@@ -4,6 +4,8 @@
 #![allow(non_snake_case)]
 #![allow(unused_attributes)]
 
+pub mod beads;
+pub mod query_log;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -11,16 +13,23 @@ use hdi::prelude::*;
 
 pub const THREADS_ZOME_NAME: &'static str = "threads";
 
+pub use beads::*;
+pub use query_log::*;
+
 
 #[hdk_entry_defs]
 #[unit_enum(ThreadsEntryTypes)]
 pub enum ThreadsEntry {
-    #[entry_def(required_validations = 2, visibility = "public")]
+    #[entry_def(required_validations = 3, visibility = "public")]
     SemanticTopic(SemanticTopic),
-    #[entry_def(required_validations = 2, visibility = "public")]
+    #[entry_def(required_validations = 3, visibility = "public")]
     ParticipationProtocol(ParticipationProtocol),
-    #[entry_def(required_validations = 2, visibility = "public")]
+    #[entry_def(required_validations = 3, visibility = "public")]
     TextMessage(TextMessage),
+    #[entry_def(required_validations = 3, visibility = "public")]
+    GlobalQueryLog(GlobalQueryLog),
+    #[entry_def(required_validations = 3, visibility = "public")]
+    ThreadQueryLog(ThreadQueryLog),
 }
 
 
@@ -29,6 +38,7 @@ pub enum ThreadsEntry {
 #[derive(Serialize, Deserialize)]
 pub enum ThreadsLinkType {
     All,
+    SemanticPrefixPath,
     Topics,
     Threads,
     Beads,
@@ -45,15 +55,6 @@ pub enum ThreadsLinkType {
 #[serde(rename_all = "camelCase")]
 pub struct SemanticTopic {
     pub title: String,
-}
-
-
-///
-#[hdk_entry_helper]
-#[derive(Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct TextMessage {
-    pub value: String,
 }
 
 
