@@ -70,7 +70,7 @@ pub struct ParticipationProtocol {
 
 
 ///
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum TopicType {
     Dna,

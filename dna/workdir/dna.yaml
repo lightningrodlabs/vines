@@ -5,16 +5,16 @@ integrity:
   origin_time: 2022-09-25T13:55:49.200Z
   zomes:
     - name: profiles_integrity
-      bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity_zome.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/profiles_integrity_zome.wasm
     - name: threads_integrity
-      bundled: ../../../target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm
 coordinator:
   zomes:
     - name: zProfiles
-      bundled: ../../../target/wasm32-unknown-unknown/release/profiles_zome.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/profiles_zome.wasm
       dependencies:
         - name: profiles_integrity
     - name: zThreads
-      bundled: ../../../target/wasm32-unknown-unknown/release/threads_zome.wasm
+      bundled: ../../target/wasm32-unknown-unknown/release/threads_zome.wasm
       dependencies:
         - name: threads_integrity

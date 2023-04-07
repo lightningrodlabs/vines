@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
-name: Where Official
+name: Threads Official
 ui:
-  bundled: "../../artifacts/where-webapp-ui.zip"
+  bundled: "../../artifacts/threads-webapp-ui.zip"
 happ_manifest:
-  bundled: "../../artifacts/where.happ"
+  bundled: "../../artifacts/threads.happ"

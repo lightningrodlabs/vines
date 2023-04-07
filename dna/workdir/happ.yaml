@@ -8,5 +8,5 @@ roles:
       strategy: create
       deferred: true
     dna:
-      bundled: "../../../artifacts/threads.dna"
+      bundled: "../../artifacts/threads.dna"
       clone_limit: 0

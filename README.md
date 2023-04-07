@@ -4,7 +4,7 @@ Tooling for conversation in group spaces on holochain
 
 ##  Background
 
-The current state-of-the-art in sync/async conversation is where I'm typing this very message: channel based chat with affordances for replys and threading.  The context created by a channel is completely implicit in the channel name and it's use by the community/people that use it.   The structure of any message is always the same except if you think of an emoji reaction as message type.  This is actually quite powerful (it's why we are using it) but it has some severe limitations.
+The current state-of-the-art in sync/async conversation is Discord/Slack: channel based chat with affordances for replys and threading.  The context created by a channel is completely implicit in the channel name and it's use by the community/people that use it.   The structure of any message is always the same except if you think of an emoji reaction as message type.  This is actually quite powerful (it's why we are using it) but it has some severe limitations.
 
 
 ## Dev testing
@@ -51,7 +51,6 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 | `/scripts/`                                | Tool chain
 | `/webapp/`                                 | The Where webapp source code
 | &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | webhapp work directory
-| `/webapp.ludotheque/`                      | The Ludotheque standalone webapp source code
 | `/webcomponents/`                          | The web components source code
 | `/we-applet/`                              | The applet for We integration
 

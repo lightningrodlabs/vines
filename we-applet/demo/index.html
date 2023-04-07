@@ -27,7 +27,7 @@
         const apps = await adminWs.listApps({});
         console.log("setup() apps", apps);
 
-        const appInfo = await appWs.appInfo({installed_app_id: "where-applet"});
+        const appInfo = await appWs.appInfo({installed_app_id: "threads-applet"});
         console.log("setup() appInfo", appInfo);
 
         const renderers = await Applet.appletRenderers(
