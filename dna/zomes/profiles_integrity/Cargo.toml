@@ -1,0 +1,15 @@
+[package]
+name = "profiles_integrity_zome"
+authors = ["eric@harris-braun.com"]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+hc_zome_profiles_integrity = {git = "https://github.com/holochain-open-dev/profiles", version = "0.1.0" }
+
+hdi.workspace = true

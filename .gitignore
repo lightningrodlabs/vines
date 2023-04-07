@@ -1,0 +1,33 @@
+## editors
+/.idea
+/.vscode
+
+
+## system files
+.DS_Store
+
+target/
+node_modules/
+dist/
+.cargo/
+.hc*
+dna/workdir/dna*/*.dna
+dna/workdir/happ*/*.happ
+webapp/webhapp.workdir/*.webhapp
+*.tsbuildinfo
+.running
+dna/*.txt
+
+
+release/
+artifacts/*
+submodules/**/*
+bin/
+
+*.map
+
+
+# Specific files
+Cargo.lock
+hash_zome*
+package-lock.json

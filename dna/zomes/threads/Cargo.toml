@@ -1,0 +1,15 @@
+[package]
+name = "threads_zome"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde.workspace = true
+hdk.workspace = true
+zome_utils.workspace = true
+
+threads_integrity = { package = "threads_integrity_zome", path = "../threads_integrity" }
