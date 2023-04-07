@@ -39,6 +39,7 @@ pub enum ThreadsEntry {
 pub enum ThreadsLinkType {
     All,
     SemanticPrefixPath,
+    ProtocolsPrefixPath,
     Topics,
     Threads,
     Beads,

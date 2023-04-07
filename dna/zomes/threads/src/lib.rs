@@ -5,4 +5,5 @@
 #![allow(unused_attributes)]
 
 mod semantic_topic;
+mod participation_protocol;
 
