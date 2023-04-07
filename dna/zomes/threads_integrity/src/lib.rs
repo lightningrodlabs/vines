@@ -66,7 +66,7 @@ pub struct SemanticTopic {
 pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
-    pub topic_hash: AnyLinkableHash,
+    pub topic_hash: AnyDhtHash, //TODO: AnyLinkableHash,
     pub topic_type: TopicType,
 }
 
@@ -81,4 +81,5 @@ pub enum TopicType {
     SemanticTopic,
     AppletEntry,
     AppletAction,
+    AppletExternal(String),
 }

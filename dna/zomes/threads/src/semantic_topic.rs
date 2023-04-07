@@ -33,19 +33,34 @@ fn prefix_topic_path(title: String) -> ExternResult<TypedPath> {
 #[hdk_extern]
 pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
   if title_filter.len() < 3 {
-    return Err(wasm_error!(WasmErrorInner::Guest(
-            "Cannot search with a prefix less than 3 characters".into(),
-        )));
+    return zome_error!("Cannot search with a prefix less than 3 characters");
   }
 
   let prefix_path = prefix_topic_path(title_filter.clone())?;
-  let links = get_links(
-    prefix_path.path_entry_hash()?,
-    ThreadsLinkType::Topics,
-    Some(LinkTag::new(
-      title_filter.to_lowercase().as_bytes().to_vec(),
-    )),
-  )?;
+
+  let semantic_topics = get_semantic_topics(prefix_path)?;
+  Ok(semantic_topics)
+}
+
+
+/// return ActionHash, EntryHash and title of every known SemanticTopic entry.
+#[hdk_extern]
+pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
+  let root_path = Path::from("all_semantic_topics").typed(ThreadsLinkType::SemanticPrefixPath)?;
+  let children = root_path.children_paths()?;
+  debug!("get_all_semantic_topics() found {} children", children.len());
+  let mut res: Vec<(ActionHash, EntryHash, String)> = Vec::new();
+  for child_path in children {
+    let mut sts = get_semantic_topics(child_path)?;
+    res.append(&mut sts);
+  }
+  Ok(res)
+}
+
+
+///
+fn get_semantic_topics(path: TypedPath) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
+  let links = get_links(path.path_entry_hash()?, ThreadsLinkType::Topics, None)?;
 
   let semantic_topics = links
     .into_iter()

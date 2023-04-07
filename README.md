@@ -49,7 +49,7 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 |:-------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
 | `/dna/`                                    | DNA source code
 | `/scripts/`                                | Tool chain
-| `/webapp/`                                 | The Where webapp source code
+| `/webapp/`                                 | The webapp source code
 | &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | webhapp work directory
 | `/webcomponents/`                          | The web components source code
 | `/we-applet/`                              | The applet for We integration

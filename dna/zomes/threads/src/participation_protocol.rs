@@ -43,15 +43,16 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
 
 ///
 fn prefix_pp_path(dna_hash: DnaHashB64, maybe_entry_name: Option<&str>) -> ExternResult<TypedPath> {
-  if Some(entry_name) = maybe_entry_name {
+  if let Some(entry_name) = maybe_entry_name {
     return Path::from(format!("all_threads.{}.{}", dna_hash.to_string(), entry_name)).typed(ThreadsLinkType::ProtocolsPrefixPath);
   }
   Path::from(format!("all_threads.{}", dna_hash.to_string())).typed(ThreadsLinkType::ProtocolsPrefixPath)
 }
 
 
+/// TODO: should be AnyLinkableHash once hc-client-js has defined it
 #[hdk_extern]
-pub fn get_threads(lh: AnyLinkableHash) -> ExternResult<Vec<ActionHash>> {
+pub fn get_threads(lh: AnyDhtHash) -> ExternResult<Vec<ActionHash>> {
   let links = get_links(lh, ThreadsLinkType::Threads, None)?;
   let ahs = links
     .into_iter()
@@ -62,6 +63,8 @@ pub fn get_threads(lh: AnyLinkableHash) -> ExternResult<Vec<ActionHash>> {
 
 
 ///
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GetProtocolsInput {
   dna_hash: DnaHashB64,
   entry_name: String,
@@ -83,12 +86,18 @@ pub fn get_protocols_for_app_entry_type(input: GetProtocolsInput) -> ExternResul
 
 ///
 #[hdk_extern]
-pub fn get_protocols_for_app(dnaHash: DnaHashB64) -> ExternResult<Vec<ActionHash>> {
-  let prefix_path = prefix_pp_path(input.dna_hash, None)?;
-  let links = get_links(prefix_path.path_entry_hash()?, ThreadsLinkType::ProtocolsPrefixPath, None)?;
-  let ahs = links
-    .into_iter()
-    .map(|l| { ActionHash::from(l.target) })
-    .collect();
-  Ok(ahs)
+pub fn get_protocols_for_app(dna_hash: DnaHashB64) -> ExternResult<Vec<ActionHash>> {
+  let prefix_path = prefix_pp_path(dna_hash, None)?;
+  let children = prefix_path.children_paths()?;
+  debug!("get_protocols_for_app() found {} children", children.len());
+  let mut res = Vec::new();
+  for child_path in children {
+    let links = get_links(child_path.path_entry_hash()?, ThreadsLinkType::Protocols, None)?;
+    let mut ahs = links
+      .into_iter()
+      .map(|l| { ActionHash::from(l.target) })
+      .collect();
+    res.append(&mut ahs);
+  }
+  Ok(res)
 }
