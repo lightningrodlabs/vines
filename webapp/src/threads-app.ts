@@ -5,7 +5,7 @@ import {Button, CircularProgress, Dialog} from "@scoped-elements/material-web";
 import {AdminWebsocket, AppSignal, AppWebsocket, EntryHashB64, InstalledAppId, RoleName} from "@holochain/client";
 import {CellContext, delay, HCL, CellsForRole, HappElement, HvmDef} from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF
+  DEFAULT_THREADS_DEF, SemanticTopicList, ThreadsTestPage
 } from "@threads/elements";
 import {ThreadsProfile} from "@threads/elements/dist/viewModels/profiles.proxy";
 
@@ -130,7 +130,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   render() {
-    console.log("*** <threads-app> render()", this._hasStartingProfile)
+    console.log("*** <threads-app> render()", this._hasStartingProfile, this.threadsDvm.cell)
     if (!this._loaded) {
       return html`        
       <div style="display: flex; justify-content: center; align-items: center; height: 100vh">
@@ -140,41 +140,53 @@ export class ThreadsApp extends HappElement {
     }
 
 
-    const threadTestPage = html`
-        <cell-context .cell="${this.threadsDvm.cell}">
-            <threads-test-page></threads-test-page>
-        </cell-context>
-    `;
+    // const threadTestPage = html`
+    //     <cell-context .cell="${this.threadsDvm.cell}">
+    //         <threads-test-page></threads-test-page>
+    //     </cell-context>
+    // `;
 
 
-    const createProfile = html `
-        <div class="column"
-             style="align-items: center; justify-content: center; flex: 1; padding-bottom: 10px;"
-        >
-          <h1 style="font-family: arial;color: #5804A8;"><img src="logo.svg" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/> Threads</h1>            
-          <div class="column" style="align-items: center;">
-            <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
-                <div class="title" style="margin-bottom: 24px; align-self: flex-start">
-                  ${msg('Create Profile')}
-                </div>
-                  <edit-profile
-                          .saveProfileLabel=${msg('Create Profile')}
-                          @save-profile=${(e: CustomEvent) => this.createMyProfile(e.detail.profile)}
-                          @lang-selected=${(e: CustomEvent) => {console.log("<app> set lang", e.detail); /*setLocale(e.detail)*/}}
-                  ></edit-profile>
-            </sl-card>
-            </div>
-        </div>`;
+    // const createProfile = html `
+    //     <div class="column"
+    //          style="align-items: center; justify-content: center; flex: 1; padding-bottom: 10px;"
+    //     >
+    //       <h1 style="font-family: arial;color: #5804A8;"><img src="logo.svg" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/> Threads</h1>
+    //       <div class="column" style="align-items: center;">
+    //         <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
+    //             <div class="title" style="margin-bottom: 24px; align-self: flex-start">
+    //               ${msg('Create Profile')}
+    //             </div>
+    //               <edit-profile
+    //                       .saveProfileLabel=${msg('Create Profile')}
+    //                       @save-profile=${(e: CustomEvent) => this.createMyProfile(e.detail.profile)}
+    //                       @lang-selected=${(e: CustomEvent) => {console.log("<app> set lang", e.detail); /*setLocale(e.detail)*/}}
+    //               ></edit-profile>
+    //         </sl-card>
+    //         </div>
+    //     </div>`;
 
-    const guardedPage = threadTestPage //this._hasStartingProfile? threadTestPage : createProfile;
+    //const guardedPage = threadTestPage //this._hasStartingProfile? threadTestPage : createProfile;
 
 
     /** Render all */
     return html`
-        ${guardedPage}
+        <button @click="${() => {console.log("refresh"); const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; el.requestUpdate()}}">refresh</button>
+        <cell-context .cell="${this.threadsDvm.cell}">
+            <threads-test-page id="test"></threads-test-page>
+            <semantic-topic-list></semantic-topic-list>
+        </cell-context>
     `;
   }
 
+  /** */
+  static get scopedElements() {
+    return {
+      "threads-test-page": ThreadsTestPage,
+      "semantic-topic-list": SemanticTopicList,
+      "cell-context": CellContext,
+    }
+  }
 
   /** */
   static get styles() {

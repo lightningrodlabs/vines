@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@holochain-open-dev/core-types": "0.6.3",
+    "@open-wc/scoped-elements": "^2.1.1",
     "@threads/elements": "file:../webcomponents",
     "@lit-labs/context": "^0.1.2",
     "lit": "^2.3.0"

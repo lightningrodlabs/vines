@@ -1,5 +1,6 @@
 export * from "./globals"
 
+export * from './elements/semantic-topic-list';
 export * from './elements/threads-test-page';
 
 export * from './viewModels/happDef';

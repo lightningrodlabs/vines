@@ -3,6 +3,7 @@ import {property, state} from "lit/decorators.js";
 import { DnaElement } from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../viewModels/threads.zvm";
 
 
 /**
@@ -22,25 +23,24 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   debugMode: boolean = false;
 
 
-  // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  // taskerPerspective!: TaskerPerspective;
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  threadsPerspective!: ThreadsPerspective;
 
 
   /** -- Methods -- */
 
-  // protected async dvmUpdated(newDvm: TaskerDvm, oldDvm?: TaskerDvm): Promise<void> {
-  //   console.log("<tasker-page>.dvmUpdated()");
-  //   if (oldDvm) {
-  //     console.log("\t Unsubscribed to taskerZvm's roleName = ", oldDvm.taskerZvm.cell.name)
-  //     oldDvm.taskerZvm.unsubscribe(this);
-  //   }
-  //   newDvm.taskerZvm.subscribe(this, 'taskerPerspective');
-  //   console.log("\t Subscribed taskerZvm's roleName = ", newDvm.taskerZvm.cell.name)
-  //   newDvm.probeAll();
-  //   this._selectedTopicHash = undefined;
-  //   //this.taskerPerspective = emptyTaskerPerspective;
-  //   this._initialized = true;
-  // }
+  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    console.log("<tasker-page>.dvmUpdated()");
+    if (oldDvm) {
+      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
+      oldDvm.threadsZvm.unsubscribe(this);
+    }
+    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+    // newDvm.probeAll();
+    this._selectedTopicHash = undefined;
+    this._initialized = true;
+  }
 
 
 
