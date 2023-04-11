@@ -153,6 +153,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_protocols_for_app', dnaHash);
   }
 
+  async getProtocol(ah: ActionHash): Promise<ParticipationProtocol> {
+    return this.call('get_protocol', ah);
+  }
+
   async createSemanticTopic(semanticTopic: SemanticTopic): Promise<ActionHash> {
     return this.call('create_semantic_topic', semanticTopic);
   }

@@ -38,7 +38,7 @@ export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZv
     /** render all */
     return html`
         <h3>Semantic Topics</h3>
-        <label for="labelInput">New label:</label>
+        <label for="labelInput">New Semantic Topic:</label>
         <input type="text" id="labelInput" name="Value">
         <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
         <ul>

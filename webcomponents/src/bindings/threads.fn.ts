@@ -10,6 +10,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_threads",
 	"get_protocols_for_app_entry_type",
 	"get_protocols_for_app",
+	"get_protocol",
 	"create_semantic_topic",
 	"search_semantic_topics",
 	"get_all_semantic_topics",];

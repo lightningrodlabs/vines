@@ -1,9 +1,10 @@
 import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
-import { DnaElement } from "@ddd-qc/lit-happ";
+import {CellContext, DnaElement} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
+import {ThreadList} from "./thread-list";
 
 
 /**
@@ -17,7 +18,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Fields -- */
   @state() private _initialized = false;
-  @state() private _selectedTopicHash?: AnyDhtHashB64;
+  @state() private _selectedTopicHash: AnyDhtHashB64 = '';
 
   @property({ type: Boolean, attribute: 'debug' })
   debugMode: boolean = false;
@@ -38,7 +39,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
     // newDvm.probeAll();
-    this._selectedTopicHash = undefined;
+    this._selectedTopicHash = '';
     this._initialized = true;
   }
 
@@ -68,6 +69,15 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  async onCreateThread(e: any) {
+    const input = this.shadowRoot!.getElementById("threadInput") as HTMLInputElement;
+    let res = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this._selectedTopicHash, input.value);
+    //console.log("onCreateList() res:", res)
+    input.value = "";
+  }
+
+
+  /** */
   async onSemanticTopicSelect(e: any) {
     console.log("onSemanticTopicSelect() CALLED", e)
     const selector = this.shadowRoot!.getElementById("listSelector") as HTMLSelectElement;
@@ -76,8 +86,11 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     console.log("onListSelect() value", selector.value)
+    await this._dvm.threadsZvm.probeThreads(selector.value);
     this._selectedTopicHash = selector.value;
     this.requestUpdate();
+    const tl = this.shadowRoot.getElementById("threadList") as ThreadList;
+    tl.requestUpdate();
   }
 
 
@@ -87,7 +100,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     if (!this._initialized) {
       return html`<span>Loading...</span>`;
     }
-    console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
+    //console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
 
     let sts = this._dvm.threadsZvm.perspective.semanticTopics;
     console.log("<threads-test-page.render()> render() sts", sts);
@@ -108,7 +121,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     )
 
     let selectedTopicHtml = html `<h3>none</h3>`
-    if (this._selectedTopicHash) {
+    if (this._selectedTopicHash != "") {
       selectedTopicHtml = html`
         <span><b>${this._dvm.threadsZvm.perspective.semanticTopics[this._selectedTopicHash]}</b> ${this._selectedTopicHash}</span>
       `;
@@ -120,9 +133,9 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
         <h1>Threads test page</h1>
         <h3>Semantic Topics</h3>
         <ul>${stLi}</ul>
-          <label for="listTitleInput">New Semantic Topic:</label>
-          <input type="text" id="listTitleInput" name="title">
-          <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
+        <label for="listTitleInput">Add new Semantic Topic:</label>
+        <input type="text" id="listTitleInput" name="title">
+        <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
         <h2>
           Selected List:
           <select name="listSelector" id="listSelector" @click=${this.onSemanticTopicSelect}>
@@ -130,8 +143,23 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
           </select>
         </h2>
         ${selectedTopicHtml}
+        <div>
+            <thread-list id="threadList" .currentTopicAh="${this._selectedTopicHash}" ></thread-list>
+        </div>
+        <div>
+          <label for="threadInput">Create new thread:</label>
+          <input type="text" id="threadInput" name="purpose">
+          <input type="button" value="create" @click=${this.onCreateThread} .disabled="${this._selectedTopicHash === ''}">
+        </div>
       </div>
     `;
   }
 
+
+  /** */
+  static get scopedElements() {
+    return {
+      "thread-list": ThreadList,
+    }
+  }
 }

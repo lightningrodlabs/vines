@@ -171,13 +171,19 @@ export class ThreadsApp extends HappElement {
 
     /** Render all */
     return html`
-        <button @click="${() => {console.log("refresh"); const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; el.requestUpdate()}}">refresh</button>
+        <button @click="${() => {
+          console.log("refresh"); 
+          //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
+          //el.requestUpdate();
+            this.threadsDvm.dumpLogs();
+        }}">refresh</button>
         <cell-context .cell="${this.threadsDvm.cell}">
             <threads-test-page id="test"></threads-test-page>
             <semantic-topic-list></semantic-topic-list>
         </cell-context>
     `;
   }
+
 
   /** */
   static get scopedElements() {
@@ -187,6 +193,7 @@ export class ThreadsApp extends HappElement {
       "cell-context": CellContext,
     }
   }
+
 
   /** */
   static get styles() {

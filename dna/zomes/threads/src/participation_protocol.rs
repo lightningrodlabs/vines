@@ -7,6 +7,7 @@ use threads_integrity::*;
 #[hdk_extern]
 pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtocol) -> ExternResult<ActionHash> {
   if let TopicType::SemanticTopic = pp.topic_type {
+  } else {
     return zome_error!("create_participation_protocol_from_semantic_topic() error: ParticipationProtocol is not for a semantic topic. TopicType is {:?}", pp.topic_type);
   }
   let dna_info = dna_info()?;
@@ -100,4 +101,11 @@ pub fn get_protocols_for_app(dna_hash: DnaHashB64) -> ExternResult<Vec<ActionHas
     res.append(&mut ahs);
   }
   Ok(res)
+}
+
+
+#[hdk_extern]
+pub fn get_protocol(ah: ActionHash) -> ExternResult<ParticipationProtocol> {
+  let (_eh, pp) = get_typed_from_ah(ah)?;
+  Ok(pp)
 }
