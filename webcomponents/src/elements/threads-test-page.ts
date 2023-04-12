@@ -144,7 +144,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
         </h2>
         ${selectedTopicHtml}
         <div>
-            <thread-list id="threadList" .currentTopicAh="${this._selectedTopicHash}" ></thread-list>
+            <thread-list id="threadList" .topic="${this._selectedTopicHash}" ></thread-list>
         </div>
         <div>
           <label for="threadInput">Create new thread:</label>

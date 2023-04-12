@@ -16,18 +16,18 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   @property()
-  currentTopicAh: string = ''
+  topic: string = ''
 
 
   /** */
   render() {
-    console.log("<thread-list> render():", this.currentTopicAh);
+    console.log("<thread-list> render():", this.topic);
 
     //console.log("label-list:", this.perspective.names)
 
     let threadsLi = [html`<span>None</span>`];
-    if (this.currentTopicAh != "") {
-      threadsLi = this.perspective.threadsByTopic[this.currentTopicAh].map(
+    if (this.topic != "") {
+      threadsLi = this.perspective.threadsByTopic[this.topic].map(
         (ah) => {
           const pp = this._zvm.getParticipationProtocol(ah);
           return html`
@@ -38,7 +38,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** render all */
     return html`
-        <h3>Topic threads: ${this.currentTopicAh}</h3>
+        <h3>Topic threads: ${this.topic}</h3>
         <ul>${threadsLi}</ul>
     `;
 
