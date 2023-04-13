@@ -75,7 +75,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
     for (const rootAnchor of rootAnchors) {
       //const str = utf32Decode(new Uint8Array(child[1]));
-      console.log(`  - Root anchor: Link type "${linkKeys[rootAnchor.link_index]}": ${rootAnchor.anchor}`);
+      console.log(`  - Root anchor: LinkType="${linkKeys[rootAnchor.link_index]}" path="${rootAnchor.anchor}"`);
       //await this.printChildren(str);
     }
   }
@@ -86,16 +86,19 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     //console.log({children})
     if (children.length == 0) {
       const links = await this._dvm.threadsZvm.zomeProxy.getAnchorLinks(root_ta);
+      if (links.length > 0) {
+        const tag = new TextDecoder().decode(new Uint8Array(links[0].tag));
+        const leaf = root_ta.anchor + tag
+        console.log(`  - Anchor: LinkType="${linkKeys[root_ta.link_index]}" path="${leaf}"`);
+      }
       for (const link of links) {
-        //const tag = utf32Decode(new Uint8Array(link.tag));
         const tag = new TextDecoder().decode(new Uint8Array(link.tag));
         const hash = encodeHashToBase64(new Uint8Array(link.target));
-        console.log(` -- LeafLink: LinkType="${linkKeys[link.index]}" tag="${tag}" hash="${hash}"`);
+        console.log(`    - LeafLink: LinkType="${linkKeys[link.index]}" tag="${tag}" hash="${hash}"`);
       }
     } else {
       for (const ta of children) {
-        //const str = ta[1] // utf32Decode(new Uint8Array(child[1]));
-        console.log(`${ta} child: Link type: "${linkKeys[ta.link_index]}": ${ta.anchor}`);
+        console.log(`  - Anchor: LinkType="${linkKeys[ta.link_index]}" path="${ta.anchor}"`);
         await this.printChildren(ta);
       }
     }
@@ -175,13 +178,13 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     return html`
       <div>
           <button @click="${async () => {
-            console.log("*** explore Semantic Topics:");
+            console.log("*** Scan All Semantic Topics:");
             await this.printChildren({anchor: "all_semantic_topics", link_index: 1});}
-          }">Explore Semantic Topics</button>
+          }">Scan Semantic Topics</button>
           <button @click="${async () => {
-              console.log("*** explore root Anchors:");
+              console.log("*** Scan Root Anchors:");
               await this.printRootAnchors();}
-          }">Explore Root Anchors</button>
+          }">Scan Root Anchors</button>
           <h1>Threads test page</h1>
         <h3>Semantic Topics</h3>
         <ul>${stLi}</ul>
