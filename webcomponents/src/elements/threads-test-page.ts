@@ -85,7 +85,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_anchor);
     //console.log({children})
     if (children.length == 0) {
-      this.scanForLinks();
+      //this.scanForLinks();
     } else {
       for (const child of children) {
         const str = child[1] // utf32Decode(new Uint8Array(child[1]));
