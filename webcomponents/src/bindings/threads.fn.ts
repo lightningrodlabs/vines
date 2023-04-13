@@ -11,6 +11,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_protocols_for_app_entry_type",
 	"get_protocols_for_app",
 	"get_protocol",
+	"get_all_root_anchors",
+	"get_anchor_children",
 	"create_semantic_topic",
 	"search_semantic_topics",
 	"get_all_semantic_topics",];
@@ -18,7 +20,7 @@ export const threadsFunctionNames: FunctionName[] = [
 
 /** Generate tuple array of function names with given zomeName */
 export function generateThreadsZomeFunctionsArray(zomeName: ZomeName): [ZomeName, FunctionName][] {
-   let fns: [ZomeName, FunctionName][] = [];
+   const fns: [ZomeName, FunctionName][] = [];
    for (const fn of threadsFunctionNames) {
       fns.push([zomeName, fn]);
    }

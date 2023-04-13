@@ -1,0 +1,65 @@
+///! Copy of the code from holochain but without internal calls to .ensure()
+
+use hdk::hash_path::path::{Component};
+use hdk::prelude::*;
+
+/// Touch and list all the links from this path to paths below it.
+/// Only returns links between paths, not to other entries that might have their own links.
+pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::link::Link>> {
+  let mut unwrapped = get_links(
+    tp.path_entry_hash()?,
+    LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
+    None,
+  )?;
+  // Only need one of each hash to build the tree.
+  unwrapped.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
+  unwrapped.dedup_by(|a, b| a.tag.eq(&b.tag));
+  Ok(unwrapped)
+}
+
+
+/// Touch and list all the links from this path to paths below it.
+/// Same as `Path::children` but returns `Vec<Path>` rather than `Vec<Link>`.
+/// This is more than just a convenience. In general it's not possible to
+/// construct a full `Path` from a child `Link` alone as only a single
+/// `Component` is encoded into the link tag. To build a full child path
+/// the parent path + child link must be combined, which this function does
+/// to produce each child, by using `&self` as that parent.
+pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
+  let children = tp_children(tp)?;
+  let components: ExternResult<Vec<Option<Component>>> = children
+    .into_iter()
+    .map(|link| {
+      let component_bytes = &link.tag.0[..];
+      if component_bytes.is_empty() {
+        Ok(None)
+      } else {
+        Ok(Some(
+          SerializedBytes::from(UnsafeBytes::from(component_bytes.to_vec()))
+            .try_into()
+            .map_err(|e: SerializedBytesError| wasm_error!(e))?,
+        ))
+      }
+    })
+    .collect();
+  Ok(components?
+    .into_iter()
+    .map(|maybe_component| {
+      let mut new_path = tp.path.clone();
+      if let Some(component) = maybe_component {
+        new_path.append_component(component);
+      }
+      new_path.into_typed(tp.link_type)
+    })
+    .collect())
+}
+
+
+///
+pub fn tp_children_details(tp: &TypedPath) -> ExternResult<holochain_zome_types::link::LinkDetails> {
+  get_link_details(
+    tp.path_entry_hash()?,
+    LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
+    Some(holochain_zome_types::link::LinkTag::new([])),
+  )
+}

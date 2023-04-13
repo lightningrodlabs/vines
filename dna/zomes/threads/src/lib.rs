@@ -6,4 +6,6 @@
 
 mod semantic_topic;
 mod participation_protocol;
+mod path_explorer;
+mod typed_path;
 

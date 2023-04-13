@@ -5,7 +5,18 @@ import {AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
+import {ThreadsLinkTypeType} from "../bindings/threads.types";
 
+function utf32Decode(bytes: Uint8Array) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let result = '';
+
+  for (let i = 0; i < bytes.length; i += 4) {
+    result += String.fromCodePoint(view.getInt32(i, true));
+  }
+
+  return result;
+}
 
 /**
  * @element tasker-page
@@ -55,6 +66,33 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   async refresh(_e?: any) {
     //console.log("tasker-page.refresh() called")
     await this._dvm.probeAll();
+  }
+
+
+  async printRootAnchors() {
+    const rootAnchors = await this._dvm.threadsZvm.zomeProxy.getAllRootAnchors();
+    console.log({rootAnchors})
+    const linkKeys = Object.keys(ThreadsLinkTypeType);
+    for (const rootAnchor of rootAnchors) {
+      const str = rootAnchor[1] // utf32Decode(new Uint8Array(child[1]));
+      console.log(`  - Root anchor: Link type "${linkKeys[rootAnchor[0]]}": ${str}`);
+      //await this.printChildren(str);
+    }
+  }
+
+  async printChildren(root_anchor: string) {
+    const linkKeys = Object.keys(ThreadsLinkTypeType);
+    const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_anchor);
+    //console.log({children})
+    if (children.length == 0) {
+      this.scanForLinks();
+    } else {
+      for (const child of children) {
+        const str = child[1] // utf32Decode(new Uint8Array(child[1]));
+        console.log(`${root_anchor} child: Link type: "${linkKeys[child[0]]}": ${str}`);
+        await this.printChildren(str);
+      }
+    }
   }
 
 
@@ -130,7 +168,15 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     /** Render all */
     return html`
       <div>
-        <h1>Threads test page</h1>
+          <button @click="${async () => {
+            console.log("*** explore Semantic Topics:");
+            await this.printChildren("all_semantic_topics");}
+          }">Explore Semantic Topics</button>
+          <button @click="${async () => {
+              console.log("*** explore root Anchors:");
+              await this.printRootAnchors();}
+          }">Explore Root Anchors</button>
+          <h1>Threads test page</h1>
         <h3>Semantic Topics</h3>
         <ul>${stLi}</ul>
         <label for="listTitleInput">Add new Semantic Topic:</label>

@@ -157,6 +157,14 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_protocol', ah);
   }
 
+  async getAllRootAnchors(): Promise<[number, string][]> {
+    return this.call('get_all_root_anchors', null);
+  }
+
+  async getAnchorChildren(rootAnchor: string): Promise<[number, string][]> {
+    return this.call('get_anchor_children', rootAnchor);
+  }
+
   async createSemanticTopic(semanticTopic: SemanticTopic): Promise<ActionHash> {
     return this.call('create_semantic_topic', semanticTopic);
   }

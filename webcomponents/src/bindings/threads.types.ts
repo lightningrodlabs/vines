@@ -163,6 +163,16 @@ export type ThreadsEntry =
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =
   | {All: null} | {SemanticPrefixPath: null} | {ProtocolsPrefixPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
+export enum ThreadsLinkTypeType {
+	All = 'All',
+	SemanticPrefixPath = 'SemanticPrefixPath',
+	ProtocolsPrefixPath = 'ProtocolsPrefixPath',
+	Topics = 'Topics',
+	Threads = 'Threads',
+	Beads = 'Beads',
+	Protocols = 'Protocols',
+	Invalid = 'Invalid',
+}
 
 /**  */
 export interface SemanticTopic {
