@@ -5,7 +5,7 @@ import {AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
-import {ThreadsLinkTypeType} from "../bindings/threads.types";
+import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
 
 function utf32Decode(bytes: Uint8Array) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -74,23 +74,29 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     console.log({rootAnchors})
     const linkKeys = Object.keys(ThreadsLinkTypeType);
     for (const rootAnchor of rootAnchors) {
-      const str = rootAnchor[1] // utf32Decode(new Uint8Array(child[1]));
-      console.log(`  - Root anchor: Link type "${linkKeys[rootAnchor[0]]}": ${str}`);
+      //const str = utf32Decode(new Uint8Array(child[1]));
+      console.log(`  - Root anchor: Link type "${linkKeys[rootAnchor.link_index]}": ${rootAnchor.anchor}`);
       //await this.printChildren(str);
     }
   }
 
-  async printChildren(root_anchor: string) {
+  async printChildren(root_ta: TypedAnchor) {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
-    const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_anchor);
+    const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_ta.anchor);
     //console.log({children})
     if (children.length == 0) {
-      //this.scanForLinks();
+      const links = await this._dvm.threadsZvm.zomeProxy.getAnchorLinks(root_ta);
+      for (const link of links) {
+        //const tag = utf32Decode(new Uint8Array(link.tag));
+        const tag = new TextDecoder().decode(new Uint8Array(link.tag));
+        const hash = encodeHashToBase64(new Uint8Array(link.target));
+        console.log(` -- LeafLink: LinkType="${linkKeys[link.index]}" tag="${tag}" hash="${hash}"`);
+      }
     } else {
-      for (const child of children) {
-        const str = child[1] // utf32Decode(new Uint8Array(child[1]));
-        console.log(`${root_anchor} child: Link type: "${linkKeys[child[0]]}": ${str}`);
-        await this.printChildren(str);
+      for (const ta of children) {
+        //const str = ta[1] // utf32Decode(new Uint8Array(child[1]));
+        console.log(`${ta} child: Link type: "${linkKeys[ta.link_index]}": ${ta.anchor}`);
+        await this.printChildren(ta);
       }
     }
   }
@@ -170,7 +176,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       <div>
           <button @click="${async () => {
             console.log("*** explore Semantic Topics:");
-            await this.printChildren("all_semantic_topics");}
+            await this.printChildren({anchor: "all_semantic_topics", link_index: 1});}
           }">Explore Semantic Topics</button>
           <button @click="${async () => {
               console.log("*** explore root Anchors:");

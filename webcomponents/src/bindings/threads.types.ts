@@ -132,6 +132,17 @@ export interface GetProtocolsInput {
   entryName: string
 }
 
+export interface TypedAnchor {
+  anchor: string
+  link_index: number
+}
+
+export interface LeafLink {
+  index: number
+  target: number[]
+  tag: number[]
+}
+
 export interface Bead {
   protocolAh: ActionHash
   maybeReplyOfAh: ActionHash

@@ -25,6 +25,7 @@ fn prefix_topic_path(title: String) -> ExternResult<TypedPath> {
   // conver to lowercase for path for ease of search
   let lower_title = title.to_lowercase();
   let (prefix, _) = lower_title.as_str().split_at(3);
+  // FIXME remove first letter depth
   Path::from(format!("all_semantic_topics{}{}{}{}", DELIMITER, lower_title.chars().next().unwrap(), DELIMITER, prefix))
     .typed(ThreadsLinkType::SemanticPrefixPath)
 }
