@@ -11,14 +11,16 @@ import "@ui5/webcomponents/dist/BusyIndicator.js";
 
 function anchorLeaf(anchor: String): string {
   const subs = anchor.split(".");
-  return subs[subs.length -1];
+  //console.log("anchorLeaf()", anchor, subs)
+  if (subs.length < 2) {return subs[0]}
+  return subs[subs.length - 2];
 }
 
 
 function typedAnchor2TreeItem(ta: TypedAnchor) {
   console.log("typedAnchor2TreeItem()", ta.anchor)
   //anchorLeaf(ta.anchor)
-  return html`<ui5-tree-item id="anchor__${ta.anchor}" text="${ta.anchor}" has-children></ui5-tree-item>`
+  return html`<ui5-tree-item id="anchor__${ta.anchor}" text="${ta.anchor}" additional-text="${ta.anchor}" has-children></ui5-tree-item>`
 }
 
 
@@ -65,24 +67,10 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
 
-  async scanLeafAnchors(rootAnchor: TypedAnchor) {
-    const leafAnchors = await this._zvm.zomeProxy.getLeafAnchors(rootAnchor);
-  }
-
-
-  // updated() {
-  //   console.log("AnchorTree.updated()")
-  //   var busyIndicator = document.getElementById("busy") as any; // Tree
-  //   const rootTree = this.shadowRoot.getElementById("rootAnchorTree") as HTMLElement;
-  //   rootTree.addEventListener("item-toggle", function(e) {
-  //     console.log("ITEM TOGGLE FTW")
-  //   });
-  // }
-
   async toggleRootTreeItem(event:any) {
     const busyIndicator = this.shadowRoot.getElementById("busy") as any; // Tree
-    console.log("toggleRootTreeItem()")
     let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
+    console.log("toggleRootTreeItem()", rootItem.id, rootItem.text)
 
     /* Handle AnchorBranch */
     if (rootItem.id.length > 8 && rootItem.id.substring(0, 8) === "anchor__") {
@@ -90,45 +78,26 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         return;
       }
       event.preventDefault(); // do not let the toggle button switch yet
+
       let itemTexts = [];
       for (const item of rootItem.items) {
         itemTexts.push(item.text);
       }
       busyIndicator.active = true; // block the tree from the user
-      const rootAnchor: TypedAnchor = {anchor: rootItem.text, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
-      const leafAnchors = await this._zvm.zomeProxy.getLeafAnchors(rootAnchor);
-      console.log({leafAnchors})
-      for (const leafAnchor of leafAnchors) {
-        if (itemTexts.includes(leafAnchor.anchor)) {
-          continue;
-        }
-        var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
-        newItem.text = leafAnchor.anchor;
-        newItem.id = "leaf__" + leafAnchor.anchor;
-        newItem.hasChildren = true;
-        rootItem.appendChild(newItem); // add the newly fetched node to the tree
-      }
-      rootItem.toggle(); // now manually switch the toggle button
-      busyIndicator.active = false; // unblock the tree
 
-    } else {
+      const rootAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
+      const tas = await this._zvm.zomeProxy.getAllSubAnchors(rootAnchor.anchor);
+      console.log({tas})
 
-      /** Handle AnchorLeaf */
-      if (rootItem.id.length > 8 && rootItem.id.substring(0, 6) === "leaf__") {
-        if (rootItem.expanded) {
-          return;
-        }
-        event.preventDefault(); // do not let the toggle button switch yet
-
+      /** Handle LeafAnchor */
+      if (tas.length == 0) {
         const linkKeys = Object.keys(ThreadsLinkTypeType);
         let itemHashs = [];
         for (const item of rootItem.items) {
           itemHashs.push(item.id);
         }
 
-        busyIndicator.active = true; // block the tree from the user
-
-        const rootAnchor: TypedAnchor = {anchor: rootItem.text, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
+        const rootAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
         const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: rootAnchor, linkIndex: 3}); // Lookup in ThreadsLinkTypeType
         console.log({leafLinks})
         for (const leafLink of leafLinks) {
@@ -140,14 +109,67 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           }
           var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
           newItem.text = hash;
-          newItem.additionalText = linkKeys[leafLink.index] +"::" + tag
+          newItem.additionalText = linkKeys[leafLink.index] + "::" + tag
           newItem.id = hash;
+          newItem.level = rootItem.level + 1;
           rootItem.appendChild(newItem); // add the newly fetched node to the tree
         }
-        rootItem.toggle(); // now manually switch the toggle button
-        busyIndicator.active = false; // unblock the tree
       }
+
+      /** Handle BranchAnchor */
+      for (const ta of tas) {
+        const leafComponent = anchorLeaf(ta.anchor);
+        /* Skip if item already exists */
+        if (itemTexts.includes(leafComponent)) {
+          continue;
+        }
+        let newItem = document.createElement("ui5-tree-item") as any; // TreeItem
+        newItem.text = leafComponent;
+        newItem.additionalText = ta.anchor;
+        newItem.id = "anchor__" + ta.anchor;
+        newItem.hasChildren = true;
+        newItem.level = rootItem.level + 1;
+        rootItem.appendChild(newItem); // add the newly fetched node to the tree
+      }
+
+      rootItem.toggle(); // now manually switch the toggle button
+      busyIndicator.active = false; // unblock the tree
+
     }
+    // /** Handle AnchorLeaf */
+    // if (rootItem.id.length > 8 && rootItem.id.substring(0, 6) === "leaf__") {
+    //   if (rootItem.expanded) {
+    //     return;
+    //   }
+    //   event.preventDefault(); // do not let the toggle button switch yet
+    //
+    //   const linkKeys = Object.keys(ThreadsLinkTypeType);
+    //   let itemHashs = [];
+    //   for (const item of rootItem.items) {
+    //     itemHashs.push(item.id);
+    //   }
+    //
+    //   busyIndicator.active = true; // block the tree from the user
+    //
+    //   const rootAnchor: TypedAnchor = {anchor: rootItem.text, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
+    //   const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: rootAnchor, linkIndex: 3}); // Lookup in ThreadsLinkTypeType
+    //   console.log({leafLinks})
+    //   for (const leafLink of leafLinks) {
+    //     const tag = new TextDecoder().decode(new Uint8Array(leafLink.tag));
+    //     const hash = encodeHashToBase64(new Uint8Array(leafLink.target));
+    //
+    //     if (itemHashs.includes(hash)) {
+    //       continue;
+    //     }
+    //     var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
+    //     newItem.text = hash;
+    //     newItem.additionalText = linkKeys[leafLink.index] + "::" + tag
+    //     newItem.id = hash;
+    //     rootItem.appendChild(newItem); // add the newly fetched node to the tree
+    //   }
+    //   rootItem.toggle(); // now manually switch the toggle button
+    //   busyIndicator.active = false; // unblock the tree
+    // }
   }
 
 

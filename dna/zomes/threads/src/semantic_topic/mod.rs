@@ -13,6 +13,6 @@ pub(crate) fn determine_topic_anchor(title: String) -> ExternResult<TypedPath> {
   let lower_title = title.to_lowercase();
   let (prefix, _) = lower_title.as_str().split_at(3);
   // FIXME remove first letter depth
-  Path::from(format!("{}{}{}", ROOT_ANCHOR_SEMANTIC_TOPICS, /*DELIMITER, lower_title.chars().next().unwrap(),*/ DELIMITER, prefix))
+  Path::from(format!("{}{}{}{}{}", ROOT_ANCHOR_SEMANTIC_TOPICS, DELIMITER, lower_title.chars().next().unwrap(), DELIMITER, prefix))
     .typed(ThreadsLinkType::SemanticPrefixPath)
 }
