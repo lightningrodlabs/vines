@@ -55,3 +55,23 @@ pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
     })
     .collect())
 }
+
+
+///--------------------------------------------------------------------------------------------------
+/// Extra methods
+
+
+/// Return all LeafPaths from this Path
+/// A LeafPath is a Path with no sub Paths of same type
+pub fn tp_leaf_children(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
+  let children = tp_children_paths(tp)?;
+  if children.is_empty() {
+    return Ok(vec![tp.clone()]);
+  }
+  let mut res = Vec::new();
+  for child_tp in children {
+    let mut grand_children = tp_leaf_children(&child_tp)?;
+    res.append(&mut grand_children);
+  }
+  Ok(res)
+}

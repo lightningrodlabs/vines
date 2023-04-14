@@ -179,7 +179,7 @@ export class ThreadsApp extends HappElement {
         }}">dumpLogs</button>
         <cell-context .cell="${this.threadsDvm.cell}">
             <threads-test-page id="test"></threads-test-page>
-            <semantic-topic-list></semantic-topic-list>
+            <!-- <semantic-topic-list></semantic-topic-list> -->
         </cell-context>
     `;
   }

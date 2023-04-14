@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use crate::path_explorer::{LeafLink, path2str, tp_children_paths};
+use crate::path_explorer::{LeafLink, path2str, tp_children_paths, tp_leaf_children};
 
 
 /// Struct for holding an easily exportable typed Anchor.
@@ -51,15 +51,8 @@ impl TypedAnchor {
 
   /// Return all LeafAnchors from this Anchor
   pub fn probe_leaf_anchors(&self) -> ExternResult<Vec<TypedAnchor>> {
-    let children = self.children()?;
-    if children.is_empty() {
-      return Ok(vec![self.clone()]);
-    }
-    let mut res_tps = Vec::new();
-    for child_tp in children {
-      let mut grand_children = tp_children_paths(&child_tp)?;
-      res_tps.append(&mut grand_children);
-    }
+    let res_tps = tp_leaf_children(&self.as_path())?;
+    //debug!("TypedAnchor.probe_leaf_anchors() '{}' has {} children.", self.anchor, res_tps.len());
     let res = res_tps
       .into_iter()
       .map(|tp| TypedAnchor::try_from(&tp).unwrap())

@@ -95,19 +95,15 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** render all */
     return html`
-        <h3>Anchor Tree</h3>
+        <div style="background: lightcyan; padding-bottom: 5px">
+        <h3>Anchor Tree component</h3>
         <button @click="${async () => {
             console.log("*** Scan Root Anchors:");
             await this.scanRootAnchors();}
         }">Scan Root Anchors</button>
-        <ui5-busy-indicator id="busy">
-            <ui5-tree id="treeDynamic" mode="None" header-text="header-lol">
-                <ui5-tree-item text="Child 1"></ui5-tree-item>
-                <ui5-tree-item text="Child 2"></ui5-tree-item>                
-            </ui5-tree>
-        </ui5-busy-indicator>
         <div>
         ${rootAnchorTree}
+        </div>
         </div>
     `;
 
