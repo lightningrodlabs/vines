@@ -84,7 +84,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log("toggleRootTreeItem()")
     let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
 
-    /* Only for the dynamic node, and only when it's empty */
+    /* Handle AnchorBranch */
     if (rootItem.id.length > 8 && rootItem.id.substring(0, 8) === "anchor__") {
       if (rootItem.expanded) {
         return;
@@ -104,10 +104,49 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
         var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
         newItem.text = leafAnchor.anchor;
+        newItem.id = "leaf__" + leafAnchor.anchor;
+        newItem.hasChildren = true;
         rootItem.appendChild(newItem); // add the newly fetched node to the tree
       }
       rootItem.toggle(); // now manually switch the toggle button
       busyIndicator.active = false; // unblock the tree
+
+    } else {
+
+      /** Handle AnchorLeaf */
+      if (rootItem.id.length > 8 && rootItem.id.substring(0, 6) === "leaf__") {
+        if (rootItem.expanded) {
+          return;
+        }
+        event.preventDefault(); // do not let the toggle button switch yet
+
+        const linkKeys = Object.keys(ThreadsLinkTypeType);
+        let itemHashs = [];
+        for (const item of rootItem.items) {
+          itemHashs.push(item.id);
+        }
+
+        busyIndicator.active = true; // block the tree from the user
+
+        const rootAnchor: TypedAnchor = {anchor: rootItem.text, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
+        const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: rootAnchor, linkIndex: 3}); // Lookup in ThreadsLinkTypeType
+        console.log({leafLinks})
+        for (const leafLink of leafLinks) {
+          const tag = new TextDecoder().decode(new Uint8Array(leafLink.tag));
+          const hash = encodeHashToBase64(new Uint8Array(leafLink.target));
+
+          if (itemHashs.includes(hash)) {
+            continue;
+          }
+          var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
+          newItem.text = hash;
+          newItem.additionalText = linkKeys[leafLink.index] +"::" + tag
+          newItem.id = hash;
+          rootItem.appendChild(newItem); // add the newly fetched node to the tree
+        }
+        rootItem.toggle(); // now manually switch the toggle button
+        busyIndicator.active = false; // unblock the tree
+      }
     }
   }
 
