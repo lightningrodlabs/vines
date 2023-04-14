@@ -8,9 +8,9 @@ use crate::semantic_topic::determine_topic_anchor;
 /// return ActionHash, EntryHash and title of every known SemanticTopic entry.
 #[hdk_extern]
 pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
-  debug!("get_all_semantic_topics()");
   let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticPrefixPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
+  debug!("get_all_semantic_topics() {:?}", root_anchor);
   let leaf_anchors = root_anchor.probe_leaf_anchors()?;
   debug!("get_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
   let mut res: Vec<(ActionHash, EntryHash, String)> = Vec::new();

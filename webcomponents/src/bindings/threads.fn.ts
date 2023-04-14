@@ -13,6 +13,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_protocol",
 	"get_all_root_anchors",
 	"get_all_sub_anchors",
+	"get_leaf_anchors",
+	"get_leafs",
 	"get_anchor_all_leaf_links",
 	"create_semantic_topic",
 	"get_all_semantic_topics",

@@ -132,6 +132,13 @@ export interface GetProtocolsInput {
   entryName: string
 }
 
+/** A Typed Anchor is an Anchor with LinkType associated with it. */
+export interface GetLeafsInput {
+  typedAnchor: TypedAnchor
+  linkIndex: number
+  linkTag?: number[]
+}
+
 /**
  * Struct holding info about the link between a LeafAnchor and an AnchorLeaf.
  * A LeafAnchor is an Anchor wit no sub anchors.
@@ -145,7 +152,7 @@ export interface LeafLink {
 
 /**
  * Struct for holding an easily exportable typed Anchor.
- * An Anchor is a Holochain Path made exclusively of human readable strings.
+ * An Anchor is a Holochain Path made exclusively of human-readable strings.
  * A Typed Anchor is an Anchor with LinkType associated with it.
  */
 export interface TypedAnchor {
@@ -185,7 +192,7 @@ export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: P
 export type ThreadsEntryVariantTextMessage = {TextMessage: TextMessage}
 export type ThreadsEntryVariantGlobalQueryLog = {GlobalQueryLog: GlobalQueryLog}
 export type ThreadsEntryVariantThreadQueryLog = {ThreadQueryLog: ThreadQueryLog}
-export type ThreadsEntry = 
+export type ThreadsEntry =
  | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalQueryLog | ThreadsEntryVariantThreadQueryLog;
 
 /** List of all link kinds handled by this Zome */
@@ -232,7 +239,7 @@ export type TopicTypeVariantSemanticTopic = {semanticTopic: null}
 export type TopicTypeVariantAppletEntry = {appletEntry: null}
 export type TopicTypeVariantAppletAction = {appletAction: null}
 export type TopicTypeVariantAppletExternal = {appletExternal: string}
-export type TopicType = 
+export type TopicType =
  | TopicTypeVariantDna | TopicTypeVariantAgent | TopicTypeVariantBead | TopicTypeVariantSemanticTopic | TopicTypeVariantAppletEntry | TopicTypeVariantAppletAction | TopicTypeVariantAppletExternal;
 
 export interface GlobalQueryLog {

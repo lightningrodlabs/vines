@@ -1,10 +1,9 @@
 
-mod path_get_all;
+mod fns;
 mod path_typed_path_ext;
 mod path_typed_anchor;
 mod path_leaf_link;
 
-pub use path_get_all::*;
 pub use path_typed_path_ext::*;
 pub use path_typed_anchor::*;
 pub use path_leaf_link::*;

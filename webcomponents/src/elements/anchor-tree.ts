@@ -1,4 +1,4 @@
-import {css, html} from "lit";
+import {css, html, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
@@ -18,7 +18,7 @@ function anchorLeaf(anchor: String): string {
 function typedAnchor2TreeItem(ta: TypedAnchor) {
   console.log("typedAnchor2TreeItem()", ta.anchor)
   //anchorLeaf(ta.anchor)
-  return html`<ui5-tree-item text="${ta.anchor}"></ui5-tree-item>`
+  return html`<ui5-tree-item id="anchor__${ta.anchor}" text="${ta.anchor}" has-children></ui5-tree-item>`
 }
 
 
@@ -36,47 +36,78 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @state() private _rootAnchors: TypedAnchor[] = [];
 
 
-  rootAnchor2Tree(rootAnchors: TypedAnchor[]) {
+  /** */
+  renderLeafAnchor(rootAnchors: TypedAnchor[]): TemplateResult<1> {
+    return html``;
+  }
+
+
+  /** */
+  renderRootAnchorTree(rootAnchors: TypedAnchor[]): TemplateResult<1> {
     const children = rootAnchors.map((ta) => {
       return typedAnchor2TreeItem(ta)
     });
     console.log({children})
     return html`
       <ui5-busy-indicator id="busy" class="full-width">
-        <ui5-tree id="rootAnchorTree" mode="None" header-text="Root Anchors" no-data-text="No root Anchors found">
-            ${children}
+        <ui5-tree id="rootAnchorTree" mode="None" header-text="Root Anchors" no-data-text="No root Anchors found"
+                  @item-toggle="${this.toggleRootTreeItem}"
+        >
+          ${children}
         </ui5-tree>
       </ui5-busy-indicator>
     `
   }
 
 
-  async scanRootAnchors() {
+  async scanRootAnchors(): Promise<void> {
     this._rootAnchors = await this._zvm.zomeProxy.getAllRootAnchors();
   }
 
 
-  async printChildren(root_ta: TypedAnchor) {
-    const linkKeys = Object.keys(ThreadsLinkTypeType);
-    const children = await this._zvm.zomeProxy.getAllSubAnchors(root_ta.anchor);
-    //console.log({children})
-    if (children.length == 0) {
-      const links = await this._zvm.zomeProxy.getAnchorAllLeafLinks(root_ta);
-      if (links.length > 0) {
-        const tag = new TextDecoder().decode(new Uint8Array(links[0].tag));
-        const leaf = root_ta.anchor + tag
-        console.log(`  - Anchor: LinkType="${linkKeys[root_ta.linkIndex]}" path="${leaf}"`);
+  async scanLeafAnchors(rootAnchor: TypedAnchor) {
+    const leafAnchors = await this._zvm.zomeProxy.getLeafAnchors(rootAnchor);
+  }
+
+
+  // updated() {
+  //   console.log("AnchorTree.updated()")
+  //   var busyIndicator = document.getElementById("busy") as any; // Tree
+  //   const rootTree = this.shadowRoot.getElementById("rootAnchorTree") as HTMLElement;
+  //   rootTree.addEventListener("item-toggle", function(e) {
+  //     console.log("ITEM TOGGLE FTW")
+  //   });
+  // }
+
+  async toggleRootTreeItem(event:any) {
+    const busyIndicator = this.shadowRoot.getElementById("busy") as any; // Tree
+    console.log("toggleRootTreeItem()")
+    let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
+
+    /* Only for the dynamic node, and only when it's empty */
+    if (rootItem.id.length > 8 && rootItem.id.substring(0, 8) === "anchor__") {
+      if (rootItem.expanded) {
+        return;
       }
-      for (const link of links) {
-        const tag = new TextDecoder().decode(new Uint8Array(link.tag));
-        const hash = encodeHashToBase64(new Uint8Array(link.target));
-        console.log(`    - LeafLink: LinkType="${linkKeys[link.index]}" tag="${tag}" hash="${hash}"`);
+      event.preventDefault(); // do not let the toggle button switch yet
+      let itemTexts = [];
+      for (const item of rootItem.items) {
+        itemTexts.push(item.text);
       }
-    } else {
-      for (const ta of children) {
-        console.log(`  - Anchor: LinkType="${linkKeys[ta.linkIndex]}" path="${ta.anchor}"`);
-        await this.printChildren(ta);
+      busyIndicator.active = true; // block the tree from the user
+      const rootAnchor: TypedAnchor = {anchor: rootItem.text, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
+      const leafAnchors = await this._zvm.zomeProxy.getLeafAnchors(rootAnchor);
+      console.log({leafAnchors})
+      for (const leafAnchor of leafAnchors) {
+        if (itemTexts.includes(leafAnchor.anchor)) {
+          continue;
+        }
+        var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
+        newItem.text = leafAnchor.anchor;
+        rootItem.appendChild(newItem); // add the newly fetched node to the tree
       }
+      rootItem.toggle(); // now manually switch the toggle button
+      busyIndicator.active = false; // unblock the tree
     }
   }
 
@@ -85,13 +116,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   render() {
     console.log(`<anchor-tree> render(): ${this.cell.print()}`);
 
-    const stLi = Object.entries(this.perspective.semanticTopics).map(
-      ([_b64, title]) => {
-        return html`<li>${title}</li>`
-      }
-    );
-
-    const rootAnchorTree = this.rootAnchor2Tree(this._rootAnchors);
+    const rootAnchorTree = this.renderRootAnchorTree(this._rootAnchors);
 
     /** render all */
     return html`
