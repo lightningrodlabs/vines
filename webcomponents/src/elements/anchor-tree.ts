@@ -108,8 +108,8 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             continue;
           }
           var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
-          newItem.text = hash;
-          newItem.additionalText = linkKeys[leafLink.index] + "::" + tag
+          newItem.text = tag//hash;
+          newItem.additionalText = //hash linkKeys[leafLink.index] + "::" + tag
           newItem.id = hash;
           newItem.level = rootItem.level + 1;
           rootItem.appendChild(newItem); // add the newly fetched node to the tree
