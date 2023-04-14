@@ -6,15 +6,15 @@
 
 pub mod beads;
 pub mod query_log;
+pub mod globals;
 
 //--------------------------------------------------------------------------------------------------
 
 use hdi::prelude::*;
 
-pub const THREADS_ZOME_NAME: &'static str = "threads";
-
 pub use beads::*;
 pub use query_log::*;
+pub use globals::*;
 
 
 #[hdk_entry_defs]

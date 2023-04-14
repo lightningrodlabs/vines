@@ -3,9 +3,11 @@
 use hdk::hash_path::path::{Component};
 use hdk::prelude::*;
 
+
 /// Touch and list all the links from this path to paths below it.
 /// Only returns links between paths, not to other entries that might have their own links.
 pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::link::Link>> {
+  //debug!("tp_children() '{}' | {}", path2str(tp.path.clone()), tp.link_type.zome_type.0);
   let mut unwrapped = get_links(
     tp.path_entry_hash()?,
     LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
@@ -52,14 +54,4 @@ pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
       new_path.into_typed(tp.link_type)
     })
     .collect())
-}
-
-
-///
-pub fn tp_children_details(tp: &TypedPath) -> ExternResult<holochain_zome_types::link::LinkDetails> {
-  get_link_details(
-    tp.path_entry_hash()?,
-    LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
-    Some(holochain_zome_types::link::LinkTag::new([])),
-  )
 }

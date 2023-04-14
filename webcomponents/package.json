@@ -19,6 +19,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
+    "@ui5/webcomponents": "^1.12.2",
     "@open-wc/scoped-elements": "^2.1.1",
     "@holochain-open-dev/core-types": "0.6.3",
     "@lit-labs/context": "^0.1.3",

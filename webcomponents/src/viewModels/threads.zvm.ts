@@ -43,18 +43,6 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** */
-  async initializePerspectiveOnline(): Promise<void> {
-    // FIXME
-  }
-
-
-  /** */
-  probeAllInner() {
-    // FIXME
-  }
-
-
   /** -- Perspective -- */
 
   /* */
@@ -85,11 +73,24 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Probe */
 
+  async initializePerspectiveOnline(): Promise<void> {
+    await this.probeSemanticTopics();
+  }
+
+
+  /** */
+  probeAllInner() {
+    /* await */ this.initializePerspectiveOnline();
+  }
+
+
   async probeSemanticTopics(): Promise<Dictionary<string>> {
     const sts = await this.zomeProxy.getAllSemanticTopics();
     for (const tuple of sts) {
       this._semanticTopics[encodeHashToBase64(tuple[0])] = tuple[2]
     }
+    console.log("probeSemanticTopics()", Object.keys(this._semanticTopics).length);
+    this.notifySubscribers();
     return this._semanticTopics;
   }
 
@@ -140,9 +141,5 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
     return ahB64;
   }
-
-
-
-
 
 }

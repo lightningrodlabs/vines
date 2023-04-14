@@ -132,15 +132,26 @@ export interface GetProtocolsInput {
   entryName: string
 }
 
-export interface TypedAnchor {
-  anchor: string
-  link_index: number
-}
-
+/**
+ * Struct holding info about the link between a LeafAnchor and an AnchorLeaf.
+ * A LeafAnchor is an Anchor wit no sub anchors.
+ * An AnchorLeaf is the target data linked from a LeafAnchor.
+ */
 export interface LeafLink {
   index: number
   target: number[]
   tag: number[]
+}
+
+/**
+ * Struct for holding an easily exportable typed Anchor.
+ * An Anchor is a Holochain Path made exclusively of human readable strings.
+ * A Typed Anchor is an Anchor with LinkType associated with it.
+ */
+export interface TypedAnchor {
+  anchor: string
+  zomeIndex: number
+  linkIndex: number
 }
 
 export interface Bead {
@@ -155,6 +166,12 @@ export interface TextMessage {
 }
 
 export const THREADS_ZOME_NAME = "threads";
+
+export const ROOT_ANCHOR_SEMANTIC_TOPICS = "all_semantic_topics";
+
+export const ROOT_ANCHOR_THREADS = "all_threads";
+
+export const COMPONENT_SEMANTIC_TOPIC_THREADS = "semantic_topic";
 
 export enum ThreadsEntryType {
 	SemanticTopic = 'SemanticTopic',

@@ -1,3 +1,4 @@
+use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use holo_hash::DnaHashB64;
 use zome_utils::*;
@@ -15,7 +16,7 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
 
   let ah = create_entry(ThreadsEntry::ParticipationProtocol(pp.clone()))?;
 
-  let path = prefix_pp_path(dna_hash, Some("semantic_topic"))?;
+  let path = prefix_pp_path(dna_hash, Some(COMPONENT_SEMANTIC_TOPIC_THREADS))?;
   path.ensure()?;
 
   /// Global Threads Index
@@ -45,9 +46,10 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
 ///
 fn prefix_pp_path(dna_hash: DnaHashB64, maybe_entry_name: Option<&str>) -> ExternResult<TypedPath> {
   if let Some(entry_name) = maybe_entry_name {
-    return Path::from(format!("all_threads.{}.{}", dna_hash.to_string(), entry_name)).typed(ThreadsLinkType::ProtocolsPrefixPath);
+    return Path::from(format!("{}{}{}{}{}", ROOT_ANCHOR_THREADS, DELIMITER, dna_hash.to_string(), DELIMITER, entry_name))
+      .typed(ThreadsLinkType::ProtocolsPrefixPath);
   }
-  Path::from(format!("all_threads.{}", dna_hash.to_string())).typed(ThreadsLinkType::ProtocolsPrefixPath)
+  Path::from(format!("{}{}{}", ROOT_ANCHOR_THREADS, DELIMITER, dna_hash.to_string())).typed(ThreadsLinkType::ProtocolsPrefixPath)
 }
 
 

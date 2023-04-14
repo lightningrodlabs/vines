@@ -101,7 +101,7 @@ export class ThreadsApp extends HappElement {
       this._hasStartingProfile = true;
     }
 
-    //this._whereInventory = await this.whereDvm.playsetZvm.probeInventory();
+    await this.hvm.probeAll();
 
     /** Done */
     this._loaded = true;
@@ -172,11 +172,11 @@ export class ThreadsApp extends HappElement {
     /** Render all */
     return html`
         <button @click="${() => {
-          console.log("refresh"); 
+          console.log("dumpLogs"); 
           //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
           //el.requestUpdate();
             this.threadsDvm.dumpLogs();
-        }}">refresh</button>
+        }}">dumpLogs</button>
         <cell-context .cell="${this.threadsDvm.cell}">
             <threads-test-page id="test"></threads-test-page>
             <semantic-topic-list></semantic-topic-list>

@@ -6,7 +6,10 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
 import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
+import {AnchorTree} from "./anchor-tree";
 
+
+/** */
 function utf32Decode(bytes: Uint8Array) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let result = '';
@@ -17,6 +20,7 @@ function utf32Decode(bytes: Uint8Array) {
 
   return result;
 }
+
 
 /**
  * @element tasker-page
@@ -75,21 +79,21 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
     for (const rootAnchor of rootAnchors) {
       //const str = utf32Decode(new Uint8Array(child[1]));
-      console.log(`  - Root anchor: LinkType="${linkKeys[rootAnchor.link_index]}" path="${rootAnchor.anchor}"`);
+      console.log(`  - Root anchor: LinkType="${linkKeys[rootAnchor.linkIndex]}" path="${rootAnchor.anchor}"`);
       //await this.printChildren(str);
     }
   }
 
   async printChildren(root_ta: TypedAnchor) {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
-    const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_ta.anchor);
+    const children = await this._dvm.threadsZvm.zomeProxy.getAllSubAnchors(root_ta.anchor);
     //console.log({children})
     if (children.length == 0) {
-      const links = await this._dvm.threadsZvm.zomeProxy.getAnchorLinks(root_ta);
+      const links = await this._dvm.threadsZvm.zomeProxy.getAnchorAllLeafLinks(root_ta);
       if (links.length > 0) {
         const tag = new TextDecoder().decode(new Uint8Array(links[0].tag));
         const leaf = root_ta.anchor + tag
-        console.log(`  - Anchor: LinkType="${linkKeys[root_ta.link_index]}" path="${leaf}"`);
+        console.log(`  - Anchor: LinkType="${linkKeys[root_ta.linkIndex]}" path="${leaf}"`);
       }
       for (const link of links) {
         const tag = new TextDecoder().decode(new Uint8Array(link.tag));
@@ -98,7 +102,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       }
     } else {
       for (const ta of children) {
-        console.log(`  - Anchor: LinkType="${linkKeys[ta.link_index]}" path="${ta.anchor}"`);
+        console.log(`  - Anchor: LinkType="${linkKeys[ta.linkIndex]}" path="${ta.anchor}"`);
         await this.printChildren(ta);
       }
     }
@@ -177,9 +181,15 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     /** Render all */
     return html`
       <div>
+          <button @click="${() => {
+              console.log("refresh");
+              //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
+              //el.requestUpdate();
+              this.refresh();
+          }}">refresh</button>
           <button @click="${async () => {
             console.log("*** Scan All Semantic Topics:");
-            await this.printChildren({anchor: "all_semantic_topics", link_index: 1});}
+            await this.printChildren({anchor: "all_semantic_topics", linkIndex: 1, zomeIndex: 0});}
           }">Scan Semantic Topics</button>
           <button @click="${async () => {
               console.log("*** Scan Root Anchors:");
@@ -207,6 +217,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
           <input type="button" value="create" @click=${this.onCreateThread} .disabled="${this._selectedTopicHash === ''}">
         </div>
       </div>
+      <anchor-tree></anchor-tree>
     `;
   }
 
@@ -215,6 +226,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   static get scopedElements() {
     return {
       "thread-list": ThreadList,
+      "anchor-tree": AnchorTree,
     }
   }
 }
