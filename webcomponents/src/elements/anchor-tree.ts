@@ -37,10 +37,20 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   @state() private _rootAnchors: TypedAnchor[] = [];
 
+  @property()
+  canProbeLeafAnchorsDirectly: boolean = false; // TODO: set probe behavior to traverse the AnchorTree directly on first expand or not
+
+  // TODO: Implement ExpandAll button
+  // TODO: Add refresh buttons to branch items
 
   /** */
   renderLeafAnchor(rootAnchors: TypedAnchor[]): TemplateResult<1> {
     return html``;
+  }
+
+  /** */
+  async expandAll(): Promise<void> {
+    // FIXME
   }
 
 
@@ -62,11 +72,13 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
 
+  /** */
   async scanRootAnchors(): Promise<void> {
     this._rootAnchors = await this._zvm.zomeProxy.getAllRootAnchors();
   }
 
 
+  /** */
   async toggleRootTreeItem(event:any) {
     const busyIndicator = this.shadowRoot.getElementById("busy") as any; // Tree
     let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
@@ -182,14 +194,20 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render all */
     return html`
         <div style="background: lightcyan; padding-bottom: 5px">
-        <h3>Anchor Tree component</h3>
-        <button @click="${async () => {
-            console.log("*** Scan Root Anchors:");
-            await this.scanRootAnchors();}
-        }">Scan Root Anchors</button>
-        <div>
-        ${rootAnchorTree}
-        </div>
+          <h3>Anchor Tree component</h3>
+          <button @click="${async () => {
+              console.log("*** Scan Root Anchors:");
+              await this.scanRootAnchors();}
+          }">
+            Scan Root Anchors
+        </button>
+            <button @click="${async () => {
+                console.log("*** expandAll");
+                await this.expandAll();}
+            }">Expand All</button>            
+          <div>
+            ${rootAnchorTree}
+          </div>
         </div>
     `;
 
