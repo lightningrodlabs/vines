@@ -5,18 +5,6 @@ use crate::path_explorer::*;
 use crate::utils::get_threads_zome_index;
 
 
-// /// Return all sub paths of an Anchor (an Anchor is Path of type String)
-// #[hdk_extern]
-// pub fn get_typed_sub_anchors(anchor: String) -> ExternResult<Vec<TypedAnchor>> {
-//   let starting_path = Path::from(anchor.clone());
-//   let parent_path
-//   let children_str_pair = batch_convert_path_to_anchor(children)?;
-//   Ok(children_str_pair)
-// }
-//
-//
-
-
 /// Return all sub paths of an Anchor (an Anchor is Path of type String)
 #[hdk_extern]
 pub fn get_all_sub_anchors(anchor: String) -> ExternResult<Vec<TypedAnchor>> {

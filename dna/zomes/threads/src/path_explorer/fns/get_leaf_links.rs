@@ -2,8 +2,6 @@ use hdk::prelude::*;
 use crate::path_explorer::*;
 
 
-//pub fn probe_leafs(&self, link_type: LinkType, link_tag: Option<LinkTag>) -> ExternResult<Vec<LeafLink>> {
-
 /// A Typed Anchor is an Anchor with LinkType associated with it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

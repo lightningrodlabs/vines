@@ -27,8 +27,11 @@ pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash
 
 ///
 fn get_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
-  debug!("*** dna_info.zome_names: {:?}", dna_info()?.zome_names);
-  let search_ta = TypedAnchor::new(leaf_anchor.clone(), get_threads_zome_index(), ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type.0);
+  let search_ta = TypedAnchor::new(
+    leaf_anchor.clone(),
+    get_threads_zome_index(),
+    ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type.0,
+  );
   debug!("get_semantic_topics() leaf_anchor: '{}' | {:?}", leaf_anchor, search_ta);
   let leaf_links = search_ta.probe_leafs(None)?;
   debug!("get_semantic_topics() {} leaf_links found", leaf_links.len());
@@ -47,29 +50,6 @@ fn get_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(ActionHash, Ent
   /// Done
   Ok(semantic_topics)
 }
-
-
-// ///
-// fn get_semantic_topics(tp: TypedPath) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
-//   let ph = tp.path_entry_hash()?;
-//   debug!("get_semantic_topics() path  {} | {}", path2str(tp.path).unwrap(), ph);
-//   let links = get_links(ph, ThreadsLinkType::Topics, None)?;
-//   debug!("get_semantic_topics() links {:?}", links);
-//   let semantic_topics = links
-//     .into_iter()
-//     .map(|l| {
-//       let ah = ActionHash::from(l.target);
-//       let (eh, typed) = get_typed_from_ah::<SemanticTopic>(ah.clone())
-//         .unwrap(); // FIXME
-//       // let Ok((eh, _typed)) = get_typed_from_ah::<SemanticTopic>(ah.clone())
-//       //   else { return };
-//       return (ah, eh, typed.title);
-//     })
-//     .collect();
-//   /// TODO: remove duplicates
-//   /// Done
-//   Ok(semantic_topics)
-// }
 
 
 /// From a title filter of at least 3 characters, returns all the semantic topics whose title starts with that prefix
