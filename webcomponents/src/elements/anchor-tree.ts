@@ -20,9 +20,9 @@ function anchorLeaf(anchor: String): string {
 
 
 /** */
-function anchor2TreeItem(anchor: string, isBranch: boolean) {
+function anchor2TreeItem(anchor: string) {
   console.log("anchor2TreeItem()", anchor)
-  const id = isBranch? "anchor__" +  anchor : anchor;
+  const id = "anchor__" +  anchor;
   return html`<ui5-tree-item id="${id}" text="${anchor}" anchor="${anchor}" has-children></ui5-tree-item>`
 }
 
@@ -39,8 +39,6 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   @state() private _rootAnchors: string[] = [];
-
-  @property() rootAnchorHash: AnyDhtHashB64 = undefined;
 
   @property()
   canProbeLeafAnchorsDirectly: boolean = false; // TODO: set probing behavior to traverse the AnchorTree directly on first expand or not
@@ -60,11 +58,6 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async scanAnchors(): Promise<void> {
-    this._rootAnchors = [this.rootAnchorHash] //await this._zvm.zomeProxy.getAllLeafLinksFromHash(this.rootAnchorHash);
-  }
-
-  /** */
   async scanRootAnchors(): Promise<void> {
     const typed = await this._zvm.zomeProxy.getAllRootAnchors();
     this._rootAnchors = typed.map((ta) => ta.anchor);
@@ -74,10 +67,10 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   renderAnchorTree(rootAnchors: string[]): TemplateResult<1> {
     const children = rootAnchors.map((anchor) => {
-      return anchor2TreeItem(anchor, !!this.rootAnchorHash)
+      return anchor2TreeItem(anchor)
     });
     console.log({children})
-    const header = this.rootAnchorHash? "Anchor: " + this.rootAnchorHash : "Root Anchors";
+    const header = "Root Anchors";
     return html`
       <ui5-busy-indicator id="busy" class="full-width">
         <ui5-tree id="rootAnchorTree" mode="None" header-text="${header}" no-data-text="No Anchors found"
@@ -203,7 +196,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     const anchorTree = this.renderAnchorTree(this._rootAnchors);
 
-    const scanRootAnchor = this.rootAnchorHash? html`` :
+    const scanRootAnchor = /*this.rootAnchorHash? html`` :*/
       html`
           <button @click="${async () => {
               console.log("*** Scan Root Anchors:");

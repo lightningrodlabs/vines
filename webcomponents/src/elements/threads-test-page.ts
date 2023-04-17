@@ -224,7 +224,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             </div>
         </div>
         <div style="display: flex; flex-direction: row;">
-            <!-- <anchor-tree style="width: 50%"></anchor-tree> -->
+            <anchor-tree style="width: 50%"></anchor-tree>
             <link-list .rootHash="${this._selectedTopicHash}" style="width: 50%"></link-list>
         </div>
     `;
