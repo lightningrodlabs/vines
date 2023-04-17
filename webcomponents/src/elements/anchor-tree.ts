@@ -55,6 +55,12 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
+  async scanRootAnchors(): Promise<void> {
+    this._rootAnchors = await this._zvm.zomeProxy.getAllRootAnchors();
+  }
+
+
+  /** */
   renderRootAnchorTree(rootAnchors: TypedAnchor[]): TemplateResult<1> {
     const children = rootAnchors.map((ta) => {
       return typedAnchor2TreeItem(ta)
@@ -69,12 +75,6 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         </ui5-tree>
       </ui5-busy-indicator>
     `
-  }
-
-
-  /** */
-  async scanRootAnchors(): Promise<void> {
-    this._rootAnchors = await this._zvm.zomeProxy.getAllRootAnchors();
   }
 
 
@@ -98,7 +98,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       busyIndicator.active = true; // block the tree from the user
 
       const rootAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
-      const tas = await this._zvm.zomeProxy.getAllSubAnchors(rootAnchor.anchor);
+      const tas = await this._zvm.getAllSubAnchors(rootAnchor.anchor);
       console.log({tas})
 
       /** Handle LeafAnchor */
@@ -109,8 +109,8 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           itemHashs.push(item.id);
         }
 
-        const rootAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
-        const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: rootAnchor, linkIndex: 3}); // Lookup in ThreadsLinkTypeType
+        const searchAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 3} // Lookup in ThreadsLinkTypeType
+        const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: searchAnchor});
         console.log({leafLinks})
         for (const leafLink of leafLinks) {
           const tag = new TextDecoder().decode(new Uint8Array(leafLink.tag));

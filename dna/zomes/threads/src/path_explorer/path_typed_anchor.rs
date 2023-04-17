@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use crate::path_explorer::{LeafLink, path2str, tp_children_paths, tp_leaf_children};
+use crate::path_explorer::{convert_links_to_leaf_links, LeafLink, path2str, tp_children_paths, tp_leaf_children};
 
 
 /// Struct for holding an easily exportable typed Anchor.
@@ -16,11 +16,11 @@ pub struct TypedAnchor {
 
 ///
 impl TypedAnchor {
-  pub fn new(zome_index: u8, link_index: u8, anchor: String) -> Self {
+  pub fn new(anchor: String, zome_index: u8, link_index: u8) -> Self {
     TypedAnchor {zome_index, link_index, anchor}
   }
 
-  pub fn from(link_index: u8, anchor: String) -> Self {
+  pub fn from(anchor: String, link_index: u8) -> Self {
     TypedAnchor {zome_index: zome_info().unwrap().id.0, link_index, anchor}
   }
 
@@ -62,26 +62,16 @@ impl TypedAnchor {
 
 
   /// Return all AnchorLeafs of type from this Anchor
-  pub fn probe_leafs(&self, link_type: LinkType, link_tag: Option<LinkTag>) -> ExternResult<Vec<LeafLink>> {
+  pub fn probe_leafs(&self, link_tag: Option<LinkTag>) -> ExternResult<Vec<LeafLink>> {
     let tp = self.as_path();
     let links = get_links(
-      tp.path_entry_hash()?,
-      LinkTypeFilter::single_type(tp.link_type.zome_index, link_type),
-      link_tag,
+    tp.path_entry_hash()?,
+    LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
+    link_tag,
     )?;
-
-    let mut res = Vec::new();
-    for link in links {
-      debug!("TypedAnchor.probe_leafs() LeafLink: target = {} ; tag = {:?}", link.target, link.tag);
-      res.push(LeafLink {
-        index: link_type.0,
-        target: link.target.as_ref().to_vec(),
-        tag: link.tag.as_ref().to_vec(),
-      })
-    }
+    let res = convert_links_to_leaf_links(links, tp.link_type.zome_type)?;
     Ok(res)
   }
-
 }
 
 
@@ -92,7 +82,7 @@ impl TryFrom<&TypedPath> for TypedAnchor {
     Ok(TypedAnchor {
       zome_index: tp.link_type.zome_index.0,
       link_index: tp.link_type.zome_type.0,
-      anchor: path2str(tp.path.clone())?,
+      anchor: path2str(&tp.path)?,
     })
   }
 }

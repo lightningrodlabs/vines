@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use holo_hash::DnaHashB64;
 use zome_utils::*;
 use threads_integrity::*;
+use crate::path_explorer::path2str;
 
 /// Creates the SemanticTopic
 #[hdk_extern]
@@ -16,12 +17,13 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
 
   let ah = create_entry(ThreadsEntry::ParticipationProtocol(pp.clone()))?;
 
-  let path = prefix_pp_path(dna_hash, Some(COMPONENT_SEMANTIC_TOPIC_THREADS))?;
-  path.ensure()?;
+  let tp = prefix_threads_path(dna_hash, Some(COMPONENT_SEMANTIC_TOPIC_THREADS))?;
+  tp.ensure()?;
 
   /// Global Threads Index
+  debug!("create_participation_protocol_from_semantic_topic(): {} --> {}", path2str(&tp.path).unwrap(), ah);
   create_link(
-    path.path_entry_hash()?,
+    tp.path_entry_hash()?,
     ah.clone(),
     ThreadsLinkType::Protocols,
     LinkTag::new(vec![]),
@@ -44,7 +46,7 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
 
 
 ///
-fn prefix_pp_path(dna_hash: DnaHashB64, maybe_entry_name: Option<&str>) -> ExternResult<TypedPath> {
+fn prefix_threads_path(dna_hash: DnaHashB64, maybe_entry_name: Option<&str>) -> ExternResult<TypedPath> {
   if let Some(entry_name) = maybe_entry_name {
     return Path::from(format!("{}{}{}{}{}", ROOT_ANCHOR_THREADS, DELIMITER, dna_hash.to_string(), DELIMITER, entry_name))
       .typed(ThreadsLinkType::ProtocolsPrefixPath);
@@ -77,7 +79,7 @@ pub struct GetProtocolsInput {
 ///
 #[hdk_extern]
 pub fn get_protocols_for_app_entry_type(input: GetProtocolsInput) -> ExternResult<Vec<ActionHash>> {
-  let prefix_path = prefix_pp_path(input.dna_hash, Some(&input.entry_name))?;
+  let prefix_path = prefix_threads_path(input.dna_hash, Some(&input.entry_name))?;
   let links = get_links(prefix_path.path_entry_hash()?, ThreadsLinkType::Protocols, None)?;
   let ahs = links
     .into_iter()
@@ -90,7 +92,7 @@ pub fn get_protocols_for_app_entry_type(input: GetProtocolsInput) -> ExternResul
 ///
 #[hdk_extern]
 pub fn get_protocols_for_app(dna_hash: DnaHashB64) -> ExternResult<Vec<ActionHash>> {
-  let prefix_path = prefix_pp_path(dna_hash, None)?;
+  let prefix_path = prefix_threads_path(dna_hash, None)?;
   let children = prefix_path.children_paths()?;
   debug!("get_protocols_for_app() found {} children", children.len());
   let mut res = Vec::new();

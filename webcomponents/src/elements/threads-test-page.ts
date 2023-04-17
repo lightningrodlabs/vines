@@ -89,7 +89,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     const children = await this._dvm.threadsZvm.zomeProxy.getAllSubAnchors(root_ta.anchor);
     //console.log({children})
     if (children.length == 0) {
-      const links = await this._dvm.threadsZvm.zomeProxy.getAnchorAllLeafLinks(root_ta);
+      const links = await this._dvm.threadsZvm.zomeProxy.getAllLeafLinksFromAnchor(root_ta.anchor);
       if (links.length > 0) {
         const tag = new TextDecoder().decode(new Uint8Array(links[0].tag));
         const leaf = root_ta.anchor + tag

@@ -157,6 +157,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_protocol', ah);
   }
 
+  async getAllLeafLinksFromAnchor(anchor: string): Promise<LeafLink[]> {
+    return this.call('get_all_leaf_links_from_anchor', anchor);
+  }
+
   async getAllRootAnchors(): Promise<TypedAnchor[]> {
     return this.call('get_all_root_anchors', null);
   }
@@ -171,10 +175,6 @@ export class ThreadsProxy extends ZomeProxy {
 
   async getLeafs(input: GetLeafsInput): Promise<LeafLink[]> {
     return this.call('get_leafs', input);
-  }
-
-  async getAnchorAllLeafLinks(ta: TypedAnchor): Promise<LeafLink[]> {
-    return this.call('get_anchor_all_leaf_links', ta);
   }
 
   async createSemanticTopic(semanticTopic: SemanticTopic): Promise<ActionHash> {

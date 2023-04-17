@@ -13,11 +13,11 @@ use hdk::prelude::{Path, SerializedBytesError};
 
 
 /// Convert Path to string
-pub fn path2str(path: Path) -> Result<String, SerializedBytesError> {
+pub fn path2str(path: &Path) -> Result<String, SerializedBytesError> {
   let mut res = String::new();
-  let comps: Vec<Component> = path.into();
+  let comps: &Vec<Component> = path.as_ref();
   for comp in comps {
-    res.push_str(String::try_from(&comp)?.as_str());
+    res.push_str(String::try_from(comp)?.as_str());
     res.push_str(DELIMITER);
   }
   Ok(res)

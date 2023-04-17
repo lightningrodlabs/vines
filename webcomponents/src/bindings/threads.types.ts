@@ -135,7 +135,6 @@ export interface GetProtocolsInput {
 /** A Typed Anchor is an Anchor with LinkType associated with it. */
 export interface GetLeafsInput {
   typedAnchor: TypedAnchor
-  linkIndex: number
   linkTag?: number[]
 }
 

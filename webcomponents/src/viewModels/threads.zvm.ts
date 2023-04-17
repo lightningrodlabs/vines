@@ -10,7 +10,7 @@ import {
   ParticipationProtocol,
   SemanticTopic,
   TopicType, TopicTypeType,
-  TopicTypeVariantSemanticTopic
+  TopicTypeVariantSemanticTopic, TypedAnchor
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -114,6 +114,16 @@ export class ThreadsZvm extends ZomeViewModel {
     return res;
   }
 
+
+  /** */
+  async getAllSubAnchors(anchor: string): Promise<TypedAnchor[]> {
+    const tas = await this.zomeProxy.getAllSubAnchors(anchor);
+    /** filter out self ; recursif link edge-case */
+    //const ftas = tas.filter((ta) => ta.anchor != anchor);
+    //console.log("getAllSubAnchors()", anchor, tas, ftas)
+    /** */
+    return tas;
+  }
 
   /** Publish */
 

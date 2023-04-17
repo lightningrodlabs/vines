@@ -11,11 +11,11 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_protocols_for_app_entry_type",
 	"get_protocols_for_app",
 	"get_protocol",
+	"get_all_leaf_links_from_anchor",
 	"get_all_root_anchors",
 	"get_all_sub_anchors",
 	"get_leaf_anchors",
 	"get_leafs",
-	"get_anchor_all_leaf_links",
 	"create_semantic_topic",
 	"get_all_semantic_topics",
 	"search_semantic_topics",];

@@ -27,7 +27,8 @@ pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash
 ///
 fn get_semantic_topics(ta: TypedAnchor) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
   debug!("get_semantic_topics() anchor: {}", ta.anchor);
-  let leaf_links = ta.probe_leafs(ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type, None)?;
+  let search_ta = TypedAnchor::from(ta.anchor, ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type.0);
+  let leaf_links = search_ta.probe_leafs(None)?;
   debug!("get_semantic_topics() {} leaf_links found", leaf_links.len());
   let semantic_topics = leaf_links
     .into_iter()

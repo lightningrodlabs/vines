@@ -26,7 +26,7 @@ pub fn get_all_root_anchors(_: ()) -> ExternResult<Vec<TypedAnchor>> {
         debug!("get_all_root_anchors() {:?} | comp: {:?} ; len = {}", link.link_type, comp, tag2.len());
         let str = String::try_from(&comp).unwrap();
         debug!("get_all_root_anchors() {:?} | {}", link.link_type, str);
-        res.push(TypedAnchor::from(link.link_type.0, str));
+        res.push(TypedAnchor::from(str, link.link_type.0));
       }
     }
   }
