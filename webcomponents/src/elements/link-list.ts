@@ -88,7 +88,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log({children})
     const header = "Root: " + this.rootHash;
     return html`
-      <ui5-busy-indicator id="busy" class="full-width">
+      <ui5-busy-indicator id="busy" style="width: 100%">
         <ui5-tree id="linkTree" mode="None" header-text="${header}" no-data-text="No links found"
                   @item-toggle="${this.toggleRootTreeItem}"
         >

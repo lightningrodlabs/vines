@@ -27,13 +27,16 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     let threadsLi = [html`<span>None</span>`];
     if (this.topic != "") {
-      threadsLi = this.perspective.threadsByTopic[this.topic].map(
-        (ah) => {
-          const pp = this._zvm.getParticipationProtocol(ah);
-          return html`
-              <li>${pp.purpose}</li>`
-        }
-      );
+      const maybeThreads = this.perspective.threadsByTopic[this.topic];
+      if (maybeThreads) {
+        threadsLi = maybeThreads.map(
+          (ah) => {
+            const pp = this._zvm.getParticipationProtocol(ah);
+            return html`
+                <li>${pp.purpose}</li>`
+          }
+        );
+      }
     }
 
     /** render all */

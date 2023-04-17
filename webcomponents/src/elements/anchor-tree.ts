@@ -3,7 +3,7 @@ import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
-import {AnyDhtHashB64, encodeHashToBase64} from "@holochain/client";
+import {AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
@@ -72,9 +72,10 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log({children})
     const header = "Root Anchors";
     return html`
-      <ui5-busy-indicator id="busy" class="full-width">
+      <ui5-busy-indicator id="busy" style="width: 100%">
         <ui5-tree id="rootAnchorTree" mode="None" header-text="${header}" no-data-text="No Anchors found"
                   @item-toggle="${this.toggleRootTreeItem}"
+                  @click="${this.clickTree}"
         >
           ${children}
         </ui5-tree>
@@ -82,6 +83,17 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     `
   }
 
+
+  /** */
+  async clickTree(event:any) {
+    console.log("<anchor-tree> click event:", event)
+    console.log("<anchor-tree> click event:", event.target.id);
+    /** Hacky way to know it's a hash */
+    if (event.target.id.substring(0, 3) == "uhC") {
+      this.dispatchEvent(new CustomEvent('hashSelected', {detail: event.target.id, bubbles: true, composed: true}));
+
+    }
+  }
 
   /** */
   async toggleRootTreeItem(event:any) {
