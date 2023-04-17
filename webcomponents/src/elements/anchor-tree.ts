@@ -20,7 +20,8 @@ function anchorLeaf(anchor: String): string {
 function typedAnchor2TreeItem(ta: TypedAnchor) {
   console.log("typedAnchor2TreeItem()", ta.anchor)
   //anchorLeaf(ta.anchor)
-  return html`<ui5-tree-item id="anchor__${ta.anchor}" text="${ta.anchor}" additional-text="${ta.anchor}" has-children></ui5-tree-item>`
+  // additional-text="${ta.anchor}"
+  return html`<ui5-tree-item id="anchor__${ta.anchor}" text="${ta.anchor}" anchor="${ta.anchor}" has-children></ui5-tree-item>`
 }
 
 
@@ -82,7 +83,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   async toggleRootTreeItem(event:any) {
     const busyIndicator = this.shadowRoot.getElementById("busy") as any; // Tree
     let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
-    console.log("toggleRootTreeItem()", rootItem.id, rootItem.text)
+    console.log("toggleRootTreeItem()", rootItem.id, rootItem.getAttribute("anchor"))
 
     /* Handle AnchorBranch */
     if (rootItem.id.length > 8 && rootItem.id.substring(0, 8) === "anchor__") {
@@ -97,7 +98,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
       busyIndicator.active = true; // block the tree from the user
 
-      const rootAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
+      const rootAnchor: TypedAnchor = {anchor: rootItem.getAttribute("anchor"), zomeIndex: 1, linkIndex: 1}; // Lookup in ThreadsLinkTypeType
       const tas = await this._zvm.getAllSubAnchors(rootAnchor.anchor);
       console.log({tas})
 
@@ -109,8 +110,10 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           itemHashs.push(item.id);
         }
 
-        const searchAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 3} // Lookup in ThreadsLinkTypeType
-        const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: searchAnchor});
+        //const searchAnchor: TypedAnchor = {anchor: rootItem.additionalText, zomeIndex: 1, linkIndex: 3} // Lookup in ThreadsLinkTypeType
+        // const leafLinks = await this._zvm.zomeProxy.getLeafs({typedAnchor: searchAnchor});
+        const leafLinks = await this._zvm.zomeProxy.getAllLeafLinksFromAnchor(rootItem.getAttribute("anchor"));
+
         console.log({leafLinks})
         for (const leafLink of leafLinks) {
           const tag = new TextDecoder().decode(new Uint8Array(leafLink.tag));
@@ -120,8 +123,9 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             continue;
           }
           var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
-          newItem.text = tag//hash;
-          newItem.additionalText = //hash linkKeys[leafLink.index] + "::" + tag
+          newItem.text = hash;
+          newItem.additionalText = tag? linkKeys[leafLink.index] + " | " + tag : linkKeys[leafLink.index];
+          newItem.setAttribute("anchor", rootItem.anchor);
           newItem.id = hash;
           newItem.level = rootItem.level + 1;
           rootItem.appendChild(newItem); // add the newly fetched node to the tree
@@ -138,6 +142,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         let newItem = document.createElement("ui5-tree-item") as any; // TreeItem
         newItem.text = leafComponent;
         newItem.additionalText = ta.anchor;
+        newItem.setAttribute("anchor", ta.anchor);
         newItem.id = "anchor__" + ta.anchor;
         newItem.hasChildren = true;
         newItem.level = rootItem.level + 1;

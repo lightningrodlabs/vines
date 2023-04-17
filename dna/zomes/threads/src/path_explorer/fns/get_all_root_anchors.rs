@@ -2,6 +2,7 @@ use hdk::hash_path::path::{Component, root_hash};
 use hdk::prelude::*;
 //use zome_utils::*;
 use crate::path_explorer::*;
+use crate::utils::get_threads_zome_index;
 
 
 /// Return all root Anchors from all Zomes
@@ -26,7 +27,7 @@ pub fn get_all_root_anchors(_: ()) -> ExternResult<Vec<TypedAnchor>> {
         debug!("get_all_root_anchors() {:?} | comp: {:?} ; len = {}", link.link_type, comp, tag2.len());
         let str = String::try_from(&comp).unwrap();
         debug!("get_all_root_anchors() {:?} | {}", link.link_type, str);
-        res.push(TypedAnchor::from(str, link.link_type.0));
+        res.push(TypedAnchor::new(str, get_threads_zome_index(), link.link_type.0));
       }
     }
   }

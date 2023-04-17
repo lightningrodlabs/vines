@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use zome_utils::zome_error;
 //use zome_utils::*;
 use crate::path_explorer::*;
-
+use crate::utils::get_threads_zome_index;
 
 
 // /// Return all sub paths of an Anchor (an Anchor is Path of type String)
@@ -68,7 +68,7 @@ pub fn batch_convert_path_to_anchor(tps: Vec<TypedPath>) -> ExternResult<Vec<Typ
     //debug!("get_anchor_children()    - leaf: '{}' ; tag = {:?}", leaf_str, child_path.make_tag());
     let Ok(str) = path2str(&tp.path)
       else { return zome_error!("Failed to convert Path to Anchor") };
-    res.push(TypedAnchor::from(str, tp.link_type.zome_type.0));
+    res.push(TypedAnchor::new(str, get_threads_zome_index(), tp.link_type.zome_type.0));
   }
   Ok(res)
 }

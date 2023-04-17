@@ -20,9 +20,9 @@ impl TypedAnchor {
     TypedAnchor {zome_index, link_index, anchor}
   }
 
-  pub fn from(anchor: String, link_index: u8) -> Self {
-    TypedAnchor {zome_index: zome_info().unwrap().id.0, link_index, anchor}
-  }
+  // pub fn from(anchor: String, link_index: u8) -> Self {
+  //   TypedAnchor {zome_index: zome_info().unwrap().id.0, link_index, anchor}
+  // }
 
   ///
   pub fn as_path(&self) -> TypedPath {

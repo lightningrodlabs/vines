@@ -3,6 +3,7 @@ use threads_integrity::*;
 use zome_utils::*;
 use crate::path_explorer::*;
 use crate::semantic_topic::determine_topic_anchor;
+use crate::utils::get_threads_zome_index;
 
 
 /// return ActionHash, EntryHash and title of every known SemanticTopic entry.
@@ -15,7 +16,7 @@ pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash
   debug!("get_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
   let mut res: Vec<(ActionHash, EntryHash, String)> = Vec::new();
   for leaf_anchor in leaf_anchors {
-    let mut sts = get_semantic_topics(leaf_anchor)?;
+    let mut sts = get_semantic_topics(leaf_anchor.anchor)?;
     //debug!("get_all_semantic_topics() sts {:?}", sts);
     res.append(&mut sts);
   }
@@ -25,9 +26,10 @@ pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash
 
 
 ///
-fn get_semantic_topics(ta: TypedAnchor) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
-  debug!("get_semantic_topics() anchor: {}", ta.anchor);
-  let search_ta = TypedAnchor::from(ta.anchor, ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type.0);
+fn get_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
+  debug!("*** dna_info.zome_names: {:?}", dna_info()?.zome_names);
+  let search_ta = TypedAnchor::new(leaf_anchor.clone(), get_threads_zome_index(), ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type.0);
+  debug!("get_semantic_topics() leaf_anchor: '{}' | {:?}", leaf_anchor, search_ta);
   let leaf_links = search_ta.probe_leafs(None)?;
   debug!("get_semantic_topics() {} leaf_links found", leaf_links.len());
   let semantic_topics = leaf_links
@@ -78,6 +80,6 @@ pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(ActionH
     return zome_error!("Cannot search with a prefix less than 3 characters");
   }
   let tp = determine_topic_anchor(title_filter.clone())?;
-  let semantic_topics = get_semantic_topics(TypedAnchor::try_from(&tp).unwrap())?;
+  let semantic_topics = get_semantic_topics(path2str(&tp.path).unwrap())?;
   Ok(semantic_topics)
 }
