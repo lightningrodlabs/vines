@@ -148,6 +148,8 @@ export class ThreadsZvm extends ZomeViewModel {
     const ah = await this.zomeProxy.createParticipationProtocolFromSemanticTopic(pp);
     const ahB64 = encodeHashToBase64(ah);
     this._allParticipationProtocols[ahB64] = pp;
+    this._threadsByTopic[topicHash].push(ahB64);
+    //console.log("publishThreadFromSemanticTopic()", pp)
     this.notifySubscribers();
     return ahB64;
   }

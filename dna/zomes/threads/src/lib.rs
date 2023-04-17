@@ -5,8 +5,21 @@
 #![allow(unused_attributes)]
 
 mod semantic_topic;
-mod participation_protocol;
+mod threads;
 mod path_explorer;
 
 pub(crate) mod utils;
 
+use hdk::prelude::*;
+
+
+#[hdk_extern]
+fn get_zome_info(_:()) -> ExternResult<ZomeInfo> {
+  return zome_info();
+}
+
+
+#[hdk_extern]
+fn get_dna_info(_:()) -> ExternResult<DnaInfo> {
+  return dna_info();
+}

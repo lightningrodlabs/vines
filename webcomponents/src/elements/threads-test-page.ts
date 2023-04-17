@@ -7,6 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
 import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
 import {AnchorTree} from "./anchor-tree";
+import {LinkList} from "./link-list";
 
 
 /** */
@@ -173,51 +174,59 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
 
     let selectedTopicHtml = html `<h3>none</h3>`
     if (this._selectedTopicHash != "") {
-      selectedTopicHtml = html`
-        <span><b>${this._dvm.threadsZvm.perspective.semanticTopics[this._selectedTopicHash]}</b> ${this._selectedTopicHash}</span>
-      `;
+      // <b>${this._dvm.threadsZvm.perspective.semanticTopics[this._selectedTopicHash]}</b>
+      selectedTopicHtml = html`<span>${this._selectedTopicHash}</span>`;
     }
 
     /** Render all */
     return html`
-      <div>
-          <button @click="${() => {
-              console.log("refresh");
-              //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
-              //el.requestUpdate();
-              this.refresh();
-          }}">refresh</button>
-          <button @click="${async () => {
-            console.log("*** Scan All Semantic Topics:");
-            await this.printChildren({anchor: "all_semantic_topics", linkIndex: 1, zomeIndex: 0});}
-          }">Scan Semantic Topics</button>
-          <button @click="${async () => {
-              console.log("*** Scan Root Anchors:");
-              await this.printRootAnchors();}
-          }">Scan Root Anchors</button>
-          <h1>Threads test page</h1>
-        <h3>Semantic Topics</h3>
-        <ul>${stLi}</ul>
-        <label for="listTitleInput">Add new Semantic Topic:</label>
-        <input type="text" id="listTitleInput" name="title">
-        <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
-        <h2>
-          Selected List:
-          <select name="listSelector" id="listSelector" @click=${this.onSemanticTopicSelect}>
-            ${stOption}
-          </select>
-        </h2>
-        ${selectedTopicHtml}
         <div>
-            <thread-list id="threadList" .topic="${this._selectedTopicHash}" ></thread-list>
+            <button @click="${() => {
+                console.log("refresh");
+                //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
+                //el.requestUpdate();
+                this.refresh();
+            }}">refresh
+            </button>
+            <button @click="${async () => {
+                console.log("*** Scan All Semantic Topics:");
+                await this.printChildren({anchor: "all_semantic_topics", linkIndex: 1, zomeIndex: 0});
+            }
+            }">Scan Semantic Topics
+            </button>
+            <button @click="${async () => {
+                console.log("*** Scan Root Anchors:");
+                await this.printRootAnchors();
+            }
+            }">Scan Root Anchors
+            </button>
+            <h1>Threads test page</h1>
+            <h3>Semantic Topics</h3>
+            <ul>${stLi}</ul>
+            <label for="listTitleInput">Add new Semantic Topic:</label>
+            <input type="text" id="listTitleInput" name="title">
+            <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
+            <h2>
+                Selected List:
+                <select name="listSelector" id="listSelector" @click=${this.onSemanticTopicSelect}>
+                    ${stOption}
+                </select>
+                ${selectedTopicHtml}
+            </h2>
+            <div style="background: #fac8c8">
+                <thread-list id="threadList" .topic="${this._selectedTopicHash}"></thread-list>
+            </div>
+            <div>
+                <label for="threadInput">Create new thread:</label>
+                <input type="text" id="threadInput" name="purpose">
+                <input type="button" value="create" @click=${this.onCreateThread}
+                       .disabled="${this._selectedTopicHash === ''}">
+            </div>
         </div>
-        <div>
-          <label for="threadInput">Create new thread:</label>
-          <input type="text" id="threadInput" name="purpose">
-          <input type="button" value="create" @click=${this.onCreateThread} .disabled="${this._selectedTopicHash === ''}">
+        <div style="display: flex; flex-direction: row;">
+            <!-- <anchor-tree style="width: 50%"></anchor-tree> -->
+            <link-list .rootHash="${this._selectedTopicHash}" style="width: 50%"></link-list>
         </div>
-      </div>
-      <anchor-tree></anchor-tree>
     `;
   }
 
@@ -227,6 +236,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     return {
       "thread-list": ThreadList,
       "anchor-tree": AnchorTree,
+      "link-list": LinkList,
     }
   }
 }

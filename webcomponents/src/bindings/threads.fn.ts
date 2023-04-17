@@ -5,20 +5,25 @@ import {ZomeName, FunctionName} from '@holochain/client';
 
 /** Array of all zome function names in "threads" */
 export const threadsFunctionNames: FunctionName[] = [
-	"entry_defs",
-	"create_participation_protocol_from_semantic_topic",
-	"get_threads",
-	"get_protocols_for_app_entry_type",
-	"get_protocols_for_app",
-	"get_protocol",
+	"entry_defs", 
+	"get_zome_info", 
+	"get_dna_info",
+
+
 	"get_all_leaf_links_from_anchor",
+	"get_all_leaf_links_from_hash",
 	"get_all_root_anchors",
 	"get_all_sub_anchors",
 	"get_leaf_anchors",
 	"get_leafs",
 	"create_semantic_topic",
 	"get_all_semantic_topics",
-	"search_semantic_topics",];
+	"search_semantic_topics",
+	"create_participation_protocol_from_semantic_topic",
+	"get_threads",
+	"get_protocols_for_app_entry_type",
+	"get_protocols_for_app",
+	"get_protocol",];
 
 
 /** Generate tuple array of function names with given zomeName */

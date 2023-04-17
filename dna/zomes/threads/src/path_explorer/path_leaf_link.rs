@@ -11,21 +11,19 @@ pub struct LeafLink {
   pub tag: Vec<u8>,
 }
 
-
 /// Return links from a leaf Anchor for all link types
-pub(crate) fn get_all_leaf_links_from_path(path: Path) -> ExternResult<Vec<LeafLink>> {
+pub(crate) fn get_all_leaf_links(dh: AnyDhtHash, link_tag: Option<LinkTag>) -> ExternResult<Vec<LeafLink>> {
   let zome_link_types = zome_info()?.zome_types.links;
-  debug!("get_all_leaf_links_from_path() Leaf-anchor: {:?}", path);
   let mut res = Vec::new();
   for szt in zome_link_types.0 {
     for link_type in szt.1 {
       let links = get_links(
-        path.path_entry_hash()?,
+        dh.clone(),
         LinkTypeFilter::single_type(szt.0, link_type),
-        None,
+        link_tag.clone(),
       )?;
       for link in links {
-        debug!("get_all_leaf_links_from_path() LeafLink: {:?} ; tag = {:?}", link.target, link.tag);
+        debug!("get_all_leaf_links() LeafLink: {:?} ; tag = {:?}", link.target, link.tag);
         res.push(LeafLink {
           index: link_type.0,
           target: link.target.as_ref().to_vec(),
@@ -34,6 +32,14 @@ pub(crate) fn get_all_leaf_links_from_path(path: Path) -> ExternResult<Vec<LeafL
       }
     }
   }
+  Ok(res)
+}
+
+
+/// Return links from a leaf Anchor for all link types
+pub(crate) fn get_all_leaf_links_from_path(path: Path) -> ExternResult<Vec<LeafLink>> {
+  debug!("get_all_leaf_links_from_path() Leaf-anchor: {:?}", path);
+  let res = get_all_leaf_links(AnyDhtHash::from(path.path_entry_hash()?), None)?;
   Ok(res)
 }
 

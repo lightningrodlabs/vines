@@ -126,12 +126,6 @@ ValidationStatus,
 ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
-/**  */
-export interface GetProtocolsInput {
-  dnaHash: DnaHashB64
-  entryName: string
-}
-
 /** A Typed Anchor is an Anchor with LinkType associated with it. */
 export interface GetLeafsInput {
   typedAnchor: TypedAnchor
@@ -158,6 +152,12 @@ export interface TypedAnchor {
   anchor: string
   zomeIndex: number
   linkIndex: number
+}
+
+/**  */
+export interface GetProtocolsInput {
+  dnaHash: DnaHashB64
+  entryName: string
 }
 
 export interface Bead {
