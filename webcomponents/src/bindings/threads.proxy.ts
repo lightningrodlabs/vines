@@ -175,8 +175,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('search_semantic_topics', titleFilter);
   }
 
-  async createParticipationProtocolFromSemanticTopic(pp0: ParticipationProtocol): Promise<ActionHash> {
-    return this.call('create_participation_protocol_from_semantic_topic', pp0);
+  async createParticipationProtocolFromSemanticTopic(pp: ParticipationProtocol): Promise<ActionHash> {
+    return this.call('create_participation_protocol_from_semantic_topic', pp);
   }
 
   async getThreads(lh: AnyDhtHash): Promise<ActionHash[]> {

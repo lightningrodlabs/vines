@@ -18,35 +18,46 @@ pub fn get_previous_hour_timestamp(time: Timestamp) -> Result<Timestamp, Timesta
 
 
 ///
-pub fn convert_component_to_i32(component: &Component) -> ExternResult<i32> {
-  let bytes: [u8; 4] = component
-    .as_ref()
-    .try_into()
-    .map_err(|e: TryFromSliceError| wasm_error!(e))
-    ?;
-  Ok(i32::from_be_bytes(bytes))
-}
-
-
-///
 pub fn get_timepath_leaf_value(path: &Path) -> ExternResult<i32> {
   let component = path.leaf().unwrap();
   return convert_component_to_i32(component);
 }
 
 
+// ///
+// pub fn convert_component_to_i32(component: &Component) -> ExternResult<i32> {
+//   let bytes: [u8; 4] = component
+//     .as_ref()
+//     .try_into()
+//     .map_err(|e: TryFromSliceError| wasm_error!(e))
+//     ?;
+//   Ok(i32::from_be_bytes(bytes))
+// }
+
 
 ///
-pub fn append_timestamp_to_path(path: Path, time: Timestamp, link_type: ScopedLinkType) -> ExternResult<TypedPath> {
+pub fn convert_component_to_i32(component: &Component) -> ExternResult<i32> {
+  let str = std::str::from_utf8(component.as_ref()).unwrap();
+  Ok(str.parse::<i32>().unwrap())
+}
+
+
+///
+pub fn append_timestamp_to_path(tp: TypedPath, time: Timestamp) -> ExternResult<TypedPath> {
   let (ms, ns) = time.as_seconds_and_nanos();
   let time = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(ms, ns), Utc);
-  let mut components: Vec<_> = path.into();
+  let mut components: Vec<_> = tp.path.into();
 
-  components.push((time.year() as i32).to_be_bytes().to_vec().into());
-  components.push((time.month() as i32).to_be_bytes().to_vec().into());
-  components.push((time.day() as i32).to_be_bytes().to_vec().into());
-  // DEV_MODE: This can be updated to sec() for testing
-  components.push((time.hour() as i32).to_be_bytes().to_vec().into());
+  components.push((time.year() as i32).to_string().into());
+  components.push((time.month() as i32).to_string().into());
+  components.push((time.day() as i32).to_string().into());
+  components.push((time.hour() as i32).to_string().into());
 
-  Ok(TypedPath::new(link_type, components.into()))
+  Ok(TypedPath::new(tp.link_type, components.into()))
 }
+
+
+// fn convert_i32_to_anchor_component(val: i32) -> Component {
+//   let str= String::from(val).unwrap();
+//   str.into()
+// }

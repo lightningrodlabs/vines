@@ -27,11 +27,10 @@ pub fn get_latest_time_indexed_links(
     sys_time()?
   };
 
-  let root_path = root_tp.path.clone();
   let mut res = Vec::new();
 
   /// Grab links from latest time-index hour
-  let latest_hour_path = append_timestamp_to_path(root_path, latest_included_timestamp, root_tp.link_type)?;
+  let latest_hour_path = append_timestamp_to_path(root_tp.clone(), latest_included_timestamp)?;
   if latest_hour_path.exists()? {
     let mut last_hour_links = get_links(
       latest_hour_path.path_entry_hash()?,

@@ -18,7 +18,7 @@ pub fn get_all_sub_anchors(anchor: String) -> ExternResult<Vec<TypedAnchor>> {
 /// Return all sub paths of a Path
 pub fn get_all_sub_paths(root_path: Path) -> ExternResult<Vec<TypedPath>> {
   let zome_link_types = zome_info()?.zome_types.links;
-  debug!("get_children() root_path: {}", path2str(&root_path).unwrap());
+  debug!("get_children() root_path: {}", path2str(&root_path).unwrap_or("<binary>".to_string()));
   let mut res = Vec::new();
   /// Check for children for each link type
   for szt in zome_link_types.0 {
@@ -36,7 +36,7 @@ pub fn get_all_sub_paths(root_path: Path) -> ExternResult<Vec<TypedPath>> {
       }
       debug!("get_children()  - for link '{:?}' ; found {} children", link_type, children.len());
       for child_path in children {
-        debug!("get_children()  - child_path '{}'", path2str(&child_path.path).unwrap());
+        debug!("get_children()  - child_path '{}'", path2str(&child_path.path).unwrap_or("<binary>".to_string()));
         if child_path.path != root_path {
           res.push(child_path);
         }
