@@ -179,6 +179,8 @@ export const ROOT_ANCHOR_THREADS = "all_threads";
 
 export const COMPONENT_SEMANTIC_TOPIC_THREADS = "semantic_topic";
 
+export const GLOBAL_TIME_INDEX = "global_time";
+
 export enum ThreadsEntryType {
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
@@ -196,9 +198,11 @@ export type ThreadsEntry =
 
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =
-  | {All: null} | {SemanticPrefixPath: null} | {ProtocolsPrefixPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {BeadTimePath: null} | {SemanticPrefixPath: null} | {ProtocolsPrefixPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
 export enum ThreadsLinkTypeType {
-	All = 'All',
+	ReversePath = 'ReversePath',
+	GlobalTimePath = 'GlobalTimePath',
+	BeadTimePath = 'BeadTimePath',
 	SemanticPrefixPath = 'SemanticPrefixPath',
 	ProtocolsPrefixPath = 'ProtocolsPrefixPath',
 	Topics = 'Topics',

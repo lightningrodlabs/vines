@@ -37,7 +37,9 @@ pub enum ThreadsEntry {
 #[hdk_link_types]
 #[derive(Serialize, Deserialize)]
 pub enum ThreadsLinkType {
-    All,
+    ReversePath,
+    GlobalTimePath,
+    BeadTimePath,
     SemanticPrefixPath,
     ProtocolsPrefixPath,
     Topics,
