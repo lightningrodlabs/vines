@@ -9,6 +9,7 @@ mod threads;
 mod path_explorer;
 
 pub(crate) mod utils;
+mod time_index;
 
 use hdk::prelude::*;
 
