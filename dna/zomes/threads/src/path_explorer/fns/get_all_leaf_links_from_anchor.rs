@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use crate::path_explorer::{get_all_leaf_links, get_all_leaf_links_from_path, LeafLink, TypedAnchor};
+use crate::path_explorer::{get_all_leaf_links, get_all_leaf_links_from_path, LeafLink};
 
 
 /// Return all children links from an Anchor

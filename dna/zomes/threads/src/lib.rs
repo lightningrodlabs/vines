@@ -7,9 +7,9 @@
 mod semantic_topic;
 mod threads;
 mod path_explorer;
+mod time_indexing;
 
 pub(crate) mod utils;
-mod time_index;
 
 use hdk::prelude::*;
 

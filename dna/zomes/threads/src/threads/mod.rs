@@ -6,9 +6,8 @@ mod create_participation_protocol_from_semantic_topic;
 use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use holo_hash::DnaHashB64;
-use zome_utils::*;
+//use zome_utils::*;
 use threads_integrity::*;
-use crate::path_explorer::path2str;
 
 
 

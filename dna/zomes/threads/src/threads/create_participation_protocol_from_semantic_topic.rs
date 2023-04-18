@@ -1,4 +1,3 @@
-use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use holo_hash::DnaHashB64;
 use zome_utils::*;
