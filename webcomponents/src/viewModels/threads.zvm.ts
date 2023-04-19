@@ -7,6 +7,7 @@ import {
   EntryHashB64
 } from "@holochain/client";
 import {
+  Bead,
   ParticipationProtocol,
   SemanticTopic,
   TopicType, TopicTypeType,
@@ -126,6 +127,16 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   /** Publish */
+
+  /** */
+  async publishTextMessage(texto: string, protocolAh: ActionHashB64) : Promise<string> {
+    const bead: Bead = {
+      protocolAh: decodeHashFromBase64(protocolAh)
+    }
+    const path_str = await this.zomeProxy.addTextMessage({value: texto, bead});
+    return path_str;
+  }
+
 
   /** */
   async publishSemanticTopic(title: string) : Promise<ActionHashB64> {

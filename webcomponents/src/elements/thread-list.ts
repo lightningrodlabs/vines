@@ -3,6 +3,8 @@ import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
 
+import "@ui5/webcomponents/dist/List.js"
+import "@ui5/webcomponents/dist/StandardListItem.js";
 
 /**
  * @element
@@ -19,6 +21,16 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   topic: string = ''
 
 
+  onSelectionChange(event) {
+    let items = event.detail.selectedItems /* as TreeItem */; // get the node that is toggled
+    if (items.length == 0) {
+      return;
+    }
+    console.log("onSelectionChange()", event, items[0].id)
+    this.dispatchEvent(new CustomEvent('threadSelected', {detail: items[0].id, bubbles: true, composed: true}));
+
+  }
+
   /** */
   render() {
     console.log("<thread-list> render():", this.topic);
@@ -33,7 +45,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           (ah) => {
             const pp = this._zvm.getParticipationProtocol(ah);
             return html`
-                <li>${pp.purpose}</li>`
+                <ui5-li id="${ah}">${pp.purpose}</ui5-li>`
           }
         );
       }
@@ -41,8 +53,10 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** render all */
     return html`
-        <h3>Topic threads: ${this.topic}</h3>
-        <ul>${threadsLi}</ul>
+        <ui5-list mode="SingleSelect" header-text="Topic threads: ${this.topic}" no-data-text="No Data Available"
+        @selection-change="${this.onSelectionChange}">
+            ${threadsLi}
+        </ui5-list>
     `;
 
   }

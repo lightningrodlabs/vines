@@ -4,7 +4,7 @@ use hdi::prelude::*;
 #[serde(rename_all = "camelCase")]
 pub struct Bead {
   pub protocol_ah: ActionHash,
-  pub maybe_reply_of_ah: ActionHash,
+  pub maybe_reply_of_ah: Option<ActionHash>,
 }
 
 

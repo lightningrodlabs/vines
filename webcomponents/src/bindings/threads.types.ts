@@ -154,6 +154,17 @@ export interface TypedAnchor {
   linkIndex: number
 }
 
+export interface GetLatestBeadsInput {
+  ppAh: ActionHash
+  startTime?: Timestamp
+  targetCount: number
+}
+
+export interface BeadLink {
+  beadAh: ActionHash
+  beadType: string
+}
+
 /**  */
 export interface GetProtocolsInput {
   dnaHash: DnaHashB64
@@ -162,7 +173,7 @@ export interface GetProtocolsInput {
 
 export interface Bead {
   protocolAh: ActionHash
-  maybeReplyOfAh: ActionHash
+  maybeReplyOfAh?: ActionHash
 }
 
 /**  */

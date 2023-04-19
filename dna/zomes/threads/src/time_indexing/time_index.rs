@@ -9,24 +9,6 @@ use crate::path_explorer::*;
 use crate::time_indexing::timepath_utils::*;
 
 
-#[hdk_extern]
-pub fn get_latest_entries(_ : ()) -> ExternResult<Vec<LeafLink>> {
-  let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
-  let links = get_latest_time_indexed_links(root_tp, Timestamp::HOLOCHAIN_EPOCH, sys_time()?, 20, None)?;
-  debug!("get_latest_entries() links.len = {}\n\n", links.len());
-  let res = links.into_iter()
-    .map(|link| {
-      LeafLink {
-        index: link.link_type.0,
-        target: link.target.as_ref().to_vec(),
-        tag: link.tag.as_ref().to_vec(),
-      }
-    })
-    .collect();
-  Ok(res)
-}
-
-
 /// Traverse the time-index tree from `end_ts` to `start_ts` until `target_count` links are found.
 pub fn get_latest_time_indexed_links(
   root_tp: TypedPath,

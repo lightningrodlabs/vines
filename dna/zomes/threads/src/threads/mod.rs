@@ -1,6 +1,8 @@
 
 mod participation_protocol;
 mod create_participation_protocol_from_semantic_topic;
+mod add_bead;
+mod get_latest_beads;
 
 
 use hdk::hash_path::path::DELIMITER;

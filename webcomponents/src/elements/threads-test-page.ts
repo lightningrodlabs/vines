@@ -8,6 +8,7 @@ import {ThreadList} from "./thread-list";
 import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
 import {AnchorTree} from "./anchor-tree";
 import {LinkList} from "./link-list";
+import {TextMessageList} from "./text-message-list";
 
 
 /** */
@@ -35,6 +36,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   /** -- Fields -- */
   @state() private _initialized = false;
   @state() private _selectedTopicHash: AnyDhtHashB64 = '';
+  @state() private _selectedThreadHash: AnyDhtHashB64 = '';
 
   @property({ type: Boolean, attribute: 'debug' })
   debugMode: boolean = false;
@@ -56,6 +58,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
     // newDvm.probeAll();
     this._selectedTopicHash = '';
+    this._selectedThreadHash = '';
     this._initialized = true;
   }
 
@@ -130,8 +133,18 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateThread(e: any) {
     const input = this.shadowRoot!.getElementById("threadInput") as HTMLInputElement;
-    let res = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this._selectedTopicHash, input.value);
+    let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this._selectedTopicHash, input.value);
     //console.log("onCreateList() res:", res)
+    input.value = "";
+    this._selectedThreadHash = ah;
+  }
+
+
+  /** */
+  async onCreateTextMessage(e: any) {
+    const input = this.shadowRoot!.getElementById("textMessageInput") as HTMLInputElement;
+    let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._selectedThreadHash);
+    console.log("onCreateTextMessage() res:", path_str);
     input.value = "";
   }
 
@@ -144,10 +157,10 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       console.warn("No list selector value", selector);
       return;
     }
-    console.log("onListSelect() value", selector.value)
+    console.log("onSemanticTopicSelect() value", selector.value)
     await this._dvm.threadsZvm.probeThreads(selector.value);
     this._selectedTopicHash = selector.value;
-    this.requestUpdate();
+    //this.requestUpdate();
     const tl = this.shadowRoot.getElementById("threadList") as ThreadList;
     tl.requestUpdate();
   }
@@ -172,7 +185,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       }
     )
 
-    const stOption = Object.entries(sts).map(
+    const stOptions = Object.entries(sts).map(
       ([b64, title]) => {
         //console.log("taskList:", ahB64)
         return html `<option value="${b64}">${title}</option>`
@@ -184,6 +197,12 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       // <b>${this._dvm.threadsZvm.perspective.semanticTopics[this._selectedTopicHash]}</b>
       selectedTopicHtml = html`<span>${this._selectedTopicHash}</span>`;
     }
+
+
+    // let selectedThreadHtml = html `<h3>none</h3>`
+    // if (this._selectedThreadHash != "") {
+    //   selectedThreadHtml = html`<span>${this._selectedThreadHash}</span>`;
+    // }
 
     /** Render all */
     return html`
@@ -208,8 +227,8 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             }">Scan Root Anchors
             </button>
             <button @click="${async () => {
-                console.log("*** Scan latest entries");
-                let res = await this._dvm.threadsZvm.zomeProxy.getLatestEntries();
+                console.log("*** Scan latest items");
+                let res = await this._dvm.threadsZvm.zomeProxy.getLatestItems();
                 console.log({res})
             }
             }">Scan latest entries
@@ -221,23 +240,33 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             <input type="text" id="listTitleInput" name="title">
             <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
             <h2>
-                Selected List:
+                Selected Topic:
                 <select name="listSelector" id="listSelector" @click=${this.onSemanticTopicSelect}>
-                    ${stOption}
+                    ${stOptions}
                 </select>
-                ${selectedTopicHtml}
+                    <!-- ${selectedTopicHtml} -->
             </h2>
-            <div style="background: #fac8c8">
-                <thread-list id="threadList" .topic="${this._selectedTopicHash}"></thread-list>
-            </div>
+            <thread-list id="threadList" .topic="${this._selectedTopicHash}"
+                         @threadSelected="${(e) => {this._selectedThreadHash = e.detail}}"></thread-list>
             <div>
                 <label for="threadInput">Create new thread:</label>
                 <input type="text" id="threadInput" name="purpose">
                 <input type="button" value="create" @click=${this.onCreateThread}
                        .disabled="${this._selectedTopicHash === ''}">
             </div>
+            <!-- Show Thread -->
+            <div style="background: #fac8c8">
+                <text-message-list id="textMessageList" .thread="${this._selectedThreadHash}"></text-message-list>
+                <div>
+                    <label for="threadInput">Add Message:</label>
+                    <input type="text" id="textMessageInput" name="message">
+                    <input type="button" value="create" @click=${this.onCreateTextMessage}
+                           .disabled="${this._selectedThreadHash === ''}">
+                </div>                
+            </div>            
         </div>
-        <div style="display: flex; flex-direction: row;">
+        <!-- Anchor trees -->
+        <div style="display: flex; flex-direction: row;margin-top:25px;">
             <anchor-tree style="width: 50%; overflow: auto;" 
                          @hashSelected="${(e) => {this._selectedTopicHash = e.detail}}"></anchor-tree>
             <link-list .rootHash="${this._selectedTopicHash}"
@@ -253,6 +282,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       "thread-list": ThreadList,
       "anchor-tree": AnchorTree,
       "link-list": LinkList,
+      "text-message-list": TextMessageList,
     }
   }
 }

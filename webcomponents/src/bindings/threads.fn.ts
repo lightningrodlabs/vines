@@ -19,12 +19,14 @@ export const threadsFunctionNames: FunctionName[] = [
 	"create_semantic_topic",
 	"get_all_semantic_topics",
 	"search_semantic_topics",
+	"add_text_message",
 	"create_participation_protocol_from_semantic_topic",
+	"get_latest_beads",
 	"get_threads",
 	"get_protocols_for_app_entry_type",
 	"get_protocols_for_app",
 	"get_protocol",
-	"get_latest_entries",];
+	"get_latest_items",];
 
 
 /** Generate tuple array of function names with given zomeName */
