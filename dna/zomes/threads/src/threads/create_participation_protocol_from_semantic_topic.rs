@@ -42,7 +42,7 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
   /// Global time-Index
   let root_time_path = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
-  let leaf_tp = get_time_path(root_time_path, sys_time()?)?; // FIXME: Grab Action's timestamp
+  let leaf_tp = get_time_path(root_time_path.clone(), sys_time()?)?; // FIXME: use Action's timestamp
   leaf_tp.ensure()?;
   create_link(
     leaf_tp.path_entry_hash()?,
@@ -50,6 +50,7 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
     ThreadsLinkType::Protocols,
     LinkTag::new(vec![]),
   )?;
+  debug!("Thread indexed at:\n  - {}", path2str(&leaf_tp.path).unwrap());
 
   /// Done
   Ok(ah)

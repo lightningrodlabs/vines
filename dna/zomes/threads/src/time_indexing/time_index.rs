@@ -4,8 +4,27 @@ use hdk::{
 };
 use std::cmp;
 use zome_utils::zome_error;
-use crate::path_explorer::{get_all_leaf_links, get_all_leaf_links_from_path, tp_children};
+use threads_integrity::{GLOBAL_TIME_INDEX, ThreadsLinkType};
+use crate::path_explorer::*;
 use crate::time_indexing::timepath_utils::*;
+
+
+#[hdk_extern]
+pub fn get_latest_entries(_ : ()) -> ExternResult<Vec<LeafLink>> {
+  let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
+  let links = get_latest_time_indexed_links(root_tp, Timestamp::HOLOCHAIN_EPOCH, sys_time()?, 20, None)?;
+  debug!("get_latest_entries() links.len = {}\n\n", links.len());
+  let res = links.into_iter()
+    .map(|link| {
+      LeafLink {
+        index: link.link_type.0,
+        target: link.target.as_ref().to_vec(),
+        tag: link.tag.as_ref().to_vec(),
+      }
+    })
+    .collect();
+  Ok(res)
+}
 
 
 /// Traverse the time-index tree from `end_ts` to `start_ts` until `target_count` links are found.
@@ -22,12 +41,15 @@ pub fn get_latest_time_indexed_links(
   let Ok(time_diff) = end_ts - start_ts
     else { return zome_error!("Start time must be before end time") } ;
 
+  let start_tp = get_time_path(root_tp.clone(), start_ts)?;
+  debug!("get_latest_time_indexed_links() start: {} | diff = {}", timepath2str(&start_tp), time_diff);
+
+
   /// end_time must be longer than 1 hour, otherwise return empty list
   //let Ok(latest_included_timestamp) = end_time - std::time::Duration::from_secs(60 * 60)
   //  else { return Ok(Vec::new()); };
   if time_diff < chrono::Duration::hours(1) {
-    let time_path = get_time_path(root_tp, start_ts)?;
-    let leaf_links = get_all_leaf_links_from_path(time_path.path, link_tag)?;
+    let leaf_links = get_all_leaf_links_from_path(start_tp.path, link_tag)?;
     //return Ok(leaf_links);
     return Ok(Vec::new());
   }
@@ -36,8 +58,9 @@ pub fn get_latest_time_indexed_links(
   /// Floor to the hour
   let end_time = Timestamp::from_micros((end_ts.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
   let start_time = Timestamp::from_micros((start_ts.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
-  debug!("get_latest_time_indexed_links()\n start: {} -> {} \n end: {} -> {}",
-        start_ts.as_seconds_and_nanos().0, start_time.as_seconds_and_nanos().0,
+  debug!("get_latest_time_indexed_links() start: {} -> {}",
+    start_ts.as_seconds_and_nanos().0, start_time.as_seconds_and_nanos().0);
+  debug!("get_latest_time_indexed_links()   end: {} -> {}",
     end_ts.as_seconds_and_nanos().0, end_time.as_seconds_and_nanos().0);
 
 
@@ -45,31 +68,47 @@ pub fn get_latest_time_indexed_links(
 
   /// Grab links from latest time-index hour
   let latest_hour_path = get_time_path(root_tp.clone(), end_time)?;
+  debug!("get_latest_time_indexed_links() latest_hour_path: {}", timepath2str(&latest_hour_path));
   if latest_hour_path.exists()? {
     let mut last_hour_links = get_links(
       latest_hour_path.path_entry_hash()?,
-      LinkTypeFilter::single_type(root_tp.link_type.zome_index, root_tp.link_type.zome_type),
+      LinkTypeFilter::single_dep(root_tp.link_type.zome_index),
+      //LinkTypeFilter::single_type(root_tp.link_type.zome_index, root_tp.link_type.zome_type),
+      //ThreadsLinkType::Protocols.try_into_filter()?,
       link_tag.clone(),
     )?;
+    debug!("get_latest_time_indexed_links() latest_hour_path found {}", last_hour_links.len());
     res.append(&mut last_hour_links);
   }
 
 
   /// Setup search loop. Grab parent
-  let mut latest_seen_child_path = latest_hour_path;
-  let mut current_search_path = latest_seen_child_path.parent().unwrap();
+  let mut latest_seached_path = latest_hour_path;
+  let mut current_search_path = latest_seached_path.parent().unwrap();
   let mut depth = 0;
 
   /// Traverse tree until target count is reached or root_path is reached
   while res.len() < target_count && current_search_path.as_ref().len() >= root_tp.as_ref().len() {
+    debug!("*** searching: {} | found: {}", path2str(&current_search_path.path).unwrap(), res.len());
     if current_search_path.exists()? {
-      let latest_seen_child_value =
-        get_timepath_leaf_value(&latest_seen_child_path).unwrap();
+      let latest_searched_leaf_value = get_timepath_leaf_value(&latest_seached_path).unwrap();
+
+      let latest_searched_time = convert_timepath_to_timestamp(latest_seached_path.path.clone()).unwrap();
+      debug!("*** searching:   - latest_searched_time: {}", latest_searched_time);
+      let current_search_time = convert_timepath_to_timestamp(current_search_path.path.clone())
+        .unwrap_or(start_time); // If at root component, search years starting from start_time
+      debug!("*** searching:   - current_search_time: {}", current_search_time);
+
+      if current_search_time < start_time {
+        debug!("WENT PAST START_TIME");
+        break;
+      }
+
       let children = tp_children(&current_search_path)?;
 
       let raw_children_dbg_info = children
         .iter()
-        .map(|l| format!("{{ tag: {:?} timestamp: {:?} }}, ", l.tag, l.timestamp))
+        .map(|l| format!("{{ tag: {} timestamp: {:?} }}, ", tag2str(&l.tag).unwrap_or("<failed>".to_string()), l.timestamp))
         .collect::<String>();
 
       /// Keep children older than latest time value
@@ -80,9 +119,11 @@ pub fn get_latest_time_indexed_links(
         .collect::<Result<Vec<_>, WasmError>>()?;
 
       /// Remove "newer" children
-      older_children_pairs.retain(|(time_value, _)| *time_value < latest_seen_child_value);
+      older_children_pairs.retain(|(time_value, _)| *time_value < latest_searched_leaf_value);
 
       /// Remove children older than start_time
+      // FIXME
+      // older_children_pairs.retain(|(time_value, _)| *time_value < latest_searched_leaf_value);
 
       let link_count_before_dbg_info = res.len();
 
@@ -90,12 +131,17 @@ pub fn get_latest_time_indexed_links(
 
       /// Debug info
       let links_added = res.get(link_count_before_dbg_info..).unwrap_or(&[]);
-      debug!("get_latest_time_indexed_links() Finished including all descendants of node in tree (depth {:?} current_search_path {:?}).
-            Raw children {:?}. Messages added {:?}", depth, current_search_path, raw_children_dbg_info, links_added);
+      debug!("get_latest_time_indexed_links() Finished including all descendants of node in tree (depth {} current_search_time {}).
+            Raw children {}. Links added {}", depth, current_search_time, raw_children_dbg_info, links_added.len());
     }
 
-    latest_seen_child_path = current_search_path;
-    current_search_path = latest_seen_child_path.parent().unwrap();
+    latest_seached_path = current_search_path;
+    if let Some(csp) = latest_seached_path.parent() {
+      current_search_path = csp
+    } else {
+      debug!("NO PARENT");
+      break;
+    };
     depth += 1;
   }
   /// Done

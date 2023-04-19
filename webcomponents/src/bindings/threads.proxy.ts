@@ -194,4 +194,8 @@ export class ThreadsProxy extends ZomeProxy {
   async getProtocol(ah: ActionHash): Promise<ParticipationProtocol> {
     return this.call('get_protocol', ah);
   }
+
+  async getLatestEntries(): Promise<LeafLink[]> {
+    return this.call('get_latest_entries', null);
+  }
 }

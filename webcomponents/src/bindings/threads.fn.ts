@@ -23,7 +23,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_threads",
 	"get_protocols_for_app_entry_type",
 	"get_protocols_for_app",
-	"get_protocol",];
+	"get_protocol",
+	"get_latest_entries",];
 
 
 /** Generate tuple array of function names with given zomeName */

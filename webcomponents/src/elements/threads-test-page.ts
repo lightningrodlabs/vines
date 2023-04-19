@@ -118,9 +118,12 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateSemanticTopic(e: any) {
     const input = this.shadowRoot!.getElementById("listTitleInput") as HTMLInputElement;
-    let res = await this._dvm.threadsZvm.publishSemanticTopic(input.value);
+    let ah = await this._dvm.threadsZvm.publishSemanticTopic(input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
+    this._selectedTopicHash = ah;
+    //const selector = this.shadowRoot!.getElementById("listSelector") as HTMLSelectElement;
+    //selector.value = input.value;
   }
 
 
@@ -204,6 +207,13 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             }
             }">Scan Root Anchors
             </button>
+            <button @click="${async () => {
+                console.log("*** Scan latest entries");
+                let res = await this._dvm.threadsZvm.zomeProxy.getLatestEntries();
+                console.log({res})
+            }
+            }">Scan latest entries
+            </button>            
             <h1>Threads test page: ${this._myNick}</h1>
             <h3>Semantic Topics</h3>
             <ul>${stLi}</ul>
