@@ -3,34 +3,48 @@ use hdk::{
   prelude::*,
 };
 use std::cmp;
-use crate::path_explorer::tp_children;
+use zome_utils::zome_error;
+use crate::path_explorer::{get_all_leaf_links, get_all_leaf_links_from_path, tp_children};
 use crate::time_indexing::timepath_utils::*;
 
 
-/// Returns at least `target_count` messages that are all earlier than `end_time`.
-/// Navigates a tree of timestamp-based links to find targets.
+/// Traverse the time-index tree from `end_ts` to `start_ts` until `target_count` links are found.
 pub fn get_latest_time_indexed_links(
   root_tp: TypedPath,
-  maybe_end_time: Option<Timestamp>,
+  start_ts: Timestamp,
+  end_ts: Timestamp,
   target_count: usize,
   link_tag: Option<LinkTag>,
-) -> Result<Vec<Link>, WasmError> {
+) -> ExternResult<Vec<Link>> {
+  /// TODO: let origin_time = dna_info()?.origin_time
+  /// check start_time > origin_time
 
-  /// end_time must be longer than 1 hour, otherwise use now
-  let latest_included_timestamp = if let Some(end_time) = maybe_end_time {
-    if let Ok(ts) = end_time - std::time::Duration::from_secs(60 * 60) {
-      ts
-    } else {
-      return Ok(Vec::new());
-    }
-  } else {
-    sys_time()?
-  };
+  let Ok(time_diff) = end_ts - start_ts
+    else { return zome_error!("Start time must be before end time") } ;
+
+  /// end_time must be longer than 1 hour, otherwise return empty list
+  //let Ok(latest_included_timestamp) = end_time - std::time::Duration::from_secs(60 * 60)
+  //  else { return Ok(Vec::new()); };
+  if time_diff < chrono::Duration::hours(1) {
+    let time_path = get_time_path(root_tp, start_ts)?;
+    let leaf_links = get_all_leaf_links_from_path(time_path.path, link_tag)?;
+    //return Ok(leaf_links);
+    return Ok(Vec::new());
+  }
+
+
+  /// Floor to the hour
+  let end_time = Timestamp::from_micros((end_ts.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
+  let start_time = Timestamp::from_micros((start_ts.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
+  debug!("get_latest_time_indexed_links()\n start: {} -> {} \n end: {} -> {}",
+        start_ts.as_seconds_and_nanos().0, start_time.as_seconds_and_nanos().0,
+    end_ts.as_seconds_and_nanos().0, end_time.as_seconds_and_nanos().0);
+
 
   let mut res = Vec::new();
 
   /// Grab links from latest time-index hour
-  let latest_hour_path = append_timestamp_to_path(root_tp.clone(), latest_included_timestamp)?;
+  let latest_hour_path = get_time_path(root_tp.clone(), end_time)?;
   if latest_hour_path.exists()? {
     let mut last_hour_links = get_links(
       latest_hour_path.path_entry_hash()?,
@@ -65,7 +79,10 @@ pub fn get_latest_time_indexed_links(
         .map(|(c, l)| Ok((convert_component_to_i32(&c)?, l)))
         .collect::<Result<Vec<_>, WasmError>>()?;
 
+      /// Remove "newer" children
       older_children_pairs.retain(|(time_value, _)| *time_value < latest_seen_child_value);
+
+      /// Remove children older than start_time
 
       let link_count_before_dbg_info = res.len();
 

@@ -60,11 +60,15 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  @state() private _myNick: string = '';
 
   // /** After first render only */
-  // async firstUpdated() {
-  //   this._initialized = true;
-  // }
+  async firstUpdated() {
+    // this._initialized = true;
+
+    await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
+    this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
+  }
 
 
   /** */
@@ -200,7 +204,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             }
             }">Scan Root Anchors
             </button>
-            <h1>Threads test page</h1>
+            <h1>Threads test page: ${this._myNick}</h1>
             <h3>Semantic Topics</h3>
             <ul>${stLi}</ul>
             <label for="listTitleInput">Add new Semantic Topic:</label>

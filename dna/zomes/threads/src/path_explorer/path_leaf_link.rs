@@ -37,9 +37,9 @@ pub(crate) fn get_all_leaf_links(dh: AnyDhtHash, link_tag: Option<LinkTag>) -> E
 
 
 /// Return links from a leaf Anchor for all link types
-pub(crate) fn get_all_leaf_links_from_path(path: Path) -> ExternResult<Vec<LeafLink>> {
+pub(crate) fn get_all_leaf_links_from_path(path: Path, link_tag: Option<LinkTag>) -> ExternResult<Vec<LeafLink>> {
   debug!("get_all_leaf_links_from_path() Leaf-anchor: {:?}", path);
-  let res = get_all_leaf_links(AnyDhtHash::from(path.path_entry_hash()?), None)?;
+  let res = get_all_leaf_links(AnyDhtHash::from(path.path_entry_hash()?), link_tag)?;
   Ok(res)
 }
 

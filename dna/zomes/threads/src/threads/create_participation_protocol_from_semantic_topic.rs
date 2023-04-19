@@ -4,7 +4,7 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::path_explorer::path2str;
 use crate::threads::prefix_threads_path;
-use crate::time_indexing::timepath_utils::append_timestamp_to_path;
+use crate::time_indexing::timepath_utils::get_time_path;
 
 
 /// Creates the SemanticTopic
@@ -42,7 +42,7 @@ pub fn create_participation_protocol_from_semantic_topic(pp: ParticipationProtoc
   /// Global time-Index
   let root_time_path = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
-  let leaf_tp = append_timestamp_to_path(root_time_path, sys_time()?)?; // FIXME: Grab Action's timestamp
+  let leaf_tp = get_time_path(root_time_path, sys_time()?)?; // FIXME: Grab Action's timestamp
   leaf_tp.ensure()?;
   create_link(
     leaf_tp.path_entry_hash()?,

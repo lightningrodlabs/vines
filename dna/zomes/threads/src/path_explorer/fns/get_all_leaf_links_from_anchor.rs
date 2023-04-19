@@ -6,7 +6,7 @@ use crate::path_explorer::{get_all_leaf_links, get_all_leaf_links_from_path, Lea
 #[hdk_extern]
 pub fn get_all_leaf_links_from_anchor(anchor: String) -> ExternResult<Vec<LeafLink>>  {
   let path = Path::try_from(anchor)?;
-  let lls = get_all_leaf_links_from_path(path)?;
+  let lls = get_all_leaf_links_from_path(path, None)?;
   Ok(lls)
 }
 
