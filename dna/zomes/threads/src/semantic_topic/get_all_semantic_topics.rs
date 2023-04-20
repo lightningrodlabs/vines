@@ -6,7 +6,8 @@ use crate::semantic_topic::determine_topic_anchor;
 use crate::utils::get_threads_zome_index;
 
 
-/// return ActionHash, EntryHash and title of every known SemanticTopic entry.
+/// Walk semantic-topic AnchorTree
+/// Return ActionHash, EntryHash and title of every known SemanticTopic entry.
 #[hdk_extern]
 pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
   let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticPrefixPath)?;

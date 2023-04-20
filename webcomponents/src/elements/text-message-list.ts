@@ -3,7 +3,7 @@ import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
 import {ActionHash, decodeHashFromBase64, encodeHashToBase64, Timestamp} from "@holochain/client";
-import {BeadLink} from "../bindings/threads.types";
+import {BeadLink, ParticipationProtocol} from "../bindings/threads.types";
 
 
 /**
@@ -21,6 +21,7 @@ export class TextMessageList extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   thread: string = ''
 
   @state() private _beads: BeadLink[] = []
+  @state() private _pp: ParticipationProtocol;
 
 
   /** */
@@ -29,11 +30,16 @@ export class TextMessageList extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     //console.log("ZomeElement.shouldUpdate() start", !!this._zvm, this.installedCell);
     if (changedProperties.has("thread") && this._zvm) {
       console.log({changedProperties})
-      this.getLatestMessages(changedProperties.get("thread"));
+      const ah = changedProperties.get("thread");
+      this.getLatestMessages(ah);
+      this._zvm.zomeProxy.getProtocol(decodeHashFromBase64(ah))
+        .then((pp) => this._pp = pp)
     }
     return true;
   }
 
+
+  /** */
   async getLatestMessages(ppAhB64: string): Promise<void> {
     console.log("<text-message-list>.getLatestMessages()", ppAhB64)
     if (ppAhB64 === "") {
@@ -42,6 +48,7 @@ export class TextMessageList extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const beadLinks = await this._zvm.zomeProxy.getLatestBeads({ppAh: decodeHashFromBase64(ppAhB64), targetCount: 20})
     console.log("<text-message-list>.getLatestMessages() beadLinks", beadLinks)
     // FIXME convert bead to TextMessage
+    this._beads = beadLinks;
   }
 
 
@@ -49,7 +56,10 @@ export class TextMessageList extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   render() {
     console.log("<text-message-list> render():", this.thread);
 
-    //console.log("text-message-list:", this.perspective.names)
+    if (!this._pp) {
+      return html `<div>!!Thread data not found!!</div>`;
+    }
+
 
     let beadsLi = [html`<li>_None_</li>`];
     if (this.thread != "") {
@@ -63,7 +73,7 @@ export class TextMessageList extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** render all */
     return html`
-        <h3>Thread: ${this.thread}</h3>
+        <h3>Thread: ${this._pp.purpose}</h3>
         <ul>${beadsLi}</ul>
     `;
 

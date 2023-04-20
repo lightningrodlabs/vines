@@ -85,6 +85,7 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  /** */
   async probeSemanticTopics(): Promise<Dictionary<string>> {
     const sts = await this.zomeProxy.getAllSemanticTopics();
     for (const tuple of sts) {

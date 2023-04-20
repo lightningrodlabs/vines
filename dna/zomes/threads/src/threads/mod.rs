@@ -8,9 +8,15 @@ mod get_latest_beads;
 use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use holo_hash::DnaHashB64;
-//use zome_utils::*;
+use zome_utils::*;
 use threads_integrity::*;
 
+/// Get a SemanticTopic
+#[hdk_extern]
+pub fn get_protocol(ah: ActionHash) -> ExternResult<ParticipationProtocol> {
+  let typed_pair = get_typed_from_ah(ah)?;
+  Ok(typed_pair.1)
+}
 
 
 ///

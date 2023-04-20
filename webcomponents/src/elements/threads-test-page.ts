@@ -1,7 +1,7 @@
 import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
 import {CellContext, DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
@@ -9,6 +9,7 @@ import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
 import {AnchorTree} from "./anchor-tree";
 import {LinkList} from "./link-list";
 import {TextMessageList} from "./text-message-list";
+import {SemanticTopicList} from "./semantic-topic-list";
 
 
 /** */
@@ -150,16 +151,10 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onSemanticTopicSelect(e: any) {
-    console.log("onSemanticTopicSelect() CALLED", e)
-    const selector = this.shadowRoot!.getElementById("listSelector") as HTMLSelectElement;
-    if (!selector || !selector.value) {
-      console.warn("No list selector value", selector);
-      return;
-    }
-    console.log("onSemanticTopicSelect() value", selector.value)
-    await this._dvm.threadsZvm.probeThreads(selector.value);
-    this._selectedTopicHash = selector.value;
+  async onSemanticTopicSelect(topicAh: ActionHashB64) {
+    console.log("onSemanticTopicSelect() CALLED", topicAh)
+    await this._dvm.threadsZvm.probeThreads(topicAh);
+    this._selectedTopicHash = topicAh;
     //this.requestUpdate();
     const tl = this.shadowRoot.getElementById("threadList") as ThreadList;
     tl.requestUpdate();
@@ -173,36 +168,6 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       return html`<span>Loading...</span>`;
     }
     //console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
-
-    let sts = this._dvm.threadsZvm.perspective.semanticTopics;
-    console.log("<threads-test-page.render()> render() sts", sts);
-
-
-    const stLi = Object.entries(sts).map(
-      ([_b64, title]) => {
-        //console.log("localTaskList.item:", ahB64)
-        return html `<li>${title}</li>`
-      }
-    )
-
-    const stOptions = Object.entries(sts).map(
-      ([b64, title]) => {
-        //console.log("taskList:", ahB64)
-        return html `<option value="${b64}">${title}</option>`
-      }
-    )
-
-    let selectedTopicHtml = html `<h3>none</h3>`
-    if (this._selectedTopicHash != "") {
-      // <b>${this._dvm.threadsZvm.perspective.semanticTopics[this._selectedTopicHash]}</b>
-      selectedTopicHtml = html`<span>${this._selectedTopicHash}</span>`;
-    }
-
-
-    // let selectedThreadHtml = html `<h3>none</h3>`
-    // if (this._selectedThreadHash != "") {
-    //   selectedThreadHtml = html`<span>${this._selectedThreadHash}</span>`;
-    // }
 
     /** Render all */
     return html`
@@ -234,20 +199,11 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             }">Scan latest entries
             </button>            
             <h1>Threads test page: ${this._myNick}</h1>
-            <h3>Semantic Topics</h3>
-            <ul>${stLi}</ul>
-            <label for="listTitleInput">Add new Semantic Topic:</label>
-            <input type="text" id="listTitleInput" name="title">
-            <input type="button" value="create" @click=${this.onCreateSemanticTopic}>
-            <h2>
-                Selected Topic:
-                <select name="listSelector" id="listSelector" @click=${this.onSemanticTopicSelect}>
-                    ${stOptions}
-                </select>
-                    <!-- ${selectedTopicHtml} -->
-            </h2>
+            <semantic-topic-list id="threadList" .topic="${this._selectedTopicHash}"
+                         @selected="${(e) => {this.onSemanticTopicSelect(e.detail)}}"></semantic-topic-list>            
+
             <thread-list id="threadList" .topic="${this._selectedTopicHash}"
-                         @threadSelected="${(e) => {this._selectedThreadHash = e.detail}}"></thread-list>
+                         @selected="${(e) => {this._selectedThreadHash = e.detail}}"></thread-list>
             <div>
                 <label for="threadInput">Create new thread:</label>
                 <input type="text" id="threadInput" name="purpose">
@@ -283,6 +239,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
       "anchor-tree": AnchorTree,
       "link-list": LinkList,
       "text-message-list": TextMessageList,
+      "semantic-topic-list": SemanticTopicList,
     }
   }
 }

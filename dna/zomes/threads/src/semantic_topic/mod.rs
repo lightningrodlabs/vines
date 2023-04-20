@@ -1,10 +1,21 @@
-use hdk::hash_path::path::DELIMITER;
-use hdk::prelude::*;
-use threads_integrity::*;
-
 
 mod create_semantic_topic;
 mod get_all_semantic_topics;
+
+
+
+use hdk::hash_path::path::DELIMITER;
+use hdk::prelude::*;
+use zome_utils::get_typed_from_ah;
+use threads_integrity::*;
+
+
+/// Get a SemanticTopic
+#[hdk_extern]
+pub fn get_topic(ah: ActionHash) -> ExternResult<SemanticTopic> {
+  let typed_pair = get_typed_from_ah(ah)?;
+  Ok(typed_pair.1)
+}
 
 
 ///

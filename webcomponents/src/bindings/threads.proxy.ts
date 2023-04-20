@@ -175,6 +175,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('search_semantic_topics', titleFilter);
   }
 
+  async getTopic(ah: ActionHash): Promise<SemanticTopic> {
+    return this.call('get_topic', ah);
+  }
+
   async addTextMessage(texto: TextMessage): Promise<string> {
     return this.call('add_text_message', texto);
   }
@@ -187,6 +191,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_latest_beads', input);
   }
 
+  async getProtocol(ah: ActionHash): Promise<ParticipationProtocol> {
+    return this.call('get_protocol', ah);
+  }
+
   async getThreads(lh: AnyDhtHash): Promise<ActionHash[]> {
     return this.call('get_threads', lh);
   }
@@ -197,10 +205,6 @@ export class ThreadsProxy extends ZomeProxy {
 
   async getProtocolsForApp(dnaHash: DnaHashB64): Promise<ActionHash[]> {
     return this.call('get_protocols_for_app', dnaHash);
-  }
-
-  async getProtocol(ah: ActionHash): Promise<ParticipationProtocol> {
-    return this.call('get_protocol', ah);
   }
 
   async getLatestItems(): Promise<LeafLink[]> {
