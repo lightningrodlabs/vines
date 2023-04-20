@@ -1,12 +1,10 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
 
 import "@ui5/webcomponents/dist/List.js"
 import "@ui5/webcomponents/dist/StandardListItem.js";
-import {decodeHashFromBase64} from "@holochain/client";
-import {ParticipationProtocol, SemanticTopic} from "../bindings/threads.types";
 
 
 /**
@@ -35,7 +33,7 @@ export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZv
     if (items.length == 0) {
       return;
     }
-    console.log("onSelectionChange()", event, items[0].id)
+    console.log("<semantic-topic-list>.onSelectionChange()", items[0].id)
     this.dispatchEvent(new CustomEvent('selected', {detail: items[0].id, bubbles: true, composed: true}));
   }
 

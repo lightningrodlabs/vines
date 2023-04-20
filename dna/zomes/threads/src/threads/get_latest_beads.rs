@@ -4,7 +4,7 @@ use hdk::{
 };
 use hdk::prelude::holo_hash::{ActionHashB64, holo_hash_encode};
 use threads_integrity::*;
-use crate::path_explorer::{LeafLink, path2str, tag2str};
+use crate::path_explorer::{LeafLink, path2str, compTag2str, tag2str};
 use crate::threads::add_bead::index_bead;
 use crate::time_indexing::time_index::get_latest_time_indexed_links;
 use crate::time_indexing::timepath_utils::get_time_path;
@@ -39,7 +39,7 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<Vec<BeadLink
   let links = get_latest_time_indexed_links(root_tp, start, sys_time()?, input.target_count, None)?;
   debug!("get_latest_beads() links.len = {}", links.len());
 
-  let res = links.into_iter()
+  let res: Vec<BeadLink> = links.into_iter()
                  .map(|link| {
                    BeadLink {
                      bead_ah: ActionHash::from(link.target),
@@ -47,5 +47,8 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<Vec<BeadLink
                    }
                  })
                  .collect();
+  debug!("get_latest_beads() res.len = {}", res.len());
+
+  /// Done
   Ok(res)
 }

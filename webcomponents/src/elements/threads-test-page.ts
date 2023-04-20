@@ -126,8 +126,6 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedTopicHash = ah;
-    //const selector = this.shadowRoot!.getElementById("listSelector") as HTMLSelectElement;
-    //selector.value = input.value;
   }
 
 
@@ -147,6 +145,8 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._selectedThreadHash);
     console.log("onCreateTextMessage() res:", path_str);
     input.value = "";
+    const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
+    await msgList.getLatestMessages()
   }
 
 
@@ -155,9 +155,6 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("onSemanticTopicSelect() CALLED", topicAh)
     await this._dvm.threadsZvm.probeThreads(topicAh);
     this._selectedTopicHash = topicAh;
-    //this.requestUpdate();
-    const tl = this.shadowRoot.getElementById("threadList") as ThreadList;
-    tl.requestUpdate();
   }
 
 

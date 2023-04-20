@@ -15,7 +15,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
-    console.log("<semantic-topic-list>.ctor()")
+    console.log("<thread-list>.ctor()")
   }
 
 
@@ -30,9 +30,8 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     super.shouldUpdate(changedProperties);
     //console.log("ZomeElement.shouldUpdate() start", !!this._zvm, this.installedCell);
     if (changedProperties.has("topic") && this._zvm) {
-      console.log({changedProperties})
-      const topicAh = changedProperties.get("topic");
-      this._zvm.zomeProxy.getTopic(decodeHashFromBase64(topicAh))
+      console.log("<thread-list>.shouldUpdate()", changedProperties, this.topic)
+      this._zvm.zomeProxy.getTopic(decodeHashFromBase64(this.topic))
         .then((t) => this._topicObj = t)
     }
     return true;
@@ -67,7 +66,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           (ah) => {
             const pp = this._zvm.getParticipationProtocol(ah);
             return html`
-                <ui5-li id="${ah}">${pp.purpose}</ui5-li>`
+                <ui5-li id="${ah}" additional-text="${ah}">${pp.purpose}</ui5-li>`
           }
         );
       }

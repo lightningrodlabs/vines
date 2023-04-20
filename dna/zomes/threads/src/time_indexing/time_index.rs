@@ -90,7 +90,7 @@ pub fn get_latest_time_indexed_links(
 
       let raw_children_dbg_info = children
         .iter()
-        .map(|l| format!("{{ tag: {} timestamp: {:?} }}, ", tag2str(&l.tag).unwrap_or("<failed>".to_string()), l.timestamp))
+        .map(|l| format!("{{ tag: {} timestamp: {:?} }}, ", compTag2str(&l.tag).unwrap_or("<failed>".to_string()), l.timestamp))
         .collect::<String>();
 
       /// Keep children older than latest time value
