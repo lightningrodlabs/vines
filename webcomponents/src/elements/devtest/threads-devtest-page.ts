@@ -26,7 +26,7 @@ function utf32Decode(bytes: Uint8Array) {
 
 
 /**
- * @element tasker-page
+ * @element
  */
 export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
@@ -50,7 +50,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   /** -- Methods -- */
 
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<tasker-page>.dvmUpdated()");
+    console.log("<threads-devtest-page>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -77,7 +77,6 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async refresh(_e?: any) {
-    //console.log("tasker-page.refresh() called")
     await this._dvm.probeAll();
   }
 

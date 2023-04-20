@@ -3,7 +3,7 @@ import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
-import {AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {encodeHashToBase64} from "@holochain/client";
 
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
@@ -206,31 +206,22 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   render() {
     console.log(`<anchor-tree> render(): ${this.cell.print()}`);
 
-    const anchorTree = this.renderAnchorTree(this._rootAnchors);
-
-    const scanRootAnchor = /*this.rootAnchorHash? html`` :*/
-      html`
-          <button @click="${async () => {
-              console.log("*** Scan Root Anchors:");
-              await this.scanRootAnchors();}
-          }">
-              Scan Root Anchors
-          </button>
-      `;
-
-
-
     /** render all */
     return html`
         <div style="background: lightcyan; padding-bottom: 5px">
           <h3>Anchor Tree component</h3>
-            ${scanRootAnchor}
+            <button @click="${async () => {
+                console.log("*** Scan Root Anchors:");
+                await this.scanRootAnchors();}
+            }">
+                Scan Root Anchors
+            </button>
             <button @click="${async () => {
                 console.log("*** expandAll");
                 await this.expandAll();}
             }">Expand All</button>            
           <div>
-            ${anchorTree}
+            ${this.renderAnchorTree(this._rootAnchors)}
           </div>
         </div>
     `;

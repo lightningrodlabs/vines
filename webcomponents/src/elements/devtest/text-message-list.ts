@@ -76,32 +76,28 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>!!Thread data not found!!</div>`;
     }
 
-    const beadsLi = this._beads.map(
-      (bl) => {
-        return html`<li>${bl.beadType}: ${encodeHashToBase64(bl.beadAh)}</li>`
+    // const beadsLi = this._beads.map(
+    //   (bl) => {
+    //     return html`<li>${bl.beadType}: ${encodeHashToBase64(bl.beadAh)}</li>`
+    //   }
+    // );
+    //         <!-- <ul>${beadsLi}</ul> -->
+
+    const textLi = Object.values(this._txtTuples).map(
+      (tuple) => {
+        const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date_str = date.toLocaleString('en-US', {hour12: false});
+        const agent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
+        return html`
+            <li><abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr></li>`
       }
     );
-
-    let textUl = html`<div>Loading...</div>`;
-    //if (this._txtTuples.length > 0) {
-      const textLi = Object.values(this._txtTuples).map(
-        (tuple) => {
-          const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-          const date_str = date.toLocaleString('en-US', {hour12: false});
-          const agent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
-          return html`
-              <li><abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr></li>`
-        }
-      );
-      textUl = html`<ul>${textLi}</ul>`;
-    //}
 
 
     /** render all */
     return html`
         <h3>Thread: ${this._pp.purpose} (${this.thread})</h3>
-        <!-- <ul>${beadsLi}</ul> -->
-        ${textUl}
+        <ul>${textLi}</ul>
     `;
 
   }

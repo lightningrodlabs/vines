@@ -201,36 +201,28 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`Loading...`;
     }
 
-    const zomeOptions = Object.values(this._zomes).map(
-      (zomeName) => {
-        return html`<option>${zomeName}</option>`
-      }
-    )
-
-    const zomeLinkTypes = this._linkTypes[0];
-    const linkTypeOptions = zomeLinkTypes[1].map(
-      (linkIndex) => {
-        return html`<option>${linkIndex}</option>`
-      }
-    )
-
-
-    let anchorTree = this.renderLinkTree();
-
     /** render all */
     return html`
         <div style="background: darkseagreen; padding-bottom: 5px">
           <h3>Link Tree component</h3>
             Filter by:
             <select name="zomeSelector" id="zomeSelector" @click=${this.onZomeSelect}>
-                ${zomeOptions}
+                ${Object.values(this._zomes).map(
+                        (zomeName) => {
+                            return html`<option>${zomeName}</option>`
+                        }
+                )}
             </select>
             <select name="linkTypeSelector" id="linkTypeSelector" @click=${this.onLinkTypeSelect}>
-                ${linkTypeOptions}
+                ${this._linkTypes[0].map(
+                        (linkIndex) => {
+                            return html`<option>${linkIndex}</option>`
+                        }
+                )}
             </select>
             <button @click="${() => {this._linkTypeFilter = undefined;}}">Reset</button>
             <div>
-            ${anchorTree}
+            ${this.renderLinkTree()}
           </div>
         </div>
     `;

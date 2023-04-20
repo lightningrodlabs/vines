@@ -42,21 +42,16 @@ export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZv
   render() {
     console.log(`<semantic-topic-list> render(): ${this.cell.print()}`);
 
-    //console.log("label-list:", this.perspective.names)
-
-    const stLi = Object.entries(this.perspective.semanticTopics).map(
-      ([b64, title]) => {
-        return html`<ui5-li id="${b64}" additional-text="${b64}">${title}</ui5-li>`
-      }
-    );
-
-
     /** render all */
     return html`
         <ui5-list mode="SingleSelect" header-text="Semantic Topics" no-data-text="No Data Available"
                   style="width: 400px; margin-bottom: 10px;"
-                  @selection-change="${this.onSelectionChange}">
-            ${stLi}
+                  @selection-change=${this.onSelectionChange}>
+            ${Object.entries(this.perspective.semanticTopics).map(
+                    ([b64, title]) => {
+                        return html`<ui5-li id=${b64} additional-text=${b64}>${title}</ui5-li>`
+                    }
+            )}
         </ui5-list>
         <label for="labelInput">Create new Semantic Topic:</label>
         <input type="text" id="labelInput" name="Value">
