@@ -1,5 +1,5 @@
 import {
-  ActionHashB64,
+  ActionHashB64, AgentPubKeyB64,
   AnyDhtHash, AnyDhtHashB64,
   CellId,
   decodeHashFromBase64,
@@ -7,9 +7,9 @@ import {
   EntryHashB64
 } from "@holochain/client";
 import {
-  Bead,
+  Bead, BeadLink, GetLatestBeadsInput,
   ParticipationProtocol,
-  SemanticTopic,
+  SemanticTopic, TextMessage,
   TopicType, TopicTypeType,
   TopicTypeVariantSemanticTopic, TypedAnchor
 } from "../bindings/threads.types";
@@ -21,8 +21,12 @@ import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 export interface ThreadsPerspective {
   semanticTopics: Dictionary<string>
   allParticipationProtocols: Dictionary<ParticipationProtocol>,
-  /** TopicEh -> ProtocolAh */
+  /** TopicHash -> ProtocolAh */
   threadsByTopic: Dictionary<ActionHashB64[]>,
+  /** TopicHash -> BeadLinks */
+  latestBeadsByTopic: Dictionary<BeadLink[]>,
+  /** Ah -> TextMessageTuple */
+  textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]>,
 }
 
 
@@ -52,6 +56,8 @@ export class ThreadsZvm extends ZomeViewModel {
       semanticTopics: this._semanticTopics,
       allParticipationProtocols: this._allParticipationProtocols,
       threadsByTopic: this._threadsByTopic,
+      latestBeadsByTopic: this._latestBeadsByTopic,
+      textMessageTuples: this._textMessageTuples,
     };
   }
 
@@ -60,7 +66,11 @@ export class ThreadsZvm extends ZomeViewModel {
   /** ah -> ParticipationProtocol */
   private _allParticipationProtocols: Dictionary<ParticipationProtocol> = {};
   private _threadsByTopic: Dictionary<ActionHashB64[]> = {};
+  private _latestBeadsByTopic: Dictionary<BeadLink[]> = {};
+  private _textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]> = {};
 
+
+  /** -- Getters -- */
 
   getSemanticTopic(ah: ActionHashB64): string | undefined {
     return this._semanticTopics[ah];
@@ -68,6 +78,21 @@ export class ThreadsZvm extends ZomeViewModel {
 
   getParticipationProtocol(ah: ActionHashB64): ParticipationProtocol | undefined {
     return this._allParticipationProtocols[ah];
+  }
+
+  getTextMessageTuple(ah: ActionHashB64): [number, AgentPubKeyB64, string] | undefined {
+    return this._textMessageTuples[ah];
+  }
+
+
+  getLatestTextMessageTuples(pp_ah: ActionHashB64): [number, AgentPubKeyB64, string][] {
+    const beadLinks = this._latestBeadsByTopic[pp_ah];
+    if (!beadLinks) {
+      return [];
+    }
+    const tuples = beadLinks.map((bl) => this._textMessageTuples[encodeHashToBase64(bl.beadAh)]);
+    //FIXME tuples.sort((a, b) => {return 1})
+    return tuples;
   }
 
   /** -- Methods -- */
@@ -126,6 +151,22 @@ export class ThreadsZvm extends ZomeViewModel {
     /** */
     return tas;
   }
+
+
+  /** */
+  async probeLatestBeads(input: GetLatestBeadsInput): Promise<BeadLink[]> {
+    const beadLinks = await this.zomeProxy.getLatestBeads(input);
+    this._latestBeadsByTopic[encodeHashToBase64(input.ppAh)] = beadLinks;
+
+    const beadAhs = beadLinks.map((bl) => bl.beadAh);
+    for (const beadAh of beadAhs) {
+      const tuple = await this.zomeProxy.getTextMessage(beadAh); // TODO: Implement and use getTextMessageList() instead
+      this._textMessageTuples[encodeHashToBase64(beadAh)] = [tuple[0], encodeHashToBase64(tuple[1]), tuple[2]];
+    }
+
+    return beadLinks;
+  }
+
 
   /** Publish */
 

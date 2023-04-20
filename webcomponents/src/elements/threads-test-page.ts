@@ -146,7 +146,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("onCreateTextMessage() res:", path_str);
     input.value = "";
     const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
-    await msgList.getLatestMessages()
+    await msgList.probeLatestMessages()
   }
 
 
