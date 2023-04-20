@@ -1,7 +1,7 @@
 import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AnyDhtHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
@@ -10,6 +10,7 @@ import {AnchorTree} from "./anchor-tree";
 import {LinkList} from "./link-list";
 import {TextMessageList} from "./text-message-list";
 import {SemanticTopicList} from "./semantic-topic-list";
+import {TextThreadView} from "../text-thread-view";
 
 
 /** */
@@ -144,8 +145,11 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._selectedThreadHash);
     console.log("onCreateTextMessage() res:", path_str);
     input.value = "";
+    //const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this._selectedThreadHash), targetCount: 20})
+    await this.probeLatestMessages();
     const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
-    await msgList.probeLatestMessages()
+    msgList.requestUpdate();
+    // await this._dvm.threadsZvm.probeLatestMessages()
   }
 
 
@@ -199,7 +203,9 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
                          @selected="${(e) => {this.onSemanticTopicSelect(e.detail)}}"></semantic-topic-list>            
 
             <thread-list id="threadList" .topicHash="${this._selectedTopicHash}"
-                         @selected="${(e) => {this._selectedThreadHash = e.detail}}"></thread-list>
+                         @selected="${async (e) => {
+                            await this.probeLatestMessages();
+                            this._selectedThreadHash = e.detail}}"></thread-list>
             <div>
                 <label for="threadInput">Create new thread:</label>
                 <input type="text" id="threadInput" name="purpose">
@@ -208,7 +214,9 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <!-- Show Thread -->
             <div style="background: #fac8c8">
-                <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list>
+                <!-- <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list> -->
+                <text-thread-view id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-thread-view>
+
                 <div>
                     <label for="threadInput">Add Message:</label>
                     <input type="text" id="textMessageInput" name="message">
@@ -229,12 +237,24 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  async probeLatestMessages(): Promise<void> {
+    if (this._selectedThreadHash) {
+      const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({
+        ppAh: decodeHashFromBase64(this._selectedThreadHash),
+        targetCount: 20
+      });
+    }
+  }
+
+
+  /** */
   static get scopedElements() {
     return {
       "thread-list": ThreadList,
       "anchor-tree": AnchorTree,
       "link-list": LinkList,
       "text-message-list": TextMessageList,
+      "text-thread-view": TextThreadView,
       "semantic-topic-list": SemanticTopicList,
     }
   }

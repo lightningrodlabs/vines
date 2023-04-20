@@ -1,26 +1,23 @@
 import {
   ActionHashB64, AgentPubKeyB64,
-  AnyDhtHash, AnyDhtHashB64,
-  CellId,
+  AnyDhtHashB64,
   decodeHashFromBase64,
   encodeHashToBase64,
-  EntryHashB64
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
   ParticipationProtocol,
-  SemanticTopic, TextMessage,
-  TopicType, TopicTypeType,
-  TopicTypeVariantSemanticTopic, TypedAnchor
+  TypedAnchor
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
+import {materializeParticipationProtocol, ParticipationProtocolMat} from "./threads.perspective";
 
 
 /** */
 export interface ThreadsPerspective {
   semanticTopics: Dictionary<string>
-  allParticipationProtocols: Dictionary<ParticipationProtocol>,
+  allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** TopicHash -> ProtocolAh */
   threadsByTopic: Dictionary<ActionHashB64[]>,
   /** TopicHash -> BeadLinks */
@@ -64,7 +61,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** ah -> SemanticTopics */
   private _semanticTopics: Dictionary<string> = {};
   /** ah -> ParticipationProtocol */
-  private _allParticipationProtocols: Dictionary<ParticipationProtocol> = {};
+  private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   private _threadsByTopic: Dictionary<ActionHashB64[]> = {};
   private _latestBeadsByTopic: Dictionary<BeadLink[]> = {};
   private _textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]> = {};
@@ -76,7 +73,7 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._semanticTopics[ah];
   }
 
-  getParticipationProtocol(ah: ActionHashB64): ParticipationProtocol | undefined {
+  getParticipationProtocol(ah: ActionHashB64): ParticipationProtocolMat | undefined {
     return this._allParticipationProtocols[ah];
   }
 
@@ -133,7 +130,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const ahB64 = encodeHashToBase64(ppAh);
       const pp = await this.zomeProxy.getProtocol(ppAh);
       current.push(ahB64);
-      this._allParticipationProtocols[ahB64] = pp;
+      this._allParticipationProtocols[ahB64] = materializeParticipationProtocol(pp);
       res[ahB64] = pp;
     }
     const uniq = [...new Set(current)]; // dedup
@@ -155,6 +152,9 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async probeLatestBeads(input: GetLatestBeadsInput): Promise<BeadLink[]> {
+    if (input.ppAh.length == 0) {
+      console.error("probeLatestBeads() Failed. ppAh not provided.")
+    }
     const beadLinks = await this.zomeProxy.getLatestBeads(input);
     this._latestBeadsByTopic[encodeHashToBase64(input.ppAh)] = beadLinks;
 
@@ -200,7 +200,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const ah = await this.zomeProxy.createParticipationProtocolFromSemanticTopic(pp);
     const ahB64 = encodeHashToBase64(ah);
-    this._allParticipationProtocols[ahB64] = pp;
+    this._allParticipationProtocols[ahB64] = materializeParticipationProtocol(pp);
     this._threadsByTopic[topicHash].push(ahB64);
     //console.log("publishThreadFromSemanticTopic()", pp)
     this.notifySubscribers();
