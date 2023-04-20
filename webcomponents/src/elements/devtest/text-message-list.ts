@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
-import {Dictionary, DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {DnaElement} from "@ddd-qc/lit-happ";
+import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {BeadLink, ParticipationProtocol} from "../../bindings/threads.types";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 
@@ -16,7 +16,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
 
 
   @property()
-  thread: string = ''
+  threadHash: string = ''
 
   @state() private _initialized = false;
 
@@ -29,14 +29,14 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
 
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<text-message-list>.dvmUpdated()");
-    this.thread = '';
+    this.threadHash = '';
     this._initialized = true;
   }
 
 
   /** */
   async onUpdate(): Promise<void> {
-    this._dvm.threadsZvm.zomeProxy.getProtocol(decodeHashFromBase64(this.thread))
+    this._dvm.threadsZvm.zomeProxy.getProtocol(decodeHashFromBase64(this.threadHash))
       .then((pp) => this._pp = pp)
     await this.probeLatestMessages();
   }
@@ -46,9 +46,9 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
   shouldUpdate(changedProperties: PropertyValues<this>) {
     super.shouldUpdate(changedProperties);
     console.log("<text-message-list>.shouldUpdate()", changedProperties);
-    if (changedProperties.has("thread") && this._dvm) {
-      console.log("<text-message-list>.shouldUpdate()", changedProperties, this.thread);
-      this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.thread);
+    if (changedProperties.has("threadHash") && this._dvm) {
+      console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
+      this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
       this.onUpdate();
     }
     return true;
@@ -57,20 +57,20 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async probeLatestMessages(): Promise<void> {
-    console.log("<text-message-list>.probeLatestMessages()", this.thread)
-    if (this.thread === "") {
+    console.log("<text-message-list>.probeLatestMessages()", this.threadHash)
+    if (this.threadHash === "") {
       return;
     }
-    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.thread), targetCount: 20})
+    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
     console.log("<text-message-list>.probeLatestMessages() beadLinks", beadLinks)
 
-    this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.thread);
+    this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
   }
 
 
   /** */
   render() {
-    console.log("<text-message-list> render():", this.thread);
+    console.log("<text-message-list> render():", this.threadHash);
 
     if (!this._initialized || !this._pp) {
       return html `<div>!!Thread data not found!!</div>`;
@@ -96,7 +96,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <h3>Thread: ${this._pp.purpose} (${this.thread})</h3>
+        <h3>Thread: ${this._pp.purpose} (${this.threadHash})</h3>
         <ul>${textLi}</ul>
     `;
 

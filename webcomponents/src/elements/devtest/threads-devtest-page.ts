@@ -195,10 +195,10 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
             }">Scan latest entries
             </button>            
             <h1>Threads test page: <abbr title="${this.cell.agentPubKey}">${this._myNick}</abbr></h1>
-            <semantic-topic-list id="threadList" .topic="${this._selectedTopicHash}"
+            <semantic-topic-list id="threadList"
                          @selected="${(e) => {this.onSemanticTopicSelect(e.detail)}}"></semantic-topic-list>            
 
-            <thread-list id="threadList" .topic="${this._selectedTopicHash}"
+            <thread-list id="threadList" .topicHash="${this._selectedTopicHash}"
                          @selected="${(e) => {this._selectedThreadHash = e.detail}}"></thread-list>
             <div>
                 <label for="threadInput">Create new thread:</label>
@@ -208,7 +208,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <!-- Show Thread -->
             <div style="background: #fac8c8">
-                <text-message-list id="textMessageList" .thread="${this._selectedThreadHash}"></text-message-list>
+                <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list>
                 <div>
                     <label for="threadInput">Add Message:</label>
                     <input type="text" id="textMessageInput" name="message">

@@ -20,7 +20,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   @property()
-  topic: string = ''
+  topicHash: string = ''
 
   @state() private _topicObj: SemanticTopic;
 
@@ -29,9 +29,9 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   shouldUpdate(changedProperties: PropertyValues<this>) {
     super.shouldUpdate(changedProperties);
     //console.log("ZomeElement.shouldUpdate() start", !!this._zvm, this.installedCell);
-    if (changedProperties.has("topic") && this._zvm) {
-      console.log("<thread-list>.shouldUpdate()", changedProperties, this.topic)
-      this._zvm.zomeProxy.getTopic(decodeHashFromBase64(this.topic))
+    if (changedProperties.has("topicHash") && this._zvm) {
+      console.log("<thread-list>.shouldUpdate()", changedProperties, this.topicHash)
+      this._zvm.zomeProxy.getTopic(decodeHashFromBase64(this.topicHash))
         .then((t) => this._topicObj = t)
     }
     return true;
@@ -51,7 +51,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<thread-list> render():", this.topic);
+    console.log("<thread-list> render():", this.topicHash);
 
     if (!this._topicObj) {
       return html `<div>!!Topic data not found!!</div>`;
@@ -59,8 +59,8 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
     let threadsLi = [html`<span>None</span>`];
-    if (this.topic != "") {
-      const maybeThreads = this.perspective.threadsByTopic[this.topic];
+    if (this.topicHash != "") {
+      const maybeThreads = this.perspective.threadsByTopic[this.topicHash];
       if (maybeThreads) {
         threadsLi = maybeThreads.map(
           (ah) => {

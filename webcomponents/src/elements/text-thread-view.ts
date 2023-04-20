@@ -1,13 +1,9 @@
-import {css, html} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AnyDhtHashB64, encodeHashToBase64} from "@holochain/client";
+import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
+import {BeadLink, ParticipationProtocol} from "../bindings/threads.types";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.zvm";
-import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
-import {TextMessageList} from "./devtest/text-message-list";
-
-
 
 /**
  * @element
@@ -18,93 +14,88 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
 
-  /** -- Fields -- */
+
+  @property()
+  threadHash: string = ''
+
   @state() private _initialized = false;
-  @state() private _selectedTopicHash: AnyDhtHashB64 = '';
-  @state() private _threadHash: AnyDhtHashB64 = '';
 
-  @property({ type: Boolean, attribute: 'debug' })
-  debugMode: boolean = false;
+  @state() private _pp: ParticipationProtocol;
+  @state() private _beads: BeadLink[] = []
+  //@state() private _txtMap: Dictionary<[number, AgentPubKeyB64, string]> = {}
 
-
-  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  threadsPerspective!: ThreadsPerspective;
+  @state() private _txtTuples: [number, AgentPubKeyB64, string][] = []
 
 
-  /** -- Methods -- */
-
-
-  /** Subscribe to Threads Zvm */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<text-thread-view>.dvmUpdated()");
-    if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
-      oldDvm.threadsZvm.unsubscribe(this);
-    }
-    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    // newDvm.probeAll();
-
-    this._threadHash = '';
+    this.threadHash = '';
     this._initialized = true;
   }
 
 
-  // /** After first render only */
-  async firstUpdated() {
-    // this._initialized = true;
-  }
-
-
-
   /** */
-  async onCreateTextMessage(e: any) {
-    const input = this.shadowRoot!.getElementById("textMessageInput") as HTMLInputElement;
-    let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._threadHash);
-    console.log("onCreateTextMessage() res:", path_str);
-    input.value = "";
-    const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
-    await msgList.probeLatestMessages()
+  async onUpdate(): Promise<void> {
+    this._dvm.threadsZvm.zomeProxy.getProtocol(decodeHashFromBase64(this.threadHash))
+      .then((pp) => this._pp = pp)
+    await this.probeLatestMessages();
   }
 
 
   /** */
-  async onSemanticTopicSelect(topicAh: ActionHashB64) {
-    console.log("onSemanticTopicSelect() CALLED", topicAh)
-    await this._dvm.threadsZvm.probeThreads(topicAh);
-    this._selectedTopicHash = topicAh;
+  shouldUpdate(changedProperties: PropertyValues<this>) {
+    super.shouldUpdate(changedProperties);
+    console.log("<text-thread-view>.shouldUpdate()", changedProperties);
+    if (changedProperties.has("threadHash") && this._dvm) {
+      console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
+      this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
+      this.onUpdate();
+    }
+    return true;
+  }
+
+
+  /** */
+  async probeLatestMessages(): Promise<void> {
+    console.log("<text-thread-view>.probeLatestMessages()", this.threadHash)
+    if (this.threadHash === "") {
+      return;
+    }
+    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
+    console.log("<text-thread-view>.probeLatestMessages() beadLinks", beadLinks)
+
+    this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
   }
 
 
   /** */
   render() {
-    console.log("<text-thread-view>.render()> render()", this._initialized, this._threadHash);
+    console.log("<text-thread-view>.render():", this.threadHash);
+
     if (!this._initialized) {
-      return html`<span>Loading...</span>`;
+      return html `<div>Loading...</div>`;
     }
-    //console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
+    if (!this._pp) {
+      return html `<div>No thread selected</div>`;
+    }
 
-    /** Render all */
+    const textLi = Object.values(this._txtTuples).map(
+      (tuple) => {
+        const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date_str = date.toLocaleString('en-US', {hour12: false});
+        const agent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
+        return html`
+            <li><abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr></li>`
+      }
+    );
+
+
+    /** render all */
     return html`
-        <div>
-            <div style="background: #fac8c8">
-                <text-message-list id="textMessageList" .thread="${this._threadHash}"></text-message-list>
-                <div>
-                    <label for="threadInput">Add Message:</label>
-                    <input type="text" id="textMessageInput" name="message">
-                    <input type="button" value="create" @click=${this.onCreateTextMessage}
-                           .disabled="${this._threadHash === ''}">
-                </div>                
-            </div>            
-        </div>
+        <h3>Thread: ${this._pp.purpose} (${this.threadHash})</h3>
+        <ul>${textLi}</ul>
     `;
+
   }
 
-
-  /** */
-  static get scopedElements() {
-    return {
-      "text-message-list": TextMessageList,
-    }
-  }
 }
