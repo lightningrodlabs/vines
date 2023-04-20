@@ -1,11 +1,11 @@
 import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
-import {CellContext, DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AgentPubKeyB64, AnyDhtHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.zvm";
+import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionHashB64, AnyDhtHashB64, encodeHashToBase64} from "@holochain/client";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
-import {ThreadsLinkTypeType, TypedAnchor} from "../bindings/threads.types";
+import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
 import {AnchorTree} from "./anchor-tree";
 import {LinkList} from "./link-list";
 import {TextMessageList} from "./text-message-list";
@@ -28,7 +28,7 @@ function utf32Decode(bytes: Uint8Array) {
 /**
  * @element tasker-page
  */
-export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
+export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)

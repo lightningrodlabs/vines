@@ -1,8 +1,8 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
-import {LeafLink, ThreadsLinkTypeType} from "../bindings/threads.types";
+import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
+import {LeafLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
 import {AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64, ZomeName} from "@holochain/client";
 
 import "@ui5/webcomponents/dist/Tree.js"

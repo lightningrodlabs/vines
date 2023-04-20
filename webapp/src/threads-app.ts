@@ -5,7 +5,7 @@ import {Button, CircularProgress, Dialog} from "@scoped-elements/material-web";
 import {AdminWebsocket, AppSignal, AppWebsocket, EntryHashB64, InstalledAppId, RoleName} from "@holochain/client";
 import {CellContext, delay, HCL, CellsForRole, HappElement, HvmDef} from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF, SemanticTopicList, ThreadsTestPage
+  DEFAULT_THREADS_DEF, SemanticTopicList, ThreadsDevtestPage
 } from "@threads/elements";
 import {ThreadsProfile} from "@threads/elements/dist/viewModels/profiles.proxy";
 
@@ -188,7 +188,7 @@ export class ThreadsApp extends HappElement {
   /** */
   static get scopedElements() {
     return {
-      "threads-test-page": ThreadsTestPage,
+      "threads-test-page": ThreadsDevtestPage,
       "semantic-topic-list": SemanticTopicList,
       "cell-context": CellContext,
     }

@@ -1,4 +1,3 @@
-import {ThreadsTestPage} from "@threads/elements";
 
 export * from './threads-app';
 export * from './globals';

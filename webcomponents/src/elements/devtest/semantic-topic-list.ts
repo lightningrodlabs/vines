@@ -1,7 +1,7 @@
 import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
+import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
 
 import "@ui5/webcomponents/dist/List.js"
 import "@ui5/webcomponents/dist/StandardListItem.js";

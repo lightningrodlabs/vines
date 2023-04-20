@@ -2,8 +2,8 @@ import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {Dictionary, DnaElement} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
-import {BeadLink, ParticipationProtocol} from "../bindings/threads.types";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {BeadLink, ParticipationProtocol} from "../../bindings/threads.types";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
 
 /**
  * @element
@@ -83,7 +83,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     );
 
     let textUl = html`<div>Loading...</div>`;
-    if (this._txtTuples.length > 0) {
+    //if (this._txtTuples.length > 0) {
       const textLi = Object.values(this._txtTuples).map(
         (tuple) => {
           const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
@@ -94,9 +94,9 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
         }
       );
       textUl = html`<ul>${textLi}</ul>`;
-    }
+    //}
 
-    
+
     /** render all */
     return html`
         <h3>Thread: ${this._pp.purpose} (${this.thread})</h3>
