@@ -23,6 +23,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"add_text_message",
 	"create_participation_protocol_from_semantic_topic",
 	"get_latest_beads",
+	"get_text_message",
 	"get_protocol",
 	"get_threads",
 	"get_protocols_for_app_entry_type",

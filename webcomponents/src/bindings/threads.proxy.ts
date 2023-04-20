@@ -191,6 +191,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_latest_beads', input);
   }
 
+  async getTextMessage(ah: ActionHash): Promise<[Timestamp, AgentPubKey, string]> {
+    return this.call('get_text_message', ah);
+  }
+
   async getProtocol(ah: ActionHash): Promise<ParticipationProtocol> {
     return this.call('get_protocol', ah);
   }

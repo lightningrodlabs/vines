@@ -11,7 +11,26 @@ use holo_hash::DnaHashB64;
 use zome_utils::*;
 use threads_integrity::*;
 
-/// Get a SemanticTopic
+
+///
+#[hdk_extern]
+pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
+  return match get(ah.clone(), GetOptions::content())? {
+    Some(record) => {
+      let action = record.action().clone();
+      //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
+      let mut msg: String = "<unknown type>".to_string();
+      if let Ok(typed) = get_typed_from_record::<TextMessage>(record) {
+        msg = typed.value;
+      }
+      Ok((action.timestamp(), action.author().to_owned(), msg))
+    }
+    None => zome_error!("get_text_message(): Entry not found"),
+  };
+}
+
+
+///
 #[hdk_extern]
 pub fn get_protocol(ah: ActionHash) -> ExternResult<ParticipationProtocol> {
   let typed_pair = get_typed_from_ah(ah)?;

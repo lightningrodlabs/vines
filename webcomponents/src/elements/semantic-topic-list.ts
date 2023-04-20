@@ -46,7 +46,7 @@ export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZv
 
     const stLi = Object.entries(this.perspective.semanticTopics).map(
       ([b64, title]) => {
-        return html`<ui5-li id="${b64}">${title}</ui5-li>`
+        return html`<ui5-li id="${b64}" additional-text="${b64}">${title}</ui5-li>`
       }
     );
 

@@ -195,7 +195,7 @@ export class ThreadsTestPage extends DnaElement<unknown, ThreadsDvm> {
             }
             }">Scan latest entries
             </button>            
-            <h1>Threads test page: ${this._myNick}</h1>
+            <h1>Threads test page: <abbr title="${this.cell.agentPubKey}">${this._myNick}</abbr></h1>
             <semantic-topic-list id="threadList" .topic="${this._selectedTopicHash}"
                          @selected="${(e) => {this.onSemanticTopicSelect(e.detail)}}"></semantic-topic-list>            
 
