@@ -6,27 +6,14 @@ import {
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
-  ParticipationProtocol,
+  ParticipationProtocol, TopicTypeType,
   TypedAnchor
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
-import {materializeParticipationProtocol, ParticipationProtocolMat} from "./threads.perspective";
+import {materializeParticipationProtocol, ParticipationProtocolMat, ThreadsPerspective} from "./threads.perspective";
 
 
-/** */
-export interface ThreadsPerspective {
-  /** TopicHash -> Topic Title */
-  semanticTopics: Dictionary<string>
-  /** pp Hash -> PP */
-  allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
-  /** TopicHash -> ProtocolAh */
-  threadsByTopic: Dictionary<ActionHashB64[]>,
-  /** TopicHash -> BeadLinks */
-  latestBeadsByTopic: Dictionary<BeadLink[]>,
-  /** Ah -> TextMessageTuple */
-  textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]>,
-}
 
 
 /**
@@ -55,7 +42,7 @@ export class ThreadsZvm extends ZomeViewModel {
       semanticTopics: this._semanticTopics,
       allParticipationProtocols: this._allParticipationProtocols,
       threadsByTopic: this._threadsByTopic,
-      latestBeadsByTopic: this._latestBeadsByTopic,
+      latestBeadsByThread: this._latestBeadsByTopic,
       textMessageTuples: this._textMessageTuples,
     };
   }
@@ -93,6 +80,7 @@ export class ThreadsZvm extends ZomeViewModel {
     //FIXME tuples.sort((a, b) => {return 1})
     return tuples;
   }
+
 
   /** -- Methods -- */
 
@@ -182,8 +170,13 @@ export class ThreadsZvm extends ZomeViewModel {
     const bead: Bead = {
       protocolAh: decodeHashFromBase64(protocolAh)
     }
-    const path_str = await this.zomeProxy.addTextMessage({value: texto, bead});
-    return path_str;
+    const [ah, global_time_anchor] = await this.zomeProxy.addTextMessage({value: texto, bead});
+    const ahB64 = encodeHashToBase64(ah)
+    this._latestBeadsByTopic[protocolAh].push({beadAh: ah, beadType: TopicTypeType.SemanticTopic});
+    const tuple = await this.zomeProxy.getTextMessage(ah);
+    this._textMessageTuples[ahB64] = [tuple[0], encodeHashToBase64(tuple[1]), tuple[2]];;
+    this.notifySubscribers();
+    return global_time_anchor;
   }
 
 

@@ -3,7 +3,6 @@ import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64, AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../../viewModels/threads.zvm";
 import {ThreadList} from "./thread-list";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
 import {AnchorTree} from "./anchor-tree";
@@ -11,6 +10,7 @@ import {LinkList} from "./link-list";
 import {TextMessageList} from "./text-message-list";
 import {SemanticTopicList} from "./semantic-topic-list";
 import {TextThreadView} from "../text-thread-view";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
 /** */

@@ -1,14 +1,15 @@
-import {css, html} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64} from "@holochain/client";
+import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.zvm";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials} from "../utils";
 
 import "@ui5/webcomponents/dist/Avatar.js"
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/StandardListItem.js";
+import {ThreadsProfile} from "../viewModels/profiles.proxy";
 // import "@ui5/webcomponents/dist/CustomListItem.js";
 // import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
 
@@ -70,13 +71,35 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  // /** */
+  // async onUpdate(): Promise<void> {
+  //   this._dvm.threadsZvm.zomeProxy.getProtocol(decodeHashFromBase64(this.threadHash))
+  //     .then((pp) => this._pp = pp)
+  //   await this.probeLatestMessages();
+  // }
+  //
+  //
+  // /** */
+  // shouldUpdate(changedProperties: PropertyValues<this>) {
+  //   super.shouldUpdate(changedProperties);
+  //   console.log("<text-message-list>.shouldUpdate()", changedProperties);
+  //   if (changedProperties.has("threadHash") && this._dvm) {
+  //     console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
+  //     this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
+  //     this.onUpdate();
+  //   }
+  //   return true;
+  // }
+  //
+
+
   /** */
   render() {
     console.log("<text-thread-view>.render():", this.threadHash);
 
-    if (!this._initialized) {
-      return html `<div>Loading...</div>`;
-    }
+    // if (!this._initialized) {
+    //   return html `<div>Loading...</div>`;
+    // }
     if (this.threadHash == "") {
       return html `<div>No thread selected</div>`;
     }
@@ -90,13 +113,18 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const txtTuples: [number, AgentPubKeyB64, string][] = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
+    console.log("<text-thread-view>.render() len =", txtTuples.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     const textLi = Object.values(txtTuples).map(
       (tuple) => {
         const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
-        const agent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
+        let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
+        let maybeAgent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
+        if (maybeAgent) {
+          agent = maybeAgent
+        }
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
         // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
@@ -119,12 +147,11 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <h2># ${topic}</h2>
-        <h5><abbr title="${this.threadHash}">${pp.purpose}</abbr></h5>
-        <ui5-list id="textList" style="height: 400px" growing="Scroll"
-                  @load-more=${this.onLoadMore}
+        <!-- <h2># ${topic}</h2>
+        <h5><abbr title="${this.threadHash}">${pp.purpose}</abbr></h5> -->
+        <ui5-list id="textList" style="height: 88vh">
+        <!--style="height: 400px" growing="Scroll" @load-more=${this.onLoadMore}-->
                   <!-- @wheel=${this.onWheel} -->
-        >
             ${textLi}
         </ui5-list>
     `;

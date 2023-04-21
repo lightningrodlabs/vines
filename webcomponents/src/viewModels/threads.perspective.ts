@@ -1,5 +1,20 @@
-import {ParticipationProtocol, TopicType, TopicTypeType} from "../bindings/threads.types";
-import {encodeHashToBase64} from "@holochain/client";
+import {BeadLink, ParticipationProtocol, TopicType, TopicTypeType} from "../bindings/threads.types";
+import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
+import {Dictionary} from "@ddd-qc/lit-happ";
+
+/** */
+export interface ThreadsPerspective {
+  /** TopicHash -> Topic Title */
+  semanticTopics: Dictionary<string>
+  /** pp Hash -> PP */
+  allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
+  /** TopicHash -> ProtocolAh */
+  threadsByTopic: Dictionary<ActionHashB64[]>,
+  /** TopicHash -> BeadLinks */
+  latestBeadsByThread: Dictionary<BeadLink[]>,
+  /** Ah -> TextMessageTuple */
+  textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]>,
+}
 
 
 /**  */

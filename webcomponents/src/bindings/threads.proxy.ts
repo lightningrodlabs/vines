@@ -179,7 +179,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_topic', ah);
   }
 
-  async addTextMessage(texto: TextMessage): Promise<string> {
+  async addTextMessage(texto: TextMessage): Promise<[ActionHash, string]> {
     return this.call('add_text_message', texto);
   }
 

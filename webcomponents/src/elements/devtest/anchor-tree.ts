@@ -1,13 +1,14 @@
 import {css, html, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
 import {encodeHashToBase64} from "@holochain/client";
 
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
 /** */

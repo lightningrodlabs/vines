@@ -1,12 +1,13 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
 
 import "@ui5/webcomponents/dist/List.js"
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import {decodeHashFromBase64} from "@holochain/client";
 import {SemanticTopic} from "../../bindings/threads.types";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 /**
  * @element

@@ -1,8 +1,9 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective, ThreadsZvm} from "../viewModels/threads.zvm";
+import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {LeafLink, ROOT_ANCHOR_SEMANTIC_TOPICS} from "../bindings/threads.types";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
@@ -11,6 +12,8 @@ import "@ui5/webcomponents/dist/BusyIndicator.js";
 
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
+
+
 
 /**
  * @element
@@ -110,8 +113,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
   /** */
   async clickTree(event) {
-    console.log("<semantic-topics-view> click event:", event.detail.item)
-    //console.log("<semantic-topics-view> click event:", event.detail.item.level);
+    //console.log("<semantic-topics-view> click event:", event.detail.item)
     if (event.detail.item.level == 2) {
       this.dispatchEvent(new CustomEvent('selected', {detail: event.detail.item.id, bubbles: true, composed: true}));
     }
@@ -122,7 +124,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
   /** */
   render() {
-    console.log("<semantic-topics-view>.render()", /*this._leafLinks*/ this.perspective.semanticTopics);
+    console.log("<semantic-topics-view>.render()");
     // if (!this._leafLinks) {
     //   return html`Loading...`;
     // }
@@ -135,7 +137,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           const pp = this.perspective.allParticipationProtocols[ppHash];
           //console.log("<semantic-topics-view>.render() topic: ", topicThreads., this.perspective.semanticTopics);
           if (!pp) return html``;
-          return html`<ui5-tree-item-custom id="${ppHash}" level="2">
+          return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="discussion">
               <span slot="content">${pp.purpose}</span>
           </ui5-tree-item-custom>`
         })
@@ -145,14 +147,14 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           <span slot="content">
               ${title}                  
               <ui5-button icon="add" tooltip="Create Topic" design="Transparent" @click=${(e) => {
-                e.stopPropagation(); console.log("topic clicked:", title);
+                e.stopPropagation(); //console.log("topic clicked:", title);
                 this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: hash, bubbles: true, composed: true}));
               }} ></ui5-button>
           </span>
           ${threads}
       </ui5-tree-item-custom>`
     });
-    console.log({treeItems})
+    //console.log({treeItems})
 
     /** render all */
     return html`

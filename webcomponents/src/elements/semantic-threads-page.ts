@@ -1,11 +1,12 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AnyDhtHashB64} from "@holochain/client";
+import {AnyDhtHashB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {TextThreadView} from "./text-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
+
 /** @ui5/webcomponents */
 import Label from "@ui5/webcomponents/dist/Label"
 import Dialog from "@ui5/webcomponents/dist/Dialog"
@@ -14,13 +15,18 @@ import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 /** @ui5/webcomponents-fiori */
-import Bar from "@ui5/webcomponents-fiori/dist/Bar"
+import "@ui5/webcomponents-fiori/dist/Bar.js"
 /** @ui5/webcomponents-icons */
-//import "@ui5/webcomponents-icons/dist/AllIcons.js";
+//import "@ui5/webcomponents-icons/dist/allIcons-static.js";
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/action-settings.js"
+import "@ui5/webcomponents-icons/dist/number-sign.js"
+import "@ui5/webcomponents-icons/dist/process.js"
+import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
+import "@ui5/webcomponents-icons/dist/discussion.js"
 
 /**
  * @element
@@ -80,7 +86,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateTopic(e: any) {
+  async onCreateTopic(e) {
     const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
     let ah = await this._dvm.threadsZvm.publishSemanticTopic(input.value);
     //console.log("onCreateList() res:", res)
@@ -90,7 +96,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateThread(e: any) {
+  async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
     let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this._createTopicHash, input.value);
     //console.log("onCreateList() res:", res)
@@ -100,19 +106,20 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  //
-  //
-  // /** */
-  // async onCreateTextMessage(e: any) {
-  //   const input = this.shadowRoot!.getElementById("textMessageInput") as HTMLInputElement;
-  //   let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._selectedThreadHash);
-  //   console.log("onCreateTextMessage() res:", path_str);
-  //   input.value = "";
-  //
-  //   //await this.probeLatestMessages();
-  //   //const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
-  //   //msgList.requestUpdate();
-  // }
+  /** */
+  async onCreateTextMessage(e) {
+    const input = this.shadowRoot!.getElementById("textMessageInput") as HTMLInputElement;
+    if (!input.value || input.value.length == 0) {
+      return;
+    }
+    let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._selectedThreadHash);
+    console.log("onCreateTextMessage() res:", path_str);
+    input.value = "";
+
+    //await this.probeLatestMessages();
+    //const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
+    //msgList.requestUpdate();
+  }
 
 
   /** */
@@ -124,18 +131,26 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     let rightSide = html`<div>No threads found</div>`
     if (this._selectedThreadHash) {
+      const thread = this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash];
+      const topic = this.threadsPerspective.semanticTopics[thread.topicHash];
+
       rightSide = html`
-          <ui5-bar design="Header">
-              <ui5-button icon="home" tooltip="Go home" design="Transparent" slot="startContent"></ui5-button>
-              <ui5-label>${this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash].purpose}</ui5-label>
-              <ui5-button icon="action-settings" tooltip="Go to settings" slot="endContent"></ui5-button>
+          <ui5-bar design="Header" style="background: #f1efef; border: 1px solid dimgray;">
+              <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
+                          design="Transparent"></ui5-button>
+              <span id="threadTitle" slot="startContent">${topic}: ${thread.purpose}</span>
+              <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings"></ui5-button>
           </ui5-bar>
-          <text-thread-view .threadHash=${this._selectedThreadHash}></text-thread-view>
-          <ui5-bar design="FloatingFooter">
-              <ui5-button design="Positive" slot="endContent">Agree</ui5-button>
-              <ui5-button design="Negative" slot="endContent">Decline</ui5-button>
-              <ui5-button design="Transparent" slot="endContent">Cancel</ui5-button>
-          </ui5-bar>          
+          <text-thread-view .threadHash=${this._selectedThreadHash}
+                            style=""></text-thread-view>
+          <ui5-bar design="FloatingFooter" style="margin:10px">
+              <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
+              <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
+                         show-clear-icon
+                         style="min-width: 400px;"
+                         @change=${this.onCreateTextMessage}></ui5-input>
+              <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
+          </ui5-bar>
       `;
     }
 
@@ -144,7 +159,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return html`
       <div id="mainDiv">
           <div id="leftSide">
-              <div id="sideButtonBar" style="display: flex; flex-direction: row">
+              <div id="sideButtonBar" style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
                   <span style="font-size: 24px;font-weight: bold;padding: 3px 20px 0px 10px;">Topics</span>
                   <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent" @click=${this.refresh}></ui5-button>
                   <ui5-button id="createTopicButton" icon="add" tooltip="Create Topic" design="Transparent" 
@@ -153,7 +168,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               </div>
               <semantic-topics-view 
                       @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}
-                      @selected=${(e) => {this._selectedThreadHash = e.detail}}
+                      @selected=${(e) => {this.onThreadSelected(e.detail)}}
               ></semantic-topics-view>
         </div>
         <div id="rightSide">
@@ -192,6 +207,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+  async onThreadSelected(threadHash: AnyDhtHashB64) {
+    console.log("onThreadSelected()", threadHash)
+    //this._dvm.threadsZvm.probeLatestBeads(threadHash)
+    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(threadHash), targetCount: 20})
+    console.log("onThreadSelected() beads found: ", beadLinks.length);
+    this._selectedThreadHash = threadHash;
+  }
+
+
   /** */
   async refresh(_e?: any) {
     await this._dvm.probeAll();
@@ -219,10 +244,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         #mainDiv {
           display: flex;
           flex-direction: row;
+          height: 100vh;
+          overflow: clip;
         }
 
         #leftSide {
           background: #9bb791;
+          height: 100vh;
           width: 340px;
           display: flex;
           flex-direction: column;
@@ -230,10 +258,17 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
         #rightSide {
           width: 100%;
+          height: 100vh;
           background: mediumpurple;
           display: flex;
           flex-direction: column;
         }
+        
+        #threadTitle {
+          font-size: 18px;
+          font-weight: bold;
+        }
+        
         
       `,
 

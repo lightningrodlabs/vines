@@ -1,7 +1,7 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {LeafLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
 import {AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64, ZomeName} from "@holochain/client";
 import {ScopedZomeTypes} from "@ddd-qc/cell-proxy/dist/types";
@@ -9,6 +9,7 @@ import {ScopedZomeTypes} from "@ddd-qc/cell-proxy/dist/types";
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
 

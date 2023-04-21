@@ -7,16 +7,16 @@ use threads_integrity::*;
 use crate::path_explorer::{path2str, str2tag};
 use crate::time_indexing::timepath_utils::get_time_path;
 
-///
+/// Return ActionHash and Global Time Anchor
 #[hdk_extern]
-pub fn add_text_message(texto: TextMessage) -> ExternResult<String> {
+pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String)> {
   let ah = create_entry(ThreadsEntry::TextMessage(texto.clone()))?;
-  let tp_pair = index_bead(texto.bead, ah, "TextMessage")?;
-  Ok(path2str(&tp_pair.1.path).unwrap())
+  let tp_pair = index_bead(texto.bead, ah.clone(), "TextMessage")?;
+  Ok((ah, path2str(&tp_pair.1.path).unwrap()))
 }
 
 
-/// Returns the Thread Time TypePath and the Global Time TypePath
+/// Returns the Thread Time Anchor and the Global Time Anchor
 pub fn index_bead(bead: Bead, ah: ActionHash, bead_type: &str) -> ExternResult<(TypedPath, TypedPath)> {
 
   let pp_ahB64_str: String = holo_hash_encode(bead.protocol_ah.clone().get_raw_39());
