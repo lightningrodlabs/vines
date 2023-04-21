@@ -27,7 +27,9 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    super.shouldUpdate(changedProperties);
+    const canUpdate = super.shouldUpdate(changedProperties);
+    //if (!canUpdate) return false;
+
     //console.log("ZomeElement.shouldUpdate() start", !!this._zvm, this.installedCell);
     if (changedProperties.has("topicHash") && this._zvm) {
       console.log("<thread-list>.shouldUpdate()", changedProperties, this.topicHash)

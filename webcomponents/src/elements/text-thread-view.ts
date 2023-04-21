@@ -4,12 +4,14 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
-
-import "@ui5/webcomponents/dist/List.js"
-import "@ui5/webcomponents/dist/StandardListItem.js";
+import {getInitials} from "../utils";
 
 import "@ui5/webcomponents/dist/Avatar.js"
-import {getInitials} from "../utils";
+import List from "@ui5/webcomponents/dist/List"
+import "@ui5/webcomponents/dist/StandardListItem.js";
+// import "@ui5/webcomponents/dist/CustomListItem.js";
+// import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
+
 
 
 /**
@@ -39,11 +41,17 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-
   /** -- State variables -- */
 
   @state() private _initialized = false;
   @state() private _txtTuples: [number, AgentPubKeyB64, string][] = []
+
+
+  /** -- Getters -- */
+
+  get listElem() : List {
+    return this.shadowRoot.getElementById("textList") as List;
+  }
 
 
   /** -- Methods -- */
@@ -60,27 +68,6 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     this.threadHash = '';
     this._initialized = true;
   }
-
-
-  // /** */
-  // async onUpdate(): Promise<void> {
-  //   this._dvm.threadsZvm.zomeProxy.getProtocol(decodeHashFromBase64(this.threadHash))
-  //     .then((pp) => this._pp = pp)
-  //   await this.probeLatestMessages();
-  // }
-
-
-  // /** */
-  // shouldUpdate(changedProperties: PropertyValues<this>) {
-  //   super.shouldUpdate(changedProperties);
-  //   console.log("<text-thread-view>.shouldUpdate()", changedProperties);
-  //   if (changedProperties.has("threadHash") && this._dvm) {
-  //     console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
-  //     this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
-  //     this.onUpdate();
-  //   }
-  //   return true;
-  // }
 
 
   /** */
@@ -134,9 +121,36 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <h2># ${topic}</h2>
         <h5><abbr title="${this.threadHash}">${pp.purpose}</abbr></h5>
-        <ui5-list>${textLi}</ui5-list>
+        <ui5-list id="textList" style="height: 400px" growing="Scroll"
+                  @load-more=${this.onLoadMore}
+                  <!-- @wheel=${this.onWheel} -->
+        >
+            ${textLi}
+        </ui5-list>
     `;
-
   }
+
+
+  /** */
+  onLoadMore() {
+    console.log("<text-thread-view>.onLoadMore()");
+
+    this.listElem.busy = true;
+    // FIXME: Probe DHT
+    this.listElem.busy = false;
+  }
+
+
+  // /** */
+  onWheel(event) {
+  //   // this.listElem.scrollTop
+  //   const hasScrolledUp = event.wheelDeltaY > 0
+  //   var scrollY = this.listElem.scrollHeight - this.listElem.clientHeight;
+  //   const hasOverScrolledTop = scrollY == 0 && hasScrolledUp;
+  //   //const e = {deltaY: event.deltaY, wheelDeltaY: event.wheelDeltaY}
+  //   const elem = {scroll: this.listElem.scroll, scrollHeight: this.listElem.scrollHeight}
+  //   //console.log("<text-thread-view>.onWheel event: ", /*e,*/ elem, scrollY, hasOverScrolledTop);
+  }
+
 
 }

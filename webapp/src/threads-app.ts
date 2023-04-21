@@ -1,11 +1,10 @@
 import {html, css} from "lit";
 import { state } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
-import {Button, CircularProgress, Dialog} from "@scoped-elements/material-web";
 import {AdminWebsocket, AppSignal, AppWebsocket, EntryHashB64, InstalledAppId, RoleName} from "@holochain/client";
 import {CellContext, delay, HCL, CellsForRole, HappElement, HvmDef} from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF, SemanticTopicList, ThreadsDevtestPage
+  DEFAULT_THREADS_DEF, SemanticThreadsPage, ThreadsDevtestPage,
 } from "@threads/elements";
 import {ThreadsProfile} from "@threads/elements/dist/viewModels/profiles.proxy";
 
@@ -51,9 +50,6 @@ export class ThreadsApp extends HappElement {
 
   get threadsDvm(): ThreadsDvm { return this.hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)! as ThreadsDvm }
 
-  get importingDialogElem() : Dialog {
-    return this.shadowRoot!.getElementById("importing-dialog") as Dialog;
-  }
 
   /** -- Methods -- */
 
@@ -171,15 +167,16 @@ export class ThreadsApp extends HappElement {
 
     /** Render all */
     return html`
-        <button @click="${() => {
-          console.log("dumpLogs"); 
-          //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
-          //el.requestUpdate();
-            this.threadsDvm.dumpLogs();
-        }}">dumpLogs</button>
         <cell-context .cell="${this.threadsDvm.cell}">
-            <threads-test-page id="test"></threads-test-page>
-            <!-- <semantic-topic-list></semantic-topic-list> -->
+            <!--
+                    <button @click="${() => {
+                console.log("dumpLogs");
+                //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
+                //el.requestUpdate();
+                this.threadsDvm.dumpLogs();
+            }}">dumpLogs</button> 
+            <threads-devtest-page id="test"></threads-devtest-page> -->
+            <semantic-threads-page id="test"></semantic-threads-page>
         </cell-context>
     `;
   }
@@ -188,8 +185,8 @@ export class ThreadsApp extends HappElement {
   /** */
   static get scopedElements() {
     return {
-      "threads-test-page": ThreadsDevtestPage,
-      "semantic-topic-list": SemanticTopicList,
+      "threads-devtest-page": ThreadsDevtestPage,
+      "semantic-threads-page": SemanticThreadsPage,
       "cell-context": CellContext,
     }
   }

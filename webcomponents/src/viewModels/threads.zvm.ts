@@ -16,7 +16,9 @@ import {materializeParticipationProtocol, ParticipationProtocolMat} from "./thre
 
 /** */
 export interface ThreadsPerspective {
+  /** TopicHash -> Topic Title */
   semanticTopics: Dictionary<string>
+  /** pp Hash -> PP */
   allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** TopicHash -> ProtocolAh */
   threadsByTopic: Dictionary<ActionHashB64[]>,
@@ -201,7 +203,11 @@ export class ThreadsZvm extends ZomeViewModel {
     const ah = await this.zomeProxy.createParticipationProtocolFromSemanticTopic(pp);
     const ahB64 = encodeHashToBase64(ah);
     this._allParticipationProtocols[ahB64] = materializeParticipationProtocol(pp);
-    this._threadsByTopic[topicHash].push(ahB64);
+    if (!this._threadsByTopic[topicHash]) {
+      this._threadsByTopic[topicHash] = [ahB64];
+    } else {
+      this._threadsByTopic[topicHash].push(ahB64);
+    }
     //console.log("publishThreadFromSemanticTopic()", pp)
     this.notifySubscribers();
     return ahB64;
