@@ -5,8 +5,8 @@ import {ThreadsPerspective, ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
 import {encodeHashToBase64} from "@holochain/client";
 
-import "@ui5/webcomponents/dist/Tree.js"
-import "@ui5/webcomponents/dist/TreeItem.js";
+import Tree from "@ui5/webcomponents/dist/Tree"
+import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 
 
@@ -97,7 +97,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async toggleRootTreeItem(event:any) {
-    const busyIndicator = this.shadowRoot.getElementById("busy") as any; // Tree
+    const busyIndicator = this.shadowRoot.getElementById("busy") as any;
     let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
     console.log("toggleRootTreeItem()", rootItem.id, rootItem.getAttribute("anchor"))
 
@@ -134,7 +134,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           if (itemHashs.includes(hash)) {
             continue;
           }
-          var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
+          var newItem = document.createElement("ui5-tree-item") as TreeItem;
           newItem.text = hash;
           newItem.additionalText = tag? linkKeys[leafLink.index] + " | " + tag : linkKeys[leafLink.index];
           newItem.setAttribute("anchor", rootItem.anchor);
@@ -151,7 +151,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         if (itemTexts.includes(leafComponent)) {
           continue;
         }
-        let newItem = document.createElement("ui5-tree-item") as any; // TreeItem
+        let newItem = document.createElement("ui5-tree-item") as TreeItem;
         newItem.text = leafComponent;
         newItem.additionalText = ta.anchor;
         newItem.setAttribute("anchor", ta.anchor);

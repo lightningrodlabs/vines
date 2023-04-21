@@ -109,9 +109,13 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
 
   /** */
-  async clickTree(event:any) {
-    console.log("<semantic-topics-view> click event:", event)
-    console.log("<semantic-topics-view> click event:", event.target.id);
+  async clickTree(event) {
+    console.log("<semantic-topics-view> click event:", event.detail.item)
+    //console.log("<semantic-topics-view> click event:", event.detail.item.level);
+    if (event.detail.item.level == 2) {
+      this.dispatchEvent(new CustomEvent('selected', {detail: event.detail.item.id, bubbles: true, composed: true}));
+    }
+
   }
 
 
@@ -131,22 +135,19 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           const pp = this.perspective.allParticipationProtocols[ppHash];
           //console.log("<semantic-topics-view>.render() topic: ", topicThreads., this.perspective.semanticTopics);
           if (!pp) return html``;
-          return html`<ui5-tree-item-custom id="${ppHash}">
+          return html`<ui5-tree-item-custom id="${ppHash}" level="2">
               <span slot="content">${pp.purpose}</span>
-              <!-- <div slot="deleteButton">
-                  <ui5-button>Custom Delete Button</ui5-button>
-              </div> -->
           </ui5-tree-item-custom>`
         })
       }
       return html`<ui5-tree-item-custom id="${hash}" ?has-children="${!!topicThreads}" 
-                                        expanded="${!!topicThreads}"  show-toggle-button level="1">
+                                        expanded="${!!topicThreads}" show-toggle-button level="1">
           <span slot="content">
               ${title}                  
               <ui5-button icon="add" tooltip="Create Topic" design="Transparent" @click=${(e) => {
                 e.stopPropagation(); console.log("topic clicked:", title);
                 this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: hash, bubbles: true, composed: true}));
-              }}
+              }} ></ui5-button>
           </span>
           ${threads}
       </ui5-tree-item-custom>`
@@ -158,7 +159,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       <ui5-busy-indicator id="busy" style="width: 100%">
         <ui5-tree id="semTree" mode="SingleSelect" no-data-text="No topics found"
                   @item-toggle="${this.toggleTreeItem}"
-                  @click="${this.clickTree}"
+                  @item-click="${this.clickTree}"
         >
           ${treeItems}
         </ui5-tree>

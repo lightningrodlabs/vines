@@ -6,14 +6,16 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.zvm";
 import {TextThreadView} from "./text-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
-
-import Bar from "@ui5/webcomponents-fiori/dist/Bar"
+/** @ui5/webcomponents */
+import Label from "@ui5/webcomponents/dist/Label"
 import Dialog from "@ui5/webcomponents/dist/Dialog"
 import Button from "@ui5/webcomponents/dist/Button"
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
-
+/** @ui5/webcomponents-fiori */
+import Bar from "@ui5/webcomponents-fiori/dist/Bar"
+/** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/add.js"
@@ -143,12 +145,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       <div id="mainDiv">
           <div id="leftSide">
               <div id="sideButtonBar" style="display: flex; flex-direction: row">
-                  <ui5-button icon="synchronize" tooltip="Refresh" @click=${this.refresh}></ui5-button>
+                  <span style="font-size: 24px;font-weight: bold;padding: 3px 20px 0px 10px;">Topics</span>
+                  <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent" @click=${this.refresh}></ui5-button>
                   <ui5-button id="createTopicButton" icon="add" tooltip="Create Topic" design="Transparent" 
                               @click=${() => this.createTopicDialogElem.show()}
                   ></ui5-button>                  
               </div>
-              <semantic-topics-view @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}></semantic-topics-view>
+              <semantic-topics-view 
+                      @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}
+                      @selected=${(e) => {this._selectedThreadHash = e.detail}}
+              ></semantic-topics-view>
         </div>
         <div id="rightSide">
             ${rightSide}

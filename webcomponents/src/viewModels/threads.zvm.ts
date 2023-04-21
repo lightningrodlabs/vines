@@ -100,6 +100,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   async initializePerspectiveOnline(): Promise<void> {
     await this.probeSemanticTopics();
+    let probes = []
+    for (const topicAh of Object.keys(this._semanticTopics)) {
+      probes.push(this.probeThreads(topicAh));
+    }
+    await Promise.all(probes);
   }
 
 
