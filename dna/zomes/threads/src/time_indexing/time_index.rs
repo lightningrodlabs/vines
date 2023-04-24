@@ -29,7 +29,7 @@ pub fn get_latest_time_indexed_links(
   //let Ok(latest_included_timestamp) = end_time - std::time::Duration::from_secs(60 * 60)
   //  else { return Ok(Vec::new()); };
   if time_diff < chrono::Duration::hours(1) {
-    let leaf_links = get_all_leaf_links_from_path(start_tp.path, link_tag)?;
+    let _leaf_links = get_any_leaf_links_from_path(start_tp.path, link_tag)?;
     //return Ok(leaf_links);
     return Ok(Vec::new());
   }

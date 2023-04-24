@@ -1,7 +1,6 @@
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::{HashType, holo_hash_decode, holo_hash_decode_unchecked};
+use hdk::prelude::holo_hash::{holo_hash_decode_unchecked};
 //use zome_utils::*;
-use threads_integrity::*;
 use crate::participation_protocols::*;
 use crate::path_explorer::tp_children_paths;
 

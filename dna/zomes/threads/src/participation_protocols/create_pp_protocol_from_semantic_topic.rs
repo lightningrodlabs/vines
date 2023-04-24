@@ -28,7 +28,7 @@ pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, entry_type_name: 
   //let pp_eh = hash_entry(pp_entry)?;
 
   /// Global Threads Index
-  let (tp, ehb64) = get_subject_tp(dna_hash, entry_type_name, pp.topic_hash.clone())?;
+  let (tp, _subject_hash_str) = get_subject_tp(dna_hash, entry_type_name, pp.topic_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
@@ -39,7 +39,7 @@ pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, entry_type_name: 
     pp_ah.clone(),
     ThreadsLinkType::Protocols,
     LinkTag::new(vec![]),
-    // str2tag(&ehb64), // Store Subject Hash in Tag
+    // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
   /// Link from Subject Hash to Protocol
   create_link(

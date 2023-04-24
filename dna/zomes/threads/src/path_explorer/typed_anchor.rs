@@ -50,6 +50,7 @@ impl TypedAnchor {
 
 
   /// Return all LeafAnchors from this Anchor
+  /// USE WITH CARE as this can easily timeout as it's a recursive loop of get_links()
   pub fn probe_leaf_anchors(&self) -> ExternResult<Vec<TypedAnchor>> {
     let res_tps = tp_leaf_children(&self.as_path())?;
     //debug!("TypedAnchor.probe_leaf_anchors() '{}' has {} children.", self.anchor, res_tps.len());
@@ -69,7 +70,7 @@ impl TypedAnchor {
     LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
     link_tag,
     )?;
-    let res = convert_links_to_leaf_links(links, tp.link_type.zome_type)?;
+    let res = convert_links_to_leaf_links(links)?;
     Ok(res)
   }
 }

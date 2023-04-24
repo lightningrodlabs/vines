@@ -61,7 +61,8 @@ pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
 
 
 /// Return all LeafPaths from this Path
-/// A LeafPath is a Path with no sub Paths of same type
+/// A LeafPath is a Path with no sub Paths of same type.
+/// USE WITH CARE as this can easily timeout as it's a recursive loop of get_links()
 pub fn tp_leaf_children(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
   let children = tp_children_paths(tp)?;
   if children.is_empty() {

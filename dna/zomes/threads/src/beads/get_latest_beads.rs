@@ -1,8 +1,8 @@
 use hdk::{
   prelude::*,
 };
-use hdk::prelude::holo_hash::{holo_hash_encode};
 use threads_integrity::*;
+use crate::beads::BeadLink;
 use crate::path_explorer::*;
 use crate::time_indexing::time_index::get_latest_time_indexed_links;
 
@@ -16,23 +16,15 @@ pub struct GetLatestBeadsInput {
 }
 
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BeadLink {
-  bead_ah: ActionHash,
-  bead_type: String,
-}
-
-
 ///
 #[hdk_extern]
 pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<Vec<BeadLink>> {
-  let pp_ahB64_str: String = holo_hash_encode(input.pp_ah.clone().get_raw_39());
+  let pp_str = hash2anchor(input.pp_ah.clone());
 
   let start = input.start_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
-  debug!("get_latest_beads() pp_ahB64_str = {} | start = {}", pp_ahB64_str, start);
+  debug!("get_latest_beads() pp_str = {} | start = {}", pp_str, start);
 
-  let root_tp = Path::from(pp_ahB64_str).typed(ThreadsLinkType::BeadTimePath)?;
+  let root_tp = Path::from(pp_str).typed(ThreadsLinkType::BeadTimePath)?;
   let links = get_latest_time_indexed_links(root_tp, start, sys_time()?, input.target_count, None)?;
   debug!("get_latest_beads() links.len = {}", links.len());
 

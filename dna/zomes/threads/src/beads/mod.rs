@@ -1,26 +1,33 @@
 
 mod text_message;
 mod get_latest_beads;
+mod get_all_beads;
 
 
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::holo_hash_encode;
 //use zome_utils::*;
 use threads_integrity::*;
 use crate::path_explorer::*;
 use crate::time_indexing::timepath_utils::*;
 
 
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BeadLink {
+  pub bead_ah: ActionHash,
+  pub bead_type: String,
+}
+
+
 /// Returns the Thread Time Anchor and the Global Time Anchor
 pub fn index_bead(bead: Bead, ah: ActionHash, bead_type: &str) -> ExternResult<(TypedPath, TypedPath)> {
-
-  let pp_ahB64_str: String = holo_hash_encode(bead.protocol_ah.clone().get_raw_39());
-
-  let ah_time = sys_time()?; // FIXME: use Action's timestamp
-
   /// Thread time-Index
-  let thread_path = Path::from(pp_ahB64_str.clone())
+  let pp_anchor: String = hash2anchor(bead.for_protocol_ah.clone());
+  let thread_path = Path::from(pp_anchor.clone())
     .typed(ThreadsLinkType::BeadTimePath)?;
+  let ah_time = sys_time()?; // FIXME: use Action's timestamp
   let thread_leaf_tp = get_time_path(thread_path.clone(), ah_time)?;
   thread_leaf_tp.ensure()?;
   create_link(
@@ -40,7 +47,7 @@ pub fn index_bead(bead: Bead, ah: ActionHash, bead_type: &str) -> ExternResult<(
     leaf_tp.path_entry_hash()?,
     ah.clone(),
     ThreadsLinkType::Beads,
-    str2tag(&pp_ahB64_str),
+    str2tag(&pp_anchor),
   )?;
   debug!("Bead indexed at:\n  - {}", path2anchor(&leaf_tp.path).unwrap());
 

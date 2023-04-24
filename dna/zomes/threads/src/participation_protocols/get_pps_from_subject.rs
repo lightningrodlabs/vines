@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::*;
-use crate::participation_protocols::*;
 
 
 /// TODO: should be AnyLinkableHash once hc-client-js has defined it

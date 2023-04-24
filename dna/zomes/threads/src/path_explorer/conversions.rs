@@ -1,5 +1,6 @@
 use hdk::hash_path::path::{Component, DELIMITER};
 use hdk::prelude::*;
+use hdk::prelude::holo_hash::{HashType, holo_hash_encode};
 use zome_utils::zome_error;
 
 
@@ -17,6 +18,10 @@ pub fn tag2str(tag: &LinkTag) -> ExternResult<String> {
   Ok(str.to_string())
 }
 
+
+pub fn hash2anchor<T: HashType>(hash: HoloHash<T>) -> String {
+  return holo_hash_encode(hash.get_raw_39());
+}
 
 /// Convert Path to Anchor
 pub fn path2anchor(path: &Path) -> Result<String, SerializedBytesError> {

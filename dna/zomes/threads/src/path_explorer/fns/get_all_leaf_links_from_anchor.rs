@@ -1,12 +1,12 @@
 use hdk::prelude::*;
-use crate::path_explorer::{get_all_leaf_links, get_all_leaf_links_from_path, LeafLink};
+use crate::path_explorer::{get_any_leaf_links, get_any_leaf_links_from_path, LeafLink};
 
 
 /// Return all children links from an Anchor
 #[hdk_extern]
 pub fn get_all_leaf_links_from_anchor(anchor: String) -> ExternResult<Vec<LeafLink>>  {
   let path = Path::try_from(anchor)?;
-  let lls = get_all_leaf_links_from_path(path, None)?;
+  let lls = get_any_leaf_links_from_path(path, None)?;
   Ok(lls)
 }
 
@@ -14,6 +14,6 @@ pub fn get_all_leaf_links_from_anchor(anchor: String) -> ExternResult<Vec<LeafLi
 /// Return all children links from a hash
 #[hdk_extern]
 pub fn get_all_leaf_links_from_hash(dh: AnyDhtHash) -> ExternResult<Vec<LeafLink>>  {
-  let lls = get_all_leaf_links(dh, None)?;
+  let lls = get_any_leaf_links(dh, None)?;
   Ok(lls)
 }

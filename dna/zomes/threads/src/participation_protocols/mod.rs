@@ -1,5 +1,5 @@
 
-mod get_pps;
+mod get_subjects;
 mod create_pp_protocol_from_semantic_topic;
 mod get_pps_from_subject;
 
