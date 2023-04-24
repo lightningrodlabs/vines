@@ -48,7 +48,7 @@ export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZv
         <ui5-list mode="SingleSelect" header-text="Semantic Topics" no-data-text="No Data Available"
                   style="width: 400px; margin-bottom: 10px;"
                   @selection-change=${this.onSelectionChange}>
-            ${Object.entries(this.perspective.semanticTopics).map(
+            ${Object.entries(this.perspective.allSemanticTopics).map(
                     ([b64, title]) => {
                         return html`<ui5-li id=${b64} additional-text=${b64}>${title}</ui5-li>`
                     }

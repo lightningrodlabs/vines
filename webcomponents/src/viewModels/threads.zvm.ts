@@ -39,7 +39,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /* */
   get perspective(): ThreadsPerspective {
     return {
-      semanticTopics: this._semanticTopics,
+      allSemanticTopics: this._semanticTopics,
       allParticipationProtocols: this._allParticipationProtocols,
       threadsByTopic: this._threadsByTopic,
       latestBeadsByThread: this._latestBeadsByTopic,

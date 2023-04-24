@@ -5,10 +5,11 @@
 #![allow(unused_attributes)]
 
 mod semantic_topic;
-mod threads;
 mod path_explorer;
 mod time_indexing;
 pub(crate) mod utils;
+mod beads;
+mod participation_protocols;
 
 use hdk::prelude::*;
 

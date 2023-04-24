@@ -132,7 +132,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     let rightSide = html`<h1 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">No threads selected</h1>`
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash];
-      const topic = this.threadsPerspective.semanticTopics[thread.topicHash];
+      const topic = this.threadsPerspective.allSemanticTopics[thread.topicHash];
 
       rightSide = html`
           <ui5-bar design="Header" style="background: #f1efef; border: 1px solid dimgray;">

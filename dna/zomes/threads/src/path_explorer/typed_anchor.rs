@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use crate::path_explorer::{convert_links_to_leaf_links, LeafLink, path2str, tp_children_paths, tp_leaf_children};
+use crate::path_explorer::*;
 
 
 /// Struct for holding an easily exportable typed Anchor.
@@ -82,7 +82,7 @@ impl TryFrom<&TypedPath> for TypedAnchor {
     Ok(TypedAnchor {
       zome_index: tp.link_type.zome_index.0,
       link_index: tp.link_type.zome_type.0,
-      anchor: path2str(&tp.path)?,
+      anchor: path2anchor(&tp.path)?,
     })
   }
 }

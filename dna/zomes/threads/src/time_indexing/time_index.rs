@@ -1,10 +1,8 @@
 use hdk::{
-  hash_path::path::{TypedPath},
   prelude::*,
 };
 use std::cmp;
 use zome_utils::zome_error;
-use threads_integrity::{GLOBAL_TIME_INDEX, ThreadsLinkType};
 use crate::path_explorer::*;
 use crate::time_indexing::timepath_utils::*;
 
@@ -71,7 +69,7 @@ pub fn get_latest_time_indexed_links(
 
   /// Traverse tree until target count is reached or root_path is reached
   while res.len() < target_count && current_search_path.as_ref().len() >= root_tp.as_ref().len() {
-    debug!("*** searching: {} | found: {}", path2str(&current_search_path.path).unwrap(), res.len());
+    debug!("*** searching: {} | found: {}", path2anchor(&current_search_path.path).unwrap(), res.len());
     if current_search_path.exists()? {
       let latest_searched_leaf_value = get_timepath_leaf_value(&latest_seached_path).unwrap();
 

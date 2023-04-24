@@ -1,5 +1,4 @@
 use hdk::{
-  hash_path::path::{TypedPath},
   prelude::*,
 };
 use threads_integrity::*;

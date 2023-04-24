@@ -1,19 +1,14 @@
-use hdk::{
-  hash_path::path::{TypedPath},
-  prelude::*,
-};
-use hdk::prelude::holo_hash::{ActionHashB64, holo_hash_encode};
-use threads_integrity::*;
-use crate::path_explorer::{path2str, str2tag};
-use crate::time_indexing::timepath_utils::get_time_path;
 
-/// Return ActionHash and Global Time Anchor
-#[hdk_extern]
-pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String)> {
-  let ah = create_entry(ThreadsEntry::TextMessage(texto.clone()))?;
-  let tp_pair = index_bead(texto.bead, ah.clone(), "TextMessage")?;
-  Ok((ah, path2str(&tp_pair.1.path).unwrap()))
-}
+mod text_message;
+mod get_latest_beads;
+
+
+use hdk::prelude::*;
+use hdk::prelude::holo_hash::holo_hash_encode;
+//use zome_utils::*;
+use threads_integrity::*;
+use crate::path_explorer::*;
+use crate::time_indexing::timepath_utils::*;
 
 
 /// Returns the Thread Time Anchor and the Global Time Anchor
@@ -34,7 +29,7 @@ pub fn index_bead(bead: Bead, ah: ActionHash, bead_type: &str) -> ExternResult<(
     ThreadsLinkType::Beads,
     str2tag(bead_type),
   )?;
-  debug!("Bead indexed at:\n  - {}", path2str(&thread_leaf_tp.path).unwrap());
+  debug!("Bead indexed at:\n  - {}", path2anchor(&thread_leaf_tp.path).unwrap());
 
   /// Global time-Index
   let root_time_path = Path::from(GLOBAL_TIME_INDEX)
@@ -47,7 +42,7 @@ pub fn index_bead(bead: Bead, ah: ActionHash, bead_type: &str) -> ExternResult<(
     ThreadsLinkType::Beads,
     str2tag(&pp_ahB64_str),
   )?;
-  debug!("Bead indexed at:\n  - {}", path2str(&leaf_tp.path).unwrap());
+  debug!("Bead indexed at:\n  - {}", path2anchor(&leaf_tp.path).unwrap());
 
   /// Done
   Ok((thread_leaf_tp, leaf_tp))

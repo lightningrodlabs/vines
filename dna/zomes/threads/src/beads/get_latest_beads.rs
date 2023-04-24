@@ -1,13 +1,10 @@
 use hdk::{
-  hash_path::path::{TypedPath},
   prelude::*,
 };
-use hdk::prelude::holo_hash::{ActionHashB64, holo_hash_encode};
+use hdk::prelude::holo_hash::{holo_hash_encode};
 use threads_integrity::*;
-use crate::path_explorer::{LeafLink, path2str, compTag2str, tag2str};
-use crate::threads::add_bead::index_bead;
+use crate::path_explorer::*;
 use crate::time_indexing::time_index::get_latest_time_indexed_links;
-use crate::time_indexing::timepath_utils::get_time_path;
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

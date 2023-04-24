@@ -1,11 +1,11 @@
-use std::array::TryFromSliceError;
+//use std::array::TryFromSliceError;
 use chrono::{DateTime, Datelike, NaiveDateTime, Timelike, Utc, NaiveDate};
 use hdk::{
   hash_path::path::{Component, TypedPath},
   prelude::*,
 };
 use zome_utils::zome_error;
-use crate::path_explorer::path2str;
+use crate::path_explorer::*;
 
 ///
 pub fn get_component_from_link_tag(link: &Link) -> Result<Component, SerializedBytesError> {
@@ -79,7 +79,7 @@ pub fn get_time_path(tp: TypedPath, time: Timestamp) -> ExternResult<TypedPath> 
 
 
 pub fn timepath2str(tp: &TypedPath) -> String {
-  return path2str(&trim_to_timepath(&tp.path).unwrap()).unwrap();
+  return path2anchor(&trim_to_timepath(&tp.path).unwrap()).unwrap();
 }
 
 
@@ -121,7 +121,7 @@ pub fn trim_to_timepath(path: &Path) -> ExternResult<Path> {
 
 ///
 pub fn convert_timepath_to_timestamp(path: Path) -> ExternResult<Timestamp> {
-  debug!("convert_timepath_to_timestamp() {}", path2str(&path).unwrap_or("<failed>".to_string()));
+  debug!("convert_timepath_to_timestamp() {}", path2anchor(&path).unwrap_or("<failed>".to_string()));
   let time_comps: Vec<_> = trim_to_timepath(&path)?.into();
 
   let len = time_comps.len();

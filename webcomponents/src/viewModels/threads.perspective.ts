@@ -4,16 +4,21 @@ import {Dictionary} from "@ddd-qc/lit-happ";
 
 /** */
 export interface ThreadsPerspective {
-  /** TopicHash -> Topic Title */
-  semanticTopics: Dictionary<string>
-  /** pp Hash -> PP */
+  /** Store of all ST: ah -> Topic Title */
+  allSemanticTopics: Dictionary<string>
+  /** Store of all PPm: ah -> PP */
   allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
-  /** TopicHash -> ProtocolAh */
+  /** Store threads for queried topics: TopicHash -> ProtocolAh */
   threadsByTopic: Dictionary<ActionHashB64[]>,
   /** TopicHash -> BeadLinks */
   latestBeadsByThread: Dictionary<BeadLink[]>,
   /** Ah -> TextMessageTuple */
   textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]>,
+
+
+
+  /** dnaHash -> Cell name */
+  dnaNames: Dictionary<string>
 }
 
 

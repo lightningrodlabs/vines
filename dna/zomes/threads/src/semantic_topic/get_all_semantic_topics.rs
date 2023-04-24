@@ -10,7 +10,7 @@ use crate::utils::get_threads_zome_index;
 /// Return ActionHash, EntryHash and title of every known SemanticTopic entry.
 #[hdk_extern]
 pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
-  let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticPrefixPath)?;
+  let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticTopicPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
   debug!("get_all_semantic_topics() {:?}", root_anchor);
   let leaf_anchors = root_anchor.probe_leaf_anchors()?;
@@ -61,6 +61,6 @@ pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(ActionH
     return zome_error!("Cannot search with a prefix less than 3 characters");
   }
   let tp = determine_topic_anchor(title_filter.clone())?;
-  let semantic_topics = get_semantic_topics(path2str(&tp.path).unwrap())?;
+  let semantic_topics = get_semantic_topics(path2anchor(&tp.path).unwrap())?;
   Ok(semantic_topics)
 }

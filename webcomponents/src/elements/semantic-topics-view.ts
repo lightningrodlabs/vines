@@ -129,7 +129,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     //   return html`Loading...`;
     // }
 
-    let treeItems = Object.entries(this.perspective.semanticTopics).map(([hash, title]) => {
+    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([hash, title]) => {
       const topicThreads = this.perspective.threadsByTopic[hash];
       let threads = [html``];
       if (topicThreads) {

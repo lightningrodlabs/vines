@@ -12,7 +12,7 @@ pub fn create_semantic_topic(semanticTopic: SemanticTopic) -> ExternResult<Actio
   let tp = determine_topic_anchor(semanticTopic.title.clone())?;
   tp.ensure()?;
   let ph = tp.path_entry_hash()?;
-  debug!("create_semantic_topic() path:  '{}' {} | {}", path2str(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
+  debug!("create_semantic_topic() path:  '{}' {} | {}", path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
   create_link(
     ph,
     ah.clone(),
