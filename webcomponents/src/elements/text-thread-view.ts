@@ -101,7 +101,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     //   return html `<div>Loading...</div>`;
     // }
     if (this.threadHash == "") {
-      return html `<div>No thread selected</div>`;
+      return html `<div>No thread selected FIXME</div>`;
     }
     const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
     if (!pp) {

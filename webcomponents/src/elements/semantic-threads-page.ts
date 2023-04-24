@@ -129,7 +129,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
 
 
-    let rightSide = html`<div>No threads found</div>`
+    let rightSide = html`<h1 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">No threads selected</h1>`
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash];
       const topic = this.threadsPerspective.semanticTopics[thread.topicHash];
@@ -143,7 +143,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           </ui5-bar>
           <text-thread-view .threadHash=${this._selectedThreadHash}
                             style=""></text-thread-view>
-          <ui5-bar design="FloatingFooter" style="margin:10px">
+          <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
               <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
                          show-clear-icon
@@ -259,7 +259,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         #rightSide {
           width: 100%;
           height: 100vh;
-          background: mediumpurple;
+          background: #eaeaea;
           display: flex;
           flex-direction: column;
         }

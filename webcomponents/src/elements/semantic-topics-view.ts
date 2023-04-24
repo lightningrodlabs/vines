@@ -144,9 +144,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       }
       return html`<ui5-tree-item-custom id="${hash}" ?has-children="${!!topicThreads}" 
                                         expanded="${!!topicThreads}" show-toggle-button level="1">
-          <span slot="content">
-              ${title}                  
-              <ui5-button icon="add" tooltip="Create Topic" design="Transparent" @click=${(e) => {
+          <span slot="content" style="display:flex;">
+              <span style="margin-top:8px">${title}</span>                 
+              <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${(e) => {
                 e.stopPropagation(); //console.log("topic clicked:", title);
                 this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: hash, bubbles: true, composed: true}));
               }} ></ui5-button>
