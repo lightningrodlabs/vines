@@ -178,10 +178,10 @@ export class ThreadsApp extends HappElement {
                 this.threadsDvm.dumpLogs();
             }}">dumpLogs</button> 
                     -->
-            <threads-devtest-page id="test" ?hide=${this._canShowDebug}
+            <threads-devtest-page id="test" style="display:${this._canShowDebug? "block" : "none" };"
                                   @debug=${(e) => this._canShowDebug = e.detail}>
             </threads-devtest-page> 
-            <semantic-threads-page ?hide=${!this._canShowDebug}
+            <semantic-threads-page style="display:${!this._canShowDebug? "block" : "none" };"
                                    @debug=${(e) => this._canShowDebug = e.detail}>
             </semantic-threads-page>
         </cell-context>

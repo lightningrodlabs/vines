@@ -82,6 +82,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** */
   async printRootAnchors() {
     const rootAnchors = await this._dvm.threadsZvm.zomeProxy.getAllRootAnchors();
     console.log({rootAnchors})
@@ -93,9 +94,11 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
+
+  /** */
   async printChildren(root_ta: TypedAnchor) {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
-    const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_ta);
+    const children = await this._dvm.threadsZvm.zomeProxy.getTypedChildren(root_ta);
     //console.log({children})
     if (children.length == 0) {
       const itemLinks = await this._dvm.threadsZvm.zomeProxy.getAllItems(root_ta.anchor);

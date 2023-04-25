@@ -115,7 +115,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
       busyIndicator.active = true; // block the tree from the user
 
-      const tas = await this._zvm.getAllSubAnchors(rootItem.getAttribute("anchor"));
+      const tas = await this._zvm.zomeProxy.getAllChildren(rootItem.getAttribute("anchor"));
       console.log({tas})
 
       /** Handle LeafAnchor */

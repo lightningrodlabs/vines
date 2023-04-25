@@ -175,12 +175,12 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_pp', ah);
   }
 
-  async getAllRootAnchors(): Promise<TypedAnchor[]> {
-    return this.call('get_all_root_anchors', null);
+  async getAllChildren(parentAnchor: string): Promise<TypedAnchor[]> {
+    return this.call('get_all_children', parentAnchor);
   }
 
-  async getAnchorChildren(parentTa: TypedAnchor): Promise<TypedAnchor[]> {
-    return this.call('get_anchor_children', parentTa);
+  async getAllRootAnchors(): Promise<TypedAnchor[]> {
+    return this.call('get_all_root_anchors', null);
   }
 
   async getItems(input: GetItemsInput): Promise<ItemLink[]> {
@@ -197,6 +197,10 @@ export class ThreadsProxy extends ZomeProxy {
 
   async getLeafAnchors(ta: TypedAnchor): Promise<TypedAnchor[]> {
     return this.call('get_leaf_anchors', ta);
+  }
+
+  async getTypedChildren(parentTa: TypedAnchor): Promise<TypedAnchor[]> {
+    return this.call('get_typed_children', parentTa);
   }
 
   async createSemanticTopic(semanticTopic: SemanticTopic): Promise<ActionHash> {

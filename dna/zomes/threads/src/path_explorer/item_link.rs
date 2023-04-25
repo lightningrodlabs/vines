@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::hash_type;
-use crate::path_explorer::dna_zomes;
+use crate::path_explorer::{all_dna_link_types};
 
 /// Struct holding info about the link between a LeafAnchor and an Item.
 /// A LeafAnchor is an Anchor wit no sub anchors.
@@ -42,14 +42,17 @@ impl ItemLink {
 }
 
 
-
 ///
 pub fn get_itemlinks(path: Path, link_filter: impl LinkTypeFilterExt, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
-  let links = get_links(
+  let mut links = get_links(
     path.path_entry_hash()?,
     link_filter,
     link_tag,
   )?;
+  /// Only need one of each hash.
+  links.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
+  links.dedup_by(|a, b| a.tag.eq(&b.tag));
+  /// Convert to ItemLinks
   let res = links.into_iter().map(|link| ItemLink::from(link)).collect();
   Ok(res)
 }
@@ -57,41 +60,6 @@ pub fn get_itemlinks(path: Path, link_filter: impl LinkTypeFilterExt, link_tag: 
 
 ///
 pub fn get_all_itemlinks(path: Path, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
-  let all_zomes = dna_zomes();
-  let res = get_itemlinks(
-    path,
-    LinkTypeFilter::Dependencies(all_zomes),
-    link_tag.clone())
-    ?;
+  let res = get_itemlinks(path, all_dna_link_types(), link_tag.clone())?;
   Ok(res)
 }
-
-
-// /// Return links from a LeafAnchor for all link types
-// pub(crate) fn collect_any(hash: AnyDhtHash, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
-//   let zome_link_types = zome_info()?.zome_types.links;
-//   let mut res = Vec::new();
-//   for szt in zome_link_types.0 {
-//     for link_type in szt.1 {
-//       let links = get_links(
-//         hash.clone(),
-//         LinkTypeFilter::single_type(szt.0, link_type),
-//         link_tag.clone(),
-//       )?;
-//       for link in links {
-//         debug!("get_all_leaf_links() LeafLink: {:?} ; tag = {:?}", link.target, link.tag);
-//         res.push(ItemLink::from(link))
-//       }
-//     }
-//   }
-//   Ok(res)
-// }
-
-
-// /// Return links from a leaf Anchor for all link types
-// pub(crate) fn get_any_itemlinks_from_path(path: Path, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
-//   debug!("get_all_leaf_links_from_path() Leaf-anchor: {:?}", path);
-//   let res = collect_any(AnyDhtHash::from(path.path_entry_hash()?), link_tag)?;
-//   Ok(res)
-// }
-
