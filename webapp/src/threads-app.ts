@@ -39,6 +39,8 @@ export class ThreadsApp extends HappElement {
   @state() private _canShowBuildView = false;
 
 
+  @state() private _canShowDebug = false;
+
 
   /** */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, appId?: InstalledAppId) {
@@ -175,8 +177,13 @@ export class ThreadsApp extends HappElement {
                 //el.requestUpdate();
                 this.threadsDvm.dumpLogs();
             }}">dumpLogs</button> 
-            <threads-devtest-page id="test"></threads-devtest-page> -->
-            <semantic-threads-page id="test"></semantic-threads-page>
+                    -->
+            <threads-devtest-page id="test" ?hide=${this._canShowDebug}
+                                  @debug=${(e) => this._canShowDebug = e.detail}>
+            </threads-devtest-page> 
+            <semantic-threads-page ?hide=${!this._canShowDebug}
+                                   @debug=${(e) => this._canShowDebug = e.detail}>
+            </semantic-threads-page>
         </cell-context>
     `;
   }

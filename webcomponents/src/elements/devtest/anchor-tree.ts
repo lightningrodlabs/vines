@@ -126,18 +126,18 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           itemHashs.push(item.id);
         }
 
-        const leafLinks = await this._zvm.zomeProxy.getAllLeafLinksFromAnchor(rootItem.getAttribute("anchor"));
-        console.log({leafLinks})
-        for (const leafLink of leafLinks) {
-          const tag = new TextDecoder().decode(new Uint8Array(leafLink.tag));
-          const hash = encodeHashToBase64(new Uint8Array(leafLink.target));
+        const itemLinks = await this._zvm.zomeProxy.getAllItems(rootItem.getAttribute("anchor"));
+        console.log({itemLinks})
+        for (const itemLink of itemLinks) {
+          const tag = new TextDecoder().decode(new Uint8Array(itemLink.tag));
+          const hash = encodeHashToBase64(new Uint8Array(itemLink.target));
 
           if (itemHashs.includes(hash)) {
             continue;
           }
           var newItem = document.createElement("ui5-tree-item") as TreeItem;
           newItem.text = hash;
-          newItem.additionalText = tag? linkKeys[leafLink.index] + " | " + tag : linkKeys[leafLink.index];
+          newItem.additionalText = tag? linkKeys[itemLink.linkIndex] + " | " + tag : linkKeys[itemLink.linkIndex];
           newItem.setAttribute("anchor", rootItem.anchor);
           newItem.id = hash;
           newItem.level = rootItem.level + 1;

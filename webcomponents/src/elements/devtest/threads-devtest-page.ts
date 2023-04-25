@@ -95,19 +95,19 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   async printChildren(root_ta: TypedAnchor) {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
-    const children = await this._dvm.threadsZvm.zomeProxy.getAllSubAnchors(root_ta.anchor);
+    const children = await this._dvm.threadsZvm.zomeProxy.getAnchorChildren(root_ta);
     //console.log({children})
     if (children.length == 0) {
-      const links = await this._dvm.threadsZvm.zomeProxy.getAllLeafLinksFromAnchor(root_ta.anchor);
-      if (links.length > 0) {
-        const tag = new TextDecoder().decode(new Uint8Array(links[0].tag));
+      const itemLinks = await this._dvm.threadsZvm.zomeProxy.getAllItems(root_ta.anchor);
+      if (itemLinks.length > 0) {
+        const tag = new TextDecoder().decode(new Uint8Array(itemLinks[0].tag));
         const leaf = root_ta.anchor + tag
         console.log(`  - Anchor: LinkType="${linkKeys[root_ta.linkIndex]}" path="${leaf}"`);
       }
-      for (const link of links) {
-        const tag = new TextDecoder().decode(new Uint8Array(link.tag));
-        const hash = encodeHashToBase64(new Uint8Array(link.target));
-        console.log(`    - LeafLink: LinkType="${linkKeys[link.index]}" tag="${tag}" hash="${hash}"`);
+      for (const itemLink of itemLinks) {
+        const tag = new TextDecoder().decode(new Uint8Array(itemLink.tag));
+        const hash = encodeHashToBase64(new Uint8Array(itemLink.target));
+        console.log(`    - LeafLink: LinkType="${linkKeys[itemLink.linkIndex]}" tag="${tag}" hash="${hash}"`);
       }
     } else {
       for (const ta of children) {
@@ -172,6 +172,10 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     /** Render all */
     return html`
         <div>
+            <button @click="${() => {
+                this.dispatchEvent(new CustomEvent('debug', {detail: false, bubbles: true, composed: true}));
+            }}">exit
+            </button>
             <button @click="${() => {
                 console.log("refresh");
                 //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 

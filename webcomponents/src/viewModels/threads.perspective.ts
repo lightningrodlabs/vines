@@ -15,10 +15,8 @@ export interface ThreadsPerspective {
   /** Ah -> TextMessageTuple */
   textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]>,
 
-
-
-  /** dnaHash -> Cell name */
-  dnaNames: Dictionary<string>
+  // /** dnaHash -> Cell name */
+  // dnaNames: Dictionary<string>
 }
 
 

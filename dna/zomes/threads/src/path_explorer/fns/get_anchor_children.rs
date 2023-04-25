@@ -13,7 +13,7 @@ pub fn get_anchor_children(parent_ta: TypedAnchor) -> ExternResult<Vec<TypedAnch
   Ok(children_tas)
 }
 
-//
+
 // /// Return any sub paths of a Path
 // pub fn get_all_sub_paths(root_path: Path) -> ExternResult<Vec<TypedPath>> {
 //   let zome_link_types = zome_info()?.zome_types.links;

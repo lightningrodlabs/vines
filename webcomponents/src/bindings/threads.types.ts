@@ -126,34 +126,6 @@ ValidationStatus,
 ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
-/** A Typed Anchor is an Anchor with LinkType associated with it. */
-export interface GetLeafsInput {
-  typedAnchor: TypedAnchor
-  linkTag?: number[]
-}
-
-/**
- * Struct holding info about the link between a LeafAnchor and an AnchorLeaf.
- * A LeafAnchor is an Anchor wit no sub anchors.
- * An AnchorLeaf is the target data linked from a LeafAnchor.
- */
-export interface LeafLink {
-  index: number
-  target: number[]
-  tag: number[]
-}
-
-/**
- * Struct for holding an easily exportable typed Anchor.
- * An Anchor is a Holochain Path made exclusively of human readable strings.
- * A Typed Anchor is an Anchor with LinkType associated with it.
- */
-export interface TypedAnchor {
-  anchor: string
-  zomeIndex: number
-  linkIndex: number
-}
-
 export interface GetLatestBeadsInput {
   ppAh: ActionHash
   startTime?: Timestamp
@@ -167,12 +139,45 @@ export interface BeadLink {
 
 /**  */
 export interface GetProtocolsInput {
-  dnaHash: DnaHashB64
-  entryName: string
+  dnaHash: DnaHash
+  entryTypeName: string
+}
+
+export type MyLinkFilter = [number, number[]][];
+
+/**  */
+export interface GetItemsInput {
+  anchor: string
+  linkFilter: MyLinkFilter
+  linkTag?: number[]
+}
+
+/**
+ * Struct holding info about the link between a LeafAnchor and an Item.
+ * A LeafAnchor is an Anchor wit no sub anchors.
+ * An Item is the object linked from a LeafAnchor.
+ */
+export interface ItemLink {
+  target: AnyDhtHash
+  zomeIndex: number
+  linkIndex: number
+  tag: number[]
+}
+
+/**
+ * Struct for holding an easily exportable typed Anchor.
+ * An Anchor is a Holochain Path made exclusively of human readable strings.
+ * A Typed Anchor is an Anchor with LinkType associated with it.
+ */
+export interface TypedAnchor {
+  anchor: string
+  /** Flattened ScopedLinkType */
+  zomeIndex: number
+  linkIndex: number
 }
 
 export interface Bead {
-  protocolAh: ActionHash
+  forProtocolAh: ActionHash
   maybeReplyOfAh?: ActionHash
 }
 
@@ -188,7 +193,7 @@ export const ROOT_ANCHOR_SEMANTIC_TOPICS = "all_semantic_topics";
 
 export const ROOT_ANCHOR_THREADS = "all_threads";
 
-export const COMPONENT_SEMANTIC_TOPIC_THREADS = "semantic_topic";
+export const SEMANTIC_TOPIC_TYPE_NAME = "semantic_topic";
 
 export const GLOBAL_TIME_INDEX = "global_time";
 
@@ -209,13 +214,13 @@ export type ThreadsEntry =
 
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {BeadTimePath: null} | {SemanticPrefixPath: null} | {ProtocolsPrefixPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {BeadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
 	BeadTimePath = 'BeadTimePath',
-	SemanticPrefixPath = 'SemanticPrefixPath',
-	ProtocolsPrefixPath = 'ProtocolsPrefixPath',
+	SemanticTopicPath = 'SemanticTopicPath',
+	SubjectPath = 'SubjectPath',
 	Topics = 'Topics',
 	Threads = 'Threads',
 	Beads = 'Beads',

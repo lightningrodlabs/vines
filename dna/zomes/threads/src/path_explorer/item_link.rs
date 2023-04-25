@@ -8,9 +8,10 @@ use crate::path_explorer::dna_zomes;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemLink {
-  pub link_type: ScopedLinkType,
   pub target: AnyDhtHash, //AnyLinkableHash TODO: replace once AnyLinkableHash is available in JS
-  pub tag: LinkTag,
+  pub zome_index: u8, //pub link_type: ScopedLinkType,
+  pub link_index: u8,
+  pub tag: Vec<u8> // LinkTag,
 }
 
 
@@ -32,9 +33,10 @@ fn linkable2dht(hash: AnyLinkableHash) -> AnyDhtHash {
 impl ItemLink {
   pub fn from(link: Link) -> ItemLink {
     ItemLink {
-      link_type: ScopedLinkType { zome_index: link.zome_index, zome_type: link.link_type },
+      zome_index: link.zome_index.0,
+      link_index: link.link_type.0,
       target: linkable2dht(link.target),
-      tag: link.tag,
+      tag: link.tag.0,
     }
   }
 }

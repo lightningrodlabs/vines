@@ -2,7 +2,7 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
-import {LeafLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
+import {ItemLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
 import {AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64, ZomeName} from "@holochain/client";
 import {ScopedZomeTypes} from "@ddd-qc/cell-proxy/dist/types";
 
@@ -35,7 +35,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   @property() rootHash: AnyDhtHashB64;
 
-  @state() private _rootLinks: LeafLink[];
+  @state() private _rootLinks: ItemLink[];
 
 
   @state() private _zomes: ZomeName[];
@@ -43,10 +43,11 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @state() private _linkTypes: ScopedZomeTypes;
   @state() private _linkTypeFilter: number;
 
+
   /** */
   async scanRoot() {
     console.log("<link-list>.scanRoot()", this.rootHash);
-    this._rootLinks = await this._zvm.zomeProxy.getAllLeafLinksFromHash(decodeHashFromBase64(this.rootHash));
+    this._rootLinks = await this._zvm.zomeProxy.getAllItemsFromB64(this.rootHash);
   }
 
 
@@ -79,12 +80,12 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`No root set`
     }
     let children = this._rootLinks.map((ll) => {
-        if (this._linkTypeFilter && ll.index != this._linkTypeFilter) {
+        if (this._linkTypeFilter && ll.linkIndex != this._linkTypeFilter) {
           return html``;
         }
         const tag = new TextDecoder().decode(new Uint8Array(ll.tag));
         const hash = encodeHashToBase64(new Uint8Array(ll.target));
-        const additionalText = tag? linkKeys[ll.index] + " | " + tag : linkKeys[ll.index];
+        const additionalText = tag? linkKeys[ll.linkIndex] + " | " + tag : linkKeys[ll.linkIndex];
         return html`<ui5-tree-item id="${hash}" text="${hash}" additional-text="${additionalText}"></ui5-tree-item>`
       });
     console.log({children})

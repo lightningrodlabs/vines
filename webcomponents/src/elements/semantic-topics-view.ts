@@ -2,7 +2,7 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {LeafLink, ROOT_ANCHOR_SEMANTIC_TOPICS} from "../bindings/threads.types";
+import {ItemLink, ROOT_ANCHOR_SEMANTIC_TOPICS} from "../bindings/threads.types";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import Tree from "@ui5/webcomponents/dist/Tree"
@@ -25,15 +25,15 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
   }
 
 
-  @state() private _leafLinks: LeafLink[];
-
-
-
-  /** */
-  async scanRoot() {
-    console.log("<semantic-topics-view>.scanRoot()");
-    this._leafLinks = await this._zvm.zomeProxy.getAllLeafLinksFromAnchor(ROOT_ANCHOR_SEMANTIC_TOPICS);
-  }
+  // @state() private _itemLinks: ItemLink[];
+  //
+  //
+  //
+  // /** */
+  // async scanRoot() {
+  //   console.log("<semantic-topics-view>.scanRoot()");
+  //   this._itemLinks = await this._zvm.zomeProxy.getLeafAnchors(ROOT_ANCHOR_SEMANTIC_TOPICS);
+  // }
 
 
   /** */
