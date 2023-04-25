@@ -3,7 +3,6 @@ use threads_integrity::*;
 use zome_utils::*;
 use crate::path_explorer::*;
 use crate::semantic_topic::determine_topic_anchor;
-use crate::utils::get_threads_zome_index;
 
 
 /// Walk semantic-topic AnchorTree
@@ -28,18 +27,13 @@ pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(ActionHash, EntryHash
 
 ///
 fn get_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(ActionHash, EntryHash, String)>>  {
-  let search_ta = TypedAnchor::new(
-    leaf_anchor.clone(),
-    get_threads_zome_index(),
-    ScopedLinkType::try_from(ThreadsLinkType::Topics)?.zome_type.0,
-  );
-  debug!("get_semantic_topics() leaf_anchor: '{}' | {:?}", leaf_anchor, search_ta);
-  let leaf_links = search_ta.probe_leafs(None)?;
-  debug!("get_semantic_topics() {} leaf_links found", leaf_links.len());
-  let semantic_topics = leaf_links
+  let path = Path::from(&leaf_anchor);
+  let itemlinks = get_itemlinks(path, ThreadsLinkType::Topics.try_into_filter()?, None)?;
+  debug!("get_semantic_topics() {} leaf_links found", itemlinks.len());
+  let semantic_topics = itemlinks
     .into_iter()
     .map(|ll| {
-      let ah = ActionHash::from_raw_39(ll.target).unwrap();
+      let ah = ll.target.into_action_hash().unwrap();
       let (eh, typed) = get_typed_from_ah::<SemanticTopic>(ah.clone())
         .unwrap(); // FIXME
       // let Ok((eh, _typed)) = get_typed_from_ah::<SemanticTopic>(ah.clone())

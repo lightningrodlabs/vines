@@ -9,27 +9,48 @@ use crate::path_explorer::*;
 #[serde(rename_all = "camelCase")]
 pub struct TypedAnchor {
   pub anchor: String,
+  /// Flattened ScopedLinkType
   pub zome_index: u8,
   pub link_index: u8,
 }
 
 
+
+/// From TypedPath
+impl TryFrom<&TypedPath> for TypedAnchor {
+  type Error = SerializedBytesError;
+  fn try_from(tp: &TypedPath) -> Result<Self, Self::Error> {
+    Ok(TypedAnchor {
+      zome_index: tp.link_type.zome_index.0,
+      link_index: tp.link_type.zome_type.0,
+      anchor: path2anchor(&tp.path)?,
+    })
+  }
+}
+
+
 ///
 impl TypedAnchor {
+  ///
   pub fn new(anchor: String, zome_index: u8, link_index: u8) -> Self {
     TypedAnchor {zome_index, link_index, anchor}
   }
 
-  // pub fn from(anchor: String, link_index: u8) -> Self {
-  //   TypedAnchor {zome_index: zome_info().unwrap().id.0, link_index, anchor}
-  // }
 
-  ///
+  /// into TypedPath
   pub fn as_path(&self) -> TypedPath {
     TypedPath {
       link_type: ScopedZomeType {zome_index: ZomeIndex::from(self.zome_index), zome_type: LinkType::from(self.link_index)},
       path: Path::from(self.anchor.clone()),
     }
+  }
+
+
+  ///
+  pub fn path_hash(&self)-> EntryHash {
+    return Path::from(self.anchor.clone())
+      .path_entry_hash()
+      .expect("Anchor should convert to entry hash");
   }
 
 
@@ -62,29 +83,17 @@ impl TypedAnchor {
   }
 
 
-  /// Return all AnchorLeafs of type from this Anchor
-  pub fn probe_leafs(&self, link_tag: Option<LinkTag>) -> ExternResult<Vec<LeafLink>> {
+  /// Return all Items hanging off this Anchor according to tag
+  pub fn get_all_items(&self, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
     let tp = self.as_path();
-    let links = get_links(
-    tp.path_entry_hash()?,
-    LinkTypeFilter::single_type(tp.link_type.zome_index, tp.link_type.zome_type),
-    link_tag,
-    )?;
-    let res = convert_links_to_leaf_links(links)?;
-    Ok(res)
+    return get_all_itemlinks(tp.path, link_tag);
   }
-}
 
 
-///
-impl TryFrom<&TypedPath> for TypedAnchor {
-  type Error = SerializedBytesError;
-  fn try_from(tp: &TypedPath) -> Result<Self, Self::Error> {
-    Ok(TypedAnchor {
-      zome_index: tp.link_type.zome_index.0,
-      link_index: tp.link_type.zome_type.0,
-      anchor: path2anchor(&tp.path)?,
-    })
+  /// Return Items hanging off this Anchor according to filter and tag
+  pub fn get_items(&self, link_filter: impl LinkTypeFilterExt, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
+    let tp = self.as_path();
+    return get_itemlinks(tp.path, link_filter, link_tag);
   }
-}
 
+}

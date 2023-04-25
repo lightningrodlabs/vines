@@ -42,3 +42,11 @@ pub fn compTag2str(tag: &LinkTag) -> Result<String, SerializedBytesError> {
   let res = String::try_from(&comp)?;
   Ok(res)
 }
+
+
+/// Convert a Component stored in a LinkTag to a Component
+pub fn compTag2tag(tag: &LinkTag) -> Component {
+  let tag2 = tag.0.clone().split_off(2);
+  let comp: Component = tag2.clone().into();
+  comp
+}
