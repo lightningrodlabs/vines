@@ -17,7 +17,7 @@ use hdk::prelude::*;
 /// Only gives values for integrity zomes of current zome.
 /// Hopefully Holo will fix this and give all links types for all zomes in the dna.
 pub fn dna_link_types() -> Vec<(ZomeIndex, Vec<LinkType>)> {
-  debug!("dna_link_types() {:?}", dna_info().unwrap().zome_names);
+  //debug!("dna_link_types() {:?}", dna_info().unwrap().zome_names);
   return zome_info()
     .expect("zome_info() should never fail")
     .zome_types

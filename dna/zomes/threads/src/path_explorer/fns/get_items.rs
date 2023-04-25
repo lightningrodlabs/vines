@@ -51,13 +51,28 @@ pub fn get_all_items(leaf_anchor: String) -> ExternResult<Vec<ItemLink>>  {
   Ok(lls)
 }
 
-
 /// Return all itemLinks from a B64 hash
 #[hdk_extern]
 pub fn get_all_items_from_b64(b64: AnyDhtHashB64) -> ExternResult<Vec<ItemLink>>  {
-  let hash: AnyDhtHash = b64.into();
-  let anchor = hash2anchor(hash);
-  let lls = get_all_items(anchor)?;
-  Ok(lls)
+  let hash: AnyDhtHash = b64.clone().into();
+  let mut links = get_links(hash, all_dna_link_types(), None)?;
+  debug!("get_all_items_from_b64() {} ; found {}", b64, links.len());
+  /// Only need one of each hash.
+  links.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
+  links.dedup_by(|a, b| a.tag.eq(&b.tag));
+  /// Convert to ItemLinks
+  let res = links.into_iter().map(|link| ItemLink::from(link)).collect();
+  Ok(res)
 }
+
+
+// /// Return all itemLinks from a B64 hash
+// #[hdk_extern]
+// pub fn get_all_items_from_b64(b64: AnyDhtHashB64) -> ExternResult<Vec<ItemLink>>  {
+//   let hash: AnyDhtHash = b64.into();
+//   let anchor = hash2anchor(hash);
+//   debug!("get_all_items_from_b64() {} -> {}", b64, anchor);
+//   let lls = get_all_items(anchor)?;
+//   Ok(lls)
+// }
 

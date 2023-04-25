@@ -13,6 +13,7 @@ use threads_integrity::*;
 /// Get a SemanticTopic
 #[hdk_extern]
 pub fn get_topic(ah: ActionHash) -> ExternResult<SemanticTopic> {
+  debug!("get_topic() {:?}", ah);
   let typed_pair = get_typed_from_ah(ah)?;
   Ok(typed_pair.1)
 }

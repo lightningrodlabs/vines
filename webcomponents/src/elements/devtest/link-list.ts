@@ -10,6 +10,7 @@ import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {utf32Decode} from "./threads-devtest-page";
 
 
 
@@ -35,7 +36,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   @property() rootHash: AnyDhtHashB64;
 
-  @state() private _rootLinks: ItemLink[];
+  @state() private _itemLinks: ItemLink[];
 
 
   @state() private _zomes: ZomeName[];
@@ -47,7 +48,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   async scanRoot() {
     console.log("<link-list>.scanRoot()", this.rootHash);
-    this._rootLinks = await this._zvm.zomeProxy.getAllItemsFromB64(this.rootHash);
+    this._itemLinks = await this._zvm.zomeProxy.getAllItemsFromB64(this.rootHash);
   }
 
 
@@ -76,14 +77,15 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   renderLinkTree(): TemplateResult<1> {
     const linkKeys = Object.keys(ThreadsLinkTypeType);
-    if (!this._rootLinks) {
+    if (!this._itemLinks) {
       return html`No root set`
     }
-    let children = this._rootLinks.map((ll) => {
+    let children = this._itemLinks.map((ll) => {
         if (this._linkTypeFilter && ll.linkIndex != this._linkTypeFilter) {
           return html``;
         }
-        const tag = new TextDecoder().decode(new Uint8Array(ll.tag));
+        //const tag = new TextDecoder().decode(new Uint8Array(ll.tag));
+        const tag = utf32Decode(new Uint8Array(ll.tag.slice(2)));
         const hash = encodeHashToBase64(new Uint8Array(ll.target));
         const additionalText = tag? linkKeys[ll.linkIndex] + " | " + tag : linkKeys[ll.linkIndex];
         return html`<ui5-tree-item id="${hash}" text="${hash}" additional-text="${additionalText}"></ui5-tree-item>`
@@ -92,87 +94,11 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const header = "Root: " + this.rootHash;
     return html`
       <ui5-busy-indicator id="busy" style="width: 100%">
-        <ui5-tree id="linkTree" mode="None" header-text="${header}" no-data-text="No links found"
-                  @item-toggle="${this.toggleRootTreeItem}"
-        >
+        <ui5-tree id="linkTree" mode="None" header-text="${header}" no-data-text="No links found">
           ${children}
         </ui5-tree>
       </ui5-busy-indicator>
     `
-  }
-
-
-  /** */
-  async toggleRootTreeItem(event:any) {
-    // const busyIndicator = this.shadowRoot.getElementById("busy") as any; // Tree
-    // let rootItem = event.detail.item /* as TreeItem */; // get the node that is toggled
-    // console.log("toggleRootTreeItem()", rootItem.id, rootItem.getAttribute("anchor"))
-    //
-    // /* Handle AnchorBranch */
-    // if (rootItem.id.length > 8 && rootItem.id.substring(0, 8) === "anchor__") {
-    //   if (rootItem.expanded) {
-    //     return;
-    //   }
-    //   event.preventDefault(); // do not let the toggle button switch yet
-    //
-    //   let itemTexts = [];
-    //   for (const item of rootItem.items) {
-    //     itemTexts.push(item.text);
-    //   }
-    //   busyIndicator.active = true; // block the tree from the user
-    //
-    //   const tas = await this._zvm.getAllSubAnchors(rootItem.getAttribute("anchor"));
-    //   console.log({tas})
-    //
-    //   /** Handle LeafAnchor */
-    //   if (tas.length == 0) {
-    //     const linkKeys = Object.keys(ThreadsLinkTypeType);
-    //     let itemHashs = [];
-    //     for (const item of rootItem.items) {
-    //       itemHashs.push(item.id);
-    //     }
-    //
-    //     const leafLinks = await this._zvm.zomeProxy.getAllLeafLinksFromAnchor(rootItem.getAttribute("anchor"));
-    //
-    //     console.log({leafLinks})
-    //     for (const leafLink of leafLinks) {
-    //       const tag = new TextDecoder().decode(new Uint8Array(leafLink.tag));
-    //       const hash = encodeHashToBase64(new Uint8Array(leafLink.target));
-    //
-    //       if (itemHashs.includes(hash)) {
-    //         continue;
-    //       }
-    //       var newItem = document.createElement("ui5-tree-item") as any; // TreeItem
-    //       newItem.text = hash;
-    //       newItem.additionalText = tag? linkKeys[leafLink.index] + " | " + tag : linkKeys[leafLink.index];
-    //       newItem.setAttribute("anchor", rootItem.anchor);
-    //       newItem.id = hash;
-    //       newItem.level = rootItem.level + 1;
-    //       rootItem.appendChild(newItem); // add the newly fetched node to the tree
-    //     }
-    //   }
-    //
-    //   /** Handle BranchAnchor */
-    //   for (const ta of tas) {
-    //     const leafComponent = anchorLeaf(ta.anchor);
-    //     /* Skip if item already exists */
-    //     if (itemTexts.includes(leafComponent)) {
-    //       continue;
-    //     }
-    //     let newItem = document.createElement("ui5-tree-item") as any; // TreeItem
-    //     newItem.text = leafComponent;
-    //     newItem.additionalText = ta.anchor;
-    //     newItem.setAttribute("anchor", ta.anchor);
-    //     newItem.id = "anchor__" + ta.anchor;
-    //     newItem.hasChildren = true;
-    //     newItem.level = rootItem.level + 1;
-    //     rootItem.appendChild(newItem); // add the newly fetched node to the tree
-    //   }
-    //
-    //   rootItem.toggle(); // now manually switch the toggle button
-    //   busyIndicator.active = false; // unblock the tree
-    //
-    // }
   }
 
 

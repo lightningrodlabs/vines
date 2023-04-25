@@ -4,7 +4,7 @@ use hdk::{
 use threads_integrity::*;
 use crate::beads::BeadLink;
 use crate::path_explorer::*;
-use crate::time_indexing::time_index::get_latest_time_indexed_links;
+use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

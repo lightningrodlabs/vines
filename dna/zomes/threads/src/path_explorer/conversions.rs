@@ -37,6 +37,9 @@ pub fn path2anchor(path: &Path) -> Result<String, SerializedBytesError> {
 
 /// Convert a Component stored in a LinkTag to a String
 pub fn compTag2str(tag: &LinkTag) -> Result<String, SerializedBytesError> {
+  if tag.0.len() <= 2 {
+    return Err(SerializedBytesError::Deserialize("LinkTag not a Component".to_string()));
+  }
   let vec = tag.0[2..].to_vec();
   let comp = Component::from(vec);
   let res = String::try_from(&comp)?;

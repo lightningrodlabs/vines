@@ -14,7 +14,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
 /** */
-function utf32Decode(bytes: Uint8Array) {
+export function utf32Decode(bytes: Uint8Array) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let result = '';
 
@@ -221,8 +221,9 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <!-- Show Thread -->
             <div style="background: #fac8c8">
-                <!-- <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list> -->
-                <text-thread-view id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-thread-view>
+                
+                <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list> 
+                    <!-- <text-thread-view id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-thread-view>-->
 
                 <div>
                     <label for="threadInput">Add Message:</label>

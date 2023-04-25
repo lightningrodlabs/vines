@@ -7,10 +7,17 @@ use hdk::prelude::*;
 pub fn get_all_children(parent_anchor: String) -> ExternResult<Vec<TypedAnchor>> {
   let parent_path = Path::from(parent_anchor.clone());
   let children = get_any_children(parent_path, None)?;
-  let child_anchors = children.into_iter().map(|link| {
-    let comp_str = compTag2str(&link.tag).unwrap();
+  debug!("get_all_children({}) found {}", parent_anchor, children.len());
+  let mut child_anchors = Vec::new();
+  for link in children.into_iter() {
+    let Ok(comp_str) = compTag2str(&link.tag)
+      else {
+        debug!("get_all_children() compTag2str() failed for {:?}", link.tag.0);
+        continue;
+      };
     let anchor = format!("{}{}{}", parent_anchor.clone(), DELIMITER, comp_str);
-    return TypedAnchor::new(anchor, link.zome_index.0, link.link_type.0);
-  }).collect();
+    let ta = TypedAnchor::new(anchor, link.zome_index.0, link.link_type.0);
+    child_anchors.push(ta);
+  };
   Ok(child_anchors)
 }

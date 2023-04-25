@@ -12,11 +12,11 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
 /** */
-function anchorLeaf(anchor: String): string {
+function getLeafComponent(anchor: String): string {
   const subs = anchor.split(".");
-  //console.log("anchorLeaf()", anchor, subs)
-  if (subs.length < 2) {return subs[0]}
-  return subs[subs.length - 2];
+  console.log("leafComponent()", anchor, subs)
+  if (subs.length == 0) {return "<error>"}
+  return subs[subs.length - 1];
 }
 
 
@@ -87,7 +87,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async clickTree(event:any) {
-    console.log("<anchor-tree> click event:", event)
+    //console.log("<anchor-tree> click event:", event)
     console.log("<anchor-tree> click event:", event.target.id);
     /** Hacky way to know it's a hash */
     if (event.target.id.substring(0, 3) == "uhC") {
@@ -147,7 +147,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       /** Handle BranchAnchor */
       for (const ta of tas) {
-        const leafComponent = anchorLeaf(ta.anchor);
+        const leafComponent = getLeafComponent(ta.anchor);
         /* Skip if item already exists */
         if (itemTexts.includes(leafComponent)) {
           continue;
