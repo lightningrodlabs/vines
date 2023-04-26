@@ -26,7 +26,7 @@ pub fn index_bead(bead: Bead, ah: ActionHash, bead_type: &str) -> ExternResult<(
   /// Thread time-Index
   let pp_anchor: String = hash2anchor(bead.for_protocol_ah.clone());
   let thread_path = Path::from(pp_anchor.clone())
-    .typed(ThreadsLinkType::BeadTimePath)?;
+    .typed(ThreadsLinkType::ThreadTimePath)?;
   let ah_time = sys_time()?; // FIXME: use Action's timestamp
   let thread_leaf_tp = get_time_path(thread_path.clone(), ah_time)?;
   thread_leaf_tp.ensure()?;

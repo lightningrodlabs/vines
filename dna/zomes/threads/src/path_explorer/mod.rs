@@ -38,7 +38,7 @@ pub fn all_dna_link_types() -> LinkTypeFilter {
 }
 
 
-/// Return any sub paths of a Path
+/// Return all children of any link-type
 pub fn get_any_children(parent_path: Path, link_tag: Option<LinkTag>) -> ExternResult<Vec<Link>> {
   let mut children = get_links(
     parent_path.path_entry_hash()?,

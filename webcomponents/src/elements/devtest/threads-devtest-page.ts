@@ -39,6 +39,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _initialized = false;
   @state() private _selectedTopicHash: AnyDhtHashB64 = '';
   @state() private _selectedThreadHash: AnyDhtHashB64 = '';
+  @state() private _selectedHash: AnyDhtHashB64 = '';
 
   @property({ type: Boolean, attribute: 'debug' })
   debugMode: boolean = false;
@@ -236,8 +237,8 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
         <!-- Anchor trees -->
         <div style="display: flex; flex-direction: row;margin-top:25px;">
             <anchor-tree style="width: 50%; overflow: auto;" 
-                         @hashSelected="${(e) => {this._selectedTopicHash = e.detail}}"></anchor-tree>
-            <link-list .rootHash="${this._selectedTopicHash}"
+                         @hashSelected="${(e) => {this._selectedHash = e.detail}}"></anchor-tree>
+            <link-list .rootHash="${this._selectedHash}"
                        style="width: 50%; overflow: auto;"></link-list>
         </div>
     `;

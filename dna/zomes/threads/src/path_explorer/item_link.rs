@@ -9,9 +9,10 @@ use crate::path_explorer::{all_dna_link_types};
 #[serde(rename_all = "camelCase")]
 pub struct ItemLink {
   pub target: AnyDhtHash, //AnyLinkableHash TODO: replace once AnyLinkableHash is available in JS
-  pub zome_index: u8, //pub link_type: ScopedLinkType,
+  pub tag: Vec<u8>, // LinkTag ; TODO
+  /// Flattened ScopedLinkType
+  pub zome_index: u8,
   pub link_index: u8,
-  pub tag: Vec<u8> // LinkTag,
 }
 
 
@@ -49,9 +50,6 @@ pub fn get_itemlinks(path: Path, link_filter: impl LinkTypeFilterExt, link_tag: 
     link_filter,
     link_tag,
   )?;
-  /// Only need one of each hash.
-  links.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
-  links.dedup_by(|a, b| a.tag.eq(&b.tag));
   /// Convert to ItemLinks
   let res = links.into_iter().map(|link| ItemLink::from(link)).collect();
   Ok(res)

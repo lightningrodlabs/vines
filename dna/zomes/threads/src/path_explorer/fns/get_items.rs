@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::AnyDhtHashB64;
+use zome_utils::zome_error;
 use crate::path_explorer::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -42,21 +43,26 @@ pub fn get_items(input: GetItemsInput) -> ExternResult<Vec<ItemLink>> {
 }
 
 
-
 /// Return all itemLinks from a LeafAnchor
 #[hdk_extern]
 pub fn get_all_items(leaf_anchor: String) -> ExternResult<Vec<ItemLink>>  {
-  let path = Path::from(leaf_anchor);
+  if leaf_anchor.is_empty() {
+    return zome_error!("get_all_items() Failed. Input string is empty");
+  }
+  let path = Path::from(leaf_anchor.clone());
   let lls = get_all_itemlinks(path, None)?;
+  debug!("get_all_items() {} ; found {}", leaf_anchor, lls.len());
   Ok(lls)
 }
+
 
 /// Return all itemLinks from a B64 hash
 #[hdk_extern]
 pub fn get_all_items_from_b64(b64: AnyDhtHashB64) -> ExternResult<Vec<ItemLink>>  {
   let hash: AnyDhtHash = b64.clone().into();
+  debug!("get_all_items_from_b64() {} -> {}", b64, hash);
   let mut links = get_links(hash, all_dna_link_types(), None)?;
-  debug!("get_all_items_from_b64() {} ; found {}", b64, links.len());
+  debug!("get_all_items_from_b64() found {} children", links.len());
   /// Only need one of each hash.
   links.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
   links.dedup_by(|a, b| a.tag.eq(&b.tag));

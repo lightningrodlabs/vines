@@ -5,7 +5,7 @@ use crate::path_explorer::*;
 use crate::utils::get_threads_zome_index;
 
 
-/// Return any sub paths of an Anchor (an Anchor is Path of type String)
+/// Return all children of same link-type as parent Anchor
 #[hdk_extern]
 pub fn get_typed_children(parent_ta: TypedAnchor) -> ExternResult<Vec<TypedAnchor>> {
   let children = parent_ta.children()?;

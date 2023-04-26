@@ -19,6 +19,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
+    "js-base64": "^3.7.3",
     "@ui5/webcomponents": "^1.12.2",
     "@ui5/webcomponents-fiori": "^1.12.2",
     "@ui5/webcomponents-icons": "^1.12.2",

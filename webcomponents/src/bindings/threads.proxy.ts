@@ -175,10 +175,6 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_pp', ah);
   }
 
-  async getAllChildren(parentAnchor: string): Promise<TypedAnchor[]> {
-    return this.call('get_all_children', parentAnchor);
-  }
-
   async getAllRootAnchors(): Promise<TypedAnchor[]> {
     return this.call('get_all_root_anchors', null);
   }
@@ -197,6 +193,10 @@ export class ThreadsProxy extends ZomeProxy {
 
   async getLeafAnchors(ta: TypedAnchor): Promise<TypedAnchor[]> {
     return this.call('get_leaf_anchors', ta);
+  }
+
+  async getTypedAnchor(anchor: string): Promise<[EntryHashB64, TypedAnchor | null]> {
+    return this.call('get_typed_anchor', anchor);
   }
 
   async getTypedChildren(parentTa: TypedAnchor): Promise<TypedAnchor[]> {

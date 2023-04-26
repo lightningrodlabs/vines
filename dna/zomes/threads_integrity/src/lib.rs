@@ -39,7 +39,7 @@ pub enum ThreadsEntry {
 pub enum ThreadsLinkType {
     ReversePath,
     GlobalTimePath,
-    BeadTimePath,
+    ThreadTimePath,
     SemanticTopicPath,
     SubjectPath,
     Topics,

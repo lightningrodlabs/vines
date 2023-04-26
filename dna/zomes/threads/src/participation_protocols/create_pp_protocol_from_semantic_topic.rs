@@ -33,12 +33,12 @@ pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, entry_type_name: 
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
 
-  /// Link from Subject TypePath to Protocol
+  /// Link from Subject Path to Protocol
   create_link(
     tp.path_entry_hash()?,
     pp_ah.clone(),
     ThreadsLinkType::Protocols,
-    LinkTag::new(vec![]),
+    LinkTag::new(pp.purpose),
     // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
   /// Link from Subject Hash to Protocol
@@ -50,10 +50,10 @@ pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, entry_type_name: 
   )?;
 
   /// Global time-Index
-  let record = get(pp_ah.clone(), GetOptions::content())?.unwrap();
+  let action_timestamp = get(pp_ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
   let root_time_path = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
-  let leaf_tp = get_time_path(root_time_path.clone(), record.action().timestamp())?;
+  let leaf_tp = get_time_path(root_time_path.clone(), action_timestamp)?;
   leaf_tp.ensure()?;
   create_link(
     leaf_tp.path_entry_hash()?,

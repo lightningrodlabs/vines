@@ -159,9 +159,10 @@ export interface GetItemsInput {
  */
 export interface ItemLink {
   target: AnyDhtHash
+  tag: number[]
+  /** Flattened ScopedLinkType */
   zomeIndex: number
   linkIndex: number
-  tag: number[]
 }
 
 /**
@@ -191,7 +192,7 @@ export const THREADS_ZOME_NAME = "threads";
 
 export const ROOT_ANCHOR_SEMANTIC_TOPICS = "all_semantic_topics";
 
-export const ROOT_ANCHOR_THREADS = "all_threads";
+export const ROOT_ANCHOR_THREADS = "all_subjects";
 
 export const SEMANTIC_TOPIC_TYPE_NAME = "semantic_topic";
 
@@ -214,11 +215,11 @@ export type ThreadsEntry =
 
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {BeadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
-	BeadTimePath = 'BeadTimePath',
+	ThreadTimePath = 'ThreadTimePath',
 	SemanticTopicPath = 'SemanticTopicPath',
 	SubjectPath = 'SubjectPath',
 	Topics = 'Topics',

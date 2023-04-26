@@ -3,7 +3,7 @@ import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ItemLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
-import {AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64, ZomeName} from "@holochain/client";
+import {AnyDhtHashB64, encodeHashToBase64, ZomeName} from "@holochain/client";
 import {ScopedZomeTypes} from "@ddd-qc/cell-proxy/dist/types";
 
 import "@ui5/webcomponents/dist/Tree.js"
@@ -11,16 +11,6 @@ import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {utf32Decode} from "./threads-devtest-page";
-
-
-
-/** */
-function anchorLeaf(anchor: String): string {
-  const subs = anchor.split(".");
-  //console.log("anchorLeaf()", anchor, subs)
-  if (subs.length < 2) {return subs[0]}
-  return subs[subs.length - 2];
-}
 
 
 /**
@@ -84,8 +74,14 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         if (this._linkTypeFilter && ll.linkIndex != this._linkTypeFilter) {
           return html``;
         }
-        //const tag = new TextDecoder().decode(new Uint8Array(ll.tag));
-        const tag = utf32Decode(new Uint8Array(ll.tag.slice(2)));
+        //console.log("renderLinKTree()", ll.tag);
+        let tag;
+        /** Tag can be a normal string or a Component in utf32 */
+        try {
+          tag = utf32Decode(new Uint8Array(ll.tag.slice(2)));
+        } catch(e) {
+          tag = new TextDecoder().decode(new Uint8Array(ll.tag));
+        }
         const hash = encodeHashToBase64(new Uint8Array(ll.target));
         const additionalText = tag? linkKeys[ll.linkIndex] + " | " + tag : linkKeys[ll.linkIndex];
         return html`<ui5-tree-item id="${hash}" text="${hash}" additional-text="${additionalText}"></ui5-tree-item>`
@@ -125,7 +121,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log(`<link-tree> render(): ${this.rootHash}`);
+    console.log(`<link-list> render(): ${this.rootHash}`);
     if (!this._zomes) {
       return html`Loading...`;
     }

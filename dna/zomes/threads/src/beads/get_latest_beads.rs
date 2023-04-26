@@ -24,7 +24,7 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<Vec<BeadLink
   let start = input.start_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
   debug!("get_latest_beads() pp_str = {} | start = {}", pp_str, start);
 
-  let root_tp = Path::from(pp_str).typed(ThreadsLinkType::BeadTimePath)?;
+  let root_tp = Path::from(pp_str).typed(ThreadsLinkType::ThreadTimePath)?;
   let links = get_latest_time_indexed_links(root_tp, start, sys_time()?, input.target_count, None)?;
   debug!("get_latest_beads() links.len = {}", links.len());
 

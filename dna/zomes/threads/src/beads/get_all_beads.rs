@@ -12,7 +12,7 @@ pub fn get_all_beads(pp_ah: ActionHash,  link_tag: Option<LinkTag>) -> ExternRes
   /// Form TypedPath
   let pp_anchor: String = hash2anchor(pp_ah.clone());
   let thread_tp = Path::from(pp_anchor.clone())
-    .typed(ThreadsLinkType::BeadTimePath)?;
+    .typed(ThreadsLinkType::ThreadTimePath)?;
   /// Get All leafs
   let leaf_paths = tp_leaf_children(&thread_tp)?;
   let mut res = Vec::new();
