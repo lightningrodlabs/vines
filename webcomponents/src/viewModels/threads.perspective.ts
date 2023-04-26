@@ -4,7 +4,7 @@ import {Dictionary} from "@ddd-qc/lit-happ";
 
 /** */
 export interface ThreadsPerspective {
-  /** Store of all ST: ah -> Topic Title */
+  /** Store of all ST: eh -> Topic Title */
   allSemanticTopics: Dictionary<string>
   /** Store of all PPm: ah -> PP */
   allParticipationProtocols: Dictionary<ParticipationProtocolMat>,

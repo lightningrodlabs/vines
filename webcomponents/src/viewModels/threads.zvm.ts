@@ -2,11 +2,11 @@ import {
   ActionHashB64, AgentPubKeyB64,
   AnyDhtHashB64,
   decodeHashFromBase64,
-  encodeHashToBase64,
+  encodeHashToBase64, EntryHashB64,
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
-  ParticipationProtocol, TopicTypeType,
+  ParticipationProtocol, SEMANTIC_TOPIC_TYPE_NAME, TopicTypeType,
   TypedAnchor
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
@@ -106,7 +106,7 @@ export class ThreadsZvm extends ZomeViewModel {
   async probeSemanticTopics(): Promise<Dictionary<string>> {
     const sts = await this.zomeProxy.getAllSemanticTopics();
     for (const tuple of sts) {
-      this._allSemanticTopics[encodeHashToBase64(tuple[0])] = tuple[2]
+      this._allSemanticTopics[encodeHashToBase64(tuple[0])] = tuple[1]
     }
     console.log("probeSemanticTopics()", Object.keys(this._allSemanticTopics).length);
     this.notifySubscribers();
@@ -172,6 +172,9 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const [ah, global_time_anchor] = await this.zomeProxy.addTextMessage({value: texto, bead});
     const ahB64 = encodeHashToBase64(ah)
+    if (!this._latestBeadsByTopic[protocolAh]) {
+      this._latestBeadsByTopic[protocolAh] = [];
+    }
     this._latestBeadsByTopic[protocolAh].push({beadAh: ah, beadType: TopicTypeType.SemanticTopic});
     const tuple = await this.zomeProxy.getTextMessage(ah);
     this._textMessageTuples[ahB64] = [tuple[0], encodeHashToBase64(tuple[1]), tuple[2]];;
@@ -181,12 +184,15 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishSemanticTopic(title: string) : Promise<ActionHashB64> {
-    const ah = await this.zomeProxy.createSemanticTopic({title});
-    const ahB64 = encodeHashToBase64(ah);
-    this._allSemanticTopics[ahB64] = title;
+  async publishSemanticTopic(title: string) : Promise<EntryHashB64> {
+    const eh = await this.zomeProxy.createSemanticTopic({title});
+    const ehB64 = encodeHashToBase64(eh);
+    this._allSemanticTopics[ehB64] = title;
+    console.log("publishSemanticTopic()", title,ehB64);
+    console.log("publishSemanticTopic()", this._allSemanticTopics);
+
     this.notifySubscribers();
-    return ahB64;
+    return ehB64;
   }
 
 
@@ -202,13 +208,48 @@ export class ThreadsZvm extends ZomeViewModel {
     const ahB64 = encodeHashToBase64(ah);
     this._allParticipationProtocols[ahB64] = materializeParticipationProtocol(pp);
     if (!this._threadsByTopic[topicHash]) {
-      this._threadsByTopic[topicHash] = [ahB64];
-    } else {
-      this._threadsByTopic[topicHash].push(ahB64);
+      this._threadsByTopic[topicHash] = [];
     }
+    this._threadsByTopic[topicHash].push(ahB64);
     //console.log("publishThreadFromSemanticTopic()", pp)
     this.notifySubscribers();
     return ahB64;
   }
 
+
+  /** -- Debug -- */
+
+  /** */
+  async generateTestData() {
+
+    const hashs = await this.zomeProxy.getSubjectsForDna(decodeHashFromBase64(this.cell.dnaHash));
+    if (hashs.length > 0) {
+      return;
+    }
+
+    const top1 = await this.publishSemanticTopic("topic-many");
+    const top11 = await this.publishSemanticTopic("topic-many");
+    const top2 = await this.publishSemanticTopic("topic-1");
+    const top3 = await this.publishSemanticTopic("topic-none");
+
+    const th1 = await this.publishThreadFromSemanticTopic(top1, "general");
+    const th2 = await this.publishThreadFromSemanticTopic(top1, "none");
+    const th3 = await this.publishThreadFromSemanticTopic(top1, "furnished");
+    const th4 = await this.publishThreadFromSemanticTopic(top1, "full");
+    const th01 = await this.publishThreadFromSemanticTopic(top2, "general");
+    //const th11 = await this.publishThreadFromSemanticTopic(top1, "general");
+
+
+    await this.publishTextMessage("m1", th01);
+    await this.publishTextMessage("first post", th1);
+    await this.publishTextMessage("second", th1);
+
+    for (let n = 0 ;n < 30; n +=1) {
+      await this.publishTextMessage("message-" + n, th3);
+    }
+
+    // for (let n = 0 ;n < 200; n +=1) {
+    //   await this.publishTextMessage("m-" + n, th4);
+    // }
+  }
 }

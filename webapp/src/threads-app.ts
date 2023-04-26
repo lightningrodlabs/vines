@@ -39,7 +39,7 @@ export class ThreadsApp extends HappElement {
   @state() private _canShowBuildView = false;
 
 
-  @state() private _canShowDebug = true;
+  @state() private _canShowDebug = false;
 
 
   /** */

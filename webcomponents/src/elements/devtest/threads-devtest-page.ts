@@ -74,6 +74,10 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
     await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
     this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
+
+    /** Generate data */
+    await this._dvm.threadsZvm.generateTestData();
+
   }
 
 
@@ -126,10 +130,10 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateSemanticTopic(e: any) {
     const input = this.shadowRoot!.getElementById("listTitleInput") as HTMLInputElement;
-    let ah = await this._dvm.threadsZvm.publishSemanticTopic(input.value);
+    let hash = await this._dvm.threadsZvm.publishSemanticTopic(input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
-    this._selectedTopicHash = ah;
+    this._selectedTopicHash = hash;
   }
 
 

@@ -203,15 +203,15 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_typed_children', parentTa);
   }
 
-  async createSemanticTopic(semanticTopic: SemanticTopic): Promise<ActionHash> {
+  async createSemanticTopic(semanticTopic: SemanticTopic): Promise<EntryHash> {
     return this.call('create_semantic_topic', semanticTopic);
   }
 
-  async getAllSemanticTopics(): Promise<[ActionHash, EntryHash, string][]> {
+  async getAllSemanticTopics(): Promise<[EntryHash, string][]> {
     return this.call('get_all_semantic_topics', null);
   }
 
-  async searchSemanticTopics(titleFilter: string): Promise<[ActionHash, EntryHash, string][]> {
+  async searchSemanticTopics(titleFilter: string): Promise<[EntryHash, string][]> {
     return this.call('search_semantic_topics', titleFilter);
   }
 

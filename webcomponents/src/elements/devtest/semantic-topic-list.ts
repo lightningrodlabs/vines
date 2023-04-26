@@ -22,7 +22,7 @@ export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZv
   /** */
   async onCreateSemanticTopic(e: any) {
     const input = this.shadowRoot.getElementById("labelInput") as HTMLInputElement;
-    let res = await this._zvm.publishSemanticTopic(input.value);
+    await this._zvm.publishSemanticTopic(input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
   }

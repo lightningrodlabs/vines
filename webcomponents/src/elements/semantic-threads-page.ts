@@ -88,7 +88,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateTopic(e) {
     const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
-    let ah = await this._dvm.threadsZvm.publishSemanticTopic(input.value);
+    await this._dvm.threadsZvm.publishSemanticTopic(input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.createTopicDialogElem.close();
