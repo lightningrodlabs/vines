@@ -48,7 +48,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     console.log("<text-message-list>.shouldUpdate()", changedProperties);
     if (changedProperties.has("threadHash") && this._dvm) {
       console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
-      this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
+      this._txtTuples = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);
       this.onUpdate();
     }
     return true;
@@ -64,7 +64,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
     console.log("<text-message-list>.probeLatestMessages() beadLinks", beadLinks)
 
-    this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
+    this._txtTuples = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);
   }
 
 

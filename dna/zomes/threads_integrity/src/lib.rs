@@ -26,9 +26,9 @@ pub enum ThreadsEntry {
     ParticipationProtocol(ParticipationProtocol),
     #[entry_def(required_validations = 3, visibility = "public")]
     TextMessage(TextMessage),
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_def(required_validations = 1, visibility = "private")]
     GlobalQueryLog(GlobalQueryLog),
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_def(required_validations = 1, visibility = "private")]
     ThreadQueryLog(ThreadQueryLog),
 }
 

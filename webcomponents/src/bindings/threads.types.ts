@@ -133,8 +133,15 @@ export interface GetLatestBeadsInput {
 }
 
 export interface BeadLink {
+  bucketTime: Timestamp
   beadAh: ActionHash
   beadType: string
+}
+
+/** DEBUG ONLY */
+export interface AddTextMessageAtInput {
+  texto: TextMessage
+  at: Timestamp
 }
 
 /**  */

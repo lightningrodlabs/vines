@@ -8,9 +8,11 @@ export const threadsFunctionNames: FunctionName[] = [
 	"entry_defs", 
 	"get_zome_info", 
 	"get_dna_info",
+	"get_all_beads",
 	"get_latest_beads",
 	"get_text_message",
 	"add_text_message",
+	"add_text_message_at",
 
 
 	"create_pp_from_semantic_topic",

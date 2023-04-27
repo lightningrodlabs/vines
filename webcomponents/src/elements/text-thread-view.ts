@@ -69,15 +69,16 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    this.loadMessages(newDvm);
+    this.loadlatestMessages(newDvm);
   }
 
 
   /** */
-  protected loadMessages(newDvm?: ThreadsDvm) {
+  protected loadlatestMessages(newDvm?: ThreadsDvm) {
     //console.log("<text-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
+    dvm.threadsZvm.probeAllBeads(this.threadHash)
+      //dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
       .then((beadLinks) => {
         console.log("<text-thread-view>.loadMessages() beads found: ", beadLinks.length);
         this._loading = false;
@@ -86,12 +87,15 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+
+
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     console.log("<text-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
     if (changedProperties.has("threadHash") && this._dvm) {
-      this.loadMessages();
+      this.loadlatestMessages();
     }
   }
 
@@ -136,7 +140,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading thread topic...</div>`;
     }
 
-    const txtTuples: [number, AgentPubKeyB64, string][] = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
+    const txtTuples: [number, AgentPubKeyB64, string][] = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);
     console.log("<text-thread-view>.render() len =", txtTuples.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>

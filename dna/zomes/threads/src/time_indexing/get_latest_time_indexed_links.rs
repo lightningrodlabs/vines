@@ -10,19 +10,19 @@ use crate::time_indexing::timepath_utils::*;
 /// Traverse the time-index tree from `end_ts` to `start_ts` until `target_count` links are found.
 pub fn get_latest_time_indexed_links(
   root_tp: TypedPath,
-  start_ts: Timestamp,
-  end_ts: Timestamp,
+  begin_time_us: Timestamp,
+  end_time_us: Timestamp,
   target_count: usize,
   link_tag: Option<LinkTag>,
-) -> ExternResult<Vec<Link>> {
+) -> ExternResult<Vec<(Timestamp, Link)>> {
   /// TODO: let origin_time = dna_info()?.origin_time
-  /// check start_time > origin_time
+  /// check begin_us > origin_time
 
-  let Ok(time_diff) = end_ts - start_ts
+  let Ok(time_diff) = end_time_us - begin_time_us
     else { return zome_error!("Start time must be before end time") } ;
 
-  let start_tp = get_time_path(root_tp.clone(), start_ts)?;
-  debug!("get_latest_time_indexed_links() start: {} | diff = {}", timepath2str(&start_tp), time_diff);
+  let begin_tp = get_time_path(root_tp.clone(), begin_time_us)?;
+  debug!("get_latest_time_indexed_links() begin: {} | diff = {}", timepath2str(&begin_tp), time_diff);
 
 
   /// end_time must be longer than 1 hour, otherwise return empty list?
@@ -34,70 +34,79 @@ pub fn get_latest_time_indexed_links(
 
 
   /// Floor to the hour
-  let end_time = Timestamp::from_micros((end_ts.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
-  let start_time = Timestamp::from_micros((start_ts.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
-  debug!("get_latest_time_indexed_links() start: {} -> {}",
-    start_ts.as_seconds_and_nanos().0, start_time.as_seconds_and_nanos().0);
+  let end_time_floored_us = Timestamp::from_micros((end_time_us.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
+  let begin_time_floored_us = Timestamp::from_micros((begin_time_us.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
+  /// DEBUG INFO
+  debug!("get_latest_time_indexed_links() begin: {} -> {} ({})",
+    begin_time_us.as_seconds_and_nanos().0,
+    begin_time_floored_us.as_seconds_and_nanos().0,
+    convert_timepath_to_timestamp(begin_tp.path)?.as_seconds_and_nanos().0);
   debug!("get_latest_time_indexed_links()   end: {} -> {}",
-    end_ts.as_seconds_and_nanos().0, end_time.as_seconds_and_nanos().0);
+    end_time_floored_us.as_seconds_and_nanos().0,
+    end_time_floored_us.as_seconds_and_nanos().0);
 
 
   let mut res = Vec::new();
 
   /// Grab links from latest time-index hour
-  let latest_hour_path = get_time_path(root_tp.clone(), end_time)?;
-  debug!("get_latest_time_indexed_links() latest_hour_path: {}", timepath2str(&latest_hour_path));
-  if latest_hour_path.exists()? {
-    let mut last_hour_links = get_links(
-      latest_hour_path.path_entry_hash()?,
+  let latest_hour_tp = get_time_path(root_tp.clone(), end_time_floored_us)?;
+  debug!("get_latest_time_indexed_links() latest_hour_path: {}", timepath2str(&latest_hour_tp));
+  if latest_hour_tp.exists()? {
+    let latest_hour_us = convert_timepath_to_timestamp(latest_hour_tp.path.clone())?;
+    let last_hour_links = get_links(
+      latest_hour_tp.path_entry_hash()?,
       LinkTypeFilter::single_dep(root_tp.link_type.zome_index),
       //LinkTypeFilter::single_type(root_tp.link_type.zome_index, root_tp.link_type.zome_type),
       //ThreadsLinkType::Protocols.try_into_filter()?,
       link_tag.clone(),
     )?;
     debug!("get_latest_time_indexed_links() latest_hour_path found {}", last_hour_links.len());
-    res.append(&mut last_hour_links);
+    let mut last_hour_pairs = last_hour_links.into_iter()
+      .map(|link| (latest_hour_us.clone(), link))
+      .collect();
+    res.append(&mut last_hour_pairs);
   }
 
 
-  /// Setup search loop. Grab parent
-  let mut latest_seached_path = latest_hour_path;
-  let mut current_search_path = latest_seached_path.parent().unwrap();
+  /// Setup search loop. Start search at parent node of end time.
+  let mut oldest_searched_tp = latest_hour_tp;
+  let mut current_search_tp = oldest_searched_tp.parent().unwrap();
   let mut depth = 0;
 
-  /// Traverse tree until target count is reached or root_path is reached
-  while res.len() < target_count && current_search_path.as_ref().len() >= root_tp.as_ref().len() {
-    debug!("*** searching: {} | found: {}", path2anchor(&current_search_path.path).unwrap(), res.len());
-    if current_search_path.exists()? {
-      let latest_searched_leaf_value = get_timepath_leaf_value(&latest_seached_path).unwrap();
+  /// Traverse tree until target count is reached or root node is reached.
+  while res.len() < target_count && current_search_tp.as_ref().len() >= root_tp.as_ref().len() {
+    debug!("*** searching: {} | found: {}", path2anchor(&current_search_tp.path).unwrap(), res.len());
+    if current_search_tp.exists()? {
+      let oldest_searched_leaf_value = get_timepath_leaf_value(&oldest_searched_tp).unwrap();
 
-      let latest_searched_time = convert_timepath_to_timestamp(latest_seached_path.path.clone()).unwrap();
-      debug!("*** searching:   - latest_searched_time: {}", latest_searched_time);
-      let current_search_time = convert_timepath_to_timestamp(current_search_path.path.clone())
-        .unwrap_or(start_time); // If at root component, search years starting from start_time
-      debug!("*** searching:   - current_search_time: {}", current_search_time);
+      let latest_searched_time_us = convert_timepath_to_timestamp(oldest_searched_tp.path.clone()).unwrap();
+      debug!("*** searching:   - latest_searched_time: {}", latest_searched_time_us);
+      let current_search_time_us = convert_timepath_to_timestamp(current_search_tp.path.clone())
+        .unwrap_or(begin_time_floored_us); // If at root component, search years starting from begin_time
+      debug!("*** searching:   - current_search_time: {}", current_search_time_us);
 
-      if current_search_time < start_time {
-        debug!("WENT PAST START_TIME");
+      if current_search_time_us < begin_time_floored_us {
+        debug!("WENT PAST BEGINNING");
         break;
       }
 
-      let children = tp_children(&current_search_path)?;
+      let children = tp_children(&current_search_tp)?;
 
+      /// DEBUG INFO
       let raw_children_dbg_info = children
         .iter()
         .map(|l| format!("{{ tag: {} timestamp: {:?} }}, ", compTag2str(&l.tag).unwrap_or("<failed>".to_string()), l.timestamp))
         .collect::<String>();
 
       /// Keep children older than latest time value
-      let mut older_children_pairs = children
+      let mut older_children_pairs: Vec<(Path, i32, Link)> = children
         .into_iter()
         .filter_map(|l| get_component_from_link_tag(&l).ok().map(|c| (c, l))) // filter out non-path links
-        .map(|(c, l)| Ok((convert_component_to_i32(&c)?, l)))
+        .map(|(c, l)| Ok((current_search_tp.path.clone(), convert_component_to_i32(&c)?, l)))
         .collect::<Result<Vec<_>, WasmError>>()?;
 
       /// Remove "newer" children
-      older_children_pairs.retain(|(time_value, _)| *time_value < latest_searched_leaf_value);
+      older_children_pairs.retain(|(_path, comp_value, _)| *comp_value < oldest_searched_leaf_value);
 
       /// Remove children older than start_time
       // FIXME
@@ -110,12 +119,13 @@ pub fn get_latest_time_indexed_links(
       /// Debug info
       let links_added = res.get(link_count_before_dbg_info..).unwrap_or(&[]);
       debug!("get_latest_time_indexed_links() Finished including all descendants of node in tree (depth {} current_search_time {}).
-            Raw children {}. Links added {}", depth, current_search_time, raw_children_dbg_info, links_added.len());
+            Raw children {}. Links added {}", depth, current_search_time_us, raw_children_dbg_info, links_added.len());
     }
 
-    latest_seached_path = current_search_path;
-    if let Some(csp) = latest_seached_path.parent() {
-      current_search_path = csp
+    // "Move up" tree
+    oldest_searched_tp = current_search_tp;
+    if let Some(csp) = oldest_searched_tp.parent() {
+      current_search_tp = csp
     } else {
       debug!("NO PARENT");
       break;
@@ -129,8 +139,8 @@ pub fn get_latest_time_indexed_links(
 
 ///
 fn append_target_links_recursive(
-  mut children: Vec<(i32, Link)>,
-  target_links: &mut Vec<Link>,
+  mut children: Vec<(Path, i32, Link)>,
+  target_links: &mut Vec<(Timestamp, Link)>,
   target_count: usize,
   depth: u8,
   link_type: ScopedLinkType,
@@ -139,10 +149,10 @@ fn append_target_links_recursive(
   /// It's important to sort by component time value instead of timestamp,
   /// since in the proptest, fake messages are inserted with chosen time-path,
   /// but the timestamp is not fake and still represents the system time.
-  children.sort_unstable_by_key(|(time_value, _)| cmp::Reverse(*time_value));
+  children.sort_unstable_by_key(|(_path, time_component_value, _)| cmp::Reverse(*time_component_value));
 
   /// Traverse tree
-  for (_, child_link) in children {
+  for (parent_path, _, child_link) in children {
     if depth == 0 {
       /// Grab all children at the hour level
       let mut links = get_links(
@@ -150,7 +160,20 @@ fn append_target_links_recursive(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         link_tag.clone(),
       )?;
-      target_links.append(&mut links);
+      /// Form leaf path
+      let mut pairs = links
+        .into_iter()
+        .map(|l| {
+          let c = get_component_from_link_tag(&l).unwrap();
+          //let val = convert_component_to_i32(&c)?;
+          let mut  leaf_path = parent_path.clone();
+          leaf_path.append_component(c);
+          let ts = convert_timepath_to_timestamp(leaf_path)?;
+          Ok((ts, l))
+        }) // filter out non-path links
+        .collect::<Result<Vec<_>, WasmError>>()?;
+      ///
+      target_links.append(&mut pairs);
     } else {
       /// Grab children and go deeper
       let grandchildren = get_links(
@@ -161,7 +184,11 @@ fn append_target_links_recursive(
       let grandchildren_pairs = grandchildren
         .into_iter()
         .filter_map(|l| get_component_from_link_tag(&l).ok().map(|c| (c, l))) // filter out non-path links
-        .map(|(c, l)| Ok((convert_component_to_i32(&c)?, l)))
+        .map(|(c, l)| {
+          let mut  leaf_path = parent_path.clone();
+          leaf_path.append_component(c.clone());
+          Ok((leaf_path, convert_component_to_i32(&c)?, l))
+        })
         .collect::<Result<Vec<_>, WasmError>>()?;
       /// Go deeper
       append_target_links_recursive(grandchildren_pairs, target_links, target_count, depth - 1, link_type, link_tag.clone())?;

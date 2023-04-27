@@ -29,8 +29,9 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<Vec<BeadLink
   debug!("get_latest_beads() links.len = {}", links.len());
 
   let res: Vec<BeadLink> = links.into_iter()
-                 .map(|link| {
+                 .map(|(bucket_time, link)| {
                    BeadLink {
+                     bucket_time,
                      bead_ah: ActionHash::from(link.target),
                      bead_type: tag2str(&link.tag).unwrap(),
                    }

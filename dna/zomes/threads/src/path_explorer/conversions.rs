@@ -36,6 +36,7 @@ pub fn path2anchor(path: &Path) -> Result<String, SerializedBytesError> {
 
 
 /// Convert a Component stored in a LinkTag to a String
+/// TODO: Check if same as get_component_from_link_tag()
 pub fn compTag2str(tag: &LinkTag) -> Result<String, SerializedBytesError> {
   if tag.0.len() <= 2 {
     return Err(SerializedBytesError::Deserialize("LinkTag not a Component".to_string()));

@@ -7,6 +7,7 @@ use hdk::{
 use zome_utils::zome_error;
 use crate::path_explorer::*;
 
+
 ///
 pub fn get_component_from_link_tag(link: &Link) -> Result<Component, SerializedBytesError> {
   SerializedBytes::from(UnsafeBytes::from(link.tag.clone().into_inner())).try_into()

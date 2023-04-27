@@ -3,6 +3,7 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::index_bead;
 use crate::path_explorer::*;
+use crate::time_indexing::timepath_utils::convert_timepath_to_timestamp;
 
 
 ///
@@ -23,11 +24,30 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
 }
 
 
-/// Return ActionHash and Global Time Anchor
+/// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
-pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String)> {
+pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String, Timestamp)> {
   let ah = create_entry(ThreadsEntry::TextMessage(texto.clone()))?;
-  let tp_pair = index_bead(texto.bead, ah.clone(), "TextMessage")?;
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
+  let ah_time = sys_time()?; // FIXME: use Action's timestamp
+  let tp_pair = index_bead(texto.bead, ah.clone(), "TextMessage", ah_time)?;
+  let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
+  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// DEBUG ONLY
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddTextMessageAtInput {
+  texto: TextMessage,
+  at: Timestamp,
+}
+
+#[hdk_extern]
+pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String)> {
+  let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
+  let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.at)?;
+  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
+}
