@@ -44,7 +44,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- State variables -- */
 
-  @state() private _initialized = false;
+  @state() private _loading = false;
   @state() private _txtTuples: [number, AgentPubKeyB64, string][] = []
 
 
@@ -57,7 +57,10 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Methods -- */
 
-  /** Subscribe to ThreadsZvm */
+  /**
+   * In dvmUpdated() this._dvm is not already set!
+   * Subscribe to ThreadsZvm
+   */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<text-thread-view>.dvmUpdated()");
     if (oldDvm) {
@@ -66,8 +69,30 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    this.threadHash = '';
-    this._initialized = true;
+    this.loadMessages(newDvm);
+  }
+
+
+  /** */
+  protected loadMessages(newDvm?: ThreadsDvm) {
+    //console.log("<text-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
+    const dvm = newDvm? newDvm : this._dvm;
+    dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
+      .then((beadLinks) => {
+        console.log("<text-thread-view>.loadMessages() beads found: ", beadLinks.length);
+        this._loading = false;
+      });
+    this._loading = true;
+  }
+
+
+  /** */
+  protected async willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    console.log("<text-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
+    if (changedProperties.has("threadHash") && this._dvm) {
+      this.loadMessages();
+    }
   }
 
 
@@ -96,13 +121,12 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     console.log("<text-thread-view>.render():", this.threadHash);
-
-    // if (!this._initialized) {
-    //   return html `<div>Loading...</div>`;
-    // }
     if (this.threadHash == "") {
-      return html `<div>No thread selected FIXME</div>`;
+      return html `<div>No thread selected</div>`;
     }
+
+    const bg_color = this._loading? "#ededf0" : ""
+
     const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
     if (!pp) {
       return html `<div>Loading thread...</div>`;
@@ -129,7 +153,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
         const avatarUrl = agent.fields['avatar'];
         // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
         return html`
-            <ui5-li additional-text="${date_str}">
+            <ui5-li additional-text="${date_str}" style="background: ${bg_color};">
                 ${tuple[2]}
                 <div slot="imageContent">                
                   ${avatarUrl? html`
@@ -149,7 +173,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <!-- <h2># ${topic}</h2>
         <h5><abbr title="${this.threadHash}">${pp.purpose}</abbr></h5> -->
-        <ui5-list id="textList" style="height: 88vh">
+        <ui5-list id="textList" style="height: 88vh;background: ${bg_color};">
         <!--style="height: 400px" growing="Scroll" @load-more=${this.onLoadMore}-->
                   <!-- @wheel=${this.onWheel} -->
             ${textLi}

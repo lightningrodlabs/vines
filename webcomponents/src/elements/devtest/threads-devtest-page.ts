@@ -71,6 +71,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   // /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
+    console.log("<threads-test-page.render()> firstUpdated():", "createMyProfile");
 
     await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
     this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;

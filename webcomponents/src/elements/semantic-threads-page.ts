@@ -215,8 +215,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async onThreadSelected(threadHash: AnyDhtHashB64) {
     console.log("onThreadSelected()", threadHash)
     //this._dvm.threadsZvm.probeLatestBeads(threadHash)
-    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(threadHash), targetCount: 20})
-    console.log("onThreadSelected() beads found: ", beadLinks.length);
+    // const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(threadHash), targetCount: 20})
+    // console.log("onThreadSelected() beads found: ", beadLinks.length);
     this._selectedThreadHash = threadHash;
   }
 

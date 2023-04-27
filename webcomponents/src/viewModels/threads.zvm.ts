@@ -221,11 +221,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async generateTestData() {
-
     const hashs = await this.zomeProxy.getSubjectsForDna(decodeHashFromBase64(this.cell.dnaHash));
     if (hashs.length > 0) {
       return;
     }
+    console.log("*** generateTestData()");
 
     const top1 = await this.publishSemanticTopic("topic-many");
     const top11 = await this.publishSemanticTopic("topic-many");
@@ -233,8 +233,10 @@ export class ThreadsZvm extends ZomeViewModel {
     const top3 = await this.publishSemanticTopic("topic-none");
 
     const th1 = await this.publishThreadFromSemanticTopic(top1, "general");
+    console.log("*** generateTestData() general", th1);
     const th2 = await this.publishThreadFromSemanticTopic(top1, "none");
     const th3 = await this.publishThreadFromSemanticTopic(top1, "furnished");
+    console.log("*** generateTestData() furnished", th3);
     const th4 = await this.publishThreadFromSemanticTopic(top1, "full");
     const th01 = await this.publishThreadFromSemanticTopic(top2, "general");
     //const th11 = await this.publishThreadFromSemanticTopic(top1, "general");

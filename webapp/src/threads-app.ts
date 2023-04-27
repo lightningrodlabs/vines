@@ -19,10 +19,9 @@ import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
 @localized()
 export class ThreadsApp extends HappElement {
 
-  @state() private _loaded = false;
+  @state() private _offlinePerspectiveloaded = false;
 
 
-  @state() private _canLudotheque = false;
   @state() private _hasStartingProfile = false;
   @state() private _lang?: string
 
@@ -82,15 +81,11 @@ export class ThreadsApp extends HappElement {
 
 
   /** */
-  //async perspectiveInitializedOffline(): Promise<void> {}
-
-
-  /** */
-  async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<app>.perspectiveInitializedOnline()");
+  async perspectiveInitializedOffline(): Promise<void> {
+    console.log("<threads-app>.perspectiveInitializedOffline()");
     /** Load My profile */
     const maybeMyProfile = this.threadsDvm.profilesZvm.perspective.profiles[this.threadsDvm.cell.agentPubKey]
-    console.log("<app>.perspectiveInitializedOnline() maybeMyProfile", maybeMyProfile);
+    console.log("<threads-app>.perspectiveInitializedOnline() maybeMyProfile:", maybeMyProfile);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
@@ -98,38 +93,44 @@ export class ThreadsApp extends HappElement {
       }
       this._hasStartingProfile = true;
     }
+    /** Done */
+    this._offlinePerspectiveloaded = true;
+  }
+
+
+  /** */
+  async perspectiveInitializedOnline(): Promise<void> {
+    console.log("<threads-app>.perspectiveInitializedOnline()");
 
     await this.hvm.probeAll();
 
     /** Done */
-    this._loaded = true;
+    //this._loaded = true;
   }
 
 
   /** */
-  async createMyProfile(profile: ThreadsProfile) {
-    //console.log("onNewProfile()", profile)
-    await this.threadsDvm.profilesZvm.createMyProfile(profile);
-    this._hasStartingProfile = true;
+  shouldUpdate(): boolean {
+    const canUpdate = super.shouldUpdate();
+    console.log("<threads-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
+    /** Wait for offlinePerspective */
+    return canUpdate && this._offlinePerspectiveloaded;
   }
 
 
-  /** */
-  async onShowLudo(cloneId: RoleName | null) {
-    if (cloneId) {
-      this._curLudoCloneId = cloneId;
-    } else {
-      this._curLudoCloneId = undefined;
-    }
-    //this._whereInventory = await this.whereDvm.playsetZvm.probeInventory();
-    this._canLudotheque = true;
-  }
+  // /** */
+  // async createMyProfile(profile: ThreadsProfile) {
+  //   //console.log("onNewProfile()", profile)
+  //   await this.threadsDvm.profilesZvm.createMyProfile(profile);
+  //   this._hasStartingProfile = true;
+  // }
+
 
 
   /** */
   render() {
-    console.log("*** <threads-app> render()", this._hasStartingProfile, this.threadsDvm.cell)
-    if (!this._loaded) {
+    console.log("*** <threads-app> render()", this._hasStartingProfile, this.threadsDvm.cell.print())
+    if (!this._offlinePerspectiveloaded) {
       return html`        
       <div style="display: flex; justify-content: center; align-items: center; height: 100vh">
         <span>Loading...</span>
