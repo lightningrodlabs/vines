@@ -1,84 +1,69 @@
 {
-  "name"           : "threads-dev",
-  "version"        : "0.1.0",
-  "config"         : {
-    "hc_version"   : "0.1.0",
-    "zits_version" : "1.6.1",
-    "bin"          : "bin"
+  "name": "threads-dev",
+  "version": "0.1.0",
+  "config": {
+    "hc_version": "0.1.0",
+    "zits_version": "1.6.1",
+    "bin": "bin"
   },
-  "private"        : true,
-  "workspaces"     : [
+  "private": true,
+  "workspaces": [
     "webcomponents",
     "webapp",
     "we-applet"
   ],
-  "scripts"        : {
-    "postinstall"          : "mkdir -p artifacts",
-    "install:submodules"   : "bash scripts/install-submodules.sh $npm_package_config_hc_version",
-    "install:rust"         : "bash submodules/hc-prebuilt/install-rust.sh",
-    "install:hc"           : "bash submodules/hc-prebuilt/install-hc-cli.sh $npm_package_config_bin $npm_package_config_hc_version",
-    "install:zits"         : "cargo install zits --version $npm_package_config_zits_version",
-
-    "version"              : "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
-
-    "build:zome"           : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:dna"            : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
-    "build:happ"           : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir",
-
-    "build:webapp"         : "npm run build -w webcomponents && npm run dist -w webapp",
-    "build:devtest"        : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
-
-    "dev:components"       : "npm run build:watch -w webcomponents",
-
-    "devtest"              : "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run build:watch -w webapp\" \"npm run start\"",
-    "devtest:we"           : "npm run build:devtest && npm run devtest -w we-applet",
-
-    "network"              : "npm run build:happ && concurrently-repeat \"npm run start:proxied\"",
-    "network-playground"   : "npm run build:happ && concurrently-repeat \"npm run start:playground\"",
-    "network-mdns"         : "npm run build:happ && concurrently-repeat \"npm run start\"",
-
-    "prodtest"             : "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
-
-
-    "start:proxied"        : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ:proxied\" \"sleep 7 && npm run start:ui -w webapp\"",
-    "start"                : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
-    "start:playground"     : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run playground\" \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
-    "start-rerun"          : "cross-env HC_APP_PORT=8888 concurrently -k \"npm run build:watch -w webcomponents\" \"$npm_package_config_bin/hc s run 0 -p 8888\" \"npm run start:ui -w webapp\"",
-    "start:happ"           : "RUST_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ -a threads --run=$HC_APP_PORT network mdns",
-    "start:happ:proxied"   : "RUST_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network --bootstrap https://bootstrap-staging.holo.host/ quic -p=kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--",
-
-    "start:launcher"       : "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
-
-
-    "test"                 : "npm run build:happ && npm run build -w @threads/elements && npm t -w @threads/tests",
-
-    "package:webapp"       : "rm -rf artifacts/threads-webapp-ui.zip & cp -v webapp/logo.svg webapp/dist && cd webapp/dist && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
-    "package:we-applet"    : "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir",
-
-    "update-version"       : "bash scripts/update-version-number.sh $npm_package_version",
-
-    "dl-test-release"     : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/threads",
-
-    "clean"                : "bash scripts/clean.sh",
-    "clean:npm"            : "bash scripts/clean-npm.sh",
-    "clean:hc"             : "rm -rf .hc* && rm -rf we-applet/.hc*",
-    "clean:all"            : "npm run clean:hc && npm run clean:npm && npm run clean"
+  "scripts": {
+    "postinstall": "mkdir -p artifacts",
+    "install:submodules": "bash scripts/install-submodules.sh $npm_package_config_hc_version",
+    "install:rust": "bash submodules/hc-prebuilt/install-rust.sh",
+    "install:hc": "bash submodules/hc-prebuilt/install-hc-cli.sh $npm_package_config_bin $npm_package_config_hc_version",
+    "install:zits": "cargo install zits --version $npm_package_config_zits_version",
+    "version": "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
+    "build:zome": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:dna": "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
+    "build:happ": "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir",
+    "build:webapp": "npm run build -w webcomponents && npm run dist -w webapp",
+    "build:devtest": "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
+    "dev:components": "npm run build:watch -w webcomponents",
+    "devtest": "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run build:watch -w webapp\" \"npm run start\"",
+    "devtest:we": "npm run build:devtest && npm run devtest -w we-applet",
+    "network": "npm run build:happ && concurrently-repeat \"npm run start:proxied\"",
+    "network-playground": "npm run build:happ && concurrently-repeat \"npm run start:playground\"",
+    "network-mdns": "npm run build:happ && concurrently-repeat \"npm run start\"",
+    "prodtest": "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:proxied": "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ:proxied\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start": "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:playground": "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run playground\" \"npm run dev:components\" \"npm run start:happ\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start-rerun": "cross-env HC_APP_PORT=8888 concurrently -k \"npm run build:watch -w webcomponents\" \"$npm_package_config_bin/hc s run 0 -p 8888\" \"npm run start:ui -w webapp\"",
+    "start:happ": "RUST_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ -a threads --run=$HC_APP_PORT network mdns",
+    "start:happ:proxied": "RUST_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network --bootstrap https://bootstrap-staging.holo.host/ quic -p=kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--",
+    "start:launcher": "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
+    "test": "npm run build:happ && npm run build -w @threads/elements && npm t -w @threads/tests",
+    "package:webapp": "rm -rf artifacts/threads-webapp-ui.zip & cp -v webapp/logo.svg webapp/dist && cd webapp/dist && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
+    "package:we-applet": "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir",
+    "update-version": "bash scripts/update-version-number.sh $npm_package_version",
+    "dl-test-release": "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/threads",
+    "clean": "bash scripts/clean.sh",
+    "clean:npm": "bash scripts/clean-npm.sh",
+    "clean:hc": "rm -rf .hc* && rm -rf we-applet/.hc*",
+    "clean:all": "npm run clean:hc && npm run clean:npm && npm run clean"
   },
-
   "devDependencies": {
-    "@types/ws"               : "^8.5.3",
-    "bestzip"                 : "^2.2.0",
-    "concurrently"            : "^6.2.1",
-    "concurrently-repeat"     : "^0.0.1",
-    "cross-env"               : "^7.0.3",
-    "new-port-cli"            : "^1.0.0",
-    "tslib"                   : "^2.4.0",
-    "typescript"              : "^4.9.0"
+    "@types/ws": "^8.5.3",
+    "bestzip": "^2.2.0",
+    "concurrently": "^6.2.1",
+    "concurrently-repeat": "^0.0.1",
+    "cross-env": "^7.0.3",
+    "new-port-cli": "^1.0.0",
+    "tslib": "^2.4.0",
+    "typescript": "^4.9.0"
   },
-  "dependencies"   : {
+  "dependencies": {
     "@ddd-qc/cell-proxy": "0.15.1",
-    "@ddd-qc/lit-happ"  : "0.15.1",
-    "@holochain/client" : "0.12.0"
+    "@ddd-qc/lit-happ": "0.15.1",
+    "@holochain/client": "0.12.0",
+    "@types/functional-red-black-tree": "^1.0.2",
+    "functional-red-black-tree": "^1.0.1"
   },
   "engines": {
     "npm": ">=7.0.0"

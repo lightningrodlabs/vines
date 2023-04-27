@@ -45,7 +45,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
   /** */
   shouldUpdate(changedProperties: PropertyValues<this>) {
     super.shouldUpdate(changedProperties);
-    console.log("<text-message-list>.shouldUpdate()", changedProperties);
+    // console.log("<text-message-list>.shouldUpdate()", changedProperties);
     if (changedProperties.has("threadHash") && this._dvm) {
       console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
       this._txtTuples = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);

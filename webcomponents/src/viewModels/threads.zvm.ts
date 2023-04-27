@@ -83,10 +83,10 @@ export class ThreadsZvm extends ZomeViewModel {
     if (!threadInfo) {
       return [];
     }
-    const bead_ahs = threadInfo.beadLinksTree.reach((bl) => bl.beadAh);
-    //const tuples = bead_ahs.map((ah) => this._textMessageTuples[encodeHashToBase64(ah)]);
+    const bead_ahs = threadInfo.getLast(10).map((bl) => bl.beadAh);
+    const tuples = bead_ahs.map((ah) => this._textMessageTuples[encodeHashToBase64(ah)]);
     //FIXME tuples.sort((a, b) => {return 1})
-    return [];
+    return tuples;
   }
 
 

@@ -1,9 +1,10 @@
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64} from "@holochain/client";
 import {BeadLink} from "../bindings/threads.types";
-//import "@types/bintrees";
-import {RBTree} from "bintrees";
+import {TimeInterval} from "./timeInterval";
 
+//import "functional-red-black-tree";
+import createRBTree, {Tree} from "functional-red-black-tree";
 
 
 export type TextMessageItem = [number, AgentPubKeyB64, string];
@@ -37,14 +38,16 @@ export class ThreadInfo {
   /* ah -> TextMessageItem */
   //private _messageItems: Dictionary<TextMessageItem>;
 
-  private _beadLinksTree: RBTree<BeadLink>;
+  private _beadLinksTree: Tree<number, BeadLink>;
+
 
   /** Ctor */
   constructor(interval: TimeInterval) {
     this._searchedTimeInterval = interval;
     //this._messageItems = items;
 
-    this._beadLinksTree = new RBTree((a: BeadLink, b: BeadLink) => a.bucketTime - b.bucketTime);
+    //this._beadLinksTree = new RBTree((a: BeadLink, b: BeadLink) => a.bucketTime - b.bucketTime);
+    this._beadLinksTree = createRBTree();
   }
 
 
@@ -52,20 +55,21 @@ export class ThreadInfo {
   get searchedTimeInterval(): TimeInterval { return this._searchedTimeInterval}
   //get messageItems(): Dictionary<TextMessageItem> { return this._messageItems}
 
-  get beadLinksTree(): RBTree<BeadLink> { return this._beadLinksTree}
+  get beadLinksTree(): Tree<number, BeadLink> { return this._beadLinksTree}
 
 
   /** -- Methods -- */
 
   /** */
   checkIntegrity(): boolean {
-    const treeInterval = new TimeInterval(this._beadLinksTree.min().bucketTime, this._beadLinksTree.max().bucketTime);
+    const treeInterval = new TimeInterval(this._beadLinksTree.begin.key, this._beadLinksTree.end.key);
     return treeInterval.isWithin(this._searchedTimeInterval);
   }
 
 
   /**  New Items must have overlapping timeInterval with current searchInterval */
   addItems(newItems: BeadLink[], searchInterval?: TimeInterval): void {
+    console.log("ThreadInfo.addItems()", newItems.length)
       if (!searchInterval) {
         searchInterval = determineInterval(newItems.map((item) => item.bucketTime));
       }
@@ -77,7 +81,7 @@ export class ThreadInfo {
       this._searchedTimeInterval = union;
 
       for (const bl of Object.values(newItems)) {
-        this._beadLinksTree.insert(bl);
+        this._beadLinksTree.insert(bl.bucketTime, bl);
       }
   }
 
@@ -85,15 +89,27 @@ export class ThreadInfo {
   /** TODO API */
   /** CAUTIOUS between precise time and bucket rounded time */
 
-
   /** Return all items */
   getAll(): BeadLink[] {
-    return [];
+    return this._beadLinksTree.values;
   }
 
   /** Return the last n items */
   getLast(n: number): BeadLink[] {
-    return [];
+    let it = this.beadLinksTree.end;
+    if (!it.value) {
+      return [];
+    }
+    let res = [];
+    for (let i = 0; i < n; i++) {
+      res.push(it.value);
+      if (!it.hasPrev) {
+        break;
+      }
+      it.prev();
+    }
+    console.debug(`getLast(${n}): found `, res.length, res);
+    return res;
   }
 
   /** Return the first n items */

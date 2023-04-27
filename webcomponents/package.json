@@ -14,13 +14,13 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
-    "@types/bintrees": "^1.0.3",
     "eslint-plugin-import": "^2.22.1",
     "lit-analyzer": "^1.2.1",
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
-    "bintrees": "^1.0.2",
+    "@types/functional-red-black-tree": "^1.0.2",
+    "functional-red-black-tree": "^1.0.1",
     "js-base64": "^3.7.3",
     "@ui5/webcomponents": "^1.12.2",
     "@ui5/webcomponents-fiori": "^1.12.2",

@@ -2,7 +2,7 @@
  * In Holochain Timestamp
  * Only positive values allowed
  */
-class TimeInterval {
+export class TimeInterval {
   private readonly _beginning: number;
   private readonly _end: number;
 

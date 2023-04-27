@@ -6,16 +6,16 @@ mod get_all_semantic_topics;
 
 use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
-use zome_utils::get_typed_from_ah;
+use zome_utils::*;
 use threads_integrity::*;
 
 
 /// Get a SemanticTopic
 #[hdk_extern]
-pub fn get_topic(ah: ActionHash) -> ExternResult<SemanticTopic> {
-  debug!("get_topic() {:?}", ah);
-  let typed_pair = get_typed_from_ah(ah)?;
-  Ok(typed_pair.1)
+pub fn get_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
+  debug!("get_topic() {:?}", eh);
+  let typed = get_typed_from_eh(eh)?;
+  Ok(typed)
 }
 
 

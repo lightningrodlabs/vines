@@ -139,11 +139,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
               <span id="threadTitle" slot="startContent">${topic}: ${thread.purpose}</span>
-              <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings"
-                          @click=${() => {
-                              this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
-                          }}
-              ></ui5-button>
+              <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings"></ui5-button>
           </ui5-bar>
           <text-thread-view .threadHash=${this._selectedThreadHash}
                             style=""></text-thread-view>
@@ -165,6 +161,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           <div id="leftSide">
               <div id="sideButtonBar" style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
                   <span style="font-size: 24px;font-weight: bold;padding: 3px 20px 0px 10px;">Topics</span>
+                  <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
+                              @click=${() => {
+                                  this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
+                              }}
+                  ></ui5-button>                  
                   <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent" @click=${this.refresh}></ui5-button>
                   <ui5-button id="createTopicButton" icon="add" tooltip="Create Topic" design="Transparent" 
                               @click=${() => this.createTopicDialogElem.show()}

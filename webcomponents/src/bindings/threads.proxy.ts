@@ -223,8 +223,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('search_semantic_topics', titleFilter);
   }
 
-  async getTopic(ah: ActionHash): Promise<SemanticTopic> {
-    return this.call('get_topic', ah);
+  async getTopic(eh: EntryHash): Promise<SemanticTopic> {
+    return this.call('get_topic', eh);
   }
 
   async getLatestItems(): Promise<[Timestamp, ItemLink][]> {
