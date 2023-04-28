@@ -1,9 +1,8 @@
-import {Dictionary} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64} from "@holochain/client";
+import {AgentPubKeyB64, Timestamp} from "@holochain/client";
 import {BeadLink} from "../bindings/threads.types";
 import {TimeInterval} from "./timeInterval";
 
-//import "functional-red-black-tree";
+/** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
 
 
@@ -48,7 +47,7 @@ export class ThreadInfo {
 
     //this._beadLinksTree = new RBTree((a: BeadLink, b: BeadLink) => a.bucketTime - b.bucketTime);
     this._beadLinksTree = createRBTree();
-    //this._beadLinksTree = createRBTree((a, b) => a - b);
+    //this._beadLinksTree = createRBTree((a, b) => b - a);
   }
 
 
@@ -70,7 +69,7 @@ export class ThreadInfo {
 
   /**  New Items must have overlapping timeInterval with current searchInterval */
   addItems(newItems: BeadLink[], searchInterval?: TimeInterval): void {
-    //console.log("ThreadInfo.addItems()", newItems.length)
+    console.log("ThreadInfo.addItems()", newItems.length)
       if (!searchInterval) {
         searchInterval = determineInterval(newItems.map((item) => item.bucketTime));
       }
@@ -82,10 +81,36 @@ export class ThreadInfo {
       this._searchedTimeInterval = union;
 
       for (const bl of Object.values(newItems)) {
+        if (this.has(bl)) {
+          continue;
+        }
+        console.log("ThreadInfo.addItems().inserting", bl.beadAh)
         this._beadLinksTree = this._beadLinksTree.insert(bl.bucketTime, bl);
       }
-    //console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
+    console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   }
+
+  /** */
+  has(candidat: BeadLink): boolean {
+    const bls = this.getAtBucket(candidat.bucketTime);
+    for (const bl of bls) {
+      if (bl == candidat) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** */
+  getAtBucket(bucket_begin_time_us: Timestamp): BeadLink[] {
+    let res = [];
+    this._beadLinksTree.forEach(
+      ((k, v) => {res.push(v)}),
+      bucket_begin_time_us,
+      bucket_begin_time_us + 1);
+    return res;
+  }
+
 
 
   /** TODO API */
@@ -114,20 +139,38 @@ export class ThreadInfo {
     return res;
   }
 
+
   /** Return the first n items */
   getFirst(n: number): BeadLink[] {
-    return [];
+    let it = this.beadLinksTree.begin;
+    if (!it.value) {
+      return [];
+    }
+    let res = [];
+    for (let i = 0; i < n; i++) {
+      res.push(it.value);
+      if (!it.hasNext) {
+        break;
+      }
+      it.next();
+    }
+    console.debug(`getFirst(${n}): found `, res.length, res);
+    return res;
   }
+
 
   /** Return all items between these time values */
   getBetween(begin: number, end: number): BeadLink[] {
+    // tree.forEach(visitor(key,value)[, lo[, hi]])
     return [];
   }
+
 
   /** Return the first n items starting from */
   getNext(begin: number): BeadLink[] {
     return [];
   }
+
 
   /** Return the first n items before */
   getPrev(begin: number): BeadLink[] {

@@ -8,7 +8,8 @@
     "lint": "eslint --ext .ts .",
     "build": "tsc",
     "build:watch": "tsc --watch --preserveWatchOutput",
-    "analyze": "lit-analyzer src --failFast"
+    "analyze": "lit-analyzer src --failFast",
+    "test": "jest"
   },
   "type": "module",
   "devDependencies": {

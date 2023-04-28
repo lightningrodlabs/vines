@@ -3,7 +3,7 @@ import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials} from "../utils";
 
 import "@ui5/webcomponents/dist/Avatar.js"
@@ -140,16 +140,16 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading thread topic...</div>`;
     }
 
-    const txtTuples: [number, AgentPubKeyB64, string][] = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);
-    console.log("<text-thread-view>.render() len =", txtTuples.length);
+    const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
+    console.log("<text-thread-view>.render() len =", infos.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    const textLi = Object.values(txtTuples).map(
-      (tuple) => {
-        const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const textLi = Object.values(infos).map(
+      (info) => {
+        const date = new Date(info.create_time_us / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
-        let maybeAgent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
+        let maybeAgent = this._dvm.profilesZvm.perspective.profiles[info.author];
         if (maybeAgent) {
           agent = maybeAgent
         }
@@ -158,7 +158,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
         // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
         return html`
             <ui5-li additional-text="${date_str}" style="background: ${bg_color};">
-                ${tuple[2]}
+                ${info.message}
                 <div slot="imageContent">                
                   ${avatarUrl? html`
                       <ui5-avatar style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">

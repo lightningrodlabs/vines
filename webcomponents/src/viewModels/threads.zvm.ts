@@ -2,7 +2,7 @@ import {
   ActionHashB64, AgentPubKeyB64,
   AnyDhtHashB64,
   decodeHashFromBase64,
-  encodeHashToBase64, EntryHashB64,
+  encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
@@ -10,8 +10,13 @@ import {
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
-import {materializeParticipationProtocol, ParticipationProtocolMat, ThreadsPerspective} from "./threads.perspective";
-import {determineInterval, ThreadInfo} from "./thread.info";
+import {
+  materializeParticipationProtocol,
+  ParticipationProtocolMat,
+  TextMessageInfo,
+  ThreadsPerspective
+} from "./threads.perspective";
+import {determineInterval, ThreadInfo} from "./threadInfo";
 
 
 
@@ -43,7 +48,7 @@ export class ThreadsZvm extends ZomeViewModel {
       allParticipationProtocols: this._allParticipationProtocols,
       threadsByTopic: this._threadsByTopic,
       beadsByThread: this._beadsByThread,
-      textMessageTuples: this._textMessageTuples,
+      textMessages: this._textMessages,
     };
   }
 
@@ -52,8 +57,8 @@ export class ThreadsZvm extends ZomeViewModel {
   private _allSemanticTopics: Dictionary<string> = {};
   /** ah -> ParticipationProtocol */
   private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
-  /** ah -> [timestamp, author, message] */
-  private _textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]> = {};
+  /** ah -> TextMessageInfo */
+  private _textMessages: Dictionary<TextMessageInfo> = {};
 
   private _threadsByTopic: Dictionary<ActionHashB64[]> = {};
 
@@ -71,20 +76,20 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._allParticipationProtocols[ah];
   }
 
-  getTextMessageTuple(ah: ActionHashB64): [number, AgentPubKeyB64, string] | undefined {
-    return this._textMessageTuples[ah];
-  }
+  // getTextMessageInfo(ah: ActionHashB64): [number, AgentPubKeyB64, string] | undefined {
+  //   return this._textMessages[ah];
+  // }
 
 
-  getLatestTextMessages(pp_ah: ActionHashB64): [number, AgentPubKeyB64, string][] {
+  getMostRecentTextMessages(pp_ah: ActionHashB64): TextMessageInfo[] {
     const threadInfo = this._beadsByThread[pp_ah];
     if (!threadInfo) {
       return [];
     }
     const bead_ahs = threadInfo.getLast(10).map((bl) => bl.beadAh);
-    const tuples = bead_ahs.map((ah) => this._textMessageTuples[encodeHashToBase64(ah)]);
+    const infos = bead_ahs.map((ah) => this._textMessages[encodeHashToBase64(ah)]);
     //FIXME tuples.sort((a, b) => {return 1})
-    return tuples;
+    return infos;
   }
 
 
@@ -175,10 +180,14 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     this._beadsByThread[ppAhB64].addItems(beadLinks);
     /** Grab the actual items and cache them */
-    const beadAhs = beadLinks.map((bl) => bl.beadAh);
-    for (const beadAh of beadAhs) {
-      const tuple = await this.zomeProxy.getTextMessage(beadAh); // TODO: Implement and use getTextMessageList() instead
-      this._textMessageTuples[encodeHashToBase64(beadAh)] = [tuple[0], encodeHashToBase64(tuple[1]), tuple[2]];
+    for (const bl of beadLinks) {
+      const tuple = await this.zomeProxy.getTextMessage(bl.beadAh); // TODO: Implement and use getTextMessageList() instead
+      this._textMessages[encodeHashToBase64(bl.beadAh)] = {
+        index_begin_time_us: bl.bucketTime,
+        create_time_us: tuple[0],
+        author: encodeHashToBase64(tuple[1]),
+        message: tuple[2]
+      };
     }
     /** Notify observers */
     this.notifySubscribers();
@@ -201,14 +210,20 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** - Publish - */
 
+  async publishTextMessage(msg: string, protocolAh: ActionHashB64) : Promise<string> {
+    return this.publishTextMessageAt(msg, protocolAh, Date.now() * 1000);
+  }
+
+
   /** */
-  async publishTextMessage(texto: string, protocolAh: ActionHashB64) : Promise<string> {
+  async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, timeUs: Timestamp) : Promise<string> {
     /** Make out bead */
     const bead: Bead = {
       forProtocolAh: decodeHashFromBase64(protocolAh)
     }
     /** Commit Entry */
-    const [ah, global_time_anchor, bucketTime] = await this.zomeProxy.addTextMessage({value: texto, bead});
+    const texto = {value: msg, bead}
+    const [ah, global_time_anchor, bucketTime] = await this.zomeProxy.addTextMessageAt({texto, timeUs});
     const beadLink = {bucketTime, beadAh: ah, beadType: TopicTypeType.SemanticTopic}
     /** Insert in ThreadInfo */
     await this.storeItems(protocolAh, [beadLink]);
@@ -277,12 +292,16 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
     await this.publishTextMessage("m1", th01);
-    await this.publishTextMessage("first post", th1);
-    await this.publishTextMessage("second", th1);
 
-    for (let n = 0 ;n < 30; n +=1) {
-      await this.publishTextMessage("message-" + n, th3);
-    }
+    await this.publishTextMessage("first", th1);
+    await this.publishTextMessage("second", th1);
+    await this.publishTextMessage("third", th1);
+
+    // let date_ms = Date.now();
+    // for (let n = 30; n > 0; n -= 1) {
+    //   await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000);
+    //   date_ms -= 3600 * 1000;
+    // }
 
     // for (let n = 0 ;n < 200; n +=1) {
     //   await this.publishTextMessage("m-" + n, th4);

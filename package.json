@@ -49,19 +49,22 @@
     "clean:all": "npm run clean:hc && npm run clean:npm && npm run clean"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
     "concurrently": "^6.2.1",
     "concurrently-repeat": "^0.0.1",
     "cross-env": "^7.0.3",
+    "jest": "^29.5.0",
     "new-port-cli": "^1.0.0",
+    "ts-jest": "^29.1.0",
     "tslib": "^2.4.0",
-    "typescript": "^4.9.0"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "@ddd-qc/cell-proxy": "0.15.1",
     "@ddd-qc/lit-happ": "0.15.1",
-    "@holochain/client": "0.12.0",
+    "@holochain/client": "=0.12.0",
     "@types/functional-red-black-tree": "^1.0.2",
     "functional-red-black-tree": "^1.0.1"
   },

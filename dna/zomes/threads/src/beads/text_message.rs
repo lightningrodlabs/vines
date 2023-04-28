@@ -42,12 +42,13 @@ pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String,
 #[serde(rename_all = "camelCase")]
 pub struct AddTextMessageAtInput {
   texto: TextMessage,
-  at: Timestamp,
+  time_us: Timestamp,
 }
 
 #[hdk_extern]
-pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String)> {
+pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String, Timestamp)> {
   let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
-  let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.at)?;
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
+  let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.time_us)?;
+  let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
+  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }

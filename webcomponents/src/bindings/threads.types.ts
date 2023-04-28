@@ -141,7 +141,7 @@ export interface BeadLink {
 /** DEBUG ONLY */
 export interface AddTextMessageAtInput {
   texto: TextMessage
-  at: Timestamp
+  timeUs: Timestamp
 }
 
 /**  */

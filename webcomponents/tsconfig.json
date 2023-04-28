@@ -8,6 +8,7 @@
 
   "include": [
     "src/**/*.ts",
+    "tests/**/*.ts",
     "dist/viewModels/timeInterval.d.ts"
   ]
 }

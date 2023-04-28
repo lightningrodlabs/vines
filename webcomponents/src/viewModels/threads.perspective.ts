@@ -1,7 +1,16 @@
 import {BeadLink, ParticipationProtocol, TopicType, TopicTypeType} from "../bindings/threads.types";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
-import {ThreadInfo} from "./thread.info";
+import {ThreadInfo} from "./threadInfo";
+
+/** */
+export interface TextMessageInfo {
+  index_begin_time_us: number,
+  create_time_us: number,
+  author: AgentPubKeyB64,
+  message: string,
+}
+
 
 /** */
 export interface ThreadsPerspective {
@@ -13,8 +22,8 @@ export interface ThreadsPerspective {
   threadsByTopic: Dictionary<ActionHashB64[]>,
   /** Thread ah -> ThreadInfo */
   beadsByThread: Dictionary<ThreadInfo>,
-  /** Ah -> TextMessageTuple */
-  textMessageTuples: Dictionary<[number, AgentPubKeyB64, string]>,
+  /** Ah -> TextMessageInfo */
+  textMessages: Dictionary<TextMessageInfo>,
 
   // /** dnaHash -> Cell name */
   // dnaNames: Dictionary<string>

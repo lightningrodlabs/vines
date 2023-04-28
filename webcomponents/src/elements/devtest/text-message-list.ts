@@ -4,6 +4,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {BeadLink, ParticipationProtocol} from "../../bindings/threads.types";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {TextMessageInfo} from "../../viewModels/threads.perspective";
 
 /**
  * @element
@@ -24,7 +25,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
   @state() private _beads: BeadLink[] = []
   //@state() private _txtMap: Dictionary<[number, AgentPubKeyB64, string]> = {}
 
-  @state() private _txtTuples: [number, AgentPubKeyB64, string][] = []
+  @state() private _textMessageInfos: TextMessageInfo[] = []
 
 
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
@@ -48,7 +49,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     // console.log("<text-message-list>.shouldUpdate()", changedProperties);
     if (changedProperties.has("threadHash") && this._dvm) {
       console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
-      this._txtTuples = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);
+      this._textMessageInfos = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
       this.onUpdate();
     }
     return true;
@@ -64,7 +65,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
     console.log("<text-message-list>.probeLatestMessages() beadLinks", beadLinks)
 
-    this._txtTuples = this._dvm.threadsZvm.getLatestTextMessages(this.threadHash);
+    this._textMessageInfos = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
   }
 
 
@@ -83,13 +84,15 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     // );
     //         <!-- <ul>${beadsLi}</ul> -->
 
-    const textLi = Object.values(this._txtTuples).map(
-      (tuple) => {
-        const date = new Date(tuple[0] / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-        const date_str = date.toLocaleString('en-US', {hour12: false});
-        const agent = this._dvm.profilesZvm.perspective.profiles[tuple[1]];
+    const textLi = Object.values(this._textMessageInfos).map(
+      (info) => {
+        const index_date = new Date(info.index_begin_time_us / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const index_date_str = index_date.toLocaleString('en-US', {hour12: false});
+        const creation_date = new Date(info.create_time_us / 1000);
+        const creation_date_str = creation_date.toLocaleString('en-US', {hour12: false});
+        const agent = this._dvm.profilesZvm.perspective.profiles[info.author];
         return html`
-            <li><abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr></li>`
+            <li><abbr title="${agent ? agent.nickname : "unknown"}">[${index_date_str}] [${creation_date_str}] ${info.message}</abbr></li>`
       }
     );
 
