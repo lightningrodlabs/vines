@@ -4,9 +4,16 @@ import {TimeInterval} from "./timeInterval";
 
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
+import {Base64} from "js-base64";
 
 
 export type TextMessageItem = [number, AgentPubKeyB64, string];
+
+
+/** Importing this holochain will cause jest to fail */
+function encodeHashToBase64(hash) {
+  return `u${Base64.fromUint8Array(hash, true)}`;
+}
 
 
 /** */
@@ -70,6 +77,8 @@ export class ThreadInfo {
   /**  New Items must have overlapping timeInterval with current searchInterval */
   addItems(newItems: BeadLink[], searchInterval?: TimeInterval): void {
     console.log("ThreadInfo.addItems()", newItems.length)
+    this.print();
+
       if (!searchInterval) {
         searchInterval = determineInterval(newItems.map((item) => item.bucketTime));
       }
@@ -84,20 +93,36 @@ export class ThreadInfo {
         if (this.has(bl)) {
           continue;
         }
-        console.log("ThreadInfo.addItems().inserting", bl.beadAh)
+        console.log("ThreadInfo.addItems().inserting at", bl.bucketTime, encodeHashToBase64(bl.beadAh))
         this._beadLinksTree = this._beadLinksTree.insert(bl.bucketTime, bl);
       }
     console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   }
 
+
+  /** */
+  print(): void {
+    console.log("BeadLinksTree:");
+    this._beadLinksTree.forEach(
+      ((k, bl) => {
+        console.log(`\t[${k}]`, encodeHashToBase64(bl.beadAh), bl.beadType);
+      }));
+  }
+
+
   /** */
   has(candidat: BeadLink): boolean {
     const bls = this.getAtBucket(candidat.bucketTime);
+    const candidatHash = encodeHashToBase64(candidat.beadAh);
+    //console.log("has?", candidat.bucketTime, candidatHash, candidat.beadType);
     for (const bl of bls) {
-      if (bl == candidat) {
+      const blHash =  encodeHashToBase64(bl.beadAh);
+      //console.log(`\t[${bl.bucketTime}]`, blHash, bl.beadType);
+      if (blHash == candidatHash) {
         return true;
       }
     }
+    //console.log("has? NO");
     return false;
   }
 
