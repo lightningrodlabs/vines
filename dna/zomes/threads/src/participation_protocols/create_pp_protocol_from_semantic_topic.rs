@@ -3,7 +3,7 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::participation_protocols::*;
 use crate::path_explorer::*;
-use crate::time_indexing::timepath_utils::get_time_path;
+use crate::time_indexing::get_time_path;
 
 
 /// Creates the SemanticTopic

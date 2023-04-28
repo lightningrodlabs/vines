@@ -3,7 +3,7 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::index_bead;
 use crate::path_explorer::*;
-use crate::time_indexing::timepath_utils::convert_timepath_to_timestamp;
+use crate::time_indexing::convert_timepath_to_timestamp;
 
 
 ///

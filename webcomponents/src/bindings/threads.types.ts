@@ -184,6 +184,17 @@ export interface TypedAnchor {
   linkIndex: number
 }
 
+export interface SearchResponse {
+  searchedInterval: SearchInterval
+  foundItems: [Timestamp, ItemLink][]
+}
+
+/** Time interval in us */
+export interface SearchInterval {
+  begin: Timestamp
+  end: Timestamp
+}
+
 export interface Bead {
   forProtocolAh: ActionHash
   maybeReplyOfAh?: ActionHash

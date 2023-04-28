@@ -4,52 +4,31 @@ use hdk::{
 use std::cmp;
 use zome_utils::zome_error;
 use crate::path_explorer::*;
+use crate::time_indexing::*;
 use crate::time_indexing::timepath_utils::*;
 
 
 /// Traverse the time-index tree from `end_ts` to `start_ts` until `target_count` links are found.
 pub fn get_latest_time_indexed_links(
   root_tp: TypedPath,
-  begin_time_us: Timestamp,
-  end_time_us: Timestamp,
+  search_interval: SearchInterval,
   target_count: usize,
   link_tag: Option<LinkTag>,
-) -> ExternResult<Vec<(Timestamp, Link)>> {
+) -> ExternResult<(SearchInterval, Vec<(Timestamp, Link)>)> {
   /// TODO: let origin_time = dna_info()?.origin_time
   /// check begin_us > origin_time
 
-  let Ok(time_diff) = end_time_us - begin_time_us
-    else { return zome_error!("Start time must be before end time") } ;
+  let rounded_interval = search_interval.into_hour_buckets();
 
-  let begin_tp = get_time_path(root_tp.clone(), begin_time_us)?;
-  debug!("get_latest_time_indexed_links() begin: {} | diff = {}", timepath2str(&begin_tp), time_diff);
-
-
-  /// end_time must be longer than 1 hour, otherwise return empty list?
-  if time_diff < chrono::Duration::hours(1) {
-    //let _leaf_links = get_any_itemlinks_from_path(start_tp.path, link_tag)?;
-    //return Ok(leaf_links);
-    return Ok(Vec::new());
-  }
-
-
-  /// Floor to the hour
-  let end_time_floored_us = Timestamp::from_micros((end_time_us.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
-  let begin_time_floored_us = Timestamp::from_micros((begin_time_us.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
-  /// DEBUG INFO
-  debug!("get_latest_time_indexed_links() begin: {} -> {} ({})",
-    begin_time_us.as_seconds_and_nanos().0,
-    begin_time_floored_us.as_seconds_and_nanos().0,
-    convert_timepath_to_timestamp(begin_tp.path)?.as_seconds_and_nanos().0);
-  debug!("get_latest_time_indexed_links()   end: {} -> {}",
-    end_time_floored_us.as_seconds_and_nanos().0,
-    end_time_floored_us.as_seconds_and_nanos().0);
+  let begin_tp = get_time_path(root_tp.clone(), rounded_interval.begin.clone())?;
+  debug!(" search_interval: {}", search_interval);
+  debug!("rounded_interval: {}", rounded_interval);
 
 
   let mut res = Vec::new();
 
   /// Grab links from latest time-index hour
-  let latest_hour_tp = get_time_path(root_tp.clone(), end_time_floored_us)?;
+  let latest_hour_tp = get_time_path(root_tp.clone(), rounded_interval.get_end_bucket_start_time())?;
   debug!("get_latest_time_indexed_links() latest_hour_path: {}", timepath2str(&latest_hour_tp));
   if latest_hour_tp.exists()? {
     let latest_hour_us = convert_timepath_to_timestamp(latest_hour_tp.path.clone())?;
@@ -82,10 +61,10 @@ pub fn get_latest_time_indexed_links(
       let latest_searched_time_us = convert_timepath_to_timestamp(oldest_searched_tp.path.clone()).unwrap();
       debug!("*** searching:   - latest_searched_time: {}", latest_searched_time_us);
       let current_search_time_us = convert_timepath_to_timestamp(current_search_tp.path.clone())
-        .unwrap_or(begin_time_floored_us); // If at root component, search years starting from begin_time
+        .unwrap_or(rounded_interval.begin); // If at root component, search years starting from begin_time
       debug!("*** searching:   - current_search_time: {}", current_search_time_us);
 
-      if current_search_time_us < begin_time_floored_us {
+      if current_search_time_us < rounded_interval.begin {
         debug!("WENT PAST BEGINNING");
         break;
       }
@@ -123,7 +102,7 @@ pub fn get_latest_time_indexed_links(
     }
 
     // "Move up" tree
-    oldest_searched_tp = current_search_tp;
+    oldest_searched_tp = current_search_tp.clone();
     if let Some(csp) = oldest_searched_tp.parent() {
       current_search_tp = csp
     } else {
@@ -133,7 +112,9 @@ pub fn get_latest_time_indexed_links(
     depth += 1;
   }
   /// Done
-  Ok(res)
+  let oldest_searched_bucket_time = convert_timepath_to_timestamp(current_search_tp.path)?;
+  let searched_interval = SearchInterval::new(oldest_searched_bucket_time, rounded_interval.end).unwrap();
+  Ok((searched_interval, res))
 }
 
 

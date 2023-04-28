@@ -159,7 +159,7 @@ export class ThreadsZvm extends ZomeViewModel {
       console.error("probeAllBeads() Failed. ppAh not provided.")
     }
     /** Probe */
-    const beadLinks = await this.zomeProxy.getAllBeads(decodeHashFromBase64(ppAhB64));
+    const [_interval, beadLinks] = await this.zomeProxy.getAllBeads(decodeHashFromBase64(ppAhB64));
     /** Store */
     await this.storeItems(ppAhB64, beadLinks);
     /** Done */
@@ -192,7 +192,7 @@ export class ThreadsZvm extends ZomeViewModel {
       console.error("probeLatestBeads() Failed. ppAh not provided.")
     }
     /** Probe the latest beads */
-    const beadLinks = await this.zomeProxy.getLatestBeads(input);
+    const [_interval, beadLinks] = await this.zomeProxy.getLatestBeads(input);
     /** Cache them */
     await this.storeItems(encodeHashToBase64(input.ppAh), beadLinks);
     /** Done */

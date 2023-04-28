@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::hash_type;
 use crate::path_explorer::{all_dna_link_types};
-use crate::time_indexing::timepath_utils::convert_timepath_to_timestamp;
+use crate::time_indexing::convert_timepath_to_timestamp;
 
 /// Struct holding info about the link between a LeafAnchor and an Item.
 /// A LeafAnchor is an Anchor wit no sub anchors.

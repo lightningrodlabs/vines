@@ -1,5 +1,26 @@
+use hdk::prelude::*;
+use crate::path_explorer::ItemLink;
 
 pub mod get_latest_time_indexed_links;
-pub mod timepath_utils;
 pub mod get_latest_items;
 pub mod get_all_items;
+mod time_interval;
+mod timepath_utils;
+
+pub use time_interval::*;
+pub use timepath_utils::*;
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchResponse {
+  pub searched_interval: SearchInterval, // From begin bucket start time to end bucket finish time.
+  pub found_items: Vec<(Timestamp, ItemLink)>, // Bucket start time
+}
+
+
+impl SearchResponse {
+  pub fn new(searched_interval: SearchInterval, found_items: Vec<(Timestamp, ItemLink)>) -> Self {
+    Self { searched_interval, found_items }
+  }
+}
