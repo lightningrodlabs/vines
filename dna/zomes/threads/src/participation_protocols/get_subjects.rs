@@ -37,7 +37,7 @@ pub fn get_subjects_for_entry_type(input: GetProtocolsInput) -> ExternResult<Vec
 #[hdk_extern]
 pub fn get_subjects_for_dna(dna_hash: DnaHash) -> ExternResult<Vec<AnyDhtHash>> {
   let (tp, _b64) = get_dna_path(dna_hash.clone())?;
-  let children = tp.children_paths()?;
+  let children = tp_children_paths(&tp)?;
   debug!("get_subjects_for_dna() found {} children", children.len());
   let mut input = GetProtocolsInput{ dna_hash, entry_type_name: "".to_string() };
   let mut res = Vec::new();

@@ -133,7 +133,8 @@ export interface GetLatestBeadsInput {
 }
 
 export interface BeadLink {
-  bucketTime: Timestamp
+  indexTime: Timestamp
+  creationTime: Timestamp
   beadAh: ActionHash
   beadType: string
 }

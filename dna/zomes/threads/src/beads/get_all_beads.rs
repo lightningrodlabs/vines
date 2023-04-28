@@ -23,13 +23,14 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
   let mut res = Vec::new();
   for leaf_tp in leaf_tps {
     debug!("leaf_tp = {}", path2anchor(&leaf_tp.path).unwrap_or("<error>".to_string()));
-    let Ok(bucket_time) = convert_timepath_to_timestamp(leaf_tp.path.clone())
+    let Ok(bucket_begin_time_us) = convert_timepath_to_timestamp(leaf_tp.path.clone())
       else { /* probably at root */ continue; };
     let links = get_links(leaf_tp.path_entry_hash()?, ThreadsLinkType::Beads, link_tag.clone())?;
     let mut bls = links.into_iter()
                        .map(|ll| {
                          BeadLink {
-                           bucket_time,
+                           index_time: bucket_begin_time_us,
+                           creation_time: ll.timestamp,
                            bead_ah: ActionHash::from(ll.target),
                            bead_type: tag2str(&LinkTag::from(ll.tag)).unwrap(),
                          }

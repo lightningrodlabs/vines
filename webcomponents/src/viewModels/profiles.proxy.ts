@@ -23,11 +23,11 @@ export class ProfilesProxy extends ZomeProxy {
 
 
   async createProfile(profile: ThreadsProfile): Promise<HcRecord> {
-    return this.call('create_profile', profile);
+    return this.callBlocking('create_profile', profile);
   }
 
   async updateProfile(profile: ThreadsProfile): Promise<HcRecord> {
-    return this.call('update_profile', profile);
+    return this.callBlocking('update_profile', profile);
   }
 
   async searchAgents(nickname_filter: string): Promise<AgentPubKey[]> {

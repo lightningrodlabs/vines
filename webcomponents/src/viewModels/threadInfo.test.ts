@@ -10,7 +10,8 @@ test('add 1', () => {
   expect(info.beadLinksTree.length).toBe(0);
 
   const beadLink: BeadLink = {
-    bucketTime: 42,
+    indexTime: 42,
+    creationTime: 44,
     beadAh: new Uint8Array(),
     beadType: "someType",
   };
@@ -26,12 +27,14 @@ test('add 1', () => {
 test('add many on same key', () => {
   let info = new ThreadInfo(new TimeInterval(0, 0));
   const beadLink1: BeadLink = {
-    bucketTime: 11,
+    indexTime: 11,
+    creationTime: 42,
     beadAh: new Uint8Array(),
     beadType: "someType1",
   };
   const beadLink2: BeadLink = {
-    bucketTime: 22,
+    indexTime: 11,
+    creationTime: 48,
     beadAh: new Uint8Array(),
     beadType: "someType2",
   };

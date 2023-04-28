@@ -73,8 +73,9 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     // this._initialized = true;
     console.log("<threads-test-page.render()> firstUpdated():", "createMyProfile");
 
-    await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
-    this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
+    // FIXME Fix source-chain head changed error by implementing blocking calls in zits
+    //await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
+    //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate data */
     await this._dvm.threadsZvm.generateTestData();

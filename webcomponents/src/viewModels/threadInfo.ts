@@ -44,6 +44,7 @@ export class ThreadInfo {
   /* ah -> TextMessageItem */
   //private _messageItems: Dictionary<TextMessageItem>;
 
+  /** Tree of BeadLinks keyed by creation time */
   private _beadLinksTree: Tree<number, BeadLink>;
 
 
@@ -80,21 +81,21 @@ export class ThreadInfo {
     this.print();
 
       if (!searchInterval) {
-        searchInterval = determineInterval(newItems.map((item) => item.bucketTime));
+        searchInterval = determineInterval(newItems.map((item) => item.indexTime));
       }
-      let union = this._searchedTimeInterval.union(searchInterval);
-      if (!union) {
-        throw Error("ThreadInfo.addMessages() Failed. New message time interval do not overlap with current searchInterval")
-      }
+      // let union = this._searchedTimeInterval.union(searchInterval);
+      // if (!union) {
+      //   throw Error("ThreadInfo.addMessages() Failed. New message time interval do not overlap with current searchInterval")
+      // }
 
-      this._searchedTimeInterval = union;
+      this._searchedTimeInterval = searchInterval; // union;
 
       for (const bl of Object.values(newItems)) {
         if (this.has(bl)) {
           continue;
         }
-        console.log("ThreadInfo.addItems().inserting at", bl.bucketTime, encodeHashToBase64(bl.beadAh))
-        this._beadLinksTree = this._beadLinksTree.insert(bl.bucketTime, bl);
+        console.log("ThreadInfo.addItems().inserting at", bl.creationTime, encodeHashToBase64(bl.beadAh))
+        this._beadLinksTree = this._beadLinksTree.insert(bl.creationTime, bl);
       }
     console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   }
@@ -112,7 +113,7 @@ export class ThreadInfo {
 
   /** */
   has(candidat: BeadLink): boolean {
-    const bls = this.getAtBucket(candidat.bucketTime);
+    const bls = this.getAtBucket(candidat.creationTime);
     const candidatHash = encodeHashToBase64(candidat.beadAh);
     //console.log("has?", candidat.bucketTime, candidatHash, candidat.beadType);
     for (const bl of bls) {

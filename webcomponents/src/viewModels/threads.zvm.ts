@@ -175,7 +175,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("storeItems() len = ", beadLinks.length);
     /** Insert them in ThreadInfo */
     if (!this._beadsByThread[ppAhB64]) {
-      const interval = determineInterval(beadLinks.map((bl) => bl.bucketTime))
+      const interval = determineInterval(beadLinks.map((bl) => bl.indexTime))
       this._beadsByThread[ppAhB64] = new ThreadInfo(interval);
     }
     this._beadsByThread[ppAhB64].addItems(beadLinks);
@@ -183,7 +183,7 @@ export class ThreadsZvm extends ZomeViewModel {
     for (const bl of beadLinks) {
       const tuple = await this.zomeProxy.getTextMessage(bl.beadAh); // TODO: Implement and use getTextMessageList() instead
       this._textMessages[encodeHashToBase64(bl.beadAh)] = {
-        index_begin_time_us: bl.bucketTime,
+        index_begin_time_us: bl.indexTime,
         create_time_us: tuple[0],
         author: encodeHashToBase64(tuple[1]),
         message: tuple[2]
@@ -223,8 +223,8 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Commit Entry */
     const texto = {value: msg, bead}
-    const [ah, global_time_anchor, bucketTime] = await this.zomeProxy.addTextMessageAt({texto, timeUs});
-    const beadLink = {bucketTime, beadAh: ah, beadType: TopicTypeType.SemanticTopic}
+    const [ah, global_time_anchor, indexTime] = await this.zomeProxy.addTextMessageAt({texto, timeUs});
+    const beadLink: BeadLink = {indexTime, creationTime: timeUs, beadAh: ah, beadType: TopicTypeType.SemanticTopic}
     /** Insert in ThreadInfo */
     await this.storeItems(protocolAh, [beadLink]);
     /** Done */
@@ -297,11 +297,11 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.publishTextMessage("second", th1);
     await this.publishTextMessage("third", th1);
 
-    // let date_ms = Date.now();
-    // for (let n = 30; n > 0; n -= 1) {
-    //   await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000);
-    //   date_ms -= 3600 * 1000;
-    // }
+    let date_ms = Date.now();
+    for (let n = 30; n > 0; n -= 1) {
+      await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000);
+      date_ms -= 3600 * 1000;
+    }
 
     // for (let n = 0 ;n < 200; n +=1) {
     //   await this.publishTextMessage("m-" + n, th4);

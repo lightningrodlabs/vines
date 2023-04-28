@@ -33,9 +33,10 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInter
   /// Convert links to BeadLinks
   let bls: Vec<BeadLink> = response.1
     .into_iter()
-    .map(|(bucket_time, link)| {
+    .map(|(index_time, link)| {
       BeadLink {
-        bucket_time,
+        index_time,
+        creation_time: link.timestamp,
         bead_ah: ActionHash::from(link.target),
         bead_type: tag2str(&link.tag).unwrap(),
       }
