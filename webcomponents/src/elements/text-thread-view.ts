@@ -140,11 +140,14 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading thread topic...</div>`;
     }
 
-    const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
+    /** Should grab all probed and request probes if end is reached */
+    //const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
+    const infos: TextMessageInfo[] = this._dvm.threadsZvm.getAllTextMessages(this.threadHash);
+
     console.log("<text-thread-view>.render() len =", infos.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    const textLi = Object.values(infos).map(
+    let textLi = Object.values(infos).map(
       (info) => {
         const date = new Date(info.create_time_us / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -171,6 +174,14 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
             </ui5-li>`
       }
     );
+
+    /** Different UI if no message found for thread */
+    if (infos.length == 0) {
+      textLi = [html`
+            <ui5-li style="background: ${bg_color};">
+                NO MESSAGES FOUND                         
+            </ui5-li>`]
+    }
 
 
     /** render all */

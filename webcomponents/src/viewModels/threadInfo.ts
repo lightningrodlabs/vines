@@ -123,7 +123,8 @@ export class ThreadInfo {
     return false;
   }
 
-  /** */
+
+  /** Get all values with same key */
   getAtIndex(index_begin_time_us: Timestamp): BeadLink[] {
     let res = [];
     this._beadLinksTree.forEach(
@@ -158,7 +159,7 @@ export class ThreadInfo {
       it.prev();
     }
     console.debug(`getLast(${n}): found `, res.length, res);
-    return res;
+    return res.reverse();
   }
 
 

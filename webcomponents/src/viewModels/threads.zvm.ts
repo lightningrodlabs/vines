@@ -94,6 +94,18 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  getAllTextMessages(pp_ah: ActionHashB64): TextMessageInfo[] {
+    const threadInfo = this._beadsByThread[pp_ah];
+    if (!threadInfo) {
+      return [];
+    }
+    const bead_ahs = threadInfo.getAll().map((bl) => bl.beadAh);
+    const infos = bead_ahs.map((ah) => this._textMessages[encodeHashToBase64(ah)]);
+    //FIXME tuples.sort((a, b) => {return 1})
+    return infos;
+  }
+
+
   /** -- Methods -- */
 
   /** Probe */
