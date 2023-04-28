@@ -112,7 +112,7 @@ pub fn get_latest_time_indexed_links(
     depth += 1;
   }
   /// Done
-  let oldest_searched_bucket_time = convert_timepath_to_timestamp(current_search_tp.path)?;
+  let oldest_searched_bucket_time = convert_timepath_to_timestamp(current_search_tp.path).unwrap_or(rounded_interval.begin);
   let searched_interval = SearchInterval::new(oldest_searched_bucket_time, rounded_interval.end).unwrap();
   Ok((searched_interval, res))
 }

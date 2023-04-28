@@ -20,26 +20,28 @@ pub struct GetLatestBeadsInput {
 ///
 #[hdk_extern]
 pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInterval, Vec<BeadLink>)> {
+  /// Convert arguments
   let pp_str = hash2anchor(input.pp_ah.clone());
-
   let start = input.start_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
-  debug!("get_latest_beads() pp_str = {} | start = {}", pp_str, start);
-
+  debug!("pp_str = {} | start = {} | target_count = {}", pp_str, start, input.target_count);
+  let search_interval = SearchInterval::with_beginning_at(start);
+  debug!("search_interval = {}", search_interval);
   let root_tp = Path::from(pp_str).typed(ThreadsLinkType::ThreadTimePath)?;
-  let response = get_latest_time_indexed_links(root_tp, SearchInterval::with_beginning_at(start), input.target_count, None)?;
-  debug!("get_latest_beads() links.len = {}", response.1.len());
-
-  let res: Vec<BeadLink> = response.1.into_iter()
-                                   .map(|(bucket_time, link)| {
-                   BeadLink {
-                     bucket_time,
-                     bead_ah: ActionHash::from(link.target),
-                     bead_type: tag2str(&link.tag).unwrap(),
-                   }
-                 })
-                                   .collect();
-  debug!("get_latest_beads() res.len = {}", res.len());
-
+  /// Query DHT
+  let response = get_latest_time_indexed_links(root_tp, search_interval, input.target_count, None)?;
+  debug!("links.len = {}", response.1.len());
+  /// Convert links to BeadLinks
+  let bls: Vec<BeadLink> = response.1
+    .into_iter()
+    .map(|(bucket_time, link)| {
+      BeadLink {
+        bucket_time,
+        bead_ah: ActionHash::from(link.target),
+        bead_type: tag2str(&link.tag).unwrap(),
+      }
+    })
+    .collect();
+  debug!("bls.len = {}", bls.len());
   /// Done
-  Ok((response.0, res))
+  Ok((response.0, bls))
 }

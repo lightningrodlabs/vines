@@ -1,5 +1,4 @@
 import {
-  ActionHash,
   ActionHashB64, AgentPubKeyB64,
   AnyDhtHashB64,
   decodeHashFromBase64,
@@ -7,8 +6,7 @@ import {
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
-  ParticipationProtocol, SEMANTIC_TOPIC_TYPE_NAME, TopicTypeType,
-  TypedAnchor
+  ParticipationProtocol, TopicTypeType,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -169,6 +167,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   private async storeItems(ppAhB64: ActionHashB64, beadLinks: BeadLink[]): Promise<void> {
+    console.log("storeItems() len = ", beadLinks.length);
     /** Insert them in ThreadInfo */
     if (!this._beadsByThread[ppAhB64]) {
       const interval = determineInterval(beadLinks.map((bl) => bl.bucketTime))

@@ -16,12 +16,13 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
   let pp_anchor: String = hash2anchor(pp_ah.clone());
   let thread_tp = Path::from(pp_anchor.clone())
     .typed(ThreadsLinkType::ThreadTimePath)?;
-  /// Get All leafs
-  let leaf_paths = tp_leaf_children(&thread_tp)?;
-  debug!("get_all_beads(), leaf_paths.len = {}", leaf_paths.len());
+  /// Get All LeafAnchors
+  let leaf_tps = tp_leaf_children(&thread_tp)?;
+  debug!("leaf_paths.len = {}", leaf_tps.len());
+  /// Get BeadLinks from each LeafAnchor
   let mut res = Vec::new();
-  for leaf_tp in leaf_paths {
-    debug!("get_all_beads(), leaf_tp = {}", path2anchor(&leaf_tp.path).unwrap_or("<error>".to_string()));
+  for leaf_tp in leaf_tps {
+    debug!("leaf_tp = {}", path2anchor(&leaf_tp.path).unwrap_or("<error>".to_string()));
     let Ok(bucket_time) = convert_timepath_to_timestamp(leaf_tp.path.clone())
       else { /* probably at root */ continue; };
     let links = get_links(leaf_tp.path_entry_hash()?, ThreadsLinkType::Beads, link_tag.clone())?;
@@ -36,6 +37,6 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
                        .collect();
     res.append(&mut bls);
   }
-  debug!("get_all_beads(), res.len = {}", res.len());
+  debug!("res.len = {}", res.len());
   Ok((search_interval, res))
 }

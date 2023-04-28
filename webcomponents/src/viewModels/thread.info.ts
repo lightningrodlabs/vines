@@ -48,6 +48,7 @@ export class ThreadInfo {
 
     //this._beadLinksTree = new RBTree((a: BeadLink, b: BeadLink) => a.bucketTime - b.bucketTime);
     this._beadLinksTree = createRBTree();
+    //this._beadLinksTree = createRBTree((a, b) => a - b);
   }
 
 
@@ -69,7 +70,7 @@ export class ThreadInfo {
 
   /**  New Items must have overlapping timeInterval with current searchInterval */
   addItems(newItems: BeadLink[], searchInterval?: TimeInterval): void {
-    console.log("ThreadInfo.addItems()", newItems.length)
+    //console.log("ThreadInfo.addItems()", newItems.length)
       if (!searchInterval) {
         searchInterval = determineInterval(newItems.map((item) => item.bucketTime));
       }
@@ -81,8 +82,9 @@ export class ThreadInfo {
       this._searchedTimeInterval = union;
 
       for (const bl of Object.values(newItems)) {
-        this._beadLinksTree.insert(bl.bucketTime, bl);
+        this._beadLinksTree = this._beadLinksTree.insert(bl.bucketTime, bl);
       }
+    //console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   }
 
 
