@@ -4,10 +4,10 @@ use crate::path_explorer::ItemLink;
 pub mod get_latest_time_indexed_links;
 pub mod get_latest_items;
 pub mod get_all_items;
-mod time_interval;
+mod search_interval;
 mod timepath_utils;
 
-pub use time_interval::*;
+pub use search_interval::*;
 pub use timepath_utils::*;
 
 
