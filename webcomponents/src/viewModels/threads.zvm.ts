@@ -1,12 +1,12 @@
 import {
-  ActionHashB64, AgentPubKeyB64,
+  ActionHashB64,
   AnyDhtHashB64,
   decodeHashFromBase64,
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
-  ParticipationProtocol, TopicTypeType,
+  ParticipationProtocol,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -17,6 +17,7 @@ import {
   ThreadsPerspective
 } from "./threads.perspective";
 import {determineInterval, ThreadInfo} from "./threadInfo";
+import {TimeInterval} from "./timeInterval";
 
 
 
@@ -162,7 +163,8 @@ export class ThreadsZvm extends ZomeViewModel {
       console.error("probeAllBeads() Failed. ppAh not provided.")
     }
     /** Probe */
-    const [_interval, beadLinks] = await this.zomeProxy.getAllBeads(decodeHashFromBase64(ppAhB64));
+    const [interval, beadLinks] = await this.zomeProxy.getAllBeads(decodeHashFromBase64(ppAhB64));
+    console.log("probeAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Store */
     await this.storeItems(ppAhB64, beadLinks);
     /** Done */
@@ -173,18 +175,19 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   private async storeItems(ppAhB64: ActionHashB64, beadLinks: BeadLink[]): Promise<void> {
     console.log("storeItems() len = ", beadLinks.length);
-    /** Insert them in ThreadInfo */
+    /** Insert itemLinks in ThreadInfo */
     if (!this._beadsByThread[ppAhB64]) {
       const interval = determineInterval(beadLinks.map((bl) => bl.indexTime))
       this._beadsByThread[ppAhB64] = new ThreadInfo(interval);
     }
     this._beadsByThread[ppAhB64].addItems(beadLinks);
-    /** Grab the actual items and cache them */
+    /** Grab and cache the items in _textMessages */
     for (const bl of beadLinks) {
-      const tuple = await this.zomeProxy.getTextMessage(bl.beadAh); // TODO: Implement and use getTextMessageList() instead
+      //console.log("storeItems()", bl.t)
+      const tuple = await this.zomeProxy.getTextMessage(bl.beadAh); // TODO: do batch get instead?
       this._textMessages[encodeHashToBase64(bl.beadAh)] = {
-        index_begin_time_us: bl.indexTime,
-        create_time_us: tuple[0],
+        //index_begin_time_us: bl.indexTime,
+        create_time_us: bl.creationTime, //tuple[0],
         author: encodeHashToBase64(tuple[1]),
         message: tuple[2]
       };
@@ -201,6 +204,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Probe the latest beads */
     const [_interval, beadLinks] = await this.zomeProxy.getLatestBeads(input);
+
     /** Cache them */
     await this.storeItems(encodeHashToBase64(input.ppAh), beadLinks);
     /** Done */
@@ -224,7 +228,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Commit Entry */
     const texto = {value: msg, bead}
     const [ah, global_time_anchor, indexTime] = await this.zomeProxy.addTextMessageAt({texto, timeUs});
-    const beadLink: BeadLink = {indexTime, creationTime: timeUs, beadAh: ah, beadType: TopicTypeType.SemanticTopic}
+    const beadLink: BeadLink = {indexTime, creationTime: timeUs, beadAh: ah, beadType: "TextMessage"}
     /** Insert in ThreadInfo */
     await this.storeItems(protocolAh, [beadLink]);
     /** Done */

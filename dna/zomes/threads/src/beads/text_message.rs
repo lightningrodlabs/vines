@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
-use crate::beads::index_bead;
+use crate::beads::*;
 use crate::path_explorer::*;
 use crate::time_indexing::convert_timepath_to_timestamp;
 

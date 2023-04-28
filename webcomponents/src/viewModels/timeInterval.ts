@@ -1,11 +1,16 @@
+import {SearchInterval} from "../bindings/threads.types";
+
 /**
- * In Holochain Timestamp
+ * In Holochain Timestamp (us)
  * Only positive values allowed
  */
 export class TimeInterval {
   private readonly _begin: number;
   private readonly _end: number;
 
+  static new(interval: SearchInterval): TimeInterval {
+    return new TimeInterval(interval.begin, interval.end);
+  }
   constructor(beginning: number, end: number) {
     if (end < beginning) {
       throw Error("Invalid TimeInterval: end < beginning")
@@ -26,6 +31,13 @@ export class TimeInterval {
     return this._end;
   }
 
+  get duration(): number {
+    return this._end - this._begin;
+  }
+
+  toStringSec(): string {
+    return `[${this._begin / 1000 / 100}, ${this._end / 1000 / 100}] (duration: ${this.duration} secs)`;
+  }
 
   /** */
   union(other: TimeInterval): TimeInterval | null {

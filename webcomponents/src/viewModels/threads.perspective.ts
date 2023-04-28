@@ -5,7 +5,7 @@ import {ThreadInfo} from "./threadInfo";
 
 /** */
 export interface TextMessageInfo {
-  index_begin_time_us: number,
+  //index_begin_time_us: number,
   create_time_us: number,
   author: AgentPubKeyB64,
   message: string,

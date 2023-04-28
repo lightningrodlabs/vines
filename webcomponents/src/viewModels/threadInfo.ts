@@ -1,4 +1,4 @@
-import {AgentPubKeyB64, Timestamp} from "@holochain/client";
+import {Timestamp} from "@holochain/client";
 import {BeadLink} from "../bindings/threads.types";
 import {TimeInterval} from "./timeInterval";
 
@@ -7,10 +7,7 @@ import createRBTree, {Tree} from "functional-red-black-tree";
 import {Base64} from "js-base64";
 
 
-export type TextMessageItem = [number, AgentPubKeyB64, string];
-
-
-/** Importing this holochain will cause jest to fail */
+/** Importing this from holochain will cause jest to fail */
 function encodeHashToBase64(hash) {
   return `u${Base64.fromUint8Array(hash, true)}`;
 }
@@ -35,7 +32,7 @@ export function determineInterval(tss: number[]): TimeInterval {
 
 
 /**
- *
+ * Holds BinaryTree of BeadLinks and searchIntervals
  */
 export class ThreadInfo {
 
@@ -53,7 +50,6 @@ export class ThreadInfo {
     this._searchedTimeInterval = interval;
     //this._messageItems = items;
 
-    //this._beadLinksTree = new RBTree((a: BeadLink, b: BeadLink) => a.bucketTime - b.bucketTime);
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
   }
@@ -113,12 +109,12 @@ export class ThreadInfo {
 
   /** */
   has(candidat: BeadLink): boolean {
-    const bls = this.getAtBucket(candidat.creationTime);
+    const bls = this.getAtIndex(candidat.creationTime);
     const candidatHash = encodeHashToBase64(candidat.beadAh);
-    //console.log("has?", candidat.bucketTime, candidatHash, candidat.beadType);
+    //console.log("has?", candidat.indexTime, candidatHash, candidat.beadType);
     for (const bl of bls) {
       const blHash =  encodeHashToBase64(bl.beadAh);
-      //console.log(`\t[${bl.bucketTime}]`, blHash, bl.beadType);
+      //console.log(`\t[${bl.indexTime}]`, blHash, bl.beadType);
       if (blHash == candidatHash) {
         return true;
       }
@@ -128,19 +124,19 @@ export class ThreadInfo {
   }
 
   /** */
-  getAtBucket(bucket_begin_time_us: Timestamp): BeadLink[] {
+  getAtIndex(index_begin_time_us: Timestamp): BeadLink[] {
     let res = [];
     this._beadLinksTree.forEach(
       ((k, v) => {res.push(v)}),
-      bucket_begin_time_us,
-      bucket_begin_time_us + 1);
+      index_begin_time_us,
+      index_begin_time_us + 1);
     return res;
   }
 
 
 
   /** TODO API */
-  /** CAUTIOUS between precise time and bucket rounded time */
+  /** CAUTIOUS between precise time and index-bucket rounded time */
 
   /** Return all items */
   getAll(): BeadLink[] {

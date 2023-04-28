@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::*;
-use crate::beads::BeadLink;
+use crate::beads::{BeadLink, BeadTag};
 use crate::path_explorer::*;
 use crate::time_indexing::*;
 
@@ -28,11 +28,14 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
     let links = get_links(leaf_tp.path_entry_hash()?, ThreadsLinkType::Beads, link_tag.clone())?;
     let mut bls = links.into_iter()
                        .map(|ll| {
+                         let bt: BeadTag = SerializedBytes::from(UnsafeBytes::from(ll.tag.0)).try_into().unwrap();
                          BeadLink {
                            index_time: bucket_begin_time_us,
-                           creation_time: ll.timestamp,
+                           creation_time: bt.devtest_timestamp,
+                           //creation_time: ll.timestamp,
                            bead_ah: ActionHash::from(ll.target),
-                           bead_type: tag2str(&LinkTag::from(ll.tag)).unwrap(),
+                           bead_type: bt.bead_type,
+                           //bead_type: tag2str(&LinkTag::from(ll.tag)).unwrap(),
                          }
                        })
                        .collect();
