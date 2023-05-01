@@ -27,6 +27,7 @@ import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
+import {ChatThreadView} from "./chat-thread-view";
 
 /**
  * @element
@@ -141,8 +142,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <span id="threadTitle" slot="startContent">${topic}: ${thread.purpose}</span>
               <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings"></ui5-button>
           </ui5-bar>
-          <text-thread-view .threadHash=${this._selectedThreadHash}
-                            style=""></text-thread-view>
+          <chat-view .threadHash=${this._selectedThreadHash}
+                            style=""></chat-view>
           <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
               <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
@@ -233,6 +234,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return {
       "semantic-topics-view": SemanticTopicsView,
       "text-thread-view": TextThreadView,
+      "chat-view": ChatThreadView,
     }
   }
 

@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
+import {AgentPubKeyB64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials} from "../utils";
@@ -123,6 +123,35 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  protected updated(_changedProperties: PropertyValues) {
+    super.updated(_changedProperties);
+    try {
+      const scrollContainer = this.listElem.shadowRoot.children[0].children[0];
+      //console.log("TextList.updated() ", scrollContainer)
+      console.log("TextList.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+      //this.listElem.scrollTo(0, this.listElem.scrollHeight);
+      //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
+      //this.listElem.scrollIntoView({block: "end"});
+      //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
+      //this.listElem.scrollTop = this.listElem.scrollHeight;
+      //this.listElem.scrollIntoView(false);
+    } catch(e) {
+      // element not present
+    }
+  }
+
+
+  /** */
+  onLoadMore() {
+    console.log("<text-thread-view>.onLoadMore()");
+
+    this.listElem.busy = true;
+    // FIXME: Probe DHT
+    this.listElem.busy = false;
+  }
+
+
+  /** */
   render() {
     console.log("<text-thread-view>.render():", this.threadHash);
     if (this.threadHash == "") {
@@ -154,13 +183,13 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
         let maybeAgent = this._dvm.profilesZvm.perspective.profiles[info.author];
         if (maybeAgent) {
-          agent = maybeAgent
+          agent = maybeAgent;
         }
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
         // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
         return html`
-            <ui5-li additional-text="${date_str}" style="background: ${bg_color};">
+            <ui5-li additional-text="${date_str}" style="background: ${bg_color};"  type="Inactive">
                 ${info.message}
                 <div slot="imageContent">                
                   ${avatarUrl? html`
@@ -184,39 +213,17 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
 
+    //<!--style="height: 400px" growing="Scroll" -->
+    //<!-- @load-more=${this.onLoadMore}-->
+
     /** render all */
     return html`
         <!-- <h2># ${topic}</h2>
         <h5><abbr title="${this.threadHash}">${pp.purpose}</abbr></h5> -->
         <ui5-list id="textList" style="height: 88vh;background: ${bg_color};">
-        <!--style="height: 400px" growing="Scroll" @load-more=${this.onLoadMore}-->
-                  <!-- @wheel=${this.onWheel} -->
             ${textLi}
         </ui5-list>
     `;
   }
-
-
-  /** */
-  onLoadMore() {
-    console.log("<text-thread-view>.onLoadMore()");
-
-    this.listElem.busy = true;
-    // FIXME: Probe DHT
-    this.listElem.busy = false;
-  }
-
-
-  // /** */
-  onWheel(event) {
-  //   // this.listElem.scrollTop
-  //   const hasScrolledUp = event.wheelDeltaY > 0
-  //   var scrollY = this.listElem.scrollHeight - this.listElem.clientHeight;
-  //   const hasOverScrolledTop = scrollY == 0 && hasScrolledUp;
-  //   //const e = {deltaY: event.deltaY, wheelDeltaY: event.wheelDeltaY}
-  //   const elem = {scroll: this.listElem.scroll, scrollHeight: this.listElem.scrollHeight}
-  //   //console.log("<text-thread-view>.onWheel event: ", /*e,*/ elem, scrollY, hasOverScrolledTop);
-  }
-
 
 }
