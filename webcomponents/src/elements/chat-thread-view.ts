@@ -106,18 +106,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async getUpdateComplete(): Promise<boolean> {
     //console.log("ChatView.getUpdateComplete()")
-    let updatedCompleted = await super.getUpdateComplete();
-    const childElements = this.shadowRoot.querySelectorAll('*');
-    //console.log("ChatView children", childElements); // This will log all child elements of the shadowRoot
-    await childElements.forEach(async(childElement) => {
-      const chatItem = childElement as LitElement;
-      const childUpdated = await chatItem.updateComplete;
-      if (!childUpdated) {
-        updatedCompleted = false;
-      }
-      //console.log("ChatView child height", /*childUpdated,*/ chatItem.offsetHeight, chatItem.scrollHeight, chatItem.clientHeight/*, chatItem*/);
-    });
-    return updatedCompleted;
+    let superCompleted = await super.getUpdateComplete();
+    /** Make sure mainChat has finished updating (i.e. loaded child chat-items) */
+    const mainChat = this.shadowRoot.getElementById('mainChat') as LitElement;
+    const childUpdated = await mainChat.updateComplete;
+    /** Done */
+    return superCompleted && childUpdated;
   }
 
 
