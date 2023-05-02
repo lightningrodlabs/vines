@@ -183,10 +183,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <div id="mainChat" style="height: 88vh;background: ${bg_color};display: flex; flex-direction: column;overflow: scroll"
+        <div id="mainChat" style="height: 88vh;background: ${bg_color};display: flex; flex-direction: column-reverse;overflow: scroll"
                   @scroll=${this.onWheel}
         >
-            ${textLi}
+            ${textLi.reverse()}
         </div>
     `;
   }
