@@ -42,12 +42,13 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  onSelectionChange(event) {
+  async onSelectionChange(event) {
     let items = event.detail.selectedItems /* as TreeItem */; // get the node that is toggled
     if (items.length == 0) {
       return;
     }
-    console.log("onSelectionChange()", event, items[0].id)
+    console.log("onSelectionChange()", event, items[0].id);
+    await this.updateComplete;
     this.dispatchEvent(new CustomEvent('selected', {detail: items[0].id, bubbles: true, composed: true}));
   }
 

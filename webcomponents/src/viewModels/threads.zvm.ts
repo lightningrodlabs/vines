@@ -16,7 +16,7 @@ import {
   TextMessageInfo,
   ThreadsPerspective
 } from "./threads.perspective";
-import {determineInterval, ThreadInfo} from "./threadInfo";
+import {determineInterval, Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
 
 
@@ -64,7 +64,7 @@ export class ThreadsZvm extends ZomeViewModel {
   private _threadsByTopic: Dictionary<ActionHashB64[]> = {};
 
 
-  private _beadsByThread: Dictionary<ThreadInfo> = {};
+  private _beadsByThread: Dictionary<Thread> = {};
 
 
   /** -- Getters -- */
@@ -190,7 +190,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Insert itemLinks in ThreadInfo */
     if (!this._beadsByThread[ppAhB64]) {
       const interval = determineInterval(beadLinks.map((bl) => bl.indexTime))
-      this._beadsByThread[ppAhB64] = new ThreadInfo(interval);
+      this._beadsByThread[ppAhB64] = new Thread(interval);
     }
     this._beadsByThread[ppAhB64].addItems(beadLinks);
     /** Grab and cache the items in _textMessages */

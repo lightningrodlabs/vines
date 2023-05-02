@@ -182,7 +182,8 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     /** Render all */
     return html`
         <div>
-            <button @click="${() => {
+            <button @click="${async () => {
+                await this.updateComplete;
                 this.dispatchEvent(new CustomEvent('debug', {detail: false, bubbles: true, composed: true}));
             }}">exit
             </button>

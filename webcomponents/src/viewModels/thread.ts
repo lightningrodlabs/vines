@@ -34,7 +34,7 @@ export function determineInterval(tss: number[]): TimeInterval {
 /**
  * Holds BinaryTree of BeadLinks and searchIntervals
  */
-export class ThreadInfo {
+export class Thread {
 
   /* Time interval of the searched messages */
   private _searchedTimeInterval: TimeInterval;

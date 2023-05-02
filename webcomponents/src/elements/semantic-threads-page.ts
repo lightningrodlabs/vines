@@ -124,6 +124,23 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  protected async updated(_changedProperties: PropertyValues) {
+    try {
+      const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
+      const view = await chatView.updateComplete;
+      console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
+      chatView.scrollTop = chatView.scrollHeight;
+      if (!view) {
+        chatView.requestUpdate();
+      }
+    } catch(e) {
+      // element not present
+      //this.requestUpdate();
+    }
+  }
+
+
+  /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
 
@@ -142,7 +159,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <span id="threadTitle" slot="startContent">${topic}: ${thread.purpose}</span>
               <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings"></ui5-button>
           </ui5-bar>
-          <chat-view .threadHash=${this._selectedThreadHash}
+          <chat-view id="chat-view" .threadHash=${this._selectedThreadHash}
                             style=""></chat-view>
           <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
@@ -163,7 +180,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <div id="sideButtonBar" style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
                   <span style="font-size: 24px;font-weight: bold;padding: 3px 20px 0px 10px;">Topics</span>
                   <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
-                              @click=${() => {
+                              @click=${async () => {
+                                  await this.updateComplete;
                                   this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
                               }}
                   ></ui5-button>                  

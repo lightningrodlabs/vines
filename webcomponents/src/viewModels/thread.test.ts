@@ -1,11 +1,11 @@
-import { ThreadInfo } from './threadInfo';
+import { Thread } from './thread';
 import {TimeInterval} from "./timeInterval";
 import {BeadLink} from "../bindings/threads.types";
 
 
 /** */
 test('add 1', () => {
-  let info = new ThreadInfo(new TimeInterval(0, 0));
+  let info = new Thread(new TimeInterval(0, 0));
   info.addItems([]);
   expect(info.beadLinksTree.length).toBe(0);
 
@@ -25,7 +25,7 @@ test('add 1', () => {
 
 /** */
 test('add many on same key', () => {
-  let info = new ThreadInfo(new TimeInterval(0, 0));
+  let info = new Thread(new TimeInterval(0, 0));
   const beadLink1: BeadLink = {
     indexTime: 11,
     creationTime: 42,

@@ -1,7 +1,7 @@
-import {BeadLink, ParticipationProtocol, TopicType, TopicTypeType} from "../bindings/threads.types";
+import {ParticipationProtocol, TopicType, TopicTypeType} from "../bindings/threads.types";
 import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
-import {ThreadInfo} from "./threadInfo";
+import {Thread} from "./thread";
 
 /** */
 export interface TextMessageInfo {
@@ -21,7 +21,7 @@ export interface ThreadsPerspective {
   /** Store threads for queried topics: TopicHash -> ProtocolAh */
   threadsByTopic: Dictionary<ActionHashB64[]>,
   /** Thread ah -> ThreadInfo */
-  beadsByThread: Dictionary<ThreadInfo>,
+  beadsByThread: Dictionary<Thread>,
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
 

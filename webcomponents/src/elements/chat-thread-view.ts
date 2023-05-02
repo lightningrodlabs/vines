@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
+import {encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
@@ -40,6 +40,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   @state() private _loading = false;
   @state() private _busy = false;
 
+  
   /** -- Getters -- */
 
   get chatElem() : HTMLElement {
@@ -90,6 +91,44 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  protected updated(_changedProperties: PropertyValues) {
+    //super.updated(_changedProperties);
+    try {
+      console.log("ChatView.updated() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+      const childElements = this.shadowRoot.querySelectorAll('*');
+      childElements.forEach(async(childElement) => {
+        const chatItem = childElement as ChatMessageItem;
+        await chatItem.updateComplete;
+      });
+      console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+      this.chatElem.scrollTop = this.chatElem.scrollHeight;
+    } catch(e) {
+      /** i.e. element not present */
+    }
+  }
+
+
+  /** */
+  async getUpdateComplete(): Promise<boolean> {
+    console.log("ChatView.getUpdateComplete()")
+    let succeeded = await super.getUpdateComplete();
+    //const childOk = await this.chatElem.updateComplete;
+    const childElements = this.shadowRoot.querySelectorAll('*');
+    console.log("ChatView children", childElements); // This will log all child elements of the shadowRoot
+    await childElements.forEach(async(childElement) => {
+      const chatItem = childElement as ChatMessageItem;
+      const childUpdated = await chatItem.updateComplete;
+      if (!childUpdated) {
+        console.log("ChatView child NOT COMPLETE", chatItem);
+        succeeded = false;
+      }
+      console.log("ChatView child height", /*childUpdated,*/ chatItem.offsetHeight, chatItem.scrollHeight, chatItem.clientHeight/*, chatItem*/);
+    });
+    return succeeded /*&& childOk*/;
+  }
+
+
+  /** */
   onLoadMore() {
     console.log("<chat-thread-view>.onLoadMore()");
 
@@ -99,9 +138,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-    /** */
+  /** */
   onWheel(event) {
-    //console.log("TextList.onWheel() ", this.listElem.scrollTop, this.listElem.scrollHeight, this.listElem.clientHeight)
+    console.log("ChatView.onWheel() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
 
     //   // this.listElem.scrollTop
     //   const hasScrolledUp = event.wheelDeltaY > 0
@@ -115,7 +154,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-thread-view>.render():", this.threadHash);
+    console.log("<chat-thread-view>.render()", this.threadHash);
     if (this.threadHash == "") {
       return html `<div>No thread selected</div>`;
     }
@@ -145,6 +184,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       }
     );
 
+
     /** Different UI if no message found for thread */
     if (threadInfo.beadLinksTree.length == 0) {
       textLi = [html`
@@ -157,7 +197,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <div id="mainChat" style="height: 88vh;background: ${bg_color};display: flex; flex-direction: column;overflow: scroll"
-                  @wheel=${this.onWheel}
+                  @scroll=${this.onWheel}
         >
             ${textLi}
         </div>

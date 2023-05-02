@@ -182,6 +182,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log("<anchor-tree> click event:", event.target.id);
     /** Hacky way to know it's a hash */
     if (event.target.id.substring(0, 3) == "uhC") {
+      await this.updateComplete;
       this.dispatchEvent(new CustomEvent('hashSelected', {detail: event.target.id, bubbles: true, composed: true}));
 
     }

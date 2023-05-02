@@ -5,6 +5,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {getInitials} from "../utils";
+import {ChatThreadView} from "./chat-thread-view";
 
 /**
  * @element
@@ -33,6 +34,39 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+  }
+
+
+  /** */
+  protected async updated(_changedProperties: PropertyValues) {
+    // try {
+    //   const childElements = this.shadowRoot.querySelectorAll('*');
+    //   console.log({childElements}); // This will log all child elements of the shadowRoot
+    //   childElements.forEach(async(childElement) => {
+    //     const chatItem = childElement as ChatMessageItem;
+    //     await chatItem.updateComplete;
+    //   });
+    //   console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+    // } catch(e) {
+    //   // element not present
+    //   //this.requestUpdate();
+    // }
+  }
+
+
+  /** */
+  async getUpdateComplete(): Promise<boolean> {
+    //console.log("ChatView.msg.getUpdateComplete()")
+    const superOk = await super.getUpdateComplete();
+    //const childOk = await this.chatElem.updateComplete;
+    // const childElements = this.shadowRoot.querySelectorAll('*');
+    // console.log("ChatView.msg children", childElements); // This will log all child elements of the shadowRoot
+    // childElements.forEach(async(childElement) => {
+    //   const chatItem = childElement// as ChatMessageItem;
+    //   //await chatItem.updateComplete;
+    //   console.log("ChatView.msg child height", /*chatItem.offsetHeight,*/ chatItem.scrollHeight, chatItem.clientHeight, chatItem);
+    // });
+    return superOk /*&& childOk*/;
   }
 
 

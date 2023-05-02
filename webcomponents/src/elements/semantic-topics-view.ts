@@ -115,6 +115,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
   async clickTree(event) {
     //console.log("<semantic-topics-view> click event:", event.detail.item)
     if (event.detail.item.level == 2) {
+      await this.updateComplete;
       this.dispatchEvent(new CustomEvent('selected', {detail: event.detail.item.id, bubbles: true, composed: true}));
     }
 
@@ -146,8 +147,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                                         expanded="${!!topicThreads}" show-toggle-button level="1">
           <span slot="content" style="display:flex;">
               <span style="margin-top:8px">${title}</span>                 
-              <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${(e) => {
+              <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${async (e) => {
                 e.stopPropagation(); //console.log("topic clicked:", title);
+                await this.updateComplete;
                 this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: hash, bubbles: true, composed: true}));
               }} ></ui5-button>
           </span>
