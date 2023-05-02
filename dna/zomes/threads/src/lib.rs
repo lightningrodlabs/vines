@@ -10,6 +10,7 @@ mod time_indexing;
 pub(crate) mod utils;
 mod beads;
 mod participation_protocols;
+mod subjects;
 
 use hdk::prelude::*;
 

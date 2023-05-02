@@ -1,10 +1,9 @@
 use hdk::hash_path::path::Component;
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::EntryHashB64;
-use zome_utils::zome_error;
+
 //use zome_utils::*;
 use crate::path_explorer::*;
-use crate::utils::get_threads_zome_index;
 
 
 /// Determine TypedAnchor from anchor, by looking for parent

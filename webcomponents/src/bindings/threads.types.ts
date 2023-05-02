@@ -128,8 +128,9 @@ ValidationReceipt,
 
 export interface GetLatestBeadsInput {
   ppAh: ActionHash
-  startTime?: Timestamp
-  targetCount: number
+  beginTime?: Timestamp
+  endTime?: Timestamp
+  targetLimit?: number
 }
 
 export interface BeadLink {
@@ -150,10 +151,12 @@ export interface AddTextMessageAtInput {
   timeUs: Timestamp
 }
 
-/**  */
-export interface GetProtocolsInput {
+export interface CreatePpInput {
+  purpose: string
+  rules: string
   dnaHash: DnaHash
-  entryTypeName: string
+  topicHash: Uint8Array
+  typeName: string
 }
 
 export type MyLinkFilter = [number, number[]][];
@@ -171,7 +174,7 @@ export interface GetItemsInput {
  * An Item is the object linked from a LeafAnchor.
  */
 export interface ItemLink {
-  target: AnyDhtHash
+  target: Uint8Array
   tag: number[]
   /** Flattened ScopedLinkType */
   zomeIndex: number
@@ -188,6 +191,19 @@ export interface TypedAnchor {
   /** Flattened ScopedLinkType */
   zomeIndex: number
   linkIndex: number
+}
+
+export interface Subject {
+  hash: Uint8Array
+  hashType: AppletTopicType
+  topicType: string
+  dna: DnaHash
+}
+
+/**  */
+export interface GetProtocolsInput {
+  dnaHash: DnaHash
+  entryTypeName: string
 }
 
 export interface SearchResponse {
@@ -216,7 +232,7 @@ export const THREADS_ZOME_NAME = "threads";
 
 export const ROOT_ANCHOR_SEMANTIC_TOPICS = "all_semantic_topics";
 
-export const ROOT_ANCHOR_THREADS = "all_subjects";
+export const ROOT_ANCHOR_SUBJECTS = "all_subjects";
 
 export const SEMANTIC_TOPIC_TYPE_NAME = "semantic_topic";
 
@@ -262,7 +278,7 @@ export interface SemanticTopic {
 export interface ParticipationProtocol {
   purpose: string
   rules: string
-  topicHash: AnyDhtHash
+  topicHash: Uint8Array
   topicType: TopicType
 }
 
@@ -272,19 +288,24 @@ export enum TopicTypeType {
 	Agent = 'Agent',
 	Bead = 'Bead',
 	SemanticTopic = 'SemanticTopic',
-	AppletEntry = 'AppletEntry',
-	AppletAction = 'AppletAction',
-	AppletExternal = 'AppletExternal',
+	Applet = 'Applet',
 }
 export type TopicTypeVariantDna = {dna: null}
 export type TopicTypeVariantAgent = {agent: null}
 export type TopicTypeVariantBead = {bead: null}
 export type TopicTypeVariantSemanticTopic = {semanticTopic: null}
-export type TopicTypeVariantAppletEntry = {appletEntry: null}
-export type TopicTypeVariantAppletAction = {appletAction: null}
-export type TopicTypeVariantAppletExternal = {appletExternal: string}
+export type TopicTypeVariantApplet = {applet: AppletTopicType}
 export type TopicType = 
- | TopicTypeVariantDna | TopicTypeVariantAgent | TopicTypeVariantBead | TopicTypeVariantSemanticTopic | TopicTypeVariantAppletEntry | TopicTypeVariantAppletAction | TopicTypeVariantAppletExternal;
+ | TopicTypeVariantDna | TopicTypeVariantAgent | TopicTypeVariantBead | TopicTypeVariantSemanticTopic | TopicTypeVariantApplet;
+
+/**  */
+export type AppletTopicType =
+  | {entry: null} | {action: null} | {external: null};
+export enum AppletTopicTypeType {
+	Entry = 'Entry',
+	Action = 'Action',
+	External = 'External',
+}
 
 export interface GlobalQueryLog {
   time: number

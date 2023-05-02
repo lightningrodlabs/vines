@@ -10,7 +10,7 @@ import {LinkList} from "./link-list";
 import {TextMessageList} from "./text-message-list";
 import {SemanticTopicList} from "./semantic-topic-list";
 import {TextThreadView} from "../text-thread-view";
-import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
 /** */
@@ -37,9 +37,9 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Fields -- */
   @state() private _initialized = false;
-  @state() private _selectedTopicHash: AnyDhtHashB64 = '';
-  @state() private _selectedThreadHash: AnyDhtHashB64 = '';
-  @state() private _selectedHash: AnyDhtHashB64 = '';
+  @state() private _selectedTopicHash: AnyLinkableHashB64 = '';
+  @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
+  @state() private _selectedHash: AnyLinkableHashB64 = '';
 
   @property({ type: Boolean, attribute: 'debug' })
   debugMode: boolean = false;
@@ -257,7 +257,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     if (this._selectedThreadHash) {
       const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({
         ppAh: decodeHashFromBase64(this._selectedThreadHash),
-        targetCount: 20
+        targetLimit: 20
       });
     }
   }

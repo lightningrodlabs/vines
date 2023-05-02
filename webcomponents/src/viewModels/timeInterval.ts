@@ -11,6 +11,11 @@ export class TimeInterval {
   static new(interval: SearchInterval): TimeInterval {
     return new TimeInterval(interval.begin, interval.end);
   }
+
+  static instant(t: number): TimeInterval {
+    return new TimeInterval(t, t);
+  }
+
   constructor(beginning: number, end: number) {
     if (end < beginning) {
       throw Error("Invalid TimeInterval: end < beginning")
@@ -38,6 +43,8 @@ export class TimeInterval {
   toStringSec(): string {
     return `[${this._begin / 1000 / 100}, ${this._end / 1000 / 100}] (duration: ${this.duration} secs)`;
   }
+
+  isInstant(): boolean { return this.begin == this.end; }
 
   /** */
   union(other: TimeInterval): TimeInterval | null {

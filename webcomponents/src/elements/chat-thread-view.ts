@@ -1,7 +1,7 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {encodeHashToBase64} from "@holochain/client";
+import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
@@ -70,8 +70,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
     //console.log("<chat-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.probeAllBeads(this.threadHash)
-      //dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
+    //dvm.threadsZvm.probeAllBeads(this.threadHash)
+      dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 10})
       .then((beadLinks) => {
         console.log("<chat-thread-view>.loadMessages() beads found: ", beadLinks.length);
         this._loading = false;
@@ -126,9 +126,15 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onWheel(event) {
+  async onWheel(event) {
     console.log("ChatView.onWheel() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
-
+    //if (this.chatElem.scrollTop == 0) {
+    if (this.chatElem.clientHeight -  this.chatElem.scrollHeight == this.chatElem.scrollTop) {
+      this.chatElem.style.background = 'grey';
+      await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
+    } else {
+      this.chatElem.style.background = 'white';
+    }
     //   // this.listElem.scrollTop
     //   const hasScrolledUp = event.wheelDeltaY > 0
     //   var scrollY = this.listElem.scrollHeight - this.listElem.clientHeight;
@@ -152,7 +158,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (!pp) {
       return html `<div>Loading thread...</div>`;
     }
-    const threadInfo = this._dvm.threadsZvm.perspective.beadsByThread[this.threadHash];
+    const threadInfo = this._dvm.threadsZvm.perspective.threads[this.threadHash];
     if (!threadInfo) {
       return html `<div>Loading messages...</div>`;
     }
@@ -175,11 +181,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Different UI if no message found for thread */
     if (threadInfo.beadLinksTree.length == 0) {
       textLi = [html`
-            <div style="background: ${bg_color};">
-                NO MESSAGES FOUND                         
-            </div>`]
+            <h2 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">
+                No message found                        
+            </h2>`]
     }
-
 
     /** render all */
     return html`

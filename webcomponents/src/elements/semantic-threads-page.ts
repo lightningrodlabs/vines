@@ -1,11 +1,10 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AnyDhtHashB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextThreadView} from "./text-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 
 /** @ui5/webcomponents */
 import Label from "@ui5/webcomponents/dist/Label"
@@ -40,8 +39,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Fields -- */
   @state() private _initialized = false;
-  @state() private _selectedThreadHash: AnyDhtHashB64 = '';
-  @state() private _createTopicHash: AnyDhtHashB64 = '';
+  @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
+  @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -232,7 +231,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
 
-  async onThreadSelected(threadHash: AnyDhtHashB64) {
+  async onThreadSelected(threadHash: AnyLinkableHashB64) {
     console.log("onThreadSelected()", threadHash)
     //this._dvm.threadsZvm.probeLatestBeads(threadHash)
     // const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(threadHash), targetCount: 20})

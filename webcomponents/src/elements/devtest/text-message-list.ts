@@ -62,7 +62,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     if (this.threadHash === "") {
       return;
     }
-    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
+    const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
     console.log("<text-message-list>.probeLatestMessages() beadLinks", beadLinks)
 
     this._textMessageInfos = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);

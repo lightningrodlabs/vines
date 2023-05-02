@@ -38,7 +38,8 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   async scanRoot() {
     console.log("<link-list>.scanRoot()", this.rootHash);
-    this._itemLinks = await this._zvm.zomeProxy.getAllItemsFromB64(this.rootHash);
+    const b64 = new TextEncoder().encode(this.rootHash);
+    this._itemLinks = await this._zvm.zomeProxy.getAllItemsFromB64(b64);
   }
 
 

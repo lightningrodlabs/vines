@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::AnyDhtHashB64;
+use hdk::prelude::holo_hash::{AnyLinkableHashB64};
 use zome_utils::zome_error;
 use crate::path_explorer::*;
 
@@ -58,8 +58,8 @@ pub fn get_all_items(leaf_anchor: String) -> ExternResult<Vec<ItemLink>>  {
 
 /// Return all itemLinks from a B64 hash
 #[hdk_extern]
-pub fn get_all_items_from_b64(b64: AnyDhtHashB64) -> ExternResult<Vec<ItemLink>>  {
-  let hash: AnyDhtHash = b64.clone().into();
+pub fn get_all_items_from_b64(b64: AnyLinkableHashB64) -> ExternResult<Vec<ItemLink>>  {
+  let hash: AnyLinkableHash = b64.clone().into();
   debug!("get_all_items_from_b64() {} -> {}", b64, hash);
   let mut links = get_links(hash, all_dna_link_types(), None)?;
   debug!("get_all_items_from_b64() found {} children", links.len());

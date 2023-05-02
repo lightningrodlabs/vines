@@ -5,7 +5,7 @@ use threads_integrity::*;
 
 /// TODO: should be AnyLinkableHash once hc-client-js has defined it
 #[hdk_extern]
-pub fn get_pps_from_subject_hash(lh: AnyDhtHash) -> ExternResult<Vec<ActionHash>> {
+pub fn get_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<ActionHash>> {
   let links = get_links(lh, ThreadsLinkType::Threads, None)?;
   let ahs = links
     .into_iter()

@@ -1,7 +1,14 @@
-import {ParticipationProtocol, TopicType, TopicTypeType} from "../bindings/threads.types";
-import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
+import {ParticipationProtocol, Subject, TopicType, TopicTypeType} from "../bindings/threads.types";
+import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
+import {HoloHashB64} from "@holochain/client/lib/types";
+
+
+/** -- Should be defined in holochain/client */
+export declare type AnyLinkableHash = HoloHash;
+export declare type AnyLinkableHashB64 = HoloHashB64;
+
 
 /** */
 export interface TextMessageInfo {
@@ -15,13 +22,15 @@ export interface TextMessageInfo {
 /** */
 export interface ThreadsPerspective {
   /** Store of all ST: eh -> Topic Title */
+  allSubjects: Dictionary<Subject>
+  /** Store of all ST: eh -> Topic Title */
   allSemanticTopics: Dictionary<string>
   /** Store of all PPmat: ah -> PP */
   allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried topics: TopicHash -> ProtocolAh */
-  threadsByTopic: Dictionary<ActionHashB64[]>,
-  /** Thread ah -> ThreadInfo */
-  beadsByThread: Dictionary<Thread>,
+  threadsPerSubject: Dictionary<ActionHashB64[]>,
+  /** pp_ah -> Thread */
+  threads: Dictionary<Thread>,
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
 

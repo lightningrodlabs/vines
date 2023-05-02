@@ -8,7 +8,7 @@ import {AnyDhtHashB64, encodeHashToBase64} from "@holochain/client";
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
-import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 import "@ui5/webcomponents/dist/Icon.js";
 import Input from "@ui5/webcomponents/dist/Input";
@@ -19,7 +19,7 @@ import {Base64} from "js-base64";
 const ZOME_LINK_NAMES = Object.keys(ThreadsLinkTypeType);
 
 export interface LinkTreeItem {
-  origin:  AnyDhtHashB64 | string /* Anchor */,
+  origin:  AnyLinkableHashB64 | string /* Anchor */,
   /** Flattened ScopedLinkType */
   zomeIndex?: number,
   linkIndex?: number,
@@ -141,7 +141,8 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     if (this.root) {
       if (typeof this.root == 'string') {
-        const itemLinks = await this._zvm.zomeProxy.getAllItemsFromB64(this.root);
+        const b64 = new TextEncoder().encode(this.root);
+        const itemLinks = await this._zvm.zomeProxy.getAllItemsFromB64(b64);
         this._level0 = itemLinks.map((il) => {return {origin: encodeHashToBase64(il.target), zomeIndex: il.zomeIndex, linkIndex: il.linkIndex}});
       } else {
         /** AnchorTree */

@@ -11,6 +11,7 @@ pub mod globals;
 //--------------------------------------------------------------------------------------------------
 
 use hdi::prelude::*;
+use hdi::prelude::holo_hash::hash_type;
 
 pub use beads::*;
 pub use query_log::*;
@@ -68,20 +69,45 @@ pub struct SemanticTopic {
 pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
-    pub topic_hash: AnyDhtHash, //TODO: AnyLinkableHash,
+    pub topic_hash: AnyLinkableHash,
     pub topic_type: TopicType,
 }
 
 
 ///
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum TopicType {
     Dna,
     Agent,
     Bead,
     SemanticTopic,
-    AppletEntry,
-    AppletAction,
-    AppletExternal(String),
+    Applet(AppletTopicType),
 }
+
+
+///
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum AppletTopicType {
+    Entry,
+    Action,
+    External,
+}
+
+impl AppletTopicType {
+    pub fn from(lh: AnyLinkableHash) -> Self {
+        match lh.hash_type() {
+            hash_type::AnyLinkable::Entry => {
+                AppletTopicType::Entry
+            }
+            hash_type::AnyLinkable::Action => {
+                AppletTopicType::Entry
+            }
+            hash_type::AnyLinkable::External => {
+                AppletTopicType::External
+            }
+        }
+    }
+}
+

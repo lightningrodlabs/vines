@@ -14,7 +14,7 @@ function encodeHashToBase64(hash) {
 
 
 /** */
-export function determineInterval(tss: number[]): TimeInterval {
+export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
   let beginning = 0;
   let end = 0;
   for (const ts of Object.values(tss)) {
@@ -37,7 +37,7 @@ export function determineInterval(tss: number[]): TimeInterval {
 export class Thread {
 
   /* Time interval of the searched messages */
-  private _searchedTimeInterval: TimeInterval;
+  private _searchedTimeIntervals: [Timestamp, TimeInterval][];
   /* ah -> TextMessageItem */
   //private _messageItems: Dictionary<TextMessageItem>;
 
@@ -46,8 +46,9 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(interval: TimeInterval) {
-    this._searchedTimeInterval = interval;
+  //[Date.now() * 1000, interval]
+  constructor() {
+    this._searchedTimeIntervals = [];
     //this._messageItems = items;
 
     this._beadLinksTree = createRBTree();
@@ -56,35 +57,49 @@ export class Thread {
 
 
   /** -- Getters -- */
-  get searchedTimeInterval(): TimeInterval { return this._searchedTimeInterval}
+  get searchedTimeIntervals(): [Timestamp, TimeInterval][] { return this._searchedTimeIntervals}
   //get messageItems(): Dictionary<TextMessageItem> { return this._messageItems}
 
   get beadLinksTree(): Tree<number, BeadLink> { return this._beadLinksTree}
 
 
+  get searchedUnion(): TimeInterval | null {
+    if (this.searchedTimeIntervals.length == 0) {
+      return null;
+    }
+    let union = this.searchedTimeIntervals[0][1];
+    for (const [_ts, interval] of this.searchedTimeIntervals) {
+      if (interval.isInstant()) {
+        continue;
+      }
+      union = union.union(interval);
+    }
+    return union;
+  }
+
   /** -- Methods -- */
 
   /** */
-  checkIntegrity(): boolean {
-    const treeInterval = new TimeInterval(this._beadLinksTree.begin.key, this._beadLinksTree.end.key);
-    return treeInterval.isWithin(this._searchedTimeInterval);
-  }
+  // checkIntegrity(): boolean {
+  //   const treeInterval = new TimeInterval(this._beadLinksTree.begin.key, this._beadLinksTree.end.key);
+  //   return treeInterval.isWithin(this._searchedTimeIntervals);
+  // }
 
 
   /**  New Items must have overlapping timeInterval with current searchInterval */
-  addItems(newItems: BeadLink[], searchInterval?: TimeInterval): void {
+  addItems(newItems: BeadLink[], searchedInterval?: TimeInterval): void {
     console.log("ThreadInfo.addItems()", newItems.length)
     this.print();
 
-      if (!searchInterval) {
-        searchInterval = determineInterval(newItems.map((item) => item.indexTime));
+      if (!searchedInterval) {
+        searchedInterval = determineIntervalFromTimestamps(newItems.map((item) => item.indexTime));
       }
       // let union = this._searchedTimeInterval.union(searchInterval);
       // if (!union) {
       //   throw Error("ThreadInfo.addMessages() Failed. New message time interval do not overlap with current searchInterval")
       // }
 
-      this._searchedTimeInterval = searchInterval; // union;
+      this._searchedTimeIntervals.push([Date.now() * 1000, searchedInterval]); // union;
 
       for (const bl of Object.values(newItems)) {
         if (this.has(bl)) {
@@ -99,7 +114,7 @@ export class Thread {
 
   /** */
   print(): void {
-    console.log("BeadLinksTree:");
+    console.log("BeadLinksTree:", this.searchedUnion);
     this._beadLinksTree.forEach(
       ((k, bl) => {
         console.log(`\t[${k}]`, encodeHashToBase64(bl.beadAh), bl.beadType);

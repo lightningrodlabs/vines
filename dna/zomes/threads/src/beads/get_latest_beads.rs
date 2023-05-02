@@ -12,8 +12,9 @@ use crate::time_indexing::SearchInterval;
 #[serde(rename_all = "camelCase")]
 pub struct GetLatestBeadsInput {
   pp_ah: ActionHash,
-  start_time: Option<Timestamp>,
-  target_count: usize,
+  begin_time: Option<Timestamp>,
+  end_time: Option<Timestamp>,
+  target_limit: Option<usize>,
 }
 
 
@@ -22,13 +23,15 @@ pub struct GetLatestBeadsInput {
 pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInterval, Vec<BeadLink>)> {
   /// Convert arguments
   let pp_str = hash2anchor(input.pp_ah.clone());
-  let start = input.start_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
-  debug!("pp_str = {} | start = {} | target_count = {}", pp_str, start, input.target_count);
-  let search_interval = SearchInterval::with_beginning_at(start);
+  let begin = input.begin_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
+  let end = input.end_time.unwrap_or(sys_time().unwrap());
+  let limit = input.target_limit.unwrap_or(usize::MAX);
+  debug!("pp_str = {} | start = {} | target_count = {}", pp_str, begin, limit);
+  let search_interval = SearchInterval::new(begin, end)?;
   debug!("search_interval = {}", search_interval);
   let root_tp = Path::from(pp_str).typed(ThreadsLinkType::ThreadTimePath)?;
   /// Query DHT
-  let response = get_latest_time_indexed_links(root_tp, search_interval, input.target_count, None)?;
+  let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None)?;
   debug!("links.len = {}", response.1.len());
   /// Convert links to BeadLinks
   let bls: Vec<BeadLink> = response.1

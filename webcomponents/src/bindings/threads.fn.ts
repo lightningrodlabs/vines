@@ -15,11 +15,10 @@ export const threadsFunctionNames: FunctionName[] = [
 	"add_text_message_at",
 
 
+	"create_participation_protocol",
 	"create_pp_from_semantic_topic",
 	"get_pps_from_subject_hash",
 	"get_pps_from_subject_anchor",
-	"get_subjects_for_entry_type",
-	"get_subjects_for_dna",
 	"get_pp",
 	"get_all_root_anchors",
 	"get_items",
@@ -32,6 +31,9 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_all_semantic_topics",
 	"search_semantic_topics",
 	"get_topic",
+	"get_all_subjects",
+	"get_subjects_for_dna",
+	"get_subjects_for_entry_type",
 	"get_latest_items",];
 
 

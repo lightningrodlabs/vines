@@ -2,13 +2,12 @@ use hdk::{
   prelude::*,
 };
 use std::cmp;
-use zome_utils::zome_error;
 use crate::path_explorer::*;
 use crate::time_indexing::*;
 use crate::time_indexing::timepath_utils::*;
 
 
-/// Traverse the time-index tree from `end_ts` to `start_ts` until `target_count` links are found.
+/// Reverse-walk the time-index tree from `search_interval.end` to `begin` until `target_count` links are found.
 pub fn get_latest_time_indexed_links(
   root_tp: TypedPath,
   search_interval: SearchInterval,
@@ -20,7 +19,7 @@ pub fn get_latest_time_indexed_links(
 
   let rounded_interval = search_interval.into_hour_buckets();
 
-  let begin_tp = get_time_path(root_tp.clone(), rounded_interval.begin.clone())?;
+  let _begin_tp = get_time_path(root_tp.clone(), rounded_interval.begin.clone())?;
   debug!(" search_interval: {}", search_interval);
   debug!("rounded_interval: {}", rounded_interval);
 
@@ -29,7 +28,7 @@ pub fn get_latest_time_indexed_links(
 
   /// Grab links from latest time-index hour
   let latest_hour_tp = get_time_path(root_tp.clone(), rounded_interval.get_end_bucket_start_time())?;
-  debug!("get_latest_time_indexed_links() latest_hour_path: {}", timepath2str(&latest_hour_tp));
+  debug!("latest_hour_path: {}", timepath2str(&latest_hour_tp));
   if latest_hour_tp.exists()? {
     let latest_hour_us = convert_timepath_to_timestamp(latest_hour_tp.path.clone())?;
     let last_hour_links = get_links(
@@ -39,7 +38,7 @@ pub fn get_latest_time_indexed_links(
       //ThreadsLinkType::Protocols.try_into_filter()?,
       link_tag.clone(),
     )?;
-    debug!("get_latest_time_indexed_links() latest_hour_path found {}", last_hour_links.len());
+    debug!("latest_hour_path found {}", last_hour_links.len());
     let mut last_hour_pairs = last_hour_links.into_iter()
       .map(|link| (latest_hour_us.clone(), link))
       .collect();
@@ -97,7 +96,7 @@ pub fn get_latest_time_indexed_links(
 
       /// Debug info
       let links_added = res.get(link_count_before_dbg_info..).unwrap_or(&[]);
-      debug!("get_latest_time_indexed_links() Finished including all descendants of node in tree (depth {} current_search_time {}).
+      debug!("Finished including all descendants of node in tree (depth {} current_search_time {}).
             Raw children {}. Links added {}", depth, current_search_time_us, raw_children_dbg_info, links_added.len());
     }
 
@@ -136,7 +135,7 @@ fn append_target_links_recursive(
   for (parent_path, _, child_link) in children {
     if depth == 0 {
       /// Grab all children at the hour level
-      let mut links = get_links(
+      let links = get_links(
         child_link.target,
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         link_tag.clone(),

@@ -64,7 +64,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     let threadsLi = [html`<span>None</span>`];
     if (this.topicHash != "") {
-      const maybeThreads = this.perspective.threadsByTopic[this.topicHash];
+      const maybeThreads = this.perspective.threadsPerSubject[this.topicHash];
       if (maybeThreads) {
         threadsLi = maybeThreads.map(
           (ah) => {
