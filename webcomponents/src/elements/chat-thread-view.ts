@@ -1,4 +1,4 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {encodeHashToBase64} from "@holochain/client";
@@ -40,7 +40,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   @state() private _loading = false;
   @state() private _busy = false;
 
-  
+
   /** -- Getters -- */
 
   get chatElem() : HTMLElement {
@@ -92,15 +92,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected updated(_changedProperties: PropertyValues) {
-    //super.updated(_changedProperties);
     try {
-      console.log("ChatView.updated() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
-      const childElements = this.shadowRoot.querySelectorAll('*');
-      childElements.forEach(async(childElement) => {
-        const chatItem = childElement as ChatMessageItem;
-        await chatItem.updateComplete;
-      });
-      console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+      /** Scroll to bottom when chat-view finished updating (e.g. loading chat-items) */
+      //console.log("ChatView.updated() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+      // TODO: store scrollTop in localStorage when changing displayed thread
       this.chatElem.scrollTop = this.chatElem.scrollHeight;
     } catch(e) {
       /** i.e. element not present */
@@ -110,21 +105,19 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async getUpdateComplete(): Promise<boolean> {
-    console.log("ChatView.getUpdateComplete()")
-    let succeeded = await super.getUpdateComplete();
-    //const childOk = await this.chatElem.updateComplete;
+    //console.log("ChatView.getUpdateComplete()")
+    let updatedCompleted = await super.getUpdateComplete();
     const childElements = this.shadowRoot.querySelectorAll('*');
-    console.log("ChatView children", childElements); // This will log all child elements of the shadowRoot
+    //console.log("ChatView children", childElements); // This will log all child elements of the shadowRoot
     await childElements.forEach(async(childElement) => {
-      const chatItem = childElement as ChatMessageItem;
+      const chatItem = childElement as LitElement;
       const childUpdated = await chatItem.updateComplete;
       if (!childUpdated) {
-        console.log("ChatView child NOT COMPLETE", chatItem);
-        succeeded = false;
+        updatedCompleted = false;
       }
-      console.log("ChatView child height", /*childUpdated,*/ chatItem.offsetHeight, chatItem.scrollHeight, chatItem.clientHeight/*, chatItem*/);
+      //console.log("ChatView child height", /*childUpdated,*/ chatItem.offsetHeight, chatItem.scrollHeight, chatItem.clientHeight/*, chatItem*/);
     });
-    return succeeded /*&& childOk*/;
+    return updatedCompleted;
   }
 
 

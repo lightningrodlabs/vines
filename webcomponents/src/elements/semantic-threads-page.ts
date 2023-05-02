@@ -126,16 +126,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected async updated(_changedProperties: PropertyValues) {
     try {
+
       const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
       const view = await chatView.updateComplete;
-      console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
-      chatView.scrollTop = chatView.scrollHeight;
+      //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
       if (!view) {
+        /** Request a new update for scrolling to work */
         chatView.requestUpdate();
       }
     } catch(e) {
-      // element not present
-      //this.requestUpdate();
+      /** i.e. element not present */
     }
   }
 
