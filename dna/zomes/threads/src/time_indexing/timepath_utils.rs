@@ -122,7 +122,7 @@ pub fn trim_to_timepath(path: &Path) -> ExternResult<Path> {
 
 ///
 pub fn convert_timepath_to_timestamp(path: Path) -> ExternResult<Timestamp> {
-  debug!("convert_timepath_to_timestamp() {}", path2anchor(&path).unwrap_or("<failed>".to_string()));
+  //debug!("convert_timepath_to_timestamp() {}", path2anchor(&path).unwrap_or("<failed>".to_string()));
   let time_comps: Vec<_> = trim_to_timepath(&path)?.into();
 
   let len = time_comps.len();
@@ -132,7 +132,7 @@ pub fn convert_timepath_to_timestamp(path: Path) -> ExternResult<Timestamp> {
   let day = if len > 2 { convert_component_to_i32(&time_comps[2])? } else { 1 };
   let hour = if len > 3 { convert_component_to_i32(&time_comps[3])? } else { 0 };
 
-  debug!("convert_timepath_to_timestamp() {}-{}-{} {}", year, month, day, hour);
+  //debug!("convert_timepath_to_timestamp() {}-{}-{} {}", year, month, day, hour);
 
   let naive = NaiveDate::from_ymd_opt(year, month as u32, day as u32)
     .unwrap()

@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64} from "@holochain/client";
+import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials} from "../utils";
@@ -77,8 +77,8 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
     //console.log("<text-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.probeAllBeads(this.threadHash)
-      //dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetCount: 20})
+    //dvm.threadsZvm.probeAllBeads(this.threadHash)
+      dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
       .then((beadLinks) => {
         console.log("<text-thread-view>.loadMessages() beads found: ", beadLinks.length);
         this._loading = false;

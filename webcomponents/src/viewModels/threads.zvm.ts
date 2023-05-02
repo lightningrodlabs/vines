@@ -267,7 +267,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, timeUs: Timestamp) : Promise<string> {
+  async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, timeUs: Timestamp, dontStore?: boolean) : Promise<string> {
     /** Make out bead */
     const bead: Bead = {
       forProtocolAh: decodeHashFromBase64(protocolAh)
@@ -277,7 +277,9 @@ export class ThreadsZvm extends ZomeViewModel {
     const [ah, global_time_anchor, indexTime] = await this.zomeProxy.addTextMessageAt({texto, timeUs});
     const beadLink: BeadLink = {indexTime, creationTime: timeUs, beadAh: ah, beadType: "TextMessage"}
     /** Insert in ThreadInfo */
-    await this.storeItems(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
+    if (!dontStore) {
+      await this.storeItems(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
+    }
     /** Done */
     return global_time_anchor;
   }
@@ -351,7 +353,7 @@ export class ThreadsZvm extends ZomeViewModel {
     let date_ms = Date.now();
     let interval = 24 * 3600 * 1000; // 1 day
     for (let n = 30; n > 0; n -= 1) {
-      await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000);
+      await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000, true);
       date_ms -= interval;
     }
 
