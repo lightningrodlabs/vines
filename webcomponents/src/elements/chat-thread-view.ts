@@ -67,20 +67,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected loadlatestMessages(newDvm?: ThreadsDvm) {
-    //console.log("<chat-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
-    const dvm = newDvm? newDvm : this._dvm;
-    //dvm.threadsZvm.probeAllBeads(this.threadHash)
-      dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
-      .then((beadLinks) => {
-        console.log("<chat-thread-view>.loadMessages() beads found: ", beadLinks.length);
-        this._loading = false;
-      });
-    this._loading = true;
-  }
-
-
-  /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     console.log("<chat-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
@@ -90,13 +76,19 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** Scroll to bottom only on first load of chatElem */
+  _firstLoad = true;
+
   /** */
   protected updated(_changedProperties: PropertyValues) {
     try {
       /** Scroll to bottom when chat-view finished updating (e.g. loading chat-items) */
       //console.log("ChatView.updated() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
       // TODO: store scrollTop in localStorage when changing displayed thread
-      this.chatElem.scrollTop = this.chatElem.scrollHeight;
+      if (this._firstLoad) {
+        this.chatElem.scrollTop = this.chatElem.scrollHeight;
+        this._firstLoad = false;
+      }
     } catch(e) {
       /** i.e. element not present */
     }
@@ -116,24 +108,46 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onLoadMore() {
-    console.log("<chat-thread-view>.onLoadMore()");
-
-    this._busy = true;
-    // FIXME: Probe DHT
-    this._busy = false;
+  protected loadlatestMessages(newDvm?: ThreadsDvm) {
+    //console.log("<chat-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
+    const dvm = newDvm? newDvm : this._dvm;
+    //dvm.threadsZvm.probeAllBeads(this.threadHash)
+    dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
+      .then((beadLinks) => {
+        console.log("<chat-thread-view>.loadMessages() beads found: ", beadLinks.length);
+        this._loading = false;
+      });
+    this._loading = true;
   }
 
 
   /** */
+  async loadPreviousMessages() {
+    this._loading = true;
+    await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
+    this._loading = false;
+  }
+
+
+  // /** */
+  // onLoadMore() {
+  //   console.log("<chat-thread-view>.onLoadMore()");
+  //
+  //   this._busy = true;
+  //   // FIXME: Probe DHT
+  //   this._busy = false;
+  // }
+
+
+  /** */
   async onWheel(event) {
-    console.log("ChatView.onWheel() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+    //console.log("ChatView.onWheel() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
     //if (this.chatElem.scrollTop == 0) {
     if (this.chatElem.clientHeight -  this.chatElem.scrollHeight == this.chatElem.scrollTop) {
-      this.chatElem.style.background = 'grey';
-      await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
+      //this.chatElem.style.background = 'grey';
+      await this.loadPreviousMessages();
     } else {
-      this.chatElem.style.background = 'white';
+      //this.chatElem.style.background = 'white';
     }
     //   // this.listElem.scrollTop
     //   const hasScrolledUp = event.wheelDeltaY > 0
@@ -147,7 +161,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-thread-view>.render()", this.threadHash);
+    console.log("<chat-thread-view>.render()", this._firstLoad, this._loading, this.threadHash);
     if (this.threadHash == "") {
       return html `<div>No thread selected</div>`;
     }

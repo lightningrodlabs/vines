@@ -31,7 +31,7 @@ pub fn get_latest_time_indexed_links(
 
   /// Grab links from latest time-index hour
   let latest_hour_tp = get_time_path(root_tp.clone(), rounded_interval.get_end_bucket_start_time())?;
-  debug!("latest_hour_path: {}", timepath2str(&latest_hour_tp));
+  debug!("latest_hour_path: {}", timepath2anchor(&latest_hour_tp));
   if latest_hour_tp.exists()? {
     let latest_hour_us = convert_timepath_to_timestamp(latest_hour_tp.path.clone())?;
     let last_hour_links = get_links(
@@ -56,7 +56,7 @@ pub fn get_latest_time_indexed_links(
 
   /// Traverse tree until target count is reached or root node is reached.
   while res.len() < target_count && current_search_tp.as_ref().len() >= root_tp.as_ref().len() {
-    debug!("*** Searching: {} | total: {}", timepath2str(&current_search_tp), res.len());
+    debug!("*** Searching: {} | total: {}", timepath2anchor(&current_search_tp), res.len());
     if current_search_tp.exists()? {
       let oldest_searched_leaf_i32 = get_timepath_leaf_value(&oldest_searched_tp).unwrap();
 
@@ -96,17 +96,16 @@ pub fn get_latest_time_indexed_links(
       // FIXME
       // older_children_pairs.retain(|(time_value, _)| *time_value < latest_searched_leaf_value);
 
-      let link_count_before_dbg_info = res.len();
-
-      debug!("*** Starting recursive search of the {} descendants of {} (depth {})", older_children_pairs.len(), timepath2str(&current_search_tp), depth);
-
-
-      search_and_append_targets_recursively(older_children_pairs, &mut res, target_count, depth, root_tp.link_type, link_tag.clone())?;
-
-      /// Debug info
-      let links_added = res.get(link_count_before_dbg_info..).unwrap_or(&[]);
-      debug!("Descendants of {} (depth {}). Leafs added {}"
-        , timepath2str(&current_search_tp), depth, /*raw_children_dbg_info,*/ links_added.len());
+      /// Search in descendants if any
+      if !older_children_pairs.is_empty() {
+        let link_count_before_dbg_info = res.len();
+        debug!("*** Starting recursive search of the {} descendants of {} (depth {})", older_children_pairs.len(), timepath2anchor(&current_search_tp), depth);
+        search_and_append_targets_recursively(older_children_pairs, &mut res, target_count, depth, root_tp.link_type, link_tag.clone())?;
+        /// Debug info
+        let links_added = res.get(link_count_before_dbg_info..).unwrap_or(&[]);
+        debug!("Descendants of {} (depth {}). Leafs added {}"
+        , timepath2anchor(&current_search_tp), depth, /*raw_children_dbg_info,*/ links_added.len());
+      }
     }
 
     // "Move up" tree
@@ -120,7 +119,8 @@ pub fn get_latest_time_indexed_links(
     depth += 1;
   }
   /// Done
-  let oldest_searched_bucket_time = convert_timepath_to_timestamp(current_search_tp.path).unwrap_or(rounded_interval.begin);
+  let oldest_searched_bucket_time = convert_timepath_to_timestamp(current_search_tp.path)
+    .unwrap_or(rounded_interval.begin);
   let searched_interval = SearchInterval::new(oldest_searched_bucket_time, rounded_interval.end).unwrap();
   Ok((searched_interval, res))
 }
@@ -149,7 +149,7 @@ fn search_and_append_targets_recursively(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         link_tag.clone(),
       )?;
-      debug!(" - get_links() of parent {}·{} : {} found | {}", timepath2str(&parent_tp), compi32, links.len(), child_link.target);
+      debug!(" - get_links() of parent {}·{} : {} found | {}", timepath2anchor(&parent_tp), compi32, links.len(), child_link.target);
       /// Form leaf path
       let mut leaf_tp = parent_tp.clone();
       let comp = Component::from(format!("{}", compi32));
@@ -167,7 +167,7 @@ fn search_and_append_targets_recursively(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         None,
       )?;
-      debug!(" - get_links(grandchildren) of parent {}·{} : {} found", timepath2str(&parent_tp), compi32, grandchildren.len());
+      debug!(" - get_links(grandchildren) of parent {}·{} : {} found", timepath2anchor(&parent_tp), compi32, grandchildren.len());
 
       let grandchildren_pairs = grandchildren
         .into_iter()

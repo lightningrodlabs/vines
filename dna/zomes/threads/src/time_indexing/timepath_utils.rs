@@ -72,34 +72,21 @@ pub fn get_time_path(tp: TypedPath, time: Timestamp) -> ExternResult<TypedPath> 
 }
 
 
-// fn convert_i32_to_anchor_component(val: i32) -> Component {
-//   let str= String::from(val).unwrap();
-//   str.into()
-// }
-
-
-
-pub fn timepath2str(tp: &TypedPath) -> String {
-  return path2anchor(&trim_to_timepath(&tp.path).unwrap()).unwrap();
+///
+pub fn timepath2anchor(tp: &TypedPath) -> String {
+  let maybe_time_path = trim_to_timepath(&tp.path);
+  if let Ok(time_path) = maybe_time_path {
+    //debug!("timepath2str() FAILED for {:?}: {:?}", path2anchor(tp), maybe_time_path.err().unwrap());
+    return path2anchor(&time_path).unwrap();
+  };
+  return path2anchor(&tp.path).unwrap();
 }
 
 
-// pub fn trim_to_timepath(path: &Path) -> ExternResult<Path> {
-//   let components = path.as_ref();
-//   let len = components.len();
-//   if len < 4 {
-//     return zome_error!("Not a valid timepath");
-//   }
-//   let time_comps = &components[(len-4)..];
-//   //debug!("convert_time_path_to_timestamp() time_comps {:?}", time_comps);
-//   Ok(Path::from(time_comps.to_vec()))
-// }
-
-
-
 /// Possible input:
-///  - 2023.4.1.2
-///  - all.global.2023.4.1.2
+///  - 2023
+///  - 2023.4.13.12
+///  - all.global.2023.4.13.12
 ///  - all.global.2023.4
 pub fn trim_to_timepath(path: &Path) -> ExternResult<Path> {
   let components = path.as_ref();
