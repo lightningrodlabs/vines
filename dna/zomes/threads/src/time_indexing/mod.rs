@@ -6,10 +6,16 @@ pub mod get_latest_items;
 pub mod get_all_items;
 mod search_interval;
 mod timepath_utils;
+mod index_item;
+mod timed_item_tag;
 
 pub use search_interval::*;
 pub use timepath_utils::*;
+pub use index_item::*;
+pub use timed_item_tag::*;
 
+
+//--------------------------------------------------------------------------------------------------
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

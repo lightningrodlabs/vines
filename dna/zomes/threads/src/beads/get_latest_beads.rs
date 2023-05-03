@@ -2,10 +2,10 @@ use hdk::{
   prelude::*,
 };
 use threads_integrity::*;
-use crate::beads::{BeadLink, BeadTag};
+use crate::beads::{BeadLink};
 use crate::path_explorer::*;
 use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
-use crate::time_indexing::SearchInterval;
+use crate::time_indexing::{SearchInterval, TimedItemTag};
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -37,13 +37,13 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInter
   let bls: Vec<BeadLink> = response.1
     .into_iter()
     .map(|(index_time, link)| {
-      let bt: BeadTag = SerializedBytes::from(UnsafeBytes::from(link.tag.0)).try_into().unwrap();
+      let bt: TimedItemTag = SerializedBytes::from(UnsafeBytes::from(link.tag.0)).try_into().unwrap();
       BeadLink {
         index_time,
         creation_time: bt.devtest_timestamp,
         //creation_time: link.timestamp,
         bead_ah: ActionHash::from(link.target),
-        bead_type: bt.bead_type,
+        bead_type: bt.item_type,
         //bead_type: tag2str(&link.tag).unwrap(),
       }
     })

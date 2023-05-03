@@ -352,7 +352,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
     let date_ms = Date.now();
     let interval = 24 * 3600 * 1000; // 1 day
-    for (let n = 30; n > 0; n -= 1) {
+    for (let n = 40; n > 0; n -= 1) {
       await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000, true);
       date_ms -= interval;
     }

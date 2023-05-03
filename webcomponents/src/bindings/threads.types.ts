@@ -140,11 +140,6 @@ export interface BeadLink {
   beadType: string
 }
 
-export interface BeadTag {
-  beadType: string
-  devtestTimestamp: Timestamp
-}
-
 /** DEBUG ONLY */
 export interface AddTextMessageAtInput {
   texto: TextMessage
@@ -215,6 +210,12 @@ export interface SearchResponse {
 export interface SearchInterval {
   begin: Timestamp
   end: Timestamp
+}
+
+export interface TimedItemTag {
+  itemType: string
+  devtestTimestamp: Timestamp
+  customData: number[]
 }
 
 export interface Bead {
