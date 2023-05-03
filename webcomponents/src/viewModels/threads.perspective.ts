@@ -5,9 +5,10 @@ import {Thread} from "./thread";
 import {HoloHashB64} from "@holochain/client/lib/types";
 
 
-/** -- Should be defined in holochain/client */
+/** -- Should be defined in @holochain/client */
 export declare type AnyLinkableHash = HoloHash;
 export declare type AnyLinkableHashB64 = HoloHashB64;
+export const HOLOCHAIN_EPOCH = 1640995200000000;
 
 
 /** */
@@ -25,7 +26,7 @@ export interface ThreadsPerspective {
   allSubjects: Dictionary<Subject>
   /** Store of all ST: eh -> Topic Title */
   allSemanticTopics: Dictionary<string>
-  /** Store of all PPmat: ah -> PP */
+  /** Store of all PPmat: pp_ah -> PP */
   allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried topics: TopicHash -> ProtocolAh */
   threadsPerSubject: Dictionary<ActionHashB64[]>,

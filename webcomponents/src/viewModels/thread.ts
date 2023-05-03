@@ -5,6 +5,7 @@ import {TimeInterval} from "./timeInterval";
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
 import {Base64} from "js-base64";
+import {HOLOCHAIN_EPOCH} from "./threads.perspective";
 
 
 /** Importing this from holochain will cause jest to fail */
@@ -44,6 +45,10 @@ export class Thread {
   /** Tree of BeadLinks keyed by creation time */
   private _beadLinksTree: Tree<number, BeadLink>;
 
+  /** Flag if first node is the oldest node possible */
+  private _beginningOfTime?: Timestamp;
+
+
 
   /** Ctor */
   //[Date.now() * 1000, interval]
@@ -62,6 +67,7 @@ export class Thread {
 
   get beadLinksTree(): Tree<number, BeadLink> { return this._beadLinksTree}
 
+  get beginningOfTime(): Timestamp | undefined { return this._beginningOfTime}
 
   get searchedUnion(): TimeInterval | null {
     if (this.searchedTimeIntervals.length == 0) {
@@ -77,7 +83,16 @@ export class Thread {
     return union;
   }
 
+
   /** -- Methods -- */
+
+  setBeginningOfTime(): void {
+    if (this._beginningOfTime && this._beadLinksTree.begin.key) {
+      this._beginningOfTime = this._beadLinksTree.begin.key
+    } else {
+      this._beginningOfTime = HOLOCHAIN_EPOCH; // FIXME should be DNA.origin_time
+    }
+  }
 
   /** */
   // checkIntegrity(): boolean {

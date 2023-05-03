@@ -35,7 +35,7 @@ impl SearchInterval {
 
   ///
   pub fn now() -> Self {
-    Self { begin: Timestamp::HOLOCHAIN_EPOCH, end: sys_time().unwrap() }
+    Self { begin: Timestamp::HOLOCHAIN_EPOCH, end: sys_time().unwrap() } // FIXME use dna_info.origin_time
   }
 
   ///
@@ -45,7 +45,7 @@ impl SearchInterval {
 
   ///
   pub fn with_end_at(end: Timestamp) -> Self {
-    Self { begin: Timestamp::HOLOCHAIN_EPOCH, end, }
+    Self { begin: Timestamp::HOLOCHAIN_EPOCH, end, } // FIXME use dna_info.origin_time
   }
 
   ///

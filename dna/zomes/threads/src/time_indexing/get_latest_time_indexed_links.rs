@@ -11,23 +11,27 @@ use crate::time_indexing::timepath_utils::*;
 /// Reverse-walk the time-index tree from `search_interval.end` to `begin` until `target_count` links are found.
 pub fn get_latest_time_indexed_links(
   root_tp: TypedPath,
-  search_interval: SearchInterval,
+  searching_interval: SearchInterval,
   target_count: usize,
   link_tag: Option<LinkTag>,
 ) -> ExternResult<(SearchInterval, Vec<(Timestamp, Link)>)> {
   /// TODO: let origin_time = dna_info()?.origin_time
   /// check begin > origin_time
 
-  let rounded_interval = search_interval.into_hour_buckets();
+  if target_count == 0 {
+    return Err(wasm_error!(WasmErrorInner::Guest("Invalid input for get_latest_time_indexed_links(). target_count = 0".to_string())));
+  }
+
+  let rounded_interval = searching_interval.into_hour_buckets();
 
   let _begin_tp = get_time_path(root_tp.clone(), rounded_interval.begin.clone())?;
   debug!("get_latest_time_indexed_links() START");
   debug!("        link_tag: {:?}", link_tag);
-  debug!(" search_interval: {}", search_interval);
+  debug!(" search_interval: {}", searching_interval);
   debug!("rounded_interval: {}", rounded_interval);
 
 
-  let mut res = Vec::new();
+  let mut total_items = Vec::new();
 
   /// Grab links from latest time-index hour
   let latest_hour_tp = get_time_path(root_tp.clone(), rounded_interval.get_end_bucket_start_time())?;
@@ -45,7 +49,7 @@ pub fn get_latest_time_indexed_links(
     let mut last_hour_pairs = last_hour_links.into_iter()
       .map(|link| (latest_hour_us.clone(), link))
       .collect();
-    res.append(&mut last_hour_pairs);
+    total_items.append(&mut last_hour_pairs);
   }
 
 
@@ -55,8 +59,8 @@ pub fn get_latest_time_indexed_links(
   let mut depth = 0;
 
   /// Traverse tree until target count is reached or root node is reached.
-  while res.len() < target_count && current_search_tp.as_ref().len() >= root_tp.as_ref().len() {
-    debug!("*** Searching: {} | total: {}", timepath2anchor(&current_search_tp), res.len());
+  while total_items.len() < target_count && current_search_tp.as_ref().len() >= root_tp.as_ref().len() {
+    debug!("*** Searching: {} | total: {}", timepath2anchor(&current_search_tp), total_items.len());
     if current_search_tp.exists()? {
       let oldest_searched_leaf_i32 = get_timepath_leaf_value(&oldest_searched_tp).unwrap();
 
@@ -98,31 +102,44 @@ pub fn get_latest_time_indexed_links(
 
       /// Search in descendants if any
       if !older_children_pairs.is_empty() {
-        let link_count_before_dbg_info = res.len();
+        let link_count_before_dbg_info = total_items.len();
         debug!("*** Starting recursive search of the {} descendants of {} (depth {})", older_children_pairs.len(), timepath2anchor(&current_search_tp), depth);
-        search_and_append_targets_recursively(older_children_pairs, &mut res, target_count, depth, root_tp.link_type, link_tag.clone())?;
+        search_and_append_targets_recursively(older_children_pairs, &mut total_items, target_count, depth, root_tp.link_type, link_tag.clone())?;
         /// Debug info
-        let links_added = res.get(link_count_before_dbg_info..).unwrap_or(&[]);
+        let links_added = total_items.get(link_count_before_dbg_info..).unwrap_or(&[]);
         debug!("Descendants of {} (depth {}). Leafs added {}"
         , timepath2anchor(&current_search_tp), depth, /*raw_children_dbg_info,*/ links_added.len());
       }
     }
 
-    // "Move up" tree
+    // /* Exit if limit reached */
+    // if (total_item_links.len() >= target_count) {
+    //   debug!("target_count REACHED");
+    //   break;
+    // }
+
+    /* "Move up" tree */
     oldest_searched_tp = current_search_tp.clone();
     if let Some(csp) = oldest_searched_tp.parent() {
       current_search_tp = csp
     } else {
-      debug!("NO PARENT");
+      debug!("NO PARENT, e.g. ROOT REACHED");
       break;
     };
     depth += 1;
   }
-  /// Done
-  let oldest_searched_bucket_time = convert_timepath_to_timestamp(current_search_tp.path)
-    .unwrap_or(rounded_interval.begin);
+
+  /// Determine searched interval
+  debug!("END. current_search_tp = {} | total = {}", timepath2anchor(&current_search_tp), total_items.len());
+  let oldest_searched_bucket_time = if total_items.len() >= target_count {
+    total_items.last().unwrap().0
+  } else {
+    convert_timepath_to_timestamp(current_search_tp.path)
+      .unwrap_or(rounded_interval.begin)
+  };
   let searched_interval = SearchInterval::new(oldest_searched_bucket_time, rounded_interval.end).unwrap();
-  Ok((searched_interval, res))
+  /// Done
+  Ok((searched_interval, total_items))
 }
 
 
@@ -140,6 +157,8 @@ fn search_and_append_targets_recursively(
   /// but the timestamp is not fake and still represents the system time.
   children.sort_unstable_by_key(|(_path, time_component_value, _)| cmp::Reverse(*time_component_value));
 
+  //let mut last_probed_anchor =
+
   /// Traverse tree
   for (parent_tp, compi32, child_link) in children {
     if depth == 0 {
@@ -149,7 +168,7 @@ fn search_and_append_targets_recursively(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         link_tag.clone(),
       )?;
-      debug!(" - get_links() of parent {}·{} : {} found | {}", timepath2anchor(&parent_tp), compi32, links.len(), child_link.target);
+      debug!(" - get_links() of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, links.len()/*, child_link.target*/);
       /// Form leaf path
       let mut leaf_tp = parent_tp.clone();
       let comp = Component::from(format!("{}", compi32));
@@ -167,7 +186,7 @@ fn search_and_append_targets_recursively(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         None,
       )?;
-      debug!(" - get_links(grandchildren) of parent {}·{} : {} found", timepath2anchor(&parent_tp), compi32, grandchildren.len());
+      debug!(" - get_links(grandchildren) of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, grandchildren.len());
 
       let grandchildren_pairs = grandchildren
         .into_iter()

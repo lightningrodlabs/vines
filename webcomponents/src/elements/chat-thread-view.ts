@@ -6,6 +6,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ChatMessageItem} from "./chat-message-item";
+import {ChatHeader} from "./chat-header";
 
 
 /**
@@ -122,7 +123,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async loadPreviousMessages() {
+  async loadPreviousMessages(): Promise<void> {
+    if (this._dvm.threadsZvm.reachedBeginning(this.threadHash)) {
+      //this._dvm.threadsZvm.perspective.threads[this.threadHash]
+      return;
+    }
     this._loading = true;
     await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
     this._loading = false;
@@ -177,6 +182,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading messages...</div>`;
     }
 
+
+    /** */
+    let maybeHeader = html``
+    if (this._dvm.threadsZvm.reachedBeginning(this.threadHash)) {
+      maybeHeader = html`<chat-header .hash="${this.threadHash}" style="margin:10px;"></chat-header>`;
+    }
+
+
     /** Should grab all probed and request probes if end is reached */
     //const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
 
@@ -206,6 +219,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                   @scroll=${this.onWheel}
         >
             ${textLi.reverse()}
+            ${maybeHeader}            
         </div>
     `;
   }
@@ -214,6 +228,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static get scopedElements() {
     return {
+      "chat-header": ChatHeader,
       "chat-item": ChatMessageItem,
     }
   }

@@ -12,7 +12,7 @@ import {
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
-  AnyLinkableHashB64,
+  AnyLinkableHashB64, HOLOCHAIN_EPOCH,
   materializeParticipationProtocol,
   ParticipationProtocolMat,
   TextMessageInfo,
@@ -195,6 +195,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("probeAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Store */
     await this.storeItems(ppAhB64, beadLinks, TimeInterval.new(interval));
+    this._threads[ppAhB64].setBeginningOfTime();
     /** Done */
     return beadLinks;
   }
@@ -208,14 +209,30 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Probe the latest beads */
     const [interval, beadLinks] = await this.zomeProxy.getLatestBeads(input);
     /** Cache them */
-    await this.storeItems(encodeHashToBase64(input.ppAh), beadLinks, TimeInterval.new(interval));
+    const ppAhB64 = encodeHashToBase64(input.ppAh);
+    await this.storeItems(ppAhB64, beadLinks, TimeInterval.new(interval));
+    /** Check if beginning of time reached */
+    console.log("BeginningOfTime", interval, HOLOCHAIN_EPOCH);
+    if (interval.begin <= HOLOCHAIN_EPOCH) {
+      this._threads[ppAhB64].setBeginningOfTime();
+      console.log("BeginningOfTime reached for", ppAhB64, this._threads[ppAhB64].beginningOfTime);
+    }
     /** Done */
     return beadLinks;
   }
 
 
+  /** */
+  reachedBeginning(ppAh: ActionHashB64): boolean {
+    return this._threads[ppAh].beginningOfTime != undefined;
+  }
+
+
   /** Try to get older beads from the currently known oldest bead of a thread */
   /*async */ probePreviousBeads(ppAh: ActionHashB64, limit: number): Promise<BeadLink[]> {
+    // if (this.reachedBeginning(ppAh)) {
+    //   return [];
+    // }
     const thread = this._threads[ppAh];
     if (!thread) {
       return Promise.reject("No Thread data found for given ParticipationProtocol")
@@ -333,15 +350,22 @@ export class ThreadsZvm extends ZomeViewModel {
     const top11 = await this.publishSemanticTopic("topic-many");
     const top2 = await this.publishSemanticTopic("topic-1");
     const top3 = await this.publishSemanticTopic("topic-none");
+    const top4 = await this.publishSemanticTopic("time-test");
 
     const th1 = await this.publishThreadFromSemanticTopic(top1, "general");
     console.log("*** generateTestData() general", th1);
     const th2 = await this.publishThreadFromSemanticTopic(top1, "none");
-    const th3 = await this.publishThreadFromSemanticTopic(top1, "furnished");
-    console.log("*** generateTestData() furnished", th3);
+
     const th4 = await this.publishThreadFromSemanticTopic(top1, "full");
     const th01 = await this.publishThreadFromSemanticTopic(top2, "general");
     //const th11 = await this.publishThreadFromSemanticTopic(top1, "general");
+
+    const timeMin = await this.publishThreadFromSemanticTopic(top4, "minute");
+    console.log("*** generateTestData() minute", timeMin);
+    const timeHour = await this.publishThreadFromSemanticTopic(top4, "hour");
+    const timeDay = await this.publishThreadFromSemanticTopic(top4, "day");
+    const timeMon = await this.publishThreadFromSemanticTopic(top4, "month");
+    //const timeYear = await this.publishThreadFromSemanticTopic(top4, "year");
 
 
     await this.publishTextMessage("m1", th01);
@@ -350,15 +374,23 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.publishTextMessage("second", th1);
     await this.publishTextMessage("third", th1);
 
+    //await this.publishManyDebug(timeMin, 60 * 1000);
+    //await this.publishManyDebug(timeHour, 3600 * 1000);
+    //await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
+    await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000);
+  }
+
+
+  /** */
+  async publishManyDebug(ppAh: ActionHashB64, interval: Timestamp, n?: number): Promise<void> {
     let date_ms = Date.now();
-    let interval = 24 * 3600 * 1000; // 1 day
-    for (let n = 40; n > 0; n -= 1) {
-      await this.publishTextMessageAt("message-" + n, th3, date_ms * 1000, true);
+    if (!n) {
+      n = 40;
+    }
+    for (; n > 0; n -= 1) {
+      await this.publishTextMessageAt("message-" + n, ppAh, date_ms * 1000, true);
       date_ms -= interval;
     }
-
-    // for (let n = 0 ;n < 200; n +=1) {
-    //   await this.publishTextMessage("m-" + n, th4);
-    // }
   }
+
 }
