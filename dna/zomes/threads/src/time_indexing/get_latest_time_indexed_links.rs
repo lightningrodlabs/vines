@@ -168,7 +168,7 @@ fn search_and_append_targets_recursively(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         link_tag.clone(),
       )?;
-      debug!(" - get_links() of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, links.len()/*, child_link.target*/);
+      //debug!(" - get_links() of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, links.len()/*, child_link.target*/);
       /// Form leaf path
       let mut leaf_tp = parent_tp.clone();
       let comp = Component::from(format!("{}", compi32));
@@ -186,7 +186,7 @@ fn search_and_append_targets_recursively(
         LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         None,
       )?;
-      debug!(" - get_links(grandchildren) of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, grandchildren.len());
+      //debug!(" - get_links(grandchildren) of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, grandchildren.len());
 
       let grandchildren_pairs = grandchildren
         .into_iter()

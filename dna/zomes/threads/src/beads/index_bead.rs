@@ -12,7 +12,7 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_u
   let thread_tp = Path::from(pp_anchor.clone())
     .typed(ThreadsLinkType::ThreadTimePath)?;
   let (thread_leaf_tp, _ah) = index_item(thread_tp, bead_ah.clone().into(), bead_type, index_time_us, &vec![])?;
-  debug!("Bead indexed at thread:\n  - {} {}", path2anchor(&thread_leaf_tp.path).unwrap(), thread_leaf_tp.path_entry_hash()?);
+  //debug!("Bead indexed at thread:\n  - {} {}", path2anchor(&thread_leaf_tp.path).unwrap(), thread_leaf_tp.path_entry_hash()?);
 
   /// Index in Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)

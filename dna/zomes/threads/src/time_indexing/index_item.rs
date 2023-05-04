@@ -27,7 +27,7 @@ pub fn index_item(
     root_tp.link_type,
     LinkTag::new(tag.to_vec()),
   )?;
-  debug!("Item indexed at: {}", path2anchor(&leaf_tp.path).unwrap());
+  //debug!("Item indexed at: {}", path2anchor(&leaf_tp.path).unwrap());
   /// Done
   Ok((leaf_tp, link_ah))
 }

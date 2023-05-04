@@ -120,6 +120,13 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** -- Init -- */
 
+  /** */
+  async initializePerspectiveOffline(): Promise<void> {
+    // TODO: notify subscribers
+  }
+
+
+  /** */
   async initializePerspectiveOnline(): Promise<void> {
     await this.probeSemanticTopics();
     let probes = []
@@ -303,6 +310,25 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  async publishManyTextMessageAt(msg: string, protocolAh: ActionHashB64, intervalUs: Timestamp, count: number, dontStore?: boolean) : Promise<void> {
+    /** Make out bead */
+    const bead: Bead = {
+      forProtocolAh: decodeHashFromBase64(protocolAh)
+    }
+    /** Commit Entry */
+    const texto = {value: msg, bead}
+    const tuples = await this.zomeProxy.addManyTextMessageAt({texto, intervalUs, count});
+    for (const [ah, _global_time_anchor, indexTime] of tuples) {
+      const beadLink: BeadLink = {indexTime, creationTime: intervalUs, beadAh: ah, beadType: "TextMessage"}
+      /** Insert in ThreadInfo */
+      if (!dontStore) {
+        await this.storeItems(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
+      }
+    }
+  }
+
+
+  /** */
   async publishSemanticTopic(title: string) : Promise<EntryHashB64> {
     const eh = await this.zomeProxy.createSemanticTopic({title});
     const ehB64 = encodeHashToBase64(eh);
@@ -374,23 +400,35 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.publishTextMessage("second", th1);
     await this.publishTextMessage("third", th1);
 
-    //await this.publishManyDebug(timeMin, 60 * 1000);
-    //await this.publishManyDebug(timeHour, 3600 * 1000);
-    //await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
+    //await this.publishManyDebug(timeMin, 60 * 1000, 40 * 4);
+    await this.publishManyDebug(timeHour, 3600 * 1000);
+    await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
+    let begin = Date.now()
     await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000);
+    let end = Date.now()
+    let diff = end - begin;
+    console.log(`Publish Debug timing: ${diff / 1000} secs`)
   }
 
 
   /** */
   async publishManyDebug(ppAh: ActionHashB64, interval: Timestamp, n?: number): Promise<void> {
-    let date_ms = Date.now();
     if (!n) {
       n = 40;
     }
-    for (; n > 0; n -= 1) {
-      await this.publishTextMessageAt("message-" + n, ppAh, date_ms * 1000, true);
-      date_ms -= interval;
-    }
+    await this.publishManyTextMessageAt("message-" + n, ppAh, interval, n);
   }
+
+  // /** */
+  // async publishManyDebug(ppAh: ActionHashB64, interval: Timestamp, n?: number): Promise<void> {
+  //   let date_ms = Date.now();
+  //   if (!n) {
+  //     n = 40;
+  //   }
+  //   for (; n > 0; n -= 1) {
+  //     await this.publishTextMessageAt("message-" + n, ppAh, date_ms * 1000, true);
+  //     date_ms -= interval;
+  //   }
+  // }
 
 }

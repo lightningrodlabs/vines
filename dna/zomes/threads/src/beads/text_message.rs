@@ -24,6 +24,13 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
 }
 
 
+///
+#[hdk_extern]
+pub fn get_many_text_message(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, String)>> {
+  return ahs.into_iter().map(|ah| get_text_message(ah)).collect();
+}
+
+
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
 pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String, Timestamp)> {
@@ -51,4 +58,32 @@ pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(Action
   let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.time_us)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+}
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddManyTextMessageAtInput {
+  texto: TextMessage,
+  interval_us: u32,
+  count: usize,
+}
+
+#[hdk_extern]
+pub fn add_many_text_message_at(input: AddManyTextMessageAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
+  let mut start = sys_time()?.0;
+  let mut res = Vec::new();
+  for i in 0..input.count {
+    let text = format!("{}-{}", input.texto.value, i);
+    let texto = TextMessage {
+      value: text,
+      bead: input.texto.bead.clone(),
+    };
+    let ah = create_entry(ThreadsEntry::TextMessage(texto))?;
+    let tp_pair = index_bead(input.texto.bead.clone(), ah.clone(), "TextMessage", Timestamp::from_micros(start.clone()))?;
+    let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
+    res.push((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time));
+    start += i64::from(input.interval_us);
+  }
+  Ok(res)
 }

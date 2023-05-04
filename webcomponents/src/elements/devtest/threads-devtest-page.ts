@@ -68,7 +68,8 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _myNick: string = '';
 
-  // /** After first render only */
+
+  /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
     console.log("<threads-test-page.render()> firstUpdated():", "createMyProfile");
@@ -78,8 +79,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
     //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate data */
-    await this._dvm.threadsZvm.generateTestData();
-
+    //await this._dvm.threadsZvm.generateTestData();
   }
 
 

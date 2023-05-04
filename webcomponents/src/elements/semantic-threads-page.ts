@@ -122,6 +122,22 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** After first render only */
+  async firstUpdated() {
+    // this._initialized = true;
+    console.log("<semantic-threads-page> firstUpdated():", "createMyProfile");
+
+    // FIXME Fix source-chain head changed error by implementing blocking calls in zits
+    //await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
+    //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
+
+    /** Generate test data */
+    await this._dvm.threadsZvm.generateTestData();
+    const leftSide = this.shadowRoot.getElementById("leftSide");
+    leftSide.style.background = "#aab799";
+  }
+
+
   /** */
   protected async updated(_changedProperties: PropertyValues) {
     try {
@@ -156,7 +172,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
               <span id="threadTitle" slot="startContent">${topic}: ${thread.purpose}</span>
-              <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings"></ui5-button>
+              <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings" @click=${() => this._dvm.dumpLogs()}></ui5-button>
           </ui5-bar>
           <chat-view id="chat-view" .threadHash=${this._selectedThreadHash}
                             style=""></chat-view>
@@ -273,7 +289,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         }
 
         #leftSide {
-          background: #9bb791;
+          background: #e889c0;
           height: 100vh;
           width: 340px;
           display: flex;
@@ -287,13 +303,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           display: flex;
           flex-direction: column;
         }
-        
+
         #threadTitle {
           font-size: 18px;
           font-weight: bold;
         }
-        
-        
+
+
       `,
 
     ];

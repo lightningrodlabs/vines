@@ -11,8 +11,10 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_all_beads",
 	"get_latest_beads",
 	"get_text_message",
+	"get_many_text_message",
 	"add_text_message",
 	"add_text_message_at",
+	"add_many_text_message_at",
 
 
 	"create_participation_protocol",

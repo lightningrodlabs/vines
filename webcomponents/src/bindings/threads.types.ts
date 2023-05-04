@@ -146,6 +146,12 @@ export interface AddTextMessageAtInput {
   timeUs: Timestamp
 }
 
+export interface AddManyTextMessageAtInput {
+  texto: TextMessage
+  intervalUs: number
+  count: number
+}
+
 export interface CreatePpInput {
   purpose: string
   rules: string
