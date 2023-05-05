@@ -9,7 +9,8 @@ use crate::time_indexing::convert_timepath_to_timestamp;
 ///
 #[hdk_extern]
 pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
-  return match get(ah.clone(), GetOptions::content())? {
+  let fn_start = sys_time()?;
+  let res = match get(ah.clone(), GetOptions::content())? {
     Some(record) => {
       let action = record.action().clone();
       //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
@@ -21,6 +22,9 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
     }
     None => zome_error!("get_text_message(): Entry not found"),
   };
+  let fn_end = sys_time()?;
+  debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
+  res
 }
 
 
@@ -54,9 +58,12 @@ pub struct AddTextMessageAtInput {
 
 #[hdk_extern]
 pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String, Timestamp)> {
+  let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.time_us)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
+  let fn_end = sys_time()?;
+  debug!("               ADD TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
