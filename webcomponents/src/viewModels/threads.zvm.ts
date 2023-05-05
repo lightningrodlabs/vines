@@ -405,8 +405,14 @@ export class ThreadsZvm extends ZomeViewModel {
     // await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
     //await delay(60 * 1000);
 
+    // Do zome_calls for fun
+    // for (let i = 1; i <= 100; i++) {
+    //   let dnaInfo = await this.zomeProxy.dnaInfo();
+    //   console.log("dnaInfo", i, dnaInfo);
+    // }
+
     let begin = Date.now()
-    let n = 100;
+    let n = 10;
     await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000, n);
     let end = Date.now()
     let diff = (end - begin) / 1000;

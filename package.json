@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "config": {
     "hc_version": "0.1.0",
-    "zits_version": "1.6.1",
+    "zits_version": "1.7.0",
     "bin": "bin"
   },
   "private": true,

@@ -5,7 +5,7 @@ mod get_all_beads;
 mod index_bead;
 
 pub use index_bead::*;
-
+pub use text_message::*;
 
 //--------------------------------------------------------------------------------------------------
 

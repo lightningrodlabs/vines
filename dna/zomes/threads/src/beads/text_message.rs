@@ -52,8 +52,8 @@ pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String,
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AddTextMessageAtInput {
-  texto: TextMessage,
-  time_us: Timestamp,
+  pub texto: TextMessage,
+  pub time_us: Timestamp,
 }
 
 #[hdk_extern]

@@ -2,8 +2,9 @@
 members = [
   "dna/zomes/threads_integrity",
   "dna/zomes/threads",
-  "dna/zomes/profiles_integrity",
-  "dna/zomes/profiles"
+  #"dna/zomes/profiles_integrity",
+  #"dna/zomes/profiles",
+  "sweettest"
   ]
 
 [workspace.package]
@@ -13,9 +14,9 @@ edition = "2021"
 
 [workspace.dependencies]
 serde = { version = "1.0", default-features = false }
-hdi = { version = "=0.2.2", default-features = false }
-hdk = { version = "=0.1.2", default-features = false }
-zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-1.2" }
+hdi = { version = "=0.2.1", default-features = false }
+hdk = { version = "=0.1.1", default-features = false }
+zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-1.1" }
 
 
 [profile.dev]
@@ -25,4 +26,5 @@ overflow-checks = false
 
 [profile.release]
 opt-level = "z"
-lto = true
+#lto = true
+lto = false

@@ -1,0 +1,19 @@
+[package]
+name = "sweettest_threads"
+version = "0.0.1"
+edition = "2021"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+serde = { version = "1.0", default-features = false }
+tokio = { version = "1.13", features = [ "full" ] }
+tokio-stream = { version = "0.1", default-features = false }
+maplit = { version = "1", default-features = false }
+
+holochain = { version = "=0.1.3", default-features = false, features = ["test_utils"]  }
+holo_hash = { version = "=0.1.1", default-features = false  }
+
+sweettest_utils = { git = "https://github.com/ddd-mtl/sweettest-utils", branch = "hc-0.1.3" }
+
+threads_zome = { path = "../dna/zomes/threads", default-features = false }
+threads_integrity_zome = { path = "../dna/zomes/threads_integrity", default-features = false }
