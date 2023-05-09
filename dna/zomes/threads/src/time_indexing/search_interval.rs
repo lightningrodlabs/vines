@@ -1,6 +1,7 @@
 use std::fmt::*;
 use hdk::prelude::*;
 use zome_utils::zome_error;
+use crate::time_indexing::{ts2anchor, ts2timepath};
 
 /// Time interval in us
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -87,9 +88,15 @@ impl SearchInterval {
 
   ///
   pub fn get_end_bucket_start_time(&self) -> Timestamp {
-    let hour = Timestamp::try_from(std::time::Duration::from_secs(3600)).unwrap();
-    let diff = self.end.0 - hour.0;
+    let hour_us = Timestamp::try_from(std::time::Duration::from_secs(3600)).unwrap();
+    let diff = self.end.0 - hour_us.0;
     Timestamp::from_micros(diff)
+  }
+
+
+  /// Print as timepath anchor
+  pub fn as_anchors(&self) -> String {
+    return format!("[{}, {}]", ts2anchor(self.begin), ts2anchor(self.end));
   }
 
 }

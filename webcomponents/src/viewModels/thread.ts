@@ -114,7 +114,10 @@ export class Thread {
       //   throw Error("ThreadInfo.addMessages() Failed. New message time interval do not overlap with current searchInterval")
       // }
 
-      this._searchedTimeIntervals.push([Date.now() * 1000, searchedInterval]); // union;
+      /** Don't add 'Instant' interval */
+      if (searchedInterval.end != searchedInterval.begin) {
+        this._searchedTimeIntervals.push([Date.now() * 1000, searchedInterval]); // union;
+      }
 
       for (const bl of Object.values(newItems)) {
         if (this.has(bl)) {
@@ -129,7 +132,14 @@ export class Thread {
 
   /** */
   print(): void {
-    console.log("BeadLinksTree:", this.searchedUnion);
+    console.log("BeadLinksTree:", this._beadLinksTree.length);
+    console.log(" - searched union:", this.searchedUnion);
+
+  }
+
+  /** */
+  dump(): void {
+    console.log("BeadLinksTree dump:", this._beadLinksTree.length, this.searchedUnion);
     this._beadLinksTree.forEach(
       ((k, bl) => {
         console.log(`\t[${k}]`, encodeHashToBase64(bl.beadAh), bl.beadType);

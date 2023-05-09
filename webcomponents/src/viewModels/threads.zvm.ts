@@ -214,13 +214,13 @@ export class ThreadsZvm extends ZomeViewModel {
       console.error("probeLatestBeads() Failed. ppAh not provided.")
     }
     /** Probe the latest beads */
-    const [interval, beadLinks] = await this.zomeProxy.getLatestBeads(input);
+    const [searchedInterval, beadLinks] = await this.zomeProxy.getLatestBeads(input);
     /** Cache them */
     const ppAhB64 = encodeHashToBase64(input.ppAh);
-    await this.storeItems(ppAhB64, beadLinks, TimeInterval.new(interval));
+    await this.storeItems(ppAhB64, beadLinks, TimeInterval.new(searchedInterval));
     /** Check if beginning of time reached */
-    console.log("BeginningOfTime", interval, HOLOCHAIN_EPOCH);
-    if (interval.begin <= HOLOCHAIN_EPOCH) {
+    console.log("BeginningOfTime", searchedInterval, HOLOCHAIN_EPOCH);
+    if (searchedInterval.begin <= HOLOCHAIN_EPOCH) {
       this._threads[ppAhB64].setBeginningOfTime();
       console.log("BeginningOfTime reached for", ppAhB64, this._threads[ppAhB64].beginningOfTime);
     }
@@ -244,7 +244,8 @@ export class ThreadsZvm extends ZomeViewModel {
     if (!thread) {
       return Promise.reject("No Thread data found for given ParticipationProtocol")
     }
-    const oldestTime = thread.beadLinksTree.begin.key;
+    // const oldestTime = thread.beadLinksTree.begin.key;
+    const oldestTime = thread.searchedUnion.begin;
     let query: GetLatestBeadsInput = {
       ppAh: decodeHashFromBase64(ppAh),
       targetLimit: limit,
@@ -394,26 +395,27 @@ export class ThreadsZvm extends ZomeViewModel {
     //const timeYear = await this.publishThreadFromSemanticTopic(top4, "year");
 
 
-    // await this.publishTextMessage("m1", th01);
-    //
-    // await this.publishTextMessage("first", th1);
-    // await this.publishTextMessage("second", th1);
-    // await this.publishTextMessage("third", th1);
-    //
-    // await this.publishManyDebug(timeMin, 60 * 1000, 40 * 4);
-    // await this.publishManyDebug(timeHour, 3600 * 1000);
-    // await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
-    //await delay(60 * 1000);
+    await this.publishTextMessage("m1", th01);
 
-    // Do zome_calls for fun
+    await this.publishTextMessage("first", th1);
+    await this.publishTextMessage("second", th1);
+    await this.publishTextMessage("third", th1);
+
+    await this.publishManyDebug(timeMin, 60 * 1000, 200);
+    await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
+    await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000, 30);
+
+    // await delay(60 * 1000);
+    // Do zome calls for fun (performance test)
     // for (let i = 1; i <= 100; i++) {
     //   let dnaInfo = await this.zomeProxy.dnaInfo();
     //   console.log("dnaInfo", i, dnaInfo);
     // }
 
+
     let begin = Date.now()
-    let n = 10;
-    await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000, n);
+    let n = 100;
+    await this.publishManyDebug(timeHour, 3600 * 1000, 100);
     let end = Date.now()
     let diff = (end - begin) / 1000;
     console.log(`Publish timing for ${n} entries: ${diff} secs (${diff / n} secs / entry)`)
@@ -435,7 +437,7 @@ export class ThreadsZvm extends ZomeViewModel {
       n = 40;
     }
     for (; n > 0; n -= 1) {
-      await this.publishTextMessageAt("message-" + n, ppAh, date_ms * 1000, true);
+      await this.publishTextMessageAt("" + interval / 1000 + "-message-" + n, ppAh, date_ms * 1000, true);
       date_ms -= interval;
     }
   }

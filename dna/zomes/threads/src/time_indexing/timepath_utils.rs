@@ -51,9 +51,24 @@ pub fn convert_component_to_i32(component: &Component) -> ExternResult<i32> {
 }
 
 
-///
-pub fn get_time_path(tp: TypedPath, time: Timestamp) -> ExternResult<TypedPath> {
+/// Convert timestamp to timepath
+pub fn ts2timepath(time: Timestamp) -> Path {
+  let (secs, ns) = time.as_seconds_and_nanos();
+  let dtc = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(secs, ns).unwrap(), Utc);
+  let mut components: Vec<Component> = Vec::new();
 
+  components.push((dtc.year() as i32).to_string().into());
+  components.push((dtc.month() as i32).to_string().into());
+  components.push((dtc.day() as i32).to_string().into());
+  components.push((dtc.hour() as i32).to_string().into());
+
+  //let path = Path::from( components);
+  components.into()
+}
+
+
+/// Convert timestamp to typed timepath
+pub fn get_time_path(tp: TypedPath, time: Timestamp) -> ExternResult<TypedPath> {
   let (secs, ns) = time.as_seconds_and_nanos();
   let dtc = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp_opt(secs, ns).unwrap(), Utc);
   let mut components: Vec<_> = tp.path.into();
@@ -80,6 +95,13 @@ pub fn timepath2anchor(tp: &TypedPath) -> String {
     return path2anchor(&time_path).unwrap();
   };
   return path2anchor(&tp.path).unwrap();
+}
+
+
+///
+pub fn ts2anchor(ts: Timestamp) -> String {
+  let path = ts2timepath(ts);
+  return path2anchor(&path).unwrap();
 }
 
 

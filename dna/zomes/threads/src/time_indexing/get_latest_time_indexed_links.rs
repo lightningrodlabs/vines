@@ -22,20 +22,25 @@ pub fn get_latest_time_indexed_links(
     return Err(wasm_error!(WasmErrorInner::Guest("Invalid input for get_latest_time_indexed_links(). target_count = 0".to_string())));
   }
 
-  let rounded_interval = searching_interval.into_hour_buckets();
-
-  let _begin_tp = get_time_path(root_tp.clone(), rounded_interval.begin.clone())?;
   debug!("get_latest_time_indexed_links() START");
   debug!("        link_tag: {:?}", link_tag);
-  debug!(" search_interval: {}", searching_interval);
-  debug!("rounded_interval: {}", rounded_interval);
 
+  /// Determine latest hour and the previous
+  let mut rounded_search_interval = searching_interval.into_hour_buckets();
+  let latest_hour_us = rounded_search_interval.get_end_bucket_start_time();
+  let latest_hour_tp = get_time_path(root_tp.clone(), latest_hour_us)?;
+  let prev_hour_us = Timestamp::from_micros(latest_hour_us.0 - 3600 * 1000 * 1000);
+  let prev_hour_tp = get_time_path(root_tp.clone(), prev_hour_us)?;
+  //let _begin_tp = get_time_path(root_tp.clone(), rounded_search_interval.begin.clone())?;
+  debug!(" search_interval: {}", searching_interval.as_anchors());
+  debug!("rounded_interval: {}", rounded_search_interval.as_anchors());
+  debug!("  latest_hour_tp: {}", timepath2anchor(&latest_hour_tp));
+  debug!("    prev_hour_tp: {}", timepath2anchor(&prev_hour_tp));
 
   let mut total_items = Vec::new();
+  let mut has_searched_prev = false;
 
   /// Grab links from latest time-index hour
-  let latest_hour_tp = get_time_path(root_tp.clone(), rounded_interval.get_end_bucket_start_time())?;
-  debug!("latest_hour_path: {}", timepath2anchor(&latest_hour_tp));
   if latest_hour_tp.exists()? {
     let latest_hour_us = convert_timepath_to_timestamp(latest_hour_tp.path.clone())?;
     let last_hour_links = get_links(
@@ -45,16 +50,34 @@ pub fn get_latest_time_indexed_links(
       //ThreadsLinkType::Protocols.try_into_filter()?,
       link_tag.clone(),
     )?;
-    debug!("latest_hour_path items: {}", last_hour_links.len());
+    debug!("latest_hour_tp items: {}", last_hour_links.len());
     let mut last_hour_pairs = last_hour_links.into_iter()
       .map(|link| (latest_hour_us.clone(), link))
       .collect();
     total_items.append(&mut last_hour_pairs);
+
+    /// Search previous hour if limit already reached, since we don't know if this bucket was already searched
+    /// in order to not get stuck in the same bucket forever
+    if total_items.len() >= target_count {
+      has_searched_prev = true;
+      if prev_hour_tp.exists()? {
+        let prev_hour_links = get_links(
+          prev_hour_tp.path_entry_hash()?,
+          LinkTypeFilter::single_dep(root_tp.link_type.zome_index),
+          link_tag.clone(),
+        )?;
+        debug!("prev_hour_tp items: {}", prev_hour_links.len());
+        let mut prev_hour_pairs = prev_hour_links.into_iter()
+                                                 .map(|link| (prev_hour_us.clone(), link))
+                                                 .collect();
+        total_items.append(&mut prev_hour_pairs);
+      }
+    }
   }
 
 
   /// Setup search loop. Start search at parent node of end time.
-  let mut oldest_searched_tp = latest_hour_tp;
+  let mut oldest_searched_tp = if has_searched_prev { prev_hour_tp } else { latest_hour_tp };
   let mut current_search_tp = oldest_searched_tp.parent().unwrap();
   let mut depth = 0;
 
@@ -67,10 +90,10 @@ pub fn get_latest_time_indexed_links(
       let latest_searched_time_us = convert_timepath_to_timestamp(oldest_searched_tp.path.clone()).unwrap();
       debug!("*** Searching: latest_searched_time: {}", latest_searched_time_us);
       let current_search_time_us = convert_timepath_to_timestamp(current_search_tp.path.clone())
-        .unwrap_or(rounded_interval.begin); // If at root component, search years starting from begin_time
+        .unwrap_or(rounded_search_interval.begin); // If at root component, search years starting from begin_time
       debug!("*** Searching:  current_search_time: {}", current_search_time_us);
 
-      if current_search_time_us < rounded_interval.begin {
+      if current_search_time_us < rounded_search_interval.begin {
         debug!("WENT PAST BEGINNING");
         break;
       }
@@ -130,14 +153,23 @@ pub fn get_latest_time_indexed_links(
   }
 
   /// Determine searched interval
-  debug!("END. current_search_tp = {} | total = {}", timepath2anchor(&current_search_tp), total_items.len());
-  let oldest_searched_bucket_time = if total_items.len() >= target_count {
-    total_items.last().unwrap().0
+  debug!("current_search_tp = {} | total = {}", timepath2anchor(&current_search_tp), total_items.len());
+  let oldest_searched_bucket_time =
+    if total_items.len() >= target_count {
+      if has_searched_prev {
+        prev_hour_us
+      } else {
+        total_items.last().unwrap().0
+      }
   } else {
     convert_timepath_to_timestamp(current_search_tp.path)
-      .unwrap_or(rounded_interval.begin)
+      .unwrap_or(rounded_search_interval.begin)
   };
-  let searched_interval = SearchInterval::new(oldest_searched_bucket_time, rounded_interval.end).unwrap();
+
+
+
+  debug!("END. searched_interval = [{}, {}]", ts2anchor(oldest_searched_bucket_time), ts2anchor(rounded_search_interval.end));
+  let searched_interval = SearchInterval::new(oldest_searched_bucket_time, rounded_search_interval.end).unwrap();
   /// Done
   Ok((searched_interval, total_items))
 }
