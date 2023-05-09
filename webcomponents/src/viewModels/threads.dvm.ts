@@ -1,6 +1,14 @@
 import {DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {ProfilesZvm} from "./profiles.zvm";
+import {AgentPubKeyB64, AppSignal, EntryHashB64} from "@holochain/client";
+import {DirectMessageType, SignalPayload} from "../bindings/threads.types";
+
+
+/** */
+export interface ThreadsDnaPerspective {
+  agentPresences: Record<string, number>,
+}
 
 
 /**
@@ -23,7 +31,110 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Perspective -- */
 
   protected hasChanged(): boolean {return true}
-  get perspective(): unknown {return}
+
+  get perspective(): ThreadsDnaPerspective {
+    return {
+      agentPresences: this._agentPresences,
+    }
+  }
+
+  /** agentPubKey -> timestamp */
+  private _agentPresences: Record<string, number> = {};
+
 
   /** -- Methods -- */
+
+  /** */
+  private updatePresence(from: AgentPubKeyB64) {
+    const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
+    console.log("Updating presence of", from, currentTimeInSeconds);
+    this._agentPresences[from] = currentTimeInSeconds;
+    this.notifySubscribers();
+  }
+
+
+  /** -- Signaling -- */
+
+  /** */
+  handleSignal(signal: AppSignal) {
+    console.log("Received Signal", signal);
+    if (signal.zome_name === ProfilesZvm.DEFAULT_ZOME_NAME) {
+      return;
+    }
+    const signalPayload = signal.payload as SignalPayload;
+    /* Update agent's presence stat */
+    this.updatePresence(signalPayload.from)
+    /* Send pong response */
+    if (signalPayload.dm.type != DirectMessageType.Pong) {
+      console.log("PONGING ", signalPayload.from)
+      const pong: SignalPayload = {
+        maybePpHash: signalPayload.maybePpHash,
+        from: this._cellProxy.cell.agentPubKey,
+        dm: {type: DirectMessageType.Pong, content: this._cellProxy.cell.agentPubKey}
+      };
+      this.notifyPeers(pong, [signalPayload.from])
+    }
+    /* Handle signal */
+    switch(signalPayload.dm.type) {
+      case DirectMessageType.Ping:
+      case DirectMessageType.Pong:
+        break;
+      case DirectMessageType.NewSemanticTopic:
+        const stEh = signalPayload.dm.content;
+        //this.playsetZvm.fetchSvgMarker(svgEh);
+        break;
+      case DirectMessageType.NewPp:
+        const ppEh = signalPayload.dm.content
+        //this.playsetZvm.fetchEmojiGroup(groupEh);
+        break;
+      case DirectMessageType.NewBead:
+        const beadEh = signalPayload.dm.content
+        //this.playsetZvm.fetchTemplate(templateEh);
+        break;
+    }
+  }
+
+
+  /** */
+  async notifyPeers(signal: SignalPayload, peers: Array<AgentPubKeyB64>): Promise<void> {
+    // if (signal.message.type != "Ping" && signal.message.type != "Pong") {
+    //   console.log(`NOTIFYING ${signal.message.type}`, signal, peers)
+    // };
+    console.log(`NOTIFYING "${signal.dm.type}" to`, peers)
+    /* Skip if no recipients or sending to self only */
+    if (!peers || peers.length == 1 && peers[0] === this._cellProxy.cell.agentPubKey) {
+      console.log("notifyPeers() aborted: No recipients for notification")
+      return;
+    }
+    return this.threadsZvm.notifyPeers(signal, peers);
+  }
+
+
+  /** */
+  async pingPeers(maybeSpaceHash: EntryHashB64 | null, peers: Array<AgentPubKeyB64>) {
+    const ping: SignalPayload = {
+      maybePpHash: maybeSpaceHash? maybeSpaceHash : undefined,
+      from: this._cellProxy.cell.agentPubKey,
+      dm: {type: DirectMessageType.Ping, content: this._cellProxy.cell.agentPubKey}};
+    // console.log({signal})
+    this.notifyPeers(ping, peers);
+  }
+
+
+  /** */
+  allCurrentOthers(): AgentPubKeyB64[] {
+    const agents = this.profilesZvm.getAgents();
+    //console.log({agents})
+    //console.log({presences: this._agentPresences})
+    const currentTime: number = Math.floor(Date.now() / 1000);
+    const keysB64 = agents
+      .filter((key)=> key != this.cell.agentPubKey)
+      .filter((key)=> {
+        const lastPingTime = this._agentPresences[key];
+        if (!lastPingTime) return false;
+        return (currentTime - lastPingTime) < 5 * 60; // 5 minutes
+      });
+    console.log({keysB64});
+    return keysB64;
+  }
 }

@@ -33,6 +33,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_all_semantic_topics",
 	"search_semantic_topics",
 	"get_topic",
+
+	"notify_peers",
 	"get_all_subjects",
 	"get_subjects_for_dna",
 	"get_subjects_for_entry_type",

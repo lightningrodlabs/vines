@@ -11,6 +11,7 @@ pub(crate) mod utils;
 pub mod beads;
 mod participation_protocols;
 mod subjects;
+mod signals;
 
 use hdk::prelude::*;
 

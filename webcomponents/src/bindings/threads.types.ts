@@ -194,6 +194,39 @@ export interface TypedAnchor {
   linkIndex: number
 }
 
+/**
+ * 
+ * Data sent by UI ONLY. Thats why we use B64 here
+ * 
+ */
+export enum DirectMessageType {
+	Ping = 'Ping',
+	Pong = 'Pong',
+	NewSemanticTopic = 'NewSemanticTopic',
+	NewPp = 'NewPp',
+	NewBead = 'NewBead',
+}
+export type DirectMessage = 
+ | {type: "Ping", content: AgentPubKeyB64}
+ | {type: "Pong", content: AgentPubKeyB64}
+ | {type: "NewSemanticTopic", content: EntryHashB64}
+ | {type: "NewPp", content: EntryHashB64}
+ | {type: "NewBead", content: EntryHashB64}
+
+
+export interface SignalPayload {
+  maybePpHash?: ActionHashB64
+  /** used for filtering by PP if applicable */
+  from: AgentPubKeyB64
+  dm: DirectMessage
+}
+
+/** Input to the notify call */
+export interface NotifyInput {
+  signal: SignalPayload
+  peers: AgentPubKeyB64[]
+}
+
 export interface Subject {
   hash: Uint8Array
   hashType: AppletTopicType

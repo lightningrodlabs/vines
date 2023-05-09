@@ -1,13 +1,13 @@
 import {
   ActionHash,
-  ActionHashB64,
+  ActionHashB64, AgentPubKeyB64,
   AnyDhtHashB64,
   decodeHashFromBase64,
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
   Bead, BeadLink, GetLatestBeadsInput,
-  ParticipationProtocol, Subject,
+  ParticipationProtocol, SignalPayload, Subject,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -360,6 +360,14 @@ export class ThreadsZvm extends ZomeViewModel {
     //console.log("publishThreadFromSemanticTopic()", pp)
     this.notifySubscribers();
     return ahB64;
+  }
+
+
+  /** Signaling */
+
+  /** */
+  notifyPeers(signal: SignalPayload, peers: Array<AgentPubKeyB64>) {
+    this.zomeProxy.notifyPeers({signal, peers})
   }
 
 

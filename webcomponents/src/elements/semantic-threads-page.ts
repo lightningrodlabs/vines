@@ -27,6 +27,10 @@ import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import {ChatThreadView} from "./chat-thread-view";
+import {ThreadsProfile} from "../viewModels/profiles.proxy";
+import {Dictionary} from "@ddd-qc/cell-proxy";
+import {getInitials} from "../utils";
+import {EditProfile} from "./edit-profile";
 
 /**
  * @element
@@ -46,6 +50,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   threadsPerspective!: ThreadsPerspective;
 
 
+  private _myProfile: ThreadsProfile = {nickname: "unknown", fields: {}}
+
   /** -- Getters -- */
 
   get createTopicDialogElem(): Dialog {
@@ -55,6 +61,21 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   get createThreadDialogElem(): Dialog {
     return this.shadowRoot.getElementById("create-thread-dialog") as Dialog;
   }
+
+
+  get profileDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
+  }
+
+  // get myNickName(): string {
+  //   return this._myProfile!.nickname;
+  // }
+  // get myAvatar(): string {
+  //   return this._myProfile!.fields.avatar;
+  // }
+  // get myColor(): string {
+  //   return this._myProfile!.fields.color;
+  // }
 
 
   /** -- Methods -- */
@@ -156,18 +177,63 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  async handleColorChange(e: any) {
+    console.log("handleColorChange: " + e.target.lastValueEmitted)
+    const color = e.target.lastValueEmitted;
+    const profile = this._myProfile!;
+    await this.setMyProfile(profile.nickname, profile.fields['avatar'], color)
+  }
+
+  /** */
+  async setMyProfile(nickname: string, avatar: string, color: string) {
+    console.log("updateProfile() called:", nickname)
+    const fields: Dictionary<string> = {};
+    fields['color'] = color;
+    fields['avatar'] = avatar;
+    try {
+      if (this._dvm.profilesZvm.getProfile(this._dvm.profilesZvm.cell.agentPubKey)) {
+        await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
+      } else {
+        await this._dvm.profilesZvm.createMyProfile({nickname, fields});
+      }
+    } catch (e) {
+      console.log("createMyProfile() failed");
+      console.log(e);
+    }
+  }
+
+  /** */
+  private async onProfileEdited(profile: ThreadsProfile) {
+    console.log("onProfileEdited()", this._myProfile)
+    try {
+      await this._dvm.profilesZvm.updateMyProfile(profile);
+    } catch(e) {
+      await this._dvm.profilesZvm.createMyProfile(profile);
+      this._myProfile = profile;
+    }
+    this.profileDialogElem.close(false);
+    /** Make sure a redraw is triggered */
+    this._myProfile.fields.avatar = profile.fields.avatar;
+    this._myProfile.fields.color = profile.fields.color;
+    this.requestUpdate();
+  }
+
+
+  /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
 
     //console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
 
+    this._myProfile = this._dvm.profilesZvm.getMyProfile();
 
-    let rightSide = html`<h1 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">No threads selected</h1>`
+
+    let centerSide = html`<h1 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">No threads selected</h1>`
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash];
       const topic = this.threadsPerspective.allSemanticTopics[thread.topicHash];
 
-      rightSide = html`
+      centerSide = html`
           <ui5-bar design="Header" style="background: #f1efef; border: 1px solid dimgray;">
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
@@ -186,6 +252,26 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           </ui5-bar>
       `;
     }
+
+    /** */
+    let rightSide = html`
+        <div>
+            <peer-list></peer-list>
+        </div>
+    `;
+
+    /** This agent's profile info */
+    let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
+    let maybeAgent = this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey];
+    if (maybeAgent) {
+      agent = maybeAgent;
+    } else {
+      //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
+      this._dvm.profilesZvm.probeProfile(this._dvm.cell.agentPubKey)
+      //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+    }
+    const initials = getInitials(agent.nickname);
+    const avatarUrl = agent.fields['avatar'];
 
 
     /** Render all */
@@ -209,11 +295,38 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                       @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}
                       @selected=${(e) => {this.onThreadSelected(e.detail)}}
               ></semantic-topics-view>
+              <div id="profile-div" style="display: flex; flex-direction: row">
+                  ${avatarUrl? html`
+                      <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+                          <img src=${avatarUrl}>
+                      </ui5-avatar>                   
+                          ` : html`
+                        <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
+                  `}
+                  <div style="display: flex; flex-direction: column; align-items: stretch;">
+                      <div>${agent.nickname}</div>
+                  </div>
+                  <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
+                              @click=${() => this.profileDialogElem.show()}
+                  ></ui5-button>
+              </div>
         </div>
+          <div id="centerSide">
+              ${centerSide}
+          </div>          
         <div id="rightSide">
             ${rightSide}
         </div>
       </div>
+      <!-- DIALOGS -->
+      <!-- ProfileDialog -->
+      <ui5-dialog id="profile-dialog" header-text="Edit Profile">
+          <edit-profile
+                  .profile="${this._myProfile}"
+                  .saveProfileLabel=${'Edit Profile'}
+                  @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
+          ></edit-profile>
+      </ui5-dialog>      
       <!-- CreateTopicDialog -->
       <ui5-dialog id="create-topic-dialog" header-text="Create Topic">
         <section>
@@ -268,6 +381,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       "semantic-topics-view": SemanticTopicsView,
       "text-thread-view": TextThreadView,
       "chat-view": ChatThreadView,
+      "edit-profile": EditProfile,
     }
   }
 
@@ -304,6 +418,14 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           flex-direction: column;
         }
 
+        .chatAvatar {
+          margin-top:5px;
+          margin-left: 5px;
+          margin-bottom: 5px;
+          margin-right: 5px;
+          min-width: 48px;
+        }
+        
         #threadTitle {
           font-size: 18px;
           font-weight: bold;
