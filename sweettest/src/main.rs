@@ -17,7 +17,3 @@ async fn main() {
    };
    crate::test::test(arg).await;
 }
-
-/// Dummy main for wasm32 target
-#[cfg(target_arch = "wasm32")]
-fn main() { }

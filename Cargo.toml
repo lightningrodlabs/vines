@@ -2,9 +2,9 @@
 members = [
   "dna/zomes/threads_integrity",
   "dna/zomes/threads",
-  #"dna/zomes/profiles_integrity",
-  #"dna/zomes/profiles",
-  "sweettest"
+  "dna/zomes/profiles_integrity",
+  "dna/zomes/profiles",
+  #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces
   ]
 
 [workspace.package]
@@ -14,9 +14,9 @@ edition = "2021"
 
 [workspace.dependencies]
 serde = { version = "1.0", default-features = false }
-hdi = { version = "=0.2.1", default-features = false }
-hdk = { version = "=0.1.1", default-features = false }
-zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-1.1" }
+hdi = { version = "=0.2.2", default-features = false }
+hdk = { version = "=0.1.2", default-features = false }
+zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-1.2" }
 
 
 [profile.dev]
