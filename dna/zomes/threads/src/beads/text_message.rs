@@ -8,21 +8,20 @@ use crate::time_indexing::convert_timepath_to_timestamp;
 
 ///
 #[hdk_extern]
-pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
-  let fn_start = sys_time()?;
+pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextMessage)> {
+  //let fn_start = sys_time()?;
   let res = match get(ah.clone(), GetOptions::content())? {
     Some(record) => {
       let action = record.action().clone();
       //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
       let mut msg: String = "<unknown type>".to_string();
-      if let Ok(typed) = get_typed_from_record::<TextMessage>(record) {
-        msg = typed.value;
-      }
-      Ok((action.timestamp(), action.author().to_owned(), msg))
+      let Ok(typed) = get_typed_from_record::<TextMessage>(record)
+      else { return zome_error!("get_text_message(): Entry not a TextMessage") };
+      Ok((action.timestamp(), action.author().to_owned(), typed))
     }
     None => zome_error!("get_text_message(): Entry not found"),
   };
-  let fn_end = sys_time()?;
+  //let fn_end = sys_time()?;
   //debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
   res
 }
@@ -30,7 +29,7 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
 
 ///
 #[hdk_extern]
-pub fn get_many_text_message(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, String)>> {
+pub fn get_many_text_message(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextMessage)>> {
   return ahs.into_iter().map(|ah| get_text_message(ah)).collect();
 }
 
@@ -53,16 +52,16 @@ pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String,
 #[serde(rename_all = "camelCase")]
 pub struct AddTextMessageAtInput {
   pub texto: TextMessage,
-  pub time_us: Timestamp,
+  pub creation_time: Timestamp,
 }
 
 #[hdk_extern]
 pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String, Timestamp)> {
-  let fn_start = sys_time()?;
+  //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
-  let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.time_us)?;
+  let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.creation_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
-  let fn_end = sys_time()?;
+  //let fn_end = sys_time()?;
   //debug!("               ADD TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }

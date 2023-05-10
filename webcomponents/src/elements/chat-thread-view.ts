@@ -124,7 +124,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousMessages(): Promise<void> {
-    if (this._dvm.threadsZvm.reachedBeginning(this.threadHash)) {
+    if (this._dvm.threadsZvm.hasReachedBeginning(this.threadHash)) {
       //this._dvm.threadsZvm.perspective.threads[this.threadHash]
       return;
     }
@@ -185,7 +185,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** */
     let maybeHeader = html``
-    if (this._dvm.threadsZvm.reachedBeginning(this.threadHash)) {
+    if (this._dvm.threadsZvm.hasReachedBeginning(this.threadHash)) {
       maybeHeader = html`<chat-header .hash="${this.threadHash}" style="margin:10px;"></chat-header>`;
     }
 
@@ -193,14 +193,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Should grab all probed and request probes if end is reached */
     //const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
 
-    const all = threadInfo.getAll().map((bl) => encodeHashToBase64(bl.beadAh));
+    const all = threadInfo.getAll();
 
     console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(all).map(
-      (ahb64) => {
-        return html`<chat-item hash="${ahb64}"></chat-item>`;
+      (blm ) => {
+        return html`<chat-item hash="${blm.beadAh}"></chat-item>`;
       }
     );
 

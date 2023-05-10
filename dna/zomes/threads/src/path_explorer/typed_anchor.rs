@@ -5,7 +5,7 @@ use crate::utils::get_threads_zome_index;
 
 
 /// Struct for holding an easily exportable typed Anchor.
-/// An Anchor is a Holochain Path made exclusively of human readable strings.
+/// An Anchor is a Holochain Path made exclusively of human-readable strings.
 /// A Typed Anchor is an Anchor with LinkType associated with it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -111,7 +111,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateTopic(e) {
     const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
-    await this._dvm.threadsZvm.publishSemanticTopic(input.value);
+    await this._dvm.publishSemanticTopic(input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.createTopicDialogElem.close();
@@ -121,7 +121,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this._createTopicHash, input.value);
+    let ah = await this._dvm.publishThreadFromSemanticTopic(this._createTopicHash, input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedThreadHash = ah;
@@ -135,7 +135,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     if (!input.value || input.value.length == 0) {
       return;
     }
-    let path_str = await this._dvm.threadsZvm.publishTextMessage(input.value, this._selectedThreadHash);
+    let path_str = await this._dvm.publishTextMessage(input.value, this._selectedThreadHash);
     console.log("onCreateTextMessage() res:", path_str);
     input.value = "";
 
@@ -144,6 +144,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //msgList.requestUpdate();
   }
 
+
+  /** */
+  async onCreateSemanticTopic(topic: string) {
+    await this._dvm.publishSemanticTopic(topic);
+  }
 
   /** After first render only */
   async firstUpdated() {
@@ -155,7 +160,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate test data */
-    //await this._dvm.threadsZvm.generateTestData();
+    await this._dvm.threadsZvm.generateTestData();
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
 

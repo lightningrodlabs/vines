@@ -72,7 +72,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-message-item>.render():", this.hash);
+    //console.log("<chat-message-item>.render()", this.hash);
     if (this.hash == "") {
       return html`
           <div>No message found</div>`;
@@ -80,10 +80,10 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
     const texto = this._dvm.threadsZvm.perspective.textMessages[this.hash];
     if (!texto) {
-      return html `<div>Loading thread...</div>`;
+      return html `<div>Loading message...</div>`;
     }
 
-    const date = new Date(texto.create_time_us / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;

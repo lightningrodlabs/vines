@@ -178,7 +178,7 @@ export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(infos).map(
       (info) => {
-        const date = new Date(info.create_time_us / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
         let maybeAgent = this._dvm.profilesZvm.perspective.profiles[info.author];

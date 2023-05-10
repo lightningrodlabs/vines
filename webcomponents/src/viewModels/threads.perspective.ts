@@ -1,5 +1,5 @@
 import {ParticipationProtocol, Subject, TopicType, TopicTypeType} from "../bindings/threads.types";
-import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash} from "@holochain/client";
+import {ActionHash, ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {HoloHashB64} from "@holochain/client/lib/types";
@@ -14,10 +14,17 @@ export const HOLOCHAIN_EPOCH = 1640995200000000;
 /** */
 export interface TextMessageInfo {
   //index_begin_time_us: number,
-  create_time_us: number,
+  creationTime: Timestamp,
   author: AgentPubKeyB64,
   message: string,
 }
+
+export interface BeadLinkMaterialized {
+  creationTime: Timestamp,
+  beadAh: ActionHashB64,
+  beadType: string,
+}
+
 
 
 /** */

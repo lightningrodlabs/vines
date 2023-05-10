@@ -1,8 +1,16 @@
 import {DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {ProfilesZvm} from "./profiles.zvm";
-import {ActionHashB64, AgentPubKeyB64, AppSignal, EntryHashB64} from "@holochain/client";
+import {
+  ActionHashB64,
+  AgentPubKeyB64,
+  AppSignal,
+  decodeHashFromBase64,
+  encodeHashToBase64,
+  EntryHashB64
+} from "@holochain/client";
 import {DirectMessageType, SignalPayload} from "../bindings/threads.types";
+import {AnyLinkableHashB64} from "./threads.perspective";
 
 
 /** */
@@ -24,13 +32,20 @@ export class ThreadsDvm extends DnaViewModel {
   readonly signalHandler = undefined;
 
   /** QoL Helpers */
-  get profilesZvm(): ProfilesZvm { return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm}
-  get threadsZvm(): ThreadsZvm { return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm}
+  get profilesZvm(): ProfilesZvm {
+    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm
+  }
+
+  get threadsZvm(): ThreadsZvm {
+    return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm
+  }
 
 
   /** -- Perspective -- */
 
-  protected hasChanged(): boolean {return true}
+  protected hasChanged(): boolean {
+    return true
+  }
 
   get perspective(): ThreadsDnaPerspective {
     return {
@@ -75,21 +90,24 @@ export class ThreadsDvm extends DnaViewModel {
       this.notifyPeers(pong, [signalPayload.from])
     }
     /* Handle signal */
-    switch(signalPayload.dm.type) {
+    switch (signalPayload.dm.type) {
       case DirectMessageType.Ping:
       case DirectMessageType.Pong:
         break;
       case DirectMessageType.NewSemanticTopic:
-        const stEh = signalPayload.dm.content;
-        //this.playsetZvm.fetchSvgMarker(svgEh);
+        const [stEh, title] = signalPayload.dm.content;
+        this.threadsZvm.storeSemanticTopic(stEh, title);
         break;
       case DirectMessageType.NewPp:
-        const ppEh = signalPayload.dm.content
-        //this.playsetZvm.fetchEmojiGroup(groupEh);
+        const ppAh = signalPayload.dm.content
+        /*await */ this.threadsZvm.fetchPp(ppAh);
         break;
       case DirectMessageType.NewBead:
-        const beadEh = signalPayload.dm.content
-        //this.playsetZvm.fetchTemplate(templateEh);
+        const [beadAh, beadType, _beadData] = signalPayload.dm.content;
+        console.log("Signal is NewBead of type", beadType);
+        if (beadType == "TextMessage") {
+          this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
+        }
         break;
     }
   }
@@ -113,9 +131,10 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async pingPeers(maybePpHash: ActionHashB64 | null, peers: Array<AgentPubKeyB64>) {
     const ping: SignalPayload = {
-      maybePpHash: maybePpHash? maybePpHash : undefined,
+      maybePpHash: maybePpHash ? maybePpHash : undefined,
       from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.Ping, content: this._cellProxy.cell.agentPubKey}};
+      dm: {type: DirectMessageType.Ping, content: this._cellProxy.cell.agentPubKey}
+    };
     // console.log({signal})
     this.notifyPeers(ping, peers);
   }
@@ -128,13 +147,53 @@ export class ThreadsDvm extends DnaViewModel {
     //console.log({presences: this._agentPresences})
     const currentTime: number = Math.floor(Date.now() / 1000);
     const keysB64 = agents
-      .filter((key)=> key != this.cell.agentPubKey)
-      .filter((key)=> {
+      .filter((key) => key != this.cell.agentPubKey)
+      .filter((key) => {
         const lastPingTime = this._agentPresences[key];
         if (!lastPingTime) return false;
         return (currentTime - lastPingTime) < 5 * 60; // 5 minutes
       });
     console.log({keysB64});
     return keysB64;
+  }
+
+
+  /** -- Call ZVM and notify peers -- */
+
+  /** */
+  async publishTextMessage(msg: string, ppAh: ActionHashB64): Promise<ActionHashB64> {
+    let [ah, _time_anchor] = await this.threadsZvm.publishTextMessage(msg, ppAh);
+    const signal: SignalPayload = {
+      maybePpHash: ppAh,
+      from: this._cellProxy.cell.agentPubKey,
+      dm: {type: DirectMessageType.NewBead, content: [ah, msg, []]}
+    };
+    await this.notifyPeers(signal, this.allCurrentOthers());
+    return ah;
+  }
+
+
+  /** */
+  async publishSemanticTopic(title: string): Promise<EntryHashB64> {
+    let eh = await this.threadsZvm.publishSemanticTopic(title);
+    const signal: SignalPayload = {
+      from: this._cellProxy.cell.agentPubKey,
+      dm: {type: DirectMessageType.NewSemanticTopic, content: [eh, title]}
+    };
+    await this.notifyPeers(signal, this.allCurrentOthers());
+    return eh;
+  }
+
+
+  /** */
+  async publishThreadFromSemanticTopic(topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
+    let ah = await this.threadsZvm.publishThreadFromSemanticTopic(topicHash, purpose);
+    const signal: SignalPayload = {
+      maybePpHash: ah,
+      from: this._cellProxy.cell.agentPubKey,
+      dm: {type: DirectMessageType.NewPp, content: ah}
+    };
+    await this.notifyPeers(signal, this.allCurrentOthers());
+    return ah;
   }
 }

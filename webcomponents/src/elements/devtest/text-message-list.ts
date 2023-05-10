@@ -89,7 +89,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
         //const index_date = new Date(info.index_begin_time_us / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const index_date_str = index_date.toLocaleString('en-US', {hour12: false});
         // [${index_date_str}]
-        const creation_date = new Date(info.create_time_us / 1000);
+        const creation_date = new Date(info.creationTime / 1000);
         const creation_date_str = creation_date.toLocaleString('en-US', {hour12: false});
         const agent = this._dvm.profilesZvm.perspective.profiles[info.author];
         return html`

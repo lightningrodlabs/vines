@@ -3,7 +3,7 @@ import {TimeInterval} from "./timeInterval";
 import {BeadLink} from "../bindings/threads.types";
 
 
-/** */
+/**
 test('add 1', () => {
   let info = new Thread();
   info.addItems([]);
@@ -23,7 +23,7 @@ test('add 1', () => {
 });
 
 
-/** */
+/**
 test('add many on same key', () => {
   let info = new Thread();
   const beadLink1: BeadLink = {
@@ -45,3 +45,4 @@ test('add many on same key', () => {
   info.addItems([beadLink2]);
   expect(info.beadLinksTree.length).toBe(2);
 });
+*/

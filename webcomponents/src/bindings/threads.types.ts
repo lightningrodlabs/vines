@@ -134,7 +134,6 @@ export interface GetLatestBeadsInput {
 }
 
 export interface BeadLink {
-  indexTime: Timestamp
   creationTime: Timestamp
   beadAh: ActionHash
   beadType: string
@@ -143,7 +142,7 @@ export interface BeadLink {
 /** DEBUG ONLY */
 export interface AddTextMessageAtInput {
   texto: TextMessage
-  timeUs: Timestamp
+  creationTime: Timestamp
 }
 
 export interface AddManyTextMessageAtInput {
@@ -184,7 +183,7 @@ export interface ItemLink {
 
 /**
  * Struct for holding an easily exportable typed Anchor.
- * An Anchor is a Holochain Path made exclusively of human readable strings.
+ * An Anchor is a Holochain Path made exclusively of human-readable strings.
  * A Typed Anchor is an Anchor with LinkType associated with it.
  */
 export interface TypedAnchor {
@@ -196,7 +195,7 @@ export interface TypedAnchor {
 
 /**
  * 
- * Data sent by UI ONLY. Thats why we use B64 here
+ * Data sent by UI ONLY. That's why we use B64 here
  * 
  */
 export enum DirectMessageType {
@@ -209,14 +208,13 @@ export enum DirectMessageType {
 export type DirectMessage = 
  | {type: "Ping", content: AgentPubKeyB64}
  | {type: "Pong", content: AgentPubKeyB64}
- | {type: "NewSemanticTopic", content: EntryHashB64}
- | {type: "NewPp", content: EntryHashB64}
- | {type: "NewBead", content: EntryHashB64}
+ | {type: "NewSemanticTopic", content: [EntryHashB64, string]}
+ | {type: "NewPp", content: ActionHashB64}
+ | {type: "NewBead", content: [ActionHashB64, string, number[]]}
 
 
 export interface SignalPayload {
   maybePpHash?: ActionHashB64
-  /** used for filtering by PP if applicable */
   from: AgentPubKeyB64
   dm: DirectMessage
 }
