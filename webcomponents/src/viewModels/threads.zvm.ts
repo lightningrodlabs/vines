@@ -277,7 +277,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Insert in ThreadInfo */
     if (!dontStore) {
       //await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
-      await this.fetchTextMessage(beadLink.beadAh, false, creationTime);
+      await this.fetchTextMessage(beadLink.beadAh, true, creationTime);
     }
     /** Done */
     return [encodeHashToBase64(ah), global_time_anchor];
