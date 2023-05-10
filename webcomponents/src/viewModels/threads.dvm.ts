@@ -1,7 +1,7 @@
 import {DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {ProfilesZvm} from "./profiles.zvm";
-import {AgentPubKeyB64, AppSignal, EntryHashB64} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, AppSignal, EntryHashB64} from "@holochain/client";
 import {DirectMessageType, SignalPayload} from "../bindings/threads.types";
 
 
@@ -111,9 +111,9 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async pingPeers(maybeSpaceHash: EntryHashB64 | null, peers: Array<AgentPubKeyB64>) {
+  async pingPeers(maybePpHash: ActionHashB64 | null, peers: Array<AgentPubKeyB64>) {
     const ping: SignalPayload = {
-      maybePpHash: maybeSpaceHash? maybeSpaceHash : undefined,
+      maybePpHash: maybePpHash? maybePpHash : undefined,
       from: this._cellProxy.cell.agentPubKey,
       dm: {type: DirectMessageType.Ping, content: this._cellProxy.cell.agentPubKey}};
     // console.log({signal})

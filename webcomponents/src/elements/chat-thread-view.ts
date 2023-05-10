@@ -206,12 +206,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** Different UI if no message found for thread */
-    if (threadInfo.beadLinksTree.length == 0) {
-      textLi = [html`
-            <h2 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">
-                No message found                        
-            </h2>`]
-    }
+    // if (threadInfo.beadLinksTree.length == 0) {
+    //   textLi = [html`
+    //         <h2 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">
+    //             No message found
+    //         </h2>`]
+    // }
 
     /** render all */
     return html`

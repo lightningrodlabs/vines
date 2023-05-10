@@ -65,8 +65,7 @@
     "@ddd-qc/cell-proxy": "0.15.1",
     "@ddd-qc/lit-happ": "0.15.1",
     "@holochain/client": "=0.12.0",
-    "@types/functional-red-black-tree": "^1.0.2",
-    "functional-red-black-tree": "^1.0.1"
+    "@holochain-open-dev/core-types": "0.6.3"
   },
   "engines": {
     "npm": ">=7.0.0"

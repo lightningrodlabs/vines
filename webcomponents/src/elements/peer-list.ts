@@ -2,13 +2,6 @@ import { html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 import {SlAvatar, SlBadge, SlInput, SlTooltip} from '@scoped-elements/shoelace';
-import {
-  ListItem,
-  Select,
-  IconButton,
-  Button, TextField, List, Icon, Switch, Slider, Menu, IconButtonToggle, CircularProgress,
-} from "@scoped-elements/material-web";
-
 
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ProfilesPerspective} from "../viewModels/profiles.zvm";
@@ -100,12 +93,12 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </li>`;
     }
 
-    const filterField = this.shadowRoot!.getElementById("filter-field") as TextField;
-    const filterStr = filterField && filterField.value? filterField.value : "";
-
-    const visibleProfiles = Object.entries(profiles).filter(([key, profile]) => {
-      return filterStr.length < 2 || profile.nickname.toLowerCase().includes(filterStr.toLowerCase())
-    });
+    // const filterField = this.shadowRoot!.getElementById("filter-field") as Input;
+    // const filterStr = filterField && filterField.value? filterField.value : "";
+    //
+    // const visibleProfiles = Object.entries(profiles).filter(([key, profile]) => {
+    //   return filterStr.length < 2 || profile.nickname.toLowerCase().includes(filterStr.toLowerCase())
+    // });
 
     //console.log({visibleProfiles})
 
@@ -125,7 +118,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // })
 
     /** Build avatar agent list */
-    const peers = visibleProfiles.map(([keyB64, profile]) => {
+    const peers = Object.entries(profiles).map(([keyB64, profile]) => {
       let key = decodeHashFromBase64(keyB64)
       let opacity = 1.0;
       if (this.soloAgent && this.soloAgent != keyB64) {
@@ -135,7 +128,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <li class="folk" style="opacity: ${opacity};">
           <span @click="${this.handleClickAvatar}">
             <sl-avatar id=${key}  .image=${profile.fields.avatar}
-                       style="background-color:${profile.fields.color};border: ${profile.fields.color} 1px solid;">
+                       style="background-color:${profile.fields.color};border: black 1px solid;border-radius: var(--sl-border-radius-circle);">
             </sl-avatar>
             <sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge>
             <span style="color:${profile.fields['color']};margin-left:4px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
@@ -156,12 +149,12 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
+    console.log("<peer-list> render()", this._loaded);
     if (!this._loaded) {
       return html`<div class="fill center-content">
         Loading...
       </div>`;
     }
-    console.log("<peer-list> render()", Object.keys(this.profilesPerspective.profiles).length);
 
     return this.renderList(this.profilesPerspective.profiles);
   }
@@ -185,7 +178,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         .folks {
           /*background-color: red;*/
           overflow-y: auto;
-          margin-left: 5px;
+          margin-left: 10px;
           margin-top: 10px;
         }
 

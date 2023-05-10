@@ -31,6 +31,7 @@ import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
+import {PeerList} from "./peer-list";
 
 /**
  * @element
@@ -80,6 +81,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Methods -- */
 
+  /** */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<semantic-threads-page>.dvmUpdated()");
     if (oldDvm) {
@@ -153,9 +155,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate test data */
-    await this._dvm.threadsZvm.generateTestData();
+    //await this._dvm.threadsZvm.generateTestData();
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
+
+    this.pingAllOthers();
   }
 
 
@@ -220,6 +224,24 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  async pingActiveOthers() {
+    //if (this._currentSpaceEh) {
+    console.log("Pinging All Active");
+    await this._dvm.pingPeers(undefined, this._dvm.allCurrentOthers());
+    //}
+  }
+
+  /** */
+  async pingAllOthers() {
+    //if (this._currentSpaceEh) {
+    console.log("Pinging All Others");
+    const agents = this._dvm.profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
+    await this._dvm.pingPeers(undefined, agents);
+    //}
+  }
+
+
+  /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
 
@@ -228,7 +250,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     this._myProfile = this._dvm.profilesZvm.getMyProfile();
 
 
-    let centerSide = html`<h1 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">No threads selected</h1>`
+    let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash];
       const topic = this.threadsPerspective.allSemanticTopics[thread.topicHash];
@@ -252,13 +274,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           </ui5-bar>
       `;
     }
-
-    /** */
-    let rightSide = html`
-        <div>
-            <peer-list></peer-list>
-        </div>
-    `;
 
     /** This agent's profile info */
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
@@ -303,10 +318,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                           ` : html`
                         <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
                   `}
-                  <div style="display: flex; flex-direction: column; align-items: stretch;">
+                  <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
                       <div>${agent.nickname}</div>
                   </div>
-                  <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
+                  <ui5-button style="margin-top:10px;"
+                          design="Transparent" icon="action-settings" tooltip="Go to settings"
                               @click=${() => this.profileDialogElem.show()}
                   ></ui5-button>
               </div>
@@ -315,15 +331,17 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               ${centerSide}
           </div>          
         <div id="rightSide">
-            ${rightSide}
+            <peer-list></peer-list>
         </div>
       </div>
       <!-- DIALOGS -->
       <!-- ProfileDialog -->
       <ui5-dialog id="profile-dialog" header-text="Edit Profile">
           <edit-profile
+                  allowCancel
                   .profile="${this._myProfile}"
                   .saveProfileLabel=${'Edit Profile'}
+                  @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
                   @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
           ></edit-profile>
       </ui5-dialog>      
@@ -372,6 +390,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async refresh(_e?: any) {
     await this._dvm.probeAll();
+    await this.pingAllOthers();
   }
 
 
@@ -382,6 +401,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       "text-thread-view": TextThreadView,
       "chat-view": ChatThreadView,
       "edit-profile": EditProfile,
+      "peer-list": PeerList,
     }
   }
 
@@ -410,7 +430,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           flex-direction: column;
         }
 
-        #rightSide {
+        #centerSide {
           width: 100%;
           height: 100vh;
           background: #eaeaea;
@@ -418,14 +438,23 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           flex-direction: column;
         }
 
+        #rightSide {
+          width: 300px;
+          height: 100vh;
+          background: #eaeaea;
+          display: flex;
+          flex-direction: column;
+          background: #979f97;
+        }
+
         .chatAvatar {
-          margin-top:5px;
+          margin-top: 5px;
           margin-left: 5px;
           margin-bottom: 5px;
           margin-right: 5px;
           min-width: 48px;
         }
-        
+
         #threadTitle {
           font-size: 18px;
           font-weight: bold;
