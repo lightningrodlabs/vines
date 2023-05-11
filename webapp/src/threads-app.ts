@@ -56,6 +56,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   handleSignal(sig: AppSignal) {
+    console.log("<threads-app>.handleSignal()")
     this.conductorAppProxy.onSignal(sig);
   }
 

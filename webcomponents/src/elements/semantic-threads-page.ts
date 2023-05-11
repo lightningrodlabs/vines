@@ -160,7 +160,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate test data */
-    await this._dvm.threadsZvm.generateTestData();
+    //await this._dvm.threadsZvm.generateTestData();
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
 
@@ -239,8 +239,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    console.log("Pinging All Others");
     const agents = this._dvm.profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
+    console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
   }
@@ -325,6 +325,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                   `}
                   <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
                       <div>${agent.nickname}</div>
+                      <div style="font-size: small">${this.cell.agentPubKey}</div>
                   </div>
                   <ui5-button style="margin-top:10px;"
                           design="Transparent" icon="action-settings" tooltip="Go to settings"
