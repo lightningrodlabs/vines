@@ -325,7 +325,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                   `}
                   <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
                       <div>${agent.nickname}</div>
-                      <div style="font-size: small">${this.cell.agentPubKey}</div>
+                      <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
                   </div>
                   <ui5-button style="margin-top:10px;"
                           design="Transparent" icon="action-settings" tooltip="Go to settings"
