@@ -397,6 +397,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async refresh(_e?: any) {
     await this._dvm.probeAll();
     await this.pingAllOthers();
+    //await this._dvm.generateTestSignals();
   }
 
 

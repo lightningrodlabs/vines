@@ -1,4 +1,4 @@
-import {DnaViewModel} from "@ddd-qc/lit-happ";
+import {delay, DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {ProfilesZvm} from "./profiles.zvm";
 import {
@@ -196,5 +196,19 @@ export class ThreadsDvm extends DnaViewModel {
     };
     await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
+  }
+
+
+  /** -- Debug -- */
+
+  /** */
+  async generateTestSignals(): Promise<void> {
+    console.log("generateTestSignals() START");
+    const stEh = await this.publishSemanticTopic("signal-topic");
+    await delay(1000);
+    const ppAh = await this.publishThreadFromSemanticTopic(stEh, "testing");
+    await delay(1000);
+    const msgAh = await this.publishTextMessage("msg-1", ppAh);
+    console.log("generateTestSignals() END", msgAh);
   }
 }
