@@ -131,30 +131,44 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     // }
 
     let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([hash, title]) => {
+      /** Render threads for Topic */
       const topicThreads = this.perspective.threadsPerSubject[hash];
+      //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
+
       let threads = [html``];
       if (topicThreads) {
         threads = Object.values(topicThreads).map((ppHash)=> {
-          const pp = this.perspective.allParticipationProtocols[ppHash];
-          //console.log("<semantic-topics-view>.render() topic: ", topicThreads., this.perspective.semanticTopics);
-          if (!pp) return html``;
+          const thread = this.perspective.threads[ppHash];
+          const hasNewBeads = thread && thread.hasUnreads()
+          const threadIsNew = thread && thread.creationTime > this.perspective.globalSearchLog.time;
+          console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
+          if (!thread.pp) return html``;
           return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="discussion">
-              <span slot="content">${pp.purpose}</span>
+              <span slot="content" style="font-weight:${hasNewBeads? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">${thread.pp.purpose}</span>
           </ui5-tree-item-custom>`
         })
       }
-      return html`<ui5-tree-item-custom id="${hash}" ?has-children="${!!topicThreads}" 
-                                        expanded="${!!topicThreads}" show-toggle-button level="1">
+      /** Render Topic */
+      // FIXME
+      // const topicIsNew = topicCreationTime > this.perspective.globalSearchLog.time;
+      const topicIsNew = false;
+      return html`
+          <ui5-tree-item-custom id="${hash}" ?has-children="${!!topicThreads}"
+                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#cc8989" : ""};">
           <span slot="content" style="display:flex;">
               <span style="margin-top:8px">${title}</span>                 
               <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${async (e) => {
-                e.stopPropagation(); //console.log("topic clicked:", title);
-                await this.updateComplete;
-                this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: hash, bubbles: true, composed: true}));
-              }} ></ui5-button>
+                  e.stopPropagation(); //console.log("topic clicked:", title);
+                  await this.updateComplete;
+                  this.dispatchEvent(new CustomEvent('createThreadClicked', {
+                      detail: hash,
+                      bubbles: true,
+                      composed: true
+                  }));
+              }}></ui5-button>
           </span>
-          ${threads}
-      </ui5-tree-item-custom>`
+              ${threads}
+          </ui5-tree-item-custom>`
     });
     //console.log({treeItems})
 

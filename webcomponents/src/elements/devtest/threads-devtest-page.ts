@@ -1,7 +1,7 @@
 import {css, html} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AnyDhtHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadList} from "./thread-list";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
@@ -9,7 +9,7 @@ import {AnchorTree} from "./anchor-tree";
 import {LinkList} from "./link-list";
 import {TextMessageList} from "./text-message-list";
 import {SemanticTopicList} from "./semantic-topic-list";
-import {TextThreadView} from "../text-thread-view";
+import {CommentThreadView} from "../comment-thread-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 
@@ -270,7 +270,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
       "anchor-tree": AnchorTree,
       "link-list": LinkList,
       "text-message-list": TextMessageList,
-      "text-thread-view": TextThreadView,
+      "text-thread-view": CommentThreadView,
       "semantic-topic-list": SemanticTopicList,
     }
   }

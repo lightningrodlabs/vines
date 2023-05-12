@@ -6,6 +6,18 @@ use crate::path_explorer::*;
 use crate::time_indexing::convert_timepath_to_timestamp;
 
 
+/// Get all TextMessage in local source-chain
+#[hdk_extern]
+pub fn query_text_messages(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextMessage)>> {
+  let entry_type = EntryType::App(ThreadsEntryTypes::TextMessage.try_into().unwrap());
+  let tuples = get_all_typed_local::<TextMessage>(entry_type)?;
+  let res = tuples.into_iter().map(|(ah, create_action, typed)| {
+    (create_action.timestamp, ah, typed)
+  }).collect();
+  Ok(res)
+}
+
+
 ///
 #[hdk_extern]
 pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextMessage)> {

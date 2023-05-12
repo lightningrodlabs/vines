@@ -2,7 +2,7 @@ import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {TextThreadView} from "./text-thread-view";
+import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 
@@ -160,7 +160,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate test data */
-    //await this._dvm.threadsZvm.generateTestData();
+    await this._dvm.threadsZvm.generateTestData();
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
 
@@ -257,14 +257,14 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     if (this._selectedThreadHash) {
-      const thread = this.threadsPerspective.allParticipationProtocols[this._selectedThreadHash];
-      const topic = this.threadsPerspective.allSemanticTopics[thread.topicHash];
+      const thread = this.threadsPerspective.threads[this._selectedThreadHash];
+      const topic = this.threadsPerspective.allSemanticTopics[thread.pp.topicHash];
 
       centerSide = html`
           <ui5-bar design="Header" style="background: #f1efef; border: 1px solid dimgray;">
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
-              <span id="threadTitle" slot="startContent">${topic}: ${thread.purpose}</span>
+              <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
               <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings" @click=${() => this._dvm.dumpLogs()}></ui5-button>
           </ui5-bar>
           <chat-view id="chat-view" .threadHash=${this._selectedThreadHash}
@@ -397,7 +397,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async refresh(_e?: any) {
     await this._dvm.probeAll();
     await this.pingAllOthers();
+    /** DEBUGGING */
     //await this._dvm.generateTestSignals();
+    await this._dvm.threadsZvm.commitSearchLogs();
   }
 
 
@@ -405,7 +407,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   static get scopedElements() {
     return {
       "semantic-topics-view": SemanticTopicsView,
-      "text-thread-view": TextThreadView,
+      "text-thread-view": CommentThreadView,
       "chat-view": ChatThreadView,
       "edit-profile": EditProfile,
       "peer-list": PeerList,

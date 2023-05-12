@@ -195,12 +195,21 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const all = threadInfo.getAll();
 
-    console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length);
+    console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length, threadInfo.latestSearchLogTime);
+
+    let passedLog = false;
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(all).map(
       (blm ) => {
-        return html`<chat-item hash="${blm.beadAh}"></chat-item>`;
+        let hr = html``;
+        if (!passedLog && blm.creationTime > threadInfo.latestSearchLogTime) {
+          passedLog = true;
+          hr = html`
+              <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>
+              <hr style="border: 1px solid red; width:100%"/>`
+        }
+        return html`<chat-item hash="${blm.beadAh}"></chat-item>${hr}`;
       }
     );
 

@@ -276,6 +276,17 @@ export const SEMANTIC_TOPIC_TYPE_NAME = "semantic_topic";
 
 export const GLOBAL_TIME_INDEX = "global_time";
 
+export interface GlobalLastSearchLog {
+  time: Timestamp
+  maybeLastKnownPpAh?: ActionHash
+}
+
+export interface ThreadLastSearchLog {
+  time: Timestamp
+  ppAh: ActionHash
+  lastKnownBeadAh: ActionHash
+}
+
 export enum ThreadsEntryType {
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
@@ -286,8 +297,8 @@ export enum ThreadsEntryType {
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
 export type ThreadsEntryVariantTextMessage = {TextMessage: TextMessage}
-export type ThreadsEntryVariantGlobalQueryLog = {GlobalQueryLog: GlobalQueryLog}
-export type ThreadsEntryVariantThreadQueryLog = {ThreadQueryLog: ThreadQueryLog}
+export type ThreadsEntryVariantGlobalQueryLog = {GlobalQueryLog: GlobalLastSearchLog}
+export type ThreadsEntryVariantThreadQueryLog = {ThreadQueryLog: ThreadLastSearchLog}
 export type ThreadsEntry = 
  | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalQueryLog | ThreadsEntryVariantThreadQueryLog;
 
@@ -343,15 +354,4 @@ export enum AppletTopicTypeType {
 	Entry = 'Entry',
 	Action = 'Action',
 	External = 'External',
-}
-
-export interface GlobalQueryLog {
-  time: number
-  lastKnownProtocolAh: ActionHash
-}
-
-export interface ThreadQueryLog {
-  time: number
-  protocolAh: ActionHash
-  lastKnownBeadAh: ActionHash
 }

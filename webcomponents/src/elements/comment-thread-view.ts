@@ -18,7 +18,7 @@ import {ThreadsProfile} from "../viewModels/profiles.proxy";
 /**
  * @element
  */
-export class TextThreadView extends DnaElement<unknown, ThreadsDvm> {
+export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)

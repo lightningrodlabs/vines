@@ -12,6 +12,7 @@ pub mod beads;
 mod participation_protocols;
 mod subjects;
 mod signals;
+mod last_search_log;
 
 use hdk::prelude::*;
 

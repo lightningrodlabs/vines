@@ -4,8 +4,7 @@ import {TimeInterval} from "./timeInterval";
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
 import {Base64} from "js-base64";
-import {BeadLinkMaterialized, HOLOCHAIN_EPOCH} from "./threads.perspective";
-
+import {BeadLinkMaterialized, HOLOCHAIN_EPOCH, ParticipationProtocolMat} from "./threads.perspective";
 
 /** Importing this from holochain will cause jest to fail */
 function encodeHashToBase64(hash: Uint8Array) {
@@ -36,24 +35,31 @@ export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
  */
 export class Thread {
 
-  /* Time interval of the searched messages */
-  private _searchedTimeIntervals: [Timestamp, TimeInterval][];
-  /* ah -> TextMessageItem */
-  //private _messageItems: Dictionary<TextMessageItem>;
+  private _pp: ParticipationProtocolMat;
 
-  /** Tree of BeadLinks keyed by creation time */
-  private _beadLinksTree: Tree<number, BeadLinkMaterialized>;
-
-  /** Flag if first node is the oldest node possible */
+  /* CreationTime of the thread's PP entry */
+  private _creationTime: Timestamp;
+  /* Flag if first node is the oldest node possible */
   private _beginningOfTime?: Timestamp;
+  /* Logged last known bead */
+  private _latestSearchLogTime: Timestamp;
+
+  /* Time interval of the searched beads */
+  private _searchedTimeIntervals: [Timestamp, TimeInterval][];
+
+  /* Tree of BeadLinks keyed by creation time */
+  private _beadLinksTree: Tree<number, BeadLinkMaterialized>;
 
 
 
   /** Ctor */
   //[Date.now() * 1000, interval]
   constructor() {
+
+    this._creationTime = 0; // Date.now() / 1000;
+    this._latestSearchLogTime = HOLOCHAIN_EPOCH;
+
     this._searchedTimeIntervals = [];
-    //this._messageItems = items;
 
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
@@ -61,12 +67,21 @@ export class Thread {
 
 
   /** -- Getters -- */
+
+  get pp(): ParticipationProtocolMat | undefined { return this._pp}
+
+  get creationTime(): Timestamp | undefined { return this._creationTime}
+
+
+  get latestSearchLogTime(): Timestamp | undefined { return this._latestSearchLogTime}
+
+  get beginningOfTime(): Timestamp | undefined { return this._beginningOfTime}
+
+
   get searchedTimeIntervals(): [Timestamp, TimeInterval][] { return this._searchedTimeIntervals}
-  //get messageItems(): Dictionary<TextMessageItem> { return this._messageItems}
 
   get beadLinksTree(): Tree<number, BeadLinkMaterialized> { return this._beadLinksTree}
 
-  get beginningOfTime(): Timestamp | undefined { return this._beginningOfTime}
 
   get searchedUnion(): TimeInterval | null {
     if (this.searchedTimeIntervals.length == 0) {
@@ -85,6 +100,25 @@ export class Thread {
 
   /** -- Methods -- */
 
+  /** */
+  setPp(pp: ParticipationProtocolMat): void {
+    this._pp = pp;
+  }
+
+  /** */
+  setCreationTime(time: Timestamp): void {
+    this._creationTime = time;
+  }
+
+  /** */
+  setLatestSearchLogTime(time: Timestamp): void {
+    if (this._latestSearchLogTime >= time) {
+      return;
+    }
+    this._latestSearchLogTime = time;
+  }
+
+
   /**
    * Set beginning of time to the oldest bead (i.e. first bead in the tree) if there is one,
    * otherwise use EPOCH (FIXME: dna origin)
@@ -95,6 +129,15 @@ export class Thread {
     } else {
       this._beginningOfTime = HOLOCHAIN_EPOCH; // FIXME should be DNA.origin_time
     }
+  }
+
+
+  /** */
+  hasUnreads(): boolean {
+    if (this.latestSearchLogTime) {
+      return this.beadLinksTree.end.key && this.latestSearchLogTime < this.beadLinksTree.end.key;
+    }
+    return !!this.beadLinksTree.end.key;
   }
 
 

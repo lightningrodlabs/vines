@@ -19,6 +19,18 @@ pub fn get_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
 }
 
 
+
+/// Get all SemanticTopics in local source-chain
+#[hdk_extern]
+pub fn query_semantic_topics(_: ()) -> ExternResult<Vec<(Timestamp, EntryHash, SemanticTopic)>> {
+  let tuples = get_all_typed_local::<SemanticTopic>( EntryType::App(ThreadsEntryTypes::SemanticTopic.try_into().unwrap()))?;
+  let res = tuples.into_iter().map(|(_ah, create_action, typed)| {
+    (create_action.timestamp, create_action.entry_hash, typed)
+  }).collect();
+  Ok(res)
+}
+
+
 ///
 pub(crate) fn determine_topic_anchor(title: String) -> ExternResult<TypedPath> {
   // conver to lowercase for path for ease of search

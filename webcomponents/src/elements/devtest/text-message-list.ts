@@ -38,7 +38,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onUpdate(): Promise<void> {
     this._dvm.threadsZvm.zomeProxy.getPp(decodeHashFromBase64(this.threadHash))
-      .then((pp) => this._pp = pp)
+      .then(([pp, _ts]) => this._pp = pp)
     await this.probeLatestMessages();
   }
 

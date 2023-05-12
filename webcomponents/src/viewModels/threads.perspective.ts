@@ -1,5 +1,5 @@
-import {ParticipationProtocol, Subject, TopicType, TopicTypeType} from "../bindings/threads.types";
-import {ActionHash, ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
+import {GlobalLastSearchLog, ParticipationProtocol, Subject, TopicType, TopicTypeType} from "../bindings/threads.types";
+import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {HoloHashB64} from "@holochain/client/lib/types";
@@ -29,18 +29,21 @@ export interface BeadLinkMaterialized {
 
 /** */
 export interface ThreadsPerspective {
-  /** Store of all ST: eh -> Topic Title */
+  /** Store of all Subjects: eh -> Subject */
   allSubjects: Dictionary<Subject>
-  /** Store of all ST: eh -> Topic Title */
+  /** Store of all SemTopic: eh -> Topic Title */
   allSemanticTopics: Dictionary<string>
-  /** Store of all PPmat: pp_ah -> PP */
-  allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
+  ///** Store of all PPmat: pp_ah -> PP */
+  //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried topics: TopicHash -> ProtocolAh */
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** pp_ah -> Thread */
   threads: Dictionary<Thread>,
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
+
+  /** */
+  globalSearchLog?: GlobalLastSearchLog,
 
   // /** dnaHash -> Cell name */
   // dnaNames: Dictionary<string>

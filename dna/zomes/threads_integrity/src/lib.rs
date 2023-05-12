@@ -5,7 +5,7 @@
 #![allow(unused_attributes)]
 
 pub mod beads;
-pub mod query_log;
+pub mod last_search_log;
 pub mod globals;
 
 //--------------------------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ use hdi::prelude::*;
 use hdi::prelude::holo_hash::hash_type;
 
 pub use beads::*;
-pub use query_log::*;
+pub use last_search_log::*;
 pub use globals::*;
 
 
@@ -28,9 +28,9 @@ pub enum ThreadsEntry {
     #[entry_def(required_validations = 3, visibility = "public")]
     TextMessage(TextMessage),
     #[entry_def(required_validations = 1, visibility = "private")]
-    GlobalQueryLog(GlobalQueryLog),
+    GlobalQueryLog(GlobalLastSearchLog),
     #[entry_def(required_validations = 1, visibility = "private")]
-    ThreadQueryLog(ThreadQueryLog),
+    ThreadQueryLog(ThreadLastSearchLog),
 }
 
 

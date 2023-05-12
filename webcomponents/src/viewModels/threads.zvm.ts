@@ -6,8 +6,8 @@ import {
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
-  Bead, BeadLink, GetLatestBeadsInput,
-  ParticipationProtocol, SignalPayload, Subject, TextMessage, ThreadsEntryType,
+  Bead, BeadLink, GetLatestBeadsInput, GlobalLastSearchLog,
+  ParticipationProtocol, SignalPayload, Subject, TextMessage, ThreadLastSearchLog, ThreadsEntryType,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -20,8 +20,6 @@ import {
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
-import {errorMonitor} from "ws";
-
 
 
 
@@ -50,10 +48,11 @@ export class ThreadsZvm extends ZomeViewModel {
     return {
       allSubjects: this._allSubjects,
       allSemanticTopics: this._allSemanticTopics,
-      allParticipationProtocols: this._allParticipationProtocols,
+      //allParticipationProtocols: this._allParticipationProtocols,
       threadsPerSubject: this._threadsPerSubject,
       threads: this._threads,
       textMessages: this._textMessages,
+      globalSearchLog: this._globalSearchLog,
     };
   }
 
@@ -61,15 +60,16 @@ export class ThreadsZvm extends ZomeViewModel {
   private _allSubjects: Dictionary<Subject> = {};
   /** ah -> SemanticTopic */
   private _allSemanticTopics: Dictionary<string> = {};
-  /** ah -> ParticipationProtocol */
-  private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
+  ///** ah -> ParticipationProtocol */
+  //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> TextMessageInfo */
   private _textMessages: Dictionary<TextMessageInfo> = {};
   /** lh -> threads ahs */
   private _threadsPerSubject: Dictionary<ActionHashB64[]> = {};
   /** ppAh -> Thread */
   private _threads: Dictionary<Thread> = {};
-
+  /** */
+  private _globalSearchLog?: GlobalLastSearchLog;
 
   /** -- Get: Return a stored element -- */
 
@@ -82,7 +82,8 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   getParticipationProtocol(ah: ActionHashB64): ParticipationProtocolMat | undefined {
-    return this._allParticipationProtocols[ah];
+    //return this._allParticipationProtocols[ah];
+    return this._threads[ah].pp;
   }
 
   getThread(ppAh: ActionHashB64): Thread | undefined {
@@ -131,7 +132,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async initializePerspectiveOffline(): Promise<void> {
-    // TODO: notify subscribers
+    await this.querySemanticTopics();
+    await this.queryThreads();
+    await this.queryTextMessages();
+    await this.querySearchLogs();
+    this.notifySubscribers(); // check if this is useful
   }
 
 
@@ -143,6 +148,56 @@ export class ThreadsZvm extends ZomeViewModel {
       probes.push(this.probeThreads(topicAh));
     }
     await Promise.all(probes);
+  }
+
+
+  /** -- Query: Query the local source-chain, and store the results (async) -- */
+
+  /** */
+  private async querySearchLogs(): Promise<void> {
+    /** Global Log */
+    this._globalSearchLog = await this.zomeProxy.getGlobalLog();
+    /** Thread logs */
+    const threadLogs = await this.zomeProxy.queryThreadLogs();
+    for (const threadLog of threadLogs) {
+      const ppAhB64 = encodeHashToBase64(threadLog.ppAh)
+      if (!this._threads[ppAhB64]) {
+        this._threads[ppAhB64] = new Thread();
+      }
+      //this._threads[ppAhB64].setCreationTime(creationTime);
+      this._threads[ppAhB64].setLatestSearchLogTime(threadLog.time);
+    }
+  }
+
+
+  /** Get all SemanticTopics from the RootAnchor */
+  private async querySemanticTopics(): Promise<Dictionary<string>> {
+    const tuples = await this.zomeProxy.querySemanticTopics();
+    for (const [_ts, eh, st] of tuples) {
+      this.storeSemanticTopic(encodeHashToBase64(eh), st.title);
+    }
+    console.log("querySemanticTopics()", Object.keys(this._allSemanticTopics).length);
+    return this._allSemanticTopics;
+  }
+
+
+  /** Get all Threads from a subject */
+  async queryThreads(): Promise<void> {
+    const tuples = await this.zomeProxy.queryPps();
+    for (const [ts, ah, pp] of tuples) {
+      this.storePp(encodeHashToBase64(ah), pp, ts);
+    }
+    console.log("queryThreads()", Object.keys(this._threads).length);
+  }
+
+
+  /** Get all beads from a thread */
+  async queryTextMessages(): Promise<void> {
+    const tuples = await this.zomeProxy.queryTextMessages();
+    for (const [ts, ah, tm] of tuples) {
+      this.storeTextMessage(encodeHashToBase64(ah), ts, this.cell.agentPubKey, tm, false);
+    }
+    console.log("queryThreads()", Object.keys(this._threads).length);
   }
 
 
@@ -182,12 +237,12 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Get all Threads from a subject */
   async probeThreads(subjectHash: AnyLinkableHashB64): Promise<Dictionary<ActionHashB64>> {
     let res = {};
-    const ppAhs = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
+    const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
     // FIXME resolve promise all at once
-    for (const ppAh of ppAhs) {
+    for (const [ppAh, _linkTs] of pps) {
       const ahB64 = encodeHashToBase64(ppAh);
-      const pp = await this.zomeProxy.getPp(ppAh);
-      this.storePp(ahB64, pp);
+      const [pp, ts] = await this.zomeProxy.getPp(ppAh);
+      this.storePp(ahB64, pp, ts);
       res[ahB64] = pp;
     }
     return res;
@@ -324,9 +379,9 @@ export class ThreadsZvm extends ZomeViewModel {
       rules: "FFA",
       topicType: {semanticTopic: null},
     }
-    const ah = await this.zomeProxy.createPpFromSemanticTopic(pp);
+    const [ah, ts] = await this.zomeProxy.createPpFromSemanticTopic(pp);
     const ahB64 = encodeHashToBase64(ah);
-    this.storePp(ahB64, pp);
+    this.storePp(ahB64, pp, ts);
     return ahB64;
   }
 
@@ -336,11 +391,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async fetchPp(ppAh: ActionHashB64): Promise<ParticipationProtocolMat> {
-    const pp = await this.zomeProxy.getPp(decodeHashFromBase64(ppAh));
+    const [pp, ts] = await this.zomeProxy.getPp(decodeHashFromBase64(ppAh));
     if (pp === null) {
       Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
-    const ppMat = this.storePp(ppAh, pp);
+    const ppMat = this.storePp(ppAh, pp, ts);
     return ppMat;
   }
 
@@ -387,12 +442,19 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol): ParticipationProtocolMat {
-    if (this._allParticipationProtocols[ppAh]) {
-      return this._allParticipationProtocols[ppAh];
+  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp): ParticipationProtocolMat {
+    let thread = this._threads[ppAh]
+    if (!thread) {
+      thread = new Thread();
+    } else {
+      if (thread.pp) {
+        return thread.pp;
+      }
     }
+    thread.setCreationTime(creationTime);
     let ppMat = materializeParticipationProtocol(pp);
-    this._allParticipationProtocols[ppAh] = ppMat;
+    thread.setPp(ppMat);
+    this._threads[ppAh] = thread;
     if (!this._threadsPerSubject[ppMat.topicHash]) {
       this._threadsPerSubject[ppMat.topicHash] = [];
     }
@@ -424,6 +486,40 @@ export class ThreadsZvm extends ZomeViewModel {
     /* Done */
     if (canNotify) {
       this.notifySubscribers();
+    }
+  }
+
+
+  /** -- commit search logs -- */
+
+
+  getLatestThread(): [ActionHashB64, Thread] | undefined {
+    let res = undefined;
+    for (const [ah, thread] of Object.entries(this._threads)) {
+      if (!res || thread.creationTime > res.creationTime) {
+        res = [ah, thread];
+      }
+    }
+    return res;
+  }
+
+
+  /** */
+  async commitSearchLogs(): Promise<void> {
+    /** Commit Global Log */
+    const maybeLatest = this.getLatestThread();
+    await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
+    /** Commit each Thread Log */
+    for (const [ppAh, thread] of Object.entries(this._threads)) {
+      if (thread.searchedUnion && thread.searchedUnion.end > thread.latestSearchLogTime) {
+        const threadLog: ThreadLastSearchLog = {
+          lastKnownBeadAh: decodeHashFromBase64(thread.beadLinksTree.end.value.beadAh),
+          time: thread.beadLinksTree.end.key,
+          ppAh: decodeHashFromBase64(ppAh),
+        }
+        const ah = await this.zomeProxy.commitThreadLog(threadLog);
+        thread.setLatestSearchLogTime(threadLog.time);
+      }
     }
   }
 
@@ -488,12 +584,12 @@ export class ThreadsZvm extends ZomeViewModel {
     // }
 
 
-    let begin = Date.now()
-    let n = 100;
-    await this.publishManyDebug(timeHour, 3600 * 1000, 100);
-    let end = Date.now()
-    let diff = (end - begin) / 1000;
-    console.log(`Publish timing for ${n} entries: ${diff} secs (${diff / n} secs / entry)`)
+    // let begin = Date.now()
+    // let n = 100;
+    // await this.publishManyDebug(timeHour, 3600 * 1000, 100);
+    // let end = Date.now()
+    // let diff = (end - begin) / 1000;
+    // console.log(`Publish timing for ${n} entries: ${diff} secs (${diff / n} secs / entry)`)
   }
 
 
