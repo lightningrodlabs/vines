@@ -130,9 +130,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     //   return html`Loading...`;
     // }
 
-    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([hash, title]) => {
+    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, title]) => {
       /** Render threads for Topic */
-      const topicThreads = this.perspective.threadsPerSubject[hash];
+      const topicThreads = this.perspective.threadsPerSubject[topicHash];
       //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
 
       let threads = [html``];
@@ -140,7 +140,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         threads = Object.values(topicThreads).map((ppHash)=> {
           const thread = this.perspective.threads[ppHash];
           const hasNewBeads = thread && thread.hasUnreads()
-          const threadIsNew = thread && thread.creationTime > this.perspective.globalSearchLog.time;
+          //const threadIsNew = thread && thread.creationTime > this.perspective.globalSearchLog.time;
+          const threadIsNew = this.perspective.unreadThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
           if (!thread.pp) return html``;
           return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="discussion">
@@ -151,17 +152,17 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       /** Render Topic */
       // FIXME
       // const topicIsNew = topicCreationTime > this.perspective.globalSearchLog.time;
-      const topicIsNew = false;
+      const topicIsDirty = this.perspective.unreadSubjects.includes(topicHash);
       return html`
-          <ui5-tree-item-custom id="${hash}" ?has-children="${!!topicThreads}"
-                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#cc8989" : ""};">
+          <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"
+                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsDirty? "#cc8989" : ""};">
           <span slot="content" style="display:flex;">
               <span style="margin-top:8px">${title}</span>                 
               <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${async (e) => {
                   e.stopPropagation(); //console.log("topic clicked:", title);
                   await this.updateComplete;
                   this.dispatchEvent(new CustomEvent('createThreadClicked', {
-                      detail: hash,
+                      detail: topicHash,
                       bubbles: true,
                       composed: true
                   }));

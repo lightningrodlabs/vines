@@ -9,14 +9,14 @@ use crate::time_indexing::{SearchInterval, TimedItemTag};
 #[serde(rename_all = "camelCase")]
 pub struct ProbeAllLatestOutput {
   pub searched_interval: SearchInterval,
-  pub new_threads_by_topic: Vec<(AnyLinkableHash, ActionHash)>,
+  pub new_threads_by_subject: Vec<(AnyLinkableHash, ActionHash)>,
   pub new_beads_by_thread: Vec<(ActionHash, BeadLink)>,
 }
 
 /// Get latest links from the global time index
 /// Returns:
 ///  - searched interval
-///  - all new threads (as pp_ah & topic hash)
+///  - all new threads (as pp_ah & subject hash)
 ///  - all new beads (as bead links && pp_ah)
 #[hdk_extern]
 pub fn probe_all_latest(begin_time: Timestamp)
@@ -28,17 +28,22 @@ pub fn probe_all_latest(begin_time: Timestamp)
   let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None)?.1;
   debug!("links.len = {}", responses.len());
   /// Convert links to BeadLinks
+  let me = agent_info()?.agent_initial_pubkey;
   let mut bls: Vec<(ActionHash, BeadLink)> = Vec::new();
   let mut pps: Vec<(AnyLinkableHash, ActionHash)> = Vec::new();
   for (_index_time, link) in responses {
+      // /// Dont count my things as 'new'
+      // if link.author == me {
+      //   continue;
+      // }
       let item_tag: TimedItemTag = SerializedBytes::from(UnsafeBytes::from(link.tag.0)).try_into().unwrap();
       if item_tag.item_type == PP_ITEM_TYPE {
         let pp_ah: ActionHash = ActionHash::try_from(link.target).unwrap();
-        let topic_hash: AnyLinkableHash = AnyLinkableHash::from_raw_39(item_tag.custom_data).unwrap();
+        let subject_hash: AnyLinkableHash = AnyLinkableHash::from_raw_39(item_tag.custom_data).unwrap();
         /// Add only if after begin_time since we may have older items from the same time bucket
         if item_tag.devtest_timestamp > begin_time {
-          pps.push((topic_hash.clone(), pp_ah.clone()));
-          //debug!("Thread found: {} (for topic: {:?})", pp_ah, topic_hash);
+          pps.push((subject_hash.clone(), pp_ah.clone()));
+          //debug!("Thread found: {} (for subject: {:?})", pp_ah, topic_hash);
         }
       } else {
         let pp_ah: ActionHash = ActionHash::from_raw_39(item_tag.custom_data).unwrap();
@@ -62,7 +67,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
   debug!(" new_beads_by_thread.len = {}", bls.len());
   Ok(ProbeAllLatestOutput {
     searched_interval,
-    new_threads_by_topic: pps,
+    new_threads_by_subject: pps,
     new_beads_by_thread: bls,
   })
 }

@@ -75,7 +75,7 @@ pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, subject_type_name
     index_time,
     pp.topic_hash.get_raw_39())?;
 
-  debug!("Thread indexed at:\n  - {} (for topic: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.topic_hash);
+  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.topic_hash);
 
 
   /// Done

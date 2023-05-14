@@ -6,8 +6,17 @@ import {
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
-  Bead, BeadLink, GetLatestBeadsInput, GlobalLastSearchLog,
-  ParticipationProtocol, SignalPayload, Subject, TextMessage, ThreadLastSearchLog, ThreadsEntryType,
+  Bead,
+  BeadLink,
+  GetLatestBeadsInput,
+  GlobalLastSearchLog,
+  ParticipationProtocol,
+  ProbeAllLatestOutput, SearchInterval,
+  SignalPayload,
+  Subject,
+  TextMessage,
+  ThreadLastSearchLog,
+  ThreadsEntryType,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -53,6 +62,8 @@ export class ThreadsZvm extends ZomeViewModel {
       threads: this._threads,
       textMessages: this._textMessages,
       globalSearchLog: this._globalSearchLog,
+      unreadSubjects: this._unreadSubjects,
+      unreadThreads: this._unreadThreads,
     };
   }
 
@@ -70,6 +81,11 @@ export class ThreadsZvm extends ZomeViewModel {
   private _threads: Dictionary<Thread> = {};
   /** */
   private _globalSearchLog?: GlobalLastSearchLog;
+  /** Unreads */
+  private _unreadSubjects: AnyLinkableHashB64[] = [];
+  private _unreadThreads: ActionHashB64[] = [];
+
+
 
   /** -- Get: Return a stored element -- */
 
@@ -253,6 +269,28 @@ export class ThreadsZvm extends ZomeViewModel {
     return res;
   }
 
+
+  /** */
+  async probeAllLatest(): Promise<void> {
+    const latest = await this.zomeProxy.probeAllLatest(this._globalSearchLog.time);
+    let unreadThreads = latest.newBeadsByThread.map(([ppAh, _bl]) => encodeHashToBase64(ppAh));
+    let unreadSubjects = latest.newThreadsByTopic.map(([topicHash, _ppAh]) => encodeHashToBase64(topicHash));
+    /** Also mark subjets if it has an unread thread */
+    for (const ppAh of unreadThreads) {
+      const thread = this._threads[ppAh];
+      if (!thread) {
+        console.error("Found new thread for an unknown subject")
+      }
+      const topicHash = thread.pp.topicHash;
+      unreadSubjects.push(topicHash);
+    }
+    /** Dedup */
+    unreadSubjects = [...new Set(unreadSubjects)];
+    /** Done */
+    this._unreadThreads = unreadThreads;
+    this._unreadSubjects = unreadSubjects;
+    this.notifySubscribers();
+  }
 
   /** Get all beads from a thread */
   async probeAllBeads(ppAhB64: ActionHashB64): Promise<BeadLink[]> {

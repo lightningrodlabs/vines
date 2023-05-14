@@ -1,5 +1,13 @@
-import {GlobalLastSearchLog, ParticipationProtocol, Subject, TopicType, TopicTypeType} from "../bindings/threads.types";
-import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
+import {
+  BeadLink,
+  GlobalLastSearchLog,
+  ParticipationProtocol,
+  SearchInterval,
+  Subject,
+  TopicType,
+  TopicTypeType
+} from "../bindings/threads.types";
+import {ActionHash, ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {HoloHashB64} from "@holochain/client/lib/types";
@@ -44,6 +52,9 @@ export interface ThreadsPerspective {
 
   /** */
   globalSearchLog?: GlobalLastSearchLog,
+
+  unreadSubjects: AnyLinkableHashB64[],
+  unreadThreads: ActionHashB64[],
 
   // /** dnaHash -> Cell name */
   // dnaNames: Dictionary<string>
