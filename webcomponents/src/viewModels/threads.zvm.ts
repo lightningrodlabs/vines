@@ -130,24 +130,29 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** -- Init -- */
 
-  /** */
+  /** Query all entries from local source-chain */
   async initializePerspectiveOffline(): Promise<void> {
     await this.querySemanticTopics();
     await this.queryThreads();
     await this.queryTextMessages();
     await this.querySearchLogs();
+
     this.notifySubscribers(); // check if this is useful
   }
 
 
   /** */
   async initializePerspectiveOnline(): Promise<void> {
+    /** Grab all semantic topics to see if there are new ones */
     await this.probeSemanticTopics();
+    /** Grab all threads of SemanticTopics to see if there are new ones */
     let probes = []
     for (const topicAh of Object.keys(this._allSemanticTopics)) {
       probes.push(this.probeThreads(topicAh));
     }
     await Promise.all(probes);
+    /** Get last elements since last time (global search log) */
+    //await this.probeAllLatest()
   }
 
 
@@ -267,6 +272,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Get all beads from "now" and back until `limit` is reached or `startTime` is reached */
   async probeLatestBeads(input: GetLatestBeadsInput): Promise<BeadLink[]> {
+    console.log("probeLatestBeads()", input);
     if (input.ppAh.length == 0) {
       console.error("probeLatestBeads() Failed. ppAh not provided.")
     }
@@ -508,7 +514,8 @@ export class ThreadsZvm extends ZomeViewModel {
   async commitSearchLogs(): Promise<void> {
     /** Commit Global Log */
     const maybeLatest = this.getLatestThread();
-    await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
+    let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
+    this._globalSearchLog.time = latestGlobalLogTime;
     /** Commit each Thread Log */
     for (const [ppAh, thread] of Object.entries(this._threads)) {
       if (thread.searchedUnion && thread.searchedUnion.end > thread.latestSearchLogTime) {

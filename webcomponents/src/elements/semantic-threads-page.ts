@@ -307,6 +307,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                               }}
                   ></ui5-button>                  
                   <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent" @click=${this.refresh}></ui5-button>
+                  <ui5-button icon="debug" tooltip="Commit logs" design="Transparent" @click=${this.onCommitBtn}></ui5-button>
                   <ui5-button id="createTopicButton" icon="add" tooltip="Create Topic" design="Transparent" 
                               @click=${() => this.createTopicDialogElem.show()}
                   ></ui5-button>                  
@@ -399,6 +400,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     await this.pingAllOthers();
     /** DEBUGGING */
     //await this._dvm.generateTestSignals();
+    let latestLogDate = new Date(this.threadsPerspective.globalSearchLog.time / 1000);
+    console.debug("refresh()", latestLogDate)
+    const latest = await this._dvm.threadsZvm.zomeProxy.probeAllLatest(this.threadsPerspective.globalSearchLog.time);
+    console.log({latest})
+  }
+
+
+  /** */
+  async onCommitBtn(_e?: any) {
+    /** DEBUGGING */
     await this._dvm.threadsZvm.commitSearchLogs();
   }
 

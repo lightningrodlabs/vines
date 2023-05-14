@@ -32,8 +32,8 @@ pub fn get_latest_time_indexed_links(
   let prev_hour_us = Timestamp::from_micros(latest_hour_us.0 - 3600 * 1000 * 1000);
   let prev_hour_tp = get_time_path(root_tp.clone(), prev_hour_us)?;
   //let _begin_tp = get_time_path(root_tp.clone(), rounded_search_interval.begin.clone())?;
-  debug!(" search_interval: {}", searching_interval.as_anchors());
-  debug!("rounded_interval: {}", rounded_search_interval.as_anchors());
+  debug!(" search_interval: {}", searching_interval.print_as_anchors());
+  debug!("rounded_interval: {}", rounded_search_interval.print_as_anchors());
   debug!("  latest_hour_tp: {}", timepath2anchor(&latest_hour_tp));
   debug!("    prev_hour_tp: {}", timepath2anchor(&prev_hour_tp));
 

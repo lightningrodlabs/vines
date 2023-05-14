@@ -13,7 +13,7 @@ pub fn create_pp_from_semantic_topic(pp: ParticipationProtocol) -> ExternResult<
 
   let dna_info = dna_info()?;
 
-  let ah = create_pp(pp, dna_info.hash, SEMANTIC_TOPIC_TYPE_NAME)?;
+  let ah = create_pp(pp, dna_info.hash, SEMANTIC_TOPIC_TYPE_NAME, None)?;
   Ok((ah, sys_time()?))
 }
 

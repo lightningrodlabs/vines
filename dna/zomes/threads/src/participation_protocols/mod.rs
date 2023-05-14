@@ -32,18 +32,18 @@ pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp)
 
 
 ///
-fn get_subject_tp(dna_hash: DnaHash, entry_type_name: &str, subject_hash: AnyLinkableHash) -> ExternResult<(TypedPath, String)> {
+fn get_subject_tp(dna_hash: DnaHash, subject_type_name: &str, subject_hash: AnyLinkableHash) -> ExternResult<(TypedPath, String)> {
   let subject_str: String = holo_hash_encode(subject_hash.get_raw_39());
-  let (mut tp, _) = get_entry_type_path(dna_hash, entry_type_name)?;
+  let (mut tp, _) = get_subject_type_path(dna_hash, subject_type_name)?;
   tp.path.append_component(subject_str.clone().into());
   Ok((tp, subject_str))
 }
 
 
 ///
-pub fn get_entry_type_path(dna_hash: DnaHash, entry_type_name: &str) -> ExternResult<(TypedPath, String)> {
+pub fn get_subject_type_path(dna_hash: DnaHash, subject_type_name: &str) -> ExternResult<(TypedPath, String)> {
   let (mut tp, dna_str) = get_dna_path(dna_hash)?;
-  tp.path.append_component(entry_type_name.into());
+  tp.path.append_component(subject_type_name.into());
   Ok((tp, dna_str))
 }
 

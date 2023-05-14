@@ -18,7 +18,7 @@ pub struct GetProtocolsInput {
 ///
 #[hdk_extern]
 pub fn get_subjects_for_entry_type(input: GetProtocolsInput) -> ExternResult<Vec<AnyLinkableHash>> {
-  let (tp, _b64) = get_entry_type_path(input.dna_hash, &input.entry_type_name)?;
+  let (tp, _b64) = get_subject_type_path(input.dna_hash, &input.entry_type_name)?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subjects_for_entry_type() found {} children", children.len());
   let ahs = children

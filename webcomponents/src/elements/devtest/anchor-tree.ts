@@ -74,7 +74,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
-    console.log("<anchor-tree>.ctor()")
+    //console.log("<anchor-tree>.ctor()")
   }
 
 
@@ -118,9 +118,9 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   shouldUpdate(changedProperties: PropertyValues<this>) {
     super.shouldUpdate(changedProperties);
-    console.log("<anchor-tree>.shouldUpdate()", changedProperties);
+    //console.log("<anchor-tree>.shouldUpdate()", changedProperties);
     if (changedProperties.has("root")) {
-      console.log("<anchor-tree>.shouldUpdate()", changedProperties);
+      //console.log("<anchor-tree>.shouldUpdate()", changedProperties);
       this.probeRootAnchors();
     }
     return true;
@@ -290,7 +290,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<anchor-tree>.render()", this.root);
+    //console.log("<anchor-tree>.render()", this.root);
 
     let title = "Tree of all Links from ROOT in " + this.cell.print()
     if (this.root) {

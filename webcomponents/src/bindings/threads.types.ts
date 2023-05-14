@@ -151,6 +151,12 @@ export interface AddManyTextMessageAtInput {
   count: number
 }
 
+export interface ProbeAllLatestOutput {
+  searchedInterval: SearchInterval
+  newThreadsByTopic: [Uint8Array, ActionHash][]
+  newBeadsByThread: [ActionHash, BeadLink][]
+}
+
 export interface CreatePpInput {
   purpose: string
   rules: string
@@ -275,6 +281,8 @@ export const ROOT_ANCHOR_SUBJECTS = "all_subjects";
 export const SEMANTIC_TOPIC_TYPE_NAME = "semantic_topic";
 
 export const GLOBAL_TIME_INDEX = "global_time";
+
+export const PP_ITEM_TYPE = "__protocol";
 
 export interface GlobalLastSearchLog {
   time: Timestamp

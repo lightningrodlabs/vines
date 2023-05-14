@@ -28,7 +28,7 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInter
   let limit = input.target_limit.unwrap_or(usize::MAX);
   debug!("pp_str = {} | start = {} | target_count = {}", pp_str, begin, limit);
   let search_interval = SearchInterval::new(begin, end)?;
-  debug!("search_interval = {}", search_interval);
+  debug!("search_interval = {}", search_interval.print_as_anchors());
   let root_tp = Path::from(pp_str).typed(ThreadsLinkType::ThreadTimePath)?;
   /// Query DHT
   let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None)?;

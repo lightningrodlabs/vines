@@ -110,7 +110,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
-    //console.log("<chat-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
+    console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash, !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
     //dvm.threadsZvm.probeAllBeads(this.threadHash)
     dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})

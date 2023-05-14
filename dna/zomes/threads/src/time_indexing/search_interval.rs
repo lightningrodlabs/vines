@@ -95,7 +95,7 @@ impl SearchInterval {
 
 
   /// Print as timepath anchor
-  pub fn as_anchors(&self) -> String {
+  pub fn print_as_anchors(&self) -> String {
     return format!("[{}, {}]", ts2anchor(self.begin), ts2anchor(self.end));
   }
 

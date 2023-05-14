@@ -17,7 +17,11 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_u
   /// Index in Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
-  let (global_leaf_tp, _ah) = index_item(global_time_tp, bead_ah.clone().into(), bead_type, index_time_us, pp_anchor.as_bytes())?;
+  let (global_leaf_tp, _ah) = index_item(
+    global_time_tp,
+    bead_ah.clone().into(),
+    bead_type, index_time_us,
+    bead.for_protocol_ah.get_raw_39())?;
   //debug!("Bead indexed at global:\n  - {}", path2anchor(&leaf_tp.path).unwrap());
 
   /// Done
