@@ -70,7 +70,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<chat-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
+    //console.log("<chat-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
     if (changedProperties.has("threadHash") && this._dvm) {
       this.loadlatestMessages();
     }
@@ -114,8 +114,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     const dvm = newDvm? newDvm : this._dvm;
     //dvm.threadsZvm.probeAllBeads(this.threadHash)
     dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
-      .then((beadLinks) => {
-        console.log("<chat-thread-view>.loadMessages() beads found: ", beadLinks.length);
+      .then((_beadLinks) => {
+        //console.log("<chat-thread-view>.loadMessages() beads found: ", beadLinks.length);
         this._loading = false;
       });
     this._loading = true;
@@ -195,7 +195,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const all = threadInfo.getAll();
 
-    console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length, threadInfo.latestSearchLogTime);
+    //console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length, threadInfo.latestSearchLogTime);
 
     let passedLog = false;
 

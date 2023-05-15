@@ -153,7 +153,7 @@ export interface AddManyTextMessageAtInput {
 
 export interface ProbeAllLatestOutput {
   searchedInterval: SearchInterval
-  newThreadsByTopic: [Uint8Array, ActionHash][]
+  newThreadsBySubject: [Uint8Array, ActionHash][]
   newBeadsByThread: [ActionHash, BeadLink][]
 }
 
@@ -233,7 +233,7 @@ export interface NotifyInput {
 
 export interface Subject {
   hash: Uint8Array
-  hashType: AppletTopicType
+  hashType: AppletSubjectType
   topicType: string
   dna: DnaHash
 }
@@ -241,7 +241,7 @@ export interface Subject {
 /**  */
 export interface GetProtocolsInput {
   dnaHash: DnaHash
-  entryTypeName: string
+  subjectTypeName: string
 }
 
 export interface SearchResponse {
@@ -335,30 +335,30 @@ export interface SemanticTopic {
 export interface ParticipationProtocol {
   purpose: string
   rules: string
-  topicHash: Uint8Array
-  topicType: TopicType
+  subjectHash: Uint8Array
+  subjectType: SubjectType
 }
 
 /**  */
-export enum TopicTypeType {
+export enum SubjectTypeType {
 	Dna = 'Dna',
 	Agent = 'Agent',
 	Bead = 'Bead',
 	SemanticTopic = 'SemanticTopic',
 	Applet = 'Applet',
 }
-export type TopicTypeVariantDna = {dna: null}
-export type TopicTypeVariantAgent = {agent: null}
-export type TopicTypeVariantBead = {bead: null}
-export type TopicTypeVariantSemanticTopic = {semanticTopic: null}
-export type TopicTypeVariantApplet = {applet: AppletTopicType}
-export type TopicType = 
- | TopicTypeVariantDna | TopicTypeVariantAgent | TopicTypeVariantBead | TopicTypeVariantSemanticTopic | TopicTypeVariantApplet;
+export type SubjectTypeVariantDna = {dna: null}
+export type SubjectTypeVariantAgent = {agent: null}
+export type SubjectTypeVariantBead = {bead: null}
+export type SubjectTypeVariantSemanticTopic = {semanticTopic: null}
+export type SubjectTypeVariantApplet = {applet: AppletSubjectType}
+export type SubjectType = 
+ | SubjectTypeVariantDna | SubjectTypeVariantAgent | SubjectTypeVariantBead | SubjectTypeVariantSemanticTopic | SubjectTypeVariantApplet;
 
 /**  */
-export type AppletTopicType =
+export type AppletSubjectType =
   | {entry: null} | {action: null} | {external: null};
-export enum AppletTopicTypeType {
+export enum AppletSubjectTypeType {
 	Entry = 'Entry',
 	Action = 'Action',
 	External = 'External',

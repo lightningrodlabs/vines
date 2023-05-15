@@ -139,25 +139,25 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       if (topicThreads) {
         threads = Object.values(topicThreads).map((ppHash)=> {
           const thread = this.perspective.threads[ppHash];
-          const hasNewBeads = thread && thread.hasUnreads()
-          //const threadIsNew = thread && thread.creationTime > this.perspective.globalSearchLog.time;
-          const threadIsNew = this.perspective.unreadThreads.includes(ppHash);
+          const hasNewBeads = thread && thread.hasUnreads();
+          //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
+          const threadIsNew = this.perspective.newThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
           if (!thread.pp) return html``;
           return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="discussion">
-              <span slot="content" style="font-weight:${hasNewBeads? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">${thread.pp.purpose}</span>
+              <span slot="content" style="font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">${thread.pp.purpose}</span>
           </ui5-tree-item-custom>`
         })
       }
       /** Render Topic */
       // FIXME
-      // const topicIsNew = topicCreationTime > this.perspective.globalSearchLog.time;
-      const topicIsDirty = this.perspective.unreadSubjects.includes(topicHash);
+      const topicIsNew = this.perspective.newSubjects[topicHash] != undefined;
+      const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`
           <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"
-                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsDirty? "#cc8989" : ""};">
+                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#cc8989" : ""};">
           <span slot="content" style="display:flex;">
-              <span style="margin-top:8px">${title}</span>                 
+              <span style="margin-top:8px;font-weight: ${topicHasUnreads? "bold" : ""}">${title}</span>                 
               <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${async (e) => {
                   e.stopPropagation(); //console.log("topic clicked:", title);
                   await this.updateComplete;

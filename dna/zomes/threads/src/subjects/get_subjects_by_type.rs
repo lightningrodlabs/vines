@@ -11,16 +11,16 @@ use crate::path_explorer::tp_children_paths;
 #[serde(rename_all = "camelCase")]
 pub struct GetProtocolsInput {
   pub dna_hash: DnaHash,
-  pub entry_type_name: String,
+  pub subject_type_name: String,
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_subjects_for_entry_type(input: GetProtocolsInput) -> ExternResult<Vec<AnyLinkableHash>> {
-  let (tp, _b64) = get_subject_type_path(input.dna_hash, &input.entry_type_name)?;
+pub fn get_subjects_by_type(input: GetProtocolsInput) -> ExternResult<Vec<AnyLinkableHash>> {
+  let (tp, _b64) = get_subject_type_path(input.dna_hash, &input.subject_type_name)?;
   let children = tp_children_paths(&tp)?;
-  debug!("get_subjects_for_entry_type() found {} children", children.len());
+  debug!("found {} children", children.len());
   let ahs = children
     .into_iter()
     .map(|child_tp| {

@@ -127,8 +127,8 @@ pub async fn test_handle() {
    let pp = ParticipationProtocol {
       purpose: "testing".to_string(),
       rules: "ffa".to_string(),
-      topic_hash: AnyLinkableHash::from(sem_ah),
-      topic_type: TopicType::SemanticTopic,
+      subject_hash: AnyLinkableHash::from(sem_ah),
+      subject_type: SubjectType::SemanticTopic,
    };
    let pp_ah: ActionHash = conductor.call(&cell1.zome("zThreads"), "create_pp_from_semantic_topic", pp).await;
 

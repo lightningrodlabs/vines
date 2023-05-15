@@ -63,8 +63,8 @@ pub fn probe_all_latest(begin_time: Timestamp)
       }
     }
   /// Done
-  debug!("new_threads_by_topic.len = {}", pps.len());
-  debug!(" new_beads_by_thread.len = {}", bls.len());
+  debug!("new_threads_by_subject.len = {}", pps.len());
+  debug!("   new_beads_by_thread.len = {}", bls.len());
   Ok(ProbeAllLatestOutput {
     searched_interval,
     new_threads_by_subject: pps,

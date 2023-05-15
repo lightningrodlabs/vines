@@ -161,7 +161,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   renderAnchorTree(): TemplateResult<1> {
     const level0Items = this._level0.map((lti) => {return toRootTreeItem(lti)});
-    console.log({level0: level0Items});
+    //console.log({level0: level0Items});
 
     /** */
     return html`

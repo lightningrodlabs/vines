@@ -39,7 +39,7 @@ export class ChatHeader extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<chat-header>.render():", this.hash);
+    //console.log("<chat-header>.render():", this.hash);
     if (this.hash == "") {
       return html`
           <div>No thread found</div>`;
@@ -47,7 +47,7 @@ export class ChatHeader extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
     const pp = this._zvm.perspective.threads[this.hash].pp;
-    const semTopic = this._zvm.perspective.allSemanticTopics[pp.topicHash];
+    const semTopic = this._zvm.perspective.allSemanticTopics[pp.subjectHash];
 
     // FIXME: Generate Top icon according to topic type or bead type
 

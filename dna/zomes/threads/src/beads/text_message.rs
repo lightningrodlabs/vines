@@ -50,7 +50,8 @@ pub fn get_many_text_message(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestam
 #[hdk_extern]
 pub fn add_text_message(texto: TextMessage) -> ExternResult<(ActionHash, String, Timestamp)> {
   let ah = create_entry(ThreadsEntry::TextMessage(texto.clone()))?;
-  let ah_time = sys_time()?; // FIXME: use Action's timestamp
+  //let ah_time = sys_time()?; // FIXME: use Action's timestamp
+  let ah_time = get(ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
   let tp_pair = index_bead(texto.bead, ah.clone(), "TextMessage", ah_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))

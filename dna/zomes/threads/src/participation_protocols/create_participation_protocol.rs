@@ -18,29 +18,37 @@ pub struct CreatePpInput {
 
 /// Create a Pp off anything
 #[hdk_extern]
-pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<ActionHash> {
+pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp)> {
   let pp = ParticipationProtocol {
     purpose: input.purpose,
     rules: input.rules,
-    topic_hash: input.topic_hash.clone(),
-    topic_type: TopicType::Applet(AppletTopicType::from(input.topic_hash)),
+    subject_hash: input.topic_hash.clone(),
+    subject_type: SubjectType::Applet(AppletSubjectType::from(input.topic_hash)),
   };
   return create_pp(pp, input.dna_hash, &input.type_name, None);
 }
 
 
 ///
-pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, subject_type_name: &str, maybe_index_time: Option<Timestamp>) -> ExternResult<ActionHash> {
+pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, subject_type_name: &str, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
 
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
 
   /// Global Subjects Index
-  let (tp, _subject_hash_str) = get_subject_tp(dna_hash, subject_type_name, pp.topic_hash.clone())?;
+  let (tp, _subject_hash_str) = get_subject_tp(dna_hash, subject_type_name, pp.subject_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
+
+  /// Use given index_time or use the PP's creation time
+  let index_time = if let Some(index_time) = maybe_index_time {
+    index_time
+  } else {
+    let action_ts = get(pp_ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
+    action_ts
+  };
 
   /// Link from Subject Path to Protocol
   create_link(
@@ -52,32 +60,26 @@ pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, subject_type_name
   )?;
   /// Link from Subject Hash to Protocol
   create_link(
-    pp.topic_hash.clone(),
+    pp.subject_hash.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Threads,
-    str2tag(&ta.anchor), // Store Anchor in Tag
+    LinkTag::new(index_time.0.to_le_bytes().to_owned()), // Store index-index in Tag
+    //str2tag(&ta.anchor), // Store Anchor in Tag
   )?;
 
   /// Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
-  /// Use given index_time or use the PP's creation time
-  let index_time = if let Some(index_time) = maybe_index_time {
-    index_time
-  } else {
-    let action_ts = get(pp_ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
-    action_ts
-  };
   let (global_leaf_tp, _ah) = index_item(
     global_time_tp,
     pp_ah.clone().into(),
     PP_ITEM_TYPE,
     index_time,
-    pp.topic_hash.get_raw_39())?;
+    pp.subject_hash.get_raw_39())?;
 
-  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.topic_hash);
+  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject_hash);
 
 
   /// Done
-  Ok(pp_ah)
+  Ok((pp_ah, index_time))
 }

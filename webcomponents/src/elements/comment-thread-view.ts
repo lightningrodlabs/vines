@@ -164,7 +164,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (!pp) {
       return html `<div>Loading thread...</div>`;
     }
-    const topic = this._dvm.threadsZvm.getSemanticTopic(pp.topicHash);
+    const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
     if (!topic) {
       return html `<div>Loading thread topic...</div>`;
     }

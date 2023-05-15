@@ -3,9 +3,7 @@ import {
   GlobalLastSearchLog,
   ParticipationProtocol,
   SearchInterval,
-  Subject,
-  TopicType,
-  TopicTypeType
+  Subject, SubjectType, SubjectTypeType,
 } from "../bindings/threads.types";
 import {ActionHash, ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
@@ -52,7 +50,8 @@ export interface ThreadsPerspective {
 
   /** */
   globalSearchLog?: GlobalLastSearchLog,
-
+  newSubjects: Dictionary<[ActionHash, Timestamp][]>
+  newThreads: ActionHashB64[]
   unreadSubjects: AnyLinkableHashB64[],
   unreadThreads: ActionHashB64[],
 
@@ -66,8 +65,8 @@ export interface ThreadsPerspective {
 export interface ParticipationProtocolMat {
   purpose: string
   rules: string
-  topicHash: string //AnyDhtHashB64
-  topicType: TopicTypeType
+  subjectHash: string //AnyDhtHashB64
+  subjectType: SubjectTypeType
 }
 
 
@@ -76,26 +75,28 @@ export function materializeParticipationProtocol(pp: ParticipationProtocol): Par
   return {
     purpose: pp.purpose,
     rules: pp.rules,
-    topicHash: encodeHashToBase64(pp.topicHash),
-    topicType: convertTopicType(pp.topicType),
+    subjectHash: encodeHashToBase64(pp.subjectHash),
+    subjectType: convertSubjectType(pp.subjectType),
   } as ParticipationProtocolMat;
 }
 
 
 /** */
-function convertTopicType(tt: TopicType): TopicTypeType {
-  for (const value in TopicTypeType) {
+function convertSubjectType(subjectType: SubjectType): SubjectTypeType {
+  for (const value in SubjectTypeType) {
     const variant = value.charAt(0).toLowerCase() + value.slice(1); // un-capitalize
-    if (variant in tt) {
-      return (TopicTypeType as any)[value]
+    if (variant in subjectType) {
+      return (SubjectTypeType as any)[value]
     }
   }
-  console.error("convertTopicType() failed", tt)
+  console.error("convertTopicType() failed", subjectType)
   throw Error("Unknown variant for TopicType object")
 }
+
+
 /** */
-function convertTopicTypeType(tt: TopicTypeType): TopicType {
+function convertSubjectTypeType(tt: SubjectTypeType): SubjectType {
   const obj = {};
   obj[tt] = null;
-  return obj as TopicType;
+  return obj as SubjectType;
 }

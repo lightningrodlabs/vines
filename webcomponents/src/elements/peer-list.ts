@@ -149,7 +149,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<peer-list> render()", this._loaded);
+    //console.log("<peer-list> render()", this._loaded);
     if (!this._loaded) {
       return html`<div class="fill center-content">
         Loading...

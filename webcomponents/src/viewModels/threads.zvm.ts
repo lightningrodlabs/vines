@@ -62,7 +62,9 @@ export class ThreadsZvm extends ZomeViewModel {
       threads: this._threads,
       textMessages: this._textMessages,
       globalSearchLog: this._globalSearchLog,
+      newSubjects: this._newSubjects,
       unreadSubjects: this._unreadSubjects,
+      newThreads: this._newThreads,
       unreadThreads: this._unreadThreads,
     };
   }
@@ -81,11 +83,11 @@ export class ThreadsZvm extends ZomeViewModel {
   private _threads: Dictionary<Thread> = {};
   /** */
   private _globalSearchLog?: GlobalLastSearchLog;
-  /** Unreads */
+  /** New & Unreads */
+  private _newSubjects: Dictionary<[ActionHash, Timestamp][]> = {};
   private _unreadSubjects: AnyLinkableHashB64[] = [];
+  private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
-
-
 
   /** -- Get: Return a stored element -- */
 
@@ -168,7 +170,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     await Promise.all(probes);
     /** Get last elements since last time (global search log) */
-    //await this.probeAllLatest()
+    await this.probeAllLatest()
   }
 
 
@@ -273,22 +275,61 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async probeAllLatest(): Promise<void> {
     const latest = await this.zomeProxy.probeAllLatest(this._globalSearchLog.time);
-    let unreadThreads = latest.newBeadsByThread.map(([ppAh, _bl]) => encodeHashToBase64(ppAh));
-    let unreadSubjects = latest.newThreadsByTopic.map(([topicHash, _ppAh]) => encodeHashToBase64(topicHash));
-    /** Also mark subjets if it has an unread thread */
+    const newThreads = latest.newThreadsBySubject.map(([_topicHash, ppAh]) => encodeHashToBase64(ppAh));
+    const unreadThreads = latest.newBeadsByThread.map(([ppAh, _bl]) => encodeHashToBase64(ppAh));
+    let unreadSubjects = latest.newThreadsBySubject.map(([topicHash, _ppAh]) => encodeHashToBase64(topicHash));
+    /** Store oldest thread per subject */
+    const oldestNewThreadBySubject: Dictionary<Timestamp> = {};
+
+    /** Also mark subject as unread if it has an unread thread */
     for (const ppAh of unreadThreads) {
       const thread = this._threads[ppAh];
       if (!thread) {
         console.error("Found new thread for an unknown subject")
       }
-      const topicHash = thread.pp.topicHash;
+      const topicHash = thread.pp.subjectHash;
       unreadSubjects.push(topicHash);
     }
     /** Dedup */
     unreadSubjects = [...new Set(unreadSubjects)];
+    /** Store subject's oldest 'new' thread time for each new thread */
+    for (const ppAh of newThreads) {
+      const thread = this._threads[ppAh];
+      if (!thread) {
+        console.error("Found new thread for an unknown subject")
+      }
+      const topicHash = thread.pp.subjectHash;
+      if (!oldestNewThreadBySubject[topicHash] || thread.creationTime < oldestNewThreadBySubject[topicHash]) {
+        oldestNewThreadBySubject[topicHash] = thread.creationTime;
+      }
+    }
+
+    /** Figure out if subjects are new: it's new if there are no older threads than the new ones found */
+    //console.log("oldestThreadTimeBySubject", oldestThreadTimeBySubject);
+    let newSubjects = {};
+    for (const [subjectHash, oldestNewThreadTime] of Object.entries(oldestNewThreadBySubject)) {
+      const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
+      console.log(`Subject "${subjectHash}" oldestNewThreadBySubject: `, new Date(oldestNewThreadTime / 1000), oldestNewThreadTime)
+      newSubjects[subjectHash] = pps.map(([ppAh, ts]) => [encodeHashToBase64(ppAh), ts]);
+      for (const [ppAh, ppCreationTime] of pps) {
+        let diff = oldestNewThreadTime - ppCreationTime;
+        console.log(`Subject "${subjectHash}" thread "${encodeHashToBase64(ppAh)}" creationTime: `, new Date(ppCreationTime / 1000), ppCreationTime)
+        console.log(`Diff for ${subjectHash} thread ${encodeHashToBase64(ppAh)}`, diff)
+        if (ppCreationTime < oldestNewThreadTime) {
+          delete newSubjects[subjectHash];
+          break;
+        }
+      }
+    }
+    console.log("probeAllLatest:    newSubjects", newSubjects);
+    console.log("probeAllLatest: unreadSubjects", unreadSubjects);
+    console.log("probeAllLatest:     newThreads", newThreads);
+    console.log("probeAllLatest:  unreadThreads", unreadThreads);
     /** Done */
-    this._unreadThreads = unreadThreads;
+    this._newSubjects = newSubjects;
     this._unreadSubjects = unreadSubjects;
+    this._newThreads = newThreads;
+    this._unreadThreads = unreadThreads;
     this.notifySubscribers();
   }
 
@@ -416,12 +457,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishThreadFromSemanticTopic(topicHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
+  async publishThreadFromSemanticTopic(subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
     const pp: ParticipationProtocol = {
       purpose,
-      topicHash: decodeHashFromBase64(topicHash),
+      subjectHash: decodeHashFromBase64(subjectHash),
       rules: "FFA",
-      topicType: {semanticTopic: null},
+      subjectType: {semanticTopic: null},
     }
     const [ah, ts] = await this.zomeProxy.createPpFromSemanticTopic(pp);
     const ahB64 = encodeHashToBase64(ah);
@@ -495,14 +536,15 @@ export class ThreadsZvm extends ZomeViewModel {
         return thread.pp;
       }
     }
+    console.log(`storePp() thread "${ppAh} creationTime set: "`, creationTime);
     thread.setCreationTime(creationTime);
     let ppMat = materializeParticipationProtocol(pp);
     thread.setPp(ppMat);
     this._threads[ppAh] = thread;
-    if (!this._threadsPerSubject[ppMat.topicHash]) {
-      this._threadsPerSubject[ppMat.topicHash] = [];
+    if (!this._threadsPerSubject[ppMat.subjectHash]) {
+      this._threadsPerSubject[ppMat.subjectHash] = [];
     }
-    this._threadsPerSubject[ppMat.topicHash].push(ppAh);
+    this._threadsPerSubject[ppMat.subjectHash].push(ppAh);
     //console.log("storePp()", pp)
     this.notifySubscribers();
     return ppMat;

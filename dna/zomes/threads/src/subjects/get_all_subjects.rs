@@ -9,7 +9,7 @@ use crate::path_explorer::*;
 #[serde(rename_all = "camelCase")]
 pub struct Subject {
   hash: AnyLinkableHash,
-  hash_type: AppletTopicType,
+  hash_type: AppletSubjectType,
   topic_type: String,
   dna: DnaHash,
 }
@@ -38,7 +38,7 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
 
     let subject = Subject {
       hash: subject_hash.clone(),
-      hash_type: AppletTopicType::from(subject_hash),
+      hash_type: AppletSubjectType::from(subject_hash),
       topic_type: std::str::from_utf8(topic_type.as_ref()).unwrap().to_string(), // FIXME
       dna,
     };

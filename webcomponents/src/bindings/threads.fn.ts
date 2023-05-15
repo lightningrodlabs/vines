@@ -46,8 +46,8 @@ export const threadsFunctionNames: FunctionName[] = [
 
 	"notify_peers",
 	"get_all_subjects",
+	"get_subjects_by_type",
 	"get_subjects_for_dna",
-	"get_subjects_for_entry_type",
 	"get_latest_items",];
 
 

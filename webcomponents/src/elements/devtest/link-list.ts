@@ -122,7 +122,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log(`<link-list> render(): ${this.rootHash}`);
+    //console.log(`<link-list> render(): ${this.rootHash}`);
     if (!this._zomes) {
       return html`Loading...`;
     }

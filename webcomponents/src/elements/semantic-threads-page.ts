@@ -17,6 +17,7 @@ import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents-fiori/dist/Bar.js"
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
+import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/add.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
@@ -258,7 +259,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads[this._selectedThreadHash];
-      const topic = this.threadsPerspective.allSemanticTopics[thread.pp.topicHash];
+      const topic = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
 
       centerSide = html`
           <ui5-bar design="Header" style="background: #f1efef; border: 1px solid dimgray;">
@@ -307,7 +308,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                               }}
                   ></ui5-button>                  
                   <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent" @click=${this.refresh}></ui5-button>
-                  <ui5-button icon="debug" tooltip="Commit logs" design="Transparent" @click=${this.onCommitBtn}></ui5-button>
+                  <ui5-button icon="activate" tooltip="Commit logs" design="Transparent" @click=${this.onCommitBtn}></ui5-button>
                   <ui5-button id="createTopicButton" icon="add" tooltip="Create Topic" design="Transparent" 
                               @click=${() => this.createTopicDialogElem.show()}
                   ></ui5-button>                  
@@ -402,8 +403,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //await this._dvm.generateTestSignals();
     let latestLogDate = new Date(this.threadsPerspective.globalSearchLog.time / 1000);
     console.debug("refresh()", latestLogDate)
-    const latest = await this._dvm.threadsZvm.probeAllLatest();
-    console.log({latest})
+    await this._dvm.threadsZvm.probeAllLatest();
   }
 
 

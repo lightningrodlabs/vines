@@ -44,7 +44,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastSearchLog>> {
     .entry_type(entry_type.clone());
   let updates = query(query_args)?;
 
-  for (record) in updates {
+  for record in updates {
     let Action::Update(update) = record.action().clone()
       else {return zome_error!("Should be an update Action")};
     let Some(prev_log) = hashmap.get(&update.original_action_address)

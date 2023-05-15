@@ -69,43 +69,43 @@ pub struct SemanticTopic {
 pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
-    pub topic_hash: AnyLinkableHash,
-    pub topic_type: TopicType,
+    pub subject_hash: AnyLinkableHash,
+    pub subject_type: SubjectType,
 }
 
 
 ///
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub enum TopicType {
+pub enum SubjectType {
     Dna,
     Agent,
     Bead,
     SemanticTopic,
-    Applet(AppletTopicType),
+    Applet(AppletSubjectType),
 }
 
 
 ///
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub enum AppletTopicType {
+pub enum AppletSubjectType {
     Entry,
     Action,
     External,
 }
 
-impl AppletTopicType {
+impl AppletSubjectType {
     pub fn from(lh: AnyLinkableHash) -> Self {
         match lh.hash_type() {
             hash_type::AnyLinkable::Entry => {
-                AppletTopicType::Entry
+                AppletSubjectType::Entry
             }
             hash_type::AnyLinkable::Action => {
-                AppletTopicType::Entry
+                AppletSubjectType::Entry
             }
             hash_type::AnyLinkable::External => {
-                AppletTopicType::External
+                AppletSubjectType::External
             }
         }
     }
