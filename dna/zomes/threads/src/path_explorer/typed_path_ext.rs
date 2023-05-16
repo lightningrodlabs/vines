@@ -28,6 +28,8 @@ pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::lin
 /// to produce each child, by using `&self` as that parent.
 pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
   let children = tp_children(tp)?;
+  //debug!("tp_children_paths() children = {:?}", children);
+
   let components: ExternResult<Vec<Option<Component>>> = children
     .into_iter()
     .map(|link| {
@@ -35,6 +37,7 @@ pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
       if component_bytes.is_empty() {
         Ok(None)
       } else {
+        //debug!("tp_children_paths() component_bytes = {:?}", component_bytes);
         Ok(Some(
           SerializedBytes::from(UnsafeBytes::from(component_bytes.to_vec()))
             .try_into()
@@ -65,6 +68,8 @@ pub fn tp_children_paths(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
 /// USE WITH CARE as this can easily timeout as it's a recursive loop of get_links()
 pub fn tp_leaf_children(tp: &TypedPath) -> ExternResult<Vec<TypedPath>> {
   let children = tp_children_paths(tp)?;
+  //debug!("tp_leaf_children() children = {:?}", children);
+
   if children.is_empty() {
     return Ok(vec![tp.clone()]);
   }

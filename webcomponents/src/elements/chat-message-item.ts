@@ -83,6 +83,8 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading message...</div>`;
     }
 
+    const hasCommentThread = this._dvm.threadsZvm.hasACommentThread(this.hash);
+
     const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
@@ -112,6 +114,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                 <div><span><b>${agent.nickname}</b></span><span class="chatDate"> ${date_str}</span></div>
                 <div class="chatMsg">${texto.message}</div>
             </div>
+            <ui5-button icon="${hasCommentThread? 'comment':'sys-add'}" tooltip="Create Thread" design="Transparent"></ui5-button>
         </div>
     `;
 

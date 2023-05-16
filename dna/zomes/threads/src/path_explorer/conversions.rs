@@ -19,9 +19,11 @@ pub fn tag2str(tag: &LinkTag) -> ExternResult<String> {
 }
 
 
+///
 pub fn hash2anchor<T: HashType>(hash: HoloHash<T>) -> String {
   return holo_hash_encode(hash.get_raw_39());
 }
+
 
 /// Convert Path to Anchor
 pub fn path2anchor(path: &Path) -> Result<String, SerializedBytesError> {

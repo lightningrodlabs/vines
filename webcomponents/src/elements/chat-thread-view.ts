@@ -7,6 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ChatMessageItem} from "./chat-message-item";
 import {ChatHeader} from "./chat-header";
+import {BeadLink} from "../bindings/threads.types";
 
 
 /**
@@ -40,6 +41,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _loading = false;
   @state() private _busy = false;
+  @state() private _commentsLoading = false;
 
 
   /** -- Getters -- */
@@ -108,17 +110,33 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** Check if beads have comments */
+  protected async loadTextMessageComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
+    for (const bl of bls) {
+      const pps = await dvm.threadsZvm.probeThreads(encodeHashToBase64(bl.beadAh));
+      for (const [ppAh, pp] of Object.entries(pps)) {
+        if (pp.purpose == "comment") {
+          await dvm.threadsZvm.getAllTextMessages(ppAh);
+          break;
+        }
+      }
+    }
+  }
+
+
   /** */
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
     console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash, !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
     //dvm.threadsZvm.probeAllBeads(this.threadHash)
     dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
-      .then((_beadLinks) => {
-        //console.log("<chat-thread-view>.loadMessages() beads found: ", beadLinks.length);
+      .then(async (beadLinks) => {
         this._loading = false;
+        await this.loadTextMessageComments(beadLinks, dvm);
+        this._commentsLoading = false; // This is for triggering a new requestUpdate
       });
     this._loading = true;
+    this._commentsLoading = true;
   }
 
 
@@ -129,8 +147,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     this._loading = true;
-    await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
+    this._commentsLoading = true;
+    const bls = await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
     this._loading = false;
+    await this.loadTextMessageComments(bls, this._dvm);
+    this._commentsLoading = false; // This is for triggering a new requestUpdate
   }
 
 

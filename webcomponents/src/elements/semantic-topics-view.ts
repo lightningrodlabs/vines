@@ -139,12 +139,13 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       if (topicThreads) {
         threads = Object.values(topicThreads).map((ppHash)=> {
           const thread = this.perspective.threads[ppHash];
-          const hasNewBeads = thread && thread.hasUnreads();
+          //const hasNewBeads = thread && thread.hasUnreads();
+          const hasNewBeads = this.perspective.unreadThreads.includes(ppHash);
           //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
           const threadIsNew = this.perspective.newThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
           if (!thread.pp) return html``;
-          return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="discussion">
+          return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="number-sign">
               <span slot="content" style="font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">${thread.pp.purpose}</span>
           </ui5-tree-item-custom>`
         })

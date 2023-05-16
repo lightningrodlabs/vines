@@ -18,11 +18,13 @@ import "@ui5/webcomponents-fiori/dist/Bar.js"
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
 import "@ui5/webcomponents-icons/dist/activate.js"
+import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/add.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/action-settings.js"
+import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
@@ -47,6 +49,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
+
+  @state() private _canShowComments = false;
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -266,7 +270,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
               <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
-              <ui5-button slot="endContent" icon="action-settings" tooltip="Go to settings" @click=${() => this._dvm.dumpLogs()}></ui5-button>
+              <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._dvm.dumpLogs(); this._canShowComments = !this._canShowComments;}}></ui5-button>
           </ui5-bar>
           <chat-view id="chat-view" .threadHash=${this._selectedThreadHash}
                             style=""></chat-view>
@@ -335,11 +339,14 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                   ></ui5-button>
               </div>
         </div>
-          <div id="centerSide">
-              ${centerSide}
-          </div>          
+        <div id="centerSide">
+            ${centerSide}
+        </div>
+        <div id="commentSide" style="display:${this._canShowComments? 'flex' : 'none'}">
+            <comment-thread-view .threadHash=${this._selectedThreadHash}></comment-thread-view>
+        </div>
         <div id="rightSide">
-            <peer-list></peer-list>
+          <peer-list></peer-list>
         </div>
       </div>
       <!-- DIALOGS -->
@@ -418,7 +425,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   static get scopedElements() {
     return {
       "semantic-topics-view": SemanticTopicsView,
-      "text-thread-view": CommentThreadView,
+      "comment-thread-view": CommentThreadView,
       "chat-view": ChatThreadView,
       "edit-profile": EditProfile,
       "peer-list": PeerList,

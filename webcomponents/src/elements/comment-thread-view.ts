@@ -45,7 +45,6 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- State variables -- */
 
   @state() private _loading = false;
-  @state() private _txtTuples: [number, AgentPubKeyB64, string][] = []
 
 
   /** -- Getters -- */
@@ -62,64 +61,26 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<text-thread-view>.dvmUpdated()");
+    console.log("<comment-thread-view>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    this.loadlatestMessages(newDvm);
+    newDvm.threadsZvm.probeAllBeads(this.threadHash);
   }
-
-
-  /** */
-  protected loadlatestMessages(newDvm?: ThreadsDvm) {
-    //console.log("<text-thread-view>.loadMessages() probe", this.threadHash, !!this._dvm);
-    const dvm = newDvm? newDvm : this._dvm;
-    //dvm.threadsZvm.probeAllBeads(this.threadHash)
-      dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
-      .then((beadLinks) => {
-        console.log("<text-thread-view>.loadMessages() beads found: ", beadLinks.length);
-        this._loading = false;
-      });
-    this._loading = true;
-  }
-
-
-
 
 
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<text-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
+    console.log("<comment-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
     if (changedProperties.has("threadHash") && this._dvm) {
-      this.loadlatestMessages();
+      this._dvm.threadsZvm.probeAllBeads(this.threadHash);
     }
   }
 
-
-  // /** */
-  // async onUpdate(): Promise<void> {
-  //   this._dvm.threadsZvm.zomeProxy.getProtocol(decodeHashFromBase64(this.threadHash))
-  //     .then((pp) => this._pp = pp)
-  //   await this.probeLatestMessages();
-  // }
-  //
-  //
-  // /** */
-  // shouldUpdate(changedProperties: PropertyValues<this>) {
-  //   super.shouldUpdate(changedProperties);
-  //   console.log("<text-message-list>.shouldUpdate()", changedProperties);
-  //   if (changedProperties.has("threadHash") && this._dvm) {
-  //     console.log("<text-message-list>.shouldUpdate()", changedProperties, this.threadHash);
-  //     this._txtTuples = this._dvm.threadsZvm.getLatestTextMessageTuples(this.threadHash);
-  //     this.onUpdate();
-  //   }
-  //   return true;
-  // }
-  //
 
 
   /** */
@@ -127,8 +88,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     super.updated(_changedProperties);
     try {
       const scrollContainer = this.listElem.shadowRoot.children[0].children[0];
-      //console.log("TextList.updated() ", scrollContainer)
-      console.log("TextList.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+      //console.log("CommentThreadView.updated() ", scrollContainer)
+      console.log("CommentThreadView.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
       //this.listElem.scrollTo(0, this.listElem.scrollHeight);
       //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
       //this.listElem.scrollIntoView({block: "end"});
@@ -143,7 +104,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onLoadMore() {
-    console.log("<text-thread-view>.onLoadMore()");
+    console.log("<comment-thread-view>.onLoadMore()");
 
     this.listElem.busy = true;
     // FIXME: Probe DHT
@@ -153,7 +114,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<text-thread-view>.render():", this.threadHash);
+    console.log("<comment-thread-view>.render():", this.threadHash);
     if (this.threadHash == "") {
       return html `<div>No thread selected</div>`;
     }
@@ -169,11 +130,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading thread topic...</div>`;
     }
 
-    /** Should grab all probed and request probes if end is reached */
-    //const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
+
     const infos: TextMessageInfo[] = this._dvm.threadsZvm.getAllTextMessages(this.threadHash);
 
-    console.log("<text-thread-view>.render() len =", infos.length);
+    console.log("<comment-thread-view>.render() len =", infos.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(infos).map(

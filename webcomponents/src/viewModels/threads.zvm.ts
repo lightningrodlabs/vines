@@ -77,7 +77,7 @@ export class ThreadsZvm extends ZomeViewModel {
   //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> TextMessageInfo */
   private _textMessages: Dictionary<TextMessageInfo> = {};
-  /** lh -> threads ahs */
+  /** lh -> ppAhs */
   private _threadsPerSubject: Dictionary<ActionHashB64[]> = {};
   /** ppAh -> Thread */
   private _threads: Dictionary<Thread> = {};
@@ -144,6 +144,21 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._threads[ppAh].beginningOfTime != undefined;
   }
 
+
+  /** */
+  hasACommentThread(subject: AnyLinkableHashB64): boolean {
+    const ppAhs = this._threadsPerSubject[subject];
+    if (!ppAhs) {
+      return false;
+    }
+    for (const ppAh of ppAhs) {
+      const thread = this.getThread(ppAh);
+      if (thread && thread.pp.purpose == "comment") {
+        return true;
+      }
+    }
+    return false;
+  }
 
 
   /** -- Init -- */
@@ -258,7 +273,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Get all Threads from a subject */
-  async probeThreads(subjectHash: AnyLinkableHashB64): Promise<Dictionary<ActionHashB64>> {
+  async probeThreads(subjectHash: AnyLinkableHashB64): Promise<Dictionary<ParticipationProtocol>> {
     let res = {};
     const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
     // FIXME resolve promise all at once
@@ -309,12 +324,12 @@ export class ThreadsZvm extends ZomeViewModel {
     let newSubjects = {};
     for (const [subjectHash, oldestNewThreadTime] of Object.entries(oldestNewThreadBySubject)) {
       const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
-      console.log(`Subject "${subjectHash}" oldestNewThreadBySubject: `, new Date(oldestNewThreadTime / 1000), oldestNewThreadTime)
+      //console.log(`Subject "${subjectHash}" oldestNewThreadBySubject: `, new Date(oldestNewThreadTime / 1000), oldestNewThreadTime)
       newSubjects[subjectHash] = pps.map(([ppAh, ts]) => [encodeHashToBase64(ppAh), ts]);
       for (const [ppAh, ppCreationTime] of pps) {
         let diff = oldestNewThreadTime - ppCreationTime;
-        console.log(`Subject "${subjectHash}" thread "${encodeHashToBase64(ppAh)}" creationTime: `, new Date(ppCreationTime / 1000), ppCreationTime)
-        console.log(`Diff for ${subjectHash} thread ${encodeHashToBase64(ppAh)}`, diff)
+        //console.log(`Subject "${subjectHash}" thread "${encodeHashToBase64(ppAh)}" creationTime: `, new Date(ppCreationTime / 1000), ppCreationTime)
+        //console.log(`Diff for ${subjectHash} thread ${encodeHashToBase64(ppAh)}`, diff)
         if (ppCreationTime < oldestNewThreadTime) {
           delete newSubjects[subjectHash];
           break;
@@ -333,10 +348,14 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
   }
 
+
   /** Get all beads from a thread */
   async probeAllBeads(ppAhB64: ActionHashB64): Promise<BeadLink[]> {
+    console.log("probeAllBeads()", ppAhB64)
+
     if (ppAhB64.length == 0) {
       console.error("probeAllBeads() Failed. ppAh not provided.")
+      return [];
     }
     /** Probe */
     const [interval, beadLinks] = await this.zomeProxy.getAllBeads(decodeHashFromBase64(ppAhB64));
@@ -490,7 +509,7 @@ export class ThreadsZvm extends ZomeViewModel {
     try {
       const [creationTime, author, tm] = await this.zomeProxy.getTextMessage(beadAh);
       const ts = alternateCreationTime? alternateCreationTime : creationTime;
-      console.log("fetchTextMessage", ts);
+      //console.log("fetchTextMessage", ts);
       this.storeTextMessage(encodeHashToBase64(beadAh), ts, encodeHashToBase64(author), tm, canNotify);
       return tm.value;
     } catch(e) {
@@ -502,7 +521,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   private async fetchBeads(ppAhB64: ActionHashB64, beadLinks: BeadLink[], searchedInterval: TimeInterval): Promise<void> {
-    console.log("fetchBeads() len = ", beadLinks.length, searchedInterval);
+    //console.log("fetchBeads() len = ", beadLinks.length, searchedInterval);
     if (beadLinks.length == 0) {
       return;
     }

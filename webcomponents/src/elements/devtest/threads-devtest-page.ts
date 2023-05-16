@@ -230,9 +230,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
             <!-- Show Thread -->
             <div style="background: #fac8c8">
                 
-                <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list> 
-                    <!-- <text-thread-view id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-thread-view>-->
-
+                <text-message-list id="textMessageList" .threadHash="${this._selectedThreadHash}"></text-message-list>
                 <div>
                     <label for="threadInput">Add Message:</label>
                     <input type="text" id="textMessageInput" name="message">
@@ -270,7 +268,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
       "anchor-tree": AnchorTree,
       "link-list": LinkList,
       "text-message-list": TextMessageList,
-      "text-thread-view": CommentThreadView,
+      "comment-thread-view": CommentThreadView,
       "semantic-topic-list": SemanticTopicList,
     }
   }
