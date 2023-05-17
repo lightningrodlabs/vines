@@ -3,7 +3,7 @@ import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ChatMessageItem} from "./chat-message-item";
 import {ChatHeader} from "./chat-header";

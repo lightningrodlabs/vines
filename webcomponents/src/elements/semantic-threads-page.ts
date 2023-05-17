@@ -35,6 +35,8 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
 import {PeerList} from "./peer-list";
+import {ActionHashB64, decodeHashFromBase64, DnaHash, encodeHashToBase64} from "@holochain/client";
+import {CreatePpInput} from "../bindings/threads.types";
 
 /**
  * @element
@@ -48,6 +50,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** -- Fields -- */
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
+  @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
@@ -147,6 +150,23 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //await this.probeLatestMessages();
     //const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
     //msgList.requestUpdate();
+  }
+
+
+  /** */
+  async onCreateComment(e) {
+    const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
+    if (!input.value || input.value.length == 0) {
+      return;
+    }
+    const ppAh = this._dvm.threadsZvm.getCommentThread(this._selectedCommentThreadHash);
+    if (!ppAh) {
+      console.error("Missing Comment thread");
+      return;
+    }
+    const path_str = await this._dvm.publishTextMessage(input.value, ppAh);
+    console.log("onCreateComment() res:", path_str);
+    input.value = "";
   }
 
 
@@ -252,6 +272,30 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  async onCommentingClicked(e:any) {
+    console.log("onCommentingClicked()", e)
+    let maybeCommentThread: ActionHashB64 | null = e.detail.maybeCommentThread;
+    const beadAh: ActionHashB64 = e.detail.beadAh;
+
+    /** Create Comment thread for this TextMessage */
+    if (!maybeCommentThread) {
+      const ppInput: CreatePpInput = {
+        purpose: "comment",
+        rules: "N/A",
+        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+        subjectHash: decodeHashFromBase64(beadAh),
+        subjectTypeName: "TextMessage",
+      };
+      const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
+      maybeCommentThread = ppAh;
+    }
+
+    this._canShowComments = true;
+    this._selectedCommentThreadHash = maybeCommentThread;
+  }
+
+
+  /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
 
@@ -273,6 +317,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._dvm.dumpLogs(); this._canShowComments = !this._canShowComments;}}></ui5-button>
           </ui5-bar>
           <chat-view id="chat-view" .threadHash=${this._selectedThreadHash}
+                     @commenting-clicked=${this.onCommentingClicked}
                             style=""></chat-view>
           <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
@@ -343,7 +388,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             ${centerSide}
         </div>
         <div id="commentSide" style="display:${this._canShowComments? 'flex' : 'none'}">
-            <comment-thread-view .threadHash=${this._selectedThreadHash}></comment-thread-view>
+            <comment-thread-view .threadHash=${this._selectedCommentThreadHash}></comment-thread-view>
+            <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
+                <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."
+                           show-clear-icon
+                           style="min-width: 400px;"
+                           @change=${this.onCreateComment}></ui5-input>
+            </ui5-bar>            
         </div>
         <div id="rightSide">
           <peer-list></peer-list>
@@ -393,6 +444,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
 
+  /** */
   async onThreadSelected(threadHash: AnyLinkableHashB64) {
     console.log("onThreadSelected()", threadHash)
     //this._dvm.threadsZvm.probeLatestBeads(threadHash)

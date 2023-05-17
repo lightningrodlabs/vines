@@ -77,6 +77,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     console.log("<comment-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
     if (changedProperties.has("threadHash") && this._dvm) {
+      console.log("<comment-thread-view>.willUpdate()", this.threadHash);
       this._dvm.threadsZvm.probeAllBeads(this.threadHash);
     }
   }

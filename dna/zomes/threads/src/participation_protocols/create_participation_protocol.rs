@@ -11,8 +11,8 @@ pub struct CreatePpInput {
   pub purpose: String,
   pub rules: String,
   pub dna_hash: DnaHash,
-  pub topic_hash: AnyLinkableHash,
-  pub type_name: String,
+  pub subject_hash: AnyLinkableHash,
+  pub subject_type_name: String,
 }
 
 
@@ -22,10 +22,10 @@ pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(Acti
   let pp = ParticipationProtocol {
     purpose: input.purpose,
     rules: input.rules,
-    subject_hash: input.topic_hash.clone(),
-    subject_type: SubjectType::Applet(AppletSubjectType::from(input.topic_hash)),
+    subject_hash: input.subject_hash.clone(),
+    subject_type: SubjectType::Applet(AppletSubjectType::from(input.subject_hash)),
   };
-  return create_pp(pp, input.dna_hash, &input.type_name, None);
+  return create_pp(pp, input.dna_hash, &input.subject_type_name, None);
 }
 
 

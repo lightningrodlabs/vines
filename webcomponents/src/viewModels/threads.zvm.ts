@@ -7,7 +7,7 @@ import {
 } from "@holochain/client";
 import {
   Bead,
-  BeadLink,
+  BeadLink, CreatePpInput,
   GetLatestBeadsInput,
   GlobalLastSearchLog,
   ParticipationProtocol,
@@ -100,7 +100,10 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   getParticipationProtocol(ah: ActionHashB64): ParticipationProtocolMat | undefined {
-    //return this._allParticipationProtocols[ah];
+    const thread = this._threads[ah];
+    if (!thread) {
+      return undefined;
+    }
     return this._threads[ah].pp;
   }
 
@@ -146,18 +149,18 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  hasACommentThread(subject: AnyLinkableHashB64): boolean {
+  getCommentThread(subject: AnyLinkableHashB64): ActionHashB64 | null {
     const ppAhs = this._threadsPerSubject[subject];
     if (!ppAhs) {
-      return false;
+      return null;
     }
     for (const ppAh of ppAhs) {
       const thread = this.getThread(ppAh);
       if (thread && thread.pp.purpose == "comment") {
-        return true;
+        return ppAh;
       }
     }
-    return false;
+    return null;
   }
 
 
@@ -354,7 +357,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("probeAllBeads()", ppAhB64)
 
     if (ppAhB64.length == 0) {
-      console.error("probeAllBeads() Failed. ppAh not provided.")
+      console.warn("probeAllBeads() Failed. ppAh not provided.")
       return [];
     }
     /** Probe */
@@ -362,7 +365,9 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("probeAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Store */
     await this.fetchBeads(ppAhB64, beadLinks, TimeInterval.new(interval));
-    this._threads[ppAhB64].setBeginningOfTime();
+    if (this._threads[ppAhB64]) {
+      this._threads[ppAhB64].setBeginningOfTime();
+    }
     /** Done */
     return beadLinks;
   }
@@ -475,7 +480,16 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** */
+  async publishParticipationProtocol(input: CreatePpInput): Promise<[ActionHashB64, ParticipationProtocolMat]> {
+    const [ppAh, ts] = await this.zomeProxy.createParticipationProtocol(input);
+    const ppAhB64 = encodeHashToBase64(ppAh);
+    const [pp, _ts2] = await this.zomeProxy.getPp(ppAh);
+    const ppMat = this.storePp(ppAhB64, pp, ts);
+    return [ppAhB64, ppMat];
+  }
+
+
+    /** */
   async publishThreadFromSemanticTopic(subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
     const pp: ParticipationProtocol = {
       purpose,

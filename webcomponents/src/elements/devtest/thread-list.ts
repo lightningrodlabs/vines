@@ -70,7 +70,7 @@ export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           (ah) => {
             const pp = this._zvm.getParticipationProtocol(ah);
             return html`
-                <ui5-li id="${ah}" additional-text="${ah}">${pp.purpose}</ui5-li>`
+                <ui5-li id="${ah}" additional-text="${ah}">${pp? pp.purpose : "<error>"}</ui5-li>`
           }
         );
       }

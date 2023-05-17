@@ -161,8 +161,8 @@ export interface CreatePpInput {
   purpose: string
   rules: string
   dnaHash: DnaHash
-  topicHash: Uint8Array
-  typeName: string
+  subjectHash: Uint8Array
+  subjectTypeName: string
 }
 
 export type MyLinkFilter = [number, number[]][];
