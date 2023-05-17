@@ -89,7 +89,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading message...</div>`;
     }
 
-    const maybeCommentThread = this._dvm.threadsZvm.getCommentThread(this.hash);
+    const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
 
     const threadButton = maybeCommentThread != null
       ? html`<ui5-button icon="comment" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`

@@ -162,7 +162,7 @@ export interface CreatePpInput {
   rules: string
   dnaHash: DnaHash
   subjectHash: Uint8Array
-  subjectTypeName: string
+  subjectType: string
 }
 
 export type MyLinkFilter = [number, number[]][];
@@ -233,8 +233,7 @@ export interface NotifyInput {
 
 export interface Subject {
   hash: Uint8Array
-  hashType: AppletSubjectType
-  topicType: string
+  typeName: string
   dna: DnaHash
 }
 
@@ -336,30 +335,5 @@ export interface ParticipationProtocol {
   purpose: string
   rules: string
   subjectHash: Uint8Array
-  subjectType: SubjectType
-}
-
-/**  */
-export enum SubjectTypeType {
-	Dna = 'Dna',
-	Agent = 'Agent',
-	Bead = 'Bead',
-	SemanticTopic = 'SemanticTopic',
-	Applet = 'Applet',
-}
-export type SubjectTypeVariantDna = {dna: null}
-export type SubjectTypeVariantAgent = {agent: null}
-export type SubjectTypeVariantBead = {bead: null}
-export type SubjectTypeVariantSemanticTopic = {semanticTopic: null}
-export type SubjectTypeVariantApplet = {applet: AppletSubjectType}
-export type SubjectType = 
- | SubjectTypeVariantDna | SubjectTypeVariantAgent | SubjectTypeVariantBead | SubjectTypeVariantSemanticTopic | SubjectTypeVariantApplet;
-
-/**  */
-export type AppletSubjectType =
-  | {entry: null} | {action: null} | {external: null};
-export enum AppletSubjectTypeType {
-	Entry = 'Entry',
-	Action = 'Action',
-	External = 'External',
+  subjectType: string
 }

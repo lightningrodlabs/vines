@@ -10,6 +10,7 @@ import "@ui5/webcomponents/dist/Avatar.js"
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
+import {SEMANTIC_TOPIC_TYPE_NAME} from "../bindings/threads.types";
 // import "@ui5/webcomponents/dist/CustomListItem.js";
 // import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
 
@@ -89,8 +90,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     super.updated(_changedProperties);
     try {
       const scrollContainer = this.listElem.shadowRoot.children[0].children[0];
-      //console.log("CommentThreadView.updated() ", scrollContainer)
-      console.log("CommentThreadView.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+      //console.log("<comment-thread-view>.updated() ", scrollContainer)
+      console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
       //this.listElem.scrollTo(0, this.listElem.scrollHeight);
       //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
       //this.listElem.scrollIntoView({block: "end"});
@@ -126,10 +127,15 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (!pp) {
       return html `<div>Loading thread...</div>`;
     }
-    const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
-    if (!topic) {
-      return html `<div>Loading thread topic...</div>`;
-    }
+    // if (pp.subjectType == SEMANTIC_TOPIC_TYPE_NAME) {
+    //   const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
+    //   if (!topic) {
+    //     return html`
+    //         <div>Loading thread topic...</div>`;
+    //   }
+    // } else {
+    //
+    // }
 
 
     const infos: TextMessageInfo[] = this._dvm.threadsZvm.getAllTextMessages(this.threadHash);
@@ -179,9 +185,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <!-- <h2># ${topic}</h2>
-        <h5><abbr title="${this.threadHash}">${pp.purpose}</abbr></h5> -->
-        <ui5-list id="textList" style="height: 88vh;background: ${bg_color};">
+        <h5><abbr title="${this.threadHash}">Comments on ${pp.subjectType}</abbr></h5>
+        <ui5-list id="textList" style="background: ${bg_color};">
             ${textLi}
         </ui5-list>
     `;

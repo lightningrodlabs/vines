@@ -12,7 +12,7 @@ pub struct CreatePpInput {
   pub rules: String,
   pub dna_hash: DnaHash,
   pub subject_hash: AnyLinkableHash,
-  pub subject_type_name: String,
+  pub subject_type: String,
 }
 
 
@@ -23,21 +23,21 @@ pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(Acti
     purpose: input.purpose,
     rules: input.rules,
     subject_hash: input.subject_hash.clone(),
-    subject_type: SubjectType::Applet(AppletSubjectType::from(input.subject_hash)),
+    subject_type: input.subject_type,
   };
-  return create_pp(pp, input.dna_hash, &input.subject_type_name, None);
+  return create_pp(pp, input.dna_hash, None);
 }
 
 
 ///
-pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, subject_type_name: &str, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
+pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
 
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
 
   /// Global Subjects Index
-  let (tp, _subject_hash_str) = get_subject_tp(dna_hash, subject_type_name, pp.subject_hash.clone())?;
+  let (tp, _subject_hash_str) = get_subject_tp(dna_hash, &pp.subject_type, pp.subject_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");

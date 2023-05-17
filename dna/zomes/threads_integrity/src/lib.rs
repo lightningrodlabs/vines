@@ -70,44 +70,44 @@ pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
     pub subject_hash: AnyLinkableHash,
-    pub subject_type: SubjectType,
+    pub subject_type: String,
 }
 
 
-///
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum SubjectType {
-    Dna,
-    Agent,
-    Bead,
-    SemanticTopic,
-    Applet(AppletSubjectType),
-}
-
-
-///
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum AppletSubjectType {
-    Entry,
-    Action,
-    External,
-}
-
-impl AppletSubjectType {
-    pub fn from(lh: AnyLinkableHash) -> Self {
-        match lh.hash_type() {
-            hash_type::AnyLinkable::Entry => {
-                AppletSubjectType::Entry
-            }
-            hash_type::AnyLinkable::Action => {
-                AppletSubjectType::Entry
-            }
-            hash_type::AnyLinkable::External => {
-                AppletSubjectType::External
-            }
-        }
-    }
-}
-
+// ///
+// #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+// #[serde(rename_all = "camelCase")]
+// pub enum SubjectType {
+//     Dna,
+//     Agent,
+//     Bead,
+//     SemanticTopic,
+//     Applet(AppletSubjectType),
+// }
+//
+//
+// ///
+// #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+// #[serde(rename_all = "camelCase")]
+// pub enum AppletSubjectType {
+//     Entry,
+//     Action,
+//     External,
+// }
+//
+// impl AppletSubjectType {
+//     pub fn from(lh: AnyLinkableHash) -> Self {
+//         match lh.hash_type() {
+//             hash_type::AnyLinkable::Entry => {
+//                 AppletSubjectType::Entry
+//             }
+//             hash_type::AnyLinkable::Action => {
+//                 AppletSubjectType::Entry
+//             }
+//             hash_type::AnyLinkable::External => {
+//                 AppletSubjectType::External
+//             }
+//         }
+//     }
+// }
+//

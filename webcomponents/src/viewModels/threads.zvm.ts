@@ -11,7 +11,7 @@ import {
   GetLatestBeadsInput,
   GlobalLastSearchLog,
   ParticipationProtocol,
-  ProbeAllLatestOutput, SearchInterval,
+  ProbeAllLatestOutput, SearchInterval, SEMANTIC_TOPIC_TYPE_NAME,
   SignalPayload,
   Subject,
   TextMessage,
@@ -149,7 +149,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  getCommentThread(subject: AnyLinkableHashB64): ActionHashB64 | null {
+  getCommentThreadForSubject(subject: AnyLinkableHashB64): ActionHashB64 | null {
     const ppAhs = this._threadsPerSubject[subject];
     if (!ppAhs) {
       return null;
@@ -495,7 +495,7 @@ export class ThreadsZvm extends ZomeViewModel {
       purpose,
       subjectHash: decodeHashFromBase64(subjectHash),
       rules: "FFA",
-      subjectType: {semanticTopic: null},
+      subjectType: SEMANTIC_TOPIC_TYPE_NAME,
     }
     const [ah, ts] = await this.zomeProxy.createPpFromSemanticTopic(pp);
     const ahB64 = encodeHashToBase64(ah);
@@ -569,16 +569,16 @@ export class ThreadsZvm extends ZomeViewModel {
         return thread.pp;
       }
     }
-    console.log(`storePp() thread "${ppAh} creationTime set: "`, creationTime);
     thread.setCreationTime(creationTime);
     let ppMat = materializeParticipationProtocol(pp);
     thread.setPp(ppMat);
+    console.log(`storePp() thread "${ppAh}" fro subject "${ppMat.subjectHash}"| creationTime: "`, creationTime);
     this._threads[ppAh] = thread;
     if (!this._threadsPerSubject[ppMat.subjectHash]) {
       this._threadsPerSubject[ppMat.subjectHash] = [];
     }
     this._threadsPerSubject[ppMat.subjectHash].push(ppAh);
-    //console.log("storePp()", pp)
+    //console.log("storePp()", ppMat.subjectHash, ppAh)
     this.notifySubscribers();
     return ppMat;
   }

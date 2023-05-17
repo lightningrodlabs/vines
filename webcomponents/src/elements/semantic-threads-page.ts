@@ -159,12 +159,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     if (!input.value || input.value.length == 0) {
       return;
     }
-    const ppAh = this._dvm.threadsZvm.getCommentThread(this._selectedCommentThreadHash);
-    if (!ppAh) {
+    const thread = this._dvm.threadsZvm.getThread(this._selectedCommentThreadHash);
+    if (!thread) {
       console.error("Missing Comment thread");
       return;
     }
-    const path_str = await this._dvm.publishTextMessage(input.value, ppAh);
+    const path_str = await this._dvm.publishTextMessage(input.value, this._selectedCommentThreadHash);
     console.log("onCreateComment() res:", path_str);
     input.value = "";
   }
@@ -284,10 +284,15 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         rules: "N/A",
         dnaHash: decodeHashFromBase64(this.cell.dnaHash),
         subjectHash: decodeHashFromBase64(beadAh),
-        subjectTypeName: "TextMessage",
+        subjectType: "TextMessage",
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
       maybeCommentThread = ppAh;
+      /** Grab chat-message-item to request an update */
+      const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
+      const item = chatView.shadowRoot.getElementById("chat-item__" + beadAh) as any;
+      console.log("onCommentingClicked() item", item);
+      if (item) item.requestUpdate();
     }
 
     this._canShowComments = true;
@@ -387,7 +392,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         <div id="centerSide">
             ${centerSide}
         </div>
-        <div id="commentSide" style="display:${this._canShowComments? 'flex' : 'none'}">
+        <div id="commentSide" style="display:${this._canShowComments? 'flex' : 'none'}; flex-direction: column;">
             <comment-thread-view .threadHash=${this._selectedCommentThreadHash}></comment-thread-view>
             <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
                 <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."

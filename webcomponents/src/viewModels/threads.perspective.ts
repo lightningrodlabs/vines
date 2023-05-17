@@ -3,7 +3,7 @@ import {
   GlobalLastSearchLog,
   ParticipationProtocol,
   SearchInterval,
-  Subject, SubjectType, SubjectTypeType,
+  Subject,
 } from "../bindings/threads.types";
 import {ActionHash, ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
@@ -66,7 +66,7 @@ export interface ParticipationProtocolMat {
   purpose: string
   rules: string
   subjectHash: string //AnyDhtHashB64
-  subjectType: SubjectTypeType
+  subjectType: string
 }
 
 
@@ -76,27 +76,27 @@ export function materializeParticipationProtocol(pp: ParticipationProtocol): Par
     purpose: pp.purpose,
     rules: pp.rules,
     subjectHash: encodeHashToBase64(pp.subjectHash),
-    subjectType: convertSubjectType(pp.subjectType),
+    subjectType: pp.subjectType,
   } as ParticipationProtocolMat;
 }
 
 
-/** */
-function convertSubjectType(subjectType: SubjectType): SubjectTypeType {
-  for (const value in SubjectTypeType) {
-    const variant = value.charAt(0).toLowerCase() + value.slice(1); // un-capitalize
-    if (variant in subjectType) {
-      return (SubjectTypeType as any)[value]
-    }
-  }
-  console.error("convertTopicType() failed", subjectType)
-  throw Error("Unknown variant for TopicType object")
-}
+// /** */
+// function convertSubjectType(subjectType: SubjectType): SubjectTypeType {
+//   for (const value in SubjectTypeType) {
+//     const variant = value.charAt(0).toLowerCase() + value.slice(1); // un-capitalize
+//     if (variant in subjectType) {
+//       return (SubjectTypeType as any)[value]
+//     }
+//   }
+//   console.error("convertTopicType() failed", subjectType)
+//   throw Error("Unknown variant for TopicType object")
+// }
 
-
-/** */
-function convertSubjectTypeType(tt: SubjectTypeType): SubjectType {
-  const obj = {};
-  obj[tt] = null;
-  return obj as SubjectType;
-}
+//
+// /** */
+// function convertSubjectTypeType(tt: SubjectTypeType): SubjectType {
+//   const obj = {};
+//   obj[tt] = null;
+//   return obj as SubjectType;
+// }
