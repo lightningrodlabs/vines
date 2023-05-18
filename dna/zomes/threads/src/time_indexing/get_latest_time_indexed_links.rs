@@ -3,6 +3,7 @@ use hdk::{
 };
 use std::cmp;
 use hdk::hash_path::path::Component;
+use threads_integrity::ThreadsLinkType;
 use crate::path_explorer::*;
 use crate::time_indexing::*;
 use crate::time_indexing::timepath_utils::*;
@@ -197,7 +198,8 @@ fn search_and_append_targets_recursively(
       /// Grab all children items at the hour level
       let links = get_links(
         child_link.target.clone(),
-        LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
+        ThreadsLinkType::TimeItem,
+        // LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
         link_tag.clone(),
       )?;
       //debug!(" - get_links() of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, links.len()/*, child_link.target*/);

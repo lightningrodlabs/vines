@@ -1,4 +1,5 @@
 use hdk::prelude::*;
+use threads_integrity::ThreadsLinkType;
 //use zome_utils::*;
 use crate::path_explorer::*;
 use crate::time_indexing::*;
@@ -10,7 +11,7 @@ pub fn index_item(
   root_tp: TypedPath,
   item_hash: AnyLinkableHash,
   item_type: &str,
-  item_link_type: ScopedLinkType,
+  //item_link_type: ScopedLinkType,
   index_time_us: Timestamp,
   tag_data: &[u8]) -> ExternResult<(TypedPath, ActionHash)> {
   let tag = TimedItemTag {
@@ -25,7 +26,8 @@ pub fn index_item(
   let link_ah = create_link(
     leaf_tp.path_entry_hash()?,
     item_hash,
-    item_link_type,
+    ThreadsLinkType::TimeItem,
+    //item_link_type,
     LinkTag::new(tag.to_vec()),
   )?;
   //debug!("Item indexed at: {}", path2anchor(&leaf_tp.path).unwrap());

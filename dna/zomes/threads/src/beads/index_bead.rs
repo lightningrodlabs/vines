@@ -15,7 +15,7 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_u
     thread_tp,
     bead_ah.clone().into(),
     bead_type,
-    ThreadsLinkType::Beads.try_into().unwrap(),
+    //ThreadsLinkType::Beads.try_into().unwrap(),
     index_time_us,
     &vec![])?;
   //debug!("Bead indexed at thread:\n  - {} {}", path2anchor(&thread_leaf_tp.path).unwrap(), thread_leaf_tp.path_entry_hash()?);
@@ -27,7 +27,7 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_u
     global_time_tp,
     bead_ah.clone().into(),
     bead_type,
-    ThreadsLinkType::GlobalTimePath.try_into().unwrap(),
+    //ThreadsLinkType::GlobalTimePath.try_into().unwrap(),
     index_time_us,
     bead.for_protocol_ah.get_raw_39())?;
   //debug!("Bead indexed at global:\n  - {}", path2anchor(&leaf_tp.path).unwrap());

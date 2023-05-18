@@ -43,6 +43,7 @@ pub enum ThreadsLinkType {
     ThreadTimePath,
     SemanticTopicPath,
     SubjectPath,
+    TimeItem,
     Topics,
     Threads,
     Beads,

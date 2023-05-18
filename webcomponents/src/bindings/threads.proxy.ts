@@ -161,7 +161,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('add_text_message', texto);
   }
 
-  async addTextMessageAt(input: AddTextMessageAtInput): Promise<[ActionHash, string, Timestamp]> {
+  async addTextMessageAt(input: AddTextMessageAtInput): Promise<[ActionHash, string]> {
     return this.call('add_text_message_at', input);
   }
 

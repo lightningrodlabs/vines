@@ -1,7 +1,7 @@
 import {
   ActionHash,
-  ActionHashB64, AgentPubKeyB64,
-  AnyDhtHashB64,
+  ActionHashB64,
+  AgentPubKeyB64,
   decodeHashFromBase64,
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
@@ -11,7 +11,7 @@ import {
   GetLatestBeadsInput,
   GlobalLastSearchLog,
   ParticipationProtocol,
-  ProbeAllLatestOutput, SearchInterval, SEMANTIC_TOPIC_TYPE_NAME,
+  SEMANTIC_TOPIC_TYPE_NAME,
   SignalPayload,
   Subject,
   TextMessage,
@@ -330,7 +330,7 @@ export class ThreadsZvm extends ZomeViewModel {
       //console.log(`Subject "${subjectHash}" oldestNewThreadBySubject: `, new Date(oldestNewThreadTime / 1000), oldestNewThreadTime)
       newSubjects[subjectHash] = pps.map(([ppAh, ts]) => [encodeHashToBase64(ppAh), ts]);
       for (const [ppAh, ppCreationTime] of pps) {
-        let diff = oldestNewThreadTime - ppCreationTime;
+        //let diff = oldestNewThreadTime - ppCreationTime;
         //console.log(`Subject "${subjectHash}" thread "${encodeHashToBase64(ppAh)}" creationTime: `, new Date(ppCreationTime / 1000), ppCreationTime)
         //console.log(`Diff for ${subjectHash} thread ${encodeHashToBase64(ppAh)}`, diff)
         if (ppCreationTime < oldestNewThreadTime) {
@@ -339,10 +339,11 @@ export class ThreadsZvm extends ZomeViewModel {
         }
       }
     }
-    console.log("probeAllLatest:    newSubjects", newSubjects);
-    console.log("probeAllLatest: unreadSubjects", unreadSubjects);
-    console.log("probeAllLatest:     newThreads", newThreads);
-    console.log("probeAllLatest:  unreadThreads", unreadThreads);
+    // /** DEBUG */
+    // console.log("probeAllLatest:    newSubjects", newSubjects);
+    // console.log("probeAllLatest: unreadSubjects", unreadSubjects);
+    // console.log("probeAllLatest:     newThreads", newThreads);
+    // console.log("probeAllLatest:  unreadThreads", unreadThreads);
     /** Done */
     this._newSubjects = newSubjects;
     this._unreadSubjects = unreadSubjects;
@@ -435,8 +436,8 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Commit Entry */
     const texto = {value: msg, bead}
-    const [ah, global_time_anchor, _indexTime] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
-    console.log("publishTextMessageAt() added bead", encodeHashToBase64(ah), creationTime);
+    const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
+    //console.log("publishTextMessageAt() added bead", encodeHashToBase64(ah), creationTime);
     const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: "TextMessage"}
     /** Insert in ThreadInfo */
     if (!dontStore) {

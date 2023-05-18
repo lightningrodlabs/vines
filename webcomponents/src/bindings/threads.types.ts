@@ -311,13 +311,14 @@ export type ThreadsEntry =
 
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
 	ThreadTimePath = 'ThreadTimePath',
 	SemanticTopicPath = 'SemanticTopicPath',
 	SubjectPath = 'SubjectPath',
+	TimeItem = 'TimeItem',
 	Topics = 'Topics',
 	Threads = 'Threads',
 	Beads = 'Beads',

@@ -7,6 +7,7 @@ use crate::time_indexing::convert_timepath_to_timestamp;
 
 
 /// Get all TextMessage in local source-chain
+/// WARN Will return actual action creation time and not devtest_timestamp
 #[hdk_extern]
 pub fn query_text_messages(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextMessage)>> {
   let entry_type = EntryType::App(ThreadsEntryTypes::TextMessage.try_into().unwrap());
@@ -18,7 +19,7 @@ pub fn query_text_messages(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, Te
 }
 
 
-///
+/// WARN Will return actual action creation time and not devtest_timestamp
 #[hdk_extern]
 pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextMessage)> {
   //let fn_start = sys_time()?;
@@ -69,14 +70,14 @@ pub struct AddTextMessageAtInput {
 }
 
 #[hdk_extern]
-pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String, Timestamp)> {
+pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String)> {
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.creation_time)?;
-  let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
+  let _bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   //let fn_end = sys_time()?;
   //debug!("               ADD TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
 }
 
 
