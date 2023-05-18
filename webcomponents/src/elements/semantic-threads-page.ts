@@ -322,9 +322,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
               <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._dvm.dumpLogs(); this._canShowComments = !this._canShowComments;}}></ui5-button>
           </ui5-bar>
-          <chat-view id="chat-view" .threadHash=${this._selectedThreadHash}
-                     @commenting-clicked=${this.onCommentingClicked}
-                            style=""></chat-view>
+          <chat-view id="chat-view" .threadHash=${this._selectedThreadHash} style=""></chat-view>
           <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
               <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
@@ -352,7 +350,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** Render all */
     return html`
-      <div id="mainDiv">
+      <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
           <div id="leftSide">
               <div id="sideButtonBar" style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
                   <span style="font-size: 24px;font-weight: bold;padding: 3px 20px 0px 10px;">Topics</span>
@@ -371,7 +369,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <semantic-topics-view 
                       @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}
                       @selected=${(e) => {this.onThreadSelected(e.detail)}}
-                      @commenting-clicked=${this.onCommentingClicked}
               ></semantic-topics-view>
               <div id="profile-div" style="display: flex; flex-direction: row">
                   ${avatarUrl? html`

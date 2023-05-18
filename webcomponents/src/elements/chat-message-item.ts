@@ -100,8 +100,8 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     if (this._isHovered) {
       const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
       threadButton = maybeCommentThread != null
-        ? html`<ui5-button icon="comment" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`
-        : html`<ui5-button icon="sys-add" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`;
+        ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`
+        : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`;
     }
 
     const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds

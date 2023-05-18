@@ -63,10 +63,10 @@ export interface ThreadsPerspective {
 
 /**  */
 export interface ParticipationProtocolMat {
-  purpose: string
-  rules: string
-  subjectHash: string //AnyDhtHashB64
-  subjectType: string
+  purpose: string,
+  rules: string,
+  subjectHash: AnyLinkableHashB64,
+  subjectType: string,
 }
 
 

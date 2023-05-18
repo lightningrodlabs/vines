@@ -5,7 +5,7 @@ import {SlAvatar, SlBadge, SlInput, SlTooltip} from '@scoped-elements/shoelace';
 
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ProfilesPerspective} from "../viewModels/profiles.zvm";
-import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
@@ -18,6 +18,8 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
+
+  @state() private _isHovered = false;
 
   /** -- Fields -- */
   @property() soloAgent: AgentPubKeyB64 | null  = null; // filter for a specific agent
@@ -84,6 +86,16 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  onClickComment(maybeCommentThread: ActionHashB64 | null, agent: AgentPubKeyB64) {
+    this.dispatchEvent(new CustomEvent('commenting-clicked', {
+      detail: {maybeCommentThread, subjectHash: agent, subjectType: "Profile"},
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+
+  /** */
   renderList(profiles:  Dictionary<ThreadsProfile>) {
 
     if (Object.keys(profiles).length === 0) {
@@ -119,22 +131,36 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Build avatar agent list */
     const peers = Object.entries(profiles).map(([keyB64, profile]) => {
-      let key = decodeHashFromBase64(keyB64)
+      let key = decodeHashFromBase64(keyB64);
+
+      let threadButton = html``;
+      if (this._isHovered) {
+        const profileHash = this._dvm.profilesZvm.getProfileHash(keyB64);
+        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(profileHash);
+        threadButton = maybeCommentThread != null
+          ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, profileHash)}"></ui5-button>`
+          : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, profileHash)}"></ui5-button>`;
+      }
+
+
       let opacity = 1.0;
       if (this.soloAgent && this.soloAgent != keyB64) {
         opacity = 0.4;
       }
       return html`
-        <li class="folk" style="opacity: ${opacity};">
+        <li class="folk" style="opacity:${opacity};display:flex;align-items:center" 
+            @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}
+        >
           <span @click="${this.handleClickAvatar}">
-            <sl-avatar id=${key}  .image=${profile.fields.avatar}
+            <sl-avatar id=${key} .image=${profile.fields.avatar}
                        style="background-color:${profile.fields.color};border: black 1px solid;border-radius: var(--sl-border-radius-circle);">
             </sl-avatar>
             <sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge>
-            <span style="color:${profile.fields['color']};margin-left:4px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
+            <span style="color:${profile.fields['color']};margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
               ${profile.nickname}
             </span>
           </span>
+          ${threadButton}
         </li>`
     })
 
