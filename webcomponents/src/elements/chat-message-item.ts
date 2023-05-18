@@ -22,6 +22,9 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
   @property() hash: ActionHashB64 = ''
 
 
+  @state() private _isHovered = false;
+
+
   /**
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
@@ -72,7 +75,11 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickComment(maybeCommentThread: ActionHashB64 | null) {
-    this.dispatchEvent(new CustomEvent('commenting-clicked', { detail: {maybeCommentThread, beadAh: this.hash}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('commenting-clicked', {
+      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextMessage"},
+      bubbles: true,
+      composed: true,
+    }));
   }
 
 
@@ -89,14 +96,13 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading message...</div>`;
     }
 
-    const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-
-    const threadButton = maybeCommentThread != null
-      ? html`<ui5-button icon="comment" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`
-      : html`<ui5-button icon="sys-add" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`;
-
-
-
+    let threadButton = html``;
+    if (this._isHovered) {
+      const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+      threadButton = maybeCommentThread != null
+        ? html`<ui5-button icon="comment" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`
+        : html`<ui5-button icon="sys-add" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`;
+    }
 
     const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -113,9 +119,11 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 
+    const id = "chat-item__" + this.hash;
+
     /** render all */
     return html`
-        <div id="chat-item__${this.hash}" class="chatItem">
+        <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
             ${avatarUrl? html`
                       <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
                           <img src=${avatarUrl}>

@@ -275,7 +275,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async onCommentingClicked(e:any) {
     console.log("onCommentingClicked()", e)
     let maybeCommentThread: ActionHashB64 | null = e.detail.maybeCommentThread;
-    const beadAh: ActionHashB64 = e.detail.beadAh;
+    const subjectHash: ActionHashB64 = e.detail.subjectHash;
+    const subjectType: string = e.detail.subjectType;
 
     /** Create Comment thread for this TextMessage */
     if (!maybeCommentThread) {
@@ -283,16 +284,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         purpose: "comment",
         rules: "N/A",
         dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-        subjectHash: decodeHashFromBase64(beadAh),
-        subjectType: "TextMessage",
+        subjectHash: decodeHashFromBase64(subjectHash),
+        subjectType,
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
       maybeCommentThread = ppAh;
-      /** Grab chat-message-item to request an update */
-      const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
-      const item = chatView.shadowRoot.getElementById("chat-item__" + beadAh) as any;
-      console.log("onCommentingClicked() item", item);
-      if (item) item.requestUpdate();
+      // /** Grab chat-message-item to request an update */
+      // const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
+      // const item = chatView.shadowRoot.getElementById("chat-item__" + beadAh) as any;
+      // console.log("onCommentingClicked() item", item);
+      // if (item) item.requestUpdate();
     }
 
     this._canShowComments = true;
@@ -370,6 +371,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <semantic-topics-view 
                       @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}
                       @selected=${(e) => {this.onThreadSelected(e.detail)}}
+                      @commenting-clicked=${this.onCommentingClicked}
               ></semantic-topics-view>
               <div id="profile-div" style="display: flex; flex-direction: row">
                   ${avatarUrl? html`

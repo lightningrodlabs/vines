@@ -2,7 +2,6 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {ItemLink, ROOT_ANCHOR_SEMANTIC_TOPICS} from "../bindings/threads.types";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import Tree from "@ui5/webcomponents/dist/Tree"
@@ -12,6 +11,8 @@ import "@ui5/webcomponents/dist/BusyIndicator.js";
 
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
+import {ActionHashB64} from "@holochain/client";
+import {Dictionary} from "@ddd-qc/cell-proxy";
 
 
 
@@ -23,6 +24,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
+
+
+  @state() private _isHovered: Dictionary<boolean> = {};
 
 
   // @state() private _itemLinks: ItemLink[];
@@ -122,6 +126,11 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
   }
 
 
+  /** */
+  onClickCommentPp(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64) {
+    this.dispatchEvent(new CustomEvent('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: "ParticipationProtocol"}, bubbles: true, composed: true }));
+  }
+
 
   /** */
   render() {
@@ -144,9 +153,22 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
           const threadIsNew = this.perspective.newThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
-          if (!thread.pp) return html``;
-          return html`<ui5-tree-item-custom id="${ppHash}" level="2" icon="number-sign">
-              <span slot="content" style="font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">${thread.pp.purpose}</span>
+          if (!thread.pp) {
+            return html``;
+          }
+          let threadButton = html``;
+          if (this._isHovered[ppHash]) {
+            const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
+            threadButton = maybeCommentThread != null
+              ? html`<ui5-button icon="comment" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash)}"></ui5-button>`
+              : html`<ui5-button icon="sys-add" tooltip="Create Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash)}"></ui5-button>`;
+          }
+          // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
+          return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" >
+              <div slot="content" style="display:flex;align-items:center;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">
+                  <span>${thread.pp.purpose}</span>
+                  ${threadButton}                  
+              </div>               
           </ui5-tree-item-custom>`
         })
       }
@@ -180,6 +202,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         <ui5-tree id="semTree" mode="SingleSelect" no-data-text="No topics found"
                   @item-toggle="${this.toggleTreeItem}"
                   @item-click="${this.clickTree}"
+                  @item-mouseover=${(e) => {this._isHovered[e.detail.item.id] = true; this.requestUpdate();}}
+                  @item-mouseout=${(e) => {this._isHovered[e.detail.item.id] = false;}}
         >
           ${treeItems}
         </ui5-tree>
