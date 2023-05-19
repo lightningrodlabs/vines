@@ -41,14 +41,20 @@ export interface ThreadsPerspective {
   allSemanticTopics: Dictionary<string>
   ///** Store of all PPmat: pp_ah -> PP */
   //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
-  /** Store threads for queried topics: TopicHash -> ProtocolAh */
+  /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** pp_ah -> Thread */
   threads: Dictionary<Thread>,
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
 
-  /** */
+  /**  -- Dna threads  -- */
+  /** DnaHash -> subjectType[] */
+  dnaSubjectTypes: Dictionary<string[]>
+  /** DnaHash -> SubjectType -> subjectHash[] */
+  subjectsPerType: Dictionary<Dictionary<AnyLinkableHashB64[]>>
+
+  /** -- New / unread -- */
   globalSearchLog?: GlobalLastSearchLog,
   newSubjects: Dictionary<[ActionHash, Timestamp][]>
   newThreads: ActionHashB64[]

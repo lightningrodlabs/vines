@@ -2,7 +2,7 @@ import {
   ActionHash,
   ActionHashB64,
   AgentPubKeyB64,
-  decodeHashFromBase64,
+  decodeHashFromBase64, DnaHashB64,
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
@@ -61,6 +61,10 @@ export class ThreadsZvm extends ZomeViewModel {
       threadsPerSubject: this._threadsPerSubject,
       threads: this._threads,
       textMessages: this._textMessages,
+
+      dnaSubjectTypes: this._dnaSubjectTypes,
+      subjectsPerType: this._subjectsPerType,
+
       globalSearchLog: this._globalSearchLog,
       newSubjects: this._newSubjects,
       unreadSubjects: this._unreadSubjects,
@@ -81,6 +85,14 @@ export class ThreadsZvm extends ZomeViewModel {
   private _threadsPerSubject: Dictionary<ActionHashB64[]> = {};
   /** ppAh -> Thread */
   private _threads: Dictionary<Thread> = {};
+
+  /**  -- Dna threads  -- */
+  /** DnaHash -> subjectType[] */
+  private _dnaSubjectTypes: Dictionary<string[]> = {}
+  /** DnaHash -> SubjectType -> subjectHash[] */
+  private _subjectsPerType: Dictionary<Dictionary<AnyLinkableHashB64[]>> = {}
+
+
   /** */
   private _globalSearchLog?: GlobalLastSearchLog;
   /** New & Unreads */
@@ -111,10 +123,17 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._threads[ppAh];
   }
 
-  // getTextMessageInfo(ah: ActionHashB64): [number, AgentPubKeyB64, string] | undefined {
-  //   return this._textMessages[ah];
-  // }
+  getSubjectTypes(h: DnaHashB64): string[] | undefined {
+    return this._dnaSubjectTypes[h];
+  }
 
+  getSubjects(dnaHash: DnaHashB64, subjectType: string): AnyLinkableHashB64[] | undefined {
+    const subjects = this._dnaSubjectTypes[dnaHash];
+    if (!subjects) {
+      return undefined;
+    }
+    return subjects[subjectType];
+  }
 
   /** */
   getMostRecentTextMessages(pp_ah: ActionHashB64): TextMessageInfo[] {
@@ -287,6 +306,27 @@ export class ThreadsZvm extends ZomeViewModel {
       res[ahB64] = pp;
     }
     return res;
+  }
+
+
+  /** Get all SubjectTypes for a DNA */
+  async probeSubjectTypes(dnaHash: DnaHashB64): Promise<string[]> {
+    const subjectTypes = await this.zomeProxy.getSubjectTypesForDna(decodeHashFromBase64(dnaHash));
+    console.log("probeSubjectTypes()", subjectTypes);
+    this._dnaSubjectTypes[dnaHash] = subjectTypes;
+    return subjectTypes;
+  }
+
+
+  /** Get all subjects from a subjectType */
+  async probeSubjects(dnaHash: DnaHashB64, subjectType: string): Promise<AnyLinkableHashB64[]> {
+    if (!this._dnaSubjectTypes[dnaHash] || !this._dnaSubjectTypes[dnaHash].includes(subjectType)) {
+      return Promise.reject("Unknown subjectType for DnaHash");
+    }
+    const subjects = await this.zomeProxy.getSubjectsByType({dnaHash: decodeHashFromBase64(dnaHash), subjectType});
+    const subjectB64s = subjects.map((subject) => encodeHashToBase64(subject));
+    this._dnaSubjectTypes[dnaHash][subjectType] = subjectB64s;
+    return subjectB64s;
   }
 
 

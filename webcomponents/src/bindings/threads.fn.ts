@@ -48,6 +48,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_all_subjects",
 	"get_subjects_by_type",
 	"get_subjects_for_dna",
+	"get_subject_types_for_dna",
 	"get_latest_items",];
 
 

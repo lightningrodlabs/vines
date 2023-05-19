@@ -288,6 +288,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_subjects_for_dna', dnaHash);
   }
 
+  async getSubjectTypesForDna(dnaHash: DnaHash): Promise<string[]> {
+    return this.call('get_subject_types_for_dna', dnaHash);
+  }
+
   async getLatestItems(): Promise<SearchResponse> {
     return this.call('get_latest_items', null);
   }

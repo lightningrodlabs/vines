@@ -240,7 +240,7 @@ export interface Subject {
 /**  */
 export interface GetProtocolsInput {
   dnaHash: DnaHash
-  subjectTypeName: string
+  subjectType: string
 }
 
 export interface SearchResponse {

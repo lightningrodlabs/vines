@@ -7,6 +7,8 @@ import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 
 /** @ui5/webcomponents */
+import "@ui5/webcomponents/dist/Select.js";
+import "@ui5/webcomponents/dist/Option.js";
 import "@ui5/webcomponents/dist/Menu.js";
 import Label from "@ui5/webcomponents/dist/Label"
 import Dialog from "@ui5/webcomponents/dist/Dialog"
@@ -37,8 +39,9 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
 import {PeerList} from "./peer-list";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, DnaHashB64} from "@holochain/client";
 import {CreatePpInput} from "../bindings/threads.types";
+import {DnaThreadsView} from "./dna-threads-view";
 
 /**
  * @element
@@ -56,6 +59,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
+  @state() private _showDna: DnaHashB64 | null = null;
+
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -303,6 +308,18 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  onDnaSelected(e) {
+    console.log("onDnaSelected()", e);
+    const selectedOption = e.detail.selectedOption;
+    console.log("onDnaSelected() selectedOption", e.detail.selectedOption);
+    if (selectedOption.id == "topics-option") {
+      this._showDna = null;
+    } else {
+      this._showDna = selectedOption.id;
+    }
+  }
+
+
   /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
@@ -354,12 +371,14 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
-                <div id="sideButtonBar"
-                     style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
-                    <span style="font-size: 24px;font-weight: bold;padding: 3px 2px 0px 10px;">Topics</span>
-                    <ui5-button icon="navigation-down-arrow" design="Transparent"
-                                @click=${this.refresh}></ui5-button>
-                </div>
+                <ui5-select id="dna-select" class="select" style="background: rgb(170, 183, 153);"
+                @change=${this.onDnaSelected}>
+                    <ui5-option id=${this.cell.dnaHash}>Threads</ui5-option>
+                    <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
+                </ui5-select>
+                ${this._showDna? html`
+                    <dna-threads-view .dnaHash="${this.cell.dnaHash}"></dna-threads-view>
+                ` : html`
                 <semantic-topics-view
                         @createThreadClicked=${(e) => {
                             this._createTopicHash = e.detail;
@@ -373,6 +392,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                      @click=${() => this.createTopicDialogElem.show()}>
                     Add New Topic +
                 </div>
+                `}
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
                                 @click=${async () => {
@@ -503,6 +523,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       "chat-view": ChatThreadView,
       "edit-profile": EditProfile,
       "peer-list": PeerList,
+      "dna-threads-view": DnaThreadsView,
     }
   }
 
@@ -516,6 +537,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           height: 100vh;
         }
 
+        .ui5-select-label-root {
+          font-size: larger;
+          font-weight: bold;
+        }
+        
         #mainDiv {
           display: flex;
           flex-direction: row;
