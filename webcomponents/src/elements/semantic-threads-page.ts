@@ -7,6 +7,7 @@ import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 
 /** @ui5/webcomponents */
+import "@ui5/webcomponents/dist/Menu.js";
 import Label from "@ui5/webcomponents/dist/Label"
 import Dialog from "@ui5/webcomponents/dist/Dialog"
 import Button from "@ui5/webcomponents/dist/Button"
@@ -17,6 +18,7 @@ import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents-fiori/dist/Bar.js"
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
+import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
@@ -350,99 +352,115 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** Render all */
     return html`
-      <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
-          <div id="leftSide">
-              <div id="sideButtonBar" style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
-                  <span style="font-size: 24px;font-weight: bold;padding: 3px 20px 0px 10px;">Topics</span>
-                  <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
-                              @click=${async () => {
-                                  await this.updateComplete;
-                                  this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
-                              }}
-                  ></ui5-button>                  
-                  <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent" @click=${this.refresh}></ui5-button>
-                  <ui5-button icon="activate" tooltip="Commit logs" design="Transparent" @click=${this.onCommitBtn}></ui5-button>
-                  <ui5-button id="createTopicButton" icon="add" tooltip="Create Topic" design="Transparent" 
-                              @click=${() => this.createTopicDialogElem.show()}
-                  ></ui5-button>                  
-              </div>
-              <semantic-topics-view 
-                      @createThreadClicked=${(e) => {this._createTopicHash = e.detail; this.createThreadDialogElem.show()}}
-                      @selected=${(e) => {this.onThreadSelected(e.detail)}}
-              ></semantic-topics-view>
-              <div id="profile-div" style="display: flex; flex-direction: row">
-                  ${avatarUrl? html`
-                      <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                          <img src=${avatarUrl}>
-                      </ui5-avatar>                   
-                          ` : html`
-                        <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
-                  `}
-                  <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
-                      <div>${agent.nickname}</div>
-                      <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
-                  </div>
-                  <ui5-button style="margin-top:10px;"
-                          design="Transparent" icon="action-settings" tooltip="Go to settings"
-                              @click=${() => this.profileDialogElem.show()}
-                  ></ui5-button>
-              </div>
-        </div>
-        <div id="centerSide">
-            ${centerSide}
-        </div>
-        <div id="commentSide" style="display:${this._canShowComments? 'flex' : 'none'}; flex-direction: column;">
-            <comment-thread-view .threadHash=${this._selectedCommentThreadHash}></comment-thread-view>
-            <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
-                <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."
-                           show-clear-icon
-                           style="min-width: 400px;"
-                           @change=${this.onCreateComment}></ui5-input>
-            </ui5-bar>            
-        </div>
-        <div id="rightSide">
-          <peer-list></peer-list>
-        </div>
-      </div>
-      <!-- DIALOGS -->
-      <!-- ProfileDialog -->
-      <ui5-dialog id="profile-dialog" header-text="Edit Profile">
-          <edit-profile
-                  allowCancel
-                  .profile="${this._myProfile}"
-                  .saveProfileLabel=${'Edit Profile'}
-                  @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
-                  @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
-          ></edit-profile>
-      </ui5-dialog>      
-      <!-- CreateTopicDialog -->
-      <ui5-dialog id="create-topic-dialog" header-text="Create Topic">
-        <section>
-            <div>
-                <ui5-label for="topicTitleInput" required>Title:</ui5-label>
-                <ui5-input id="topicTitleInput"></ui5-input>
+        <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
+            <div id="leftSide">
+                <div id="sideButtonBar"
+                     style="display: flex; flex-direction: row; height: 44px; border: 1px solid darkslategray">
+                    <span style="font-size: 24px;font-weight: bold;padding: 3px 2px 0px 10px;">Topics</span>
+                    <ui5-button icon="navigation-down-arrow" design="Transparent"
+                                @click=${this.refresh}></ui5-button>
+                </div>
+                <semantic-topics-view
+                        @createThreadClicked=${(e) => {
+                            this._createTopicHash = e.detail;
+                            this.createThreadDialogElem.show()
+                        }}
+                        @selected=${(e) => {
+                            this.onThreadSelected(e.detail)
+                        }}
+                ></semantic-topics-view>
+                <div style="display: flex; flex-direction: row; height: 36px; border: 1px solid #267906;background:#d6f2ac;cursor:pointer;align-items:center;padding-left:40px;"
+                     @click=${() => this.createTopicDialogElem.show()}>
+                    Add New Topic +
+                </div>
+                <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
+                    <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
+                                @click=${async () => {
+                                    await this.updateComplete;
+                                    this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
+                                }}
+                    ></ui5-button>
+                    <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent"
+                                @click=${this.refresh}></ui5-button>
+                    <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
+                                @click=${this.onCommitBtn}></ui5-button>
+                </div>
+                <div id="profile-div" style="display: flex; flex-direction: row">
+                    ${avatarUrl ? html`
+                        <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+                            <img src=${avatarUrl}>
+                        </ui5-avatar>
+                    ` : html`
+                        <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials}
+                                    color-scheme="Accent2"></ui5-avatar>
+                    `}
+                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
+                        <div>${agent.nickname}</div>
+                            <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
+                    </div>
+                    <ui5-button style="margin-top:10px;"
+                                design="Transparent" icon="action-settings" tooltip="Go to settings"
+                                @click=${() => this.profileDialogElem.show()}
+                    ></ui5-button>
+                </div>
             </div>
-        </section>
-        <div slot="footer">
-          <div style="flex: 1;"></div>
-          <ui5-button id="createTopicDialogButton" design="Emphasized" @click=${this.onCreateTopic}>Create</ui5-button>
-            <ui5-button @click=${() => this.createTopicDialogElem.close(false)}>Cancel</ui5-button>
+            <div id="centerSide">
+                ${centerSide}
+            </div>
+            <div id="commentSide" style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;">
+                <comment-thread-view .threadHash=${this._selectedCommentThreadHash}></comment-thread-view>
+                <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
+                    <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."
+                               show-clear-icon
+                               style="min-width: 400px;"
+                               @change=${this.onCreateComment}></ui5-input>
+                </ui5-bar>
+            </div>
+            <div id="rightSide">
+                <peer-list></peer-list>
+            </div>
         </div>
-      </ui5-dialog>
-      <!-- CreateThreadDialog -->
-      <ui5-dialog id="create-thread-dialog" header-text="Create Thread">
-          <section>
-              <div>
-                  <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
-                  <ui5-input id="threadPurposeInput"></ui5-input>
-              </div>
-          </section>
-          <div slot="footer">
-              <div style="flex: 1;"></div>
-              <ui5-button id="createThreadDialogButton" design="Emphasized" @click=${this.onCreateThread}>Create</ui5-button>
-              <ui5-button @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel</ui5-button>
-          </div>
-      </ui5-dialog>      
+        <!-- DIALOGS -->
+        <!-- ProfileDialog -->
+        <ui5-dialog id="profile-dialog" header-text="Edit Profile">
+            <edit-profile
+                    allowCancel
+                    .profile="${this._myProfile}"
+                    .saveProfileLabel= ${'Edit Profile'}
+                    @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
+                    @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
+            ></edit-profile>
+        </ui5-dialog>
+        <!-- CreateTopicDialog -->
+        <ui5-dialog id="create-topic-dialog" header-text="Create Topic">
+            <section>
+                <div>
+                    <ui5-label for="topicTitleInput" required>Title:</ui5-label>
+                    <ui5-input id="topicTitleInput"></ui5-input>
+                </div>
+            </section>
+            <div slot="footer">
+                <div style="flex: 1;"></div>
+                <ui5-button id="createTopicDialogButton" design="Emphasized" @click=${this.onCreateTopic}>Create
+                </ui5-button>
+                <ui5-button @click=${() => this.createTopicDialogElem.close(false)}>Cancel</ui5-button>
+            </div>
+        </ui5-dialog>
+        <!-- CreateThreadDialog -->
+        <ui5-dialog id="create-thread-dialog" header-text="Create Thread">
+            <section>
+                <div>
+                    <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
+                    <ui5-input id="threadPurposeInput"></ui5-input>
+                </div>
+            </section>
+            <div slot="footer">
+                <div style="flex: 1;"></div>
+                <ui5-button id="createThreadDialogButton" design="Emphasized" @click=${this.onCreateThread}>Create
+                </ui5-button>
+                <ui5-button @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel</ui5-button>
+            </div>
+        </ui5-dialog>
     `;
   }
 
