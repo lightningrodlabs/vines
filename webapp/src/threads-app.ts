@@ -168,6 +168,8 @@ export class ThreadsApp extends HappElement {
 
     //const guardedPage = threadTestPage //this._hasStartingProfile? threadTestPage : createProfile;
 
+    //const cells = this.conductorAppProxy.getAppCells(this.conductorAppProxy.appIdOfShame);
+
 
     /** Render all */
     return html`

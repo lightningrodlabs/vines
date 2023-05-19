@@ -1,5 +1,5 @@
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
-import {SlAvatar, SlColorPicker, SlRadio, SlRadioGroup} from '@scoped-elements/shoelace';
+import {SlAvatar, SlColorPicker, SlRadio, SlRadioGroup} from '@shoelace-style/shoelace';
 import { html, css, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';

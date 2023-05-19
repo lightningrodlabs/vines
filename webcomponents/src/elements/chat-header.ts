@@ -1,11 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
-import {getInitials} from "../utils";
-import {ChatThreadView} from "./chat-thread-view";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 

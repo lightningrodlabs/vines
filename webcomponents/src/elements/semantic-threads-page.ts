@@ -35,7 +35,7 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
 import {PeerList} from "./peer-list";
-import {ActionHashB64, decodeHashFromBase64, DnaHash, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {CreatePpInput} from "../bindings/threads.types";
 
 /**
