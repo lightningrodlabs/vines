@@ -1,7 +1,7 @@
 import { html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
-import {SlAvatar, SlBadge, SlInput, SlTooltip} from '@shoelace-style/shoelace';
+import {SlAvatar, SlBadge, SlInput, SlTooltip} from '@scoped-elements/shoelace';
 
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ProfilesPerspective} from "../viewModels/profiles.zvm";

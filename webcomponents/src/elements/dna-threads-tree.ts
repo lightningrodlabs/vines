@@ -166,11 +166,6 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
       subjectTypes = {};
     }
 
-    // let subjectsPerType = this.perspective.subjectsPerType[this.dnaHash];
-    // if (!subjectsPerType) {
-    //   return html `<div>No subject types</div>`;
-    // }
-
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
       let threadButton = html``;

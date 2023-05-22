@@ -518,6 +518,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async refresh(_e?: any) {
     await this._dvm.probeAll();
     await this.pingAllOthers();
+    await this._dvm.threadsZvm.probeSubjectTypes(this.cell.dnaHash);
+
     /** DEBUGGING */
     //await this._dvm.generateTestSignals();
     let latestLogDate = new Date(this.threadsPerspective.globalSearchLog.time / 1000);
