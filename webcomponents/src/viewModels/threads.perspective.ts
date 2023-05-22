@@ -5,7 +5,15 @@ import {
   SearchInterval,
   Subject,
 } from "../bindings/threads.types";
-import {ActionHash, ActionHashB64, AgentPubKeyB64, encodeHashToBase64, HoloHash, Timestamp} from "@holochain/client";
+import {
+  ActionHash,
+  ActionHashB64,
+  AgentPubKeyB64,
+  encodeHashToBase64,
+  EntryHashB64,
+  HoloHash,
+  Timestamp
+} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {HoloHashB64} from "@holochain/client/lib/types";
@@ -49,10 +57,10 @@ export interface ThreadsPerspective {
   textMessages: Dictionary<TextMessageInfo>,
 
   /**  -- Dna threads  -- */
-  /** DnaHash -> subjectType[] */
-  dnaSubjectTypes: Dictionary<string[]>
-  /** DnaHash -> SubjectType -> subjectHash[] */
-  subjectsPerType: Dictionary<Dictionary<AnyLinkableHashB64[]>>
+  /** DnaHash -> PathEntryHash -> subjectType */
+  dnaSubjectTypes: Dictionary<Dictionary<string>>
+  /** PathEntryHash -> subjectHash[] */
+  subjectsPerType: Dictionary<AnyLinkableHashB64[]>
 
   /** -- New / unread -- */
   globalSearchLog?: GlobalLastSearchLog,

@@ -288,7 +288,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_subjects_for_dna', dnaHash);
   }
 
-  async getSubjectTypesForDna(dnaHash: DnaHash): Promise<string[]> {
+  async getSubjectTypesForDna(dnaHash: DnaHash): Promise<[string, EntryHash][]> {
     return this.call('get_subject_types_for_dna', dnaHash);
   }
 

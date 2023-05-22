@@ -22,14 +22,14 @@ pub fn get_subjects_for_dna(dna_hash: DnaHash) -> ExternResult<Vec<AnyLinkableHa
 }
 
 
-///
+/// Returns list of SubjectTypes and their PathEntryHash
 #[hdk_extern]
-pub fn get_subject_types_for_dna(dna_hash: DnaHash) -> ExternResult<Vec<String>> {
+pub fn get_subject_types_for_dna(dna_hash: DnaHash) -> ExternResult<Vec<(String, EntryHash)>> {
   let (tp, _b64) = get_dna_path(dna_hash.clone())?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subject_types_for_dna() found {} children", children.len());
   let leafs = children.into_iter()
-    .map(|tp| tp.leaf().unwrap().try_into().unwrap())
+    .map(|tp| (tp.leaf().unwrap().try_into().unwrap(), tp.path.path_entry_hash().unwrap()))
     .collect();
   Ok(leafs)
 }

@@ -13,6 +13,7 @@ import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {ActionHashB64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
+import {CommentRequest} from "./semantic-threads-page";
 
 
 
@@ -133,7 +134,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
   /** */
   onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64) {
-    this.dispatchEvent(new CustomEvent('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic"}, bubbles: true, composed: true }));
   }
 
   /** */

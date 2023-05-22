@@ -14,6 +14,7 @@ import "@ui5/webcomponents/dist/CustomListItem.js";
 import {ActionHashB64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsEntryType} from "../bindings/threads.types";
+import {CommentRequest} from "./semantic-threads-page";
 
 
 /**
@@ -39,7 +40,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
    * Subscribe to ThreadsZvm
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    console.log("<dna-threads-view>.zvmUpdated()");
+    console.log("<dna-threads-tree>.zvmUpdated()");
     this._loading = true;
     await newZvm.probeSubjectTypes(this.dnaHash);
     this._loading = false;
@@ -48,7 +49,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<dna-threads-view>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
+    //console.log("<dna-threads-tree>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
     if (changedProperties.has("dnaHash") && this._zvm) {
       this._loading = true;
       await this._zvm.probeSubjectTypes(this.dnaHash);
@@ -78,8 +79,8 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64, subjectType: string) {
-    this.dispatchEvent(new CustomEvent('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType}, bubbles: true, composed: true }));
+  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectHash: ActionHashB64, subjectType: string) {
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash, subjectType}, bubbles: true, composed: true }));
   }
 
 
@@ -152,7 +153,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
 
   /** */
   render() {
-    console.log("<dna-threads-view>.render()", this.dnaHash);
+    console.log("<dna-threads-tree>.render()", this.dnaHash);
     if (this.dnaHash == "") {
       return html `<div>No DNA selected</div>`;
     }
@@ -162,7 +163,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
 
     let subjectTypes = this.perspective.dnaSubjectTypes[this.dnaHash];
     if (!subjectTypes) {
-      subjectTypes = [];
+      subjectTypes = {};
     }
 
     // let subjectsPerType = this.perspective.subjectsPerType[this.dnaHash];
@@ -170,16 +171,16 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     //   return html `<div>No subject types</div>`;
     // }
 
-    let treeItems = subjectTypes.map((subjectType) => {
+    let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
       let threadButton = html``;
       if (this._isHovered[subjectType]) {
-        const maybeCommentThread = this._zvm.getCommentThreadForSubject(subjectType);
+        const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
         threadButton = html`<ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="Create Comment Thread" design="Transparent" 
-                                        @click="${(e) => this.onClickComment(maybeCommentThread, subjectType, "SubjectType")}"></ui5-button>`
+                                        @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType")}"></ui5-button>`
       }
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
-      return html`<ui5-tree-item-custom id=${subjectType} level="1" has-children>
+      return html`<ui5-tree-item-custom id=${pathHash} level="1" has-children>
           <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:;">
               <span>${subjectType}</span>
               ${threadButton}

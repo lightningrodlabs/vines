@@ -43,6 +43,15 @@ import {ActionHashB64, decodeHashFromBase64, DnaHashB64} from "@holochain/client
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 import {DnaThreadsTree} from "./dna-threads-tree";
 
+
+/** */
+export interface CommentRequest {
+  maybeCommentThread: ActionHashB64 | null,
+  subjectHash: AnyLinkableHashB64,
+  subjectType: string,
+}
+
+
 /**
  * @element
  */
@@ -279,11 +288,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCommentingClicked(e:any) {
-    console.log("onCommentingClicked()", e)
-    let maybeCommentThread: ActionHashB64 | null = e.detail.maybeCommentThread;
-    const subjectHash: ActionHashB64 = e.detail.subjectHash;
-    const subjectType: string = e.detail.subjectType;
+  async onCommentingClicked(e: CustomEvent<CommentRequest>) {
+    console.log("onCommentingClicked()", e);
+    const request = e.detail;
+    let maybeCommentThread: ActionHashB64 | null = request.maybeCommentThread;
 
     /** Create Comment thread for this TextMessage */
     if (!maybeCommentThread) {
@@ -291,8 +299,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         purpose: "comment",
         rules: "N/A",
         dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-        subjectHash: decodeHashFromBase64(subjectHash),
-        subjectType,
+        subjectHash: decodeHashFromBase64(request.subjectHash),
+        subjectType: request.subjectType,
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
       maybeCommentThread = ppAh;
