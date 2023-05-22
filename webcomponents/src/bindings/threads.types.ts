@@ -277,7 +277,7 @@ export const ROOT_ANCHOR_SEMANTIC_TOPICS = "all_semantic_topics";
 
 export const ROOT_ANCHOR_SUBJECTS = "all_subjects";
 
-export const SEMANTIC_TOPIC_TYPE_NAME = "semantic_topic";
+export const SEMANTIC_TOPIC_TYPE_NAME = "SemanticTopic";
 
 export const GLOBAL_TIME_INDEX = "global_time";
 

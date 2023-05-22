@@ -40,8 +40,8 @@ import {getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
 import {PeerList} from "./peer-list";
 import {ActionHashB64, decodeHashFromBase64, DnaHashB64} from "@holochain/client";
-import {CreatePpInput} from "../bindings/threads.types";
-import {DnaThreadsView} from "./dna-threads-view";
+import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
+import {DnaThreadsTree} from "./dna-threads-tree";
 
 /**
  * @element
@@ -308,6 +308,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** */
   onDnaSelected(e) {
     console.log("onDnaSelected()", e);
     const selectedOption = e.detail.selectedOption;
@@ -319,6 +320,14 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
+
+  /** */
+  onDnaThreadSelected(e) {
+    console.log("onDnaThreadSelected()", e);
+    if (e.detail.type == ThreadsEntryType.ParticipationProtocol) {
+        this._selectedThreadHash = e.detail.target;
+    }
+  }
 
   /** */
   render() {
@@ -377,7 +386,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
                 </ui5-select>
                 ${this._showDna? html`
-                    <dna-threads-view .dnaHash="${this.cell.dnaHash}"></dna-threads-view>
+                    <dna-threads-view   .dnaHash=${this.cell.dnaHash}
+                                        @selected="${this.onDnaThreadSelected}"></dna-threads-view>
                 ` : html`
                 <semantic-topics-view
                         @createThreadClicked=${(e) => {
@@ -523,7 +533,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       "chat-view": ChatThreadView,
       "edit-profile": EditProfile,
       "peer-list": PeerList,
-      "dna-threads-view": DnaThreadsView,
+      "dna-threads-view": DnaThreadsTree,
     }
   }
 

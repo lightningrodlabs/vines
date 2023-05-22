@@ -213,7 +213,6 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       for (const item of toggledTreeItem.items) {
         currentItemTexts.push((item as TreeItem).text);
       }
-
       console.log("toggleTreeItem() currentItemTexts", currentItemTexts, isTyped);
 
       /** Grab children */
@@ -280,7 +279,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
       }
 
-      toggledTreeItem.toggle(); // now manually switch the toggle button
+      toggledTreeItem.toggle(); // manually switch the toggle button
       busyIndicator.active = false; // unblock the tree
 
     }

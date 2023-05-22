@@ -7,20 +7,19 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import TreeItemCustom from "@ui5/webcomponents/dist/TreeItemCustom";
-import "@ui5/webcomponents/dist/BusyIndicator.js";
+import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {ActionHashB64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-
+import {ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
  * @element
  */
-export class DnaThreadsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -60,11 +59,20 @@ export class DnaThreadsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
 
   /** */
   async clickTree(event) {
-    //console.log("<semantic-topics-view> click event:", event.detail.item)
-    if (event.detail.item.level == 2) {
-      await this.updateComplete;
-      this.dispatchEvent(new CustomEvent('selected', {detail: event.detail.item.id, bubbles: true, composed: true}));
+    console.log("<dna-threads-tree> click event:", event.detail.item);
+    let type;
+    switch (event.detail.item.level) {
+      case 3: type = ThreadsEntryType.ParticipationProtocol; break;
+      case 2: type = "Subject"; break;
+      case 1:
+      default:
+        type = "SubjectType"; break;
+
     }
+    //if (event.detail.item.level == 2) {
+      await this.updateComplete;
+      this.dispatchEvent(new CustomEvent('selected', {detail: {target: event.detail.item.id, type}, bubbles: true, composed: true}));
+    //}
 
   }
 
@@ -75,10 +83,70 @@ export class DnaThreadsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
   }
 
 
-
   /** */
   async toggleTreeItem(event:any) {
+    const busyIndicator = this.shadowRoot.getElementById("busy") as BusyIndicator;
+    const toggledTreeItem = event.detail.item as TreeItem ; // get the node that is toggled
+    //const isTyped = !!this.root && typeof this.root == 'object';
+    //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
 
+    console.log("<dna-threads-tree>.toggleTreeItem()", toggledTreeItem);
+
+    event.preventDefault(); // do not let the toggle button switch yet
+    busyIndicator.active = true; // block the tree from the user
+
+    /** Keep already existing children */
+    let currentChildren = [];
+    for (const item of toggledTreeItem.items) {
+      currentChildren.push((item as TreeItem).id);
+    }
+    //console.log("toggleTreeItem() currentItemTexts", currentItemTexts);
+
+    /** SubjectType */
+    if (event.detail.item.level == 1) {
+      /** Grab children */
+      let subject_lhs = await this._zvm.probeSubjects(this.dnaHash, toggledTreeItem.id);
+      /** Convert to TreeItem and append to Tree */
+      for (const lh of subject_lhs) {
+        /* Skip if item already exists */
+        if (currentChildren.includes(lh)) {
+          continue;
+        }
+        let newItem = document.createElement("ui5-tree-item") as TreeItem;
+        newItem.text = lh;
+        //newItem.additionalText = "[" + ta.anchor + "]";
+        //newItem.setAttribute("origin", ta.anchor);
+        //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
+        //newItem.setAttribute("linkIndex", ta.linkIndex.toString());
+        newItem.id = lh;
+        newItem.hasChildren = true;
+        newItem.level = toggledTreeItem.level + 1;
+        toggledTreeItem.appendChild(newItem);
+      }
+    }
+
+    /** SubjectHash */
+    if (event.detail.item.level == 2) {
+      /** Grab children */
+      let pps = await this._zvm.probeThreads(toggledTreeItem.id);
+      /** Convert to TreeItem and append to Tree */
+      for (const [ppAh, pp] of Object.entries(pps)) {
+        /* Skip if item already exists */
+        if (currentChildren.includes(ppAh)) {
+          continue;
+        }
+        let newItem = document.createElement("ui5-tree-item") as TreeItem;
+        newItem.text = pp.purpose;
+        newItem.id = ppAh;
+        //newItem.hasChildren = true;
+        newItem.level = toggledTreeItem.level + 1;
+        toggledTreeItem.appendChild(newItem);
+      }
+    }
+
+    /** Done */
+    toggledTreeItem.toggle(); // manually switch the toggle button
+    busyIndicator.active = false;
   }
 
 
@@ -111,7 +179,7 @@ export class DnaThreadsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
                                         @click="${(e) => this.onClickComment(maybeCommentThread, subjectType, "SubjectType")}"></ui5-button>`
       }
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
-      return html`<ui5-tree-item-custom id=${subjectType} level="1" >
+      return html`<ui5-tree-item-custom id=${subjectType} level="1" has-children>
           <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:;">
               <span>${subjectType}</span>
               ${threadButton}
