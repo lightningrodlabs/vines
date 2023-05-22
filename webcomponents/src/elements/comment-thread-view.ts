@@ -1,7 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials} from "../utils";
@@ -10,7 +9,6 @@ import "@ui5/webcomponents/dist/Avatar.js"
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
-import {SEMANTIC_TOPIC_TYPE_NAME} from "../bindings/threads.types";
 // import "@ui5/webcomponents/dist/CustomListItem.js";
 // import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
 

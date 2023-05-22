@@ -174,7 +174,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
       let threadButton = html``;
-      if (this._isHovered[subjectType]) {
+      if (this._isHovered[pathHash]) {
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
         threadButton = html`<ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="Create Comment Thread" design="Transparent" 
                                         @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType")}"></ui5-button>`

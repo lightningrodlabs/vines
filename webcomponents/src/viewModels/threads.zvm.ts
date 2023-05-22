@@ -340,18 +340,6 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  // /** Get all subjects from a subjectType */
-  // async probeSubjects(dnaHash: DnaHashB64, subjectType: string): Promise<AnyLinkableHashB64[]> {
-  //   if (!this._dnaSubjectTypes[dnaHash] || !this._dnaSubjectTypes[dnaHash].map(([subjectType, _hash]) => subjectType).includes(subjectType)) {
-  //     return Promise.reject("Unknown subjectType for DnaHash");
-  //   }
-  //   const subjects = await this.zomeProxy.getSubjectsByType({dnaHash: decodeHashFromBase64(dnaHash), subjectType});
-  //   const subjectB64s = subjects.map((subject) => encodeHashToBase64(subject));
-  //   this._dnaSubjectTypes[dnaHash][subjectType] = subjectB64s;
-  //   return subjectB64s;
-  // }
-
-
   /** */
   async probeAllLatest(): Promise<void> {
     const latest = await this.zomeProxy.probeAllLatest(this._globalSearchLog.time);
