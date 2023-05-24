@@ -166,6 +166,8 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
       subjectTypes = {};
     }
 
+    // FIXME: Reset tree on update() or fix bug with subjects not under the correct update when adding new SubjectTypes live
+
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
       let threadButton = html``;

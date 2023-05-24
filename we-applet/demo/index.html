@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Threads we-applet test</title>
+    <link
+            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
+            rel="stylesheet"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body style="margin:0px;background: #9bb791">
@@ -17,7 +21,7 @@
 
       const container = document.getElementById("container");
 
-      /** */
+      /** Define setup function */
       async function setup() {
         console.log("Index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
@@ -30,7 +34,7 @@
         const appInfo = await appWs.appInfo({installed_app_id: "threads-applet"});
         console.log("setup() appInfo", appInfo);
 
-        const renderers = await Applet.appletRenderers(
+        const renderers = await Applet.gameRenderers(
           appWs,
           adminWs,
           {},
@@ -38,6 +42,8 @@
         );
         renderers.full(container, window.customElements);
       }
+
+      /** Run it */
       setup();
     </script>
   </body>
