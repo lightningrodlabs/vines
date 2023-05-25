@@ -1,15 +1,17 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {getInitials} from "../utils";
-import {ChatThreadView} from "./chat-thread-view";
+//import {ChatThreadView} from "./chat-thread-view";
+
 
 /**
  * @element
  */
+@customElement("chat-message-item")
 export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {

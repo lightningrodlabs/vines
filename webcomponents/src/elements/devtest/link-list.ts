@@ -1,5 +1,5 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ItemLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
@@ -16,6 +16,7 @@ import {utf32Decode} from "./threads-devtest-page";
 /**
  * @element
  */
+@customElement("link-list")
 export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {

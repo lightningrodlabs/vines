@@ -1,5 +1,5 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
@@ -70,6 +70,7 @@ function toRootTreeItem(lti: LinkTreeItem) {
  * 3. Display all links of same link-type from some Anchor (i.e. AnchorTree)
  *    b. with Items
  */
+@customElement("anchor-tree")
 export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {

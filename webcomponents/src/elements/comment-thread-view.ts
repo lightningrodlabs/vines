@@ -1,5 +1,5 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -17,6 +17,7 @@ import {ThreadsProfile} from "../viewModels/profiles.proxy";
 /**
  * @element
  */
+@customElement("comment-thread-view")
 export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {

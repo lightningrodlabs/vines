@@ -1,25 +1,28 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
-import {property, state} from "lit/decorators.js";
+import {css, html} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
+import {ActionHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {Dictionary} from "@ddd-qc/cell-proxy";
+import {CommentRequest} from "./semantic-threads-page";
 
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import TreeItemCustom from "@ui5/webcomponents/dist/TreeItemCustom";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 
+import "@ui5/webcomponents/dist/Button.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {ActionHashB64} from "@holochain/client";
-import {Dictionary} from "@ddd-qc/cell-proxy";
-import {CommentRequest} from "./semantic-threads-page";
+
 
 
 
 /**
- * @element
+ *
  */
+@customElement("semantic-topics-view")
 export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
@@ -137,9 +140,12 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic"}, bubbles: true, composed: true }));
   }
 
+
+
   /** */
   render() {
     console.log("<semantic-topics-view>.render()");
+
     // if (!this._leafLinks) {
     //   return html`Loading...`;
     // }

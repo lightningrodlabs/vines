@@ -1,13 +1,9 @@
 import {
-  AppAgentClient,
-  CellType,
-  DnaHash,
+  AppAgentClient, AppAgentWebsocket,
   EntryHash,
 } from "@holochain/client";
-import { html, render, TemplateResult } from "lit";
+import { html, render} from "lit";
 import { msg } from "@lit/localize";
-//import { wrapPathInSvg } from "@holochain-open-dev/elements";
-import { decode } from "@msgpack/msgpack";
 
 import {
   Hrl,
@@ -17,14 +13,25 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
-
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
+import {ProfilesClient, ProfilesStore} from "@holochain-open-dev/profiles";
+import {ThreadsApp} from "@threads/app";
 
-import "./applet-main";
-import "./cross-applet-main";
+// import "./applet-main";
+// import "./cross-applet-main";
+
+
+/** */
+const applet: WeApplet = {
+  appletViews,
+  crossAppletViews,
+  attachmentTypes,
+  search: async (appletClient: AppAgentClient, filter: string) => {return []},
+};
+export default applet;
 
 
 /** */
@@ -32,53 +39,8 @@ async function attachmentTypes(appletClient: AppAgentClient) {
   return {}
 }
 
-const applet: WeApplet = {
-  appletViews,
-  crossAppletViews,
-  attachmentTypes,
-  search: async (appletClient: AppAgentClient, filter: string) => {
-    return []
-    // const client = new SynClient(appletClient, "notebooks");
-    //
-    // const roots = await client.getAllRoots();
-    // const appInfo = await appletClient.appInfo();
-    // const dnaHash = (appInfo.cell_info.notebooks[0] as any)[
-    //   CellType.Provisioned
-    // ].cell_id[0];
-    //
-    // return roots
-    //   .filter((r) => {
-    //     const noteMeta = decode(r.entry.meta!) as NoteMeta;
-    //
-    //     return noteMeta.title.includes(filter);
-    //   })
-    //   .map((r) => ({ hrl: [dnaHash, r.entryHash], context: {} }));
-  },
-};
 
-export default applet;
-
-
-import {ProfilesClient} from "@holochain-open-dev/profiles";
-
-function wrapAppletView(
-  client: AppAgentClient,
-  profilesClient: ProfilesClient,
-  weServices: WeServices,
-  innerTemplate: TemplateResult
-): TemplateResult {
-  const synStore = new SynStore(new SynClient(client, "notebooks"));
-  return html`
-    <we-services-context .services=${weServices}>
-      <profiles-context .store=${new ProfilesStore(profilesClient)}>
-        <syn-context .synstore=${synStore}>
-          ${innerTemplate}
-        </syn-context></profiles-context
-      ></we-services-context
-    >
-  `;
-}
-
+/** */
 function appletViews(
   client: AppAgentClient,
   _appletId: EntryHash,
@@ -86,81 +48,38 @@ function appletViews(
   weServices: WeServices
 ): AppletViews {
   return {
-    main: (element) =>
-      render(
-        wrapAppletView(
-          client,
-          profilesClient,
-          weServices,
-          html`
-            <applet-main
-              @note-selected=${async (e: CustomEvent) => {
-                const appInfo = await client.appInfo();
-                const dnaHash = (appInfo.cell_info.notebooks[0] as any)[
-                  CellType.Provisioned
-                ].cell_id[0];
-                weServices.openViews.openHrl([dnaHash, e.detail.noteHash], {});
-              }}
-              @note-created=${async (e: CustomEvent) => {
-                const appInfo = await client.appInfo();
-                const dnaHash = (appInfo.cell_info.notebooks[0] as any)[
-                  CellType.Provisioned
-                ].cell_id[0];
-                weServices.openViews.openHrl([dnaHash, e.detail.noteHash], {});
-              }}
-            ></applet-main>
-          `
-        ),
-        element
-      ),
-    blocks: {},
-    entries: {
-      notebooks: {
-        syn_integrity: {
-          commit: {
-            info: async (hrl: Hrl) => {
-              const synClient = new SynClient(client, "notebooks");
-              const root = await synClient.getCommit(hrl[1]);
-
-              if (!root) return undefined;
-
-              return {
-                icon_src: wrapPathInSvg(mdiNotebook),
-                name: (decode(root.entry.meta!) as NoteMeta).title,
-              };
-            },
-            view: (element, hrl: Hrl, context) =>
-              render(
-                wrapAppletView(
-                  client,
-                  profilesClient,
-                  weServices,
-                  html`
-                    <markdown-note
-                      .noteHash=${hrl[1]}
-                      style="flex: 1"
-                    ></markdown-note>
-                  `
-                ),
-                element
-              ),
-          },
-        },
-      },
+    main: (element) => {
+      const agentWs = client as AppAgentWebsocket;
+      console.log("ThreadsApplet.main()", client, agentWs.appWebsocket)
+      /** Link to styles */
+      const cssLink = document.createElement('link');
+      cssLink.href = "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/themes/light.css";
+      cssLink.rel = "stylesheet";
+      cssLink.media="(prefers-color-scheme:light)"
+      element.appendChild(cssLink);
+      /** Create and append <threads-app> */
+      const app = new ThreadsApp(agentWs.appWebsocket, undefined, true, "threads-applet");
+      element.appendChild(app);
     },
+    blocks: {},
+    entries: {},
   };
 }
+
 
 function crossAppletViews(
   applets: ReadonlyMap<EntryHash, { profilesClient: ProfilesClient; appletClient: AppAgentClient }>, // Segmented by groupId
   weServices: WeServices,
 ): CrossAppletViews {
+  // .store=${new ProfilesStore(applets[random].profilesClient)}
   return {
     main: (element) =>
       render(
         html`
           <we-services-context .services=${weServices}>
-            <cross-applet-main .applets=${applets}></cross-applet-main>
+            <!-- <profiles-context> -->
+              <cross-applet-main .applets=${applets}></cross-applet-main>
+            <!-- </profiles-context> -->
           </we-services-context>
         `,
         element

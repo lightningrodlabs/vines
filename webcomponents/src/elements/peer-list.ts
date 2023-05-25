@@ -1,7 +1,6 @@
 import { html, css } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property, state, customElement } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
-import {SlAvatar, SlBadge, SlInput, SlTooltip} from '@scoped-elements/shoelace';
 
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ProfilesPerspective} from "../viewModels/profiles.zvm";
@@ -10,10 +9,14 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 
-
+import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
+import "@shoelace-style/shoelace/dist/components/badge/badge.js"
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import "@shoelace-style/shoelace/dist/components/input/input.js";
 
 /** @element peer-list */
 @localized()
+@customElement("peer-list")
 export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
@@ -186,15 +189,15 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  /** */
-  static get scopedElements() {
-    return {
-      'sl-avatar': SlAvatar,
-      'sl-tooltip': SlTooltip,
-      'sl-badge': SlBadge,
-      'sl-input': SlInput,
-    };
-  }
+  // /** */
+  // static get scopedElements() {
+  //   return {
+  //     'sl-avatar': SlAvatar,
+  //     'sl-tooltip': SlTooltip,
+  //     'sl-badge': SlBadge,
+  //     'sl-input': SlInput,
+  //   };
+  // }
 
 
   /** */

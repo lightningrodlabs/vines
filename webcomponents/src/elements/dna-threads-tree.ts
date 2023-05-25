@@ -1,5 +1,5 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -20,6 +20,7 @@ import {CommentRequest} from "./semantic-threads-page";
 /**
  * @element
  */
+@customElement("dna-threads-tree")
 export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {

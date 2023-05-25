@@ -1,14 +1,16 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {BeadLink, ParticipationProtocol} from "../../bindings/threads.types";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {TextMessageInfo} from "../../viewModels/threads.perspective";
 
+
 /**
  * @element
  */
+@customElement("text-message-list")
 export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {

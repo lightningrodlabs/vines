@@ -1,5 +1,5 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64} from "@holochain/client";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -9,6 +9,7 @@ import {ThreadsZvm} from "../viewModels/threads.zvm";
 /**
  * @element
  */
+@customElement("chat-header")
 export class ChatHeader extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
@@ -20,8 +21,6 @@ export class ChatHeader extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** Hash of TextMessage to display */
   @property() hash: ActionHashB64 = ''
-
-
 
 
 

@@ -1,5 +1,5 @@
 import {css, html} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -29,6 +29,7 @@ export function utf32Decode(bytes: Uint8Array) {
 /**
  * @element
  */
+@customElement("threads-devtest-page")
 export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
@@ -261,15 +262,15 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
-  static get scopedElements() {
-    return {
-      "thread-list": ThreadList,
-      "anchor-tree": AnchorTree,
-      "link-list": LinkList,
-      "text-message-list": TextMessageList,
-      "comment-thread-view": CommentThreadView,
-      "semantic-topic-list": SemanticTopicList,
-    }
-  }
+  // /** */
+  // static get scopedElements() {
+  //   return {
+  //     "thread-list": ThreadList,
+  //     "anchor-tree": AnchorTree,
+  //     "link-list": LinkList,
+  //     "text-message-list": TextMessageList,
+  //     "comment-thread-view": CommentThreadView,
+  //     "semantic-topic-list": SemanticTopicList,
+  //   }
+  // }
 }

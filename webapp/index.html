@@ -2,12 +2,17 @@
 <html lang="en-GB">
   <head>
     <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      media="(prefers-color-scheme:light)"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/themes/light.css"
+    />
   </head>
   <body style="margin:0px;">
-    <thread-app></thread-app>
+    <threads-app></threads-app>
     <script type="module">
       import { ThreadsApp } from "./";
-      customElements.define("thread-app", ThreadsApp);
+      //customElements.define("thread-app", ThreadsApp);
     </script>
   </body>
 </html>

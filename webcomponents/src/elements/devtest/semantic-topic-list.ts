@@ -1,5 +1,5 @@
 import {css, html} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 
@@ -11,6 +11,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 /**
  * @element
  */
+@customElement("semantic-topic-list")
 export class SemanticTopicList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {

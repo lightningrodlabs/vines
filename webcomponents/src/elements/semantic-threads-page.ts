@@ -1,5 +1,5 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {CommentThreadView} from "./comment-thread-view";
@@ -33,6 +33,8 @@ import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
+
+/**  */
 import {ChatThreadView} from "./chat-thread-view";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {Dictionary} from "@ddd-qc/cell-proxy";
@@ -55,6 +57,7 @@ export interface CommentRequest {
 /**
  * @element
  */
+@customElement("semantic-threads-page")
 export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
@@ -191,6 +194,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     await this._dvm.publishSemanticTopic(topic);
   }
 
+
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
@@ -234,6 +238,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     await this.setMyProfile(profile.nickname, profile.fields['avatar'], color)
   }
 
+
   /** */
   async setMyProfile(nickname: string, avatar: string, color: string) {
     console.log("updateProfile() called:", nickname)
@@ -251,6 +256,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       console.log(e);
     }
   }
+
 
   /** */
   private async onProfileEdited(profile: ThreadsProfile) {
@@ -276,6 +282,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     await this._dvm.pingPeers(undefined, this._dvm.allCurrentOthers());
     //}
   }
+
 
   /** */
   async pingAllOthers() {
@@ -337,6 +344,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
+
   /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
@@ -358,7 +366,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
               <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._dvm.dumpLogs(); this._canShowComments = !this._canShowComments;}}></ui5-button>
           </ui5-bar>
-          <chat-view id="chat-view" .threadHash=${this._selectedThreadHash} style=""></chat-view>
+          <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} style=""></chat-thread-view>
           <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
               <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
@@ -394,8 +402,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
                 </ui5-select>
                 ${this._showDna? html`
-                    <dna-threads-view   .dnaHash=${this.cell.dnaHash}
-                                        @selected="${this.onDnaThreadSelected}"></dna-threads-view>
+                    <dna-threads-tree .dnaHash=${this.cell.dnaHash}
+                                      @selected="${this.onDnaThreadSelected}"></dna-threads-tree>
                 ` : html`
                 <semantic-topics-view
                         @createThreadClicked=${(e) => {
@@ -407,7 +415,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                         }}
                 ></semantic-topics-view>
                 <div style="display: flex; flex-direction: row; height: 36px; border: 1px solid #267906;background:#d6f2ac;cursor:pointer;align-items:center;padding-left:40px;"
-                     @click=${() => this.createTopicDialogElem.show()}>
+                     @click=${() => {this.createTopicDialogElem.show()}}>
                     Add New Topic +
                 </div>
                 `}
@@ -535,17 +543,17 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
-  static get scopedElements() {
-    return {
-      "semantic-topics-view": SemanticTopicsView,
-      "comment-thread-view": CommentThreadView,
-      "chat-view": ChatThreadView,
-      "edit-profile": EditProfile,
-      "peer-list": PeerList,
-      "dna-threads-view": DnaThreadsTree,
-    }
-  }
+  // /** */
+  // static get scopedElements() {
+  //   return {
+  //     "semantic-topics-view": SemanticTopicsView,
+  //     "comment-thread-view": CommentThreadView,
+  //     "chat-view": ChatThreadView,
+  //     "edit-profile": EditProfile,
+  //     "peer-list": PeerList,
+  //     "dna-threads-view": DnaThreadsTree,
+  //   }
+  // }
 
   /** */
   static get styles() {

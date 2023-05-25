@@ -1,5 +1,5 @@
 import {html, css} from "lit";
-import { state } from "lit/decorators.js";
+import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {AdminWebsocket, AppSignal, AppWebsocket, EntryHashB64, InstalledAppId, RoleName} from "@holochain/client";
 import {CellContext, delay, HCL, CellsForRole, HappElement, HvmDef} from "@ddd-qc/lit-happ";
@@ -10,13 +10,13 @@ import {ThreadsProfile} from "@threads/elements/dist/viewModels/profiles.proxy";
 
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
-//import {SlCard} from "@scoped-elements/shoelace";
 
 
 /**
  *
  */
 @localized()
+@customElement("threads-app")
 export class ThreadsApp extends HappElement {
 
   @state() private _offlinePerspectiveloaded = false;
@@ -42,8 +42,11 @@ export class ThreadsApp extends HappElement {
 
 
   /** */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, appId?: InstalledAppId) {
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, appId?: InstalledAppId) {
     super(appWs? appWs : HC_APP_PORT, appId);
+    if (_canAuthorizeZfns == undefined) {
+      this._canAuthorizeZfns = true;
+    }
   }
 
 
@@ -63,21 +66,25 @@ export class ThreadsApp extends HappElement {
 
   /** */
   async hvmConstructed() {
-    console.log("hvmConstructed()")
+    console.log("hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
     /** Authorize all zome calls */
-    if (!this._adminWs) {
+    if (!this._adminWs && this._canAuthorizeZfns) {
       this._adminWs = await AdminWebsocket.connect(`ws://localhost:${HC_ADMIN_PORT}`);
+      console.log("hvmConstructed() connect called", this._adminWs);
     }
-    if (this._adminWs) {
+    if (this._adminWs && this._canAuthorizeZfns) {
       await this.hvm.authorizeAllZomeCalls(this._adminWs);
       console.log("*** Zome call authorization complete");
     } else {
-      console.warn("No adminWebsocket provided (Zome call authorization done)")
-    }
+      if (!this._canAuthorizeZfns) {
+        console.warn("No adminWebsocket provided (Zome call authorization done)")
+      } else {
+        console.log("Zome call authorization done externally")
 
+      }
+    }
     /** Grab ludo cells */
     this._ludoRoleCells = await this.conductorAppProxy.fetchCells(DEFAULT_THREADS_DEF.id, ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-
   }
 
 
@@ -193,14 +200,14 @@ export class ThreadsApp extends HappElement {
   }
 
 
-  /** */
-  static get scopedElements() {
-    return {
-      "threads-devtest-page": ThreadsDevtestPage,
-      "semantic-threads-page": SemanticThreadsPage,
-      "cell-context": CellContext,
-    }
-  }
+  // /** */
+  // static get scopedElements() {
+  //   return {
+  //     "threads-devtest-page": ThreadsDevtestPage,
+  //     "semantic-threads-page": SemanticThreadsPage,
+  //     "cell-context": CellContext,
+  //   }
+  // }
 
 
   /** */

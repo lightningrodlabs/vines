@@ -1,12 +1,15 @@
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
-import {SlAvatar, SlColorPicker, SlRadio, SlRadioGroup} from '@scoped-elements/shoelace';
 import { html, css, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query, state, customElement } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 
 import Input from "@ui5/webcomponents/dist/Input.js";
 import Button from "@ui5/webcomponents/dist/Button"
+
+import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
+import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js"
+import "@shoelace-style/shoelace/dist/components/radio/radio.js";
+import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
 
 /** Crop the image and return a base64 bytes string of its content */
 export function resizeAndExport(img: HTMLImageElement) {
@@ -45,7 +48,8 @@ export function resizeAndExport(img: HTMLImageElement) {
  * @fires save-profile - Fired when the save profile button is clicked
  */
 @localized()
-export class EditProfile extends ScopedElementsMixin(LitElement) {
+@customElement("edit-profile")
+export class EditProfile extends LitElement {
 
   /**
    * The profile to be edited.
@@ -365,17 +369,17 @@ export class EditProfile extends ScopedElementsMixin(LitElement) {
   }
 
 
-  /**
-   * @ignore
-   */
-  static get scopedElements() {
-    return {
-      'sl-radio-group': SlRadioGroup,
-      'sl-radio': SlRadio,
-      'sl-avatar': SlAvatar,
-      'sl-color-picker': SlColorPicker,
-    };
-  }
+  // /**
+  //  * @ignore
+  //  */
+  // static get scopedElements() {
+  //   return {
+  //     'sl-radio-group': SlRadioGroup,
+  //     'sl-radio': SlRadio,
+  //     'sl-avatar': SlAvatar,
+  //     'sl-color-picker': SlColorPicker,
+  //   };
+  // }
 
   static styles = [css`
 

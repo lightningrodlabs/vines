@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "config": {
     "hc_version": "0.1.0",
-    "zits_version": "1.7.0",
+    "zits_version": "1.8.0",
     "bin": "bin"
   },
   "private": true,
@@ -37,10 +37,12 @@
     "start-rerun": "cross-env HC_APP_PORT=8888 concurrently -k \"npm run build:watch -w webcomponents\" \"$npm_package_config_bin/hc s run 0 -p 8888\" \"npm run start:ui -w webapp\"",
     "start:happ": "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ -a threads --run=$HC_APP_PORT network mdns",
     "start:happ:proxied": "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network --bootstrap https://bootstrap-staging.holo.host/ quic -p=kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--",
-    "start:launcher": "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
+    "launch": "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
+    "launch:we": "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
+
     "test": "npm run build:happ && npm run build -w @threads/elements && npm t -w @threads/tests",
-    "package:webapp": "rm -rf artifacts/threads-webapp-ui.zip & cp -v webapp/logo.svg webapp/dist && cd webapp/dist && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
-    "package:we-applet": "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir",
+    "package:webapp": "rm -rf artifacts/threads-webapp-ui.zip && cd webapp/dist && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
+    "package:we-applet": "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/threads-we_applet.webhapp",
     "update-version": "bash scripts/update-version-number.sh $npm_package_version",
     "dl-test-release": "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/threads",
     "clean": "bash scripts/clean.sh",
@@ -62,10 +64,12 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@ddd-qc/cell-proxy": "0.15.1",
-    "@ddd-qc/lit-happ": "0.15.1",
-    "@holochain/client": "=0.12.0",
-    "@holochain-open-dev/core-types": "0.6.3"
+    "@ddd-qc/cell-proxy": "0.17.0",
+    "@ddd-qc/lit-happ": "0.17.0",
+    "@holochain/client": "=0.14.1",
+    "@holochain-open-dev/core-types": "0.6.3",
+    "@lit-labs/context": "^0.2.0",
+    "lit": "2.6.0"
   },
   "engines": {
     "npm": ">=7.0.0"

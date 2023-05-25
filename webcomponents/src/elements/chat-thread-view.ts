@@ -1,5 +1,5 @@
 import {css, html, LitElement, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
@@ -13,6 +13,7 @@ import {BeadLink} from "../bindings/threads.types";
 /**
  * @element
  */
+@customElement("chat-thread-view")
 export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
@@ -230,7 +231,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
               <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>
               <hr style="border: 1px solid red; width:100%"/>`
         }
-        return html`<chat-item hash="${blm.beadAh}"></chat-item>${hr}`;
+        return html`<chat-message-item hash="${blm.beadAh}"></chat-message-item>${hr}`;
       }
     );
 
@@ -255,12 +256,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
-  static get scopedElements() {
-    return {
-      "chat-header": ChatHeader,
-      "chat-item": ChatMessageItem,
-    }
-  }
+  // /** */
+  // static get scopedElements() {
+  //   return {
+  //     "chat-header": ChatHeader,
+  //     "chat-item": ChatMessageItem,
+  //   }
+  // }
 
 }

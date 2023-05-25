@@ -1,11 +1,10 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
-//import replace from "@rollup/plugin-replace";
 import copy from "rollup-plugin-copy";
-
-import builtins from "rollup-plugin-node-builtins";
-import globals from "rollup-plugin-node-globals";
+//import replace from "@rollup/plugin-replace";
+//import typescript from "@rollup/plugin-typescript";
+//import builtins from "rollup-plugin-node-builtins";
+//import globals from "rollup-plugin-node-globals";
 
 import babel from "@rollup/plugin-babel";
 //import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
@@ -29,14 +28,19 @@ export default {
   external: [],
   plugins: [
     copy({
-      targets: [{ src: "icon.png", dest: DIST_FOLDER }],
+      targets: [
+        { src: "icon.png", dest: DIST_FOLDER },
+        { src: "../webapp/favicon.ico", dest: DIST_FOLDER },
+        { src: "../webapp/logo.svg", dest: DIST_FOLDER },
+        { src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
+      ],
     }),
     /** Resolve bare module imports */
     nodeResolve({
       browser: true,
       preferBuiltins: false,
     }),
-    typescript({ experimentalDecorators: true, outDir: DIST_FOLDER }),
+    //typescript({ experimentalDecorators: true, outDir: DIST_FOLDER }),
     //builtins(),
     //globals(),
     /** Minify JS */

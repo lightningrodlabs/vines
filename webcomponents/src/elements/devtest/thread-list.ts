@@ -1,5 +1,5 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state} from "lit/decorators.js";
+import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 
@@ -9,9 +9,11 @@ import {decodeHashFromBase64} from "@holochain/client";
 import {SemanticTopic} from "../../bindings/threads.types";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
+
 /**
  * @element
  */
+@customElement("thread-list")
 export class ThreadList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
