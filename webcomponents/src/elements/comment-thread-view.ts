@@ -9,6 +9,7 @@ import "@ui5/webcomponents/dist/Avatar.js"
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
+import {ActionHashB64} from "@holochain/client";
 // import "@ui5/webcomponents/dist/CustomListItem.js";
 // import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
 
@@ -28,7 +29,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash: string = ''
+  @property() threadHash: ActionHashB64 = ''
   /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
   @property()
   startFromBeginning: boolean = false;
