@@ -1,0 +1,73 @@
+name: build-webhapps
+
+on:
+  workflow_call:
+
+jobs:
+  build-webhapps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Install npm dependencies
+      - name: Install npm dependencies
+        shell: bash
+        run: |
+          npm install
+      # Download submodules
+      - name: Download submodules
+        shell: bash
+        run: |
+          npm run install:submodules
+      # install rust tools
+      - name: install rust tools
+        shell: bash
+        run: |
+          npm run install:rust
+      # install hc tool
+      - name: Install hc tool
+        shell: bash
+        run: |
+          npm run install:hc
+      # Install hash-zome
+      - name: Install hash-zome
+        run: |
+          npm run install:hash-zome
+      # Build happ
+      - name: Build happ
+        shell: bash
+        run: |
+          npm run build:happ
+      # Build webapp
+      - name: Build webapp
+        run: |
+          npm run build:webapp
+      # Package web-happ
+      - name: Package web-happ
+        run: |
+          npm run package:webapp
+      # build we-applet
+      - name: build we-applet
+        shell: bash
+        run: |
+          npm run build -w we-applet
+      # Package we-applet
+      - name: Package we-applet
+        shell: bash
+        run: |       
+          npm run package:we-applet
+      # Regroup artifacts
+      - name: Regroup artifacts
+        run: |       
+          cp target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm ./artifacts
+          cp target/wasm32-unknown-unknown/release/threads_zome.wasm ./artifacts      
+          cp target/wasm32-unknown-unknown/release/profiles_zome.wasm ./artifacts
+          cp target/wasm32-unknown-unknown/release/profiles_integrity_zome.wasm ./artifacts
+      # List uploaded files
+      - name: List uploaded files
+        run: ls -R
+        working-directory: ./artifacts
+      # "upload" artifacts
+      - uses: actions/upload-artifact@master
+        with:
+          name: all-happ-artifact
+          path: artifacts/

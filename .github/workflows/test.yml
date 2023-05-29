@@ -1,0 +1,39 @@
+name: test-workflow x64
+
+on: workflow_dispatch
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/build-webhapps.yml
+    secrets: inherit
+
+  # upload the artifacts
+  upload-assets:
+    needs: call-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Download previously uploaded artifacts
+      - uses: actions/download-artifact@v3
+        with:
+          name: all-happ-artifact
+          path: artifacts
+      # Display artifacts folder
+      - name: Display artifacts folder
+        run: ls
+        working-directory: artifacts
+      # upload all artifacts
+      - name: upload binary (ubuntu only)
+        if: ${{ runner.os == 'Linux' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: artifacts
+        run: |
+          rm -f *.blockmap    
+          echo threads*
+          gh release upload "manual-release" threads* --clobber
+          echo Threads*
+          gh release upload "manual-release" Threads* --clobber
+          echo profiles*
+          gh release upload "manual-release" profiles_zome.wasm --clobber          
+          gh release upload "manual-release" profiles_integrity_zome.wasm --clobber
