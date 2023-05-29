@@ -205,7 +205,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
 
     /** Generate test data */
-    await this._dvm.threadsZvm.generateTestData();
+    //await this._dvm.threadsZvm.generateTestData();
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
 
