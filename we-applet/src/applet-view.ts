@@ -1,11 +1,4 @@
 import {AppAgentClient, AppAgentWebsocket, encodeHashToBase64, EntryHash} from "@holochain/client";
-import {ProfilesClient} from "@holochain-open-dev/profiles";
-import {AppletViews, WeServices} from "@lightningrodlabs/we-applet";
-import {ThreadsApp} from "@threads/app";
-import {
-  AppAgentClient, AppAgentWebsocket,
-  EntryHash,
-} from "@holochain/client";
 import { html, render} from "lit";
 import { msg } from "@lit/localize";
 
