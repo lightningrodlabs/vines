@@ -17,6 +17,7 @@
     "install:submodules": "bash scripts/install-submodules.sh $npm_package_config_hc_version",
     "install:rust": "bash submodules/hc-prebuilt/install-rust.sh",
     "install:hc": "bash submodules/hc-prebuilt/install-hc-cli.sh $npm_package_config_bin $npm_package_config_hc_version",
+    "install:hash-zome": "bash submodules/hc-prebuilt/install-hash-zome.sh $npm_package_config_bin",
     "install:zits": "cargo install zits --version $npm_package_config_zits_version",
     "version": "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
     "build:zome": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
