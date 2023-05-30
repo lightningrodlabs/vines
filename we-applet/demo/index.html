@@ -15,7 +15,7 @@
     <script type="module">
       //import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
       //import { ProfilesZomeMock } from "@holochain-open-dev/profiles/mocks";
-      import { AppWebsocket, AdminWebsocket } from "@holochain/client";
+      import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
       import { fakeEntryHash } from '@holochain-open-dev/utils';
       import { ProfilesClient } from '@holochain-open-dev/profiles';
       import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
@@ -27,14 +27,19 @@
       async function setup() {
         console.log("Index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
-        const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);
+        // const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);
+        // const appInfo = await appWs.appInfo({installed_app_id: "threads-applet"});
+        // console.log("setup() appInfo", appInfo);
+
+        const appAgentWs = await AppAgentWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`, "threads-applet");
+        //console.log(appWs);
+        console.log(appAgentWs.appWebsocket);
+        const appWs = appAgentWs.appWebsocket;
 
         // const adminWs = await AdminWebsocket.connect(`ws://localhost:${process.env.HC_ADMIN_PORT}`);
         // const apps = await adminWs.listApps({});
         // console.log("setup() apps", apps);
 
-        const appInfo = await appWs.appInfo({installed_app_id: "threads-applet"});
-        console.log("setup() appInfo", appInfo);
 
         const renderers = await Applet.appletViews(
           appWs,
