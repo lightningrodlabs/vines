@@ -27,25 +27,28 @@
       async function setup() {
         console.log("Index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
+        /** AppWebsocket */
         // const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);
         // const appInfo = await appWs.appInfo({installed_app_id: "threads-applet"});
         // console.log("setup() appInfo", appInfo);
 
+        /** AppAgentWebsocket */
         const appAgentWs = await AppAgentWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`, "threads-applet");
-        //console.log(appWs);
         console.log(appAgentWs.appWebsocket);
-        const appWs = appAgentWs.appWebsocket;
 
+        /** AdminWebsocket */
         // const adminWs = await AdminWebsocket.connect(`ws://localhost:${process.env.HC_ADMIN_PORT}`);
         // const apps = await adminWs.listApps({});
         // console.log("setup() apps", apps);
 
+        /** Creating mock lobby app with profiles dna & zome */
+        const mockProfilesZome = new ProfilesZomeMock();
+        mockProfilesZome.create_profile({nickname: "Bobby Joe", fields: {}})
 
         const renderers = await Applet.appletViews(
-          appWs,
+                appAgentWs,
                 fakeEntryHash(),
-                //adminWs,
-                new ProfilesClient(new ProfilesZomeMock()),
+                new ProfilesClient(mockProfilesZome, mockProfilesZome.roleName),
                 weServicesMock,
         );
         renderers.main(document.body);

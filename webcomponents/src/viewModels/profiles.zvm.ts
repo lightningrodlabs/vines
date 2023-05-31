@@ -3,6 +3,7 @@ import {ProfilesProxy, ThreadsProfile} from "./profiles.proxy";
 import { decode } from '@msgpack/msgpack';
 import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 
+
 /** */
 export interface ProfilesPerspective {
   /* AgentPubKeyB64 -> Profile */

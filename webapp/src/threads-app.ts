@@ -1,15 +1,45 @@
-import {html, css} from "lit";
+import {html, css, ReactiveElement} from "lit";
 import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
-import {AdminWebsocket, AppSignal, AppWebsocket, EntryHashB64, InstalledAppId, RoleName} from "@holochain/client";
-import {CellContext, delay, HCL, CellsForRole, HappElement, HvmDef} from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF, SemanticThreadsPage, ThreadsDevtestPage,
+  AdminWebsocket,
+  AppAgentClient, AppAgentWebsocket, AppInfo,
+  AppSignal,
+  AppWebsocket, CellInfo, encodeHashToBase64,
+  EntryHashB64,
+  InstalledAppId,
+  RoleName, ZomeName
+} from "@holochain/client";
+import {
+  Profile,
+  ProfilesClient,
+  ProfilesStore,
+  profilesStoreContext
+} from '@holochain-open-dev/profiles';
+import {
+  Hrl,
+  WeServices,
+} from "@lightningrodlabs/we-applet";
+import {
+  HCL,
+  CellsForRole,
+  HappElement,
+  HvmDef,
+  DvmDef,
+  DnaViewModel, Cell, ZvmDef
+} from "@ddd-qc/lit-happ";
+import {
+  DEFAULT_THREADS_DEF, globalProfilesContext, ProfilesZvm,
 } from "@threads/elements";
-import {ThreadsProfile} from "@threads/elements/dist/viewModels/profiles.proxy";
 
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
+import {ProfilesDvm} from "@threads/elements/dist/viewModels/profiles.dvm";
+import {ContextProvider} from "@lit-labs/context";
+import {BaseRoleName} from "@ddd-qc/cell-proxy/dist/types";
+import {AppProxy} from "@ddd-qc/cell-proxy/dist/AppProxy";
+
+
 
 
 /**
@@ -41,12 +71,84 @@ export class ThreadsApp extends HappElement {
   @state() private _canShowDebug = false;
 
 
-  /** */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, appId?: InstalledAppId) {
+  /** All arguments should be provided when constructed explicity */
+  constructor(
+    appWs?: AppWebsocket,
+    private _adminWs?: AdminWebsocket,
+    private _canAuthorizeZfns?: boolean,
+    readonly appId?: InstalledAppId,
+    profilesAppId?: InstalledAppId,
+    profilesBaseRoleName?: BaseRoleName,
+    profilesZomeName?: ZomeName,
+    profilesProxy?: AppProxy,
+    private _weServices?: WeServices
+    ) {
+
     super(appWs? appWs : HC_APP_PORT, appId);
+
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
+
+
+    /** Create Profiles Dvm out of profilesAppInfo */
+    console.log("<thread-app>.ctor()", profilesProxy);
+    if (profilesProxy) {
+      /*await */ this.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesZomeName);
+    }
+
+
+  }
+
+
+
+  /** -- Provide a Profiles DVM from a different happ -- */
+
+  /** */
+  async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName, profilesZomeName: ZomeName): Promise<void> {
+    const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
+    const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
+    const cell_infos = Object.values(profilesAppInfo.cell_info);
+    console.log("createProfilesDvm() cell_infos", cell_infos);
+    /** Create Profiles "Cell" */
+    this._profilesCell = Cell.from(cell_infos[0][0], profilesAppInfo.installed_app_id, profilesBaseRoleName); // assuming a single provisioned profiles cell and no clones
+    /** Create Profiles DVM */
+    //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
+    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName));
+    console.log("createProfilesDvm() dvm", dvm);
+    this._profilesDvm = dvm as ProfilesDvm;
+    /** Load My profile */
+    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    if (maybeMyProfile) {
+      const maybeLang = maybeMyProfile.fields['lang'];
+      if (maybeLang) {
+        //setLocale(maybeLang);
+      }
+      this._hasStartingProfile = true;
+    }
+    /** Provide it as context */
+    this.provideProfilesContext(this); // TODO move this to host.connectedCallback?
+  }
+
+
+  private _profilesCell?: Cell;
+  private _profilesDvm?: ProfilesDvm;
+  protected _provider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+
+
+  /** */
+  get profilesCellName(): string {
+    if (!this._profilesCell) {
+      return "error: profiles cell not found";
+    }
+    return this._profilesCell.name;
+  }
+
+
+  /** Set ContextProvider for host */
+  provideProfilesContext(providerHost: ReactiveElement): void {
+    console.log(`\t\tProviding context "${globalProfilesContext}" | in host `, providerHost);
+    this._provider = new ContextProvider(providerHost, globalProfilesContext, this._profilesDvm.profilesZvm);
   }
 
 
@@ -60,7 +162,7 @@ export class ThreadsApp extends HappElement {
   /** */
   handleSignal(sig: AppSignal) {
     console.log("<threads-app>.handleSignal()")
-    this.conductorAppProxy.onSignal(sig);
+    this.appProxy.onSignal(sig);
   }
 
 
@@ -70,7 +172,7 @@ export class ThreadsApp extends HappElement {
     /** Authorize all zome calls */
     if (!this._adminWs && this._canAuthorizeZfns) {
       this._adminWs = await AdminWebsocket.connect(`ws://localhost:${HC_ADMIN_PORT}`);
-      console.log("hvmConstructed() connect called", this._adminWs);
+      console.log("hvmConstructed() connect() called", this._adminWs);
     }
     if (this._adminWs && this._canAuthorizeZfns) {
       await this.hvm.authorizeAllZomeCalls(this._adminWs);
@@ -84,23 +186,13 @@ export class ThreadsApp extends HappElement {
       }
     }
     /** Grab ludo cells */
-    this._ludoRoleCells = await this.conductorAppProxy.fetchCells(DEFAULT_THREADS_DEF.id, ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+    this._ludoRoleCells = await this.appProxy.fetchCells(DEFAULT_THREADS_DEF.id, ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
 
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<threads-app>.perspectiveInitializedOffline()");
-    /** Load My profile */
-    const maybeMyProfile = this.threadsDvm.profilesZvm.perspective.profiles[this.threadsDvm.cell.agentPubKey]
-    console.log("<threads-app>.perspectiveInitializedOnline() maybeMyProfile:", maybeMyProfile);
-    if (maybeMyProfile) {
-      const maybeLang = maybeMyProfile.fields['lang'];
-      if (maybeLang) {
-        //setLocale(maybeLang);
-      }
-      this._hasStartingProfile = true;
-    }
     /** Done */
     this._offlinePerspectiveloaded = true;
   }

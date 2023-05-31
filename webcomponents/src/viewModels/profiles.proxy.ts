@@ -11,7 +11,7 @@ export interface ThreadsProfile {
  *
  */
 export class ProfilesProxy extends ZomeProxy {
-  static readonly DEFAULT_ZOME_NAME = "zProfiles"
+  static readonly DEFAULT_ZOME_NAME = "profiles"
   static readonly FN_NAMES = [
     "entry_defs",
     'create_profile',

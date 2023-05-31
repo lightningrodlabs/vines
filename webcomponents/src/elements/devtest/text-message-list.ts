@@ -5,6 +5,9 @@ import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {BeadLink, ParticipationProtocol} from "../../bindings/threads.types";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {TextMessageInfo} from "../../viewModels/threads.perspective";
+import {consume} from "@lit-labs/context";
+import {globalProfilesContext} from "../../viewModels/happDef";
+import {ProfilesZvm} from "../../viewModels/profiles.zvm";
 
 
 /**
@@ -17,6 +20,8 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
 
+  @consume({ context: globalProfilesContext, subscribe: true })
+  _profilesZvm!: ProfilesZvm;
 
   @property()
   threadHash: string = ''
@@ -93,7 +98,7 @@ export class TextMessageList extends DnaElement<unknown, ThreadsDvm> {
         // [${index_date_str}]
         const creation_date = new Date(info.creationTime / 1000);
         const creation_date_str = creation_date.toLocaleString('en-US', {hour12: false});
-        const agent = this._dvm.profilesZvm.perspective.profiles[info.author];
+        const agent = this._profilesZvm? this._profilesZvm.perspective.profiles[info.author] : undefined;
         return html`
             <li><abbr title="${agent ? agent.nickname : "unknown"}">[${creation_date_str}] ${info.message}</abbr></li>`
       }

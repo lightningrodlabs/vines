@@ -46,6 +46,16 @@ import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 import {DnaThreadsTree} from "./dna-threads-tree";
 
 
+import {
+  Hrl,
+  WeServices,
+} from "@lightningrodlabs/we-applet";
+import {consume, ContextConsumer, createContext} from "@lit-labs/context";
+import {ProfilesDvm} from "../viewModels/profiles.dvm";
+import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
+import {globalProfilesContext} from "../viewModels/happDef";
+
+
 /** */
 export interface CommentRequest {
   maybeCommentThread: ActionHashB64 | null,
@@ -64,6 +74,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
 
+
   /** -- Fields -- */
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
@@ -76,6 +87,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+
+  @consume({ context: globalProfilesContext, subscribe: true })
+  _profilesZvm!: ProfilesZvm;
 
 
   private _myProfile: ThreadsProfile = {nickname: "unknown", fields: {}}
@@ -106,7 +121,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   // }
 
 
-  /** -- Methods -- */
+  /** -- Update -- */
 
   /** */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
@@ -128,12 +143,46 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   // }
 
 
-  /** */
-  shouldUpdate(changedProperties: PropertyValues<this>): boolean {
-    //if (!this._initialized) return false;
-    return super.shouldUpdate(changedProperties);
-  }
+  // /** */
+  // shouldUpdate(changedProperties: PropertyValues<this>): boolean {
+  //   //if (!this._initialized) return false;
+  //   const res = super.shouldUpdate(changedProperties);
+  //   if (!this._profilesDvm) {
+  //     this.requestProfilesDvm();
+  //   }
+  //   return res;
+  // }
 
+
+  // /** -- Grab Profiles DVM from a different cell -- */
+  //
+  // /** */
+  // protected requestProfilesDvm() {
+  //   const contextType = createContext('dvm/profiles');
+  //   console.log(`\t\t Requesting context "${contextType}"`)
+  //   /*const consumer =*/ new ContextConsumer(
+  //     this,
+  //     contextType,
+  //     async (value: ProfilesDvm, dispose?: () => void): Promise<void> => {
+  //       console.log(`\t\t Received value for context "${contextType}"`)
+  //       if (this._profilesDvm) {
+  //         this._profilesDvm.profilesZvm.unsubscribe(this);
+  //       }
+  //       this._profilesDvm = value;
+  //       this._profilesDvm.profilesZvm.subscribe(this, 'profilesPerspective');
+  //     },
+  //     false, // true will call twice at init
+  //   );
+  //   //console.log({consumer})
+  // }
+  //
+  // private _profilesDvm?: ProfilesDvm;
+  //
+  // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  // profilesPerspective!: ProfilesPerspective;
+
+
+  /** -- Update -- */
 
   /** */
   async onCreateTopic(e) {
@@ -239,6 +288,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+
   /** */
   async setMyProfile(nickname: string, avatar: string, color: string) {
     console.log("updateProfile() called:", nickname)
@@ -246,10 +297,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.getProfile(this._dvm.profilesZvm.cell.agentPubKey)) {
-        await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
+      if (this._profilesZvm.getProfile(this._dvm.cell.agentPubKey)) {
+        await this._profilesZvm.updateMyProfile({nickname, fields});
       } else {
-        await this._dvm.profilesZvm.createMyProfile({nickname, fields});
+        await this._profilesZvm.createMyProfile({nickname, fields});
       }
     } catch (e) {
       console.log("createMyProfile() failed");
@@ -262,9 +313,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   private async onProfileEdited(profile: ThreadsProfile) {
     console.log("onProfileEdited()", this._myProfile)
     try {
-      await this._dvm.profilesZvm.updateMyProfile(profile);
+      await this._profilesZvm.updateMyProfile(profile);
     } catch(e) {
-      await this._dvm.profilesZvm.createMyProfile(profile);
+      await this._profilesZvm.createMyProfile(profile);
       this._myProfile = profile;
     }
     this.profileDialogElem.close(false);
@@ -279,15 +330,19 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async pingActiveOthers() {
     //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
-    await this._dvm.pingPeers(undefined, this._dvm.allCurrentOthers());
+    const currentPeers = this._dvm.allCurrentOthers(this._profilesZvm.getAgents());
+    await this._dvm.pingPeers(undefined, currentPeers);
     //}
   }
 
 
   /** */
   async pingAllOthers() {
+    if (!this._profilesZvm) {
+      return;
+    }
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
+    const agents = this._profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -347,12 +402,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash);
+    console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash, this._profilesZvm);
 
-    //console.log("\t Using threadsZvm.roleName = ", this._dvm.threadsZvm.cell.name)
-
-    this._myProfile = this._dvm.profilesZvm.getMyProfile();
-
+    if (!this._profilesZvm) {
+      console.error("this._profilesZvm not found");
+    } else {
+      this._myProfile = this._profilesZvm.getMyProfile();
+    }
 
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     if (this._selectedThreadHash) {
@@ -380,13 +436,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** This agent's profile info */
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
-    let maybeAgent = this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey];
-    if (maybeAgent) {
-      agent = maybeAgent;
-    } else {
-      //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-      this._dvm.profilesZvm.probeProfile(this._dvm.cell.agentPubKey)
-      //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+    let maybeAgent = undefined;
+    if (this._profilesZvm) {
+      maybeAgent = this._profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey];
+      if (maybeAgent) {
+        agent = maybeAgent;
+      } else {
+        //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
+        this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey)
+        //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+      }
     }
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];

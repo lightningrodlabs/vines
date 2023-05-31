@@ -10,6 +10,9 @@ import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {ActionHashB64} from "@holochain/client";
+import {consume} from "@lit-labs/context";
+import {globalProfilesContext} from "../viewModels/happDef";
+import {ProfilesZvm} from "../viewModels/profiles.zvm";
 // import "@ui5/webcomponents/dist/CustomListItem.js";
 // import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
 
@@ -24,6 +27,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
+
+  @consume({ context: globalProfilesContext, subscribe: true })
+  _profilesZvm!: ProfilesZvm;
 
 
   /** -- Properties -- */
@@ -148,7 +154,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
-        let maybeAgent = this._dvm.profilesZvm.perspective.profiles[info.author];
+        let maybeAgent = this._profilesZvm.perspective.profiles[info.author];
         if (maybeAgent) {
           agent = maybeAgent;
         }

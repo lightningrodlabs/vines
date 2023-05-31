@@ -28,14 +28,14 @@ export interface ThreadsDnaPerspective {
 export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = "rThreads";
-  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm]
+  static readonly ZVM_DEFS = [ThreadsZvm/*, ProfilesZvm*/]
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
 
   /** QoL Helpers */
-  get profilesZvm(): ProfilesZvm {
-    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm
-  }
+  // get profilesZvm(): ProfilesZvm {
+  //   return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm
+  // }
 
   get threadsZvm(): ThreadsZvm {
     return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm
@@ -142,8 +142,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  allCurrentOthers(): AgentPubKeyB64[] {
-    const agents = this.profilesZvm.getAgents();
+  allCurrentOthers(startingAgents: AgentPubKeyB64[] ): AgentPubKeyB64[] {
+    const agents = startingAgents;
     console.log("allCurrentOthers", agents)
     console.log("allCurrentOthers", this._agentPresences)
     const currentTime: number = Math.floor(Date.now() / 1000);
@@ -169,7 +169,7 @@ export class ThreadsDvm extends DnaViewModel {
       from: this._cellProxy.cell.agentPubKey,
       dm: {type: DirectMessageType.NewBead, content: [ah, msg, []]}
     };
-    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    //await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
 
@@ -181,7 +181,7 @@ export class ThreadsDvm extends DnaViewModel {
       from: this._cellProxy.cell.agentPubKey,
       dm: {type: DirectMessageType.NewSemanticTopic, content: [eh, title]}
     };
-    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    //await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return eh;
   }
 
@@ -194,7 +194,7 @@ export class ThreadsDvm extends DnaViewModel {
       from: this._cellProxy.cell.agentPubKey,
       dm: {type: DirectMessageType.NewPp, content: ah}
     };
-    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    //await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
 

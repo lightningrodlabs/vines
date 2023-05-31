@@ -1,9 +1,9 @@
-import { html, css } from "lit";
+import {html, css, LitElement} from "lit";
 import { property, state, customElement } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ProfilesPerspective} from "../viewModels/profiles.zvm";
+import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
 import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
@@ -13,6 +13,8 @@ import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
+import {consume} from "@lit-labs/context";
+import {globalProfilesContext} from "../viewModels/happDef";
 
 /** @element peer-list */
 @localized()
@@ -22,15 +24,18 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
-  @state() private _isHovered = false;
+  @consume({ context: globalProfilesContext, subscribe: true })
+  _profilesZvm!: ProfilesZvm;
 
-  /** -- Fields -- */
   @property() soloAgent: AgentPubKeyB64 | null  = null; // filter for a specific agent
 
-  @property() canShowTable: boolean = true;
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   profilesPerspective!: ProfilesPerspective;
+
+  @property() canShowTable: boolean = true;
+
+  @state() private _isHovered = false;
 
   @state() private _loaded = false;
 
@@ -39,7 +44,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** After first render only */
   firstUpdated() {
-    this._dvm.profilesZvm.subscribe(this, "profilesPerspective");
+    this._profilesZvm.subscribe(this, "profilesPerspective");
     console.log("<peer-list> firstUpdated()", this.profilesPerspective);
     this._loaded = true;
   }
@@ -48,7 +53,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   determineAgentStatus(key: AgentPubKeyB64) {
     // const status = "primary"; // "neutral"
-    if (key == this._dvm.cell.agentPubKey) {
+    if (key == this._profilesZvm.cell.agentPubKey) {
       return "success";
     }
     const lastPingTime: number = this.perspective.agentPresences[key];
@@ -138,7 +143,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
       let threadButton = html``;
       if (this._isHovered) {
-        const profileHash = this._dvm.profilesZvm.getProfileHash(keyB64);
+        const profileHash = this._profilesZvm.getProfileHash(keyB64);
         const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(profileHash);
         threadButton = maybeCommentThread != null
           ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, profileHash)}"></ui5-button>`

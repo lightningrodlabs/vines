@@ -30,3 +30,4 @@ export async function asCellProxy(client: AppAgentClient, hrl: Hrl, appId: Insta
   const cellProxy = new CellProxy(appProxy, cell);
   return cellProxy;
 }
+
