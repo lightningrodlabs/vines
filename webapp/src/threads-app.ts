@@ -3,22 +3,15 @@ import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {
   AdminWebsocket,
-  AppAgentClient, AppAgentWebsocket, AppInfo,
   AppSignal,
-  AppWebsocket, CellInfo, encodeHashToBase64,
+  AppWebsocket, encodeHashToBase64,
   EntryHashB64,
   InstalledAppId,
   RoleName, ZomeName
 } from "@holochain/client";
 import {
-  Profile,
-  ProfilesClient,
-  ProfilesStore,
-  profilesStoreContext
-} from '@holochain-open-dev/profiles';
-import {
   Hrl,
-  WeServices,
+  WeServices, weServicesContext,
 } from "@lightningrodlabs/we-applet";
 import {
   HCL,
@@ -26,16 +19,16 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, Cell, ZvmDef, delay
+  DnaViewModel, Cell,
 } from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF, globalProfilesContext, ProfilesZvm,
+  DEFAULT_THREADS_DEF, globalProfilesContext,
 } from "@threads/elements";
 
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
 import {ProfilesDvm} from "@threads/elements/dist/viewModels/profiles.dvm";
-import {ContextProvider} from "@lit-labs/context";
+import {consume, ContextProvider} from "@lit-labs/context";
 import {BaseRoleName} from "@ddd-qc/cell-proxy/dist/types";
 import {AppProxy} from "@ddd-qc/cell-proxy/dist/AppProxy";
 
@@ -59,15 +52,11 @@ export class ThreadsApp extends HappElement {
 
   static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
-  private _currentPlaysetEh: null | EntryHashB64 = null;
-
   @state() private _ludoRoleCells!: CellsForRole;
   @state() private _curLudoCloneId?: RoleName; // = LudothequeDvm.DEFAULT_BASE_ROLE_NAME;
 
 
   @state() private _canShowBuildView = false;
-
-
   @state() private _canShowDebug = false;
 
 
@@ -80,6 +69,16 @@ export class ThreadsApp extends HappElement {
   }
 
 
+  /** -- We-applet specifics -- */
+
+  private _profilesDvm?: ProfilesDvm;
+  protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+  protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+
+
+  @consume({ context: weServicesContext, subscribe: true })
+  weServices?: WeServices;
+
   /**  */
   static async fromWe(
     appWs: AppWebsocket,
@@ -90,28 +89,25 @@ export class ThreadsApp extends HappElement {
     profilesBaseRoleName: BaseRoleName,
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
-    weServices: WeServices
+    weServices: WeServices,
   ) : Promise<ThreadsApp> {
-
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId);
-
-    /** Create Profiles Dvm out of profilesAppInfo */
+    /** Provide it as context */
+    console.log(`\t\tProviding context "${weServicesContext}" | in host `, app);
+    app._weProvider = new ContextProvider(app, weServicesContext, weServices);
+    /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesZomeName);
     return app;
   }
 
 
-  /** -- Provide a Profiles DVM from a different happ -- */
-
-  /** */
+  /** Create a Profiles DVM out of a different happ */
   async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName, profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
     console.log("createProfilesDvm() cell_infos", cell_infos);
-    /** Create Profiles "Cell" */
-    this._profilesCell = Cell.from(cell_infos[0][0], profilesAppInfo.installed_app_id, profilesBaseRoleName); // assuming a single provisioned profiles cell and no clones
     /** Create Profiles DVM */
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName));
@@ -127,28 +123,8 @@ export class ThreadsApp extends HappElement {
       this._hasStartingProfile = true;
     }
     /** Provide it as context */
-    this.provideProfilesContext(this);
-  }
-
-
-  private _profilesCell?: Cell;
-  private _profilesDvm?: ProfilesDvm;
-  protected _provider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-
-
-  // /** */
-  // get profilesCellName(): string {
-  //   if (!this._profilesCell) {
-  //     return "error: profiles cell not found";
-  //   }
-  //   return this._profilesCell.name;
-  // }
-
-
-  /** Set ContextProvider for host */
-  provideProfilesContext(providerHost: ReactiveElement): void {
-    console.log(`\t\tProviding context "${globalProfilesContext}" | in host `, providerHost);
-    this._provider = new ContextProvider(providerHost, globalProfilesContext, this._profilesDvm.profilesZvm);
+    console.log(`\t\tProviding context "${globalProfilesContext}" | in host `, this);
+    this._profilesProvider = new ContextProvider(this, globalProfilesContext, this._profilesDvm.profilesZvm);
   }
 
 
