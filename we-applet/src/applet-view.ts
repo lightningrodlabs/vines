@@ -54,46 +54,24 @@ export function appletViews(
       await profilesProxy.fetchCells(profilesAppInfo.installed_app_id, profilesClient.roleName);
       await profilesProxy.createCellProxy(hcl);
       /** Create and append <threads-app> */
-      const app = await ThreadsApp.fromWe(mainAppWs, undefined, false, "threads-applet", profilesAppInfo.installed_app_id, profilesClient.roleName, profilesClient.zomeName, profilesProxy, weServices);
+      const app = await ThreadsApp.fromWe(
+        mainAppWs, undefined, false, "threads-applet",
+        profilesAppInfo.installed_app_id, profilesClient.roleName, profilesClient.zomeName, profilesProxy,
+        weServices);
       element.appendChild(app);
     },
 
     blocks: {},
 
     entries: {
-      rThreads: {
+      role_threads: {
         threads_integrity: {
-
-          /** Thread */
-          participation_protocol: {
-            info: async (hrl: Hrl) => {
-              console.log("(applet-view) pp info", hrl);
-              const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
-              const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-              const pp = await proxy.getPp(hrl[1]);
-              return {
-                icon_src: "",
-                name: pp[0].purpose,
-              };
-            },
-            view: async (element, hrl: Hrl, context) => {
-              //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
-              //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-              const spaceElem = html`
-                  <div>Before custom element</div>
-                  <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
-                  <div>After custom element</div>
-              `;
-              render(spaceElem, element);
-            },
-          },
-
 
           /** TextMessage */
           text_message: {
             info: async (hrl: Hrl) => {
               console.log("(applet-view) text_message info", hrl);
-              const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
+              const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
               const tuple = await proxy.getTextMessage(hrl[1]);
               return {
@@ -102,7 +80,7 @@ export function appletViews(
               };
             },
             view: async (element, hrl: Hrl, context) => {
-              //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
+              //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
               //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
               const spaceElem = html`
                   <div>Before custom element</div>
@@ -114,10 +92,35 @@ export function appletViews(
           },
 
 
+          /** Thread */
+          participation_protocol: {
+            info: async (hrl: Hrl) => {
+              console.log("(applet-view) pp info", hrl);
+              const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+              const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
+              const pp = await proxy.getPp(hrl[1]);
+              return {
+                icon_src: "",
+                name: pp[0].purpose,
+              };
+            },
+            view: async (element, hrl: Hrl, context) => {
+              //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+              //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
+              const spaceElem = html`
+                  <div>Before custom element</div>
+                  <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
+                  <div>After custom element</div>
+              `;
+              render(spaceElem, element);
+            },
+          },
+
+
           // /** Path entry type */
           // path: {
           //   info: async (hrl: Hrl) => {
-          //     const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
+          //     const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
           //     const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
           //     const tuple = await proxy.getSubjectsByType(hrl[1]);
           //     return {
@@ -126,7 +129,7 @@ export function appletViews(
           //     };
           //   },
           //   view: async (element, hrl: Hrl, context: any) => {
-          //     //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
+          //     //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
           //     //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
           //     const spaceElem = html`
           //         <div>Before custom element</div>

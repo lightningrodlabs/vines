@@ -27,7 +27,7 @@ export interface ThreadsDnaPerspective {
  */
 export class ThreadsDvm extends DnaViewModel {
 
-  static readonly DEFAULT_BASE_ROLE_NAME = "rThreads";
+  static readonly DEFAULT_BASE_ROLE_NAME = "role_threads";
   static readonly ZVM_DEFS = [ThreadsZvm/*, ProfilesZvm*/]
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 

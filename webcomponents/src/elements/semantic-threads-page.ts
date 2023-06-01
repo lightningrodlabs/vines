@@ -45,14 +45,12 @@ import {ActionHashB64, decodeHashFromBase64, DnaHashB64} from "@holochain/client
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 import {DnaThreadsTree} from "./dna-threads-tree";
 
-
 import {
   Hrl,
-  WeServices,
+  WeServices, weServicesContext,
 } from "@lightningrodlabs/we-applet";
 import {consume, ContextConsumer, createContext} from "@lit-labs/context";
-import {ProfilesDvm} from "../viewModels/profiles.dvm";
-import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
+import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 
 
@@ -63,8 +61,6 @@ export interface CommentRequest {
   subjectType: string,
 }
 
-
-let weServicesContext;
 
 /**
  * @element
@@ -205,9 +201,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     if (!input.value || input.value.length == 0) {
       return;
     }
-    let path_str = await this._dvm.publishTextMessage(input.value, this._selectedThreadHash);
-    console.log("onCreateTextMessage() res:", path_str);
+    let ah = await this._dvm.publishTextMessage(input.value, this._selectedThreadHash);
+    console.log("onCreateTextMessage() res:", ah);
     input.value = "";
+
+    if (this.weServices) {
+      const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
+      console.log("entryInfo2", entryInfo);
+    }
+
+
 
     //await this.probeLatestMessages();
     //const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;

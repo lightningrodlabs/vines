@@ -52,10 +52,6 @@ export class ThreadsApp extends HappElement {
 
   static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
-  @state() private _ludoRoleCells!: CellsForRole;
-  @state() private _curLudoCloneId?: RoleName; // = LudothequeDvm.DEFAULT_BASE_ROLE_NAME;
-
-
   @state() private _canShowBuildView = false;
   @state() private _canShowDebug = false;
 
@@ -159,7 +155,8 @@ export class ThreadsApp extends HappElement {
       }
     }
     /** Grab ludo cells */
-    this._ludoRoleCells = await this.appProxy.fetchCells(DEFAULT_THREADS_DEF.id, ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+    const entryDefs = await this.threadsDvm.fetchAllEntryDefs();
+    console.log("threads.entryDefs", entryDefs);
   }
 
 

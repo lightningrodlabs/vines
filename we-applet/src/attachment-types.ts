@@ -12,7 +12,7 @@ export async function attachmentTypes(client: AppAgentClient): Promise<Record<st
       label: "Thread",
       icon_src: "",
       async create(attachToHrl: Hrl) {
-        const cellProxy = await asCellProxy(client, attachToHrl, "threads-applet", "rThreads");
+        const cellProxy = await asCellProxy(client, attachToHrl, "threads-applet", "role_threads");
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
         const input: CreatePpInput = {
           purpose: "comment",

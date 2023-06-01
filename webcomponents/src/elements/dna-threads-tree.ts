@@ -15,11 +15,9 @@ import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {CommentRequest} from "./semantic-threads-page";
-import {consume} from "@lit-labs/context";
-import {WeServices} from "@lightningrodlabs/we-applet";
+import {consume, ContextConsumer, createContext} from "@lit-labs/context";
+import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
-
-let weServicesContext;
 
 /**
  * @element
@@ -116,6 +114,10 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     if (event.detail.item.level == 1) {
       /** Grab children */
       let subject_lhs = await this._zvm.probeSubjects(this.dnaHash, toggledTreeItem.id);
+      console.log("this.weServices", this.weServices);
+      if (!this.weServices) {
+        console.warn("weServices not found in <dna-threads-tree>")
+      }
       /** Convert to TreeItem and append to Tree */
       for (const lh of subject_lhs) {
         /* Skip if item already exists */
@@ -123,8 +125,14 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
           continue;
         }
         let newItem = document.createElement("ui5-tree-item") as TreeItem;
-        const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.dnaHash), decodeHashFromBase64(lh)]);
-        newItem.text = entryInfo.entryInfo.name;
+        newItem.text = lh;
+        if (this.weServices) {
+          const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.dnaHash), decodeHashFromBase64(lh)]);
+          console.log("entryInfo", entryInfo);
+          if (entryInfo) {
+            newItem.text = entryInfo.entryInfo.name;
+          }
+        }
         //newItem.additionalText = "[" + ta.anchor + "]";
         //newItem.setAttribute("origin", ta.anchor);
         //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
