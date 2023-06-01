@@ -44,14 +44,19 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** After first render only */
   firstUpdated() {
-    this._profilesZvm.subscribe(this, "profilesPerspective");
+    if (this._profilesZvm) {
+      this._profilesZvm.subscribe(this, "profilesPerspective");
+    }
     console.log("<peer-list> firstUpdated()", this.profilesPerspective);
     this._loaded = true;
   }
 
 
   /** */
-  determineAgentStatus(key: AgentPubKeyB64) {
+  determineAgentStatus(key: AgentPubKeyB64): string {
+    if (!this._profilesZvm) {
+      return "";
+    }
     // const status = "primary"; // "neutral"
     if (key == this._profilesZvm.cell.agentPubKey) {
       return "success";
@@ -190,19 +195,15 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       </div>`;
     }
 
+    if (!this._profilesZvm) {
+      return html`<div class="fill center-content">
+        No Profiles Service found
+      </div>`;
+    }
+
+
     return this.renderList(this.profilesPerspective.profiles);
   }
-
-
-  // /** */
-  // static get scopedElements() {
-  //   return {
-  //     'sl-avatar': SlAvatar,
-  //     'sl-tooltip': SlTooltip,
-  //     'sl-badge': SlBadge,
-  //     'sl-input': SlInput,
-  //   };
-  // }
 
 
   /** */

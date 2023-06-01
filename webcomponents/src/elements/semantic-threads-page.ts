@@ -64,6 +64,8 @@ export interface CommentRequest {
 }
 
 
+let weServicesContext;
+
 /**
  * @element
  */
@@ -92,8 +94,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globalProfilesContext, subscribe: true })
   _profilesZvm!: ProfilesZvm;
 
+  @consume({ context: weServicesContext, subscribe: true })
+  weServices!: WeServices;
 
   private _myProfile: ThreadsProfile = {nickname: "unknown", fields: {}}
+
 
   /** -- Getters -- */
 
@@ -105,20 +110,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return this.shadowRoot.getElementById("create-thread-dialog") as Dialog;
   }
 
-
   get profileDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
   }
-
-  // get myNickName(): string {
-  //   return this._myProfile!.nickname;
-  // }
-  // get myAvatar(): string {
-  //   return this._myProfile!.fields.avatar;
-  // }
-  // get myColor(): string {
-  //   return this._myProfile!.fields.color;
-  // }
 
 
   /** -- Update -- */
@@ -247,14 +241,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
-    console.log("<semantic-threads-page> firstUpdated():", "createMyProfile");
-
-    // FIXME Fix source-chain head changed error by implementing blocking calls in zits
-    //await this._dvm.profilesZvm.createMyProfile({nickname: "Bobby", fields: {}});
-    //this._myNick = this._dvm.profilesZvm.getMyProfile().nickname;
+    console.log("<semantic-threads-page> firstUpdated()");
 
     /** Generate test data */
-    //await this._dvm.threadsZvm.generateTestData();
+    await this._dvm.threadsZvm.generateTestData();
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
 

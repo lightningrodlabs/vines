@@ -456,6 +456,7 @@ export class ThreadsZvm extends ZomeViewModel {
     //   return [];
     // }
     const thread = this._threads[ppAh];
+    console.log("probePreviousBeads", ppAh, thread);
     if (!thread) {
       return Promise.reject("No Thread data found for given ParticipationProtocol")
     }
@@ -744,9 +745,9 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.publishTextMessage("second", th1);
     await this.publishTextMessage("third", th1);
 
-    await this.publishManyDebug(timeMin, 60 * 1000, 200);
+    //await this.publishManyDebug(timeMin, 60 * 1000, 200);
     await this.publishManyDebug(timeDay, 24 * 3600 * 1000);
-    await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000, 30);
+    //await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000, 30);
 
     // await delay(60 * 1000);
     // Do zome calls for fun (performance test)
@@ -762,6 +763,8 @@ export class ThreadsZvm extends ZomeViewModel {
     // let end = Date.now()
     // let diff = (end - begin) / 1000;
     // console.log(`Publish timing for ${n} entries: ${diff} secs (${diff / n} secs / entry)`)
+
+    console.log("*** generateTestData() - DONE");
   }
 
 

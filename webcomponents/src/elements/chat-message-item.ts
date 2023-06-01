@@ -117,13 +117,15 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
-    let maybeAgent = this._profilesZvm.perspective.profiles[texto.author];
-    if (maybeAgent) {
-      agent = maybeAgent;
-    } else {
-      //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-      this._profilesZvm.probeProfile(texto.author)
+    if (this._profilesZvm) {
+      const maybeAgent = this._profilesZvm.perspective.profiles[texto.author];
+      if (this._profilesZvm) {
+        agent = maybeAgent;
+      } else {
+        //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
+        this._profilesZvm.probeProfile(texto.author)
         //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+      }
     }
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];

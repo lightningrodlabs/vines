@@ -57,7 +57,9 @@ export function appletViews(
       const app = await ThreadsApp.fromWe(mainAppWs, undefined, false, "threads-applet", profilesAppInfo.installed_app_id, profilesClient.roleName, profilesClient.zomeName, profilesProxy, weServices);
       element.appendChild(app);
     },
+
     blocks: {},
+
     entries: {
       rThreads: {
         threads_integrity: {
@@ -65,6 +67,7 @@ export function appletViews(
           /** Thread */
           participation_protocol: {
             info: async (hrl: Hrl) => {
+              console.log("(applet-view) pp info", hrl);
               const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
               const pp = await proxy.getPp(hrl[1]);
@@ -89,6 +92,7 @@ export function appletViews(
           /** TextMessage */
           text_message: {
             info: async (hrl: Hrl) => {
+              console.log("(applet-view) text_message info", hrl);
               const cellProxy = await asCellProxy(client, hrl, "threads-applet", "rThreads");
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
               const tuple = await proxy.getTextMessage(hrl[1]);

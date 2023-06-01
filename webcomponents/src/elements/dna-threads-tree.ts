@@ -11,11 +11,15 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {ActionHashB64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {CommentRequest} from "./semantic-threads-page";
+import {consume} from "@lit-labs/context";
+import {WeServices} from "@lightningrodlabs/we-applet";
 
+
+let weServicesContext;
 
 /**
  * @element
@@ -27,8 +31,12 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
-  /** Hash of Thread to display */
+  /** Hash of dna to display threads of */
   @property() dnaHash: string = ''
+
+
+  @consume({ context: weServicesContext, subscribe: true })
+  weServices!: WeServices;
 
   /** -- State variables -- */
 
@@ -104,7 +112,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     }
     //console.log("toggleTreeItem() currentItemTexts", currentItemTexts);
 
-    /** SubjectType */
+    /** SubjectType has been toggled */
     if (event.detail.item.level == 1) {
       /** Grab children */
       let subject_lhs = await this._zvm.probeSubjects(this.dnaHash, toggledTreeItem.id);
@@ -115,7 +123,8 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
           continue;
         }
         let newItem = document.createElement("ui5-tree-item") as TreeItem;
-        newItem.text = lh;
+        const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.dnaHash), decodeHashFromBase64(lh)]);
+        newItem.text = entryInfo.entryInfo.name;
         //newItem.additionalText = "[" + ta.anchor + "]";
         //newItem.setAttribute("origin", ta.anchor);
         //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
@@ -127,7 +136,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
       }
     }
 
-    /** SubjectHash */
+    /** SubjectHash has been toggled */
     if (event.detail.item.level == 2) {
       /** Grab children */
       let pps = await this._zvm.probeThreads(toggledTreeItem.id);
