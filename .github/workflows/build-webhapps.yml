@@ -59,9 +59,7 @@ jobs:
       - name: Regroup artifacts
         run: |       
           cp target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm ./artifacts
-          cp target/wasm32-unknown-unknown/release/threads_zome.wasm ./artifacts      
-          cp target/wasm32-unknown-unknown/release/profiles_zome.wasm ./artifacts
-          cp target/wasm32-unknown-unknown/release/profiles_integrity_zome.wasm ./artifacts
+          cp target/wasm32-unknown-unknown/release/threads_zome.wasm ./artifacts
       # List uploaded files
       - name: List uploaded files
         run: ls -R

@@ -127,7 +127,7 @@ export class ThreadsApp extends HappElement {
       this._hasStartingProfile = true;
     }
     /** Provide it as context */
-    this.provideProfilesContext(this); // TODO move this to host.connectedCallback?
+    this.provideProfilesContext(this);
   }
 
 
@@ -136,13 +136,13 @@ export class ThreadsApp extends HappElement {
   protected _provider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
 
 
-  /** */
-  get profilesCellName(): string {
-    if (!this._profilesCell) {
-      return "error: profiles cell not found";
-    }
-    return this._profilesCell.name;
-  }
+  // /** */
+  // get profilesCellName(): string {
+  //   if (!this._profilesCell) {
+  //     return "error: profiles cell not found";
+  //   }
+  //   return this._profilesCell.name;
+  // }
 
 
   /** Set ContextProvider for host */
