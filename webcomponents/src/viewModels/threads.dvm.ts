@@ -119,7 +119,7 @@ export class ThreadsDvm extends DnaViewModel {
     // if (signal.message.type != "Ping" && signal.message.type != "Pong") {
     //   console.log(`NOTIFYING ${signal.message.type}`, signal, peers)
     // };
-    console.log(`notifyPeers() Sending Signal "${signal.dm.type}" to`, peers)
+    console.log(`notifyPeers() Sending Signal "${signal.dm.type}" to`, peers, this._cellProxy.cell.agentPubKey);
     /* Skip if no recipients or sending to self only */
     if (!peers || peers.length == 1 && peers[0] === this._cellProxy.cell.agentPubKey) {
       console.log("notifyPeers() aborted: No recipients for notification")

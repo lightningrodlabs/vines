@@ -15,7 +15,7 @@
     <script type="module">
       //import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
       //import { ProfilesZomeMock } from "@holochain-open-dev/profiles/mocks";
-      import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
+      import { AppWebsocket, AdminWebsocket, AppAgentWebsocket, encodeHashToBase64 } from "@holochain/client";
       import { fakeEntryHash } from '@holochain-open-dev/utils';
       import { ProfilesClient } from '@holochain-open-dev/profiles';
       import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
@@ -37,18 +37,21 @@
         console.log(appAgentWs.appWebsocket);
         const appInfo = await appAgentWs.appInfo();
         console.log(appInfo);
+        const cellId = appInfo.cell_info['rThreads'][0].provisioned.cell_id;
+        //console.log("main agentId", cellId[1]);
+        //console.log("main agentId", encodeHashToBase64(cellId[1]));
 
         /** AdminWebsocket */
         const adminWs = await AdminWebsocket.connect(`ws://localhost:${process.env.HC_ADMIN_PORT}`);
         const apps = await adminWs.listApps({});
         console.log("setup() apps", apps);
-        const cellId = appInfo.cell_info['rThreads'][0].provisioned.cell_id;
-        console.log(cellId);
         await adminWs.authorizeSigningCredentials(cellId);
-
 
         /** Creating mock lobby app with profiles dna & zome */
         const mockProfilesZome = new ProfilesZomeMock();
+        //console.log("mock agentId", mockProfilesZome.myPubKey);
+        mockProfilesZome.myPubKey = cellId[1];
+        //console.log("mock agentId", encodeHashToBase64(mockProfilesZome.myPubKey));
         mockProfilesZome.create_profile({nickname: "Bobby Joe", fields: {}})
 
         const renderers = await Applet.appletViews(

@@ -206,7 +206,7 @@ export interface TypedAnchor {
 
 /**
  * 
- * Data sent by UI ONLY. That's why we use B64 here
+ * Data sent by UI ONLY. That's why we use B64 here.
  * 
  */
 export enum DirectMessageType {
