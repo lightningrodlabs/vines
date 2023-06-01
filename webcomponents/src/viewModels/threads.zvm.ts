@@ -192,6 +192,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Query all entries from local source-chain */
   async initializePerspectiveOffline(): Promise<void> {
+    //await delay(1000);
     await this.querySemanticTopics();
     await this.queryThreads();
     await this.queryTextMessages();

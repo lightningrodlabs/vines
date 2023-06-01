@@ -8,8 +8,8 @@ import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64,
 export interface ProfilesPerspective {
   /* AgentPubKeyB64 -> Profile */
   profiles: Record<AgentPubKeyB64, ThreadsProfile>,
-  /* AgentPubKeyB64 -> Profile hash */
-  profile_ahs: Record<AgentPubKeyB64, ActionHashB64>,
+  ///* AgentPubKeyB64 -> Profile hash */
+  //profile_ahs: Record<AgentPubKeyB64, ActionHashB64>,
 }
 
 
@@ -45,19 +45,19 @@ export class ProfilesZvm extends ZomeViewModel {
   get perspective(): ProfilesPerspective {
     return {
       profiles: this._profiles,
-      profile_ahs: this._profile_ahs,
+      //profile_ahs: this._profile_ahs,
     };
   }
 
   private _profiles: Record<AgentPubKeyB64, ThreadsProfile> = {};
-  private _profile_ahs: Record<AgentPubKeyB64, ActionHashB64> = {};
+  //private _profile_ahs: Record<AgentPubKeyB64, ActionHashB64> = {};
 
 
   getMyProfile(): ThreadsProfile { return this._profiles[this.cell.agentPubKey] }
 
   getProfile(agent: AgentPubKeyB64): ThreadsProfile | undefined {return this._profiles[agent]}
 
-  getProfileHash(agent: AgentPubKeyB64): ActionHashB64 | undefined {return this._profile_ahs[agent]}
+  //getProfileHash(agent: AgentPubKeyB64): ActionHashB64 | undefined {return this._profile_ahs[agent]}
 
   getAgents(): AgentPubKeyB64[] { return Object.keys(this._profiles)}
 
@@ -68,14 +68,14 @@ export class ProfilesZvm extends ZomeViewModel {
   async probeAllProfiles(): Promise<void> {
     const allAgents = await this.zomeProxy.getAgentsWithProfile();
     for (const agentPubKey of allAgents) {
-      const record = await this.zomeProxy.getAgentProfile(agentPubKey);
-      if (!record) {
+      const maybeProfile = await this.zomeProxy.getAgentProfile(agentPubKey);
+      if (!maybeProfile) {
         continue;
       }
-      const profile: ThreadsProfile = decode((record.entry as any).Present.entry) as ThreadsProfile;
+      //const maybeProfile: ThreadsProfile = decode((record.entry as any).Present.entry) as ThreadsProfile;
       const pubKeyB64 = encodeHashToBase64(agentPubKey);
-      this._profiles[pubKeyB64] = profile;
-      this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
+      this._profiles[pubKeyB64] = maybeProfile;
+      //this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
     }
     this.notifySubscribers();
   }
@@ -83,31 +83,32 @@ export class ProfilesZvm extends ZomeViewModel {
 
   /** */
   async probeProfile(pubKeyB64: AgentPubKeyB64): Promise<ThreadsProfile | undefined> {
-    const record = await this.zomeProxy.getAgentProfile(decodeHashFromBase64(pubKeyB64));
-    if (!record) {
+    const maybeProfile = await this.zomeProxy.getAgentProfile(decodeHashFromBase64(pubKeyB64));
+    console.log("probeProfile()", maybeProfile);
+    if (!maybeProfile) {
       return;
     }
-    const profile: ThreadsProfile = decode((record.entry as any).Present.entry) as ThreadsProfile;
-    this._profiles[pubKeyB64] = profile;
-    this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
+    //const maybeProfile: ThreadsProfile = decode((record.entry as any).Present.entry) as ThreadsProfile;
+    this._profiles[pubKeyB64] = maybeProfile;
+    //this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
     this.notifySubscribers();
-    return profile;
+    return maybeProfile;
   }
 
 
   /** */
   async createMyProfile(profile: ThreadsProfile): Promise<void> {
-    const record = await this.zomeProxy.createProfile(profile);
+    /*const record =*/ await this.zomeProxy.createProfile(profile);
     this._profiles[this.cell.agentPubKey] = profile;
-    this._profile_ahs[this.cell.agentPubKey] = encodeHashToBase64(record.signed_action.hashed.hash);
+    //this._profile_ahs[this.cell.agentPubKey] = encodeHashToBase64(record.signed_action.hashed.hash);
     this.notifySubscribers();
   }
 
   /** */
   async updateMyProfile(profile: ThreadsProfile): Promise<void> {
-    const record = await this.zomeProxy.updateProfile(profile);
+    /*const record =*/ await this.zomeProxy.updateProfile(profile);
     this._profiles[this.cell.agentPubKey] = profile;
-    this._profile_ahs[this.cell.agentPubKey] = encodeHashToBase64(record.signed_action.hashed.hash);
+    //this._profile_ahs[this.cell.agentPubKey] = encodeHashToBase64(record.signed_action.hashed.hash);
     this.notifySubscribers();
   }
 

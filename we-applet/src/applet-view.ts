@@ -5,8 +5,6 @@ import { msg } from "@lit/localize";
 import {
   Hrl,
   AppletViews,
-  CrossAppletViews,
-  WeApplet,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
@@ -14,21 +12,15 @@ import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
-import {ProfilesClient, ProfilesStore} from "@holochain-open-dev/profiles";
+import {ProfilesClient} from "@holochain-open-dev/profiles";
 import {ThreadsApp} from "@threads/app";
 import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
-import {ConductorAppProxy} from "@ddd-qc/cell-proxy";
-import {ConductorProxyProfilesMock} from "./mock";
 import {ProfilesApi} from "./profilesApi";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/dist/ExternalAppProxy";
 import {HCL} from "@ddd-qc/lit-happ";
 
 
-// FIXME: Add threads-context in some way
-
-class ProfilesZomeMock {
-}
 
 /** */
 export function appletViews(
@@ -62,7 +54,7 @@ export function appletViews(
       await profilesProxy.fetchCells(profilesAppInfo.installed_app_id, profilesClient.roleName);
       await profilesProxy.createCellProxy(hcl);
       /** Create and append <threads-app> */
-      const app = new ThreadsApp(mainAppWs, undefined, true, "threads-applet", profilesAppInfo.installed_app_id, profilesClient.roleName, profilesClient.zomeName, profilesProxy, weServices);
+      const app = await ThreadsApp.fromWe(mainAppWs, undefined, false, "threads-applet", profilesAppInfo.installed_app_id, profilesClient.roleName, profilesClient.zomeName, profilesProxy, weServices);
       element.appendChild(app);
     },
     blocks: {},

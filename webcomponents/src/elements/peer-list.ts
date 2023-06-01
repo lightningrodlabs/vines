@@ -143,11 +143,11 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
       let threadButton = html``;
       if (this._isHovered) {
-        const profileHash = this._profilesZvm.getProfileHash(keyB64);
-        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(profileHash);
+        //const profileHash = this._profilesZvm.getProfileHash(keyB64);
+        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(keyB64);
         threadButton = maybeCommentThread != null
-          ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, profileHash)}"></ui5-button>`
-          : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, profileHash)}"></ui5-button>`;
+          ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`
+          : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`;
       }
 
 

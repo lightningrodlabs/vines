@@ -1,10 +1,12 @@
 import { AgentPubKey, Record as HcRecord } from '@holochain/client';
 import {ZomeProxy} from "@ddd-qc/lit-happ";
+import { decode } from "@msgpack/msgpack";
 
 export interface ThreadsProfile {
   nickname: string;
   fields: Record<string, string>;
 }
+
 
 
 /**
@@ -22,11 +24,11 @@ export class ProfilesProxy extends ZomeProxy {
   ];
 
 
-  async createProfile(profile: ThreadsProfile): Promise<HcRecord> {
+  async createProfile(profile: ThreadsProfile): Promise<void> {
     return this.callBlocking('create_profile', profile);
   }
 
-  async updateProfile(profile: ThreadsProfile): Promise<HcRecord> {
+  async updateProfile(profile: ThreadsProfile): Promise<void> {
     return this.callBlocking('update_profile', profile);
   }
 
@@ -34,8 +36,15 @@ export class ProfilesProxy extends ZomeProxy {
     return this.call('search_agents', {nickname_filter});
   }
 
-  async getAgentProfile(agentPubKey: AgentPubKey): Promise<HcRecord | null > {
-    return this.call('get_agent_profile', agentPubKey);
+  async getAgentProfile(agentPubKey: AgentPubKey): Promise<ThreadsProfile | undefined> {
+    const record: HcRecord | undefined =  await this.call('get_agent_profile', agentPubKey);
+    console.log("getAgentProfile() record", record);
+    if (!record) {
+      return undefined;
+    }
+    const entry = (record.entry as any)?.Present?.entry;
+    console.log("getAgentProfile() entry", entry);
+    return decode(entry) as ThreadsProfile;
   }
 
   async getAgentsWithProfile(): Promise<AgentPubKey[]> {

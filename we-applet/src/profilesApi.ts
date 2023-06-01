@@ -4,6 +4,9 @@ import {
   EnableCloneCellRequest, InstalledAppId,
 } from "@holochain/client";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
+import { encode } from "@msgpack/msgpack";
+import {ThreadsProfile} from "@threads/elements";
+import {Profile} from "@holochain-open-dev/profiles/dist/types";
 
 
 /**
@@ -50,7 +53,14 @@ export class ProfilesApi implements AppApi {
         return this._profilesClient.getAgentsWithProfile();
         break;
       case 'get_agent_profile':
-        return this._profilesClient.getAgentProfile(req.payload);
+        const maybeProfile: Profile | undefined = await this._profilesClient.getAgentProfile(req.payload);
+        if (!maybeProfile) {
+          return undefined;
+        }
+        const entry = encode(maybeProfile);
+        return {
+          entry: {Present: {entry}},
+        }
         break;
       case 'search_agents':
         return this._profilesClient.searchAgents(req.payload);

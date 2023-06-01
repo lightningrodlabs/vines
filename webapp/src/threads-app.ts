@@ -26,7 +26,7 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, Cell, ZvmDef
+  DnaViewModel, Cell, ZvmDef, delay
 } from "@ddd-qc/lit-happ";
 import {
   DEFAULT_THREADS_DEF, globalProfilesContext, ProfilesZvm,
@@ -72,34 +72,34 @@ export class ThreadsApp extends HappElement {
 
 
   /** All arguments should be provided when constructed explicity */
-  constructor(
-    appWs?: AppWebsocket,
-    private _adminWs?: AdminWebsocket,
-    private _canAuthorizeZfns?: boolean,
-    readonly appId?: InstalledAppId,
-    profilesAppId?: InstalledAppId,
-    profilesBaseRoleName?: BaseRoleName,
-    profilesZomeName?: ZomeName,
-    profilesProxy?: AppProxy,
-    private _weServices?: WeServices
-    ) {
-
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId) {
     super(appWs? appWs : HC_APP_PORT, appId);
-
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
+  }
 
+
+  /**  */
+  static async fromWe(
+    appWs: AppWebsocket,
+    adminWs: AdminWebsocket,
+    canAuthorizeZfns: boolean,
+    appId: InstalledAppId,
+    profilesAppId: InstalledAppId,
+    profilesBaseRoleName: BaseRoleName,
+    profilesZomeName: ZomeName,
+    profilesProxy: AppProxy,
+    weServices: WeServices
+  ) : Promise<ThreadsApp> {
+
+    const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId);
 
     /** Create Profiles Dvm out of profilesAppInfo */
     console.log("<thread-app>.ctor()", profilesProxy);
-    if (profilesProxy) {
-      /*await */ this.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesZomeName);
-    }
-
-
+    await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesZomeName);
+    return app;
   }
-
 
 
   /** -- Provide a Profiles DVM from a different happ -- */
@@ -213,6 +213,7 @@ export class ThreadsApp extends HappElement {
   shouldUpdate(): boolean {
     const canUpdate = super.shouldUpdate();
     console.log("<threads-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
+
     /** Wait for offlinePerspective */
     return canUpdate && this._offlinePerspectiveloaded;
   }
