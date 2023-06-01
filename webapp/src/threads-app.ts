@@ -75,10 +75,7 @@ export class ThreadsApp extends HappElement {
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
 
-
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices?: WeServices;
-
+  
   /**  */
   static async fromWe(
     appWs: AppWebsocket,
