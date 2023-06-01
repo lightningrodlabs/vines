@@ -438,12 +438,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
     let maybeAgent = undefined;
     if (this._profilesZvm) {
-      maybeAgent = this._profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey];
+      maybeAgent = this._myProfile;
       if (maybeAgent) {
         agent = maybeAgent;
       } else {
         //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-        this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey)
+        this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
         //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
       }
     }

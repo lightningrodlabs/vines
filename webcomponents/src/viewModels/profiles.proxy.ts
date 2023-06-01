@@ -2,6 +2,9 @@ import { AgentPubKey, Record as HcRecord } from '@holochain/client';
 import {ZomeProxy} from "@ddd-qc/lit-happ";
 import { decode } from "@msgpack/msgpack";
 
+
+// FIXME delete this file and use ProfilesClient in ZVM instead
+
 export interface ThreadsProfile {
   nickname: string;
   fields: Record<string, string>;

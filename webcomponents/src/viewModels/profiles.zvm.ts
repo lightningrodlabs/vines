@@ -1,7 +1,6 @@
 import {ZomeViewModel} from "@ddd-qc/lit-happ";
 import {ProfilesProxy, ThreadsProfile} from "./profiles.proxy";
-import { decode } from '@msgpack/msgpack';
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
+import {AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 
 
 /** */
@@ -53,7 +52,7 @@ export class ProfilesZvm extends ZomeViewModel {
   //private _profile_ahs: Record<AgentPubKeyB64, ActionHashB64> = {};
 
 
-  getMyProfile(): ThreadsProfile { return this._profiles[this.cell.agentPubKey] }
+  getMyProfile(): ThreadsProfile | undefined { return this._profiles[this.cell.agentPubKey] }
 
   getProfile(agent: AgentPubKeyB64): ThreadsProfile | undefined {return this._profiles[agent]}
 
