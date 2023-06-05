@@ -11,7 +11,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {CommentRequest} from "./semantic-threads-page";
@@ -22,15 +22,15 @@ import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 /**
  * @element
  */
-@customElement("dna-threads-tree")
-export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("applet-threads-tree")
+export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
-  /** Hash of dna to display threads of */
-  @property() dnaHash: string = ''
+  /** ID of the applet to display threads of */
+  @property() appletId: EntryHashB64 = ''
 
 
   @consume({ context: weServicesContext, subscribe: true })
@@ -47,19 +47,19 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
    * Subscribe to ThreadsZvm
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    console.log("<dna-threads-tree>.zvmUpdated()");
+    console.log("<applet-threads-tree>.zvmUpdated()");
     this._loading = true;
-    await newZvm.probeSubjectTypes(this.dnaHash);
+    await newZvm.probeSubjectTypes(this.appletId);
     this._loading = false;
   }
 
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<dna-threads-tree>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
-    if (changedProperties.has("dnaHash") && this._zvm) {
+    //console.log("<applet-threads-tree>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
+    if (changedProperties.has("appletId") && this._zvm) {
       this._loading = true;
-      await this._zvm.probeSubjectTypes(this.dnaHash);
+      await this._zvm.probeSubjectTypes(this.appletId);
       this._loading = false;
     }
   }
@@ -67,7 +67,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
 
   /** */
   async clickTree(event) {
-    console.log("<dna-threads-tree> click event:", event.detail.item);
+    console.log("<applet-threads-tree> click event:", event.detail.item);
     let type;
     switch (event.detail.item.level) {
       case 3: type = ThreadsEntryType.ParticipationProtocol; break;
@@ -98,7 +98,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     //const isTyped = !!this.root && typeof this.root == 'object';
     //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
 
-    console.log("<dna-threads-tree>.toggleTreeItem()", toggledTreeItem);
+    console.log("<applet-threads-tree>.toggleTreeItem()", toggledTreeItem);
 
     event.preventDefault(); // do not let the toggle button switch yet
     busyIndicator.active = true; // block the tree from the user
@@ -113,10 +113,10 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
     /** SubjectType has been toggled */
     if (event.detail.item.level == 1) {
       /** Grab children */
-      let subject_lhs = await this._zvm.probeSubjects(this.dnaHash, toggledTreeItem.id);
+      let subject_lhs = await this._zvm.probeSubjects(this.appletId, toggledTreeItem.id);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
-        console.warn("weServices not found in <dna-threads-tree>")
+        console.warn("weServices not found in <applet-threads-tree>")
       }
       /** Convert to TreeItem and append to Tree */
       for (const lh of subject_lhs) {
@@ -127,7 +127,7 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
         let newItem = document.createElement("ui5-tree-item") as TreeItem;
         newItem.text = lh;
         if (this.weServices) {
-          const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.dnaHash), decodeHashFromBase64(lh)]);
+          const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.appletId), decodeHashFromBase64(lh)]);
           console.log("entryInfo", entryInfo);
           if (entryInfo) {
             newItem.text = entryInfo.entryInfo.name;
@@ -171,15 +171,15 @@ export class DnaThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> 
 
   /** */
   render() {
-    console.log("<dna-threads-tree>.render()", this.dnaHash);
-    if (this.dnaHash == "") {
-      return html `<div>No DNA selected</div>`;
+    console.log("<applet-threads-tree>.render()", this.appletId);
+    if (this.appletId == "") {
+      return html `<div>No Applet selected</div>`;
     }
     if (this._loading) {
       return html `<div>Loading subject types</div>`;
     }
 
-    let subjectTypes = this.perspective.dnaSubjectTypes[this.dnaHash];
+    let subjectTypes = this.perspective.appletSubjectTypes[this.appletId];
     if (!subjectTypes) {
       subjectTypes = {};
     }

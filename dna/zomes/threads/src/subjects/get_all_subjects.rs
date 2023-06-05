@@ -11,7 +11,8 @@ pub struct Subject {
   hash: AnyLinkableHash,
   //hash_type: AppletSubjectType,
   type_name: String,
-  dna: DnaHash,
+  //dna: DnaHash,
+  applet_id: EntryHash,
 }
 
 
@@ -30,8 +31,8 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     let path = Path::from(tp.anchor.clone());
     let comps: Vec<Component> = path.into();
     debug!("Parsing leaf_anchor: {}", tp.anchor);
-    let dna_comp = comps[1].as_ref().to_owned();
-    let dna = DnaHash::from_raw_39(dna_comp).unwrap(); // FIXME
+    let applet_id_comp = comps[1].as_ref().to_owned();
+    let applet_id = EntryHash::from_raw_39(applet_id_comp).unwrap(); // FIXME
     let topic_type = comps[2].clone();
     let hash_comp = comps[3].as_ref().to_owned();
     let subject_hash = AnyLinkableHash::from_raw_39(hash_comp).unwrap(); // FIXME
@@ -40,7 +41,7 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
       hash: subject_hash.clone(),
       //hash_type: AppletSubjectType::from(subject_hash),
       type_name: std::str::from_utf8(topic_type.as_ref()).unwrap().to_string(), // FIXME
-      dna,
+      applet_id,
     };
     all.push(subject);
   }

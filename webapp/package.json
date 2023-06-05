@@ -37,7 +37,7 @@
   "dependencies": {
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.14.0",
-    "@lightningrodlabs/we-applet": "^0.5.0-alpha.4",
+    "@lightningrodlabs/we-applet": "^0.6.0",
     "@threads/elements": "file:../webcomponents"
   }
 }

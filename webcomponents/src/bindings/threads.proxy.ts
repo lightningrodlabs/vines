@@ -208,10 +208,6 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('create_participation_protocol', input);
   }
 
-  async createPpFromSemanticTopic(pp: ParticipationProtocol): Promise<[ActionHash, Timestamp]> {
-    return this.call('create_pp_from_semantic_topic', pp);
-  }
-
   async getPpsFromSubjectHash(lh: Uint8Array): Promise<[ActionHash, Timestamp][]> {
     return this.call('get_pps_from_subject_hash', lh);
   }
@@ -285,16 +281,20 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_all_subjects', null);
   }
 
+  async getApplets(): Promise<EntryHash[]> {
+    return this.call('get_applets', null);
+  }
+
   async getSubjectsByType(input: GetProtocolsInput): Promise<Uint8Array[]> {
     return this.call('get_subjects_by_type', input);
   }
 
-  async getSubjectsForDna(dnaHash: DnaHash): Promise<Uint8Array[]> {
-    return this.call('get_subjects_for_dna', dnaHash);
+  async getSubjectsForApplet(appletId: EntryHash): Promise<Uint8Array[]> {
+    return this.call('get_subjects_for_applet', appletId);
   }
 
-  async getSubjectTypesForDna(dnaHash: DnaHash): Promise<[string, EntryHash][]> {
-    return this.call('get_subject_types_for_dna', dnaHash);
+  async getSubjectTypesForApplet(appletId: EntryHash): Promise<[string, EntryHash][]> {
+    return this.call('get_subject_types_for_applet', appletId);
   }
 
   async getLatestItems(): Promise<SearchResponse> {

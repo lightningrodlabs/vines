@@ -18,17 +18,17 @@ import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {ProfilesApi} from "./profilesApi";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/dist/ExternalAppProxy";
-import {HCL} from "@ddd-qc/lit-happ";
+import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 
 
 
 /** */
-export function appletViews(
+export async function appletViews(
   client: AppAgentClient,
-  _appletId: EntryHash,
+  thisAppletId: EntryHash,
   profilesClient: ProfilesClient,
   weServices: WeServices
-): AppletViews {
+): Promise<AppletViews> {
   return {
     main: async (element) => {
       /** Link to styles */
@@ -48,16 +48,26 @@ export function appletViews(
       //const profilesAppAgentClient: AppAgentClient = profilesClient.client;
       let profilesAppInfo = await profilesClient.client.appInfo();
       console.log("profilesAppInfo", profilesAppInfo, profilesClient.roleName);
-      const hcl = new HCL(profilesAppInfo.installed_app_id, profilesClient.roleName);
+
+      /** Check if roleName is actually a cloneId */
+      let maybeCloneId = undefined;
+      let baseRoleName = profilesClient.roleName;
+      const maybeBaseRoleName = destructureCloneId(profilesClient.roleName);
+      if (maybeBaseRoleName) {
+        baseRoleName = maybeBaseRoleName[0];
+        maybeCloneId = profilesClient.roleName;
+      }
+
+      const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
       const profilesApi = new ProfilesApi(profilesClient);
       const profilesProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
-      await profilesProxy.fetchCells(profilesAppInfo.installed_app_id, profilesClient.roleName);
+      await profilesProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
       await profilesProxy.createCellProxy(hcl);
       /** Create and append <threads-app> */
       const app = await ThreadsApp.fromWe(
         mainAppWs, undefined, false, "threads-applet",
-        profilesAppInfo.installed_app_id, profilesClient.roleName, profilesClient.zomeName, profilesProxy,
-        weServices);
+        profilesAppInfo.installed_app_id, baseRoleName, profilesClient.zomeName, profilesProxy,
+        weServices, thisAppletId);
       element.appendChild(app);
     },
 

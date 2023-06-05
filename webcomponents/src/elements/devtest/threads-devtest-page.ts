@@ -1,7 +1,7 @@
 import {css, html} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64, EntryHashB64, fakeEntryHash} from "@holochain/client";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadList} from "./thread-list";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
@@ -34,6 +34,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
+    fakeEntryHash().then((eh) => this.appletId = encodeHashToBase64(eh));
   }
 
   /** -- Fields -- */
@@ -41,6 +42,9 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _selectedTopicHash: AnyLinkableHashB64 = '';
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
   @state() private _selectedHash: AnyLinkableHashB64 = '';
+
+  @property() appletId: EntryHashB64;
+
 
   @property({ type: Boolean, attribute: 'debug' })
   debugMode: boolean = false;
@@ -143,7 +147,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateThread(e: any) {
     const input = this.shadowRoot!.getElementById("threadInput") as HTMLInputElement;
-    let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this._selectedTopicHash, input.value);
+    let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.appletId, this._selectedTopicHash, input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedThreadHash = ah;

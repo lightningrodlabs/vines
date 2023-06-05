@@ -17,6 +17,7 @@ import {
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {HoloHashB64} from "@holochain/client/lib/types";
+import {AppletInfo} from "@lightningrodlabs/we-applet";
 
 
 /** -- Should be defined in @holochain/client */
@@ -43,6 +44,8 @@ export interface BeadLinkMaterialized {
 
 /** */
 export interface ThreadsPerspective {
+  /** */
+  allAppletIds: EntryHashB64[],
   /** Store of all Subjects: eh -> Subject */
   allSubjects: Dictionary<Subject>
   /** Store of all SemTopic: eh -> Topic Title */
@@ -56,9 +59,9 @@ export interface ThreadsPerspective {
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
 
-  /**  -- Dna threads  -- */
-  /** DnaHash -> PathEntryHash -> subjectType */
-  dnaSubjectTypes: Dictionary<Dictionary<string>>
+  /**  -- Applet threads  -- */
+  /** AppletId -> PathEntryHash -> subjectType */
+  appletSubjectTypes: Dictionary<Dictionary<string>>
   /** PathEntryHash -> subjectHash[] */
   subjectsPerType: Dictionary<AnyLinkableHashB64[]>
 
@@ -68,9 +71,6 @@ export interface ThreadsPerspective {
   newThreads: ActionHashB64[]
   unreadSubjects: AnyLinkableHashB64[],
   unreadThreads: ActionHashB64[],
-
-  // /** dnaHash -> Cell name */
-  // dnaNames: Dictionary<string>
 }
 
 

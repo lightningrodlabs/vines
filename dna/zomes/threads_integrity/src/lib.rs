@@ -11,7 +11,6 @@ pub mod globals;
 //--------------------------------------------------------------------------------------------------
 
 use hdi::prelude::*;
-use hdi::prelude::holo_hash::hash_type;
 
 pub use beads::*;
 pub use last_search_log::*;
@@ -65,7 +64,7 @@ pub struct SemanticTopic {
 
 ///
 #[hdk_entry_helper]
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ParticipationProtocol {
     pub purpose: String,

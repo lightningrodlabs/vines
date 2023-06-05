@@ -1,7 +1,7 @@
 use std::fmt::*;
 use hdk::prelude::*;
 use zome_utils::zome_error;
-use crate::time_indexing::{ts2anchor, ts2timepath};
+use crate::time_indexing::{ts2anchor};
 
 /// Time interval in us
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

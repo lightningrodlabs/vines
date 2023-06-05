@@ -12,14 +12,17 @@ export async function attachmentTypes(client: AppAgentClient): Promise<Record<st
       label: "Thread",
       icon_src: "",
       async create(attachToHrl: Hrl) {
+        //const appletId = weservices.entryInfo(attachToHrl).appletId;
         const cellProxy = await asCellProxy(client, attachToHrl, "threads-applet", "role_threads");
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
         const input: CreatePpInput = {
+          pp: {
           purpose: "comment",
           rules: "FFA",
-          dnaHash: attachToHrl[0],
           subjectHash: attachToHrl[1],
           subjectType: "unknown",
+        },
+          appletId: attachToHrl[0], // FIXME this is dnaHash and not appletId
         };
         const ppPair = await proxy.createParticipationProtocol(input);
         return {

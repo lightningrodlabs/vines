@@ -5,10 +5,10 @@ import {html, render} from "lit";
 
 
 /** */
-export function crossAppletViews(
+export async function crossAppletViews(
   applets: ReadonlyMap<EntryHash, { profilesClient: ProfilesClient; appletClient: AppAgentClient }>, // Segmented by groupId
   weServices: WeServices,
-): CrossAppletViews {
+): Promise<CrossAppletViews> {
   // .store=${new ProfilesStore(applets[random].profilesClient)}
   return {
     main: (element) =>

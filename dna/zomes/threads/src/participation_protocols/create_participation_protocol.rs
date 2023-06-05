@@ -3,41 +3,32 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use crate::participation_protocols::*;
 use crate::path_explorer::*;
-use crate::time_indexing::{get_time_path, index_item};
+use crate::time_indexing::{index_item};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatePpInput {
-  pub purpose: String,
-  pub rules: String,
-  pub dna_hash: DnaHash,
-  pub subject_hash: AnyLinkableHash,
-  pub subject_type: String,
+  pub pp: ParticipationProtocol,
+  pub applet_id: EntryHash,
 }
 
 
 /// Create a Pp off anything
 #[hdk_extern]
 pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp)> {
-  let pp = ParticipationProtocol {
-    purpose: input.purpose,
-    rules: input.rules,
-    subject_hash: input.subject_hash.clone(),
-    subject_type: input.subject_type,
-  };
-  return create_pp(pp, input.dna_hash, None);
+  return create_pp(input.pp, input.applet_id, None);
 }
 
 
 ///
-pub fn create_pp(pp: ParticipationProtocol, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
+pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
 
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
 
   /// Global Subjects Index
-  let (tp, _subject_hash_str) = get_subject_tp(dna_hash, &pp.subject_type, pp.subject_hash.clone())?;
+  let (tp, _subject_hash_str) = get_subject_tp(applet_id, &pp.subject_type, pp.subject_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");

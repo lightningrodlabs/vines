@@ -41,11 +41,19 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
 import {PeerList} from "./peer-list";
-import {ActionHashB64, decodeHashFromBase64, DnaHashB64} from "@holochain/client";
+import {
+  ActionHashB64,
+  decodeHashFromBase64,
+  DnaHashB64,
+  encodeHashToBase64,
+  EntryHashB64,
+  fakeEntryHash
+} from "@holochain/client";
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
-import {DnaThreadsTree} from "./dna-threads-tree";
+import {AppletThreadsTree} from "./applet-threads-tree";
 
 import {
+  AppletInfo,
   Hrl,
   WeServices, weServicesContext,
 } from "@lightningrodlabs/we-applet";
@@ -69,7 +77,9 @@ export interface CommentRequest {
 export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+    /** Create a fake appletId for testing without We */
+    //fakeEntryHash().then((eh) => this.appletId = encodeHashToBase64(eh));
   }
 
 
@@ -83,6 +93,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _showDna: DnaHashB64 | null = null;
 
 
+  @property() appletId: EntryHashB64;
+
+
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
@@ -94,6 +107,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   weServices!: WeServices;
 
   private _myProfile: ThreadsProfile = {nickname: "unknown", fields: {}}
+
+
+  /** AppletId -> AppletInfo */
+  private _appletInfos: Dictionary<AppletInfo> = {}
 
 
   /** -- Getters -- */
@@ -187,7 +204,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    let ah = await this._dvm.publishThreadFromSemanticTopic(this._createTopicHash, input.value);
+    let ah = await this._dvm.publishThreadFromSemanticTopic(this.appletId, this._createTopicHash, input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedThreadHash = ah;
@@ -247,10 +264,20 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("<semantic-threads-page> firstUpdated()");
 
     /** Generate test data */
-    await this._dvm.threadsZvm.generateTestData();
+    await this._dvm.threadsZvm.generateTestData(this.appletId);
     const leftSide = this.shadowRoot.getElementById("leftSide");
     leftSide.style.background = "#aab799";
 
+
+    /** Grab all AppletIds */
+    const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
+    for (const appletId of appletIds) {
+      const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
+      console.log("_appletInfos", appletId, appletInfo);
+      this._appletInfos[appletId] = appletInfo;
+    }
+
+    /** */
     this.pingAllOthers();
   }
 
@@ -351,11 +378,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     /** Create Comment thread for this TextMessage */
     if (!maybeCommentThread) {
       const ppInput: CreatePpInput = {
-        purpose: "comment",
-        rules: "N/A",
-        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-        subjectHash: decodeHashFromBase64(request.subjectHash),
-        subjectType: request.subjectType,
+        pp: {
+          purpose: "comment",
+          rules: "N/A",
+          subjectHash: decodeHashFromBase64(request.subjectHash),
+          subjectType: request.subjectType,
+        },
+        appletId: decodeHashFromBase64(this.appletId),
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
       maybeCommentThread = ppAh;
@@ -443,6 +472,24 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 
+    console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
+
+    console.log("this._appletInfos", this._appletInfos);
+    const infos = Object.getOwnPropertyNames(this._appletInfos);
+    console.log("infos", infos);
+    let appletOptions = [];
+    // for (const [appletId, appletInfo] of infos) {
+    //   //appletOptions = infos.map(([appletId, appletInfo]) => {
+    //   console.log("appletInfo", appletInfo);
+    //   if (!appletInfo) {
+    //     continue;
+    //     //return html``;
+    //   }
+    //   //return html`<ui5-option id=${appletId}>${appletInfo.appletName}</ui5-option>`;
+    //   appletOptions.push(html`<ui5-option id=${appletId}>${appletInfo.appletName}</ui5-option>`);
+    // }
+    // //);
+    // console.log("appletOptions", appletOptions);
 
     /** Render all */
     return html`
@@ -450,12 +497,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             <div id="leftSide">
                 <ui5-select id="dna-select" class="select" style="background: rgb(170, 183, 153);"
                 @change=${this.onDnaSelected}>
-                    <ui5-option id=${this.cell.dnaHash}>Threads</ui5-option>
+                    ${appletOptions}
+                    <ui5-option id=${this.appletId}>Threads</ui5-option>
                     <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
                 </ui5-select>
                 ${this._showDna? html`
-                    <dna-threads-tree .dnaHash=${this.cell.dnaHash}
-                                      @selected="${this.onDnaThreadSelected}"></dna-threads-tree>
+                    <applet-threads-tree .appletId=${this.appletId}
+                                      @selected="${this.onDnaThreadSelected}"></applet-threads-tree>
                 ` : html`
                 <semantic-topics-view
                         @createThreadClicked=${(e) => {
@@ -594,18 +642,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     await this._dvm.threadsZvm.commitSearchLogs();
   }
 
-
-  // /** */
-  // static get scopedElements() {
-  //   return {
-  //     "semantic-topics-view": SemanticTopicsView,
-  //     "comment-thread-view": CommentThreadView,
-  //     "chat-view": ChatThreadView,
-  //     "edit-profile": EditProfile,
-  //     "peer-list": PeerList,
-  //     "dna-threads-view": DnaThreadsTree,
-  //   }
-  // }
 
   /** */
   static get styles() {

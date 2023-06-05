@@ -11,7 +11,7 @@ export * from './elements/chat-header';
 export * from './elements/chat-message-item';
 export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';
-export * from './elements/dna-threads-tree';
+export * from './elements/applet-threads-tree';
 export * from './elements/edit-profile';
 export * from './elements/peer-list';
 export * from './elements/semantic-threads-page';

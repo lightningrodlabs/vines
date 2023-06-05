@@ -4,7 +4,7 @@ import {localized, msg} from '@lit/localize';
 import {
   AdminWebsocket,
   AppSignal,
-  AppWebsocket, encodeHashToBase64,
+  AppWebsocket, encodeHashToBase64, Entry, EntryHash,
   EntryHashB64,
   InstalledAppId,
   RoleName, ZomeName
@@ -70,7 +70,7 @@ export class ThreadsApp extends HappElement {
   private _profilesDvm?: ProfilesDvm;
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-
+  public appletId?: EntryHashB64;
 
   /**  */
   static async fromWe(
@@ -83,11 +83,13 @@ export class ThreadsApp extends HappElement {
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
     weServices: WeServices,
+    thisAppletId: EntryHash,
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId);
     /** Provide it as context */
     console.log(`\t\tProviding context "${weServicesContext}" | in host `, app);
     app._weProvider = new ContextProvider(app, weServicesContext, weServices);
+    app.appletId = encodeHashToBase64(thisAppletId);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesZomeName);
@@ -256,6 +258,7 @@ export class ThreadsApp extends HappElement {
                                   @debug=${(e) => this._canShowDebug = e.detail}>
             </threads-devtest-page> 
             <semantic-threads-page style="display:${!this._canShowDebug? "block" : "none" };"
+                                   .appletId=${this.appletId}
                                    @debug=${(e) => this._canShowDebug = e.detail}>
             </semantic-threads-page>
         </cell-context>

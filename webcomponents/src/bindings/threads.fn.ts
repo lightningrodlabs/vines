@@ -26,7 +26,6 @@ export const threadsFunctionNames: FunctionName[] = [
 
 
 	"create_participation_protocol",
-	"create_pp_from_semantic_topic",
 	"get_pps_from_subject_hash",
 	"get_pps_from_subject_anchor",
 	"query_pps",
@@ -46,9 +45,10 @@ export const threadsFunctionNames: FunctionName[] = [
 
 	"notify_peers",
 	"get_all_subjects",
+	"get_applets",
 	"get_subjects_by_type",
-	"get_subjects_for_dna",
-	"get_subject_types_for_dna",
+	"get_subjects_for_applet",
+	"get_subject_types_for_applet",
 	"get_latest_items",];
 
 

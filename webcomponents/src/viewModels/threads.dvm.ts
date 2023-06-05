@@ -187,8 +187,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishThreadFromSemanticTopic(topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
-    let ah = await this.threadsZvm.publishThreadFromSemanticTopic(topicHash, purpose);
+  async publishThreadFromSemanticTopic(appletId: EntryHashB64, topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
+    let ah = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, topicHash, purpose);
     const signal: SignalPayload = {
       maybePpHash: ah,
       from: this._cellProxy.cell.agentPubKey,
@@ -202,11 +202,11 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Debug -- */
 
   /** */
-  async generateTestSignals(): Promise<void> {
+  async generateTestSignals(appletId: EntryHashB64): Promise<void> {
     console.log("generateTestSignals() START");
     const stEh = await this.publishSemanticTopic("signal-topic");
     await delay(1000);
-    const ppAh = await this.publishThreadFromSemanticTopic(stEh, "testing");
+    const ppAh = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
     await delay(1000);
     const msgAh = await this.publishTextMessage("msg-1", ppAh);
     console.log("generateTestSignals() END", msgAh);

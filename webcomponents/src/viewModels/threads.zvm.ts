@@ -3,7 +3,7 @@ import {
   ActionHashB64,
   AgentPubKeyB64,
   decodeHashFromBase64, DnaHashB64,
-  encodeHashToBase64, EntryHashB64, Timestamp,
+  encodeHashToBase64, Entry, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
   Bead,
@@ -29,6 +29,7 @@ import {
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
+import {AppletInfo} from "@lightningrodlabs/we-applet";
 
 
 
@@ -62,7 +63,7 @@ export class ThreadsZvm extends ZomeViewModel {
       threads: this._threads,
       textMessages: this._textMessages,
 
-      dnaSubjectTypes: this._dnaSubjectTypes,
+      appletSubjectTypes: this._appletSubjectTypes,
       subjectsPerType: this._subjectsPerType,
 
       globalSearchLog: this._globalSearchLog,
@@ -70,9 +71,13 @@ export class ThreadsZvm extends ZomeViewModel {
       unreadSubjects: this._unreadSubjects,
       newThreads: this._newThreads,
       unreadThreads: this._unreadThreads,
+
+      allAppletIds: this._allAppletIds,
     };
   }
 
+
+  private _allAppletIds: EntryHashB64[] = [];
   /** ah -> Subject */
   private _allSubjects: Dictionary<Subject> = {};
   /** ah -> SemanticTopic */
@@ -87,9 +92,9 @@ export class ThreadsZvm extends ZomeViewModel {
   private _threads: Dictionary<Thread> = {};
 
   /**  -- Dna threads  -- */
-  /** DnaHash -> subjectType[] */
-  private _dnaSubjectTypes: Dictionary<Dictionary<string>> = {}
-  /** DnaHash -> SubjectType -> subjectHash[] */
+  /** AppletId -> SubjectType PathEntryHash -> subjectType */
+  private _appletSubjectTypes: Dictionary<Dictionary<string>> = {}
+  /** SubjectType PathEntryHash -> subjectHash[] */
   private _subjectsPerType: Dictionary<AnyLinkableHashB64[]> = {}
 
 
@@ -100,6 +105,10 @@ export class ThreadsZvm extends ZomeViewModel {
   private _unreadSubjects: AnyLinkableHashB64[] = [];
   private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
+
+  /** */
+  private _appletInfos: Dictionary<AppletInfo> = {}
+
 
   /** -- Get: Return a stored element -- */
 
@@ -123,16 +132,16 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._threads[ppAh];
   }
 
-  getSubjectType(dnaHash: DnaHashB64, pathHash: EntryHashB64): string | undefined {
-    const typesForDna = this._dnaSubjectTypes[dnaHash];
+  getSubjectType(appletId: EntryHashB64, pathHash: EntryHashB64): string | undefined {
+    const typesForDna = this._appletSubjectTypes[appletId];
     if (!typesForDna) {
       return undefined;
     }
     return typesForDna[pathHash];
   }
 
-  getSubjectTypes(h: DnaHashB64): Dictionary<string> | undefined {
-    return this._dnaSubjectTypes[h];
+  getSubjectTypes(h: EntryHashB64): Dictionary<string> | undefined {
+    return this._appletSubjectTypes[h];
   }
 
   getSubjects(pathHash: EntryHashB64): AnyLinkableHashB64[] | undefined {
@@ -213,7 +222,10 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     await Promise.all(probes);
     /** Get last elements since last time (global search log) */
-    await this.probeAllLatest()
+    await this.probeAllLatest();
+
+    /** */
+    await this.probeAllAppletIds();
   }
 
 
@@ -274,6 +286,16 @@ export class ThreadsZvm extends ZomeViewModel {
     /* await */ this.initializePerspectiveOnline();
   }
 
+  /** */
+  async probeAllAppletIds(): Promise<EntryHashB64[]> {
+    console.log("probeAllAppletIds()")
+    const appletIds = await this.zomeProxy.getApplets();
+    this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
+    console.log("probeAllAppletIds() res", this._allAppletIds);
+    this.notifySubscribers();
+    return this._allAppletIds;
+  }
+
 
   /** Get all Subjects from the RootAnchor */
   async probeAllSubjects(): Promise<Dictionary<Subject>> {
@@ -315,26 +337,26 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** Get all SubjectTypes for a DNA */
-  async probeSubjectTypes(dnaHash: DnaHashB64): Promise<Dictionary<string>> {
-    let subjectTypesRaw = await this.zomeProxy.getSubjectTypesForDna(decodeHashFromBase64(dnaHash));
+  /** Get all SubjectTypes for a AppletId */
+  async probeSubjectTypes(appletId: EntryHashB64): Promise<Dictionary<string>> {
+    let subjectTypesRaw = await this.zomeProxy.getSubjectTypesForApplet(decodeHashFromBase64(appletId));
     let subjectTypes: Dictionary<string> = {}//subjectTypesRaw.map(([st, hash]) => [st, encodeHashToBase64(hash)]);
     console.log("probeSubjectTypes()", subjectTypes);
     for (const [subjectType, pathHash] of subjectTypesRaw) {
       subjectTypes[encodeHashToBase64(pathHash)] = subjectType;
     }
-    this._dnaSubjectTypes[dnaHash] = subjectTypes;
+    this._appletSubjectTypes[appletId] = subjectTypes;
     return subjectTypes;
   }
 
 
   /** Get all subjects from a subjectType path */
-  async probeSubjects(dnaHash: DnaHashB64, pathHash: EntryHashB64): Promise<AnyLinkableHashB64[]> {
-    if (!this._dnaSubjectTypes[dnaHash] || !Object.keys(this._dnaSubjectTypes[dnaHash]).includes(pathHash)) {
+  async probeSubjects(appletId: EntryHashB64, pathHash: EntryHashB64): Promise<AnyLinkableHashB64[]> {
+    if (!this._appletSubjectTypes[appletId] || !Object.keys(this._appletSubjectTypes[appletId]).includes(pathHash)) {
       return Promise.reject("Unknown pathHash for dnaHash");
     }
-    const subjectType = this.getSubjectType(dnaHash, pathHash);
-    const subjects = await this.zomeProxy.getSubjectsByType({dnaHash: decodeHashFromBase64(dnaHash), subjectType});
+    const subjectType = this.getSubjectType(appletId, pathHash);
+    const subjects = await this.zomeProxy.getSubjectsByType({appletId: decodeHashFromBase64(appletId), subjectType});
     const subjectB64s = subjects.map((subject) => encodeHashToBase64(subject));
     this._subjectsPerType[pathHash] = subjectB64s;
     return subjectB64s;
@@ -543,14 +565,15 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
     /** */
-  async publishThreadFromSemanticTopic(subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
+  async publishThreadFromSemanticTopic(appletId: EntryHashB64, subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
+    console.log("publishThreadFromSemanticTopic()", appletId);
     const pp: ParticipationProtocol = {
       purpose,
       subjectHash: decodeHashFromBase64(subjectHash),
       rules: "FFA",
       subjectType: SEMANTIC_TOPIC_TYPE_NAME,
     }
-    const [ah, ts] = await this.zomeProxy.createPpFromSemanticTopic(pp);
+    const [ah, ts] = await this.zomeProxy.createParticipationProtocol({pp, appletId: decodeHashFromBase64(appletId)});
     const ahB64 = encodeHashToBase64(ah);
     this.storePp(ahB64, pp, ts);
     return ahB64;
@@ -709,13 +732,13 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Debug -- */
 
   /** */
-  async generateTestData(): Promise<void> {
-    const hashs = await this.zomeProxy.getSubjectsForDna(decodeHashFromBase64(this.cell.dnaHash));
+  async generateTestData(appletId: EntryHashB64): Promise<void> {
+    const hashs = await this.zomeProxy.getSubjectsForApplet(decodeHashFromBase64(appletId));
     console.log("generateTestData(), subjects found", hashs.length)
     if (hashs.length > 0) {
       return;
     }
-    console.log("*** generateTestData()");
+    console.log("*** generateTestData()", appletId);
 
     const top1 = await this.publishSemanticTopic("topic-many");
     const top11 = await this.publishSemanticTopic("topic-many");
@@ -723,19 +746,19 @@ export class ThreadsZvm extends ZomeViewModel {
     const top3 = await this.publishSemanticTopic("topic-none");
     const top4 = await this.publishSemanticTopic("time-test");
 
-    const th1 = await this.publishThreadFromSemanticTopic(top1, "general");
+    const th1 = await this.publishThreadFromSemanticTopic(appletId, top1, "general");
     console.log("*** generateTestData() general", th1);
-    const th2 = await this.publishThreadFromSemanticTopic(top1, "none");
+    const th2 = await this.publishThreadFromSemanticTopic(appletId, top1, "none");
 
-    const th4 = await this.publishThreadFromSemanticTopic(top1, "full");
-    const th01 = await this.publishThreadFromSemanticTopic(top2, "general");
+    const th4 = await this.publishThreadFromSemanticTopic(appletId, top1, "full");
+    const th01 = await this.publishThreadFromSemanticTopic(appletId, top2, "general");
     //const th11 = await this.publishThreadFromSemanticTopic(top1, "general");
 
-    const timeMin = await this.publishThreadFromSemanticTopic(top4, "minute");
+    const timeMin = await this.publishThreadFromSemanticTopic(appletId, top4, "minute");
     console.log("*** generateTestData() minute", timeMin);
-    const timeHour = await this.publishThreadFromSemanticTopic(top4, "hour");
-    const timeDay = await this.publishThreadFromSemanticTopic(top4, "day");
-    const timeMon = await this.publishThreadFromSemanticTopic(top4, "month");
+    const timeHour = await this.publishThreadFromSemanticTopic(appletId, top4, "hour");
+    const timeDay = await this.publishThreadFromSemanticTopic(appletId, top4, "day");
+    const timeMon = await this.publishThreadFromSemanticTopic(appletId, top4, "month");
     //const timeYear = await this.publishThreadFromSemanticTopic(top4, "year");
 
 
@@ -746,7 +769,7 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.publishTextMessage("third", th1);
 
     //await this.publishManyDebug(timeMin, 60 * 1000, 200);
-    await this.publishManyDebug(timeDay, 24 * 3600 * 1000, 42);
+    //await this.publishManyDebug(timeDay, 24 * 3600 * 1000, 42);
     //await this.publishManyDebug(timeMon, 12 * 24 * 3600 * 1000, 30);
 
     // await delay(60 * 1000);
