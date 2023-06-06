@@ -5,6 +5,7 @@ use threads_integrity::*;
 //use zome_utils::*;
 use crate::path_explorer::*;
 
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subject {
@@ -31,11 +32,9 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     let path = Path::from(tp.anchor.clone());
     let comps: Vec<Component> = path.into();
     debug!("Parsing leaf_anchor: {}", tp.anchor);
-    let applet_id_comp = comps[1].as_ref().to_owned();
-    let applet_id = EntryHash::from_raw_39(applet_id_comp).unwrap(); // FIXME
+    let applet_id = comp2hash(&comps[1])?;
     let topic_type = comps[2].clone();
-    let hash_comp = comps[3].as_ref().to_owned();
-    let subject_hash = AnyLinkableHash::from_raw_39(hash_comp).unwrap(); // FIXME
+    let subject_hash = comp2hash(&comps[3])?;
 
     let subject = Subject {
       hash: subject_hash.clone(),

@@ -110,7 +110,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** AppletId -> AppletInfo */
-  private _appletInfos: Dictionary<AppletInfo> = {}
+  @state() private _appletInfos: Dictionary<AppletInfo> = {}
 
 
   /** -- Getters -- */
@@ -144,10 +144,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     this._initialized = true;
   }
 
-  //
-  // protected firstUpdated() {
-  //   console.log("<semantic-threads-page>.firstUpdated()", this._initialized, this._selectedThreadHash);
-  // }
 
 
   // /** */
@@ -261,7 +257,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
-    console.log("<semantic-threads-page> firstUpdated()");
+    console.log("<semantic-threads-page> firstUpdated() _appletInfos", this.appletId);
 
     /** Generate test data */
     await this._dvm.threadsZvm.generateTestData(this.appletId);
@@ -276,7 +272,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       console.log("_appletInfos", appletId, appletInfo);
       this._appletInfos[appletId] = appletInfo;
     }
-
+    this.requestUpdate();
     /** */
     this.pingAllOthers();
   }
@@ -475,21 +471,15 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
 
     console.log("this._appletInfos", this._appletInfos);
-    const infos = Object.getOwnPropertyNames(this._appletInfos);
-    console.log("infos", infos);
-    let appletOptions = [];
-    // for (const [appletId, appletInfo] of infos) {
-    //   //appletOptions = infos.map(([appletId, appletInfo]) => {
-    //   console.log("appletInfo", appletInfo);
-    //   if (!appletInfo) {
-    //     continue;
-    //     //return html``;
-    //   }
-    //   //return html`<ui5-option id=${appletId}>${appletInfo.appletName}</ui5-option>`;
-    //   appletOptions.push(html`<ui5-option id=${appletId}>${appletInfo.appletName}</ui5-option>`);
-    // }
-    // //);
-    // console.log("appletOptions", appletOptions);
+    let appletOptions = Object.entries(this._appletInfos).map(([appletId, appletInfo]) => {
+      console.log("appletInfo", appletInfo);
+      if (!appletInfo) {
+        return html``;
+      }
+      return html`<ui5-option id=${appletId}>${appletInfo.appletName}</ui5-option>`;
+    }
+    );
+    console.log("appletOptions", appletOptions);
 
     /** Render all */
     return html`
@@ -498,7 +488,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 <ui5-select id="dna-select" class="select" style="background: rgb(170, 183, 153);"
                 @change=${this.onDnaSelected}>
                     ${appletOptions}
-                    <ui5-option id=${this.appletId}>Threads</ui5-option>
+                    <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
                     <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
                 </ui5-select>
                 ${this._showDna? html`

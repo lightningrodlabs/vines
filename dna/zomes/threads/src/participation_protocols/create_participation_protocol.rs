@@ -28,7 +28,7 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, maybe_index_ti
   //let pp_eh = hash_entry(pp_entry)?;
 
   /// Global Subjects Index
-  let (tp, _subject_hash_str) = get_subject_tp(applet_id, &pp.subject_type, pp.subject_hash.clone())?;
+  let tp = get_subject_tp(applet_id, &pp.subject_type, pp.subject_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");

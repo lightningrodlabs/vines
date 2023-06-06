@@ -13,9 +13,8 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
   let link_tag = None;
   let search_interval = SearchInterval::now();
   /// Form TypedPath
-  let pp_anchor: String = hash2anchor(pp_ah.clone());
-  debug!("pp_anchor = {}", pp_anchor);
-  let thread_tp = Path::from(pp_anchor.clone())
+  let pp_anchor = hash2comp(pp_ah.clone());
+  let thread_tp = Path::from(vec![pp_anchor])
     .typed(ThreadsLinkType::ThreadTimePath)?;
   //debug!("thread_tp = {}", path2anchor(&thread_tp).unwrap());
   /// Get All LeafAnchors

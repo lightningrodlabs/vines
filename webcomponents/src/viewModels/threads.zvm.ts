@@ -106,9 +106,6 @@ export class ThreadsZvm extends ZomeViewModel {
   private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
 
-  /** */
-  private _appletInfos: Dictionary<AppletInfo> = {}
-
 
   /** -- Get: Return a stored element -- */
 

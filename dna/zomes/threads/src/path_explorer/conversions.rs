@@ -1,6 +1,6 @@
 use hdk::hash_path::path::{Component, DELIMITER};
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::{HashType, holo_hash_encode};
+use hdk::prelude::holo_hash::{HashType, holo_hash_decode, holo_hash_decode_unchecked, holo_hash_encode};
 use zome_utils::zome_error;
 
 
@@ -20,8 +20,21 @@ pub fn tag2str(tag: &LinkTag) -> ExternResult<String> {
 
 
 ///
-pub fn hash2anchor<T: HashType>(hash: HoloHash<T>) -> String {
-  return holo_hash_encode(hash.get_raw_39());
+pub fn comp2hash<T: HashType>(comp: &Component) -> ExternResult<HoloHash<T>> {
+  let hash_str = String::try_from(comp)
+    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+  let raw_hash = holo_hash_decode_unchecked(&hash_str)
+    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+  let hash = HoloHash::<T>::from_raw_39(raw_hash)
+    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+  Ok(hash)
+}
+
+
+///
+pub fn hash2comp<T: HashType>(hash: HoloHash<T>) -> Component {
+  let str = holo_hash_encode(hash.get_raw_39());
+  str.into()
 }
 
 

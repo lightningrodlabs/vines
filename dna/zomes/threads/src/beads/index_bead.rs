@@ -8,8 +8,8 @@ use crate::time_indexing::*;
 /// Returns the Thread Time Anchor and the Global Time Anchor
 pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_us: Timestamp) -> ExternResult<(TypedPath, TypedPath)> {
   /// Index in Thread time-Index
-  let pp_anchor: String = hash2anchor(bead.for_protocol_ah.clone());
-  let thread_tp = Path::from(pp_anchor.clone())
+  let pp_anchor = hash2comp(bead.for_protocol_ah.clone());
+  let thread_tp = Path::from(vec![pp_anchor])
     .typed(ThreadsLinkType::ThreadTimePath)?;
   let (thread_leaf_tp, _ah) = index_item(
     thread_tp,

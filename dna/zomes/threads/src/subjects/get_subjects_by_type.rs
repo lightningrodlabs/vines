@@ -18,7 +18,7 @@ pub struct GetProtocolsInput {
 ///
 #[hdk_extern]
 pub fn get_subjects_by_type(input: GetProtocolsInput) -> ExternResult<Vec<AnyLinkableHash>> {
-  let (tp, _b64) = get_subject_type_path(input.applet_id, &input.subject_type)?;
+  let tp = get_subject_type_tp(input.applet_id, &input.subject_type)?;
   let children = tp_children_paths(&tp)?;
   debug!("found {} children", children.len());
   let ahs = children

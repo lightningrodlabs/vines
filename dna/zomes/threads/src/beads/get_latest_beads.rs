@@ -22,14 +22,14 @@ pub struct GetLatestBeadsInput {
 #[hdk_extern]
 pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInterval, Vec<BeadLink>)> {
   /// Convert arguments
-  let pp_str = hash2anchor(input.pp_ah.clone());
+  let pp_comp = hash2comp(input.pp_ah.clone());
   let begin = input.begin_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
   let end = input.end_time.unwrap_or(sys_time().unwrap());
   let limit = input.target_limit.unwrap_or(usize::MAX);
-  debug!("pp_str = {} | start = {} | target_count = {}", pp_str, begin, limit);
+  debug!("start = {} | target_count = {}",begin, limit);
   let search_interval = SearchInterval::new(begin, end)?;
   debug!("search_interval = {}", search_interval.print_as_anchors());
-  let root_tp = Path::from(pp_str).typed(ThreadsLinkType::ThreadTimePath)?;
+  let root_tp = Path::from(vec![pp_comp]).typed(ThreadsLinkType::ThreadTimePath)?;
   /// Query DHT
   let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None)?;
   debug!("links.len = {}", response.1.len());
