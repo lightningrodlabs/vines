@@ -127,7 +127,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         let newItem = document.createElement("ui5-tree-item") as TreeItem;
         newItem.text = lh;
         if (this.weServices) {
-          const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.appletId), decodeHashFromBase64(lh)]);
+          const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(toggledTreeItem.id), decodeHashFromBase64(lh)]);
           console.log("entryInfo", entryInfo);
           if (entryInfo) {
             newItem.text = entryInfo.entryInfo.name;

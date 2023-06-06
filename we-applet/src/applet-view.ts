@@ -29,6 +29,7 @@ export async function appletViews(
   profilesClient: ProfilesClient,
   weServices: WeServices
 ): Promise<AppletViews> {
+  const mainAppInfo = await client.appInfo();
   return {
     main: async (element) => {
       /** Link to styles */
@@ -40,7 +41,6 @@ export async function appletViews(
       /** Determine profilesAppInfo */
       console.log("ThreadsApplet.main()", client);
       const mainAppAgentWs = client as AppAgentWebsocket;
-      let mainAppInfo = await mainAppAgentWs.appInfo();
       const mainAppWs = mainAppAgentWs.appWebsocket;
       // const mainAppWs = client as unknown as AppWebsocket;
       // const mainAppInfo = await mainAppWs.appInfo({installed_app_id: 'threads-applet'});
@@ -62,11 +62,12 @@ export async function appletViews(
       const profilesApi = new ProfilesApi(profilesClient);
       const profilesProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
       await profilesProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
-      await profilesProxy.createCellProxy(hcl);
+      const proxy = await profilesProxy.createCellProxy(hcl);
+      console.log("profilesCellProxy", proxy);
       /** Create and append <threads-app> */
       const app = await ThreadsApp.fromWe(
-        mainAppWs, undefined, false, "threads-applet",
-        profilesAppInfo.installed_app_id, baseRoleName, profilesClient.zomeName, profilesProxy,
+        mainAppWs, undefined, false, mainAppInfo.installed_app_id,
+        profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesProxy,
         weServices, thisAppletId);
       element.appendChild(app);
     },
@@ -81,7 +82,10 @@ export async function appletViews(
           text_message: {
             info: async (hrl: Hrl) => {
               console.log("(applet-view) text_message info", hrl);
-              const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+              const cellProxy = await asCellProxy(client, hrl,
+                mainAppInfo.installed_app_id, //"threads-applet",
+                "role_threads",
+              );
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
               const tuple = await proxy.getTextMessage(hrl[1]);
               return {
@@ -106,7 +110,9 @@ export async function appletViews(
           participation_protocol: {
             info: async (hrl: Hrl) => {
               console.log("(applet-view) pp info", hrl);
-              const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+              const cellProxy = await asCellProxy(client, hrl,
+                mainAppInfo.installed_app_id, //"threads-applet",
+              "role_threads");
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
               const pp = await proxy.getPp(hrl[1]);
               return {

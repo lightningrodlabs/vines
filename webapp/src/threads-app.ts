@@ -29,7 +29,7 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
 import {ProfilesDvm} from "@threads/elements/dist/viewModels/profiles.dvm";
 import {consume, ContextProvider} from "@lit-labs/context";
-import {BaseRoleName} from "@ddd-qc/cell-proxy/dist/types";
+import {BaseRoleName, CloneId} from "@ddd-qc/cell-proxy/dist/types";
 import {AppProxy} from "@ddd-qc/cell-proxy/dist/AppProxy";
 
 
@@ -80,6 +80,7 @@ export class ThreadsApp extends HappElement {
     appId: InstalledAppId,
     profilesAppId: InstalledAppId,
     profilesBaseRoleName: BaseRoleName,
+    profilesCloneId: CloneId | undefined,
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
     weServices: WeServices,
@@ -92,20 +93,22 @@ export class ThreadsApp extends HappElement {
     app.appletId = encodeHashToBase64(thisAppletId);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
-    await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesZomeName);
+    await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
     return app;
   }
 
 
   /** Create a Profiles DVM out of a different happ */
-  async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName, profilesZomeName: ZomeName): Promise<void> {
+  async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
+                          profilesCloneId: CloneId | undefined,
+                          profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
-    console.log("createProfilesDvm() cell_infos", cell_infos);
+    console.log("createProfilesDvm() cell_infos:", cell_infos);
     /** Create Profiles DVM */
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
-    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName));
+    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
     this._profilesDvm = dvm as ProfilesDvm;
     /** Load My profile */

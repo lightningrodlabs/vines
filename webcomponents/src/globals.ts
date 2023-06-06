@@ -28,7 +28,7 @@ export const IS_ELECTRON = typeof MY_ELECTRON_API !== 'undefined'
    try {
      BUILD_MODE = process.env.BUILD_MODE;
    } catch (e) {
-     console.log("BUILD_MODE not defined. Defaulting to 'prod'");
+     console.log("BUILD_MODE not defined. Defaulting to 'prod'...");
      BUILD_MODE = 'prod';
    }
 }
@@ -39,7 +39,8 @@ console.log("BUILD_MODE =", BUILD_MODE)
 console.log("IS_ELECTRON =", IS_ELECTRON);
 
 /** Remove console.log() in PROD */
-if (BUILD_MODE === 'prod') {
-  console.log("console.log() disabled");
-  console.log = () => {};
-}
+// FIXME
+// if (BUILD_MODE === 'prod') {
+//   console.log("console.log() disabled");
+//   console.log = () => {};
+// }
