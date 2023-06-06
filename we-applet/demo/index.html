@@ -47,6 +47,16 @@
           return undefined;
         };
 
+        myWeServicesMock.entryInfo = async (hrl) => {
+          return {
+            appletId: threadsAppletId,
+            entryInfo: {
+              icon_src: "",
+              name: "demo:" + encodeHashToBase64(hrl[1]),
+            }
+          }
+        }
+
         /** AppWebsocket */
         // const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);
         // const appInfo = await appWs.appInfo({installed_app_id: "threads-applet"});
@@ -78,7 +88,7 @@
                 appAgentWs,
                 threadsAppletId,
                 new ProfilesClient(mockProfilesZome, mockProfilesZome.roleName),
-                weServicesMock,
+                myWeServicesMock,
         );
         renderers.main(document.body);
       }

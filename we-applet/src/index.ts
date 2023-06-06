@@ -1,5 +1,5 @@
 import {
-  AppAgentClient
+  AppAgentClient, EntryHash
 } from "@holochain/client";
 
 import {
@@ -13,6 +13,7 @@ import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 import {appletViews} from "./applet-view";
 import {crossAppletViews} from "./cross-applet-view";
 import {attachmentTypes} from "./attachment-types";
+import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
 
 
 
@@ -21,7 +22,7 @@ const applet: WeApplet = {
   appletViews,
   crossAppletViews,
   attachmentTypes,
-  search: async (appletClient: AppAgentClient, filter: string) => {return []},
+  search: async (appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices, searchFilter: string) => {return []},
 };
 export default applet;
 
