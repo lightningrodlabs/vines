@@ -659,7 +659,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         #leftSide {
           background: #e889c0;
           max-height: 100vh;
-          width: 340px;
+          width: 250px;
+          min-width: 250px;
           display: flex;
           flex-direction: column;
         }

@@ -191,7 +191,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <h4><abbr title="${this.threadHash}">Comments on ${pp.subjectType}</abbr></h4>
+        <h4 style="margin-left: 5px;"><abbr title="${this.threadHash}">Comments on ${pp.subjectType}</abbr></h4>
         <ui5-list id="textList" style="background: ${bg_color};">
             ${textLi}
         </ui5-list>

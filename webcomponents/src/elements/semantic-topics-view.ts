@@ -244,6 +244,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         #semTree {
           display: flex;
           flex-direction: column;
+          /*width: 100%;*/
         }
       `,
 
