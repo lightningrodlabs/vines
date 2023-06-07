@@ -8,7 +8,7 @@ import {
 import {
   ActionHash,
   ActionHashB64,
-  AgentPubKeyB64,
+  AgentPubKeyB64, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
   HoloHash,
@@ -63,7 +63,7 @@ export interface ThreadsPerspective {
   /** AppletId -> PathEntryHash -> subjectType */
   appletSubjectTypes: Dictionary<Dictionary<string>>
   /** PathEntryHash -> subjectHash[] */
-  subjectsPerType: Dictionary<AnyLinkableHashB64[]>
+  subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>
 
   /** -- New / unread -- */
   globalSearchLog?: GlobalLastSearchLog,

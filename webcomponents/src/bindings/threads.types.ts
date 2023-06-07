@@ -165,6 +165,7 @@ export interface ProbeAllLatestOutput {
 export interface CreatePpInput {
   pp: ParticipationProtocol
   appletId: EntryHash
+  dnaHash: DnaHash
 }
 
 export type MyLinkFilter = [number, number[]][];
@@ -236,6 +237,7 @@ export interface NotifyInput {
 export interface Subject {
   hash: Uint8Array
   typeName: string
+  dnaHash: DnaHash
   appletId: EntryHash
 }
 

@@ -218,9 +218,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("onCreateTextMessage() res:", ah);
     input.value = "";
 
+    /** DEBUG */
     if (this.weServices) {
       const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
-      console.log("entryInfo2", entryInfo);
+      console.log("entryInfo2", this.cell.dnaHash, entryInfo);
     }
 
 
@@ -381,6 +382,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           subjectType: request.subjectType,
         },
         appletId: decodeHashFromBase64(this.appletId),
+        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
       maybeCommentThread = ppAh;
@@ -640,7 +642,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         :host {
           background: #f7f6f8;
           display: block;
-          height: 100vh;
+          height: inherit;
         }
 
         .ui5-select-label-root {
@@ -651,13 +653,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         #mainDiv {
           display: flex;
           flex-direction: row;
-          height: 100vh;
-          overflow: clip;
+          height: inherit;
+          /*overflow: clip;*/
         }
 
         #leftSide {
           background: #e889c0;
-          height: 100vh;
+          max-height: 100vh;
           width: 340px;
           display: flex;
           flex-direction: column;
@@ -665,7 +667,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
         #centerSide {
           width: 100%;
-          height: 100vh;
+          /*height: 100vh;*/
           background: #eaeaea;
           display: flex;
           flex-direction: column;
@@ -673,7 +675,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
         #rightSide {
           width: 300px;
-          height: 100vh;
+          /*height: 100vh;*/
           background: #eaeaea;
           display: flex;
           flex-direction: column;

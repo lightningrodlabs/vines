@@ -17,7 +17,7 @@ pub struct GetProtocolsInput {
 
 ///
 #[hdk_extern]
-pub fn get_subjects_by_type(input: GetProtocolsInput) -> ExternResult<Vec<AnyLinkableHash>> {
+pub fn get_subjects_by_type(input: GetProtocolsInput) -> ExternResult<Vec<(DnaHash, AnyLinkableHash)>> {
   let tp = get_subject_type_tp(input.applet_id, &input.subject_type)?;
   let children = tp_children_paths(&tp)?;
   debug!("found {} children", children.len());
@@ -25,9 +25,10 @@ pub fn get_subjects_by_type(input: GetProtocolsInput) -> ExternResult<Vec<AnyLin
     .into_iter()
     .map(|child_tp| {
       let leaf = child_tp.leaf().unwrap();
-      let leaf_str = String::try_from(leaf).unwrap();
-      let raw_39 = holo_hash_decode_unchecked(&leaf_str).unwrap();
-      AnyLinkableHash::from_raw_39(raw_39).unwrap()
+      comp2subject(leaf).unwrap()
+      // let leaf_str = String::try_from(leaf).unwrap();
+      // let raw_39 = holo_hash_decode_unchecked(&leaf_str).unwrap();
+      // AnyLinkableHash::from_raw_39(raw_39).unwrap()
     })
     .collect();
   Ok(ahs)

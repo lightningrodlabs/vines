@@ -188,7 +188,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishThreadFromSemanticTopic(appletId: EntryHashB64, topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
-    let ah = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, topicHash, purpose);
+    let ah = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, topicHash, purpose);
     const signal: SignalPayload = {
       maybePpHash: ah,
       from: this._cellProxy.cell.agentPubKey,

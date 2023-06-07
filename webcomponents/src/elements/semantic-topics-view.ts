@@ -237,7 +237,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         :host {
           background: #f7f6f8;
           display: block;
-          height: 100vh;
+          overflow-y: auto;
+          height: 100%;
         }
 
         #semTree {

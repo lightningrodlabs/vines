@@ -229,7 +229,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           passedLog = true;
           hr = html`
               <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>
-              <hr style="border: 1px solid red; width:100%"/>`
+              <hr style="border: 1px solid red; margin-left:10px;margin-right:10px;"/>`
         }
         return html`<chat-message-item hash="${blm.beadAh}"></chat-message-item>${hr}`;
       }
@@ -246,7 +246,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <div id="mainChat" style="height: 88vh;background: ${bg_color};display: flex; flex-direction: column-reverse;overflow: scroll"
+        <div id="mainChat" style="background: ${bg_color};"
                   @scroll=${this.onWheel}
         >
             ${textLi.reverse()}
@@ -255,13 +255,21 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     `;
   }
 
+  /** */
+  static get styles() {
+    return [
+      css`
+        :host {
+          flex-grow:1;
+        }
+        #mainChat {
+          height: 100%;
+          display: flex; 
+          flex-direction: column-reverse;
+          overflow-y: auto;
+        }
+      `,
 
-  // /** */
-  // static get scopedElements() {
-  //   return {
-  //     "chat-header": ChatHeader,
-  //     "chat-item": ChatMessageItem,
-  //   }
-  // }
-
+    ];
+  }
 }

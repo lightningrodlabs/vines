@@ -1,3 +1,4 @@
+use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::*;
@@ -10,25 +11,26 @@ use crate::time_indexing::{index_item};
 pub struct CreatePpInput {
   pub pp: ParticipationProtocol,
   pub applet_id: EntryHash,
+  pub dna_hash: DnaHash,
 }
 
 
 /// Create a Pp off anything
 #[hdk_extern]
 pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp)> {
-  return create_pp(input.pp, input.applet_id, None);
+  return create_pp(input.pp, input.applet_id, input.dna_hash, None);
 }
 
 
 ///
-pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
+pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
 
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
 
   /// Global Subjects Index
-  let tp = get_subject_tp(applet_id, &pp.subject_type, pp.subject_hash.clone())?;
+  let tp = get_subject_tp(applet_id, &pp.subject_type, dna_hash, pp.subject_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
@@ -54,7 +56,7 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, maybe_index_ti
     pp.subject_hash.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Threads,
-    LinkTag::new(index_time.0.to_le_bytes().to_owned()), // Store index-index in Tag
+    LinkTag::new(index_time.0.to_le_bytes().to_owned()), // Store index-time in Tag
     //str2tag(&ta.anchor), // Store Anchor in Tag
   )?;
 

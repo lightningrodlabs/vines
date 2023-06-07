@@ -2,7 +2,7 @@ import {
   ActionHash,
   ActionHashB64,
   AgentPubKeyB64,
-  decodeHashFromBase64, DnaHashB64,
+  decodeHashFromBase64, DnaHash, DnaHashB64,
   encodeHashToBase64, Entry, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
@@ -95,7 +95,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** AppletId -> SubjectType PathEntryHash -> subjectType */
   private _appletSubjectTypes: Dictionary<Dictionary<string>> = {}
   /** SubjectType PathEntryHash -> subjectHash[] */
-  private _subjectsPerType: Dictionary<AnyLinkableHashB64[]> = {}
+  private _subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]> = {}
 
 
   /** */
@@ -141,7 +141,7 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._appletSubjectTypes[h];
   }
 
-  getSubjects(pathHash: EntryHashB64): AnyLinkableHashB64[] | undefined {
+  getSubjects(pathHash: EntryHashB64): [DnaHashB64, AnyLinkableHashB64][] | undefined {
     return this._subjectsPerType[pathHash];
   }
 
@@ -348,13 +348,13 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Get all subjects from a subjectType path */
-  async probeSubjects(appletId: EntryHashB64, pathHash: EntryHashB64): Promise<AnyLinkableHashB64[]> {
+  async probeSubjects(appletId: EntryHashB64, pathHash: EntryHashB64): Promise<[DnaHashB64, AnyLinkableHashB64][]> {
     if (!this._appletSubjectTypes[appletId] || !Object.keys(this._appletSubjectTypes[appletId]).includes(pathHash)) {
       return Promise.reject("Unknown pathHash for dnaHash");
     }
     const subjectType = this.getSubjectType(appletId, pathHash);
     const subjects = await this.zomeProxy.getSubjectsByType({appletId: decodeHashFromBase64(appletId), subjectType});
-    const subjectB64s = subjects.map((subject) => encodeHashToBase64(subject));
+    const subjectB64s: [DnaHashB64, AnyLinkableHashB64][] = subjects.map(([dnaHash, subjectHash]) => [encodeHashToBase64(dnaHash), encodeHashToBase64(subjectHash)]);
     this._subjectsPerType[pathHash] = subjectB64s;
     return subjectB64s;
   }
@@ -562,7 +562,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: EntryHashB64, subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
+  async publishThreadFromSemanticTopic(appletId: EntryHashB64, dnaHash: DnaHashB64, subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const pp: ParticipationProtocol = {
       purpose,
@@ -570,7 +570,11 @@ export class ThreadsZvm extends ZomeViewModel {
       rules: "FFA",
       subjectType: SEMANTIC_TOPIC_TYPE_NAME,
     }
-    const [ah, ts] = await this.zomeProxy.createParticipationProtocol({pp, appletId: decodeHashFromBase64(appletId)});
+    const [ah, ts] = await this.zomeProxy.createParticipationProtocol({
+      pp,
+      appletId: decodeHashFromBase64(appletId),
+      dnaHash: decodeHashFromBase64(dnaHash),
+    });
     const ahB64 = encodeHashToBase64(ah);
     this.storePp(ahB64, pp, ts);
     return ahB64;
@@ -743,19 +747,19 @@ export class ThreadsZvm extends ZomeViewModel {
     const top3 = await this.publishSemanticTopic("topic-none");
     const top4 = await this.publishSemanticTopic("time-test");
 
-    const th1 = await this.publishThreadFromSemanticTopic(appletId, top1, "general");
+    const th1 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "general");
     console.log("*** generateTestData() general", th1);
-    const th2 = await this.publishThreadFromSemanticTopic(appletId, top1, "none");
+    const th2 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "none");
 
-    const th4 = await this.publishThreadFromSemanticTopic(appletId, top1, "full");
-    const th01 = await this.publishThreadFromSemanticTopic(appletId, top2, "general");
+    const th4 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "full");
+    const th01 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top2, "general");
     //const th11 = await this.publishThreadFromSemanticTopic(top1, "general");
 
-    const timeMin = await this.publishThreadFromSemanticTopic(appletId, top4, "minute");
+    const timeMin = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "minute");
     console.log("*** generateTestData() minute", timeMin);
-    const timeHour = await this.publishThreadFromSemanticTopic(appletId, top4, "hour");
-    const timeDay = await this.publishThreadFromSemanticTopic(appletId, top4, "day");
-    const timeMon = await this.publishThreadFromSemanticTopic(appletId, top4, "month");
+    const timeHour = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "hour");
+    const timeDay = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "day");
+    const timeMon = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "month");
     //const timeYear = await this.publishThreadFromSemanticTopic(top4, "year");
 
 

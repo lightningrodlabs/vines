@@ -9,7 +9,7 @@ use crate::subjects::get_subjects_by_type::{get_subjects_by_type, GetProtocolsIn
 
 ///
 #[hdk_extern]
-pub fn get_subjects_for_applet(applet_id: EntryHash) -> ExternResult<Vec<AnyLinkableHash>> {
+pub fn get_subjects_for_applet(applet_id: EntryHash) -> ExternResult<Vec<(DnaHash, AnyLinkableHash)>> {
   let tp = get_applet_tp(applet_id.clone())?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subjects_for_dna() found {} children", children.len());

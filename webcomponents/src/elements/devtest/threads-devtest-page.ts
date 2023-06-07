@@ -147,7 +147,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateThread(e: any) {
     const input = this.shadowRoot!.getElementById("threadInput") as HTMLInputElement;
-    let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.appletId, this._selectedTopicHash, input.value);
+    let ah = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.appletId, this.cell.dnaHash, this._selectedTopicHash, input.value);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedThreadHash = ah;

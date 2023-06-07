@@ -260,7 +260,7 @@ export class ThreadsApp extends HappElement {
             <threads-devtest-page id="test" style="display:${this._canShowDebug? "block" : "none" };"
                                   @debug=${(e) => this._canShowDebug = e.detail}>
             </threads-devtest-page> 
-            <semantic-threads-page style="display:${!this._canShowDebug? "block" : "none" };"
+            <semantic-threads-page style="display:${!this._canShowDebug? "block" : "none" }; height:100vh;"
                                    .appletId=${this.appletId}
                                    @debug=${(e) => this._canShowDebug = e.detail}>
             </semantic-threads-page>
@@ -286,7 +286,8 @@ export class ThreadsApp extends HappElement {
         :host {
           background: #f7f6f8;
           display: block;
-          height: 100vh;
+          /*height: 100vh;*/
+          width: 100%;
         }
 
         .column {

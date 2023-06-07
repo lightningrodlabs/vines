@@ -113,31 +113,37 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     /** SubjectType has been toggled */
     if (event.detail.item.level == 1) {
       /** Grab children */
-      let subject_lhs = await this._zvm.probeSubjects(this.appletId, toggledTreeItem.id);
+      let subjects = await this._zvm.probeSubjects(this.appletId, toggledTreeItem.id);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
         console.warn("weServices not found in <applet-threads-tree>")
       }
       /** Convert to TreeItem and append to Tree */
-      for (const lh of subject_lhs) {
+      for (const [dnaHash, subjectHash] of subjects) {
         /* Skip if item already exists */
-        if (currentChildren.includes(lh)) {
+        if (currentChildren.includes(subjectHash)) {
           continue;
         }
         let newItem = document.createElement("ui5-tree-item") as TreeItem;
-        newItem.text = lh;
+        newItem.text = subjectHash;
         if (this.weServices) {
-          const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(toggledTreeItem.id), decodeHashFromBase64(lh)]);
-          console.log("entryInfo", entryInfo);
-          if (entryInfo) {
-            newItem.text = entryInfo.entryInfo.name;
+          //const dnaHash = toggledTreeItem['dnaHash'];
+          console.log("calling weServices.entryInfo()", dnaHash, subjectHash);
+          try {
+            const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(dnaHash), decodeHashFromBase64(subjectHash)]);
+            console.log("entryInfo", entryInfo);
+            if (entryInfo) {
+              newItem.text = entryInfo.entryInfo.name;
+            }
+          } catch(e) {
+            console.error("Couldn't find entryInfo:", e);
           }
         }
         //newItem.additionalText = "[" + ta.anchor + "]";
-        //newItem.setAttribute("origin", ta.anchor);
+        //newItem.setAttribute("dnaHash", dnaHash);
         //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
         //newItem.setAttribute("linkIndex", ta.linkIndex.toString());
-        newItem.id = lh;
+        newItem.id = subjectHash;
         newItem.hasChildren = true;
         newItem.level = toggledTreeItem.level + 1;
         toggledTreeItem.appendChild(newItem);

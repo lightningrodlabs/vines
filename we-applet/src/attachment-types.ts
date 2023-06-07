@@ -26,6 +26,7 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
           subjectType: "unknown", //FIXME: entryInfo.type
         },
           appletId,
+          dnaHash: attachToHrl[0],
         };
         const ppPair = await proxy.createParticipationProtocol(input);
         return {
