@@ -270,7 +270,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
     for (const appletId of appletIds) {
       const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
-      console.log("_appletInfos", appletId, appletInfo);
+      //console.log("_appletInfos", appletId, appletInfo);
       this._appletInfos[appletId] = appletInfo;
     }
     this.requestUpdate();
@@ -436,14 +436,14 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       const topic = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
 
       centerSide = html`
-          <ui5-bar design="Header" style="background: #f1efef; border: 1px solid dimgray;">
+          <ui5-bar id="topicBar" design="Header">
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
               <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
               <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._dvm.dumpLogs(); this._canShowComments = !this._canShowComments;}}></ui5-button>
           </ui5-bar>
-          <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} style=""></chat-thread-view>
-          <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
+          <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
+          <ui5-bar id="inputBar" design="FloatingFooter">
               <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
               <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
                          show-clear-icon
@@ -654,7 +654,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           display: flex;
           flex-direction: row;
           height: inherit;
-          /*overflow: clip;*/
         }
 
         #leftSide {
@@ -667,12 +666,24 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
         #centerSide {
           width: 100%;
-          /*height: 100vh;*/
+          min-height: 100vh;
+          height: 100vh;
+          max-height: 100vh;
           background: #eaeaea;
           display: flex;
           flex-direction: column;
         }
 
+        #topicBar {
+          background: #f1efef;
+          border: 1px solid dimgray;
+        }
+
+        #inputBar {
+          margin:10px;
+          width: auto;
+        }
+        
         #rightSide {
           width: 300px;
           /*height: 100vh;*/

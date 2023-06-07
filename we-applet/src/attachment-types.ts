@@ -15,15 +15,15 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
       icon_src: "",
       async create(attachToHrl: Hrl) {
         console.log("attachmentTypes.thread()", attachToHrl);
-        const entryInfo = await weServices.entryInfo(attachToHrl);
+        //const entryInfo = await weServices.entryInfo(attachToHrl);
         const cellProxy = await asCellProxy(appletClient, attachToHrl, appInfo.installed_app_id /*"threads-applet"*/, "role_threads"); // FIXME use appInfo.appId and roleName
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
         const input: CreatePpInput = {
           pp: {
           purpose: "comment",
-          rules: "FFA",
+          rules: "FFA", //FIXME: We should provide a way for a user to provide extra info
           subjectHash: attachToHrl[1],
-          subjectType: "unknown", //FIXME: entryInfo.type
+          subjectType: "unknown", //FIXME: We should provide entryInfo.type
         },
           appletId,
           dnaHash: attachToHrl[0],

@@ -17,7 +17,8 @@ import {BeadLink} from "../bindings/threads.types";
 export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+    this.addEventListener('scroll', this.onWheel);
   }
 
 
@@ -44,12 +45,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   @state() private _busy = false;
   @state() private _commentsLoading = false;
 
-
-  /** -- Getters -- */
-
-  get chatElem() : HTMLElement {
-    return this.shadowRoot.getElementById("mainChat") as HTMLElement;
-  }
 
 
   /** -- Methods -- */
@@ -80,17 +75,17 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** Scroll to bottom only on first load of chatElem */
+  /** Scroll to bottom only on first load */
   _firstLoad = true;
 
   /** */
   protected updated(_changedProperties: PropertyValues) {
     try {
       /** Scroll to bottom when chat-view finished updating (e.g. loading chat-items) */
-      //console.log("ChatView.updated() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+      //console.log("ChatView.updated() ", this.scrollTop, this.scrollHeight, this.clientHeight)
       // TODO: store scrollTop in localStorage when changing displayed thread
       if (this._firstLoad) {
-        this.chatElem.scrollTop = this.chatElem.scrollHeight;
+        this.scrollTop = this.scrollHeight;
         this._firstLoad = false;
       }
     } catch(e) {
@@ -143,7 +138,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousMessages(): Promise<void> {
-    if (this._dvm.threadsZvm.hasReachedBeginning(this.threadHash)) {
+    const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
+    console.log("loadPreviousMessages() beginningReached = ", beginningReached);
+    if (beginningReached) {
       //this._dvm.threadsZvm.perspective.threads[this.threadHash]
       return;
     }
@@ -168,13 +165,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onWheel(event) {
-    //console.log("ChatView.onWheel() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
-    //if (this.chatElem.scrollTop == 0) {
-    if (this.chatElem.clientHeight -  this.chatElem.scrollHeight == this.chatElem.scrollTop) {
-      //this.chatElem.style.background = 'grey';
+    console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
+    //if (this.scrollTop == 0) {
+    if (this.clientHeight -  this.scrollHeight == this.scrollTop) {
+      //this.style.background = 'grey';
       await this.loadPreviousMessages();
     } else {
-      //this.chatElem.style.background = 'white';
+      //this.style.background = 'white';
     }
     //   // this.listElem.scrollTop
     //   const hasScrolledUp = event.wheelDeltaY > 0
@@ -193,7 +190,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>No thread selected</div>`;
     }
 
-    const bg_color = this._loading? "#ededf0" : "white"
+    //const bg_color = this._loading? "#ededf0" : "white"
+    this.style.background = this._loading? "#ededf0" : "white"
+
 
     const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
     if (!pp) {
@@ -229,29 +228,17 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           passedLog = true;
           hr = html`
               <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>
-              <hr style="border: 1px solid red; margin-left:10px;margin-right:10px;"/>`
+              <hr style="border: 1px solid red; margin-left:5px;margin-right:10px;"/>`
         }
         return html`<chat-message-item hash="${blm.beadAh}"></chat-message-item>${hr}`;
       }
     );
 
 
-    /** Different UI if no message found for thread */
-    // if (threadInfo.beadLinksTree.length == 0) {
-    //   textLi = [html`
-    //         <h2 style="top: 50%;position: absolute;margin-top: -20px;left: 50%;">
-    //             No message found
-    //         </h2>`]
-    // }
-
     /** render all */
     return html`
-        <div id="mainChat" style="background: ${bg_color};"
-                  @scroll=${this.onWheel}
-        >
             ${textLi.reverse()}
-            ${maybeHeader}            
-        </div>
+            ${maybeHeader}
     `;
   }
 
@@ -260,13 +247,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     return [
       css`
         :host {
-          flex-grow:1;
-        }
-        #mainChat {
-          height: 100%;
-          display: flex; 
+          flex:1;
+          overflow-y: scroll;
+          
+          display: flex;
           flex-direction: column-reverse;
-          overflow-y: auto;
+          height: inherit;
         }
       `,
 

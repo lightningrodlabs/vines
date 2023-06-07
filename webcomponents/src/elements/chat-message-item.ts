@@ -45,7 +45,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+    //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
   }
 
 
