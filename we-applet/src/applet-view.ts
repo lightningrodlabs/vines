@@ -82,7 +82,9 @@ export async function appletViews(
           text_message: {
             info: async (hrl: Hrl) => {
               console.log("(applet-view) text_message info", hrl);
-              const cellProxy = await asCellProxy(client, hrl,
+              const cellProxy = await asCellProxy(
+                client,
+                undefined, //hrl[0],
                 mainAppInfo.installed_app_id, //"threads-applet",
                 "role_threads",
               );
@@ -110,11 +112,15 @@ export async function appletViews(
           participation_protocol: {
             info: async (hrl: Hrl) => {
               console.log("(applet-view) pp info", hrl);
-              const cellProxy = await asCellProxy(client, hrl,
-                mainAppInfo.installed_app_id, //"threads-applet",
+              const cellProxy = await asCellProxy(
+                client,
+                undefined, // hrl[0],
+                mainAppInfo.installed_app_id,
               "role_threads");
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
+              console.log("(applet-view) getPp()", encodeHashToBase64(hrl[1]));
               const pp = await proxy.getPp(hrl[1]);
+              console.log("(applet-view) pp", pp);
               return {
                 icon_src: "",
                 name: pp[0].purpose,
@@ -123,6 +129,7 @@ export async function appletViews(
             view: async (element, hrl: Hrl, context) => {
               //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
               //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
+              console.log("(applet-view) participation_protocol", encodeHashToBase64(hrl[1]));
               const spaceElem = html`
                   <div>Before custom element</div>
                   <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
