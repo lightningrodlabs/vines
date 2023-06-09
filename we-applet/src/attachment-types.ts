@@ -1,4 +1,4 @@
-import {AppAgentClient, decodeHashFromBase64, EntryHash} from "@holochain/client";
+import {ActionHash, AppAgentClient, decodeHashFromBase64, EntryHash} from "@holochain/client";
 import {AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
 import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
@@ -28,10 +28,31 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
           appletId,
           dnaHash: attachToHrl[0],
         };
-        const ppPair = await proxy.createParticipationProtocol(input);
+
+        let ppAh: ActionHash = undefined;
+        let context: any;
+
+        /** Check if PP already exists */
+        const maybeThreads = await proxy.getPpsFromSubjectHash(attachToHrl[1]);
+        for (const ppPair of maybeThreads) {
+          const pp = await proxy.getPp(ppPair[0])[0];
+          if (pp.purpose == "comment") {
+            ppAh = ppPair[0];
+            context = {detail: "existing"};
+            break;
+          }
+        }
+
+        /** Create PP */
+        if (!ppAh) {
+          ppAh = await proxy.createParticipationProtocol(input)[0];
+          context: {detail: "create"};
+        }
+
+        /** Done */
         return {
-          hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), ppPair[0]],
-          context: {},
+          hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), ppAh],
+          context,
         };
       }
     }
