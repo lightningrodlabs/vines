@@ -47,9 +47,9 @@ export interface ThreadsPerspective {
   /** */
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: eh -> Subject */
-  allSubjects: Dictionary<Subject>
+  allSubjects: Dictionary<Subject>,
   /** Store of all SemTopic: eh -> Topic Title */
-  allSemanticTopics: Dictionary<string>
+  allSemanticTopics: Dictionary<string>,
   ///** Store of all PPmat: pp_ah -> PP */
   //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
@@ -61,14 +61,14 @@ export interface ThreadsPerspective {
 
   /**  -- Applet threads  -- */
   /** AppletId -> PathEntryHash -> subjectType */
-  appletSubjectTypes: Dictionary<Dictionary<string>>
+  appletSubjectTypes: Dictionary<Dictionary<string>>,
   /** PathEntryHash -> subjectHash[] */
-  subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>
+  subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
 
   /** -- New / unread -- */
   globalSearchLog?: GlobalLastSearchLog,
-  newSubjects: Dictionary<[ActionHash, Timestamp][]>
-  newThreads: ActionHashB64[]
+  newSubjects: Dictionary<[ActionHash, Timestamp][]>,
+  newThreads: ActionHashB64[],
   unreadSubjects: AnyLinkableHashB64[],
   unreadThreads: ActionHashB64[],
 }

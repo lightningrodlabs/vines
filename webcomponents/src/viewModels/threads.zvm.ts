@@ -2,8 +2,8 @@ import {
   ActionHash,
   ActionHashB64,
   AgentPubKeyB64,
-  decodeHashFromBase64, DnaHash, DnaHashB64,
-  encodeHashToBase64, Entry, EntryHashB64, Timestamp,
+  decodeHashFromBase64, DnaHashB64,
+  encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
   Bead,
@@ -29,7 +29,6 @@ import {
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
-import {AppletInfo} from "@lightningrodlabs/we-applet";
 
 
 

@@ -1,5 +1,5 @@
 import {AppAgentClient, AppAgentWebsocket, AppWebsocket, encodeHashToBase64, EntryHash} from "@holochain/client";
-import { html, render} from "lit";
+import {html, LitElement, ReactiveElement, render} from "lit";
 import { msg } from "@lit/localize";
 
 import {
@@ -18,7 +18,9 @@ import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {ProfilesApi} from "./profilesApi";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/dist/ExternalAppProxy";
-import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
+import {destructureCloneId, DnaViewModel, DvmDef, HCL} from "@ddd-qc/lit-happ";
+import {ProfilesDvm, ThreadsDvm} from "@threads/elements";
+import {Cell, ConductorAppProxy} from "@ddd-qc/cell-proxy";
 
 
 
@@ -117,8 +119,9 @@ export async function appletViews(
                 undefined, // hrl[0],
                 mainAppInfo.installed_app_id,
               "role_threads");
+              console.log("(applet-view) cellProxy", cellProxy);
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-              console.log("(applet-view) getPp()", encodeHashToBase64(hrl[1]));
+              console.log("(applet-view) getPp()", encodeHashToBase64(hrl[1]), proxy);
               const pp = await proxy.getPp(hrl[1]);
               console.log("(applet-view) pp", pp);
               return {
@@ -126,16 +129,41 @@ export async function appletViews(
                 name: pp[0].purpose,
               };
             },
-            view: async (element, hrl: Hrl, context) => {
-              //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+            view: async (hostElement, hrl: Hrl, context) => {
+              console.log("(applet-view) participation_protocol:", encodeHashToBase64(hrl[1]), context);
+
+              // /** Create CellProxy */
+              // const cellProxy = await asCellProxy(
+              //   client,
+              //   undefined, // hrl[0],
+              //   mainAppInfo.installed_app_id,
+              //   "role_threads");
+              // console.log("(applet-view) cellProxy", cellProxy);
               //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-              console.log("(applet-view) participation_protocol", encodeHashToBase64(hrl[1]));
-              const spaceElem = html`
+
+              /** Create Host ReactiveElement */
+              const litElem = new DvmContextElement();
+
+              /** Create Dvm */
+              //const appProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
+              const appProxy = await ConductorAppProxy.new((client as AppAgentWebsocket).appWebsocket);
+              const cells = await appProxy.fetchCells(mainAppInfo.installed_app_id, "role_threads");
+              const cell = new Cell(cells.provisioned, mainAppInfo.installed_app_id, "role_threads");
+              console.log("(applet-view) cell", cell);
+
+              const threadsDef: DvmDef = {ctor: ThreadsDvm, baseRoleName: "role_threads", isClonable: false};
+              const dvm: DnaViewModel = new threadsDef.ctor(litElem, appProxy, cell.hcl());
+              console.log("(applet-view) dvm", dvm);
+              /** */
+              const template = html`
                   <div>Before custom element</div>
-                  <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
+                  <cell-context .cell=${cell}>
+                    <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
+                  </cell-context>
                   <div>After custom element</div>
               `;
-              render(spaceElem, element);
+              render(template, litElem);
+              render(litElem, hostElement);
             },
           },
 

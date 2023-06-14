@@ -80,6 +80,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     /** Create a fake appletId for testing without We */
     //fakeEntryHash().then((eh) => this.appletId = encodeHashToBase64(eh));
+
+    this.addEventListener('beforeunload', (e) => {
+      console.log("<semantic-threads-page> beforeunload", e);
+      // await this._dvm.threadsZvm.commitSearchLogs();
+    });
+
   }
 
 
@@ -90,7 +96,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
-  @state() private _showDna: DnaHashB64 | null = null;
+  @state() private _appletToShow: DnaHashB64 | null = null;
 
 
   @property() appletId: EntryHashB64;
@@ -399,15 +405,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onDnaSelected(e) {
-    console.log("onDnaSelected()", e);
+  onAppletSelected(e) {
+    console.log("onAppletSelected()", e);
     const selectedOption = e.detail.selectedOption;
-    console.log("onDnaSelected() selectedOption", e.detail.selectedOption);
+    console.log("onAppletSelected() selectedOption", e.detail.selectedOption);
     if (selectedOption.id == "topics-option") {
-      this._showDna = null;
+      this._appletToShow = null;
     } else {
-      this._showDna = selectedOption.id;
+      this._appletToShow = selectedOption.id;
     }
+    this.requestUpdate();
   }
 
 
@@ -488,13 +495,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
                 <ui5-select id="dna-select" class="select" style="background: rgb(170, 183, 153);"
-                @change=${this.onDnaSelected}>
+                @change=${this.onAppletSelected}>
                     ${appletOptions}
                     <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
                     <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
                 </ui5-select>
-                ${this._showDna? html`
-                    <applet-threads-tree .appletId=${this.appletId}
+                ${this._appletToShow? html`
+                    <applet-threads-tree .appletId=${this._appletToShow? this._appletToShow : this.appletId}
                                       @selected="${this.onDnaThreadSelected}"></applet-threads-tree>
                 ` : html`
                 <semantic-topics-view
@@ -554,9 +561,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                @change=${this.onCreateComment}></ui5-input>
                 </ui5-bar>
             </div>
-            <div id="rightSide">
+            <!-- <div id="rightSide">
                 <peer-list></peer-list>
-            </div>
+            </div> -->
         </div>
         <!-- DIALOGS -->
         <!-- ProfileDialog -->

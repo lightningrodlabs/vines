@@ -3,7 +3,7 @@ import {AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
 import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {CreatePpInput} from "@threads/elements/dist/bindings/threads.types";
-import {WeServices} from "@lightningrodlabs/we-applet/dist/types";
+import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
@@ -21,9 +21,9 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
         const input: CreatePpInput = {
           pp: {
           purpose: "comment",
-          rules: "FFA", //FIXME: We should provide a way for a user to provide extra info
+          rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
           subjectHash: attachToHrl[1],
-          subjectType: "unknown", //FIXME: We should provide entryInfo.type
+          subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
         },
           appletId: entryInfo.appletId,
           dnaHash: attachToHrl[0],
@@ -54,14 +54,16 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
           console.log("attachmentTypes.thread() res", res);
           ppAh = res[0];
           console.log("attachmentTypes.thread() ppAh", encodeHashToBase64(ppAh));
-          context: {detail: "create"};
+          context = {detail: "create"};
         }
 
         /** Done */
+        //context = JSON.stringify(context);
+        console.log("attachmentTypes.thread() DONE", context);
         return {
           hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), ppAh],
           context,
-        };
+        } as HrlWithContext;
       }
     }
   };
