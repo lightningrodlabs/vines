@@ -2,6 +2,7 @@ import {html, css, ReactiveElement} from "lit";
 import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {
+  ActionHashB64,
   AdminWebsocket,
   AppSignal,
   AppWebsocket, encodeHashToBase64, Entry, EntryHash,
@@ -33,8 +34,6 @@ import {BaseRoleName, CloneId} from "@ddd-qc/cell-proxy/dist/types";
 import {AppProxy} from "@ddd-qc/cell-proxy/dist/AppProxy";
 
 
-
-
 /**
  *
  */
@@ -57,11 +56,14 @@ export class ThreadsApp extends HappElement {
 
 
   /** All arguments should be provided when constructed explicity */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId) {
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showCommentThreadOnly?: ActionHashB64) {
     super(appWs? appWs : HC_APP_PORT, appId);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
+    // if (showCommentThreadOnly == undefined) {
+    //   this.showCommentThreadOnly = true;
+    // }
   }
 
 
@@ -85,8 +87,9 @@ export class ThreadsApp extends HappElement {
     profilesProxy: AppProxy,
     weServices: WeServices,
     thisAppletId: EntryHash,
+    showCommentThreadOnly?: ActionHashB64,
   ) : Promise<ThreadsApp> {
-    const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId);
+    const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, showCommentThreadOnly);
     /** Provide it as context */
     console.log(`\t\tProviding context "${weServicesContext}" | in host `, app);
     app._weProvider = new ContextProvider(app, weServicesContext, weServices);
@@ -246,38 +249,45 @@ export class ThreadsApp extends HappElement {
     //const cells = this.conductorAppProxy.getAppCells(this.conductorAppProxy.appIdOfShame);
 
 
+    //let inner = html`<slot></slot>`;
+    let inner = html`
+        <comment-thread-view .threadHash=${this.showCommentThreadOnly} showInput="true"></comment-thread-view>
+    `;
+
+
+    if (!this.showCommentThreadOnly) {
+      if (this._canShowDebug) {
+        inner = html`            
+            <threads-devtest-page id="test" 
+              @debug=${(e) => this._canShowDebug = e.detail}>
+            </threads-devtest-page>
+        `;
+      } else {
+        inner = html`            
+            <semantic-threads-page style="height:100vh;"
+              .appletId=${this.appletId}
+              @debug=${(e) => this._canShowDebug = e.detail}>
+            </semantic-threads-page>
+        `;
+      }
+    }
+
+    /** Dump button */
+    //   <button @click="${() => {
+    //   console.log("dumpLogs");
+    //   //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage;
+    //   //el.requestUpdate();
+    //   this.threadsDvm.dumpLogs();
+    // }}">dumpLogs</button>
+
+
     /** Render all */
     return html`
         <cell-context .cell="${this.threadsDvm.cell}">
-            <!--
-                    <button @click="${() => {
-                console.log("dumpLogs");
-                //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage; 
-                //el.requestUpdate();
-                this.threadsDvm.dumpLogs();
-            }}">dumpLogs</button> 
-                    -->
-            <threads-devtest-page id="test" style="display:${this._canShowDebug? "block" : "none" };"
-                                  @debug=${(e) => this._canShowDebug = e.detail}>
-            </threads-devtest-page> 
-            <semantic-threads-page style="display:${!this._canShowDebug? "block" : "none" }; height:100vh;"
-                                   .appletId=${this.appletId}
-                                   @debug=${(e) => this._canShowDebug = e.detail}>
-            </semantic-threads-page>
+          ${inner}
         </cell-context>
     `;
   }
-
-
-  // /** */
-  // static get scopedElements() {
-  //   return {
-  //     "threads-devtest-page": ThreadsDevtestPage,
-  //     "semantic-threads-page": SemanticThreadsPage,
-  //     "cell-context": CellContext,
-  //   }
-  // }
-
 
   /** */
   static get styles() {

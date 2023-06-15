@@ -648,7 +648,7 @@ export class ThreadsZvm extends ZomeViewModel {
     thread.setCreationTime(creationTime);
     let ppMat = materializeParticipationProtocol(pp);
     thread.setPp(ppMat);
-    console.log(`storePp() thread "${ppAh}" fro subject "${ppMat.subjectHash}"| creationTime: "`, creationTime);
+    console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subjectHash}"| creationTime: "`, creationTime);
     this._threads[ppAh] = thread;
     if (!this._threadsPerSubject[ppMat.subjectHash]) {
       this._threadsPerSubject[ppMat.subjectHash] = [];

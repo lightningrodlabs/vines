@@ -239,23 +239,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateComment(e) {
-    const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
-    if (!input.value || input.value.length == 0) {
-      return;
-    }
-    const thread = this._dvm.threadsZvm.getThread(this._selectedCommentThreadHash);
-    if (!thread) {
-      console.error("Missing Comment thread");
-      return;
-    }
-    const path_str = await this._dvm.publishTextMessage(input.value, this._selectedCommentThreadHash);
-    console.log("onCreateComment() res:", path_str);
-    input.value = "";
-  }
-
-
-  /** */
   async onCreateSemanticTopic(topic: string) {
     await this._dvm.publishSemanticTopic(topic);
   }
@@ -553,13 +536,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 ${centerSide}
             </div>
             <div id="commentSide" style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;">
-                <comment-thread-view .threadHash=${this._selectedCommentThreadHash}></comment-thread-view>
-                <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
-                    <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."
-                               show-clear-icon
-                               style="min-width: 400px;"
-                               @change=${this.onCreateComment}></ui5-input>
-                </ui5-bar>
+                <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"></comment-thread-view>
             </div>
             <!-- <div id="rightSide">
                 <peer-list></peer-list>

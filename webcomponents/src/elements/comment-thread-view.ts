@@ -5,16 +5,18 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials} from "../utils";
 
-import "@ui5/webcomponents/dist/Avatar.js"
-import List from "@ui5/webcomponents/dist/List"
-import "@ui5/webcomponents/dist/StandardListItem.js";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {ActionHashB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
-// import "@ui5/webcomponents/dist/CustomListItem.js";
-// import "@ui5/webcomponents/dist/GroupHeaderListItem.js"
+
+/** @ui5/webcomponents(-fiori) */
+import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents-fiori/dist/Bar.js"
+import "@ui5/webcomponents/dist/Avatar.js"
+import List from "@ui5/webcomponents/dist/List"
+import "@ui5/webcomponents/dist/StandardListItem.js";
 
 
 
@@ -25,7 +27,8 @@ import {ProfilesZvm} from "../viewModels/profiles.zvm";
 export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+    console.log("<comment-thread-view>.ctor()", this.threadHash)
   }
 
   @consume({ context: globalProfilesContext, subscribe: true })
@@ -36,6 +39,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of Thread to display */
   @property() threadHash: ActionHashB64 = ''
+  /** Hash of Thread to display */
+  @property() showInput: boolean = false
   /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
   @property()
   startFromBeginning: boolean = false;
@@ -79,6 +84,20 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+  /** FOR DEBUGGING */
+  shouldUpdate(changedProperties: PropertyValues<this>) {
+    console.log("<comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
+    if (changedProperties.has("_cell_via_context")) {
+      this._cell = this._cell_via_context;
+    }
+    if (!this._dvm) {
+      this.requestDvm();
+    }
+    return !!this._dvm;
+  }
+
+
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
@@ -88,7 +107,6 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
       this._dvm.threadsZvm.probeAllBeads(this.threadHash);
     }
   }
-
 
 
   /** */
@@ -122,7 +140,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<comment-thread-view>.render():", this.threadHash);
+    console.log("<comment-thread-view>.render():", this.threadHash, this.showInput);
     if (this.threadHash == "") {
       return html `<div>No thread selected</div>`;
     }
@@ -151,6 +169,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(infos).map(
       (info) => {
+        console.log("<comment-thread-view> info", info);
+        if (info == undefined) {
+          return html``;
+        }
         const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
@@ -189,13 +211,42 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //<!--style="height: 400px" growing="Scroll" -->
     //<!-- @load-more=${this.onLoadMore}-->
 
+
+    let maybeInput = html``;
+    if (this.showInput) {
+      maybeInput = html`
+          <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
+              <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."
+                         show-clear-icon
+                         style="min-width: 400px;"
+                         @change=${this.onCreateComment}></ui5-input>
+          </ui5-bar>`
+    }
+
     /** render all */
     return html`
         <h4 style="margin-left: 5px;"><abbr title="${this.threadHash}">Comments on ${pp.subjectType}</abbr></h4>
-        <ui5-list id="textList" style="background: ${bg_color};">
+        <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
             ${textLi}
         </ui5-list>
+        ${maybeInput}
     `;
   }
 
+
+  /** */
+  async onCreateComment(e) {
+    const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
+    if (!input.value || input.value.length == 0) {
+      return;
+    }
+    const thread = this._dvm.threadsZvm.getThread(this.threadHash);
+    if (!thread) {
+      console.error("Missing Comment thread");
+      return;
+    }
+    const path_str = await this._dvm.publishTextMessage(input.value, this.threadHash);
+    console.log("onCreateComment() res:", path_str);
+    input.value = "";
+  }
 }

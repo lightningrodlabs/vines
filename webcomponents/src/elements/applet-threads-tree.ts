@@ -11,12 +11,12 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
+import {ActionHash, ActionHashB64, decodeHashFromBase64, EntryHash, EntryHashB64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {CommentRequest} from "./semantic-threads-page";
 import {consume, ContextConsumer, createContext} from "@lit-labs/context";
-import {WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
+import {AttachmentType, Hrl, WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -65,6 +65,53 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
   }
 
 
+  private _threadAttachmentType?: AttachmentType;
+
+  /** Search for Threads attachmentType in based on _appInfoMap */
+  getThreadAttachmentType(): AttachmentType | undefined {
+    if (this._threadAttachmentType) {
+      return this._threadAttachmentType;
+    }
+    // let threadsAppletId = undefined;
+    // for (const [appletId, appInfo] of Object.entries(this._appInfoMap)) {
+    //   if (appInfo.appletName == "Threads") {
+    //     threadsAppletId = appletId;
+    //     break;
+    //   }
+    // }
+    // if (!threadsAppletId) {
+    //   console.warn("Did not find Threads applet");
+    //   return undefined;
+    // }
+    for (const [appletId, atts] of this.weServices.attachmentTypes.entries()) {
+      //if (encodeHashToBase64(appletId) == threadsAppletId) {
+      for (const [attName, att] of Object.entries(atts)) {
+        if (attName == "thread") {
+          this._threadAttachmentType = att;
+          return att;
+        }
+      }
+    }
+    console.warn("Did not find 'thread' attachmentType in WeServices");
+    return undefined;
+  }
+
+
+  /** */
+  async openCommentThread(hash: ActionHashB64 | EntryHashB64): Promise<void> {
+    console.log("openCommentThread()", hash);
+    const attType = this.getThreadAttachmentType();
+    if (!attType) {
+      console.error("Thread attachmentType not found");
+      return;
+    }
+    const spaceHrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(hash)];
+    const res = await attType.create(spaceHrl);
+    console.log("Create/Open Thread result:", res);
+    this.weServices.openViews.openHrl(res.hrl, {}/*res.context*/);
+  }
+
+
   /** */
   async clickTree(event) {
     console.log("<applet-threads-tree> click event:", event.detail.item);
@@ -77,6 +124,10 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         type = "SubjectType"; break;
 
     }
+
+    ///** DEBUG Attachment View */
+    //await this.openCommentThread(event.detail.item.id);
+
     //if (event.detail.item.level == 2) {
       await this.updateComplete;
       this.dispatchEvent(new CustomEvent('selected', {detail: {target: event.detail.item.id, type}, bubbles: true, composed: true}));

@@ -1,4 +1,11 @@
-import {AppAgentClient, AppAgentWebsocket, AppWebsocket, encodeHashToBase64, EntryHash} from "@holochain/client";
+import {
+  ActionHashB64,
+  AppAgentClient,
+  AppAgentWebsocket,
+  AppWebsocket,
+  encodeHashToBase64,
+  EntryHash
+} from "@holochain/client";
 import {html, LitElement, ReactiveElement, render} from "lit";
 import { msg } from "@lit/localize";
 
@@ -31,47 +38,58 @@ export async function appletViews(
   profilesClient: ProfilesClient,
   weServices: WeServices
 ): Promise<AppletViews> {
+
   const mainAppInfo = await client.appInfo();
+
+  /** */
+  const createThreadsApp = async (showCommentThreadOnly?: ActionHashB64) => {
+    /** Determine profilesAppInfo */
+    console.log("ThreadsApplet.main()", client);
+    const mainAppAgentWs = client as AppAgentWebsocket;
+    const mainAppWs = mainAppAgentWs.appWebsocket;
+    // const mainAppWs = client as unknown as AppWebsocket;
+    // const mainAppInfo = await mainAppWs.appInfo({installed_app_id: 'threads-applet'});
+    console.log("mainAppInfo", mainAppInfo);
+    //const profilesAppAgentClient: AppAgentClient = profilesClient.client;
+    let profilesAppInfo = await profilesClient.client.appInfo();
+    console.log("profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+    /** Check if roleName is actually a cloneId */
+    let maybeCloneId = undefined;
+    let baseRoleName = profilesClient.roleName;
+    const maybeBaseRoleName = destructureCloneId(profilesClient.roleName);
+    if (maybeBaseRoleName) {
+      baseRoleName = maybeBaseRoleName[0];
+      maybeCloneId = profilesClient.roleName;
+    }
+    /** Determine profilesCellProxy */
+    const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
+    const profilesApi = new ProfilesApi(profilesClient);
+    const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
+    await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
+    const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
+    console.log("profilesCellProxy", profilesCellProxy);
+    /** Create ThreadsApp */
+    const app = await ThreadsApp.fromWe(
+      mainAppWs, undefined, false, mainAppInfo.installed_app_id,
+      profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
+      weServices, thisAppletId, showCommentThreadOnly);
+    /** Done */
+    return app;
+  }
+
+  /** */
   return {
-    main: async (element) => {
+    main: async (hostElem) => {
       /** Link to styles */
       const cssLink = document.createElement('link');
       cssLink.href = "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/themes/light.css";
       cssLink.rel = "stylesheet";
       cssLink.media="(prefers-color-scheme:light)"
-      element.appendChild(cssLink);
-      /** Determine profilesAppInfo */
-      console.log("ThreadsApplet.main()", client);
-      const mainAppAgentWs = client as AppAgentWebsocket;
-      const mainAppWs = mainAppAgentWs.appWebsocket;
-      // const mainAppWs = client as unknown as AppWebsocket;
-      // const mainAppInfo = await mainAppWs.appInfo({installed_app_id: 'threads-applet'});
-      console.log("mainAppInfo", mainAppInfo);
-      //const profilesAppAgentClient: AppAgentClient = profilesClient.client;
-      let profilesAppInfo = await profilesClient.client.appInfo();
-      console.log("profilesAppInfo", profilesAppInfo, profilesClient.roleName);
-
-      /** Check if roleName is actually a cloneId */
-      let maybeCloneId = undefined;
-      let baseRoleName = profilesClient.roleName;
-      const maybeBaseRoleName = destructureCloneId(profilesClient.roleName);
-      if (maybeBaseRoleName) {
-        baseRoleName = maybeBaseRoleName[0];
-        maybeCloneId = profilesClient.roleName;
-      }
-
-      const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
-      const profilesApi = new ProfilesApi(profilesClient);
-      const profilesProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
-      await profilesProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
-      const proxy = await profilesProxy.createCellProxy(hcl);
-      console.log("profilesCellProxy", proxy);
       /** Create and append <threads-app> */
-      const app = await ThreadsApp.fromWe(
-        mainAppWs, undefined, false, mainAppInfo.installed_app_id,
-        profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesProxy,
-        weServices, thisAppletId);
-      element.appendChild(app);
+      const app = await createThreadsApp();
+      /** Append Elements to host */
+      hostElem.appendChild(cssLink);
+      hostElem.appendChild(app);
     },
 
     blocks: {},
@@ -82,6 +100,7 @@ export async function appletViews(
 
           /** TextMessage */
           text_message: {
+            /** */
             info: async (hrl: Hrl) => {
               console.log("(applet-view) text_message info", hrl);
               const cellProxy = await asCellProxy(
@@ -97,6 +116,7 @@ export async function appletViews(
                 name: tuple[2].value,
               };
             },
+            /** */
             view: async (element, hrl: Hrl, context) => {
               //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
               //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
@@ -112,6 +132,7 @@ export async function appletViews(
 
           /** Thread */
           participation_protocol: {
+            /** */
             info: async (hrl: Hrl) => {
               console.log("(applet-view) pp info", hrl);
               const cellProxy = await asCellProxy(
@@ -129,41 +150,31 @@ export async function appletViews(
                 name: pp[0].purpose,
               };
             },
-            view: async (hostElement, hrl: Hrl, context) => {
+
+            /** */
+            view: async (hostElem, hrl: Hrl, context) => {
               console.log("(applet-view) participation_protocol:", encodeHashToBase64(hrl[1]), context);
 
-              // /** Create CellProxy */
-              // const cellProxy = await asCellProxy(
-              //   client,
-              //   undefined, // hrl[0],
-              //   mainAppInfo.installed_app_id,
-              //   "role_threads");
-              // console.log("(applet-view) cellProxy", cellProxy);
-              //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
+              const happElem = await createThreadsApp(encodeHashToBase64(hrl[1]));
 
-              /** Create Host ReactiveElement */
-              const litElem = new DvmContextElement();
 
-              /** Create Dvm */
-              //const appProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
-              const appProxy = await ConductorAppProxy.new((client as AppAgentWebsocket).appWebsocket);
-              const cells = await appProxy.fetchCells(mainAppInfo.installed_app_id, "role_threads");
-              const cell = new Cell(cells.provisioned, mainAppInfo.installed_app_id, "role_threads");
-              console.log("(applet-view) cell", cell);
+              // <cell-context .cell=${cell}>
 
-              const threadsDef: DvmDef = {ctor: ThreadsDvm, baseRoleName: "role_threads", isClonable: false};
-              const dvm: DnaViewModel = new threadsDef.ctor(litElem, appProxy, cell.hcl());
-              console.log("(applet-view) dvm", dvm);
-              /** */
-              const template = html`
-                  <div>Before custom element</div>
-                  <cell-context .cell=${cell}>
-                    <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
-                  </cell-context>
-                  <div>After custom element</div>
-              `;
-              render(template, litElem);
-              render(litElem, hostElement);
+              // /** TODO: FIGURE OUT HOW TO RENDER & APPEND A SLOT CUSTOM-ELEMENT TO THREADS APP ELEMENT */
+              // const template = html`
+              //     <div>Before custom element</div>
+              //       <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
+              //     <div>After custom element</div>
+              // `;
+              //
+              // /** Append Elements */
+              // console.log("Appending <comment-thread-view> to ThreadsApp...");
+              // render(template, happElem);
+              // //happElem.appendChild(template);
+              // console.log("DONE - Appending <comment-thread-view> to ThreadsApp");
+
+
+              hostElem.appendChild(happElem); //render(happElem, hostElem);
             },
           },
 
