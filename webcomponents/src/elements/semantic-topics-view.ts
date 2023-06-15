@@ -131,13 +131,13 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
 
   /** */
-  onClickCommentPp(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64) {
-    this.dispatchEvent(new CustomEvent('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: "ParticipationProtocol"}, bubbles: true, composed: true }));
+  onClickCommentPp(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64, subjectName: string) {
+    this.dispatchEvent(new CustomEvent('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: "ParticipationProtocol", subjectName}, bubbles: true, composed: true }));
   }
 
   /** */
-  onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic"}, bubbles: true, composed: true }));
+  onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string) {
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic", subjectName}, bubbles: true, composed: true }));
   }
 
 
@@ -171,8 +171,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           if (this._isHovered[ppHash]) {
             const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
             threadButton = maybeCommentThread != null
-              ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash)}"></ui5-button>`
-              : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash)}"></ui5-button>`;
+              ? html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
+              : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
           }
           // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
           return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" >
@@ -188,8 +188,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       if (this._isHovered[topicHash]) {
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(topicHash);
         threadButton = maybeCommentThread != null
-          ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash)}"></ui5-button>`
-          : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash)}"></ui5-button>`;
+          ? html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
+          : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
       }
       const topicIsNew = this.perspective.newSubjects[topicHash] != undefined;
       const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);

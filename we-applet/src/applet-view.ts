@@ -25,10 +25,14 @@ import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {ProfilesApi} from "./profilesApi";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/dist/ExternalAppProxy";
-import {destructureCloneId, DnaViewModel, DvmDef, HCL} from "@ddd-qc/lit-happ";
-import {ProfilesDvm, ThreadsDvm} from "@threads/elements";
-import {Cell, ConductorAppProxy} from "@ddd-qc/cell-proxy";
+import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 
+
+export interface ViewThreadContext {
+  detail: string,
+  subjectType: string,
+  subjectName: string,
+}
 
 
 /** */
@@ -42,7 +46,7 @@ export async function appletViews(
   const mainAppInfo = await client.appInfo();
 
   /** */
-  const createThreadsApp = async (showCommentThreadOnly?: ActionHashB64) => {
+  const createThreadsApp = async (showCommentThreadOnly?: boolean) => {
     /** Determine profilesAppInfo */
     console.log("ThreadsApplet.main()", client);
     const mainAppAgentWs = client as AppAgentWebsocket;
@@ -118,14 +122,13 @@ export async function appletViews(
             },
             /** */
             view: async (element, hrl: Hrl, context) => {
-              //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
-              //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-              const spaceElem = html`
-                  <div>Before custom element</div>
-                  <chat-message-item .hash=${encodeHashToBase64(hrl[1])}></chat-message-item>
-                  <div>After custom element</div>
-              `;
-              render(spaceElem, element);
+              // FIXME
+              // const spaceElem = html`
+              //     <div>Before custom element</div>
+              //     <chat-message-item .hash=${encodeHashToBase64(hrl[1])}></chat-message-item>
+              //     <div>After custom element</div>
+              // `;
+              // render(spaceElem, element);
             },
           },
 
@@ -151,28 +154,24 @@ export async function appletViews(
               };
             },
 
+
             /** */
-            view: async (hostElem, hrl: Hrl, context) => {
+            view: async (hostElem, hrl: Hrl, context: ViewThreadContext) => {
               console.log("(applet-view) participation_protocol:", encodeHashToBase64(hrl[1]), context);
 
-              const happElem = await createThreadsApp(encodeHashToBase64(hrl[1]));
+              const happElem = await createThreadsApp(true);
 
+              /** TODO: Figure out why cell-context doesn't propagate normally via ThreadsApp and has to be inserted again within the slot */
+              const template = html`
+                  <cell-context .cell=${happElem.threadsDvm.cell}>
+                      <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])} showInput="true" .subjectName=${context.subjectName} .subjectType=${context.subjectType}></comment-thread-view>
+                  </cell-context>
+              `;
 
-              // <cell-context .cell=${cell}>
-
-              // /** TODO: FIGURE OUT HOW TO RENDER & APPEND A SLOT CUSTOM-ELEMENT TO THREADS APP ELEMENT */
-              // const template = html`
-              //     <div>Before custom element</div>
-              //       <comment-thread-view .threadHash=${encodeHashToBase64(hrl[1])}></comment-thread-view>
-              //     <div>After custom element</div>
-              // `;
-              //
-              // /** Append Elements */
-              // console.log("Appending <comment-thread-view> to ThreadsApp...");
-              // render(template, happElem);
-              // //happElem.appendChild(template);
-              // console.log("DONE - Appending <comment-thread-view> to ThreadsApp");
-
+              /** Append Elements */
+              console.log("Appending <comment-thread-view> to ThreadsApp...");
+              render(template, happElem);
+              console.log("DONE - Appending <comment-thread-view> to ThreadsApp");
 
               hostElem.appendChild(happElem); //render(happElem, hostElem);
             },

@@ -98,7 +98,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
 
   /** */
-  async openCommentThread(hash: ActionHashB64 | EntryHashB64): Promise<void> {
+  async openCommentThread(hash: ActionHashB64 | EntryHashB64, subjectType: string, subjectName: string): Promise<void> {
     console.log("openCommentThread()", hash);
     const attType = this.getThreadAttachmentType();
     if (!attType) {
@@ -108,7 +108,9 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     const spaceHrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(hash)];
     const res = await attType.create(spaceHrl);
     console.log("Create/Open Thread result:", res);
-    this.weServices.openViews.openHrl(res.hrl, {}/*res.context*/);
+    res.context.subjectType = subjectType;
+    res.context.subjectName = subjectName;
+    this.weServices.openViews.openHrl(res.hrl, res.context);
   }
 
 
@@ -125,8 +127,8 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
     }
 
-    ///** DEBUG Attachment View */
-    //await this.openCommentThread(event.detail.item.id);
+    /** DEBUG Attachment View */
+    await this.openCommentThread(event.detail.item.id, type, event.detail.item.text);
 
     //if (event.detail.item.level == 2) {
       await this.updateComplete;
@@ -137,8 +139,8 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectHash: ActionHashB64, subjectType: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash, subjectType}, bubbles: true, composed: true }));
+  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectHash: ActionHashB64, subjectType: string, subjectName: string) {
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash, subjectType, subjectName}, bubbles: true, composed: true }));
   }
 
 
@@ -249,7 +251,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
       if (this._isHovered[pathHash]) {
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
         threadButton = html`<ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="Create Comment Thread" design="Transparent" 
-                                        @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType")}"></ui5-button>`
+                                        @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`
       }
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`<ui5-tree-item-custom id=${pathHash} level="1" has-children>

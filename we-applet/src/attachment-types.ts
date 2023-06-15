@@ -4,6 +4,7 @@ import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {CreatePpInput} from "@threads/elements/dist/bindings/threads.types";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
+import {ViewThreadContext} from "./applet-view";
 
 
 /** */
@@ -30,7 +31,7 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
         };
 
         let ppAh: ActionHash = undefined;
-        let context: any;
+        let context: ViewThreadContext;
 
         /** Check if PP already exists */
         console.log("attachmentTypes.thread() calling getPpsFromSubjectHash():", encodeHashToBase64(attachToHrl[1]));
@@ -42,7 +43,7 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
           const pp = res[0];
           if (pp.purpose == "comment") {
             ppAh = ppPair[0];
-            context = {detail: "existing"};
+            context = {detail: "existing", subjectType: 'unknown', subjectName: entryInfo.entryInfo.name};
             break;
           }
         }
@@ -54,11 +55,10 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
           console.log("attachmentTypes.thread() res", res);
           ppAh = res[0];
           console.log("attachmentTypes.thread() ppAh", encodeHashToBase64(ppAh));
-          context = {detail: "create"};
+          context = {detail: "create", subjectType: 'unknown', subjectName: entryInfo.entryInfo.name};
         }
 
         /** Done */
-        //context = JSON.stringify(context);
         console.log("attachmentTypes.thread() DONE", context);
         return {
           hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), ppAh],

@@ -83,14 +83,23 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null) {
+  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
-      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextMessage"},
+      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextMessage", subjectName},
       bubbles: true,
       composed: true,
     }));
   }
 
+
+  /** Truncate string to given length and add ellipse */
+  truncate(str: string, n: number, useWordBoundary: boolean): string {
+    if (str.length <= n) { return str; }
+    const subString = str.slice(0, n - 1);
+    return (useWordBoundary
+      ? subString.slice(0, subString.lastIndexOf(" "))
+      : subString) + "...";
+  };
 
   /** */
   render() {
@@ -107,10 +116,12 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
     let threadButton = html``;
     if (this._isHovered) {
+      const msg = this.truncate(texto.message, 60, true);
+      console.log("threadButton", msg, texto.message);
       const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
       threadButton = maybeCommentThread != null
-        ? html`<ui5-button icon="comment" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`
-        : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread)}"></ui5-button>`;
+        ? html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`
+        : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
     }
 
     const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds

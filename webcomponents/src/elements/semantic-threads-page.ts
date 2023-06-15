@@ -67,6 +67,7 @@ export interface CommentRequest {
   maybeCommentThread: ActionHashB64 | null,
   subjectHash: AnyLinkableHashB64,
   subjectType: string,
+  subjectName: string,
 }
 
 
@@ -93,6 +94,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
   @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
+  private _selectedThreadSubjectName: string = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
@@ -384,6 +386,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     this._canShowComments = true;
     this._selectedCommentThreadHash = maybeCommentThread;
+    this._selectedThreadSubjectName = e.detail.subjectName;
   }
 
 
@@ -536,7 +539,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 ${centerSide}
             </div>
             <div id="commentSide" style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;">
-                <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"></comment-thread-view>
+                <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true" .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
             </div>
             <!-- <div id="rightSide">
                 <peer-list></peer-list>

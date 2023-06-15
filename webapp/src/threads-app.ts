@@ -2,13 +2,12 @@ import {html, css, ReactiveElement} from "lit";
 import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {
-  ActionHashB64,
   AdminWebsocket,
   AppSignal,
-  AppWebsocket, encodeHashToBase64, Entry, EntryHash,
+  AppWebsocket, encodeHashToBase64, EntryHash,
   EntryHashB64,
   InstalledAppId,
-  RoleName, ZomeName
+  ZomeName,
 } from "@holochain/client";
 import {
   Hrl,
@@ -16,11 +15,10 @@ import {
 } from "@lightningrodlabs/we-applet";
 import {
   HCL,
-  CellsForRole,
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, Cell,
+  DnaViewModel,
 } from "@ddd-qc/lit-happ";
 import {
   DEFAULT_THREADS_DEF, globalProfilesContext,
@@ -29,7 +27,7 @@ import {
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
 import {ProfilesDvm} from "@threads/elements/dist/viewModels/profiles.dvm";
-import {consume, ContextProvider} from "@lit-labs/context";
+import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId} from "@ddd-qc/cell-proxy/dist/types";
 import {AppProxy} from "@ddd-qc/cell-proxy/dist/AppProxy";
 
@@ -56,14 +54,11 @@ export class ThreadsApp extends HappElement {
 
 
   /** All arguments should be provided when constructed explicity */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showCommentThreadOnly?: ActionHashB64) {
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showCommentThreadOnly?: boolean) {
     super(appWs? appWs : HC_APP_PORT, appId);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
-    // if (showCommentThreadOnly == undefined) {
-    //   this.showCommentThreadOnly = true;
-    // }
   }
 
 
@@ -87,7 +82,7 @@ export class ThreadsApp extends HappElement {
     profilesProxy: AppProxy,
     weServices: WeServices,
     thisAppletId: EntryHash,
-    showCommentThreadOnly?: ActionHashB64,
+    showCommentThreadOnly?: boolean,
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, showCommentThreadOnly);
     /** Provide it as context */
@@ -249,13 +244,13 @@ export class ThreadsApp extends HappElement {
     //const cells = this.conductorAppProxy.getAppCells(this.conductorAppProxy.appIdOfShame);
 
 
-    //let inner = html`<slot></slot>`;
-    let inner = html`
-        <comment-thread-view .threadHash=${this.showCommentThreadOnly} showInput="true"></comment-thread-view>
-    `;
+    let inner = html`<slot></slot>`;
+    // let inner = html`
+    //     <comment-thread-view .threadHash=${this.showCommentThreadOnly} showInput="true"></comment-thread-view>
+    // `;
 
 
-    if (!this.showCommentThreadOnly) {
+    if (this.showCommentThreadOnly == undefined) {
       if (this._canShowDebug) {
         inner = html`            
             <threads-devtest-page id="test" 
@@ -288,6 +283,7 @@ export class ThreadsApp extends HappElement {
         </cell-context>
     `;
   }
+
 
   /** */
   static get styles() {

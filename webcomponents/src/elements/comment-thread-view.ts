@@ -39,17 +39,25 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of Thread to display */
   @property() threadHash: ActionHashB64 = ''
-  /** Hash of Thread to display */
+  /** Enable Input bar */
   @property() showInput: boolean = false
-  /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
-  @property()
-  startFromBeginning: boolean = false;
-  /** */
-  @property()
-  timeReferenceMs: number = Date.now();
-  /** Number of beads to retrieve per 'get' */
-  @property()
-  batchSize: number = 20
+
+  /** Subject info */
+  @property() subjectName?: string;
+  @property() subjectType?: string;
+
+  // TODO
+  // /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
+  // @property()
+  // startFromBeginning: boolean = false;
+  // /** */
+  // @property()
+  // timeReferenceMs: number = Date.now();
+  // /** Number of beads to retrieve per 'get' */
+  // @property()
+  // batchSize: number = 20
+
+
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -139,8 +147,25 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  async onCreateComment(e) {
+    const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
+    if (!input.value || input.value.length == 0) {
+      return;
+    }
+    const thread = this._dvm.threadsZvm.getThread(this.threadHash);
+    if (!thread) {
+      console.error("Missing Comment thread");
+      return;
+    }
+    const path_str = await this._dvm.publishTextMessage(input.value, this.threadHash);
+    console.log("onCreateComment() res:", path_str);
+    input.value = "";
+  }
+
+
+  /** */
   render() {
-    console.log("<comment-thread-view>.render():", this.threadHash, this.showInput);
+    console.log("<comment-thread-view>.render():", this.threadHash, this.showInput, this.subjectName);
     if (this.threadHash == "") {
       return html `<div>No thread selected</div>`;
     }
@@ -223,9 +248,14 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           </ui5-bar>`
     }
 
+    const subjectType = this.subjectType? this.subjectType : pp.subjectType;
+    const subjectName = this.subjectName? this.subjectName : pp.subjectHash;
+    const title = `Comments on ${subjectType} "${subjectName}"`;
+
+    // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
-        <h4 style="margin-left: 5px;"><abbr title="${this.threadHash}">Comments on ${pp.subjectType}</abbr></h4>
+        <h4 style="margin-left: 5px;">${title}</h4>
         <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
             ${textLi}
         </ui5-list>
@@ -233,20 +263,4 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     `;
   }
 
-
-  /** */
-  async onCreateComment(e) {
-    const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
-    if (!input.value || input.value.length == 0) {
-      return;
-    }
-    const thread = this._dvm.threadsZvm.getThread(this.threadHash);
-    if (!thread) {
-      console.error("Missing Comment thread");
-      return;
-    }
-    const path_str = await this._dvm.publishTextMessage(input.value, this.threadHash);
-    console.log("onCreateComment() res:", path_str);
-    input.value = "";
-  }
 }
