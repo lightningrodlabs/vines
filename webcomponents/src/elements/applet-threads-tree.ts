@@ -128,7 +128,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     }
 
     /** DEBUG Attachment View */
-    await this.openCommentThread(event.detail.item.id, type, event.detail.item.text);
+    //await this.openCommentThread(event.detail.item.id, type, event.detail.item.text);
 
     //if (event.detail.item.level == 2) {
       await this.updateComplete;

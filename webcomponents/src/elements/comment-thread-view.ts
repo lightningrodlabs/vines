@@ -251,7 +251,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           <ui5-bar id="commentInputBar" design="FloatingFooter" style="margin:10px;width: auto;">
               <ui5-input id="commentInput" type="Text" placeholder="Comment..."
                          show-clear-icon
-                         style="border:none;"
+                         style="border:none;width:100%;"
                          @change=${this.onCreateComment}></ui5-input>
           </ui5-bar>`
     }
