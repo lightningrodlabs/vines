@@ -294,6 +294,7 @@ export class ThreadsApp extends HappElement {
           display: block;
           /*height: 100vh;*/
           width: 100%;
+          font-family: '72';
         }
 
         .column {

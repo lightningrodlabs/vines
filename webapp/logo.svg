@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1000" height="1000" viewBox="0 0 1000 1000" xml:space="preserve">
+<desc>Created with Fabric.js 3.5.0</desc>
+<defs>
+</defs>
+<rect x="0" y="0" width="100%" height="100%" fill="rgba(255,255,255,0)"/>
+<g transform="matrix(7.422 0 0 7.422 497.5027 502.5841)" id="967864">
+<path style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(89,1,194); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-67.5, -67.5)" d="M 132.5 67.5 C 132.5 103.399 103.399 132.5 67.5 132.5 C 31.6015 132.5 2.5 103.399 2.5 67.5 C 2.5 31.6015 31.6015 2.5 67.5 2.5 C 103.399 2.5 132.5 31.6015 132.5 67.5 Z" stroke-linecap="round"/>
+</g>
+<g transform="matrix(27.1624 0 0 25.936 499.9995 505.0813)" id="306589">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-16, -16)" d="M 18 13 h -4 V 2 h 4 V 13 z M 26 11 h -4 v 10 h 4 V 11 z M 26 27 h -4 v 3 h 4 V 27 z M 26 2 h -4 v 3 h 4 V 2 z M 18 19 h -4 v 11 h 4 V 19 z M 21 14 H 11 v 4 h 10 V 14 z M 30 22 H 19 v 4 h 11 V 22 z M 30 6 H 19 v 4 h 11 V 6 z M 10 11 H 6 v 10 h 4 V 11 z M 10 27 H 6 v 3 h 4 V 27 z M 10 2 H 6 v 3 h 4 V 2 z M 13 22 H 2 v 4 h 11 V 22 z M 13 6 H 2 v 4 h 11 V 6 z M 5 14 H 2 v 4 h 3 V 14 z M 30 14 h -3 v 4 h 3 V 14 z" stroke-linecap="round"/>
+</g>
+</svg>
