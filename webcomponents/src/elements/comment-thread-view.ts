@@ -17,6 +17,7 @@ import "@ui5/webcomponents-fiori/dist/Bar.js"
 import "@ui5/webcomponents/dist/Avatar.js"
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/StandardListItem.js";
+import {inputBarStyleTemplate} from "../styles";
 
 
 
@@ -133,6 +134,13 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     } catch(e) {
       // element not present
     }
+
+    /** Fiddle with shadow parts CSS */
+    /** -- Loading Done -- */
+    const inputBar = this.shadowRoot.getElementById('commentInputBar') as HTMLElement;
+    if (inputBar) {
+      inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
+    }
   }
 
 
@@ -228,7 +236,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (infos.length == 0) {
       textLi = [html`
             <ui5-li style="background: ${bg_color};">
-                NO MESSAGES FOUND                         
+                Add first comment:                       
             </ui5-li>`]
     }
 
@@ -240,10 +248,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     let maybeInput = html``;
     if (this.showInput) {
       maybeInput = html`
-          <ui5-bar design="FloatingFooter" style="margin:10px;width: auto;">
-              <ui5-input slot="startContent" id="commentInput" type="Text" placeholder="Comment..."
+          <ui5-bar id="commentInputBar" design="FloatingFooter" style="margin:10px;width: auto;">
+              <ui5-input id="commentInput" type="Text" placeholder="Comment..."
                          show-clear-icon
-                         style="min-width: 400px;"
+                         style="border:none;"
                          @change=${this.onCreateComment}></ui5-input>
           </ui5-bar>`
     }

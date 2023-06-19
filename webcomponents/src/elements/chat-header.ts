@@ -51,7 +51,7 @@ export class ChatHeader extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         <div id="chat-header">
           <h3>Welcome to #${semTopic} !</h3>
           <div class="subtext">This is the start of thread #${semTopic}: ${pp.purpose}.</div>
-          <div class="subtext">Participation rules: ${pp.rules}</div>
+          <!--<div class="subtext">Participation rules: ${pp.rules}</div>-->
         </div>
         <hr/>
     `;

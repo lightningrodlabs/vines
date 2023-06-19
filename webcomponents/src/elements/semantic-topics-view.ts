@@ -195,10 +195,10 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`
           <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"
-                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#cc8989" : ""};">
+                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#DBE3EF" : ""};">
           <span slot="content" style="display:flex;">
               <span style="margin-top:8px;font-weight: ${topicHasUnreads? "bold" : ""}">${title}</span>                 
-              <ui5-button icon="add" tooltip="Create Thread" design="Transparent" @click=${async (e) => {
+              <ui5-button icon="add" tooltip="Create a new Thread for this Topic" design="Transparent" @click=${async (e) => {
                   e.stopPropagation(); //console.log("topic clicked:", title);
                   await this.updateComplete;
                   this.dispatchEvent(new CustomEvent('createThreadClicked', {
@@ -235,7 +235,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     return [
       css`
         :host {
-          background: #f7f6f8;
+          background: #FBFCFD;
           display: block;
           overflow-y: auto;
           height: 100%;

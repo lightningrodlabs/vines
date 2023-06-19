@@ -191,7 +191,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
     //const bg_color = this._loading? "#ededf0" : "white"
-    this.style.background = this._loading? "#ededf0" : "white"
+    this.style.background = this._loading? "#d4d5d7" : "#FBFCFD"
 
 
     const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
@@ -249,10 +249,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         :host {
           flex:1;
           overflow-y: scroll;
-          
           display: flex;
           flex-direction: column-reverse;
+          
           height: inherit;
+          background: #FBFCFD;
+
+          font-family: '72-Light';
         }
       `,
 

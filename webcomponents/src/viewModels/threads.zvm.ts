@@ -733,11 +733,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async generateTestData(appletId: EntryHashB64): Promise<void> {
-    const hashs = await this.zomeProxy.getSubjectsForApplet(decodeHashFromBase64(appletId));
-    console.log("generateTestData(), subjects found", hashs.length)
-    if (hashs.length > 0) {
-      return;
-    }
+      const hashs = await this.zomeProxy.getSubjectsForApplet(decodeHashFromBase64(appletId));
+      console.log("generateTestData(), subjects found", hashs.length)
+      if (hashs.length > 0) {
+        return;
+      }
     console.log("*** generateTestData()", appletId);
 
     const top1 = await this.publishSemanticTopic("topic-many");

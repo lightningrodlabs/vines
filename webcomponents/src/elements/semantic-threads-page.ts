@@ -38,7 +38,7 @@ import "@ui5/webcomponents-icons/dist/discussion.js"
 import {ChatThreadView} from "./chat-thread-view";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {getInitials} from "../utils";
+import {emptyAppletId, getInitials} from "../utils";
 import {EditProfile} from "./edit-profile";
 import {PeerList} from "./peer-list";
 import {
@@ -60,6 +60,7 @@ import {
 import {consume, ContextConsumer, createContext} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
+import {inputBarStyleTemplate} from "../styles";
 
 
 /** */
@@ -246,28 +247,38 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
     console.log("<semantic-threads-page> firstUpdated() _appletInfos", this.appletId);
 
     /** Generate test data */
-    await this._dvm.threadsZvm.generateTestData(this.appletId);
+    if (!this.appletId) {
+      this.appletId = encodeHashToBase64(await emptyAppletId());
+      console.warn("no appletId provided. A fake one has been generated", this.appletId);
+    }
+    //await this._dvm.threadsZvm.generateTestData(this.appletId);
+
+    /** */
     const leftSide = this.shadowRoot.getElementById("leftSide");
-    leftSide.style.background = "#aab799";
+    leftSide.style.background = "#B9CCE7";
 
 
     /** Grab all AppletIds */
-    const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
-    for (const appletId of appletIds) {
-      const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
-      //console.log("_appletInfos", appletId, appletInfo);
-      this._appletInfos[appletId] = appletInfo;
+    if (this.weServices) {
+      const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
+      for (const appletId of appletIds) {
+        const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
+        //console.log("_appletInfos", appletId, appletInfo);
+        this._appletInfos[appletId] = appletInfo;
+      }
     }
     this.requestUpdate();
     /** */
     this.pingAllOthers();
   }
+
 
 
   /** */
@@ -283,6 +294,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       }
     } catch(e) {
       /** i.e. element not present */
+    }
+
+    /** Fiddle with shadow parts CSS */
+    /** -- Loading Done -- */
+    const inputBar = this.shadowRoot.getElementById('inputBar') as HTMLElement;
+    if (inputBar) {
+      inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
     }
   }
 
@@ -437,10 +455,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           </ui5-bar>
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
           <ui5-bar id="inputBar" design="FloatingFooter">
-              <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button>
-              <ui5-input slot="startContent" id="textMessageInput" type="Text" placeholder="Message #${topic}"
+              <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
+              <ui5-input id="textMessageInput" type="Text" placeholder="Message #${topic}"
                          show-clear-icon
-                         style="min-width: 400px;"
                          @change=${this.onCreateTextMessage}></ui5-input>
               <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
           </ui5-bar>
@@ -480,7 +497,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
-                <ui5-select id="dna-select" class="select" style="background: rgb(170, 183, 153);"
+                <ui5-select id="dna-select" class="select" style="background: #B9CCE7"
                 @change=${this.onAppletSelected}>
                     ${appletOptions}
                     <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
@@ -499,11 +516,22 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                             this.onThreadSelected(e.detail)
                         }}
                 ></semantic-topics-view>
+                
+                <!--
                 <div style="display: flex; flex-direction: row; height: 36px; border: 1px solid #267906;background:#d6f2ac;cursor:pointer;align-items:center;padding-left:40px;"
                      @click=${() => {this.createTopicDialogElem.show()}}>
                     Add New Topic +
                 </div>
+                -->
+                
+                <ui5-button icon="add" style="margin:10px 30px 10px 30px;"
+                     @click=${() => {this.createTopicDialogElem.show()}}>
+                    Add New Topic
+                </ui5-button>      
+                    <hr style="width:100%;margin:0px;color:aliceblue;"/>
                 `}
+                
+                <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
                                 @click=${async () => {
@@ -515,7 +543,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                 @click=${this.refresh}></ui5-button>
                     <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
                                 @click=${this.onCommitBtn}></ui5-button>
-                </div>
+                </div> -->
                 <div id="profile-div" style="display: flex; flex-direction: row">
                     ${avatarUrl ? html`
                         <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
@@ -627,7 +655,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return [
       css`
         :host {
-          background: #f7f6f8;
+          background: #FBFCFD;
           display: block;
           height: inherit;
         }
@@ -644,12 +672,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         }
 
         #leftSide {
-          background: #e889c0;
+          background: #B9CCE7;
           max-height: 100vh;
           width: 250px;
           min-width: 250px;
           display: flex;
           flex-direction: column;
+          border: 0.01em solid #A3ACB9;
         }
 
         #centerSide {
@@ -657,19 +686,29 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           min-height: 100vh;
           height: 100vh;
           max-height: 100vh;
-          background: #eaeaea;
+          background: #FBFCFD;
           display: flex;
           flex-direction: column;
         }
 
         #topicBar {
-          background: #f1efef;
-          border: 1px solid dimgray;
+          background: #DBE3EF;
+          /*border: 1px solid dimgray;*/
         }
 
         #inputBar {
           margin:10px;
           width: auto;
+        }
+        
+        #inputBar::part(bar) {
+          /*background: #81A2D4;*/
+        }
+        
+        #textMessageInput {
+          width: 100%;
+          border: none;
+          padding: 0px;
         }
         
         #rightSide {
@@ -678,7 +717,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           background: #eaeaea;
           display: flex;
           flex-direction: column;
-          background: #979f97;
+          background: #B9CCE7;
         }
 
         .chatAvatar {
