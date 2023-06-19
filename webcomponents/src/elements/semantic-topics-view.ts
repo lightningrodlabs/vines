@@ -175,9 +175,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
               : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
           }
           // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
-          return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" >
-              <div slot="content" style="display:flex;align-items:center;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration: ${threadIsNew? "underline" : ""}">
-                  <span>${thread.pp.purpose}</span>
+          return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
+              <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration:${threadIsNew? "underline" : ""}">
+                  <span style="height:18px; width: 100px; overflow:hidden; text-overflow:ellipsis;">${thread.pp.purpose}</span>
                   ${threadButton}                  
               </div>               
           </ui5-tree-item-custom>`
@@ -189,15 +189,15 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(topicHash);
         threadButton = maybeCommentThread != null
           ? html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
-          : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+          : html`<ui5-button icon="sys-add" style="padding:0px"tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
       }
       const topicIsNew = this.perspective.newSubjects[topicHash] != undefined;
       const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`
           <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"
-                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#DBE3EF" : ""};">
-          <span slot="content" style="display:flex;">
-              <span style="margin-top:8px;font-weight: ${topicHasUnreads? "bold" : ""}">${title}</span>                 
+                                expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#DBE3EF" : ""};overflow: hidden;">
+          <span slot="content" style="display:flex;overflow: hidden;">
+              <span style="width:110px; height:18px;margin-top:8px; margin-right:5px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis;overflow:hidden;">${title}</span>                 
               <ui5-button icon="add" tooltip="Create a new Thread for this Topic" design="Transparent" @click=${async (e) => {
                   e.stopPropagation(); //console.log("topic clicked:", title);
                   await this.updateComplete;

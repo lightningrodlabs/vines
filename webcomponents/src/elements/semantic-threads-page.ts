@@ -488,7 +488,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       if (!appletInfo) {
         return html``;
       }
-      return html`<ui5-option id=${appletId}>${appletInfo.appletName}</ui5-option>`;
+      return html`<ui5-option id=${appletId} icon="discussion">${appletInfo.appletName}</ui5-option>`;
     }
     );
     console.log("appletOptions", appletOptions);
@@ -591,10 +591,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 </div>
             </section>
             <div slot="footer">
-                <div style="flex: 1;"></div>
-                <ui5-button id="createTopicDialogButton" design="Emphasized" @click=${this.onCreateTopic}>Create
+                <ui5-button id="createTopicDialogButton"
+                            style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
                 </ui5-button>
-                <ui5-button @click=${() => this.createTopicDialogElem.close(false)}>Cancel</ui5-button>
+                <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>Cancel</ui5-button>
             </div>
         </ui5-dialog>
         <!-- CreateThreadDialog -->
@@ -605,11 +605,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     <ui5-input id="threadPurposeInput"></ui5-input>
                 </div>
             </section>
-            <div slot="footer">
-                <div style="flex: 1;"></div>
-                <ui5-button id="createThreadDialogButton" design="Emphasized" @click=${this.onCreateThread}>Create
+            <div slot="footer" style:"display:flex;">
+                <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized" @click=${this.onCreateThread}>Create
                 </ui5-button>
-                <ui5-button @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel</ui5-button>
+                <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel</ui5-button>
             </div>
         </ui5-dialog>
     `;
@@ -643,7 +642,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onCommitBtn(_e?: any) {
-    /** DEBUGGING */
     await this._dvm.threadsZvm.commitSearchLogs();
   }
 

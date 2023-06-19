@@ -209,9 +209,11 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
-        let maybeAgent = this._profilesZvm.perspective.profiles[info.author];
-        if (maybeAgent) {
-          agent = maybeAgent;
+        if (this._profilesZvm) {
+          let maybeAgent = this._profilesZvm.perspective.profiles[info.author];
+          if (maybeAgent) {
+            agent = maybeAgent;
+          }
         }
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
@@ -234,9 +236,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** Different UI if no message found for thread */
     if (infos.length == 0) {
+
       textLi = [html`
             <ui5-li style="background: ${bg_color};">
-                Add first comment:                       
+                ${this.showInput? "Add first comment:" : "No comments found"}                       
             </ui5-li>`]
     }
 
