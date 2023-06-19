@@ -33,7 +33,7 @@ import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
-
+import "@ui5/webcomponents-icons/dist/save.js"
 /**  */
 import {ChatThreadView} from "./chat-thread-view";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
@@ -517,18 +517,16 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                         }}
                 ></semantic-topics-view>
                 
-                <!--
-                <div style="display: flex; flex-direction: row; height: 36px; border: 1px solid #267906;background:#d6f2ac;cursor:pointer;align-items:center;padding-left:40px;"
-                     @click=${() => {this.createTopicDialogElem.show()}}>
-                    Add New Topic +
-                </div>
-                -->
-                
-                <ui5-button icon="add" style="margin:10px 30px 10px 30px;"
+                <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
                      @click=${() => {this.createTopicDialogElem.show()}}>
                     Add New Topic
-                </ui5-button>      
-                    <hr style="width:100%;margin:0px;color:aliceblue;"/>
+                </ui5-button>
+                <ui5-button icon="save" design="Positive"
+                            style="margin:10px 30px 10px 30px;"
+                            @click=${this.onCommitBtn}>
+                    Mark all as read
+                </ui5-button>                
+                <hr style="width:100%;margin:0px;color:aliceblue;"/>
                 `}
                 
                 <!--
