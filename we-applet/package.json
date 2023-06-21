@@ -33,6 +33,7 @@
   "dependencies": {
     "@lightningrodlabs/we-applet": "0.6.1",
     "@threads/elements": "file:../webcomponents",
-    "@threads/app": "file:../webapp"
+    "@threads/app": "file:../webapp",
+    "@mdi/js": "^7.2.0"
   }
 }

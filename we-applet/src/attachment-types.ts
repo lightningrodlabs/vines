@@ -1,10 +1,11 @@
 import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64, EntryHash} from "@holochain/client";
 import {AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
-import {asCellProxy} from "./we-utils";
+import {asCellProxy, wrapPathInSvg} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {CreatePpInput} from "@threads/elements/dist/bindings/threads.types";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
 import {ViewThreadContext} from "./applet-view";
+import { mdiCommentTextMultiple } from "@mdi/js";
 
 
 /** */
@@ -13,7 +14,7 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
   return {
     thread: {
       label: "Thread",
-      icon_src: "",
+      icon_src: wrapPathInSvg(mdiCommentTextMultiple),
       async create(attachToHrl: Hrl) {
         console.log("attachmentTypes.thread()", attachToHrl);
         const entryInfo = await weServices.entryInfo(attachToHrl);

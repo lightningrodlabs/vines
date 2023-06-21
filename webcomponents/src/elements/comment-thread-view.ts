@@ -173,9 +173,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<comment-thread-view>.render():", this.threadHash, this.showInput, this.subjectName);
+    console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
     if (this.threadHash == "") {
-      return html `<div>No thread selected</div>`;
+      return html `<div style="color:#c10a0a">No thread selected</div>`;
     }
 
     const bg_color = this._loading? "#ededf0" : ""
