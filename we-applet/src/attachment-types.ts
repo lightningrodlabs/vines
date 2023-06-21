@@ -1,8 +1,7 @@
 import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64, EntryHash} from "@holochain/client";
 import {AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
 import {asCellProxy, wrapPathInSvg} from "./we-utils";
-import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
-import {CreatePpInput} from "@threads/elements/dist/bindings/threads.types";
+import {ThreadsProxy, CreatePpInput} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
 import {ViewThreadContext} from "./applet-view";
 import { mdiCommentTextMultiple } from "@mdi/js";

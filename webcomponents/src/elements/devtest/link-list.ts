@@ -1,10 +1,9 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {ZomeElement} from "@ddd-qc/lit-happ";
+import {ScopedZomeTypes, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ItemLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
 import {AnyDhtHashB64, encodeHashToBase64, ZomeName} from "@holochain/client";
-import {ScopedZomeTypes} from "@ddd-qc/cell-proxy/dist/types";
 
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";

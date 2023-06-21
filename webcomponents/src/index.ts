@@ -24,3 +24,6 @@ export * from './viewModels/profiles.zvm';
 export * from './viewModels/profiles.dvm';
 export * from './viewModels/threads.zvm';
 export * from './viewModels/threads.dvm';
+
+export * from './bindings/threads.proxy';
+export * from './bindings/threads.types';

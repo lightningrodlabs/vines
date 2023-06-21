@@ -1,4 +1,4 @@
-import {html, css, ReactiveElement} from "lit";
+import {html, css} from "lit";
 import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {
@@ -10,7 +10,6 @@ import {
   ZomeName,
 } from "@holochain/client";
 import {
-  Hrl,
   WeServices, weServicesContext,
 } from "@lightningrodlabs/we-applet";
 import {
@@ -21,15 +20,13 @@ import {
   DnaViewModel,
 } from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF, globalProfilesContext,
+  DEFAULT_THREADS_DEF, globalProfilesContext, ThreadsDvm,
 } from "@threads/elements";
 
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
-import {ThreadsDvm} from "@threads/elements/dist/viewModels/threads.dvm";
-import {ProfilesDvm} from "@threads/elements/dist/viewModels/profiles.dvm";
+import {ProfilesDvm} from "@threads/elements";
 import {ContextProvider} from "@lit-labs/context";
-import {BaseRoleName, CloneId} from "@ddd-qc/cell-proxy/dist/types";
-import {AppProxy} from "@ddd-qc/cell-proxy/dist/AppProxy";
+import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 
 
 /**

@@ -1,12 +1,10 @@
 import {
-  ActionHashB64,
   AppAgentClient,
   AppAgentWebsocket,
-  AppWebsocket,
   encodeHashToBase64,
   EntryHash
 } from "@holochain/client";
-import {html, LitElement, ReactiveElement, render} from "lit";
+import {html, render} from "lit";
 import { msg } from "@lit/localize";
 
 import {
@@ -22,7 +20,7 @@ import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
 import {ThreadsApp} from "@threads/app";
 import {asCellProxy} from "./we-utils";
-import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
+import {ThreadsProxy} from "@threads/elements";
 import {ProfilesApi} from "./profilesApi";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";

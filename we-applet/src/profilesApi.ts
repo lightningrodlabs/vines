@@ -1,11 +1,10 @@
 import {
   AppApi, AppInfoRequest, AppInfoResponse, CallZomeRequest, ClonedCell,
   DisableCloneCellRequest,
-  EnableCloneCellRequest, InstalledAppId,
+  EnableCloneCellRequest,
 } from "@holochain/client";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
 import { encode } from "@msgpack/msgpack";
-import {ThreadsProfile} from "@threads/elements";
 import {Profile} from "@holochain-open-dev/profiles/dist/types";
 
 
