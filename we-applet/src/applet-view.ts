@@ -24,7 +24,7 @@ import {ThreadsApp} from "@threads/app";
 import {asCellProxy} from "./we-utils";
 import {ThreadsProxy} from "@threads/elements/dist/bindings/threads.proxy";
 import {ProfilesApi} from "./profilesApi";
-import {ExternalAppProxy} from "@ddd-qc/cell-proxy/dist/ExternalAppProxy";
+import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 
 
