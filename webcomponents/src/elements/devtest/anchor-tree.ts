@@ -10,9 +10,10 @@ import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
 
-import "@ui5/webcomponents/dist/Icon.js";
+import Icon from "@ui5/webcomponents/dist/Icon";
 import Input from "@ui5/webcomponents/dist/Input";
-import "@ui5/webcomponents/dist/features/InputSuggestions.js";
+import InputSuggestions from "@ui5/webcomponents/dist/features/InputSuggestions";
+
 import {Base64} from "js-base64";
 
 

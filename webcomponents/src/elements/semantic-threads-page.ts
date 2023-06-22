@@ -5,19 +5,21 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {CommentRequest} from "../utils";
 
 /** @ui5/webcomponents */
-import "@ui5/webcomponents/dist/Select.js";
-import "@ui5/webcomponents/dist/Option.js";
-import "@ui5/webcomponents/dist/Menu.js";
-import Label from "@ui5/webcomponents/dist/Label"
-import Dialog from "@ui5/webcomponents/dist/Dialog"
-import Button from "@ui5/webcomponents/dist/Button"
-import "@ui5/webcomponents/dist/Icon.js";
-import "@ui5/webcomponents/dist/Input.js";
-import "@ui5/webcomponents/dist/features/InputSuggestions.js";
+import Select from "@ui5/webcomponents/dist/Select";
+import Option from "@ui5/webcomponents/dist/Option";
+import Menu from "@ui5/webcomponents/dist/Menu";
+import Label from "@ui5/webcomponents/dist/Label";
+import Dialog from "@ui5/webcomponents/dist/Dialog";
+import Button from "@ui5/webcomponents/dist/Button";
+import Icon from "@ui5/webcomponents/dist/Icon";
+import Input from "@ui5/webcomponents/dist/Input";
+import InputSuggestions from "@ui5/webcomponents/dist/features/InputSuggestions";
 /** @ui5/webcomponents-fiori */
-import "@ui5/webcomponents-fiori/dist/Bar.js"
+import Bar from "@ui5/webcomponents-fiori/dist/Bar"
+
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
 import "@ui5/webcomponents-icons/dist/dropdown.js"
@@ -34,13 +36,16 @@ import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/save.js"
+
 /**  */
 import {ChatThreadView} from "./chat-thread-view";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {emptyAppletId, getInitials} from "../utils";
+
 import {EditProfile} from "./edit-profile";
-import {PeerList} from "./peer-list";
+//import {PeerList} from "./peer-list";
+
 import {
   ActionHashB64,
   decodeHashFromBase64,
@@ -61,15 +66,6 @@ import {consume, ContextConsumer, createContext} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {inputBarStyleTemplate} from "../styles";
-
-
-/** */
-export interface CommentRequest {
-  maybeCommentThread: ActionHashB64 | null,
-  subjectHash: AnyLinkableHashB64,
-  subjectType: string,
-  subjectName: string,
-}
 
 
 /**
@@ -518,7 +514,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 ></semantic-topics-view>
                 
                 <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
-                     @click=${() => {this.createTopicDialogElem.show()}}>
+                     @click=${() => {console.log("createTopicDialogElem", this.createTopicDialogElem); this.createTopicDialogElem.show()}}>
                     Add New Topic
                 </ui5-button>
                 <ui5-button icon="save" design="Positive"

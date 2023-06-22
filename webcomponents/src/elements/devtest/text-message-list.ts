@@ -1,11 +1,14 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
+import {consume} from "@lit-labs/context";
+
 import {DnaElement} from "@ddd-qc/lit-happ";
+
 import {AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
+
 import {BeadLink, ParticipationProtocol} from "../../bindings/threads.types";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {TextMessageInfo} from "../../viewModels/threads.perspective";
-import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../../viewModels/happDef";
 import {ProfilesZvm} from "../../viewModels/profiles.zvm";
 

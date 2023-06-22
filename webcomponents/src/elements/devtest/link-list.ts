@@ -5,11 +5,12 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ItemLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
 import {AnyDhtHashB64, encodeHashToBase64, ZomeName} from "@holochain/client";
 
-import "@ui5/webcomponents/dist/Tree.js"
-import "@ui5/webcomponents/dist/TreeItem.js";
-import "@ui5/webcomponents/dist/BusyIndicator.js";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {utf32Decode} from "./threads-devtest-page";
+
+import Tree from "@ui5/webcomponents/dist/Tree"
+import TreeItem from "@ui5/webcomponents/dist/TreeItem";
+import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 
 
 /**

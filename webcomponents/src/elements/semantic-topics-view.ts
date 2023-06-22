@@ -5,18 +5,15 @@ import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {CommentRequest} from "./semantic-threads-page";
+import {CommentRequest} from "../utils";
 
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import TreeItemCustom from "@ui5/webcomponents/dist/TreeItemCustom";
-import "@ui5/webcomponents/dist/BusyIndicator.js";
-
-import "@ui5/webcomponents/dist/Button.js";
-import "@ui5/webcomponents/dist/StandardListItem.js";
-import "@ui5/webcomponents/dist/CustomListItem.js";
-
-
+import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
+import Button from "@ui5/webcomponents/dist/Button";
+import StandardListItem from "@ui5/webcomponents/dist/StandardListItem";
+import CustomListItem from "@ui5/webcomponents/dist/CustomListItem";
 
 
 /**

@@ -3,7 +3,7 @@ import { property, query, state, customElement } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 
-import Input from "@ui5/webcomponents/dist/Input.js";
+import Input from "@ui5/webcomponents/dist/Input";
 import Button from "@ui5/webcomponents/dist/Button"
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"

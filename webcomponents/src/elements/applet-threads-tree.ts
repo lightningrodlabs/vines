@@ -1,22 +1,26 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
+import {consume, ContextConsumer, createContext} from "@lit-labs/context";
+
+import {ActionHash, ActionHashB64, decodeHashFromBase64, EntryHash, EntryHashB64} from "@holochain/client";
+
+import {AttachmentType, Hrl, WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
+
+import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
+
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsEntryType} from "../bindings/threads.types";
+import {CommentRequest} from "../utils";
 
+/** @ui5/webcomponents */
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import TreeItemCustom from "@ui5/webcomponents/dist/TreeItemCustom";
 import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
-
-import "@ui5/webcomponents/dist/StandardListItem.js";
-import "@ui5/webcomponents/dist/CustomListItem.js";
-import {ActionHash, ActionHashB64, decodeHashFromBase64, EntryHash, EntryHashB64} from "@holochain/client";
-import {Dictionary} from "@ddd-qc/cell-proxy";
-import {ThreadsEntryType} from "../bindings/threads.types";
-import {CommentRequest} from "./semantic-threads-page";
-import {consume, ContextConsumer, createContext} from "@lit-labs/context";
-import {AttachmentType, Hrl, WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
+import StandardListItem from "@ui5/webcomponents/dist/StandardListItem";
+import CustomListItem from "@ui5/webcomponents/dist/CustomListItem";
 
 
 /**

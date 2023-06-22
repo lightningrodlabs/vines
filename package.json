@@ -39,7 +39,7 @@
     "start:happ": "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ -a threads --run=$HC_APP_PORT network mdns",
     "start:happ:proxied": "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network --bootstrap https://bootstrap-staging.holo.host/ quic -p=kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--",
     "launch": "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
-    "launch:we": "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mdns",
+    "launch:we": "echo pass | hc-launch --piped -n 1 artifacts/threads-we_applet.webhapp network mdns",
 
     "test": "npm run build:happ && npm run build -w @threads/elements && npm t -w @threads/tests",
     "package:webapp": "rm -rf artifacts/threads-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
