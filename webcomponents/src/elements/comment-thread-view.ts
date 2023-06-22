@@ -12,11 +12,11 @@ import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 
 /** @ui5/webcomponents(-fiori) */
-import Input from "@ui5/webcomponents/dist/Input";
-import Avatar from "@ui5/webcomponents/dist/Avatar"
+import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents/dist/Avatar.js"
+import "@ui5/webcomponents-fiori/dist/Bar.js";
 import List from "@ui5/webcomponents/dist/List"
-import StandardListItem from "@ui5/webcomponents/dist/StandardListItem";
-import Bar from "@ui5/webcomponents-fiori/dist/Bar";
+import "@ui5/webcomponents/dist/List.js"
 
 import {inputBarStyleTemplate} from "../styles";
 

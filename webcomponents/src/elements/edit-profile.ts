@@ -4,7 +4,8 @@ import { localized, msg, str } from '@lit/localize';
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 
 import Input from "@ui5/webcomponents/dist/Input";
-import Button from "@ui5/webcomponents/dist/Button"
+import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents/dist/Button.js";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js"

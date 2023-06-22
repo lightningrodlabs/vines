@@ -5,14 +5,25 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsLinkTypeType, TypedAnchor} from "../../bindings/threads.types";
 import {AnyDhtHashB64, encodeHashToBase64} from "@holochain/client";
 
+import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
+
 import Tree from "@ui5/webcomponents/dist/Tree"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
 import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
-import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
+import "@ui5/webcomponents/dist/Tree.js"
+import "@ui5/webcomponents/dist/TreeItem.js";
+import "@ui5/webcomponents/dist/BusyIndicator.js";
 
-import Icon from "@ui5/webcomponents/dist/Icon";
+import "@ui5/webcomponents/dist/Icon.js";
 import Input from "@ui5/webcomponents/dist/Input";
-import InputSuggestions from "@ui5/webcomponents/dist/features/InputSuggestions";
+import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents/dist/features/InputSuggestions.js";
+
+
+
+
+
+
 
 import {Base64} from "js-base64";
 

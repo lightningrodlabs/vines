@@ -15,12 +15,14 @@ import {ThreadsEntryType} from "../bindings/threads.types";
 import {CommentRequest} from "../utils";
 
 /** @ui5/webcomponents */
-import Tree from "@ui5/webcomponents/dist/Tree"
+import "@ui5/webcomponents/dist/Tree.js"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
-import TreeItemCustom from "@ui5/webcomponents/dist/TreeItemCustom";
+import "@ui5/webcomponents/dist/TreeItem.js";
+import "@ui5/webcomponents/dist/TreeItemCustom.js";
 import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
-import StandardListItem from "@ui5/webcomponents/dist/StandardListItem";
-import CustomListItem from "@ui5/webcomponents/dist/CustomListItem";
+import "@ui5/webcomponents/dist/BusyIndicator.js";
+import "@ui5/webcomponents/dist/StandardListItem.js";
+import "@ui5/webcomponents/dist/CustomListItem.js";
 
 
 /**

@@ -8,9 +8,9 @@ import {AnyDhtHashB64, encodeHashToBase64, ZomeName} from "@holochain/client";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {utf32Decode} from "./threads-devtest-page";
 
-import Tree from "@ui5/webcomponents/dist/Tree"
-import TreeItem from "@ui5/webcomponents/dist/TreeItem";
-import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
+import "@ui5/webcomponents/dist/Tree.js"
+import "@ui5/webcomponents/dist/TreeItem.js";
+import "@ui5/webcomponents/dist/BusyIndicator.js";
 
 
 /**

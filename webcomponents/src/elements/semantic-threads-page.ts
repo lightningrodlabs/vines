@@ -7,18 +7,19 @@ import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {CommentRequest} from "../utils";
 
-/** @ui5/webcomponents */
-import Select from "@ui5/webcomponents/dist/Select";
-import Option from "@ui5/webcomponents/dist/Option";
-import Menu from "@ui5/webcomponents/dist/Menu";
-import Label from "@ui5/webcomponents/dist/Label";
-import Dialog from "@ui5/webcomponents/dist/Dialog";
-import Button from "@ui5/webcomponents/dist/Button";
-import Icon from "@ui5/webcomponents/dist/Icon";
-import Input from "@ui5/webcomponents/dist/Input";
-import InputSuggestions from "@ui5/webcomponents/dist/features/InputSuggestions";
 /** @ui5/webcomponents-fiori */
-import Bar from "@ui5/webcomponents-fiori/dist/Bar"
+import "@ui5/webcomponents-fiori/dist/Bar.js"
+/** @ui5/webcomponents */
+import "@ui5/webcomponents/dist/Button.js";
+import "@ui5/webcomponents/dist/Icon.js";
+import "@ui5/webcomponents/dist/Label.js";
+import "@ui5/webcomponents/dist/Option.js";
+import "@ui5/webcomponents/dist/Menu.js";
+import Dialog from "@ui5/webcomponents/dist/Dialog";
+import "@ui5/webcomponents/dist/Dialog.js";
+import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents/dist/features/InputSuggestions.js";
+import "@ui5/webcomponents/dist/Select.js";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
