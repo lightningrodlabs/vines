@@ -1,4 +1,4 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, PropertyValues, render} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {consume} from "@lit-labs/context";
 
@@ -213,19 +213,42 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     if (event.detail.item.level == 2) {
       /** Grab children */
       let pps = await this._zvm.probeThreads(toggledTreeItem.id);
+
+      const tmpls = [];
       /** Convert to TreeItem and append to Tree */
       for (const [ppAh, pp] of Object.entries(pps)) {
         /* Skip if item already exists */
         if (currentChildren.includes(ppAh)) {
           continue;
         }
-        let newItem = document.createElement("ui5-tree-item") as TreeItem;
-        newItem.text = pp.purpose;
-        newItem.id = ppAh;
-        //newItem.hasChildren = true;
-        newItem.level = toggledTreeItem.level + 1;
-        toggledTreeItem.appendChild(newItem);
+
+        // Simple tree-item
+        //const tmpl = html`<ui5-tree-item id=${ppAh} text=${pp.purpose} level=${toggledTreeItem.level + 1}></ui5-tree-item>`;
+
+        const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppAh);
+        const hasUnreadComments = this._zvm.perspective.unreadSubjects.includes(ppAh);
+        const threadIsNew = this.perspective.newThreads[ppAh] != undefined;
+        const hasNewBeads = this.perspective.unreadThreads.includes(ppAh);
+
+        /** 'new' badge to display */
+        let newBadge = html``;
+        if (threadIsNew) {
+          newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
+        }
+
+        const tmpl = html`
+          <ui5-tree-item-custom id=${ppAh} level=${toggledTreeItem.level + 1}>
+            <span slot="content" style="display:flex;overflow: hidden;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}">
+                ${pp.purpose}
+                ${newBadge}
+            </span>
+          </ui5-tree-item-custom>
+        `;
+
+
+        tmpls.push(tmpl);
       }
+      render(tmpls, toggledTreeItem);
     }
 
     /** Done */

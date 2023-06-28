@@ -39,9 +39,9 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<chat-message-item>.dvmUpdated()");
+    //console.log("<chat-message-item>.dvmUpdated()");
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
+      //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');

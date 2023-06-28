@@ -13,10 +13,8 @@
   <body style="margin:0px;background: #9bb791">
 
     <script type="module">
-      //import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
-      //import { ProfilesZomeMock } from "@holochain-open-dev/profiles/mocks";
       import {
-        AppWebsocket, AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeDnaHash, decodeHashFromBase64
+        AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeDnaHash, decodeHashFromBase64
       } from "@holochain/client";
       import { fakeEntryHash } from '@holochain-open-dev/utils';
       import { ProfilesClient } from '@holochain-open-dev/profiles';
@@ -49,7 +47,7 @@
           if (appletIdB64 == threadsAppletIdB64) {
             return {
               appletBundleId: await fakeEntryHash(),
-              appletName: "DemoThreads",
+              appletName: "DevTestWeApplet",
               groupIds: [await fakeDnaHash()],
             }
           }

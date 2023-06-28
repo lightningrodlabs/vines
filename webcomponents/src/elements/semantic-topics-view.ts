@@ -161,10 +161,10 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
           /** Determine badge & buttons */
           const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
-          const isUnread = this._zvm.perspective.unreadThreads.includes(maybeCommentThread);
+          const hasUnreadComments = this._zvm.perspective.unreadThreads.includes(maybeCommentThread);
 
           let commentButton = html``;
-          if (isUnread) {
+          if (hasUnreadComments) {
             commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
                                              design="Negative" class=${this._isHovered[ppHash]? "" : "transBtn"}
                                              @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
