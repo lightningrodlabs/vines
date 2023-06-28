@@ -1,23 +1,19 @@
 import {
-  BeadLink,
-  GlobalLastSearchLog,
-  ParticipationProtocol,
-  SearchInterval,
-  Subject,
-} from "../bindings/threads.types";
-import {
   ActionHash,
   ActionHashB64,
   AgentPubKeyB64, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
-  HoloHash,
+  HoloHash, HoloHashB64,
   Timestamp
 } from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
-import {HoloHashB64} from "@holochain/client/lib/types";
-import {AppletInfo} from "@lightningrodlabs/we-applet";
+import {
+  GlobalLastProbeLog,
+  ParticipationProtocol,
+  Subject,
+} from "../bindings/threads.types";
 
 
 /** -- Should be defined in @holochain/client */
@@ -66,7 +62,7 @@ export interface ThreadsPerspective {
   subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
 
   /** -- New / unread -- */
-  globalSearchLog?: GlobalLastSearchLog,
+  globalProbeLog?: GlobalLastProbeLog,
   /** New = First time seen */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   newSubjects: Dictionary<[ActionHash, Timestamp][]>,

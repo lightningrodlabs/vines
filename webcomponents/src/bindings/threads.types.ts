@@ -287,12 +287,12 @@ export const GLOBAL_TIME_INDEX = "global_time";
 
 export const PP_ITEM_TYPE = "__protocol";
 
-export interface GlobalLastSearchLog {
+export interface GlobalLastProbeLog {
   time: Timestamp
   maybeLastKnownPpAh?: ActionHash
 }
 
-export interface ThreadLastSearchLog {
+export interface ThreadLastProbeLog {
   time: Timestamp
   ppAh: ActionHash
   lastKnownBeadAh: ActionHash
@@ -302,16 +302,16 @@ export enum ThreadsEntryType {
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
 	TextMessage = 'TextMessage',
-	GlobalQueryLog = 'GlobalQueryLog',
-	ThreadQueryLog = 'ThreadQueryLog',
+	GlobalProbeLog = 'GlobalProbeLog',
+	ThreadProbeLog = 'ThreadProbeLog',
 }
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
 export type ThreadsEntryVariantTextMessage = {TextMessage: TextMessage}
-export type ThreadsEntryVariantGlobalQueryLog = {GlobalQueryLog: GlobalLastSearchLog}
-export type ThreadsEntryVariantThreadQueryLog = {ThreadQueryLog: ThreadLastSearchLog}
+export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
+export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
 export type ThreadsEntry = 
- | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalQueryLog | ThreadsEntryVariantThreadQueryLog;
+ | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =

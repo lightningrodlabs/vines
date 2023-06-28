@@ -8,14 +8,12 @@ import {
 import {
   Bead,
   BeadLink, CreatePpInput,
-  GetLatestBeadsInput,
-  GlobalLastSearchLog,
+  GetLatestBeadsInput, GlobalLastProbeLog,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
   SignalPayload,
   Subject,
-  TextMessage,
-  ThreadLastSearchLog,
+  TextMessage, ThreadLastProbeLog,
   ThreadsEntryType,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
@@ -65,7 +63,7 @@ export class ThreadsZvm extends ZomeViewModel {
       appletSubjectTypes: this._appletSubjectTypes,
       subjectsPerType: this._subjectsPerType,
 
-      globalSearchLog: this._globalSearchLog,
+      globalProbeLog: this._globalSearchLog,
       newSubjects: this._newSubjects,
       unreadSubjects: this._unreadSubjects,
       newThreads: this._newThreads,
@@ -98,7 +96,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private _globalSearchLog?: GlobalLastSearchLog;
+  private _globalSearchLog?: GlobalLastProbeLog;
   /** New & Unreads */
   private _newSubjects: Dictionary<[ActionHash, Timestamp][]> = {};
   private _unreadSubjects: AnyLinkableHashB64[] = [];
@@ -708,7 +706,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Commit each Thread Log */
     for (const [ppAh, thread] of Object.entries(this._threads)) {
       if (thread.searchedUnion && thread.searchedUnion.end > thread.latestSearchLogTime) {
-        const threadLog: ThreadLastSearchLog = {
+        const threadLog: ThreadLastProbeLog = {
           lastKnownBeadAh: decodeHashFromBase64(thread.beadLinksTree.end.value.beadAh),
           time: thread.beadLinksTree.end.key,
           ppAh: decodeHashFromBase64(ppAh),

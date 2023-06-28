@@ -633,7 +633,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** DEBUGGING */
     //await this._dvm.generateTestSignals();
-    let latestLogDate = new Date(this.threadsPerspective.globalSearchLog.time / 1000);
+    let latestLogDate = new Date(this.threadsPerspective.globalProbeLog.time / 1000);
     console.debug("refresh()", latestLogDate)
     await this._dvm.threadsZvm.probeAllLatest();
   }

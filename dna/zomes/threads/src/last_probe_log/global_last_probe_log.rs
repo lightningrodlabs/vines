@@ -4,27 +4,27 @@ use threads_integrity::*;
 
 ///
 #[hdk_extern]
-fn get_global_log(_ : ()) -> ExternResult<GlobalLastSearchLog> {
+fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
   let (_ah, gql) = search_global_log()?;
   Ok(gql)
 }
 
 
 ///
-fn search_global_log() -> ExternResult<(ActionHash, GlobalLastSearchLog)> {
+fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
   debug!("search_global_log()");
-  let entry_type = EntryType::App(ThreadsEntryTypes::GlobalQueryLog.try_into().unwrap());
-  let tuples = get_all_typed_local::<GlobalLastSearchLog>(entry_type.clone())?;
+  let entry_type = EntryType::App(ThreadsEntryTypes::GlobalProbeLog.try_into().unwrap());
+  let tuples = get_all_typed_local::<GlobalLastProbeLog>(entry_type.clone())?;
   if tuples.len() > 1 {
     return zome_error!("More than one global query log create found");
   }
   /// Create First log if none was created
   if tuples.is_empty() {
-    let first_log = GlobalLastSearchLog {
+    let first_log = GlobalLastProbeLog {
       time: sys_time()?,
       maybe_last_known_pp_ah: None,
     };
-    let ah = create_entry(ThreadsEntry::GlobalQueryLog(first_log.clone()))?;
+    let ah = create_entry(ThreadsEntry::GlobalProbeLog(first_log.clone()))?;
     return Ok((ah, first_log))
   }
   /// Search for updates
@@ -51,12 +51,12 @@ pub fn commit_global_log(maybe_last_known_pp_ah: Option<ActionHash>) -> ExternRe
   /// Get Previous one (this also makes sure that one has been created so we can do update)
   let (ah, _) = search_global_log()?;
   /// Create latest log
-  let gql = GlobalLastSearchLog {
+  let gql = GlobalLastProbeLog {
     time: sys_time()?,
     maybe_last_known_pp_ah,
   };
   /// Update the entry
-  let _ah = update_entry(ah, ThreadsEntry::GlobalQueryLog(gql.clone()))?;
+  let _ah = update_entry(ah, ThreadsEntry::GlobalProbeLog(gql.clone()))?;
   /// Done
   Ok(gql.time)
 }
@@ -66,8 +66,8 @@ pub fn commit_global_log(maybe_last_known_pp_ah: Option<ActionHash>) -> ExternRe
 
 /// Get all GlobalQueryLog in local source-chain
 #[hdk_extern]
-pub fn query_global_log(_: ()) -> ExternResult<Vec<(Timestamp, GlobalLastSearchLog)>> {
-  let tuples = get_all_typed_local::<GlobalLastSearchLog>( EntryType::App(ThreadsEntryTypes::GlobalQueryLog.try_into().unwrap()))?;
+pub fn query_global_log(_: ()) -> ExternResult<Vec<(Timestamp, GlobalLastProbeLog)>> {
+  let tuples = get_all_typed_local::<GlobalLastProbeLog>( EntryType::App(ThreadsEntryTypes::GlobalProbeLog.try_into().unwrap()))?;
   let res = tuples.into_iter().map(|(_ah, create_action, typed)| {
     (create_action.timestamp, typed)
   }).collect();
