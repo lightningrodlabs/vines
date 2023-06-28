@@ -26,7 +26,8 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
     debug!("leaf_tp = {}", path2anchor(&leaf_tp.path).unwrap_or("<error>".to_string()));
     //let Ok(bucket_begin_time_us) = convert_timepath_to_timestamp(leaf_tp.path.clone())
     //  else { /* probably at root */ continue; };
-    let links = get_links(leaf_tp.path_entry_hash()?, ThreadsLinkType::Beads, link_tag.clone())?;
+    let links = get_links(leaf_tp.path_entry_hash()?, ThreadsLinkType::TimeItem, link_tag.clone())?;
+    //debug!("links.len = {}", links.len());
     let mut bls = links.into_iter()
                        .map(|ll| {
                          let bt: TimedItemTag = SerializedBytes::from(UnsafeBytes::from(ll.tag.0)).try_into().unwrap();

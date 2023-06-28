@@ -486,9 +486,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 
-    console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
-
-    console.log("this._appletInfos", this._appletInfos);
+    //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
+    //console.log("this._appletInfos", this._appletInfos);
     let appletOptions = Object.entries(this._appletInfos).map(([appletId, appletInfo]) => {
       console.log("appletInfo", appletInfo);
       if (!appletInfo) {
@@ -648,7 +647,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onCommitBtn(_e?: any) {
-    await this._dvm.threadsZvm.commitSearchLogs();
+    await this._dvm.threadsZvm.commitProbeLogs();
   }
 
 

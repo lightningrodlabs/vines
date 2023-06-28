@@ -295,7 +295,7 @@ export interface GlobalLastProbeLog {
 export interface ThreadLastProbeLog {
   time: Timestamp
   ppAh: ActionHash
-  lastKnownBeadAh: ActionHash
+  maybeLastKnownBeadAh?: ActionHash
 }
 
 export enum ThreadsEntryType {

@@ -236,7 +236,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     let textLi = Object.values(all).map(
       (blm ) => {
         let hr = html``;
-        if (!passedLog && blm.creationTime > threadInfo.latestSearchLogTime) {
+        if (!passedLog && blm.creationTime > threadInfo.latestProbeLogTime) {
           passedLog = true;
           hr = html`
               <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>

@@ -19,6 +19,7 @@ import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/List.js"
 
 import {inputBarStyleTemplate} from "../styles";
+import {Thread} from "../viewModels/thread";
 
 
 
@@ -200,6 +201,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     console.log("<comment-thread-view>.render() len =", infos.length);
 
+    const thread = this._dvm.threadsZvm.perspective.threads[this.threadHash];
+    console.log("Has thread some unreads?", thread.hasUnreads());
+
+
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(infos).map(
       (info) => {
@@ -216,11 +221,14 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             agent = maybeAgent;
           }
         }
+        const isNew = thread.latestProbeLogTime < info.creationTime;
+        console.log("Is msg new?", isNew, thread.latestProbeLogTime, info.creationTime);
+
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
         // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
         return html`
-            <ui5-li additional-text="${date_str}" style="background: ${bg_color};"  type="Inactive">
+            <ui5-li additional-text="${date_str}" style="background: ${isNew? bg_color: '#e6e6e6'};" type="Inactive">
                 ${info.message}
                 <div slot="imageContent">                
                   ${avatarUrl? html`
@@ -237,7 +245,6 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** Different UI if no message found for thread */
     if (infos.length == 0) {
-
       textLi = [html`
             <ui5-li style="background: ${bg_color};">
                 ${this.showInput? "Add first comment:" : "No comments found"}                       

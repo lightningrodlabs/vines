@@ -15,5 +15,5 @@ pub struct GlobalLastProbeLog {
 pub struct ThreadLastProbeLog {
   pub time: Timestamp,
   pp_ah: ActionHash,
-  last_known_bead_ah: ActionHash,
+  maybe_last_known_bead_ah: Option<ActionHash>,
 }

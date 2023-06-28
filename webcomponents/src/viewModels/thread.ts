@@ -31,7 +31,7 @@ export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
 
 
 /**
- * Holds BinaryTree of BeadLinks and searchIntervals
+ * Holds BinaryTree of BeadLinks and probing TimeIntervals
  */
 export class Thread {
 
@@ -42,10 +42,10 @@ export class Thread {
   /* Flag if first node is the oldest node possible */
   private _beginningOfTime?: Timestamp;
   /* Logged last known bead */
-  private _latestSearchLogTime: Timestamp;
+  private _latestProbeLogTime: Timestamp;
 
-  /* Time interval of the searched beads */
-  private _searchedTimeIntervals: [Timestamp, TimeInterval][];
+  /* Time interval of the probed beads */
+  private _probedTimeIntervals: [Timestamp, TimeInterval][];
 
   /* Tree of BeadLinks keyed by creation time */
   private _beadLinksTree: Tree<number, BeadLinkMaterialized>;
@@ -57,9 +57,9 @@ export class Thread {
   constructor() {
 
     this._creationTime = 0; // Date.now() / 1000;
-    this._latestSearchLogTime = HOLOCHAIN_EPOCH;
+    this._latestProbeLogTime = HOLOCHAIN_EPOCH;
 
-    this._searchedTimeIntervals = [];
+    this._probedTimeIntervals = [];
 
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
@@ -73,22 +73,22 @@ export class Thread {
   get creationTime(): Timestamp | undefined { return this._creationTime}
 
 
-  get latestSearchLogTime(): Timestamp | undefined { return this._latestSearchLogTime}
+  get latestProbeLogTime(): Timestamp | undefined { return this._latestProbeLogTime}
 
   get beginningOfTime(): Timestamp | undefined { return this._beginningOfTime}
 
 
-  get searchedTimeIntervals(): [Timestamp, TimeInterval][] { return this._searchedTimeIntervals}
+  get probedTimeIntervals(): [Timestamp, TimeInterval][] { return this._probedTimeIntervals}
 
   get beadLinksTree(): Tree<number, BeadLinkMaterialized> { return this._beadLinksTree}
 
 
-  get searchedUnion(): TimeInterval | null {
-    if (this.searchedTimeIntervals.length == 0) {
+  get probedUnion(): TimeInterval | null {
+    if (this.probedTimeIntervals.length == 0) {
       return null;
     }
-    let union = this.searchedTimeIntervals[0][1];
-    for (const [_ts, interval] of this.searchedTimeIntervals) {
+    let union = this.probedTimeIntervals[0][1];
+    for (const [_ts, interval] of this.probedTimeIntervals) {
       if (interval.isInstant()) {
         continue;
       }
@@ -111,11 +111,11 @@ export class Thread {
   }
 
   /** */
-  setLatestSearchLogTime(time: Timestamp): void {
-    if (this._latestSearchLogTime >= time) {
+  setLatestProbeLogTime(time: Timestamp): void {
+    if (this._latestProbeLogTime >= time) {
       return;
     }
-    this._latestSearchLogTime = time;
+    this._latestProbeLogTime = time;
   }
 
 
@@ -134,8 +134,8 @@ export class Thread {
 
   /** */
   hasUnreads(): boolean {
-    if (this.latestSearchLogTime) {
-      return this.beadLinksTree.end.key && this.latestSearchLogTime < this.beadLinksTree.end.key;
+    if (this.latestProbeLogTime) {
+      return this.beadLinksTree.end.key && this.latestProbeLogTime < this.beadLinksTree.end.key;
     }
     return !!this.beadLinksTree.end.key;
   }
@@ -183,21 +183,21 @@ export class Thread {
 
 
   /** */
-  addSearchedInterval(searchedInterval: TimeInterval): void {
-    this._searchedTimeIntervals.push([Date.now() * 1000, searchedInterval]);
+  addProbedInterval(interval: TimeInterval): void {
+    this._probedTimeIntervals.push([Date.now() * 1000, interval]);
   }
 
 
   /** */
   print(): void {
     console.log("BeadLinksTree:", this._beadLinksTree.length);
-    console.log(" - searched union:", this.searchedUnion);
+    console.log(" - probed union:", this.probedUnion);
 
   }
 
   /** */
   dump(): void {
-    console.log("BeadLinksTree dump:", this._beadLinksTree.length, this.searchedUnion);
+    console.log("BeadLinksTree dump:", this._beadLinksTree.length, this.probedUnion);
     this._beadLinksTree.forEach(
       ((k, bl) => {
         console.log(`\t[${k}]`, bl.beadAh, bl.beadType);

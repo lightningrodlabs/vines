@@ -63,7 +63,7 @@ export class ThreadsZvm extends ZomeViewModel {
       appletSubjectTypes: this._appletSubjectTypes,
       subjectsPerType: this._subjectsPerType,
 
-      globalProbeLog: this._globalSearchLog,
+      globalProbeLog: this._globalProbeLog,
       newSubjects: this._newSubjects,
       unreadSubjects: this._unreadSubjects,
       newThreads: this._newThreads,
@@ -96,7 +96,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private _globalSearchLog?: GlobalLastProbeLog;
+  private _globalProbeLog?: GlobalLastProbeLog;
   /** New & Unreads */
   private _newSubjects: Dictionary<[ActionHash, Timestamp][]> = {};
   private _unreadSubjects: AnyLinkableHashB64[] = [];
@@ -199,7 +199,7 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.querySemanticTopics();
     await this.queryThreads();
     await this.queryTextMessages();
-    await this.querySearchLogs();
+    await this.queryProbeLogs();
 
     this.notifySubscribers(); // check if this is useful
   }
@@ -226,9 +226,9 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Query: Query the local source-chain, and store the results (async) -- */
 
   /** */
-  private async querySearchLogs(): Promise<void> {
+  private async queryProbeLogs(): Promise<void> {
     /** Global Log */
-    this._globalSearchLog = await this.zomeProxy.getGlobalLog();
+    this._globalProbeLog = await this.zomeProxy.getGlobalLog();
     /** Thread logs */
     const threadLogs = await this.zomeProxy.queryThreadLogs();
     for (const threadLog of threadLogs) {
@@ -237,7 +237,7 @@ export class ThreadsZvm extends ZomeViewModel {
         this._threads[ppAhB64] = new Thread();
       }
       //this._threads[ppAhB64].setCreationTime(creationTime);
-      this._threads[ppAhB64].setLatestSearchLogTime(threadLog.time);
+      this._threads[ppAhB64].setLatestProbeLogTime(threadLog.time);
     }
   }
 
@@ -359,7 +359,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async probeAllLatest(): Promise<void> {
-    const latest = await this.zomeProxy.probeAllLatest(this._globalSearchLog.time);
+    const latest = await this.zomeProxy.probeAllLatest(this._globalProbeLog.time);
     const newThreads = latest.newThreadsBySubject.map(([_topicHash, ppAh]) => encodeHashToBase64(ppAh));
     const unreadThreads = latest.newBeadsByThread.map(([ppAh, _bl]) => encodeHashToBase64(ppAh));
     let unreadSubjects = latest.newThreadsBySubject.map(([topicHash, _ppAh]) => encodeHashToBase64(topicHash));
@@ -477,7 +477,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return Promise.reject("No Thread data found for given ParticipationProtocol")
     }
     // const oldestTime = thread.beadLinksTree.begin.key;
-    const oldestTime = thread.searchedUnion.begin;
+    const oldestTime = thread.probedUnion.begin;
     let query: GetLatestBeadsInput = {
       ppAh: decodeHashFromBase64(ppAh),
       targetLimit: limit,
@@ -608,7 +608,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async fetchBeads(ppAhB64: ActionHashB64, beadLinks: BeadLink[], searchedInterval: TimeInterval): Promise<void> {
+  private async fetchBeads(ppAhB64: ActionHashB64, beadLinks: BeadLink[], probedInterval: TimeInterval): Promise<void> {
     //console.log("fetchBeads() len = ", beadLinks.length, searchedInterval);
     if (beadLinks.length == 0) {
       return;
@@ -618,7 +618,7 @@ export class ThreadsZvm extends ZomeViewModel {
       //console.log("fetchBeads()", bl.t)
       await this.fetchTextMessage(bl.beadAh, false, bl.creationTime);
     }
-    this._threads[ppAhB64].addSearchedInterval(searchedInterval);
+    this._threads[ppAhB64].addProbedInterval(probedInterval);
     this.notifySubscribers();
   }
 
@@ -698,21 +698,23 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async commitSearchLogs(): Promise<void> {
+  async commitProbeLogs(): Promise<void> {
+    console.log("commitProbeLogs()", Date.now());
     /** Commit Global Log */
     const maybeLatest = this.getLatestThread();
     let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
-    this._globalSearchLog.time = latestGlobalLogTime;
+    this._globalProbeLog.time = latestGlobalLogTime;
     /** Commit each Thread Log */
     for (const [ppAh, thread] of Object.entries(this._threads)) {
-      if (thread.searchedUnion && thread.searchedUnion.end > thread.latestSearchLogTime) {
+      //console.log(`commitProbeLogs() Thread "${thread.pp.purpose}":`, thread.probedUnion, thread.beadLinksTree.end.key, thread.latestProbeLogTime);
+      if (thread.probedUnion && thread.probedUnion.end > thread.latestProbeLogTime) {
         const threadLog: ThreadLastProbeLog = {
-          lastKnownBeadAh: decodeHashFromBase64(thread.beadLinksTree.end.value.beadAh),
+          maybeLastKnownBeadAh: decodeHashFromBase64(thread.beadLinksTree.end.value.beadAh),
           time: thread.beadLinksTree.end.key,
           ppAh: decodeHashFromBase64(ppAh),
         }
         const ah = await this.zomeProxy.commitThreadLog(threadLog);
-        thread.setLatestSearchLogTime(threadLog.time);
+        thread.setLatestProbeLogTime(threadLog.time);
       }
     }
   }
