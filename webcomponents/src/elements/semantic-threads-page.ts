@@ -11,16 +11,23 @@ import {CommentRequest} from "../utils";
 import "@ui5/webcomponents-fiori/dist/Bar.js"
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Badge.js";
+import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/Button.js";
+import "@ui5/webcomponents/dist/CustomListItem.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
 import "@ui5/webcomponents/dist/Option.js";
 import "@ui5/webcomponents/dist/Menu.js";
-import Dialog from "@ui5/webcomponents/dist/Dialog";
 import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents/dist/Select.js";
+import "@ui5/webcomponents/dist/StandardListItem.js";
+import "@ui5/webcomponents/dist/Tree.js"
+import "@ui5/webcomponents/dist/TreeItem.js";
+import "@ui5/webcomponents/dist/TreeItemCustom.js";
+
+import Dialog from "@ui5/webcomponents/dist/Dialog";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -496,7 +503,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
-                <ui5-select id="dna-select" class="select" style="background: #B9CCE7"
+                <ui5-select id="dna-select" class="select" style="background:#B9CCE7; width:auto; margin:0px;"
                 @change=${this.onAppletSelected}>
                     ${appletOptions}
                     <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
@@ -669,8 +676,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         #leftSide {
           background: #B9CCE7;
           max-height: 100vh;
-          width: 250px;
-          min-width: 250px;
+          width: 275px;
+          min-width: 275px;
           display: flex;
           flex-direction: column;
           border: 0.01em solid #A3ACB9;

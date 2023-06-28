@@ -115,27 +115,36 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     }
 
     /** Determine the comment button to display depending on current comments for this message */
+    const msg = this.truncate(texto.message, 60, true);
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    const isUnread = maybeCommentThread? this._dvm.threadsZvm.perspective.unreadThreads.includes(maybeCommentThread) : false;
+
     let commentButton = html``;
-    if (this._isHovered) {
-      const msg = this.truncate(texto.message, 60, true);
-      console.log("threadButton", msg, texto.message);
-      if (!maybeCommentThread) {
-        commentButton = html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
-      } else {
-        commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+    if (isUnread) {
+      commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+    } else {
+      if (this._isHovered) {
+        console.log("threadButton", msg, texto.message);
+        if (!maybeCommentThread) {
+          commentButton = html`
+              <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" style="border:none;"
+                          @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+        } else {
+          commentButton = html`
+              <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
+                          @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+        }
       }
     }
 
-    /** Determine the unread badge to display depending on current comments for this message */
-    let unreadBadge = html``;
-    const isUnread = this._dvm.threadsZvm.perspective.unreadThreads.includes(maybeCommentThread);
-    if (isUnread) {
-      unreadBadge = html`
-              <ui5-badge color-scheme="3" style="margin-left:5px;">
-                  <ui5-icon name="email" slot="icon" style="color:brown;"></ui5-icon>
-              </ui5-badge>`;
-    }
+    // /** Determine the unread badge to display depending on current comments for this message */
+    // let unreadBadge = html``;
+    // if (isUnread) {
+    //   unreadBadge = html`
+    //           <ui5-badge color-scheme="3" style="margin-left:5px; margin-top:2px;">
+    //               <ui5-icon name="email" slot="icon" style="color:brown;"></ui5-icon>
+    //           </ui5-badge>`;
+    // }
 
     const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -170,7 +179,6 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                 <div><span><b>${agent.nickname}</b></span><span class="chatDate"> ${date_str}</span></div>
                 <div class="chatMsg">${texto.message}</div>
             </div>
-            ${unreadBadge}
             ${commentButton}
         </div>
     `;

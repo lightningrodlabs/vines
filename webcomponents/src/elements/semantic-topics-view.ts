@@ -7,13 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {CommentRequest} from "../utils";
 
-import "@ui5/webcomponents/dist/Tree.js"
-import "@ui5/webcomponents/dist/TreeItem.js";
-import "@ui5/webcomponents/dist/TreeItemCustom.js";
-import "@ui5/webcomponents/dist/BusyIndicator.js";
-import "@ui5/webcomponents/dist/Button.js";
-import "@ui5/webcomponents/dist/StandardListItem.js";
-import "@ui5/webcomponents/dist/CustomListItem.js";
+
 
 
 /**
@@ -164,37 +158,82 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           if (!thread.pp) {
             return html``;
           }
-          let threadButton = html``;
-          if (this._isHovered[ppHash]) {
-            const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
-            threadButton = maybeCommentThread != null
-              ? html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
-              : html`<ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
+
+          /** Determine badge & buttons */
+          const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
+          const isUnread = this._zvm.perspective.unreadThreads.includes(maybeCommentThread);
+
+          let commentButton = html``;
+          if (isUnread) {
+            commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
+                                             design="Negative" class=${this._isHovered[ppHash]? "" : "transBtn"}
+                                             @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
+          } else {
+            if (this._isHovered[ppHash]) {
+              commentButton = maybeCommentThread != null
+                ? html`
+                          <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent"
+                                      style="border:none;"
+                                      @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
+                : html`
+                          <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent"
+                                      style="border:none;"
+                                      @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
+            }
           }
+
+          /** 'new' badge to display */
+          let newBadge = html``;
+          if (threadIsNew) {
+            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">!</ui5-badge>`;
+          }
+
+
           // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
           return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
-              <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; text-decoration:${threadIsNew? "underline" : ""}">
-                  <span style="height:18px; width: 100px; overflow:hidden; text-overflow:ellipsis;">${thread.pp.purpose}</span>
-                  ${threadButton}                  
+              <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
+                  <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
+                  ${commentButton}
+                  ${newBadge}                  
               </div>               
           </ui5-tree-item-custom>`
         })
       }
+
       /** Render Topic */
-      let threadButton = html``;
-      if (this._isHovered[topicHash]) {
-        const maybeCommentThread = this._zvm.getCommentThreadForSubject(topicHash);
-        threadButton = maybeCommentThread != null
-          ? html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
-          : html`<ui5-button icon="sys-add" style="padding:0px"tooltip="Create Comment Thread" design="Transparent" @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
-      }
+      const maybeCommentThread = this._zvm.getCommentThreadForSubject(topicHash);
       const topicIsNew = this.perspective.newSubjects[topicHash] != undefined;
+      const isUnread = this._zvm.perspective.unreadSubjects.includes(topicHash);
+
+      let commentButton = html``;
+      if (isUnread) {
+        commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
+                                             design="Negative" class=${this._isHovered[topicHash]? "" : "transBtn"}
+                                             @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+      } else {
+        if (this._isHovered[topicHash]) {
+          commentButton = maybeCommentThread != null
+            ? html`
+                      <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
+                                  @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
+            : html`
+                      <ui5-button icon="sys-add" style="padding:0px" tooltip="Create Comment Thread"
+                                  style="border:none;" design="Transparent"
+                                  @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+        }
+      }
+      /** 'new' badge to display */
+      let newBadge = html``;
+      if (topicIsNew) {
+        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
+      }
+
       const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`
           <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"
                                 expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#DBE3EF" : ""};overflow: hidden;">
           <span slot="content" style="display:flex;overflow: hidden;">
-              <span style="width:110px; height:18px;margin-top:8px; margin-right:5px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis;overflow:hidden;">${title}</span>                 
+              <span style="/*width:110px;*/height:18px;margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis;overflow:hidden;">${title}</span>
               <ui5-button icon="add" tooltip="Create a new Thread for this Topic" design="Transparent" @click=${async (e) => {
                   e.stopPropagation(); //console.log("topic clicked:", title);
                   await this.updateComplete;
@@ -204,7 +243,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       composed: true
                   }));
               }}></ui5-button>
-              ${threadButton}
+              ${commentButton}
+              ${newBadge}              
           </span>
               ${threads}
           </ui5-tree-item-custom>`
@@ -242,6 +282,11 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           display: flex;
           flex-direction: column;
           /*width: 100%;*/
+        }
+
+        .transBtn {
+          border:none;
+          background:none;
         }
       `,
 
