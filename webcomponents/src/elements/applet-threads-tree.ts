@@ -1,8 +1,8 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {consume, ContextConsumer, createContext} from "@lit-labs/context";
+import {consume} from "@lit-labs/context";
 
-import {ActionHash, ActionHashB64, decodeHashFromBase64, EntryHash, EntryHashB64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
 import {AttachmentType, Hrl, WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
 
@@ -253,17 +253,36 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
-      let threadButton = html``;
-      if (this._isHovered[pathHash]) {
-        const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
-        threadButton = html`<ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="Create Comment Thread" design="Transparent" 
-                                        @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`
+      const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
+      const isUnread = this._zvm.perspective.unreadThreads.includes(maybeCommentThread);
+      const topicIsNew = this.perspective.newSubjects[pathHash] != undefined;
+
+      let commentButton = html``;
+      if (isUnread) {
+        commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
+                                             design="Negative" class=${this._isHovered[pathHash]? "" : "transBtn"}
+                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`;
+      } else {
+        if (this._isHovered[pathHash]) {
+          commentButton = html`
+              <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Comment Thread" : "Create Comment Thread"}"
+                          design="Transparent"
+                          @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`
+        }
       }
+
+      /** 'new' badge to display */
+      let newBadge = html``;
+      if (topicIsNew) {
+        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
+      }
+
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`<ui5-tree-item-custom id=${pathHash} level="1" has-children>
           <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:;">
               <span>${subjectType}</span>
-              ${threadButton}
+              ${commentButton}
+              ${newBadge}
           </div>
       </ui5-tree-item-custom>`
     });
@@ -298,6 +317,11 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         #threadsTree {
           display: flex;
           flex-direction: column;
+        }
+        
+        .transBtn {
+          border:none;
+          background:none;
         }
       `,
 
