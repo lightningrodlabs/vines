@@ -67,8 +67,11 @@ export interface ThreadsPerspective {
 
   /** -- New / unread -- */
   globalSearchLog?: GlobalLastSearchLog,
+  /** New = First time seen */
+  /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   newSubjects: Dictionary<[ActionHash, Timestamp][]>,
   newThreads: ActionHashB64[],
+  /** unread = Has new beads on one if its threads */
   unreadSubjects: AnyLinkableHashB64[],
   unreadThreads: ActionHashB64[],
 }

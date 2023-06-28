@@ -10,6 +10,7 @@ import {CommentRequest} from "../utils";
 /** @ui5/webcomponents-fiori */
 import "@ui5/webcomponents-fiori/dist/Bar.js"
 /** @ui5/webcomponents */
+import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/Button.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
@@ -23,20 +24,21 @@ import "@ui5/webcomponents/dist/Select.js";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
-import "@ui5/webcomponents-icons/dist/dropdown.js"
-import "@ui5/webcomponents-icons/dist/activate.js"
-import "@ui5/webcomponents-icons/dist/comment.js"
-import "@ui5/webcomponents-icons/dist/synchronize.js"
-import "@ui5/webcomponents-icons/dist/add.js"
-import "@ui5/webcomponents-icons/dist/delete.js"
-import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/action-settings.js"
-import "@ui5/webcomponents-icons/dist/sys-add.js"
+import "@ui5/webcomponents-icons/dist/activate.js"
+import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/comment.js"
+import "@ui5/webcomponents-icons/dist/delete.js"
+import "@ui5/webcomponents-icons/dist/discussion.js"
+import "@ui5/webcomponents-icons/dist/dropdown.js"
+import "@ui5/webcomponents-icons/dist/email.js"
+import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
-import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
-import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/save.js"
+import "@ui5/webcomponents-icons/dist/sys-add.js"
+import "@ui5/webcomponents-icons/dist/synchronize.js"
+import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
 import {ChatThreadView} from "./chat-thread-view";
@@ -255,7 +257,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       this.appletId = encodeHashToBase64(await emptyAppletId());
       console.warn("no appletId provided. A fake one has been generated", this.appletId);
     }
-    //await this._dvm.threadsZvm.generateTestData(this.appletId);
+    await this._dvm.threadsZvm.generateTestData(this.appletId);
 
     /** */
     const leftSide = this.shadowRoot.getElementById("leftSide");

@@ -79,7 +79,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   _firstLoad = true;
 
   /** */
-  protected updated(_changedProperties: PropertyValues) {
+  protected async updated(_changedProperties: PropertyValues) {
     try {
       /** Scroll to bottom when chat-view finished updating (e.g. loading chat-items) */
       //console.log("ChatView.updated() ", this.scrollTop, this.scrollHeight, this.clientHeight)
@@ -91,6 +91,18 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     } catch(e) {
       /** i.e. element not present */
     }
+
+
+    // /** Check for comments on each message */
+    // const threadInfo = this._dvm.threadsZvm.perspective.threads[this.threadHash];
+    // if (!threadInfo) {
+    //   const beads = threadInfo.getAll();
+    //   let promises = Object.values(beads).map(
+    //     (blm ) => {
+    //       this._dvm.threadsZvm.probeThreads(blm.beadAh);
+    //     })
+    // }
+
   }
 
 

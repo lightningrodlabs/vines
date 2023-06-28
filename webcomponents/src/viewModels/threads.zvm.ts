@@ -391,7 +391,7 @@ export class ThreadsZvm extends ZomeViewModel {
       }
     }
 
-    /** Figure out if subjects are new: it's new if there are no older threads than the new ones found */
+    /** Figure out if subjects are new */
     //console.log("oldestThreadTimeBySubject", oldestThreadTimeBySubject);
     let newSubjects = {};
     for (const [subjectHash, oldestNewThreadTime] of Object.entries(oldestNewThreadBySubject)) {
