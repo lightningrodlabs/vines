@@ -4,6 +4,7 @@ use hdk::{
 use threads_integrity::*;
 use crate::beads::{BeadLink};
 use crate::path_explorer::*;
+use path_utils::*;
 use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
 use crate::time_indexing::{SweepInterval, TimedItemTag};
 

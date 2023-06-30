@@ -1,0 +1,15 @@
+[package]
+name = "path_utils"
+version = "0.1.0"
+rust-version = "1.65.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde = { version = "1.0", default-features = false }
+hdk = { version = "=0.1.1", features = ["encoding"] }
+
+#base64 = {version = "0.13"}
+#chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }

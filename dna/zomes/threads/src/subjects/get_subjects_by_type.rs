@@ -1,9 +1,8 @@
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::{holo_hash_decode_unchecked};
-//use zome_utils::*;
 use crate::participation_protocols::*;
-use crate::path_explorer::tp_children_paths;
+use path_utils::tp_children_paths;
 
 
 ///

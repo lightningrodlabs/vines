@@ -4,6 +4,8 @@ use hdk::prelude::holo_hash::holo_hash_encode;
 use threads_integrity::{ROOT_ANCHOR_SUBJECTS, ThreadsLinkType};
 use crate::participation_protocols::get_applet_tp;
 use crate::path_explorer::*;
+use path_utils::*;
+
 use crate::subjects::get_subjects_by_type::{get_subjects_by_type, GetProtocolsInput};
 
 

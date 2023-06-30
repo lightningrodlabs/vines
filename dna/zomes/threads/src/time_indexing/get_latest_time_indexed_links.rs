@@ -4,7 +4,8 @@ use hdk::{
 use std::cmp;
 use hdk::hash_path::path::Component;
 use threads_integrity::ThreadsLinkType;
-use crate::path_explorer::*;
+use path_utils::*;
+
 use crate::time_indexing::*;
 use crate::time_indexing::timepath_utils::*;
 

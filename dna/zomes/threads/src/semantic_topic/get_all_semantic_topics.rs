@@ -1,6 +1,8 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
+use path_utils::*;
+
 use crate::path_explorer::*;
 use crate::semantic_topic::determine_topic_anchor;
 

@@ -12,7 +12,7 @@ use hdk::prelude::*;
 use hdk::prelude::holo_hash::{hash_type, HashType, holo_hash_decode, holo_hash_decode_unchecked, holo_hash_encode};
 use zome_utils::*;
 use threads_integrity::*;
-use crate::path_explorer::hash2comp;
+use path_utils::hash2comp;
 
 /// Get all ParticipationProtocol in local source-chain
 #[hdk_extern]

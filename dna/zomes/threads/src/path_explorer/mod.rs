@@ -1,11 +1,8 @@
 
 mod fns;
-mod typed_path_ext;
 mod typed_anchor;
 mod item_link;
-mod conversions;
 
-pub use typed_path_ext::*;
 pub use typed_anchor::*;
 pub use item_link::*;
 pub use conversions::*;

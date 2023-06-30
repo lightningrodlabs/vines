@@ -4,7 +4,7 @@ use hdk::hash_path::path::{Component};
 use hdk::prelude::*;
 
 
-/// Touch and list all the links from this path to paths below it.
+/// Get all the links from this path to paths below it.
 /// Only returns links between paths, not to other entries that might have their own links.
 pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::link::Link>> {
   let mut unwrapped = get_links(

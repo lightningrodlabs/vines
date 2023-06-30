@@ -3,6 +3,8 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use crate::beads::{BeadLink};
 use crate::path_explorer::*;
+use path_utils::*;
+
 use crate::time_indexing::*;
 
 

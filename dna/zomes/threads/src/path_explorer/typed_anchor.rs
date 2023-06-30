@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::zome_error;
 use crate::path_explorer::*;
+use path_utils::*;
 use crate::utils::get_threads_zome_index;
 
 

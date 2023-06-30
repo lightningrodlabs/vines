@@ -3,7 +3,8 @@ use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
 use crate::participation_protocols::comp2subject;
-//use zome_utils::*;
+use path_utils::*;
+
 use crate::path_explorer::*;
 
 
