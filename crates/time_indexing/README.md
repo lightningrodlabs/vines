@@ -8,11 +8,15 @@ Enables to index any `AnyLinkableHash` in a Link tree structure called a time-in
 
 A datum indexed in a time-index is called a ***Timed Item***, or simply ***item*** in this context.
 
+***Probing*** is the act of calling holochain's `get_links()`.
+
+***Sweeping*** is the act of *probing* a part of a time-index tree, in order to return all stored items in that part.
+
 
 ## Design
 
 A time-index starts with a user defined anchor (called the 'root anchor'), and has a granularity of an hour.
-This means a user can define multiple time-indexes to store items separately.
+This means a user can define multiple time-indexes to store items in seperate time hiearachies.
 
 To index an item the user has to call the function:
 ```

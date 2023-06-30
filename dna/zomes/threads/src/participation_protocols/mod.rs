@@ -4,12 +4,10 @@ mod create_participation_protocol;
 
 pub use create_participation_protocol::*;
 
-use base64::*;
-
-use hdk::hash_path::path::{Component, DELIMITER};
+use hdk::hash_path::path::{Component};
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::{hash_type, HashType, holo_hash_decode, holo_hash_decode_unchecked, holo_hash_encode};
+use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_encode};
 use zome_utils::*;
 use threads_integrity::*;
 use path_utils::hash2comp;

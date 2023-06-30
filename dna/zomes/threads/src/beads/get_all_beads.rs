@@ -1,12 +1,8 @@
 use hdk::prelude::*;
-//use zome_utils::*;
 use threads_integrity::*;
-use crate::beads::{BeadLink};
-use crate::path_explorer::*;
 use path_utils::*;
-
-use crate::time_indexing::*;
-
+use time_indexing::*;
+use crate::beads::{BeadLink};
 
 /// Travers the thread-specific time-index tree and get all BeadLinks
 /// USE WITH CARE as this can easily timeout as it's a recursive loop of get_links()

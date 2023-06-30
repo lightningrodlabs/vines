@@ -1,8 +1,6 @@
 use hdk::prelude::*;
 use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
 
-use threads_integrity::*;
-
 ///
 /// Data sent by UI ONLY. That's why we use B64 here.
 ///

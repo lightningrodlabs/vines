@@ -131,6 +131,23 @@ ValidationStatus,
 ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
+export interface SweepResponse {
+  sweepedInterval: SweepInterval
+  foundItems: [Timestamp, ItemLink][]
+}
+
+/** Time interval in us */
+export interface SweepInterval {
+  begin: Timestamp
+  end: Timestamp
+}
+
+export interface TimedItemTag {
+  itemType: string
+  devtestTimestamp: Timestamp
+  customData: number[]
+}
+
 /** Struct holding info about the link between an Item and its LeafAnchor. */
 export interface ItemLink {
   itemHash: Uint8Array
@@ -240,23 +257,6 @@ export interface Subject {
 export interface GetProtocolsInput {
   appletId: EntryHash
   subjectType: string
-}
-
-export interface SweepResponse {
-  sweepedInterval: SweepInterval
-  foundItems: [Timestamp, ItemLink][]
-}
-
-/** Time interval in us */
-export interface SweepInterval {
-  begin: Timestamp
-  end: Timestamp
-}
-
-export interface TimedItemTag {
-  itemType: string
-  devtestTimestamp: Timestamp
-  customData: number[]
 }
 
 export interface Bead {

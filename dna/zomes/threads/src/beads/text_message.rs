@@ -1,11 +1,9 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
-use crate::beads::*;
-use crate::path_explorer::*;
 use path_utils::*;
-use crate::time_indexing::convert_timepath_to_timestamp;
-
+use time_indexing::convert_timepath_to_timestamp;
+use crate::beads::*;
 
 /// Get all TextMessage in local source-chain
 /// WARN Will return actual action creation time and not devtest_timestamp
@@ -28,7 +26,7 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
     Some(record) => {
       let action = record.action().clone();
       //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
-      let mut msg: String = "<unknown type>".to_string();
+      //let mut msg: String = "<unknown type>".to_string();
       let Ok(typed) = get_typed_from_record::<TextMessage>(record)
       else { return zome_error!("get_text_message(): Entry not a TextMessage") };
       Ok((action.timestamp(), action.author().to_owned(), typed))

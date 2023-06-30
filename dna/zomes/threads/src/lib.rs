@@ -6,7 +6,6 @@
 
 mod semantic_topic;
 mod path_explorer;
-mod time_indexing;
 pub(crate) mod utils;
 pub mod beads;
 mod participation_protocols;

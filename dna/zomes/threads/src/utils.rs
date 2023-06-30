@@ -1,7 +1,6 @@
 use hdk::hash_path::path::Component;
 use hdk::info::dna_info;
 use hdk::prelude::{EntryHash, ExternResult, wasm_error, WasmError, ZomeName, SerializedBytesError};
-use hdk::prelude::holo_hash::holo_hash_encode;
 
 
 ///

@@ -1,13 +1,7 @@
-use hdk::hash_path::path::Component;
-use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::error::HoloHashError;
 use threads_integrity::{ROOT_ANCHOR_SUBJECTS, ThreadsLinkType};
 use path_utils::*;
 
-use crate::participation_protocols::get_applet_tp;
-use crate::path_explorer::*;
-use crate::subjects::get_subjects_by_type::{get_subjects_by_type, GetProtocolsInput};
 use crate::utils::comp2appletId;
 
 

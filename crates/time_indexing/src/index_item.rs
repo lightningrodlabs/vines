@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use crate::time_indexing::*;
+use crate::*;
 
 
 /// Index an Item according to given time and root TypedPath

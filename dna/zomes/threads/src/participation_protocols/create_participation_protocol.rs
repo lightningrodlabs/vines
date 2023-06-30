@@ -2,9 +2,9 @@ use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
 use path_utils::*;
+use time_indexing::{index_item};
 use crate::participation_protocols::*;
 use crate::path_explorer::*;
-use crate::time_indexing::{index_item};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -33,7 +33,7 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, dna_hash: DnaH
   let tp = get_subject_tp(applet_id, &pp.subject_type, dna_hash, pp.subject_hash.clone())?;
   tp.ensure()?;
   debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
-  let ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
+  let _ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
 
   /// Use given index_time or use the PP's creation time
   let index_time = if let Some(index_time) = maybe_index_time {

@@ -1,10 +1,7 @@
 use hdk::prelude::*;
-//use zome_utils::*;
-use threads_integrity::*;
-use crate::path_explorer::*;
 use path_utils::*;
-
-use crate::time_indexing::*;
+use time_indexing::*;
+use threads_integrity::*;
 
 
 /// Returns the Thread Time Anchor and the Global Time Anchor

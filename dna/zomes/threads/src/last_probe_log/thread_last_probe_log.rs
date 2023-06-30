@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{/*BTreeMap,*/ HashMap};
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
@@ -33,7 +33,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
   /// Get Create actions
   let create_records = get_all_typed_local::<ThreadLastProbeLog>(entry_type.clone())?;
   let mut hashmap = HashMap::new();
-  for (ah, create, tql) in create_records {
+  for (ah, _create, tql) in create_records {
     hashmap.insert(ah, tql);
   }
 

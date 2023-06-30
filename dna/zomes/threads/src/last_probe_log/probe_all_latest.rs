@@ -1,9 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
+use time_indexing::*;
 use crate::beads::{BeadLink};
-use crate::path_explorer::*;
-use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
-use crate::time_indexing::{SweepInterval, TimedItemTag};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -28,7 +26,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
   let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None, ThreadsLinkType::TimeItem)?.1;
   debug!("links.len = {}", responses.len());
   /// Convert links to BeadLinks
-  let me = agent_info()?.agent_initial_pubkey;
+  //let me = agent_info()?.agent_initial_pubkey;
   let mut bls: Vec<(ActionHash, BeadLink)> = Vec::new();
   let mut pps: Vec<(AnyLinkableHash, ActionHash)> = Vec::new();
   for (_index_time, link) in responses {

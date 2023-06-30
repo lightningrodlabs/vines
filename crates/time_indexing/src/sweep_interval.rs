@@ -1,6 +1,7 @@
 use std::fmt::*;
 use hdk::prelude::*;
-use crate::time_indexing::{ts2anchor};
+
+use crate::ts2anchor;
 
 /// Time interval in us
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

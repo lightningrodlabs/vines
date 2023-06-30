@@ -5,8 +5,8 @@ use std::cmp;
 use hdk::hash_path::path::Component;
 use path_utils::*;
 
-use crate::time_indexing::*;
-use crate::time_indexing::timepath_utils::*;
+use crate::*;
+use crate::timepath_utils::*;
 
 
 /// Reverse-walk the time-index tree from `sweep_interval.end` to `begin` until `items_limit` items are found.
