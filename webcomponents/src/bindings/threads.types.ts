@@ -157,7 +157,7 @@ export interface AddManyTextMessageAtInput {
 }
 
 export interface ProbeAllLatestOutput {
-  searchedInterval: SearchInterval
+  searchedInterval: SweepInterval
   newThreadsBySubject: [Uint8Array, ActionHash][]
   newBeadsByThread: [ActionHash, BeadLink][]
 }
@@ -247,13 +247,13 @@ export interface GetProtocolsInput {
   subjectType: string
 }
 
-export interface SearchResponse {
-  searchedInterval: SearchInterval
+export interface SweepResponse {
+  sweepedInterval: SweepInterval
   foundItems: [Timestamp, ItemLink][]
 }
 
 /** Time interval in us */
-export interface SearchInterval {
+export interface SweepInterval {
   begin: Timestamp
   end: Timestamp
 }

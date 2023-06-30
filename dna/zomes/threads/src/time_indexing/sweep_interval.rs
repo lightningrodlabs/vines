@@ -6,13 +6,13 @@ use crate::time_indexing::{ts2anchor};
 /// Time interval in us
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SearchInterval {
+pub struct SweepInterval {
   pub begin: Timestamp,
   pub end: Timestamp,
 }
 
 
-impl Display for SearchInterval {
+impl Display for SweepInterval {
   fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     let duration = self.duration().as_seconds_and_nanos().0;
     write!(f,
@@ -22,7 +22,7 @@ impl Display for SearchInterval {
   }
 }
 
-impl Default for SearchInterval {
+impl Default for SweepInterval {
   fn default() -> Self {
     Self {
       begin: Timestamp::HOLOCHAIN_EPOCH,
@@ -32,8 +32,7 @@ impl Default for SearchInterval {
 }
 
 
-impl SearchInterval {
-
+impl SweepInterval {
   ///
   pub fn now() -> Self {
     Self { begin: Timestamp::HOLOCHAIN_EPOCH, end: sys_time().unwrap() } // FIXME use dna_info.origin_time
@@ -82,7 +81,7 @@ impl SearchInterval {
     let start_time_us = Timestamp::from_micros((self.begin.as_seconds_and_nanos().0 / 3600) * 3600 * 1000 * 1000);
     let end_hour_plus_1 = (self.end.as_seconds_and_nanos().0 / 3600) + 1;
     let finish_time_us = Timestamp::from_micros( end_hour_plus_1 * 3600 * 1000 * 1000);
-    return SearchInterval::new(start_time_us, finish_time_us).unwrap();
+    return SweepInterval::new(start_time_us, finish_time_us).unwrap();
   }
 
 

@@ -13,6 +13,7 @@ mod participation_protocols;
 mod subjects;
 mod signals;
 mod last_probe_log;
+mod get_latest_items;
 
 use hdk::prelude::*;
 

@@ -3,12 +3,12 @@ use threads_integrity::*;
 use crate::beads::{BeadLink};
 use crate::path_explorer::*;
 use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
-use crate::time_indexing::{SearchInterval, TimedItemTag};
+use crate::time_indexing::{SweepInterval, TimedItemTag};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProbeAllLatestOutput {
-  pub searched_interval: SearchInterval,
+  pub searched_interval: SweepInterval,
   pub new_threads_by_subject: Vec<(AnyLinkableHash, ActionHash)>,
   pub new_beads_by_thread: Vec<(ActionHash, BeadLink)>,
 }
@@ -22,7 +22,7 @@ pub struct ProbeAllLatestOutput {
 pub fn probe_all_latest(begin_time: Timestamp)
   -> ExternResult<ProbeAllLatestOutput>
 {
-  let searched_interval = SearchInterval::new(begin_time, sys_time()?)?;
+  let searched_interval = SweepInterval::new(begin_time, sys_time()?)?;
   /// Query DHT
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
   let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None)?.1;

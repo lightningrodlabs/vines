@@ -1,4 +1,4 @@
-import {SearchInterval} from "../bindings/threads.types";
+import {SweepInterval} from "../bindings/threads.types";
 
 /**
  * In Holochain Timestamp (us)
@@ -8,7 +8,7 @@ export class TimeInterval {
   private readonly _begin: number;
   private readonly _end: number;
 
-  static new(interval: SearchInterval): TimeInterval {
+  static new(interval: SweepInterval): TimeInterval {
     return new TimeInterval(interval.begin, interval.end);
   }
 

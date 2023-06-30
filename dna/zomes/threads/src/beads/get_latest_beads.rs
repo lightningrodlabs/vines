@@ -5,7 +5,7 @@ use threads_integrity::*;
 use crate::beads::{BeadLink};
 use crate::path_explorer::*;
 use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
-use crate::time_indexing::{SearchInterval, TimedItemTag};
+use crate::time_indexing::{SweepInterval, TimedItemTag};
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -20,14 +20,14 @@ pub struct GetLatestBeadsInput {
 
 ///
 #[hdk_extern]
-pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SearchInterval, Vec<BeadLink>)> {
+pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
   /// Convert arguments
   let pp_comp = hash2comp(input.pp_ah.clone());
   let begin = input.begin_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
   let end = input.end_time.unwrap_or(sys_time().unwrap());
   let limit = input.target_limit.unwrap_or(usize::MAX);
   debug!("start = {} | target_count = {}",begin, limit);
-  let search_interval = SearchInterval::new(begin, end)?;
+  let search_interval = SweepInterval::new(begin, end)?;
   debug!("search_interval = {}", search_interval.print_as_anchors());
   let root_tp = Path::from(vec![pp_comp]).typed(ThreadsLinkType::ThreadTimePath)?;
   /// Query DHT

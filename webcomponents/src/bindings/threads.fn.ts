@@ -16,6 +16,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"add_text_message",
 	"add_text_message_at",
 	"add_many_text_message_at",
+	"get_latest_items",
 	"get_global_log",
 	"commit_global_log",
 	"query_global_log",
@@ -48,8 +49,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_applets",
 	"get_subjects_by_type",
 	"get_subjects_for_applet",
-	"get_subject_types_for_applet",
-	"get_latest_items",];
+	"get_subject_types_for_applet",];
 
 
 /** Generate tuple array of function names with given zomeName */
