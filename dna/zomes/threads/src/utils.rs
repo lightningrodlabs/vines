@@ -4,7 +4,7 @@ use hdk::prelude::{EntryHash, ExternResult, wasm_error, WasmError, ZomeName, Ser
 
 
 ///
-pub(crate) fn get_threads_zome_index() -> u8 {
+pub(crate) fn get_Threads_zome_index() -> u8 {
   let threads_name = ZomeName::from("threads_integrity");
   let zome_names = dna_info().unwrap().zome_names;
   let mut i = 0;

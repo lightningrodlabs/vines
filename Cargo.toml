@@ -1,6 +1,8 @@
 [workspace]
 members = [
   "crates/path_utils",
+  "crates/time_indexing",
+  "dna/zomes/path_explorer",
   "dna/zomes/threads_integrity",
   "dna/zomes/threads",
   #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces

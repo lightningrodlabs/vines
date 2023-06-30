@@ -15,6 +15,9 @@ zome_utils.workspace = true
 path_utils = { path = "../../../crates/path_utils" }
 time_indexing = { path = "../../../crates/time_indexing" }
 
+path_explorer = { path = "../path_explorer" }
+
+
 base64 = {version = "0.13"}
 threads_integrity = { package = "threads_integrity_zome", path = "../threads_integrity" }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }

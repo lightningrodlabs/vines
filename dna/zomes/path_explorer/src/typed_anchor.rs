@@ -1,8 +1,6 @@
 use hdk::prelude::*;
-use zome_utils::zome_error;
-use crate::path_explorer::*;
 use path_utils::*;
-use crate::utils::get_threads_zome_index;
+use crate::*;
 
 
 /// Struct for holding an easily exportable typed Anchor.
@@ -101,14 +99,15 @@ impl TypedAnchor {
 
 ///
 pub fn batch_convert_path_to_anchor(tps: Vec<TypedPath>) -> ExternResult<Vec<TypedAnchor>> {
+  let this_zome_index = zome_info()?.id.0;
   let mut res = Vec::new();
   for tp in tps {
     //let leaf = child_pair.1.leaf().unwrap();
     //let leaf_str = String::try_from(leaf).unwrap();
     //debug!("get_anchor_children()    - leaf: '{}' ; tag = {:?}", leaf_str, child_path.make_tag());
     let Ok(str) = path2anchor(&tp.path)
-      else { return zome_error!("Failed to convert Path to Anchor") };
-    res.push(TypedAnchor::new(str, get_threads_zome_index(), tp.link_type.zome_type.0));
+      else { return Err(wasm_error!(WasmErrorInner::Guest("Failed to convert Path to Anchor".to_string()))) };
+    res.push(TypedAnchor::new(str, this_zome_index, tp.link_type.zome_type.0));
   }
   Ok(res)
 }

@@ -2,11 +2,9 @@ use hdk::hash_path::path::Component;
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
-use crate::participation_protocols::comp2subject;
 use path_utils::*;
-
-use crate::path_explorer::*;
-
+use path_explorer::*;
+use crate::participation_protocols::comp2subject;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

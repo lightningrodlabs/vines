@@ -1,10 +1,7 @@
 use hdk::hash_path::path::Component;
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::EntryHashB64;
-
-//use zome_utils::*;
-use crate::path_explorer::*;
-
+use crate::*;
 
 /// Determine TypedAnchor from anchor, by looking for parent
 /// Return EntryHash of anchor if no parents found

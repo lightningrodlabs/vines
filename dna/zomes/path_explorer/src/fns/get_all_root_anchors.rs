@@ -1,14 +1,14 @@
 use hdk::hash_path::path::{root_hash};
 use hdk::prelude::*;
 use path_utils::*;
-use crate::path_explorer::*;
-use crate::utils::get_threads_zome_index;
+
+use crate::*;
 
 
 /// Return any root Anchors from all Zomes
-/// A RootAnchor is the the sub Anchors of the ROOT entry
+/// A RootAnchor is a path linked from the ROOT entry
 #[hdk_extern]
-pub fn get_all_root_anchors(_: ()) -> ExternResult<Vec<TypedAnchor>> {
+pub fn get_all_root_anchors(zome_name: String) -> ExternResult<Vec<TypedAnchor>> {
   /// Check for children for each link type
   let links = get_links(
     root_hash()?,
@@ -20,7 +20,7 @@ pub fn get_all_root_anchors(_: ()) -> ExternResult<Vec<TypedAnchor>> {
   for link in links {
     let str = compTag2str(&link.tag).unwrap();
     debug!("get_all_root_anchors() {:?} | {}", link.link_type, str);
-    res.push(TypedAnchor::new(str, get_threads_zome_index(), link.link_type.0));
+    res.push(TypedAnchor::new(str, get_zome_index(&zome_name), link.link_type.0));
   }
   debug!("get_all_root_anchors() done | found: {}\n\n", res.len());
   ///

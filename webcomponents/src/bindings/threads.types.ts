@@ -157,6 +157,26 @@ export interface ItemLink {
   linkIndex: number
 }
 
+export type MyLinkFilter = [number, number[]][];
+
+/**  */
+export interface GetItemsInput {
+  anchor: string
+  linkFilter: MyLinkFilter
+  linkTag?: number[]
+}
+
+/**
+ * Struct for holding an easily exportable typed Anchor.
+ * A Typed Anchor is an Anchor with LinkType associated with it.
+ */
+export interface TypedAnchor {
+  anchor: string
+  /** Flattened ScopedLinkType */
+  zomeIndex: number
+  linkIndex: number
+}
+
 export interface GetLatestBeadsInput {
   ppAh: ActionHash
   beginTime?: Timestamp
@@ -192,26 +212,6 @@ export interface CreatePpInput {
   pp: ParticipationProtocol
   appletId: EntryHash
   dnaHash: DnaHash
-}
-
-export type MyLinkFilter = [number, number[]][];
-
-/**  */
-export interface GetItemsInput {
-  anchor: string
-  linkFilter: MyLinkFilter
-  linkTag?: number[]
-}
-
-/**
- * Struct for holding an easily exportable typed Anchor.
- * A Typed Anchor is an Anchor with LinkType associated with it.
- */
-export interface TypedAnchor {
-  anchor: string
-  /** Flattened ScopedLinkType */
-  zomeIndex: number
-  linkIndex: number
 }
 
 /**

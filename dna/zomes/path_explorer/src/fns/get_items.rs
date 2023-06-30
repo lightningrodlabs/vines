@@ -1,8 +1,7 @@
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::{AnyLinkableHashB64};
-use zome_utils::zome_error;
-use crate::path_explorer::*;
 use path_utils::*;
+use crate::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MyLinkFilter(pub Vec<(u8, Vec<u8>)>);
@@ -48,7 +47,7 @@ pub fn get_items(input: GetItemsInput) -> ExternResult<Vec<ItemLink>> {
 #[hdk_extern]
 pub fn get_all_items(leaf_anchor: String) -> ExternResult<Vec<ItemLink>>  {
   if leaf_anchor.is_empty() {
-    return zome_error!("get_all_items() Failed. Input string is empty");
+    return Err(wasm_error!(WasmErrorInner::Guest("get_all_items() Failed. Input string is empty".to_string())));
   }
   let path = Path::from(leaf_anchor.clone());
   let lls = get_all_itemlinks(path, None)?;

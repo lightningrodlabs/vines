@@ -96,7 +96,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async printRootAnchors() {
-    const rootAnchors = await this._dvm.threadsZvm.zomeProxy.getAllRootAnchors();
+    const rootAnchors = await this._dvm.threadsZvm.zomeProxy.getAllRootAnchors("threads_integrity");
     console.log({rootAnchors})
     const linkKeys = Object.keys(ThreadsLinkTypeType);
     for (const rootAnchor of rootAnchors) {

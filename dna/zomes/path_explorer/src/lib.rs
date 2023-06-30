@@ -1,16 +1,20 @@
 
 mod fns;
 mod typed_anchor;
+mod utils;
+
 
 pub use typed_anchor::*;
 pub use conversions::*;
+pub use utils::*;
 
+//--------------------------------------------------------------------------------------------------
 
 use hdk::prelude::*;
 use path_utils::*;
 
 
-/// Only gives values for integrity zomes of current zome.
+/// Only gives values for current integrity zome.
 /// Hopefully Holo will fix this and give all links types for all zomes in the dna.
 pub fn dna_link_types() -> Vec<(ZomeIndex, Vec<LinkType>)> {
   //debug!("dna_link_types() {:?}", dna_info().unwrap().zome_names);
@@ -21,8 +25,8 @@ pub fn dna_link_types() -> Vec<(ZomeIndex, Vec<LinkType>)> {
 }
 
 
-/// Only gives integrity zomes for current zome.
-/// Hopefully Holo will fix this and give all integrity zomes in the dna.
+/// Only gives link_types for current integrity zome.
+/// Hopefully Holo will fix this and return all integrity zomes in the dna.
 pub fn dna_zomes() -> Vec<ZomeIndex> {
   return dna_link_types().into_iter().map(|(zt, _lts)| zt).collect();
 }

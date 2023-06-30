@@ -165,7 +165,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
     } else {
       /** AnchorTree from ROOT */
-      let tas = await this._zvm.zomeProxy.getAllRootAnchors();
+      let tas = await this._zvm.zomeProxy.getAllRootAnchors("threads_integrity");
       this._level0 = tas.map((ta) => {return {origin: ta.anchor, zomeIndex: ta.zomeIndex, linkIndex: ta.linkIndex}});
     }
   }
