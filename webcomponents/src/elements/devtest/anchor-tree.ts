@@ -156,7 +156,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (typeof this.root == 'string') {
         const b64 = new TextEncoder().encode(this.root);
         const itemLinks = await this._zvm.zomeProxy.getAllItemsFromB64(b64);
-        this._level0 = itemLinks.map((il) => {return {origin: encodeHashToBase64(il.target), zomeIndex: il.zomeIndex, linkIndex: il.linkIndex}});
+        this._level0 = itemLinks.map((il) => {return {origin: encodeHashToBase64(il.itemHash), zomeIndex: il.zomeIndex, linkIndex: il.linkIndex}});
       } else {
         /** AnchorTree */
         const tas = await this._zvm.zomeProxy.getTypedChildren(this.root);
@@ -272,7 +272,7 @@ export class AnchorTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         console.log({itemLinks})
         for (const itemLink of itemLinks) {
           const tag = new TextDecoder().decode(new Uint8Array(itemLink.tag));
-          const hash = encodeHashToBase64(new Uint8Array(itemLink.target));
+          const hash = encodeHashToBase64(new Uint8Array(itemLink.itemHash));
 
           if (itemHashs.includes(hash)) {
             continue;

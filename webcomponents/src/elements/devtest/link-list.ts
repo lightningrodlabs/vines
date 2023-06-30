@@ -84,7 +84,7 @@ export class LinkList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         } catch(e) {
           tag = new TextDecoder().decode(new Uint8Array(ll.tag));
         }
-        const hash = encodeHashToBase64(new Uint8Array(ll.target));
+        const hash = encodeHashToBase64(new Uint8Array(ll.itemHash));
         const additionalText = tag? linkKeys[ll.linkIndex] + " | " + tag : linkKeys[ll.linkIndex];
         return html`<ui5-tree-item id="${hash}" text="${hash}" additional-text="${additionalText}"></ui5-tree-item>`
       });

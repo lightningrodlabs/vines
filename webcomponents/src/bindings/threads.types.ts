@@ -131,6 +131,15 @@ ValidationStatus,
 ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
+/** Struct holding info about the link between an Item and its LeafAnchor. */
+export interface ItemLink {
+  itemHash: Uint8Array
+  tag: number[]
+  /** Flattened ScopedLinkType */
+  zomeIndex: number
+  linkIndex: number
+}
+
 export interface GetLatestBeadsInput {
   ppAh: ActionHash
   beginTime?: Timestamp
@@ -178,21 +187,7 @@ export interface GetItemsInput {
 }
 
 /**
- * Struct holding info about the link between a LeafAnchor and an Item.
- * A LeafAnchor is an Anchor wit no sub anchors.
- * An Item is the object linked from a LeafAnchor.
- */
-export interface ItemLink {
-  target: Uint8Array
-  tag: number[]
-  /** Flattened ScopedLinkType */
-  zomeIndex: number
-  linkIndex: number
-}
-
-/**
  * Struct for holding an easily exportable typed Anchor.
- * An Anchor is a Holochain Path made exclusively of human-readable strings.
  * A Typed Anchor is an Anchor with LinkType associated with it.
  */
 export interface TypedAnchor {

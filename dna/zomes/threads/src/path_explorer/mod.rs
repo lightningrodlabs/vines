@@ -1,14 +1,13 @@
 
 mod fns;
 mod typed_anchor;
-mod item_link;
 
 pub use typed_anchor::*;
-pub use item_link::*;
 pub use conversions::*;
 
 
 use hdk::prelude::*;
+use path_utils::*;
 
 
 /// Only gives values for integrity zomes of current zome.
@@ -46,4 +45,13 @@ pub fn get_any_children(parent_path: Path, link_tag: Option<LinkTag>) -> ExternR
   children.sort_unstable_by(|a, b| a.tag.cmp(&b.tag));
   children.dedup_by(|a, b| a.tag.eq(&b.tag));
   Ok(children)
+}
+
+
+
+
+/// Calls `get_itemlinks()` and all dna link_types
+pub fn get_all_itemlinks(path: Path, link_tag: Option<LinkTag>) -> ExternResult<Vec<ItemLink>> {
+  let res = get_itemlinks(path, all_dna_link_types(), link_tag.clone())?;
+  Ok(res)
 }

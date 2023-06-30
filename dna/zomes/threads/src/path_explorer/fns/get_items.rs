@@ -2,6 +2,7 @@ use hdk::prelude::*;
 use hdk::prelude::holo_hash::{AnyLinkableHashB64};
 use zome_utils::zome_error;
 use crate::path_explorer::*;
+use path_utils::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MyLinkFilter(pub Vec<(u8, Vec<u8>)>);

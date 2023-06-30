@@ -35,7 +35,7 @@ fn get_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(EntryHash, Stri
   let semantic_topics = itemlinks
     .into_iter()
     .map(|ll| {
-      let eh = ll.target.into_entry_hash().unwrap();
+      let eh = ll.item_hash.into_entry_hash().unwrap();
       let typed = get_typed_from_eh::<SemanticTopic>(eh.clone())
         .unwrap(); // FIXME
       // let Ok((eh, _typed)) = get_typed_from_ah::<SemanticTopic>(ah.clone())

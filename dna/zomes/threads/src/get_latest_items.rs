@@ -1,5 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
+use path_utils::*;
+
 use crate::path_explorer::*;
 use crate::time_indexing::get_latest_time_indexed_links::get_latest_time_indexed_links;
 use crate::time_indexing::{SweepResponse, SweepInterval};

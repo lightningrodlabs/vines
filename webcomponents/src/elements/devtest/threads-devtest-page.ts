@@ -121,7 +121,7 @@ export class ThreadsDevtestPage extends DnaElement<unknown, ThreadsDvm> {
       }
       for (const itemLink of itemLinks) {
         const tag = new TextDecoder().decode(new Uint8Array(itemLink.tag));
-        const hash = encodeHashToBase64(new Uint8Array(itemLink.target));
+        const hash = encodeHashToBase64(new Uint8Array(itemLink.itemHash));
         console.log(`    - LeafLink: LinkType="${linkKeys[itemLink.linkIndex]}" tag="${tag}" hash="${hash}"`);
       }
     } else {
