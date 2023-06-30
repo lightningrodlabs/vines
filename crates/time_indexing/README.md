@@ -8,10 +8,11 @@ Enables to index any `AnyLinkableHash` in a Link tree structure called a time-in
 
 A datum indexed in a time-index is called a ***Timed Item***, or simply ***item*** in this context.
 
+A ***Time Path*** is a *path* composed of a *root anchor* and additional components holding a single `i32`.
+
 ***Probing*** is the act of calling holochain's `get_links()`.
 
 ***Sweeping*** is the act of *probing* a part of a time-index tree, in order to return all stored items in that part.
-
 
 ## Design
 

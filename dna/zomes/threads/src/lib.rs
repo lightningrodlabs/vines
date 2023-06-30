@@ -5,7 +5,6 @@
 #![allow(unused_attributes)]
 
 mod semantic_topic;
-mod path_explorer;
 pub(crate) mod utils;
 pub mod beads;
 mod participation_protocols;
