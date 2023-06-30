@@ -3,7 +3,6 @@ use hdk::{
 };
 use std::cmp;
 use hdk::hash_path::path::Component;
-use threads_integrity::ThreadsLinkType;
 use path_utils::*;
 
 use crate::time_indexing::*;
@@ -16,6 +15,7 @@ pub fn get_latest_time_indexed_links(
   sweep_interval: SweepInterval,
   items_limit: usize,
   link_tag: Option<LinkTag>,
+  time_link_type: impl LinkTypeFilterExt + Copy,
 ) -> ExternResult<(SweepInterval, Vec<(Timestamp, Link)>)> {
   /// TODO: let origin_time = dna_info()?.origin_time
 
@@ -128,7 +128,15 @@ pub fn get_latest_time_indexed_links(
       if !older_children_pairs.is_empty() {
         let link_count_before_dbg_info = total_items.len();
         debug!("*** Starting recursive sweep of the {} descendants of {} (depth {})", older_children_pairs.len(), timepath2anchor(&current_sweep_tp), depth);
-        sweep_and_append(older_children_pairs, &mut total_items, items_limit, depth, root_anchor_tp.link_type, link_tag.clone())?;
+        sweep_and_append(
+          older_children_pairs,
+          &mut total_items,
+          items_limit,
+          depth,
+          root_anchor_tp.link_type,
+          link_tag.clone(),
+          time_link_type,
+        )?;
         /// Debug info
         let links_added = total_items.get(link_count_before_dbg_info..).unwrap_or(&[]);
         debug!("Descendants of {} (depth {}). Leafs added {}"
@@ -184,6 +192,7 @@ fn sweep_and_append(
   depth: u8,
   link_type: ScopedLinkType,
   link_tag: Option<LinkTag>,
+  time_link_type: impl LinkTypeFilterExt + Copy,
 ) -> ExternResult<()> {
   /// It's important to sort by component time value instead of timestamp,
   /// since in the proptest, fake messages are inserted with chosen time-path,
@@ -198,8 +207,7 @@ fn sweep_and_append(
       /// Grab all children items at the hour level
       let links = get_links(
         child_link.target.clone(),
-        ThreadsLinkType::TimeItem,
-        // LinkTypeFilter::single_type(link_type.zome_index, link_type.zome_type),
+        time_link_type.try_into_filter()?,
         link_tag.clone(),
       )?;
       //debug!(" - get_links() of parent {}.{} : {} found", timepath2anchor(&parent_tp), compi32, links.len()/*, child_link.target*/);
@@ -234,7 +242,7 @@ fn sweep_and_append(
         })
         .collect::<Result<Vec<_>, WasmError>>()?;
       /// Go deeper
-      sweep_and_append(grandchildren_pairs, target_links, target_count, depth - 1, link_type, link_tag.clone())?;
+      sweep_and_append(grandchildren_pairs, target_links, target_count, depth - 1, link_type, link_tag.clone(), time_link_type)?;
     }
     if target_links.len() >= target_count {
       break;

@@ -25,7 +25,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
   let searched_interval = SweepInterval::new(begin_time, sys_time()?)?;
   /// Query DHT
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
-  let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None)?.1;
+  let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None, ThreadsLinkType::TimeItem)?.1;
   debug!("links.len = {}", responses.len());
   /// Convert links to BeadLinks
   let me = agent_info()?.agent_initial_pubkey;

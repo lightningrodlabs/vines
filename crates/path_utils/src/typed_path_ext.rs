@@ -19,7 +19,7 @@ pub fn tp_children(tp: &TypedPath) -> ExternResult<Vec<holochain_zome_types::lin
 }
 
 
-/// Touch and list all the links from this path to paths below it.
+/// Get all the links from this path to paths below it.
 /// Same as `Path::children` but returns `Vec<Path>` rather than `Vec<Link>`.
 /// This is more than just a convenience. In general it's not possible to
 /// construct a full `Path` from a child `Link` alone as only a single

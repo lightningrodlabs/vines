@@ -32,7 +32,7 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInterv
   debug!("search_interval = {}", search_interval.print_as_anchors());
   let root_tp = Path::from(vec![pp_comp]).typed(ThreadsLinkType::ThreadTimePath)?;
   /// Query DHT
-  let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None)?;
+  let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None, ThreadsLinkType::TimeItem)?;
   debug!("links.len = {}", response.1.len());
   /// Convert links to BeadLinks
   let bls: Vec<BeadLink> = response.1

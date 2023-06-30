@@ -67,7 +67,7 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: EntryHash, dna_hash: DnaH
     global_time_tp,
     pp_ah.clone().into(),
     PP_ITEM_TYPE,
-    //ThreadsLinkType::GlobalTimePath.try_into().unwrap(),
+    ThreadsLinkType::TimeItem.try_into().unwrap(),
     index_time,
     pp.subject_hash.get_raw_39())?;
 

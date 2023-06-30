@@ -25,10 +25,12 @@ pub use timed_item_tag::*;
 //   root_tp: TypedPath,
 //   item_hash: AnyLinkableHash,
 //   item_type: &str,
+//   time_link_type: ScopedLinkType,
 //   index_time_us: Timestamp,
 //   tag_data: &[u8])`
 //
 // The user has to provide its own LinkType for the root anchor of the time-index.
+// The user has to define and provide a LinkType specifically for TimedItems when using this library, otherwise time-indexing would have to be a Zome instead of a simple crate.
 // The user has to provide the type of the item being indexed, so other agents can know what kind of item is behind the hash.
 // The user can also provide its own tag data for its own use.
 //

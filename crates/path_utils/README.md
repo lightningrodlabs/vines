@@ -13,8 +13,10 @@ A ***Parent Path*** of a *Path* is a *Path* without its last *Component*.
 
 A ***Child Path*** of a *Path* is a *Path* which has one more *Component* than its *parent*. 
 
+A ***Leaf Path*** is a *Path* with no known *child paths*.
 
-Holochain commits *Paths* as entries, but not individual *components*.
+Note: All Parent/Child relationships are for paths with the same `LinkType`.
+Note: Holochain commits *Paths* as entries, but not individual *Components*.
 
 
 As this is quite generic, this library provides additional and more specific naming:
