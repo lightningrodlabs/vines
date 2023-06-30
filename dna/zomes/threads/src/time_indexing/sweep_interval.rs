@@ -1,6 +1,5 @@
 use std::fmt::*;
 use hdk::prelude::*;
-use zome_utils::zome_error;
 use crate::time_indexing::{ts2anchor};
 
 /// Time interval in us
@@ -51,10 +50,10 @@ impl SweepInterval {
   ///
   pub fn new(begin: Timestamp, end: Timestamp) -> ExternResult<Self> {
     if end < begin {
-      return zome_error!("Invalid TimeInterval end < begin");
+      return Err(wasm_error!(WasmErrorInner::Guest("Invalid TimeInterval end < begin".to_string())));
     }
     if begin.0 < 0 {
-      return zome_error!("Invalid TimeInterval begin < 0");
+      return Err(wasm_error!(WasmErrorInner::Guest("Invalid TimeInterval begin < 0".to_string())));
     }
     Ok(Self { begin, end })
   }

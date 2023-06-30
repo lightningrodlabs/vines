@@ -4,7 +4,6 @@ use hdk::{
   hash_path::path::{Component, TypedPath},
   prelude::*,
 };
-use zome_utils::zome_error;
 use crate::path_explorer::*;
 
 
@@ -42,10 +41,10 @@ pub fn get_timepath_leaf_value(path: &Path) -> ExternResult<i32> {
 pub fn convert_component_to_i32(component: &Component) -> ExternResult<i32> {
   //debug!("convert_component_to_i32() {:?}", component);
   let Ok(str) = String::try_from(component)
-    else { return zome_error!("Failed to convert Component to string") };
+    else { return Err(wasm_error!(WasmErrorInner::Guest("Failed to convert Component to string".to_string()))) };
   //let str = std::str::from_utf8(component.as_ref()).unwrap();
   let Ok(number) = str.parse::<i32>() else  {
-    return zome_error!("Component is not i32")
+    return Err(wasm_error!(WasmErrorInner::Guest("Component is not i32".to_string())));
   };
   Ok(number)
 }
@@ -120,10 +119,10 @@ pub fn trim_to_timepath(path: &Path) -> ExternResult<Path> {
     }
   }
   if time_comps.len() > 4 {
-    return zome_error!("Not a valid timepath. Too many number components found");
+    return Err(wasm_error!(WasmErrorInner::Guest("Not a valid timepath. Too many number components found".to_string())));
   }
   if time_comps.is_empty() {
-    return zome_error!("Not a valid timepath. No time component found");
+    return Err(wasm_error!(WasmErrorInner::Guest("Not a valid timepath. No time component found".to_string())));
   }
   Ok(Path::from(time_comps))
 }
