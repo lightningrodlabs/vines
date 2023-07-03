@@ -2,7 +2,7 @@ use hdk::hash_path::path::Component;
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
-use path_utils::*;
+use zome_utils::*;
 use path_explorer::*;
 use crate::participation_protocols::comp2subject;
 

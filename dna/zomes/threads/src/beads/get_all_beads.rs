@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use threads_integrity::*;
-use path_utils::*;
+use zome_utils::*;
 use time_indexing::*;
 use crate::beads::{BeadLink};
 

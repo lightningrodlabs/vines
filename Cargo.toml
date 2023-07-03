@@ -1,6 +1,5 @@
 [workspace]
 members = [
-  "crates/path_utils",
   "crates/time_indexing",
   "dna/zomes/path_explorer",
   "dna/zomes/threads_integrity",

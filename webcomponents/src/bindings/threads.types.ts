@@ -131,6 +131,9 @@ ValidationStatus,
 ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
+/** User defined external dependencies */
+import {ItemLink} from './deps.types';
+
 export interface SweepResponse {
   sweepedInterval: SweepInterval
   foundItems: [Timestamp, ItemLink][]
@@ -146,15 +149,6 @@ export interface TimedItemTag {
   itemType: string
   devtestTimestamp: Timestamp
   customData: number[]
-}
-
-/** Struct holding info about the link between an Item and its LeafAnchor. */
-export interface ItemLink {
-  itemHash: Uint8Array
-  tag: number[]
-  /** Flattened ScopedLinkType */
-  zomeIndex: number
-  linkIndex: number
 }
 
 export type MyLinkFilter = [number, number[]][];

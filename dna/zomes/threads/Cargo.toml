@@ -12,7 +12,6 @@ serde.workspace = true
 hdk.workspace = true
 zome_utils.workspace = true
 
-path_utils = { path = "../../../crates/path_utils" }
 time_indexing = { path = "../../../crates/time_indexing" }
 
 path_explorer = { path = "../path_explorer" }

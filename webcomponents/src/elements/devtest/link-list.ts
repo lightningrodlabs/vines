@@ -2,9 +2,9 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {ScopedZomeTypes, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
-import {ItemLink, ThreadsLinkTypeType} from "../../bindings/threads.types";
+import {ThreadsLinkTypeType} from "../../bindings/threads.types";
 import {AnyDhtHashB64, encodeHashToBase64, ZomeName} from "@holochain/client";
-
+import {ItemLink} from '../../bindings/deps.types';
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {utf32Decode} from "./threads-devtest-page";
 

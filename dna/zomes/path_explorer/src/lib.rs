@@ -11,7 +11,7 @@ pub use utils::*;
 //--------------------------------------------------------------------------------------------------
 
 use hdk::prelude::*;
-use path_utils::*;
+use zome_utils::*;
 
 
 /// Only gives values for current integrity zome.

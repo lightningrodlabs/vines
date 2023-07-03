@@ -5,7 +5,7 @@
 #![allow(unused_attributes)]
 
 use hdk::prelude::*;
-use path_utils::ItemLink;
+use zome_utils::ItemLink;
 
 mod get_latest_time_indexed_links;
 mod sweep_interval;

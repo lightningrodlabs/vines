@@ -4,7 +4,7 @@ use hdk::{
   hash_path::path::{Component, TypedPath},
   prelude::*,
 };
-use path_utils::*;
+use zome_utils::*;
 
 
 ///

@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use threads_integrity::*;
-use path_utils::*;
+use zome_utils::*;
 use crate::semantic_topic::determine_topic_anchor;
 
 /// Creates the SemanticTopic

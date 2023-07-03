@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use path_utils::*;
+use zome_utils::*;
 use time_indexing::*;
 use threads_integrity::*;
 

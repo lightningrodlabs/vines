@@ -1,7 +1,7 @@
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use crate::participation_protocols::get_applet_tp;
-use path_utils::*;
+use zome_utils::*;
 
 use crate::subjects::get_subjects_by_type::{get_subjects_by_type, GetProtocolsInput};
 

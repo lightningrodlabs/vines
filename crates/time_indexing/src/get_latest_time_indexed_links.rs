@@ -3,7 +3,7 @@ use hdk::{
 };
 use std::cmp;
 use hdk::hash_path::path::Component;
-use path_utils::*;
+use zome_utils::*;
 
 use crate::*;
 use crate::timepath_utils::*;

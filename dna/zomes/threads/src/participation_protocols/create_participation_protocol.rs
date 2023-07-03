@@ -1,7 +1,7 @@
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
-use path_utils::*;
+use zome_utils::*;
 use time_indexing::{index_item};
 use path_explorer::*;
 use crate::participation_protocols::*;

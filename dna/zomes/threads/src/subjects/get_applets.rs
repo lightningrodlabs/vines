@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 use threads_integrity::{ROOT_ANCHOR_SUBJECTS, ThreadsLinkType};
-use path_utils::*;
+use zome_utils::*;
 
 use crate::utils::comp2appletId;
 
