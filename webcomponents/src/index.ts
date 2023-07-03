@@ -1,11 +1,9 @@
 export * from "./globals"
 
-export * from './elements/devtest/anchor-tree';
-export * from './elements/devtest/link-list';
-export * from './elements/devtest/semantic-topic-list';
-export * from './elements/devtest/text-message-list';
-export * from './elements/devtest/thread-list';
-export * from './elements/devtest/threads-devtest-page';
+// export * from './elements/devtest/semantic-topic-list';
+// export * from './elements/devtest/text-message-list';
+// export * from './elements/devtest/thread-list';
+// export * from './elements/devtest/threads-devtest-page';
 
 export * from './elements/chat-header';
 export * from './elements/chat-message-item';
