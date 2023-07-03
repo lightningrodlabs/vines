@@ -8,15 +8,16 @@ edition.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+base64 = {version = "0.13"}
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
 serde.workspace = true
 hdk.workspace = true
-zome_utils.workspace = true
 
-time_indexing = { path = "../../../crates/time_indexing" }
+zome_utils.workspace = true
+time_indexing.workspace = true
 
 path_explorer = { path = "../path_explorer" }
 
 
-base64 = {version = "0.13"}
+
 threads_integrity = { package = "threads_integrity_zome", path = "../threads_integrity" }
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }

@@ -11,8 +11,7 @@ crate-type = ["cdylib", "rlib"]
 serde.workspace = true
 hdk.workspace = true
 zome_utils.workspace = true
-
-time_indexing = { path = "../../../crates/time_indexing" }
+time_indexing.workspace = true
 
 #base64 = {version = "0.13"}
 #chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }

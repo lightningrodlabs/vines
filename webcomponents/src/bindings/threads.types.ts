@@ -132,24 +132,7 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
-import {ItemLink} from './deps.types';
-
-export interface SweepResponse {
-  sweepedInterval: SweepInterval
-  foundItems: [Timestamp, ItemLink][]
-}
-
-/** Time interval in us */
-export interface SweepInterval {
-  begin: Timestamp
-  end: Timestamp
-}
-
-export interface TimedItemTag {
-  itemType: string
-  devtestTimestamp: Timestamp
-  customData: number[]
-}
+import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
 export type MyLinkFilter = [number, number[]][];
 

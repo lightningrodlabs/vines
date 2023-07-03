@@ -1,4 +1,4 @@
-import {SweepInterval} from "../bindings/threads.types";
+import {SweepInterval} from "../bindings/deps.types";
 
 /**
  * In Holochain Timestamp (us)
