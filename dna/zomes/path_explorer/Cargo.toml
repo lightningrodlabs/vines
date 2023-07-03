@@ -8,10 +8,5 @@ edition.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-serde.workspace = true
 hdk.workspace = true
-zome_utils.workspace = true
-time_indexing.workspace = true
-
-#base64 = {version = "0.13"}
-#chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+path_explorer = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer"}

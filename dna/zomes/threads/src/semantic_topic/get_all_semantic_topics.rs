@@ -4,7 +4,6 @@ use zome_utils::*;
 use path_explorer::*;
 use crate::semantic_topic::determine_topic_anchor;
 
-
 /// Walk semantic-topic AnchorTree
 /// Return ActionHash, EntryHash and title of every known SemanticTopic entry.
 #[hdk_extern]

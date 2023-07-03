@@ -134,26 +134,6 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
-export type MyLinkFilter = [number, number[]][];
-
-/**  */
-export interface GetItemsInput {
-  anchor: string
-  linkFilter: MyLinkFilter
-  linkTag?: number[]
-}
-
-/**
- * Struct for holding an easily exportable typed Anchor.
- * A Typed Anchor is an Anchor with LinkType associated with it.
- */
-export interface TypedAnchor {
-  anchor: string
-  /** Flattened ScopedLinkType */
-  zomeIndex: number
-  linkIndex: number
-}
-
 export interface GetLatestBeadsInput {
   ppAh: ActionHash
   beginTime?: Timestamp
