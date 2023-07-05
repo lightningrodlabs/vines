@@ -19,6 +19,7 @@ holochain_integrity_types = { version = "=0.1.1" } # needed because of broken de
 
 zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-1.1" }
 time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-1.1" }
+path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-1.1"}
 
 [profile.dev]
 lto = false

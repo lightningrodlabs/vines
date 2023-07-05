@@ -11,6 +11,7 @@ import {
 } from "@holochain/client";
 import {DirectMessageType, SignalPayload} from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
+import {PathExplorerZvm} from "@ddd-qc/path-explorer/dist/viewModels/path-explorer.zvm";
 
 
 /** */
@@ -28,7 +29,7 @@ export interface ThreadsDnaPerspective {
 export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = "role_threads";
-  static readonly ZVM_DEFS = [ThreadsZvm/*, ProfilesZvm*/]
+  static readonly ZVM_DEFS = [ThreadsZvm, PathExplorerZvm/*, ProfilesZvm*/]
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
 

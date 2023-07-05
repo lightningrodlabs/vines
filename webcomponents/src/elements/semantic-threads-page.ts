@@ -6,6 +6,7 @@ import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {CommentRequest} from "../utils";
+import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
 import "@ui5/webcomponents-fiori/dist/Bar.js"
@@ -34,6 +35,7 @@ import Dialog from "@ui5/webcomponents/dist/Dialog";
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
@@ -105,6 +107,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
+  @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
 
 
@@ -457,7 +460,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                           design="Transparent"></ui5-button>
               <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
-              <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._dvm.dumpLogs(); this._canShowComments = !this._canShowComments;}}></ui5-button>
+              <ui5-button slot="endContent" icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-button>
+              <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
           </ui5-bar>
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
           <ui5-bar id="inputBar" design="FloatingFooter">
@@ -503,44 +507,47 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
                 <ui5-select id="dna-select" class="select" style="background:#B9CCE7; width:auto; margin:0px;"
-                @change=${this.onAppletSelected}>
+                            @change=${this.onAppletSelected}>
                     ${appletOptions}
-                    <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
+                        <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
                     <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
                 </ui5-select>
-                ${this._appletToShow? html`
-                    <applet-threads-tree .appletId=${this._appletToShow? this._appletToShow : this.appletId}
-                                      @selected="${this.onDnaThreadSelected}"></applet-threads-tree>
+                ${this._appletToShow ? html`
+                    <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}
+                                         @selected="${this.onDnaThreadSelected}"></applet-threads-tree>
                 ` : html`
-                <semantic-topics-view
-                        @createThreadClicked=${(e) => {
-                            this._createTopicHash = e.detail;
-                            this.createThreadDialogElem.show()
-                        }}
-                        @selected=${(e) => {
-                            this.onThreadSelected(e.detail)
-                        }}
-                ></semantic-topics-view>
-                
-                <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
-                     @click=${() => {console.log("createTopicDialogElem", this.createTopicDialogElem); this.createTopicDialogElem.show()}}>
-                    Add New Topic
-                </ui5-button>
-                <ui5-button icon="save" design="Positive"
-                            style="margin:10px 30px 10px 30px;"
-                            @click=${this.onCommitBtn}>
-                    Mark all as read
-                </ui5-button>                
-                <hr style="width:100%;margin:0px;color:aliceblue;"/>
+                    <semantic-topics-view
+                            @createThreadClicked=${(e) => {
+                                this._createTopicHash = e.detail;
+                                this.createThreadDialogElem.show()
+                            }}
+                            @selected=${(e) => {
+                                this.onThreadSelected(e.detail)
+                            }}
+                    ></semantic-topics-view>
+
+                    <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
+                                @click=${() => {
+                                    console.log("createTopicDialogElem", this.createTopicDialogElem);
+                                    this.createTopicDialogElem.show()
+                                }}>
+                        Add New Topic
+                    </ui5-button>
+                    <ui5-button icon="save" design="Positive"
+                                style="margin:10px 30px 10px 30px;"
+                                @click=${this.onCommitBtn}>
+                        Mark all as read
+                    </ui5-button>
+                    <hr style="width:100%;margin:0px;color:aliceblue;"/>
                 `}
-                
-                <!--
+
+                    <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
                                 @click=${async () => {
-                                    await this.updateComplete;
-                                    this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
-                                }}
+                    await this.updateComplete;
+                    this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
+                }}
                     ></ui5-button>
                     <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent"
                                 @click=${this.refresh}></ui5-button>
@@ -569,9 +576,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             <div id="centerSide">
                 ${centerSide}
             </div>
-            <div id="commentSide" style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;background:#d8e4f4">
-                <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true" .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
+            <div id="commentSide"
+                 style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;background:#d8e4f4">
+                <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
+                                     .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
             </div>
+            <anchor-tree id="debugSide"
+                         style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
             <!-- <div id="rightSide">
                 <peer-list></peer-list>
             </div> -->
@@ -599,7 +610,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 <ui5-button id="createTopicDialogButton"
                             style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
                 </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>Cancel</ui5-button>
+                <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>Cancel
+                </ui5-button>
             </div>
         </ui5-dialog>
         <!-- CreateThreadDialog -->
@@ -610,10 +622,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     <ui5-input id="threadPurposeInput"></ui5-input>
                 </div>
             </section>
-            <div slot="footer" style:"display:flex;">
-                <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized" @click=${this.onCreateThread}>Create
-                </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel</ui5-button>
+            <div slot="footer" style:
+            "display:flex;">
+            <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
+                        @click=${this.onCreateThread}>Create
+            </ui5-button>
+            <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel
+            </ui5-button>
             </div>
         </ui5-dialog>
     `;

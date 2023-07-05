@@ -3,7 +3,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
 use time_indexing::{index_item};
-use path_explorer::*;
+use path_explorer_types::*;
 use crate::participation_protocols::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -15,9 +15,6 @@ hdk.workspace = true
 
 zome_utils.workspace = true
 time_indexing.workspace = true
-
-path_explorer = { path = "../path_explorer" }
-
-
+path_explorer_types.workspace = true
 
 threads_integrity = { package = "threads_integrity_zome", path = "../threads_integrity" }

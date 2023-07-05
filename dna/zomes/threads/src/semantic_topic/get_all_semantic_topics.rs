@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-use path_explorer::*;
+use path_explorer_types::*;
 use crate::semantic_topic::determine_topic_anchor;
 
 /// Walk semantic-topic AnchorTree
