@@ -11,7 +11,7 @@ pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(EntryHash, String)>> 
   let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticTopicPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
   debug!("get_all_semantic_topics() {:?}", root_anchor);
-  let leaf_anchors = root_anchor.probe_leaf_anchors()?;
+  let leaf_anchors = root_anchor.walk()?;
   debug!("get_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
   let mut res: Vec<(EntryHash, String)> = Vec::new();
   for leaf_anchor in leaf_anchors {

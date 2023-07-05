@@ -24,7 +24,7 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
   let root_path = Path::from(ROOT_ANCHOR_SUBJECTS).typed(ThreadsLinkType::SubjectPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
   debug!("{:?}", root_anchor);
-  let leaf_anchors = root_anchor.probe_leaf_anchors()?;
+  let leaf_anchors = root_anchor.walk()?;
   debug!("{} leaf_anchors found.", leaf_anchors.len());
   /// Seperate last component from rest of Path
   let mut all = Vec::new();
