@@ -9,6 +9,9 @@ export interface ProfilesPerspective {
   profiles: Record<AgentPubKeyB64, ThreadsProfile>,
   ///* AgentPubKeyB64 -> Profile hash */
   //profile_ahs: Record<AgentPubKeyB64, ActionHashB64>,
+
+  /** Nickname -> AgentPubKeyB64 */
+  reversed: Record<string, AgentPubKeyB64>,
 }
 
 
@@ -44,12 +47,14 @@ export class ProfilesZvm extends ZomeViewModel {
   get perspective(): ProfilesPerspective {
     return {
       profiles: this._profiles,
+      reversed: this._reversed,
       //profile_ahs: this._profile_ahs,
     };
   }
 
   private _profiles: Record<AgentPubKeyB64, ThreadsProfile> = {};
   //private _profile_ahs: Record<AgentPubKeyB64, ActionHashB64> = {};
+  private _reversed: Record<string, AgentPubKeyB64> = {};
 
 
   getMyProfile(): ThreadsProfile | undefined { return this._profiles[this.cell.agentPubKey] }
@@ -63,6 +68,18 @@ export class ProfilesZvm extends ZomeViewModel {
 
   /** -- Methods -- */
 
+  /* */
+  findProfiles(names: string[]): AgentPubKeyB64[] {
+    let res  = []
+    for (const name of names) {
+      if (this._reversed[name]) {
+        res.push(this._reversed[name])
+      }
+    }
+    return res;
+  }
+
+
   /** */
   async probeAllProfiles(): Promise<void> {
     const allAgents = await this.zomeProxy.getAgentsWithProfile();
@@ -74,6 +91,7 @@ export class ProfilesZvm extends ZomeViewModel {
       //const maybeProfile: ThreadsProfile = decode((record.entry as any).Present.entry) as ThreadsProfile;
       const pubKeyB64 = encodeHashToBase64(agentPubKey);
       this._profiles[pubKeyB64] = maybeProfile;
+      this._reversed[maybeProfile.nickname] = pubKeyB64;
       //this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
     }
     this.notifySubscribers();
@@ -89,6 +107,7 @@ export class ProfilesZvm extends ZomeViewModel {
     }
     //const maybeProfile: ThreadsProfile = decode((record.entry as any).Present.entry) as ThreadsProfile;
     this._profiles[pubKeyB64] = maybeProfile;
+    this._reversed[maybeProfile.nickname] = pubKeyB64;
     //this._profile_ahs[pubKeyB64] = encodeHashToBase64(record.signed_action.hashed.hash);
     this.notifySubscribers();
     return maybeProfile;
@@ -99,6 +118,7 @@ export class ProfilesZvm extends ZomeViewModel {
   async createMyProfile(profile: ThreadsProfile): Promise<void> {
     /*const record =*/ await this.zomeProxy.createProfile(profile);
     this._profiles[this.cell.agentPubKey] = profile;
+    this._reversed[profile.nickname] = this.cell.agentPubKey;
     //this._profile_ahs[this.cell.agentPubKey] = encodeHashToBase64(record.signed_action.hashed.hash);
     this.notifySubscribers();
   }
@@ -107,6 +127,7 @@ export class ProfilesZvm extends ZomeViewModel {
   async updateMyProfile(profile: ThreadsProfile): Promise<void> {
     /*const record =*/ await this.zomeProxy.updateProfile(profile);
     this._profiles[this.cell.agentPubKey] = profile;
+    this._reversed[profile.nickname] = this.cell.agentPubKey;
     //this._profile_ahs[this.cell.agentPubKey] = encodeHashToBase64(record.signed_action.hashed.hash);
     this.notifySubscribers();
   }

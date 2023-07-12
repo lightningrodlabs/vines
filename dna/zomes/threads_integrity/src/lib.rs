@@ -48,6 +48,7 @@ pub enum ThreadsLinkType {
     Beads,
     Protocols,
     Invalid,
+    Mention,
 }
 
 

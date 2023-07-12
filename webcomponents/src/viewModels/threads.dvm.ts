@@ -16,7 +16,7 @@ import {PathExplorerZvm} from "@ddd-qc/path-explorer/dist/viewModels/path-explor
 
 /** */
 export interface ThreadsDnaPerspective {
-  agentPresences: Record<string, number>,
+  agentPresences: Record<AgentPubKeyB64, number>,
 }
 
 
@@ -163,8 +163,9 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Call ZVM and notify peers -- */
 
   /** */
-  async publishTextMessage(msg: string, ppAh: ActionHashB64): Promise<ActionHashB64> {
-    let [ah, _time_anchor] = await this.threadsZvm.publishTextMessage(msg, ppAh);
+  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
+
+    let [ah, _time_anchor] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
     const signal: SignalPayload = {
       maybePpHash: ppAh,
       from: this._cellProxy.cell.agentPubKey,
@@ -209,7 +210,7 @@ export class ThreadsDvm extends DnaViewModel {
     await delay(1000);
     const ppAh = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
     await delay(1000);
-    const msgAh = await this.publishTextMessage("msg-1", ppAh);
+    const msgAh = await this.publishTextMessage("msg-1", ppAh, []);
     console.log("generateTestSignals() END", msgAh);
   }
 }

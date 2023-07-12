@@ -2,10 +2,8 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {CommentThreadView} from "./comment-thread-view";
-import {SemanticTopicsView} from "./semantic-topics-view";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
-import {CommentRequest} from "../utils";
+import {CommentRequest, parseMentions} from "../utils";
 import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
@@ -67,7 +65,6 @@ import {
   fakeEntryHash
 } from "@holochain/client";
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
-import {AppletThreadsTree} from "./applet-threads-tree";
 
 import {
   AppletInfo,
@@ -78,6 +75,12 @@ import {consume, ContextConsumer, createContext} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {inputBarStyleTemplate} from "../styles";
+
+import {AppletThreadsTree} from "./applet-threads-tree";
+import {CommentThreadView} from "./comment-thread-view";
+import {SemanticTopicsView} from "./semantic-topics-view";
+import  "./mentions-list";
+import {MentionsList} from "./mentions-list";
 
 
 /**
@@ -232,7 +235,17 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     if (!input.value || input.value.length == 0) {
       return;
     }
-    let ah = await this._dvm.publishTextMessage(input.value, this._selectedThreadHash);
+
+    let mentionedAgents = undefined;
+    if (this._profilesZvm) {
+       const mentions = parseMentions(input.value);
+       console.log("parseMentions", mentions);
+       console.log("parseMentions reversed", this._profilesZvm.perspective.reversed);
+       mentionedAgents = this._profilesZvm.findProfiles(mentions);
+      console.log("parseMentions mentionedAgents", mentionedAgents);
+    }
+
+    let ah = await this._dvm.publishTextMessage(input.value, this._selectedThreadHash, mentionedAgents);
     console.log("onCreateTextMessage() res:", ah);
     input.value = "";
 
@@ -549,8 +562,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
                 }}
                     ></ui5-button>
-                    <ui5-button icon="synchronize" tooltip="Refresh" design="Transparent"
-                                @click=${this.refresh}></ui5-button>
                     <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
                                 @click=${this.onCommitBtn}></ui5-button>
                 </div> -->
@@ -568,9 +579,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                             <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
                     </div>
                     <ui5-button style="margin-top:10px;"
-                                design="Transparent" icon="action-settings" tooltip="Go to settings"
+                                design="Transparent" icon="action-settings" tooltip="Edit profile"
                                 @click=${() => this.profileDialogElem.show()}
                     ></ui5-button>
+                    <ui5-button style="margin-top:10px;"
+                                design="Transparent" icon="synchronize" tooltip="Refresh"
+                                @click=${this.refresh}></ui5-button>                    
                 </div>
             </div>
             <div id="centerSide">
@@ -583,9 +597,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <anchor-tree id="debugSide"
                          style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
-            <!-- <div id="rightSide">
-                <peer-list></peer-list>
-            </div> -->
+            <div id="rightSide">
+                <mentions-list id="mentionsList"></mentions-list>
+                <!-- <peer-list></peer-list> -->
+            </div>
         </div>
         <!-- DIALOGS -->
         <!-- ProfileDialog -->
@@ -648,16 +663,27 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async refresh(_e?: any) {
-    await this._dvm.probeAll();
-    await this.pingAllOthers();
-    await this._dvm.threadsZvm.probeSubjectTypes(this.cell.dnaHash);
-
-    /** DEBUGGING */
-    //await this._dvm.generateTestSignals();
-    let latestLogDate = new Date(this.threadsPerspective.globalProbeLog.time / 1000);
-    console.debug("refresh()", latestLogDate)
-    await this._dvm.threadsZvm.probeAllLatest();
+    await this._dvm.threadsZvm.probeMentions();
+    console.log("mentions:", this._dvm.threadsZvm.perspective.mentions.length);
+    // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
+    // mentionsList.requestUpdate();
   }
+
+
+  // /** */
+  // async refresh(_e?: any) {
+  //   await this._dvm.probeAll();
+  //   await this.pingAllOthers();
+  //   await this._dvm.threadsZvm.probeSubjectTypes(this.cell.dnaHash);
+  //
+  //   console.log("mentions:", this._dvm.threadsZvm.perspective.mentions.length);
+  //
+  //   /** DEBUGGING */
+  //   //await this._dvm.generateTestSignals();
+  //   let latestLogDate = new Date(this.threadsPerspective.globalProbeLog.time / 1000);
+  //   console.debug("refresh()", latestLogDate)
+  //   await this._dvm.threadsZvm.probeAllLatest();
+  // }
 
 
   /** */

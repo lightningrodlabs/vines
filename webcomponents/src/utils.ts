@@ -30,3 +30,22 @@ export interface CommentRequest {
   subjectType: string,
   subjectName: string,
 }
+
+
+/** */
+export function parseMentions(str: string): string[]  {
+  if (typeof str !== 'string') {
+    throw new TypeError('expected a string');
+  }
+
+  var re = /(?:[\w_＠@][＠@])|[＠@]([\w_]{1,15})(?=$|[^\w_])/g;
+  var tokens = { input: str, output: str, matches: [] };
+  var match;
+
+  while ((match = re.exec(tokens.output))) {
+    if (!match[1]) continue;
+    var token = { name: match[1], match: match };
+    tokens.matches.push(token);
+  }
+  return tokens.matches.map((m) => m.name);
+};

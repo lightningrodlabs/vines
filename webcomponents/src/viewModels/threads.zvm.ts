@@ -70,6 +70,9 @@ export class ThreadsZvm extends ZomeViewModel {
       unreadThreads: this._unreadThreads,
 
       allAppletIds: this._allAppletIds,
+
+      mentions: this._mentions,
+
     };
   }
 
@@ -102,6 +105,8 @@ export class ThreadsZvm extends ZomeViewModel {
   private _unreadSubjects: AnyLinkableHashB64[] = [];
   private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
+
+  private _mentions: [AgentPubKeyB64, TextMessage][] = [];
 
 
   /** -- Get: Return a stored element -- */
@@ -218,8 +223,18 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Get last elements since last time (global search log) */
     await this.probeAllLatest();
 
+    await this.probeMentions();
+
     /** */
     await this.probeAllAppletIds();
+  }
+
+
+  /** */
+  async probeMentions() {
+    const mentions = await this.zomeProxy.probeMentions();
+    this._mentions = mentions.map(([agentId, textMessage]) => {return [encodeHashToBase64(agentId), textMessage]});
+    this.notifySubscribers();
   }
 
 
@@ -491,20 +506,21 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
 
   /** */
-  async publishTextMessage(msg: string, ppAh: ActionHashB64) : Promise<[ActionHashB64, string]> {
-    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000);
+  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string]> {
+    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000, ments? ments : []);
   }
 
 
   /** */
-  async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[ActionHashB64, string]> {
+  async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, creationTime: Timestamp, ments: AgentPubKeyB64[], dontStore?: boolean) : Promise<[ActionHashB64, string]> {
     /** Make out bead */
     const bead: Bead = {
       forProtocolAh: decodeHashFromBase64(protocolAh)
     }
+    const mentionees = ments.map((m) => decodeHashFromBase64(m));
     /** Commit Entry */
     const texto = {value: msg, bead}
-    const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
+    const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
     //console.log("publishTextMessageAt() added bead", encodeHashToBase64(ah), creationTime);
     const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: "TextMessage"}
     /** Insert in ThreadInfo */
@@ -806,7 +822,7 @@ export class ThreadsZvm extends ZomeViewModel {
       n = 40;
     }
     for (; n > 0; n -= 1) {
-      await this.publishTextMessageAt("" + interval / 1000 + "-message-" + n, ppAh, date_ms * 1000, true);
+      await this.publishTextMessageAt("" + interval / 1000 + "-message-" + n, ppAh, date_ms * 1000, [], true);
       date_ms -= interval;
     }
   }

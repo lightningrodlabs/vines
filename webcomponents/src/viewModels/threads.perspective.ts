@@ -12,7 +12,7 @@ import {Thread} from "./thread";
 import {
   GlobalLastProbeLog,
   ParticipationProtocol,
-  Subject,
+  Subject, TextMessage,
 } from "../bindings/threads.types";
 
 
@@ -70,6 +70,9 @@ export interface ThreadsPerspective {
   /** unread = Has new beads on one if its threads */
   unreadSubjects: AnyLinkableHashB64[],
   unreadThreads: ActionHashB64[],
+
+  /** */
+  mentions: [AgentPubKeyB64, TextMessage][],
 }
 
 

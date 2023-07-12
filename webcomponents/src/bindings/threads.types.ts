@@ -141,6 +141,18 @@ export interface GetLatestBeadsInput {
   targetLimit?: number
 }
 
+/**  */
+export interface AddTextWithMentionsInput {
+  texto: TextMessage
+  mentionees: AgentPubKey[]
+}
+
+export interface AddTextAndMentionsAtInput {
+  texto: TextMessage
+  creationTime: Timestamp
+  mentionees: AgentPubKey[]
+}
+
 export interface BeadLink {
   creationTime: Timestamp
   beadAh: ActionHash
@@ -267,7 +279,7 @@ export type ThreadsEntry =
 
 /** List of all link kinds handled by this Zome */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
@@ -280,6 +292,7 @@ export enum ThreadsLinkTypeType {
 	Beads = 'Beads',
 	Protocols = 'Protocols',
 	Invalid = 'Invalid',
+	Mention = 'Mention',
 }
 
 /**  */
