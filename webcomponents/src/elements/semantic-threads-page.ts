@@ -8,7 +8,9 @@ import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
 import "@ui5/webcomponents-fiori/dist/Bar.js";
-import "@ui5/webcomponents-fiori/dist/ShellBar";
+import "@ui5/webcomponents-fiori/dist/NotificationListItem.js";
+import "@ui5/webcomponents-fiori/dist/NotificationAction.js";
+import "@ui5/webcomponents-fiori/dist/ShellBar.js";
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
@@ -20,9 +22,8 @@ import "@ui5/webcomponents/dist/Option.js";
 import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents/dist/Popover.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
-import "@ui5/webcomponents/dist/NotificationListItem.js";
-import "@ui5/webcomponents/dist/NotificationAction.js";
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/Tree.js"
@@ -32,6 +33,7 @@ import "@ui5/webcomponents/dist/TreeItemCustom.js";
 import Dialog from "@ui5/webcomponents/dist/Dialog";
 import Input from "@ui5/webcomponents/dist/Input";
 import {InputSuggestionText} from "@ui5/webcomponents/dist/features/InputSuggestions";
+import Popover from "@ui5/webcomponents/dist/Popover";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -474,11 +476,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
 
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
-    let threadTitle = "";
+    let threadTitle = "Threads";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads[this._selectedThreadHash];
       const topic = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
-      threadTitle = `${topic}: ${thread.pp.purpose}`;
+      threadTitle = `# ${topic}: ${thread.pp.purpose}`;
 
       centerSide = html`
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
@@ -665,14 +667,54 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 </div>
             </div>
             <div id="mainSide">
-              <ui5-bar id="topicBar" design="Header">
+              <!-- <ui5-bar id="topicBar" design="Header">
                 <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
                       design="Transparent"></ui5-button>
                 <span id="threadTitle" slot="startContent">${threadTitle}</span>
                 <ui5-button slot="endContent" icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-button>
                 <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
                 <ui5-button slot="endContent" icon="inbox" tooltip="Inbox" @click=${() => {this._canShowMentions = !this._canShowMentions;}}></ui5-button>
-              </ui5-bar>
+              </ui5-bar> -->
+
+              <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${this._dvm.threadsZvm.perspective.mentions.length? this._dvm.threadsZvm.perspective.mentions.length : ""}" show-notifications
+                            @notifications-click=${() => {
+                  const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                  if (popover.isOpen()) {
+                    popover.close();
+                    return;
+                  }
+                  const shellbar = this.shadowRoot.getElementById("topicBar");
+                  popover.showAt(shellbar);
+              }}>
+                  <ui5-input slot="searchField" placeholder="Enter text..."></ui5-input>
+              </ui5-shellbar>
+
+                <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 400px">
+                    <ui5-list header-text="Mentions">
+                        <ui5-li-notification show-close title-text="New order (#2525) With a very long title - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent feugiat, turpis vel scelerisque pharetra, tellus odio vehicula dolor, nec elementum lectus turpis at nunc." priority="High">
+                            <ui5-avatar icon="employee" size="XS" slot="avatar"></ui5-avatar>
+                            <span slot="footnotes">Office Notifications</span>
+                            <span slot="footnotes">3 Days</span>
+                            <ui5-notification-action icon="accept" text="Accept" slot="actions"></ui5-notification-action>
+                            And with a very long description and long labels of the action buttons - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent feugiat, turpis vel scelerisque pharetra, tellus odio vehicula dolor, nec elementum lectus turpis at nunc.
+                        </ui5-li-notification>
+                        <ui5-li-notification title-text="New order (#2565) With a very long title - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent feugiat, turpis vel scelerisque pharetra, tellus odio vehicula dolor, nec elementum lectus turpis at nunc." priority="Medium">
+                            <ui5-avatar initials="JS" size="XS" slot="avatar"></ui5-avatar>
+                            <span slot="footnotes">Patricia Clark</span>
+                            <span slot="footnotes">3 Days</span>
+                            <ui5-notification-action icon="accept" text="Accept All Requested Information" slot="actions"></ui5-notification-action>
+                            <ui5-notification-action icon="decline" text="Reject All Requested Information" slot="actions"></ui5-notification-action>
+                            Short description
+                        </ui5-li-notification>
+                    </ui5-list>
+                    <script>
+                        var notificationList = document.querySelector("ui5-list");
+                        notificationList.addEventListener("item-close", e => {
+                            e.detail.item.hidden = true;
+                        });
+                    </script>
+                </ui5-popover>
+                
               <div id="lowerSide">
                 <div id="centerSide">
                     ${centerSide}
@@ -835,6 +877,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           /*border: 1px solid dimgray;*/
         }
 
+        //#topicBar::part(root) {
+        //  background: #DBE3EF;
+        //  /*border: 1px solid dimgray;*/
+        //}
+        
+        
         #inputBar {
           margin:10px;
           width: auto;
