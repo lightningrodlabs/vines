@@ -48,13 +48,13 @@ pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> Ex
 
 
 #[hdk_extern]
-pub fn probe_mentions(_ : ()) -> ExternResult<Vec<(AgentPubKey, TextMessage)>> {
+pub fn probe_mentions(_ : ()) -> ExternResult<Vec<(AgentPubKey, ActionHash, TextMessage)>> {
   let me = agent_info()?.agent_latest_pubkey;
   let tuples = get_typed_from_actions_links::<TextMessage>(EntryHash::from(me), ThreadsLinkType::Mention, None)?;
-  let mut pairs = Vec::new();
-  for (link_ah, from, texto) in tuples {
+  let mut res = Vec::new();
+  for (link_ah, link_target, from, texto) in tuples {
     let _ = delete_link(link_ah);
-    pairs.push((from, texto));
+    res.push((from, ActionHash::from(link_target), texto));
   }
-  Ok(pairs)
+  Ok(res)
 }

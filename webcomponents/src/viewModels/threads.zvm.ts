@@ -106,7 +106,7 @@ export class ThreadsZvm extends ZomeViewModel {
   private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
 
-  private _mentions: [AgentPubKeyB64, TextMessage][] = [];
+  private _mentions: [AgentPubKeyB64, ActionHashB64, TextMessage][] = [];
 
 
   /** -- Get: Return a stored element -- */
@@ -233,7 +233,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async probeMentions() {
     const mentions = await this.zomeProxy.probeMentions();
-    this._mentions = mentions.map(([agentId, textMessage]) => {return [encodeHashToBase64(agentId), textMessage]});
+    this._mentions = mentions.map(([agentId, ah, textMessage]) => {return [encodeHashToBase64(agentId), encodeHashToBase64(ah), textMessage]});
     this.notifySubscribers();
   }
 

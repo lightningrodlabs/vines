@@ -72,7 +72,7 @@ export interface ThreadsPerspective {
   unreadThreads: ActionHashB64[],
 
   /** */
-  mentions: [AgentPubKeyB64, TextMessage][],
+  mentions: [AgentPubKeyB64, ActionHashB64, TextMessage][],
 }
 
 

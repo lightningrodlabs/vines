@@ -161,7 +161,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('add_text_message_at_with_mentions', input);
   }
 
-  async probeMentions(): Promise<[AgentPubKey, TextMessage][]> {
+  async probeMentions(): Promise<[AgentPubKey, ActionHash, TextMessage][]> {
     return this.call('probe_mentions', null);
   }
 

@@ -123,23 +123,6 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  // /** */
-  // async onCreateComment(e) {
-  //   const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
-  //   if (!input.value || input.value.length == 0) {
-  //     return;
-  //   }
-  //   const thread = this._dvm.threadsZvm.getThread(this.threadHash);
-  //   if (!thread) {
-  //     console.error("Missing Comment thread");
-  //     return;
-  //   }
-  //   const path_str = await this._dvm.publishTextMessage(input.value, this.threadHash);
-  //   console.log("onCreateComment() res:", path_str);
-  //   input.value = "";
-  // }
-
-
   /** */
   render() {
     console.log("<mentions-list>.render()");
@@ -147,50 +130,21 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
       return html `<div style="color:#c10a0a">No mentions found</div>`;
     }
 
-    const bg_color = this._loading? "#ededf0" : ""
-
-
     let textLi = Object.values(this.threadsPerspective.mentions).map(
-      ([author, texto]) => {
+      ([_author, beadAh, texto]) => {
         console.log("<mentions-list> texto", texto.value);
-        let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
-        if (this._profilesZvm) {
-          let maybeAgent = this._profilesZvm.perspective.profiles[author];
-          if (maybeAgent) {
-            agent = maybeAgent;
-          }
-        }
 
-        const initials = getInitials(agent.nickname);
-        const avatarUrl = agent.fields['avatar'];
-        // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
-        return html`
-            <ui5-li type="Inactive">
-                ${texto.value}
-                <div slot="imageContent">                
-                  ${avatarUrl? html`
-                      <ui5-avatar style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                          <img src=${avatarUrl}>
-                      </ui5-avatar>                   
-                          ` : html`
-                        <ui5-avatar shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
-                  `}
-                </div>                    
-            </ui5-li>`
+        return html`<chat-message-item hash="${beadAh}"></chat-message-item>`;
       }
     );
 
 
 
     const title = `Mentions`;
-
-    // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
         <h4 style="margin-left: 5px;">${title}</h4>
-        <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
-            ${textLi}
-        </ui5-list>
+        ${textLi}
     `;
   }
 
