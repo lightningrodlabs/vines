@@ -464,18 +464,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
 
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
+    let threadTitle = "";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads[this._selectedThreadHash];
       const topic = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
+      threadTitle = `${topic}: ${thread.pp.purpose}`;
 
       centerSide = html`
-          <ui5-bar id="topicBar" design="Header">
-              <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
-                          design="Transparent"></ui5-button>
-              <span id="threadTitle" slot="startContent">${topic}: ${thread.pp.purpose}</span>
-              <ui5-button slot="endContent" icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-button>
-              <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
-          </ui5-bar>
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
           <ui5-bar id="inputBar" design="FloatingFooter">
               <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
@@ -587,22 +582,32 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                 @click=${this.refresh}></ui5-button>                    
                 </div>
             </div>
-            <div id="centerSide">
-                ${centerSide}
+            <div id="mainSide">
+              <ui5-bar id="topicBar" design="Header">
+                <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
+                      design="Transparent"></ui5-button>
+                <span id="threadTitle" slot="startContent">${threadTitle}</span>
+                <ui5-button slot="endContent" icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-button>
+                <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
+              </ui5-bar>
+              <div id="lowerSide">
+                <div id="centerSide">
+                    ${centerSide}
+                </div>
+                <div id="commentSide"
+                     style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;background:#d8e4f4">
+                    <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
+                                         .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
+                </div>
+                <div id="rightSide">
+                    <mentions-list id="mentionsList"></mentions-list>
+                    <!-- <peer-list></peer-list> -->
+                </div>
+                  <anchor-tree id="debugSide"
+                               style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>                  
+              </div>
             </div>
-            <div id="commentSide"
-                 style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;background:#d8e4f4">
-                <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
-                                     .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
-            </div>
-            <anchor-tree id="debugSide"
-                         style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
-            <div id="rightSide">
-                <mentions-list id="mentionsList"></mentions-list>
-                <!-- <peer-list></peer-list> -->
-            </div>
-        </div>
-        <!-- DIALOGS -->
+         <!-- DIALOGS -->
         <!-- ProfileDialog -->
         <ui5-dialog id="profile-dialog" header-text="Edit Profile">
             <edit-profile
@@ -715,7 +720,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
         #leftSide {
           background: #B9CCE7;
-          max-height: 100vh;
           width: 275px;
           min-width: 275px;
           display: flex;
@@ -723,11 +727,21 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           border: 0.01em solid #A3ACB9;
         }
 
+        #mainSide {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        #lowerSide {
+          display: flex;
+          flex-direction: row;
+          flex: 1;
+          overflow-y: auto;
+        }
+        
         #centerSide {
           width: 100%;
-          min-height: 100vh;
-          height: 100vh;
-          max-height: 100vh;
           background: #FBFCFD;
           display: flex;
           flex-direction: column;
