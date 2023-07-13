@@ -7,7 +7,8 @@ import {CommentRequest, parseMentions} from "../utils";
 import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
-import "@ui5/webcomponents-fiori/dist/Bar.js"
+import "@ui5/webcomponents-fiori/dist/Bar.js";
+import "@ui5/webcomponents-fiori/dist/ShellBar";
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
@@ -20,6 +21,8 @@ import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
+import "@ui5/webcomponents/dist/NotificationListItem.js";
+import "@ui5/webcomponents/dist/NotificationAction.js";
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/Tree.js"
@@ -42,6 +45,7 @@ import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/home.js"
+import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/save.js"
@@ -112,6 +116,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
+  @state() private _canShowMentions = false;
   @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
 
@@ -483,9 +488,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                          show-clear-icon show-suggestions
                          
                          @suggestion-item-select=${(e) => {
-                            console.log("suggestion-item-select", e)
+                            //console.log("suggestion-item-select", e)
                             const input = this.shadowRoot.getElementById("textMessageInput") as Input;
-                            console.log("suggestion-item-select: inpuit", input.value);
+                            //console.log("suggestion-item-select: inpuit", input.value);
                             e.preventDefault();
                             Array.from(input.children).forEach((child) => {
                                 input.removeChild(child);
@@ -497,7 +502,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                          
                          @keydown=${(e) => {
                            const input = this.shadowRoot.getElementById("textMessageInput") as Input;                           
-                           console.log("onkeypress", e);
+                           console.log("keydown", e);
                            /** Enter */  
                            if (e.keyCode === 13) {
                                e.preventDefault();
@@ -511,8 +516,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                              
                            const previousIsArobase = input.value !== "" && input.value.substr(input.value.length - 1) === "@";
                            const previousIsEmpty = previousIsArobase && (input.value === "@" || input.value.substr(input.value.length - 2) === " @");
-                           console.log("onkeypress previousIsArobase", previousIsArobase);
-                           console.log("onkeypress previousIsEmpty", previousIsEmpty);
+                           //console.log("keydown previousIsArobase", previousIsArobase);
+                           //console.log("keydown previousIsEmpty", previousIsEmpty);
                            
                            /** @  and not backspace */
                            if (previousIsEmpty && e.keyCode != 8) {
@@ -666,6 +671,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                 <span id="threadTitle" slot="startContent">${threadTitle}</span>
                 <ui5-button slot="endContent" icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-button>
                 <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
+                <ui5-button slot="endContent" icon="inbox" tooltip="Inbox" @click=${() => {this._canShowMentions = !this._canShowMentions;}}></ui5-button>
               </ui5-bar>
               <div id="lowerSide">
                 <div id="centerSide">
@@ -676,7 +682,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
                 </div>
-                <div id="rightSide">
+                <div id="rightSide" style="display: ${this._canShowMentions? "block" : "none"}">
                     <mentions-list id="mentionsList"></mentions-list>
                     <!-- <peer-list></peer-list> -->
                 </div>
