@@ -27,6 +27,8 @@ import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
 
 import Dialog from "@ui5/webcomponents/dist/Dialog";
+import Input from "@ui5/webcomponents/dist/Input";
+import {InputSuggestionText} from "@ui5/webcomponents/dist/features/InputSuggestions";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -113,6 +115,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
 
+
+  private _cacheInputValue: string = "";
 
   @property() appletId: EntryHashB64;
 
@@ -231,6 +235,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onCreateTextMessage(e) {
+    console.log("onCreateTextMessage", e)
     const input = this.shadowRoot!.getElementById("textMessageInput") as HTMLInputElement;
     if (!input.value || input.value.length == 0) {
       return;
@@ -475,12 +480,84 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           <ui5-bar id="inputBar" design="FloatingFooter">
               <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
               <ui5-input id="textMessageInput" type="Text" placeholder="Message #${topic}"
-                         show-clear-icon
-                         @change=${this.onCreateTextMessage}></ui5-input>
+                         show-clear-icon show-suggestions
+                         
+                         @suggestion-item-select=${(e) => {
+                            console.log("suggestion-item-select", e)
+                            const input = this.shadowRoot.getElementById("textMessageInput") as Input;
+                            console.log("suggestion-item-select: inpuit", input.value);
+                            e.preventDefault();
+                            Array.from(input.children).forEach((child) => {
+                                input.removeChild(child);
+                            });
+                            input.value = this._cacheInputValue + e.detail.item.text;
+                            this._cacheInputValue = "";
+                          }
+                         }
+                         
+                         @keydown=${(e) => {
+                           const input = this.shadowRoot.getElementById("textMessageInput") as Input;                           
+                           console.log("onkeypress", e);
+                           /** Enter */  
+                           if (e.keyCode === 13) {
+                               e.preventDefault();
+                               this.onCreateTextMessage(e);
+                           }
+
+                           /** Remove previous suggestions */
+                           Array.from(input.children).forEach((child) => {
+                               input.removeChild(child);
+                           });
+                             
+                           const previousIsArobase = input.value !== "" && input.value.substr(input.value.length - 1) === "@";
+                           const previousIsEmpty = previousIsArobase && (input.value === "@" || input.value.substr(input.value.length - 2) === " @");
+                           console.log("onkeypress previousIsArobase", previousIsArobase);
+                           console.log("onkeypress previousIsEmpty", previousIsEmpty);
+                           
+                           /** @  and not backspace */
+                           if (previousIsEmpty && e.keyCode != 8) {
+                             e.preventDefault();
+                             this._cacheInputValue = input.value;
+                             //let suggestionItems = ["toto", "titi", "bob", "joe"];
+                             let suggestionItems = this._profilesZvm? this._profilesZvm.getNames() : [];
+                             /** Filter */
+                             //if (e.keyCode !== 9) {
+                               const filtered = suggestionItems.filter((item) => {
+                                 return item.toUpperCase().indexOf(e.key.toUpperCase()) === 0;
+                               });
+                               if (filtered.length != 0) {
+                                 suggestionItems = filtered;
+                               } 
+                             //}
+                             // /** Remove previous suggestions */  
+                             // Array.from(input.children).forEach((child) => {
+                             //   input.removeChild(child);
+                             // });
+                             suggestionItems.forEach((item) => {
+                               const li = document.createElement("ui5-suggestion-item") as unknown as InputSuggestionText;
+                               //li.icon = "world";
+                               //li.additionalText = "explore";
+                               //li.additionalTextState = "Success";
+                               //li.description = "travel the world";
+                               li.text = item;
+                               input.appendChild(li as unknown as Node);
+                             });
+                           }
+                         }
+      }
+              ></ui5-input>
               <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
           </ui5-bar>
       `;
     }
+
+    /*
+                             @input=${(e) => {
+                           console.log("input", e);
+
+                         }
+
+     */
 
     /** This agent's profile info */
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;

@@ -65,6 +65,8 @@ export class ProfilesZvm extends ZomeViewModel {
 
   getAgents(): AgentPubKeyB64[] { return Object.keys(this._profiles)}
 
+  getNames(): string[] { return Object.keys(this._reversed)}
+
 
   /** -- Methods -- */
 
