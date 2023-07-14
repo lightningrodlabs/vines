@@ -27,13 +27,16 @@ import "@ui5/webcomponents/dist/Popover.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
+import "@ui5/webcomponents/dist/SuggestionItem.js";
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
 
 import Dialog from "@ui5/webcomponents/dist/Dialog";
 import Input from "@ui5/webcomponents/dist/Input";
-import {InputSuggestionText} from "@ui5/webcomponents/dist/features/InputSuggestions";
+//import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
+import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";
+//import SuggestionListItem from "@ui5/webcomponents/dist/SuggestionListItem";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 /** @ui5/webcomponents-icons */
@@ -495,29 +498,32 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                          @suggestion-item-select=${(e) => {
                             //console.log("suggestion-item-select", e)
                             const input = this.shadowRoot.getElementById("textMessageInput") as Input;
-                            //console.log("suggestion-item-select: inpuit", input.value);
                             e.preventDefault();
                             Array.from(input.children).forEach((child) => {
                                 input.removeChild(child);
                             });
-                            input.value = this._cacheInputValue + e.detail.item.text;
+                            input.value = this._cacheInputValue + e.detail.item.text + " ";
                             this._cacheInputValue = "";
+                            //input.setCaretPosition(input.value.length - 1);
+                            //console.log("suggestion-item-select: setCaretPosition", input.getCaretPosition(), input.value.length);
                           }
                          }
                          
+                         
                          @keydown=${(e) => {
                            const input = this.shadowRoot.getElementById("textMessageInput") as Input;                           
-                           console.log("keydown", e);
-                           /** Enter */  
+                           //console.log("keydown", e);
+                           
+                           /** Remove previous suggestions */
+                           Array.from(input.children).forEach((child) => {
+                             input.removeChild(child);
+                           });
+                           
+                           /** Enter: commit message */  
                            if (e.keyCode === 13) {
                                e.preventDefault();
                                this.onCreateTextMessage(e);
                            }
-
-                           /** Remove previous suggestions */
-                           Array.from(input.children).forEach((child) => {
-                               input.removeChild(child);
-                           });
 
                            /** Typed ' @' */
                            const canMention = (input.value === "@" || input.value.substr(input.value.length - 2) === " @");
@@ -525,31 +531,27 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                            
                            /** except backspace */
                            if (canMention && e.keyCode != 8) {
-                             e.preventDefault();
+                             //e.preventDefault();
                              this._cacheInputValue = input.value;
                              //let suggestionItems = ["toto", "titi", "bob", "joe"];
-                             let suggestionItems = this._profilesZvm? this._profilesZvm.getNames() : [];
+                             let suggestionItems = this._profilesZvm ? this._profilesZvm.getNames() : [];
                              /** Filter */
-                             //if (e.keyCode !== 9) {
-                               const filtered = suggestionItems.filter((item) => {
+                             const filtered = suggestionItems.filter((item) => {
                                  return item.toUpperCase().indexOf(e.key.toUpperCase()) === 0;
                                });
-                               if (filtered.length != 0) {
-                                 suggestionItems = filtered;
-                               } 
-                             //}
-                             // /** Remove previous suggestions */  
-                             // Array.from(input.children).forEach((child) => {
-                             //   input.removeChild(child);
-                             // });
-                             suggestionItems.forEach((item) => {
-                               const li = document.createElement("ui5-suggestion-item") as unknown as InputSuggestionText;
+                             if (filtered.length != 0) {
+                               suggestionItems = filtered;
+                             }
+
+                             suggestionItems.forEach((suggestion) => {
+                               const li = document.createElement("ui5-suggestion-item") as unknown as SuggestionItem;
                                //li.icon = "world";
                                //li.additionalText = "explore";
                                //li.additionalTextState = "Success";
                                //li.description = "travel the world";
-                               li.text = item;
+                               li.text = suggestion;
                                input.appendChild(li as unknown as Node);
+                               li
                              });
                            }
                          }
@@ -663,21 +665,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                 design="Transparent" icon="action-settings" tooltip="Edit profile"
                                 @click=${() => this.profileDialogElem.show()}
                     ></ui5-button>
-                    <ui5-button style="margin-top:10px;"
+                    <!-- <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="synchronize" tooltip="Refresh"
-                                @click=${this.refresh}></ui5-button>                    
+                                @click=${this.refresh}></ui5-button>  -->                  
                 </div>
             </div>
             <div id="mainSide">
-              <!-- <ui5-bar id="topicBar" design="Header">
-                <ui5-button slot="startContent" icon="number-sign" tooltip=${this._selectedThreadHash}
-                      design="Transparent"></ui5-button>
-                <span id="threadTitle" slot="startContent">${threadTitle}</span>
-                <ui5-button slot="endContent" icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-button>
-                <ui5-button slot="endContent" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
-                <ui5-button slot="endContent" icon="inbox" tooltip="Inbox" @click=${() => {this._canShowMentions = !this._canShowMentions;}}></ui5-button>
-              </ui5-bar> -->
-
               <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${this._dvm.threadsZvm.perspective.mentions.length? this._dvm.threadsZvm.perspective.mentions.length : ""}" show-notifications
                             @notifications-click=${() => {
                   const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
@@ -689,7 +682,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                   popover.showAt(shellbar);
               }}>
                   <!-- <ui5-input slot="searchField" placeholder="Enter text..."></ui5-input> -->
-                  <ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item>
+                      <!--<ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item> -->
                   <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
               </ui5-shellbar>
 
