@@ -8,8 +8,8 @@ integrity:
       bundled: ../../target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm
 coordinator:
   zomes:
-    - name: zPathExplorer
-      bundled: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
+    #- name: zPathExplorer
+    #  bundled: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
     - name: zThreads
       bundled: ../../target/wasm32-unknown-unknown/release/threads_zome.wasm
       dependencies:

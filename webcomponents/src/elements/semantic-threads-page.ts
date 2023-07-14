@@ -295,7 +295,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       this.appletId = encodeHashToBase64(await emptyAppletId());
       console.warn("no appletId provided. A fake one has been generated", this.appletId);
     }
-    await this._dvm.threadsZvm.generateTestData(this.appletId);
+    //await this._dvm.threadsZvm.generateTestData(this.appletId);
 
     /** */
     const leftSide = this.shadowRoot.getElementById("leftSide");
@@ -658,7 +658,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                     color-scheme="Accent2"></ui5-avatar>
                     `}
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
-                        <div>${agent.nickname}</div>
+                        <div><abbr title=${this.cell.agentPubKey}>${agent.nickname}</abbr></div>
                             <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
                     </div>
                     <ui5-button style="margin-top:10px;"

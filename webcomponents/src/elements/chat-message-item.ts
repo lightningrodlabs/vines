@@ -8,6 +8,7 @@ import {getInitials, truncate} from "../utils";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 //import {ChatThreadView} from "./chat-thread-view";
 
 
@@ -33,22 +34,26 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _isHovered = false;
 
-  //
-  // /**
-  //  * In dvmUpdated() this._dvm is not already set!
-  //  * Subscribe to ThreadsZvm
-  //  */
-  // protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-  //   //console.log("<chat-message-item>.dvmUpdated()");
-  //   if (oldDvm) {
-  //     //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
-  //     oldDvm.threadsZvm.unsubscribe(this);
-  //   }
-  //   newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-  //   //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-  // }
-  //
-  //
+
+  /** Observed perspective from zvm */
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  threadsPerspective!: ThreadsPerspective;
+
+  /**
+   * In dvmUpdated() this._dvm is not already set!
+   * Subscribe to ThreadsZvm
+   */
+  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    //console.log("<chat-message-item>.dvmUpdated()");
+    if (oldDvm) {
+      //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
+      oldDvm.threadsZvm.unsubscribe(this);
+    }
+    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+    //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+  }
+
+
   // /** */
   // protected async updated(_changedProperties: PropertyValues) {
   //   // try {
@@ -100,7 +105,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
           <div>No message found</div>`;
     }
 
-    const texto = this._dvm.threadsZvm.perspective.textMessages[this.hash];
+    const texto = this.threadsPerspective.textMessages[this.hash];
     if (!texto) {
       return html `<div>Loading message...</div>`;
     }
@@ -108,7 +113,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     /** Determine the comment button to display depending on current comments for this message */
     const msg = truncate(texto.message, 60, true);
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-    const isUnread = maybeCommentThread? this._dvm.threadsZvm.perspective.unreadThreads.includes(maybeCommentThread) : false;
+    const isUnread = maybeCommentThread? this.threadsPerspective.unreadThreads.includes(maybeCommentThread) : false;
 
     let commentButton = html``;
     if (isUnread) {
@@ -143,10 +148,10 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
     if (this._profilesZvm) {
       const maybeAgent = this._profilesZvm.perspective.profiles[texto.author];
-      if (this._profilesZvm) {
+      if (maybeAgent) {
         agent = maybeAgent;
       } else {
-        //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
+        console.log("Profile not found for agent", texto.author, this._profilesZvm.perspective.profiles)
         this._profilesZvm.probeProfile(texto.author)
         //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
       }
@@ -167,7 +172,10 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                         <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
                   `}
             <div style="display: flex; flex-direction: column">
-                <div><span><b>${agent.nickname}</b></span><span class="chatDate"> ${date_str}</span></div>
+                <div>
+                    <abbr title=${texto.author}><span><b>${agent.nickname}</b></span></abbr>
+                    <span class="chatDate"> ${date_str}</span>
+                </div>
                 <div class="chatMsg">${texto.message}</div>
             </div>
             ${commentButton}

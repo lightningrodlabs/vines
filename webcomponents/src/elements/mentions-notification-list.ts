@@ -67,10 +67,10 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
         let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
         if (this._profilesZvm) {
           const maybeAgent = this._profilesZvm.perspective.profiles[author];
-          if (this._profilesZvm) {
+          if (maybeAgent) {
             agent = maybeAgent;
           } else {
-            //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
+            console.log("Profile not found for agent", texto.author, this._profilesZvm.perspective.profiles)
             this._profilesZvm.probeProfile(texto.author)
             //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
           }
