@@ -3,6 +3,45 @@ import {EntryHash, ActionHashB64} from "@holochain/client";
 import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
 
 
+/** Truncate string to given length and add ellipse */
+export function truncate(str: string, n: number, useWordBoundary: boolean): string {
+  if (str.length <= n) { return str; }
+  const subString = str.slice(0, n - 1);
+  return (useWordBoundary
+    ? subString.slice(0, subString.lastIndexOf(" "))
+    : subString) + "...";
+};
+
+
+/** */
+export function timeSince(date: Date): string {
+  var seconds = Math.floor((new Date().valueOf() - date.valueOf()) / 1000);
+  var interval = seconds / 31536000;
+
+  if (interval > 1) {
+    return Math.floor(interval) + " years";
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    return Math.floor(interval) + " months";
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    return Math.floor(interval) + " days";
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    return Math.floor(interval) + " hours";
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    return Math.floor(interval) + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+}
+
+
+/** */
 export function getInitials(nickname: string): string {
   const names = nickname.split(' ');
   let initials = names[0].substring(0, 1).toUpperCase();
@@ -15,7 +54,7 @@ export function getInitials(nickname: string): string {
 }
 
 
-
+/** */
 export async function emptyAppletId(): Promise<EntryHash> {
   const zeroBytes = new Uint8Array(36).fill(0);
   return new Uint8Array([0x84, 0x21, 0x24, ...zeroBytes]);

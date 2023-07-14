@@ -4,7 +4,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
-import {getInitials} from "../utils";
+import {getInitials, truncate} from "../utils";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
@@ -33,53 +33,53 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _isHovered = false;
 
-
-  /**
-   * In dvmUpdated() this._dvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    //console.log("<chat-message-item>.dvmUpdated()");
-    if (oldDvm) {
-      //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
-      oldDvm.threadsZvm.unsubscribe(this);
-    }
-    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-  }
-
-
-  /** */
-  protected async updated(_changedProperties: PropertyValues) {
-    // try {
-    //   const childElements = this.shadowRoot.querySelectorAll('*');
-    //   console.log({childElements}); // This will log all child elements of the shadowRoot
-    //   childElements.forEach(async(childElement) => {
-    //     const chatItem = childElement as ChatMessageItem;
-    //     await chatItem.updateComplete;
-    //   });
-    //   console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
-    // } catch(e) {
-    //   // element not present
-    //   //this.requestUpdate();
-    // }
-  }
-
-
-  /** */
-  async getUpdateComplete(): Promise<boolean> {
-    //console.log("ChatView.msg.getUpdateComplete()")
-    const superOk = await super.getUpdateComplete();
-    //const childOk = await this.chatElem.updateComplete;
-    // const childElements = this.shadowRoot.querySelectorAll('*');
-    // console.log("ChatView.msg children", childElements); // This will log all child elements of the shadowRoot
-    // childElements.forEach(async(childElement) => {
-    //   const chatItem = childElement// as ChatMessageItem;
-    //   //await chatItem.updateComplete;
-    //   console.log("ChatView.msg child height", /*chatItem.offsetHeight,*/ chatItem.scrollHeight, chatItem.clientHeight, chatItem);
-    // });
-    return superOk /*&& childOk*/;
-  }
+  //
+  // /**
+  //  * In dvmUpdated() this._dvm is not already set!
+  //  * Subscribe to ThreadsZvm
+  //  */
+  // protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  //   //console.log("<chat-message-item>.dvmUpdated()");
+  //   if (oldDvm) {
+  //     //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
+  //     oldDvm.threadsZvm.unsubscribe(this);
+  //   }
+  //   newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+  //   //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+  // }
+  //
+  //
+  // /** */
+  // protected async updated(_changedProperties: PropertyValues) {
+  //   // try {
+  //   //   const childElements = this.shadowRoot.querySelectorAll('*');
+  //   //   console.log({childElements}); // This will log all child elements of the shadowRoot
+  //   //   childElements.forEach(async(childElement) => {
+  //   //     const chatItem = childElement as ChatMessageItem;
+  //   //     await chatItem.updateComplete;
+  //   //   });
+  //   //   console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
+  //   // } catch(e) {
+  //   //   // element not present
+  //   //   //this.requestUpdate();
+  //   // }
+  // }
+  //
+  //
+  // /** */
+  // async getUpdateComplete(): Promise<boolean> {
+  //   //console.log("ChatView.msg.getUpdateComplete()")
+  //   const superOk = await super.getUpdateComplete();
+  //   //const childOk = await this.chatElem.updateComplete;
+  //   // const childElements = this.shadowRoot.querySelectorAll('*');
+  //   // console.log("ChatView.msg children", childElements); // This will log all child elements of the shadowRoot
+  //   // childElements.forEach(async(childElement) => {
+  //   //   const chatItem = childElement// as ChatMessageItem;
+  //   //   //await chatItem.updateComplete;
+  //   //   console.log("ChatView.msg child height", /*chatItem.offsetHeight,*/ chatItem.scrollHeight, chatItem.clientHeight, chatItem);
+  //   // });
+  //   return superOk /*&& childOk*/;
+  // }
 
 
   /** */
@@ -91,15 +91,6 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     }));
   }
 
-
-  /** Truncate string to given length and add ellipse */
-  truncate(str: string, n: number, useWordBoundary: boolean): string {
-    if (str.length <= n) { return str; }
-    const subString = str.slice(0, n - 1);
-    return (useWordBoundary
-      ? subString.slice(0, subString.lastIndexOf(" "))
-      : subString) + "...";
-  };
 
   /** */
   render() {
@@ -115,7 +106,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     }
 
     /** Determine the comment button to display depending on current comments for this message */
-    const msg = this.truncate(texto.message, 60, true);
+    const msg = truncate(texto.message, 60, true);
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     const isUnread = maybeCommentThread? this._dvm.threadsZvm.perspective.unreadThreads.includes(maybeCommentThread) : false;
 

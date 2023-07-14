@@ -29,6 +29,8 @@ pub struct AddTextAndMentionsAtInput {
   mentionees: Vec<AgentPubKey>,
 }
 
+
+///
 #[hdk_extern]
 pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String)> {
   //let fn_start = sys_time()?;
@@ -46,15 +48,23 @@ pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> Ex
 }
 
 
-
+/// Returns vec of: LinkCreateActionHash, AuthorPubKey, TextMessageActionHash
 #[hdk_extern]
-pub fn probe_mentions(_ : ()) -> ExternResult<Vec<(AgentPubKey, ActionHash, TextMessage)>> {
+pub fn probe_mentions(_ : ()) -> ExternResult<Vec<(ActionHash, AgentPubKey, ActionHash)>> {
   let me = agent_info()?.agent_latest_pubkey;
   let tuples = get_typed_from_actions_links::<TextMessage>(EntryHash::from(me), ThreadsLinkType::Mention, None)?;
   let mut res = Vec::new();
-  for (link_ah, link_target, from, texto) in tuples {
-    let _ = delete_link(link_ah);
-    res.push((from, ActionHash::from(link_target), texto));
+  for (link_ah, link_target, from, _texto) in tuples {
+    //let _ = delete_link(link_ah);
+    res.push((link_ah, from, ActionHash::from(link_target)));
   }
   Ok(res)
+}
+
+
+/// FIXME: Make sure its a mention link
+#[hdk_extern]
+pub fn delete_mention(link_ah : ActionHash) -> ExternResult<()> {
+  let _ = delete_link(link_ah)?;
+  Ok(())
 }

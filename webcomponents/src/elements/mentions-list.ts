@@ -28,8 +28,7 @@ export class MentionsList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
 
     let textLi = Object.values(this.perspective.mentions).map(
-      ([_author, beadAh, texto]) => {
-        console.log("<mentions-list> texto", texto.value);
+      ([linkAh, _author, beadAh]) => {
         return html`<chat-message-item hash="${beadAh}"></chat-message-item>`;
       }
     );

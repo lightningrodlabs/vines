@@ -13,6 +13,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"add_text_message_with_mentions",
 	"add_text_message_at_with_mentions",
 	"probe_mentions",
+	"delete_mention",
 	"query_text_messages",
 	"get_text_message",
 	"get_many_text_message",

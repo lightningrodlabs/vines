@@ -106,7 +106,7 @@ export class ThreadsZvm extends ZomeViewModel {
   private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
 
-  private _mentions: [AgentPubKeyB64, ActionHashB64, TextMessage][] = [];
+  private _mentions: [ActionHashB64, AgentPubKeyB64, ActionHashB64][] = [];
 
 
   /** -- Get: Return a stored element -- */
@@ -233,7 +233,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async probeMentions() {
     const mentions = await this.zomeProxy.probeMentions();
-    this._mentions = mentions.map(([agentId, ah, textMessage]) => {return [encodeHashToBase64(agentId), encodeHashToBase64(ah), textMessage]});
+    this._mentions = mentions.map(([linkAh, agentId, ah]) => {return [encodeHashToBase64(linkAh), encodeHashToBase64(agentId), encodeHashToBase64(ah)]});
     this.notifySubscribers();
   }
 
@@ -507,7 +507,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string]> {
-    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000, ments? ments : []);
+    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000, ments? ments : [this.cell.agentPubKey]); // FIXME
   }
 
 

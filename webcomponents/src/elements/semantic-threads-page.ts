@@ -87,8 +87,7 @@ import {inputBarStyleTemplate} from "../styles";
 import {AppletThreadsTree} from "./applet-threads-tree";
 import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
-import  "./mentions-list";
-import {MentionsList} from "./mentions-list";
+import  "./mentions-notification-list";
 
 
 /**
@@ -689,30 +688,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                   <ui5-input slot="searchField" placeholder="Enter text..."></ui5-input>
               </ui5-shellbar>
 
-                <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 400px">
-                    <ui5-list header-text="Mentions">
-                        <ui5-li-notification show-close title-text="New order (#2525) With a very long title - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent feugiat, turpis vel scelerisque pharetra, tellus odio vehicula dolor, nec elementum lectus turpis at nunc." priority="High">
-                            <ui5-avatar icon="employee" size="XS" slot="avatar"></ui5-avatar>
-                            <span slot="footnotes">Office Notifications</span>
-                            <span slot="footnotes">3 Days</span>
-                            <ui5-notification-action icon="accept" text="Accept" slot="actions"></ui5-notification-action>
-                            And with a very long description and long labels of the action buttons - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent feugiat, turpis vel scelerisque pharetra, tellus odio vehicula dolor, nec elementum lectus turpis at nunc.
-                        </ui5-li-notification>
-                        <ui5-li-notification title-text="New order (#2565) With a very long title - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent feugiat, turpis vel scelerisque pharetra, tellus odio vehicula dolor, nec elementum lectus turpis at nunc." priority="Medium">
-                            <ui5-avatar initials="JS" size="XS" slot="avatar"></ui5-avatar>
-                            <span slot="footnotes">Patricia Clark</span>
-                            <span slot="footnotes">3 Days</span>
-                            <ui5-notification-action icon="accept" text="Accept All Requested Information" slot="actions"></ui5-notification-action>
-                            <ui5-notification-action icon="decline" text="Reject All Requested Information" slot="actions"></ui5-notification-action>
-                            Short description
-                        </ui5-li-notification>
-                    </ui5-list>
-                    <script>
-                        var notificationList = document.querySelector("ui5-list");
-                        notificationList.addEventListener("item-close", e => {
-                            e.detail.item.hidden = true;
-                        });
-                    </script>
+                <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
+                    <mentions-notification-list></mentions-notification-list>
                 </ui5-popover>
                 
               <div id="lowerSide">
