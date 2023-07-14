@@ -95,13 +95,14 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
                   `}
               <span slot="footnotes">${agent.nickname}</span>
               <span slot="footnotes">${date_str}</span>
-              <ui5-notification-action text="Jump" slot="actions"></ui5-notification-action>
+              <ui5-notification-action text="Jump" slot="actions" @click=${(e) => {
+                  this.dispatchEvent(new CustomEvent('jump', {detail: beadAh, bubbles: true, composed: true}));
+              }
+              }></ui5-notification-action>
           </ui5-li-notification>
         `;
       }
     );
-
-
 
     /** render all */
     return html`

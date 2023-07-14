@@ -695,7 +695,15 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               </ui5-shellbar>
 
                 <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
-                    <mentions-notification-list></mentions-notification-list>
+                    <mentions-notification-list @jump=${ async (e) => {
+                      console.log("requesting jump to bead", e.detail);
+                      const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
+                      this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+                      const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                      if (popover.isOpen()) {
+                          popover.close();
+                      }
+                    }}></mentions-notification-list>
                 </ui5-popover>
                 
               <div id="lowerSide">
