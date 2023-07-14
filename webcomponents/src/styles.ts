@@ -9,3 +9,14 @@ inputBarStyleTemplate.innerHTML = `
   }
 </style>
 `;
+
+
+
+export const shellBarStyleTemplate = document.createElement('template');
+shellBarStyleTemplate.innerHTML = `
+<style>
+  .ui5-shellbar-title {
+    font-size:larger !important;
+  }
+</style>
+`;

@@ -11,6 +11,7 @@ import "@ui5/webcomponents-fiori/dist/Bar.js";
 import "@ui5/webcomponents-fiori/dist/NotificationListItem.js";
 import "@ui5/webcomponents-fiori/dist/NotificationAction.js";
 import "@ui5/webcomponents-fiori/dist/ShellBar.js";
+import "@ui5/webcomponents-fiori/dist/ShellBarItem.js";
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
@@ -82,7 +83,7 @@ import {
 import {consume, ContextConsumer, createContext} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {inputBarStyleTemplate} from "../styles";
+import {inputBarStyleTemplate, shellBarStyleTemplate} from "../styles";
 
 import {AppletThreadsTree} from "./applet-threads-tree";
 import {CommentThreadView} from "./comment-thread-view";
@@ -330,10 +331,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
 
     /** Fiddle with shadow parts CSS */
-    /** -- Loading Done -- */
     const inputBar = this.shadowRoot.getElementById('inputBar') as HTMLElement;
     if (inputBar) {
       inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
+    }
+    const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
+    if (shellBar) {
+      shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
     }
   }
 
@@ -685,7 +689,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                   const shellbar = this.shadowRoot.getElementById("topicBar");
                   popover.showAt(shellbar);
               }}>
-                  <ui5-input slot="searchField" placeholder="Enter text..."></ui5-input>
+                  <!-- <ui5-input slot="searchField" placeholder="Enter text..."></ui5-input> -->
+                  <ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item>
+                  <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
               </ui5-shellbar>
 
                 <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
