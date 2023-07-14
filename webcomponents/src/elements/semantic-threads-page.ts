@@ -518,14 +518,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                            Array.from(input.children).forEach((child) => {
                                input.removeChild(child);
                            });
-                             
-                           const previousIsArobase = input.value !== "" && input.value.substr(input.value.length - 1) === "@";
-                           const previousIsEmpty = previousIsArobase && (input.value === "@" || input.value.substr(input.value.length - 2) === " @");
-                           //console.log("keydown previousIsArobase", previousIsArobase);
-                           //console.log("keydown previousIsEmpty", previousIsEmpty);
+
+                           /** Typed ' @' */
+                           const canMention = (input.value === "@" || input.value.substr(input.value.length - 2) === " @");
+                           //console.log("keydown canMention", previousIsEmpty);
                            
-                           /** @  and not backspace */
-                           if (previousIsEmpty && e.keyCode != 8) {
+                           /** except backspace */
+                           if (canMention && e.keyCode != 8) {
                              e.preventDefault();
                              this._cacheInputValue = input.value;
                              //let suggestionItems = ["toto", "titi", "bob", "joe"];

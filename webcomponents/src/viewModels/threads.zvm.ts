@@ -507,7 +507,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string]> {
-    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000, ments? ments : [this.cell.agentPubKey]); // FIXME
+    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000, ments? ments : []);
   }
 
 
