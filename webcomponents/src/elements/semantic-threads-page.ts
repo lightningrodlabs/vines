@@ -641,7 +641,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             <section>
                 <div>
                     <ui5-label for="topicTitleInput" required>Title:</ui5-label>
-                    <ui5-input id="topicTitleInput"></ui5-input>
+                    <ui5-input id="topicTitleInput" @keydown=${(e) => {
+                        if (e.keyCode === 13) {
+                            e.preventDefault();
+                            this.onCreateTopic(e);
+                        }
+                    }}></ui5-input>
                 </div>
             </section>
             <div slot="footer">
@@ -657,13 +662,18 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             <section>
                 <div>
                     <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
-                    <ui5-input id="threadPurposeInput"></ui5-input>
+                    <ui5-input id="threadPurposeInput" @keydown=${(e) => {
+                        if (e.keyCode === 13) {
+                            e.preventDefault();
+                            this.onCreateThread(e);
+                        }
+                    }}></ui5-input>
                 </div>
             </section>
             <div slot="footer" style:
             "display:flex;">
             <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                        @click=${this.onCreateThread}>Create
+                        @click=${this.onCreateThread} >Create
             </ui5-button>
             <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel
             </ui5-button>
