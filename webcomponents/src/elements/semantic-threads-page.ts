@@ -613,7 +613,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                     ${centerSide}
                 </div>
                 <div id="commentSide"
-                     style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction: column;background:#d8e4f4">
+                     style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
                     <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
                 </div>
