@@ -70,7 +70,6 @@ import {
   DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
-  fakeEntryHash
 } from "@holochain/client";
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
@@ -79,7 +78,7 @@ import {
   Hrl,
   WeServices, weServicesContext,
 } from "@lightningrodlabs/we-applet";
-import {consume, ContextConsumer, createContext} from "@lit-labs/context";
+import {consume} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {shellBarStyleTemplate} from "../styles";

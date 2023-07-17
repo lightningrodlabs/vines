@@ -3,7 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
-import {getInitials} from "../utils";
+import {getInitials, parseMentions} from "../utils";
 
 import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {ActionHashB64} from "@holochain/client";
@@ -20,7 +20,7 @@ import "@ui5/webcomponents/dist/List.js"
 
 import {inputBarStyleTemplate} from "../styles";
 import {Thread} from "../viewModels/thread";
-
+import "./input-bar";
 
 
 /**
@@ -136,13 +136,6 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     } catch(e) {
       // element not present
     }
-
-    /** Fiddle with shadow parts CSS */
-    /** -- Loading Done -- */
-    const inputBar = this.shadowRoot.getElementById('commentInputBar') as HTMLElement;
-    if (inputBar) {
-      inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
-    }
   }
 
 
@@ -157,19 +150,21 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateComment(e) {
-    const input = this.shadowRoot!.getElementById("commentInput") as HTMLInputElement;
-    if (!input.value || input.value.length == 0) {
-      return;
-    }
+  async onCreateComment(inputText: string) {
     const thread = this._dvm.threadsZvm.getThread(this.threadHash);
     if (!thread) {
       console.error("Missing Comment thread");
       return;
     }
-    const path_str = await this._dvm.publishTextMessage(input.value, this.threadHash);
+
+    let mentionedAgents = undefined;
+    if (this._profilesZvm) {
+      const mentions = parseMentions(inputText);
+      mentionedAgents = this._profilesZvm.findProfiles(mentions);
+    }
+
+    const path_str = await this._dvm.publishTextMessage(inputText, this.threadHash, mentionedAgents);
     console.log("onCreateComment() res:", path_str);
-    input.value = "";
   }
 
 
@@ -255,21 +250,17 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //<!--style="height: 400px" growing="Scroll" -->
     //<!-- @load-more=${this.onLoadMore}-->
 
+    const subjectType = this.subjectType? this.subjectType : pp.subjectType;
+    const subjectName = this.subjectName? this.subjectName : pp.subjectHash;
+    const title = `Comments on ${subjectType} "${subjectName}"`;
 
     let maybeInput = html``;
     if (this.showInput) {
       maybeInput = html`
-          <ui5-bar id="commentInputBar" design="FloatingFooter" style="margin:10px;width: auto;">
-              <ui5-input id="commentInput" type="Text" placeholder="Comment..."
-                         show-clear-icon
-                         style="border:none;width:100%;"
-                         @change=${this.onCreateComment}></ui5-input>
-          </ui5-bar>`
+          <threads-input-bar .topic=${subjectName} .profilesZvm=${this._profilesZvm}
+                              style="border:none;width:100%;"
+                              @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></threads-input-bar>`
     }
-
-    const subjectType = this.subjectType? this.subjectType : pp.subjectType;
-    const subjectName = this.subjectName? this.subjectName : pp.subjectHash;
-    const title = `Comments on ${subjectType} "${subjectName}"`;
 
     // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
