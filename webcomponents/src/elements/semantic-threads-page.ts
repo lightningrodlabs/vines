@@ -33,10 +33,6 @@ import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
 
 import Dialog from "@ui5/webcomponents/dist/Dialog";
-import Input from "@ui5/webcomponents/dist/Input";
-//import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
-import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";
-//import SuggestionListItem from "@ui5/webcomponents/dist/SuggestionListItem";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 /** @ui5/webcomponents-icons */
@@ -86,12 +82,13 @@ import {
 import {consume, ContextConsumer, createContext} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {inputBarStyleTemplate, shellBarStyleTemplate} from "../styles";
+import {shellBarStyleTemplate} from "../styles";
 
 import {AppletThreadsTree} from "./applet-threads-tree";
 import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
 import  "./mentions-notification-list";
+import "./input-bar";
 
 
 /**
@@ -125,8 +122,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
 
-
-  private _cacheInputValue: string = "";
 
   @property() appletId: EntryHashB64;
 
@@ -244,33 +239,27 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateTextMessage(e) {
-    console.log("onCreateTextMessage", e)
-    const input = this.shadowRoot!.getElementById("textMessageInput") as HTMLInputElement;
-    if (!input.value || input.value.length == 0) {
-      return;
-    }
+  async onCreateTextMessage(inputText: string) {
+    console.log("onCreateTextMessage", inputText)
 
     let mentionedAgents = undefined;
     if (this._profilesZvm) {
-       const mentions = parseMentions(input.value);
+       const mentions = parseMentions(inputText);
        console.log("parseMentions", mentions);
        console.log("parseMentions reversed", this._profilesZvm.perspective.reversed);
        mentionedAgents = this._profilesZvm.findProfiles(mentions);
       console.log("parseMentions mentionedAgents", mentionedAgents);
     }
 
-    let ah = await this._dvm.publishTextMessage(input.value, this._selectedThreadHash, mentionedAgents);
+    let ah = await this._dvm.publishTextMessage(inputText, this._selectedThreadHash, mentionedAgents);
     console.log("onCreateTextMessage() res:", ah);
-    input.value = "";
+
 
     /** DEBUG */
     if (this.weServices) {
       const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
       console.log("entryInfo2", this.cell.dnaHash, entryInfo);
     }
-
-
 
     //await this.probeLatestMessages();
     //const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
@@ -334,10 +323,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
 
     /** Fiddle with shadow parts CSS */
-    const inputBar = this.shadowRoot.getElementById('inputBar') as HTMLElement;
-    if (inputBar) {
-      inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
-    }
     const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
     if (shellBar) {
       shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
@@ -490,85 +475,11 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
       centerSide = html`
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
-          <ui5-bar id="inputBar" design="FloatingFooter">
-              <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
-              <ui5-input id="textMessageInput" type="Text" placeholder="Message #${topic}"
-                         show-clear-icon show-suggestions
-                         
-                         @suggestion-item-select=${(e) => {
-                            //console.log("suggestion-item-select", e)
-                            const input = this.shadowRoot.getElementById("textMessageInput") as Input;
-                            e.preventDefault();
-                            Array.from(input.children).forEach((child) => {
-                                input.removeChild(child);
-                            });
-                            input.value = this._cacheInputValue + e.detail.item.text + " ";
-                            this._cacheInputValue = "";
-                            //input.setCaretPosition(input.value.length - 1);
-                            //console.log("suggestion-item-select: setCaretPosition", input.getCaretPosition(), input.value.length);
-                          }
-                         }
-                         
-                         
-                         @keydown=${(e) => {
-                           const input = this.shadowRoot.getElementById("textMessageInput") as Input;                           
-                           //console.log("keydown", e);
-                           
-                           /** Remove previous suggestions */
-                           Array.from(input.children).forEach((child) => {
-                             input.removeChild(child);
-                           });
-                           
-                           /** Enter: commit message */  
-                           if (e.keyCode === 13) {
-                               e.preventDefault();
-                               this.onCreateTextMessage(e);
-                           }
-
-                           /** Typed ' @' */
-                           const canMention = (input.value === "@" || input.value.substr(input.value.length - 2) === " @");
-                           //console.log("keydown canMention", previousIsEmpty);
-                           
-                           /** except backspace */
-                           if (canMention && e.keyCode != 8) {
-                             //e.preventDefault();
-                             this._cacheInputValue = input.value;
-                             //let suggestionItems = ["toto", "titi", "bob", "joe"];
-                             let suggestionItems = this._profilesZvm ? this._profilesZvm.getNames() : [];
-                             /** Filter */
-                             const filtered = suggestionItems.filter((item) => {
-                                 return item.toUpperCase().indexOf(e.key.toUpperCase()) === 0;
-                               });
-                             if (filtered.length != 0) {
-                               suggestionItems = filtered;
-                             }
-
-                             suggestionItems.forEach((suggestion) => {
-                               const li = document.createElement("ui5-suggestion-item") as unknown as SuggestionItem;
-                               //li.icon = "world";
-                               //li.additionalText = "explore";
-                               //li.additionalTextState = "Success";
-                               //li.description = "travel the world";
-                               li.text = suggestion;
-                               input.appendChild(li as unknown as Node);
-                               li
-                             });
-                           }
-                         }
-      }
-              ></ui5-input>
-              <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
-          </ui5-bar>
+          <threads-input-bar .profilesZvm=${this._profilesZvm} .topic=${topic}
+                             @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}></threads-input-bar>
       `;
     }
 
-    /*
-                             @input=${(e) => {
-                           console.log("input", e);
-
-                         }
-
-     */
 
     /** This agent's profile info */
     let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
@@ -865,22 +776,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         //  /*border: 1px solid dimgray;*/
         //}
         
-        
-        #inputBar {
-          margin:10px;
-          width: auto;
-        }
-        
-        #inputBar::part(bar) {
-          /*background: #81A2D4;*/
-        }
-        
-        #textMessageInput {
-          width: 100%;
-          border: none;
-          padding: 0px;
-        }
-        
+       
         #rightSide {
           width: 300px;
           /*height: 100vh;*/
