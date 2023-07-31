@@ -151,9 +151,9 @@ export class ThreadsApp extends HappElement {
         console.warn("No adminWebsocket provided (Zome call authorization done)")
       } else {
         console.log("Zome call authorization done externally")
-
       }
     }
+
     /** Grab ludo cells */
     const entryDefs = await this.threadsDvm.fetchAllEntryDefs();
     console.log("threads.entryDefs", entryDefs);

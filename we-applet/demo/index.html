@@ -28,18 +28,19 @@
         console.log("Index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
 
+        /** Store AppletId in LocalStorage, so we can retrieve it when refereshing webpage */
         let threadsAppletId;
-        let threadsAppletIdB64 = window.localStorage['demoAppletId'];
+        let threadsAppletIdB64 = window.localStorage['threadsDemoAppletId'];
         if (!threadsAppletIdB64) {
           threadsAppletId = fakeEntryHash();
           threadsAppletIdB64 = encodeHashToBase64(threadsAppletId);
-          window.localStorage['demoAppletId'] = threadsAppletIdB64;
+          window.localStorage['threadsDemoAppletId'] = threadsAppletIdB64;
         } else {
           threadsAppletId = decodeHashFromBase64(threadsAppletIdB64);
         }
 
-        /** */
-        console.log("demoAppletId", threadsAppletIdB64);
+        /** Create custom WeServiceMock */
+        console.log("threadsDemoAppletId", threadsAppletIdB64);
         const myWeServicesMock = weServicesMock;
         myWeServicesMock.appletInfo = async (appletId) => {
           const appletIdB64 = encodeHashToBase64(appletId);
@@ -53,7 +54,6 @@
           }
           return undefined;
         };
-
         myWeServicesMock.entryInfo = async (hrl) => {
           return {
             appletId: threadsAppletId,
