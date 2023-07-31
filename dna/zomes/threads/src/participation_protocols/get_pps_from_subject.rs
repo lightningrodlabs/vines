@@ -12,7 +12,7 @@ pub fn get_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(Actio
     .map(|l| {
       let ts = tag2Ts(l.tag);
       debug!("get_pps_from_subject_hash() thread {}, creationTime: {}", l.target, ts);
-      (ActionHash::from(l.target), ts)
+      (ActionHash::try_from(l.target).unwrap(), ts)
     })
     .collect();
   Ok(ahs)
@@ -26,7 +26,7 @@ pub fn get_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHa
   let links = get_links(tp.path_entry_hash()?, ThreadsLinkType::Protocols, None)?;
   let ahs = links
     .into_iter()
-    .map(|l| { (ActionHash::from(l.target), tag2Ts(l.tag)) })
+    .map(|l| { (ActionHash::try_from(l.target).unwrap(), tag2Ts(l.tag)) })
     .collect();
   Ok(ahs)
 }

@@ -56,7 +56,7 @@ pub fn probe_mentions(_ : ()) -> ExternResult<Vec<(ActionHash, AgentPubKey, Acti
   let mut res = Vec::new();
   for (link_ah, link_target, from, _texto) in tuples {
     //let _ = delete_link(link_ah);
-    res.push((link_ah, from, ActionHash::from(link_target)));
+    res.push((link_ah, from, ActionHash::try_from(link_target).unwrap()));
   }
   Ok(res)
 }

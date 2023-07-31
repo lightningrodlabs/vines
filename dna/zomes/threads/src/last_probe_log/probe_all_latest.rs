@@ -49,7 +49,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
           //index_time,
           creation_time: item_tag.devtest_timestamp,
           //creation_time: link.timestamp,
-          bead_ah: ActionHash::from(link.target),
+          bead_ah: ActionHash::try_from(link.target).unwrap(),
           bead_type: item_tag.item_type,
           //bead_type: tag2str(&link.tag).unwrap(),
         };

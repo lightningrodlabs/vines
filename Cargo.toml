@@ -13,13 +13,12 @@ edition = "2021"
 
 [workspace.dependencies]
 serde = { version = "1.0", default-features = false }
-hdi = { version = "=0.2.1", default-features = false }
-hdk = { version = "=0.1.1", default-features = false }
-holochain_integrity_types = { version = "=0.1.1" } # needed because of broken deps in hdk-1.1
+hdi = { version = "=0.3.1", default-features = false }
+hdk = { version = "=0.2.1", default-features = false }
 
-zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-1.1" }
-time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-1.1" }
-path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-1.1"}
+zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-2.1" }
+time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-2.1" }
+path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-2.1"}
 
 [profile.dev]
 lto = false

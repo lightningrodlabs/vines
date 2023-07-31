@@ -33,7 +33,7 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
                            //index_time: bucket_begin_time_us,
                            creation_time: bt.devtest_timestamp,
                            //creation_time: ll.timestamp,
-                           bead_ah: ActionHash::from(ll.target),
+                           bead_ah: ActionHash::try_from(ll.target).unwrap(),
                            bead_type: bt.item_type,
                            //bead_type: tag2str(&LinkTag::from(ll.tag)).unwrap(),
                          }
