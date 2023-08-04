@@ -1,3 +1,5 @@
 #!/bin/bash
 
+set -e
+
 zits --default-zome-name zThreads -d "import {ItemLink, SweepInterval, SweepResponse} from './deps.types';" -i crates/time_indexing -i dna/zomes/path_explorer -i dna/zomes/threads -i dna/zomes/threads_integrity -o webcomponents/src/bindings/threads.ts
