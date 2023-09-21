@@ -21,10 +21,10 @@ import {
 } from "@ddd-qc/lit-happ";
 import {
   DEFAULT_THREADS_DEF, globalProfilesContext, ThreadsDvm,
+  ProfilesDvm,
 } from "@threads/elements";
 
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
-import {ProfilesDvm} from "@threads/elements";
 import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 
