@@ -302,7 +302,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`<ui5-tree-item-custom id=${pathHash} level="1" has-children>
-          <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:;">
+          <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:none;">
               <span>${subjectType}</span>
               ${commentButton}
               ${newBadge}

@@ -10,7 +10,7 @@ use crate::participation_protocols::*;
 #[serde(rename_all = "camelCase")]
 pub struct CreatePpInput {
   pub pp: ParticipationProtocol,
-  pub applet_id: EntryHash,
+  pub applet_hash: EntryHash,
   pub dna_hash: DnaHash,
 }
 
@@ -18,7 +18,7 @@ pub struct CreatePpInput {
 /// Create a Pp off anything
 #[hdk_extern]
 pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp)> {
-  return create_pp(input.pp, input.applet_id, input.dna_hash, None);
+  return create_pp(input.pp, input.applet_hash, input.dna_hash, None);
 }
 
 

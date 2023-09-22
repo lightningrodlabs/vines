@@ -48,6 +48,20 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  /** Notify subscribers */
+  /** FIXME: structuredClone() fails because of Thread class. Refactor to a state object instead */
+  protected notifySubscribers(): boolean {
+    if (!this.hasChanged()) return false;
+    //this._previousPerspective = structuredClone(this.perspective);
+    this._previousPerspective = this.perspective;
+    for (const [host, propName] of this._providedHosts) {
+      (host as any)[propName] = this._previousPerspective;
+    }
+    this._dvmParent.zvmChanged(this);
+    return true;
+  }
+
+
   /** -- Perspective -- */
 
   /* */
@@ -585,7 +599,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const [ah, ts] = await this.zomeProxy.createParticipationProtocol({
       pp,
-      appletId: decodeHashFromBase64(appletId),
+      appletHash: decodeHashFromBase64(appletId),
       dnaHash: decodeHashFromBase64(dnaHash),
     });
     const ahB64 = encodeHashToBase64(ah);

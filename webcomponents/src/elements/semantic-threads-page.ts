@@ -414,7 +414,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           subjectHash: decodeHashFromBase64(request.subjectHash),
           subjectType: request.subjectType,
         },
-        appletId: decodeHashFromBase64(this.appletId),
+        appletHash: decodeHashFromBase64(this.appletId),
         dnaHash: decodeHashFromBase64(this.cell.dnaHash),
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
@@ -780,10 +780,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           /*border: 1px solid dimgray;*/
         }
 
-        //#topicBar::part(root) {
-        //  background: #DBE3EF;
-        //  /*border: 1px solid dimgray;*/
-        //}
+        #topicBar::part(root) {
+          /*background: #DBE3EF;*/
+          /*border: 1px solid dimgray;*/
+        }
         
        
         #rightSide {

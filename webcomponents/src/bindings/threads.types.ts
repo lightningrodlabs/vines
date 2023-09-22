@@ -179,7 +179,7 @@ export interface ProbeAllLatestOutput {
 
 export interface CreatePpInput {
   pp: ParticipationProtocol
-  appletId: EntryHash
+  appletHash: EntryHash
   dnaHash: DnaHash
 }
 

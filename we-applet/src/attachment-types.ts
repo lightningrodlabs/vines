@@ -26,7 +26,7 @@ export async function attachmentTypes(appletClient: AppAgentClient, appletId: En
           subjectHash: attachToHrl[1],
           subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
         },
-          appletId: entryInfo.appletId,
+          appletHash: entryInfo.appletHash,
           dnaHash: attachToHrl[0],
         };
 
