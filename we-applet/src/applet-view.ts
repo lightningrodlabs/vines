@@ -108,7 +108,7 @@ export async function appletViews(
               const cellProxy = await asCellProxy(
                 client,
                 undefined, //hrl[0],
-                mainAppInfo.installed_app_id, //"threads-applet",
+                mainAppInfo.installed_app_id, //"ThreadsWeApplet",
                 "role_threads",
               );
               const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
@@ -179,7 +179,7 @@ export async function appletViews(
           // /** Path entry type */
           // path: {
           //   info: async (hrl: Hrl) => {
-          //     const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+          //     const cellProxy = await asCellProxy(client, hrl, "ThreadsWeApplet", "role_threads");
           //     const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
           //     const tuple = await proxy.getSubjectsByType(hrl[1]);
           //     return {
@@ -188,7 +188,7 @@ export async function appletViews(
           //     };
           //   },
           //   view: async (element, hrl: Hrl, context: any) => {
-          //     //const cellProxy = await asCellProxy(client, hrl, "threads-applet", "role_threads");
+          //     //const cellProxy = await asCellProxy(client, hrl, "ThreadsWeApplet", "role_threads");
           //     //const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
           //     const spaceElem = html`
           //         <div>Before custom element</div>

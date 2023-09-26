@@ -9,7 +9,6 @@
     "build:watch": "tsc -w --incremental --preserveWatchOutput",
     "dist": "rm -rf dist && tsc && rollup -c rollup.config.js",
     "start:ui": "concurrently --names tsc,dev-server \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
-    "start:ui-old": "web-dev-server --config ./web-dev-server.config.mjs",
     "localize:extract": "lit-localize extract",
     "localize:build": "lit-localize build"
   },
@@ -37,7 +36,6 @@
   "dependencies": {
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.16.1",
-    "@lightningrodlabs/we-applet": "0.8.0",
     "@threads/elements": "file:../webcomponents"
   }
 }

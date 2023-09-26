@@ -2,7 +2,7 @@
   "name": "threads-dev",
   "version": "0.1.0",
   "config": {
-    "hc_version": "0.2.1",
+    "hc_version": "0.2.2",
     "zits_version": "1.9.0",
     "bin": "bin"
   },
@@ -22,18 +22,19 @@
     "version"            :  "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
     "build:zome"         :  "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:dna"          :  "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
-    "build:happ"         :  "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir",
+    "build:profiles"     :  "$npm_package_config_bin/hc dna pack -o artifacts/profiles.dna dna/workdir_profiles",
+    "build:happ:we"      :  "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads-we_applet.happ dna/workdir",
+    "build:happ"         :  "npm run build:dna && npm run build:profiles && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir_profiles",
     "build:webapp"       :  "npm run build -w webcomponents && npm run dist -w webapp",
     "build:devtest"      :  "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
-    "dev:components"     :  "npm run build:watch -w webcomponents",
 
-    "devtest"            :  "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run build:watch -w webapp\" \"npm run start:mem\"",
-    "devtest:we"         :  "npm run build:devtest && npm run devtest -w we-applet",
+    "devtest"            :  "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run start:mem\"",
+    "devtest:we"         :  "npm run build:devtest && npm run build:happ:we && npm run devtest -w we-applet",
 
-    "prodtest"           :  "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "prodtest"           :  "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
 
-    "start:mem"          :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
-    "start:local"        :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run dev:components\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:mem"          :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' NO_WE=1 concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
+    "start:local"        :  "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' NO_WE=1 concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
 
     "new-sandbox:mem"    :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network mem",
     "new-sandbox:local"  :  "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
@@ -45,7 +46,7 @@
     "network3"           :  "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\" \"sleep 2 && cross-env INDEX=2 npm run start:local\"",
     "network:we"         :  "npm run clean:hc & npm run network2 -w we-applet",
     "_sandbox"           :  "echo INDEX $INDEX & echo PORTS $BOOT_PORT $SIGNAL_PORT $HC_APP_PORT $HC_ADMIN_PORT & RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX",
-    "_local"             :  "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(cat .hc_app_$INDEX) HC_ADMIN_PORT=$(cat .hc_admin_$INDEX) BUILD_MODE='dev' ADD_PROFILES=1 concurrently \"npm run _sandbox\" \"sleep 7 && npm run start:ui-only -w webapp\"",
+    "_local"             :  "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(cat .hc_app_$INDEX) HC_ADMIN_PORT=$(cat .hc_admin_$INDEX) BUILD_MODE='dev' NO_WE=1 concurrently \"npm run _sandbox\" \"sleep 7 && npm run start:ui-only -w webapp\"",
     "local0"             :  "cross-env INDEX=0 npm run _local",
     "local1"             :  "cross-env INDEX=1 npm run _local",
     "local2"             :  "cross-env INDEX=2 npm run _local",
@@ -82,7 +83,8 @@
   "dependencies": {
     "@ddd-qc/cell-proxy": "=0.19.11",
     "@ddd-qc/lit-happ": "=0.19.11",
-    "@ddd-qc/path-explorer": "0.1.6",
+    "@ddd-qc/path-explorer": "0.2.0",
+    "@lightningrodlabs/we-applet": "0.8.0",
     "@holochain/client": "=0.16.2",
     "@holochain-open-dev/core-types": "0.6.3",
     "@lit-labs/context": "^0.2.0",

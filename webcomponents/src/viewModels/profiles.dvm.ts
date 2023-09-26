@@ -4,11 +4,6 @@ import {
   AppSignal, AppSignalCb,
 } from "@holochain/client";
 
-/** */
-// export interface ProfilesDnaPerspective {
-//   agentPresences: Record<string, number>,
-// }
-
 
 /**
  * ViewModel fo a DNA holding a Profiles zome

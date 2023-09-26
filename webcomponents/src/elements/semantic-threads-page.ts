@@ -135,10 +135,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: weServicesContext, subscribe: true })
   weServices!: WeServices;
 
-  private _myProfile: ThreadsProfile = {nickname: "unknown", fields: {}}
+  private _myProfile: ThreadsProfile = {nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}}
 
-
-  /** AppletId -> AppletInfo */
+  /** AppletHash -> AppletInfo */
   @state() private _appletInfos: Dictionary<AppletInfo> = {}
 
 
@@ -172,46 +171,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     this._selectedThreadHash = '';
     this._initialized = true;
   }
-
-
-
-  // /** */
-  // shouldUpdate(changedProperties: PropertyValues<this>): boolean {
-  //   //if (!this._initialized) return false;
-  //   const res = super.shouldUpdate(changedProperties);
-  //   if (!this._profilesDvm) {
-  //     this.requestProfilesDvm();
-  //   }
-  //   return res;
-  // }
-
-
-  // /** -- Grab Profiles DVM from a different cell -- */
-  //
-  // /** */
-  // protected requestProfilesDvm() {
-  //   const contextType = createContext('dvm/profiles');
-  //   console.log(`\t\t Requesting context "${contextType}"`)
-  //   /*const consumer =*/ new ContextConsumer(
-  //     this,
-  //     contextType,
-  //     async (value: ProfilesDvm, dispose?: () => void): Promise<void> => {
-  //       console.log(`\t\t Received value for context "${contextType}"`)
-  //       if (this._profilesDvm) {
-  //         this._profilesDvm.profilesZvm.unsubscribe(this);
-  //       }
-  //       this._profilesDvm = value;
-  //       this._profilesDvm.profilesZvm.subscribe(this, 'profilesPerspective');
-  //     },
-  //     false, // true will call twice at init
-  //   );
-  //   //console.log({consumer})
-  // }
-  //
-  // private _profilesDvm?: ProfilesDvm;
-  //
-  // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  // profilesPerspective!: ProfilesPerspective;
 
 
   /** -- Update -- */

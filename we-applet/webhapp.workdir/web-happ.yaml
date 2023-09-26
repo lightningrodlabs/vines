@@ -4,4 +4,4 @@ name: Threads Official We-applet
 ui:
   bundled: "../../artifacts/threads-we_applet-ui.zip"
 happ_manifest:
-  bundled: "../../artifacts/threads.happ"
+  bundled: "../../artifacts/threads-we_applet.happ"

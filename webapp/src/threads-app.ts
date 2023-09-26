@@ -2,7 +2,7 @@ import {html, css} from "lit";
 import { state, customElement } from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {
-  AdminWebsocket,
+  AdminWebsocket, AgentPubKeyB64,
   AppSignal,
   AppWebsocket, encodeHashToBase64, EntryHash,
   EntryHashB64,
@@ -21,10 +21,10 @@ import {
 } from "@ddd-qc/lit-happ";
 import {
   DEFAULT_THREADS_DEF, globalProfilesContext, ThreadsDvm,
-  ProfilesDvm,
+  ProfilesDvm, DEFAULT_THREADS_WE_DEF,
 } from "@threads/elements";
 
-import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, IS_WE} from "./globals"
 import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 
@@ -44,7 +44,7 @@ export class ThreadsApp extends HappElement {
 
   @state() private _currentSpaceEh: null | EntryHashB64 = null;
 
-  static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
+  static readonly HVM_DEF: HvmDef = IS_WE? DEFAULT_THREADS_WE_DEF : DEFAULT_THREADS_DEF;
 
   @state() private _canShowBuildView = false;
   @state() private _canShowDebug = false;
@@ -96,7 +96,7 @@ export class ThreadsApp extends HappElement {
   /** Create a Profiles DVM out of a different happ */
   async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
                           profilesCloneId: CloneId | undefined,
-                          profilesZomeName: ZomeName): Promise<void> {
+                          _profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
@@ -105,9 +105,15 @@ export class ThreadsApp extends HappElement {
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
+    await this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+  }
+
+
+  /** */
+  async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
     this._profilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
@@ -154,6 +160,10 @@ export class ThreadsApp extends HappElement {
       }
     }
 
+    if (!IS_WE) {
+      await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.threadsDvm.cell.agentPubKey);
+    }
+
     /** Grab ludo cells */
     const entryDefs = await this.threadsDvm.fetchAllEntryDefs();
     console.log("threads.entryDefs", entryDefs);
@@ -187,15 +197,6 @@ export class ThreadsApp extends HappElement {
     /** Wait for offlinePerspective */
     return canUpdate && this._offlinePerspectiveloaded;
   }
-
-
-  // /** */
-  // async createMyProfile(profile: ThreadsProfile) {
-  //   //console.log("onNewProfile()", profile)
-  //   await this.threadsDvm.profilesZvm.createMyProfile(profile);
-  //   this._hasStartingProfile = true;
-  // }
-
 
 
   /** */

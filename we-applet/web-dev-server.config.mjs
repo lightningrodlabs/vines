@@ -38,6 +38,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
       'process.env.BUILD_MODE': BUILD_MODE,
       "process.env.HC_APP_PORT": JSON.stringify(process.env.HC_APP_PORT),
       "process.env.HC_ADMIN_PORT": JSON.stringify(process.env.HC_ADMIN_PORT) || undefined,
+      'process.env.NO_WE': JSON.stringify(process.env.NO_WE || false),
       delimiters: ["", ""],
     }),
     builtins(),

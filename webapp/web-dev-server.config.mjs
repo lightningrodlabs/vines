@@ -42,6 +42,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
       'process.env.BUILD_MODE': BUILD_MODE,
       'process.env.HC_APP_PORT': JSON.stringify(process.env.HC_APP_PORT || 8888),
       'process.env.HC_ADMIN_PORT': JSON.stringify(process.env.HC_ADMIN_PORT || 8889),
+      'process.env.NO_WE': JSON.stringify(process.env.NO_WE || false),
       '  COMB =': 'window.COMB =',
       delimiters: ['', ''],
     }),

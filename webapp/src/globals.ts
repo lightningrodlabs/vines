@@ -34,6 +34,13 @@ try {
   console.log("HC_APP_PORT not defined")
 }
 
+export let IS_WE = true;
+try {
+  IS_WE = !Boolean(process.env.NO_WE);
+} catch (e) {
+  console.log("NO_WE not defined")
+}
+console.log("IS_WE =", IS_WE)
 
 console.log("HAPP_ID =", DEFAULT_THREADS_DEF.id)
 console.log("HC_APP_PORT =", HC_APP_PORT);

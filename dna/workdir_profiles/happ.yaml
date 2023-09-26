@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: hThreads
+description: File sharing happ
+roles:
+  - name: role_threads
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/threads.dna"
+      clone_limit: 0
+  - name: profiles
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/profiles.dna"
+      clone_limit: 0
