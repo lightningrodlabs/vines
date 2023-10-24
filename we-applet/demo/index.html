@@ -8,6 +8,7 @@
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
             rel="stylesheet"
     />
+    <link href="../dist/styles.css" rel="stylesheet"/>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body style="margin:0px;background: #91a3b7">
@@ -19,13 +20,13 @@
       import { fakeEntryHash } from '@holochain-open-dev/utils';
       import { ProfilesClient } from '@holochain-open-dev/profiles';
       import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
-      import { weServicesMock } from "@lightningrodlabs/we-applet/dist/mocks.js";
 
-      import Applet from "../dist";
+      import filesAPI from "../dist";
+      console.log("filesAPI", filesAPI);
 
       /** Define setup function */
       async function setup() {
-        console.log("Index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
+        console.log("demo/index.html setup()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
 
         /** Store AppletId in LocalStorage, so we can retrieve it when refereshing webpage */
@@ -91,13 +92,14 @@
         //console.log("mock agentId", encodeHashToBase64(mockProfilesZome.myPubKey));
         mockProfilesZome.create_profile({nickname: "Alex", fields: {}})
 
-        const renderers = await Applet.appletViews(
+        const applet = await filesAPI.createFileShareApplet(
                 appAgentWs,
                 threadsAppletId,
                 new ProfilesClient(mockProfilesZome, mockProfilesZome.roleName),
                 myWeServicesMock,
         );
-        renderers.main(document.body);
+        console.log("applet", applet);
+        document.body.append(applet);
       }
 
       /** Run it */

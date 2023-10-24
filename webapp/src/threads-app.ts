@@ -10,7 +10,8 @@ import {
   ZomeName,
 } from "@holochain/client";
 import {
-  WeServices, weServicesContext,
+  weClientContext,
+  WeServices,
 } from "@lightningrodlabs/we-applet";
 import {
   HCL,
@@ -83,8 +84,8 @@ export class ThreadsApp extends HappElement {
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, showCommentThreadOnly);
     /** Provide it as context */
-    console.log(`\t\tProviding context "${weServicesContext}" | in host `, app);
-    app._weProvider = new ContextProvider(app, weServicesContext, weServices);
+    console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
+    app._weProvider = new ContextProvider(app, weClientContext, weServices);
     app.appletId = encodeHashToBase64(thisAppletId);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);

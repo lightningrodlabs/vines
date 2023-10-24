@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@types/functional-red-black-tree": "^1.0.2",
-    "@lightningrodlabs/we-applet": "0.8.0",
     "functional-red-black-tree": "^1.0.1",
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",

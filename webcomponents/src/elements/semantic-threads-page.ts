@@ -75,8 +75,8 @@ import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
 import {
   AppletInfo,
-  Hrl,
-  WeServices, weServicesContext,
+  Hrl, weClientContext,
+  WeServices,
 } from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
 import {ProfilesZvm} from "../viewModels/profiles.zvm";
@@ -132,7 +132,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globalProfilesContext, subscribe: true })
   _profilesZvm!: ProfilesZvm;
 
-  @consume({ context: weServicesContext, subscribe: true })
+  @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServices;
 
   private _myProfile: ThreadsProfile = {nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}}

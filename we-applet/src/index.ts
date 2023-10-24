@@ -1,30 +1,23 @@
-import {
-  AppAgentClient, EntryHash
-} from "@holochain/client";
-
-import {
-  WeApplet,
-} from "@lightningrodlabs/we-applet";
-
-import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
-import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
-
-import {appletViews} from "./applet-view";
-import {crossAppletViews} from "./cross-applet-view";
-import {attachmentTypes} from "./attachment-types";
-import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet/dist/types";
-
+import {getEntryInfo} from "./appletServices/getEntryInfo";
+import {weServicesMock} from "./mock";
+import {createThreadsApplet} from "./createApplet";
+import {AppletServices} from "@lightningrodlabs/we-applet";
 
 
 /** */
-const applet: WeApplet = {
-  appletViews,
-  crossAppletViews,
-  attachmentTypes,
-  search: async (appletClient: AppAgentClient, appletId: EntryHash, weServices: WeServices, searchFilter: string) => {return []},
+const appletServices: AppletServices = {
+  //attachmentTypes,
+  attachmentTypes: async (_appletClient) => ({}),
+  getEntryInfo,
+  blockTypes: {},
+  search: async (appletClient, searchFilter) => {return []},
 };
-export default applet;
+
+export default {
+  createThreadsApplet,
+  weServicesMock,
+  appletServices,
+};
 
 
 

@@ -4,7 +4,7 @@ import {consume} from "@lit-labs/context";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
-import {AttachmentType, Hrl, WeServices, weServicesContext} from "@lightningrodlabs/we-applet";
+import {AttachmentType, Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
@@ -39,7 +39,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
   @property() appletId: EntryHashB64 = ''
 
 
-  @consume({ context: weServicesContext, subscribe: true })
+  @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServices;
 
   /** -- State variables -- */
@@ -116,7 +116,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     console.log("Create/Open Thread result:", res);
     res.context.subjectType = subjectType;
     res.context.subjectName = subjectName;
-    this.weServices.openViews.openHrl(res.hrl, res.context);
+    this.weServices.openHrl(res.hrl, res.context);
   }
 
 
