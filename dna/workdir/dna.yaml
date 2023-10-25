@@ -2,7 +2,7 @@
 manifest_version: "1"
 name: dThreads
 integrity:
-  origin_time: 2022-09-25T13:55:49.200Z
+  origin_time: 2023-09-25T13:55:49.200Z
   zomes:
     - name: threads_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="Description" content="Threads we-applet" />
+    <link href="../node_modules/@shoelace-style/shoelace/dist/themes/light.css" rel="stylesheet"/>
+    <base href="." />
+    <title>Threads we-applet</title>
+  </head>
+
+  <body style="margin: 0px;">
+    <script type="module">
+      console.log("Threads we-applet index.html START");
+      import threadsAPI from "./out-tsc";
+      console.log("Imported threadsAPI");
+      const happElem = await threadsAPI.setup(threadsAPI.createThreadsApplet, threadsAPI.threadsNames);
+      document.body.append(happElem);
+    </script>
+  </body>
+</html>

@@ -4,7 +4,8 @@
   "config": {
     "hc_version": "0.2.2",
     "zits_version": "1.9.0",
-    "bin": "bin"
+    "bin": "bin",
+    "we_test_folder": "../we-main"
   },
   "private": true,
   "workspaces": [
@@ -56,7 +57,9 @@
 
     "test"               : "npm run build:happ && npm run build -w @threads/elements && npm t -w @threads/tests",
     "package:webapp"     : "rm -rf artifacts/threads-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
-    "package:we"         : "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/threads-we_applet.webhapp",
+    "package:we"         : "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/threads-we_applet.webhapp && npm run cp:we",
+    "dist:we"            : "npm run build -w we-applet && npm run package:we",
+    "cp:we"              : "cp artifacts/threads-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
 
     "update-version"     : "bash scripts/update-version-number.sh $npm_package_version",
     "dl-test-release"    : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/threads",
@@ -89,7 +92,7 @@
     "@holochain-open-dev/profiles": "^0.16.1",
     "@holochain/client": "=0.16.2",
     "@lightningrodlabs/attachments": "0.2.0",
-    "@lightningrodlabs/we-applet": "0.9.0",
+    "@lightningrodlabs/we-applet": "0.10.0",
     "@lit-labs/context": "^0.2.0",
     "lit": "2.6.0"
   },

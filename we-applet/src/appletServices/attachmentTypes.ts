@@ -1,15 +1,22 @@
 import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
-import {AttachmentName, AttachmentType, EntryInfo, EntryLocationAndInfo, Hrl} from "@lightningrodlabs/we-applet";
+import {
+  AppletHash,
+  AttachmentName,
+  AttachmentType,
+  EntryInfo,
+  EntryLocationAndInfo,
+  Hrl
+} from "@lightningrodlabs/we-applet";
 import {asCellProxy, wrapPathInSvg} from "../we-utils";
 import {ThreadsProxy, CreatePpInput} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
-import {ViewThreadContext} from "../applet-view";
+import {ViewThreadContext} from "./applet-view";
 import { mdiCommentTextMultiple } from "@mdi/js";
 
 
 /** */
 //export async function attachmentTypes(appletClient: AppAgentClient): Promise<Record<string, AttachmentType>> {
-export const attachmentTypes = async function (appletClient: AppAgentClient): Promise<Record<AttachmentName, AttachmentType>> {
+export const attachmentTypes = async function (appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices): Promise<Record<AttachmentName, AttachmentType>> {
   const appInfo = await appletClient.appInfo();
   return {
     thread: {
@@ -17,9 +24,9 @@ export const attachmentTypes = async function (appletClient: AppAgentClient): Pr
       icon_src: wrapPathInSvg(mdiCommentTextMultiple),
       async create(attachToHrl: Hrl) {
         console.log("Threads/attachmentTypes/thread: CREATE", attachToHrl);
-        //const entryLocInfo = await weServices.entryInfo(attachToHrl); // FIXME
-        //const subjectName = entryLocInfo.entryInfo.name;
-        const subjectName = "FIXME";
+        const entryLocInfo = await weServices.entryInfo(attachToHrl);
+        const subjectName = entryLocInfo.entryInfo.name;
+        //const subjectName = "FIXME";
         const appletHash = new Uint8Array(); // FIXME
 
         const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, "role_threads"); // FIXME use appInfo.appId and roleName

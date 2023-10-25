@@ -1,19 +1,3 @@
-import {
-  encodeHashToBase64,
-} from "@holochain/client";
-import {html, render} from "lit";
-//import { msg } from "@lit/localize";
-
-import {
-  Hrl,
-} from "@lightningrodlabs/we-applet";
-
-import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
-import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
-
-import {createThreadsApplet} from "./createApplet";
-
 
 export interface ViewThreadContext {
   detail: string,

@@ -6,7 +6,7 @@
     "tsc"         : "tsc",
     "build"       : "rm -rf dist && tsc && rollup --config rollup.config.js",
     "build:watch" : "tsc -w --preserveWatchOutput",
-    "devtest"     : "npm run build && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='dev' concurrently \"npm run new-sandbox\" \"npm run start:ui\"",
+    "devtest"     : "npm run build && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) BUILD_MODE='devtest' concurrently \"npm run new-sandbox\" \"npm run start:ui\"",
     "new-sandbox" : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/threads-we_applet.happ --run=$HC_APP_PORT -a ThreadsWeApplet network mem",
     "start:ui"    : "concurrently -k --names tsc,dev-server \"npm run build:watch\" \"wds --config web-dev-server.config.mjs\""
 
