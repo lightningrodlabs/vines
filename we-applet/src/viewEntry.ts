@@ -4,8 +4,8 @@ import {Hrl, WeClient} from "@lightningrodlabs/we-applet";
 import {ThreadsApp} from "@threads/app";
 import {HappElement} from "@ddd-qc/lit-happ";
 import {getBasePath, setBasePath} from "@shoelace-style/shoelace/dist/utilities/base-path";
-import {appletServices} from "./appletServices";
-import {CreateAppletFn} from "../setup";
+import {appletServices} from "./appletServices/appletServices";
+import {CreateAppletFn} from "./common/setup";
 import {createThreadsApplet} from "./createThreadsApplet";
 
 export interface ViewThreadContext {

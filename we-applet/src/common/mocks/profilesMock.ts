@@ -1,7 +1,6 @@
 import {AgentPubKey} from "@holochain/client/lib/types";
 import {AppInfo, AppInfoRequest, AppInfoResponse, fakeAgentPubKey, fakeDnaHash} from "@holochain/client";
 import {CellInfo} from "@holochain/client/lib/api/admin/types";
-import {HOLOCHAIN_EPOCH} from "@threads/elements/dist/viewModels/threads.perspective";
 import {ConductorAppProxy} from "@ddd-qc/cell-proxy";
 
 
@@ -14,7 +13,7 @@ async function generateFakeProfilesAppInfo(myKey: AgentPubKey): Promise<AppInfo>
             dna_modifiers: {
                 network_seed: "profiles-mock-ns",
                 properties: new Uint8Array(),
-                origin_time: HOLOCHAIN_EPOCH,
+                origin_time: 1640995200000000,
                 quantum_time: {secs: 1, nanos: 0},
             }
         }

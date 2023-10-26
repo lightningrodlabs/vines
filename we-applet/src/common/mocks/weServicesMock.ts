@@ -27,7 +27,7 @@ export const emptyWeServicesMock: WeServices = {
 
 
 /** Create custom WeServices Mock */
-export function createDefaultWeServicesMock(devtestAppletId: string): WeServices {
+export async function createDefaultWeServicesMock(devtestAppletId: string): Promise<WeServices> {
   console.log("createDefaultWeServicesMock() devtestAppletId", devtestAppletId);
   const weServicesMock = emptyWeServicesMock;
   weServicesMock.appletInfo = async (appletId) => {

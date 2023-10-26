@@ -1,18 +1,16 @@
 import {
-    AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeDnaHash, decodeHashFromBase64, fakeActionHash, EntryHash,
+    AdminWebsocket, AppAgentWebsocket, encodeHashToBase64, fakeEntryHash, decodeHashFromBase64, EntryHash,
 } from "@holochain/client";
-import { fakeEntryHash } from '@holochain-open-dev/utils';
 import { ProfilesClient } from '@holochain-open-dev/profiles';
 import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
 import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-import {AppletInfo, EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {HappElement} from "@ddd-qc/lit-happ";
-import {CreateAppletFn, DevTestNames} from "./setup";
-import {createDefaultWeServicesMock} from "./mocks/weServicesMock";
+import {CreateAppletFn, CreateWeServicesMockFn, DevTestNames} from "./setup";
 
 
 /** */
-export async function setupDevtest(createApplet: CreateAppletFn, names: DevTestNames): Promise<HappElement> {
+export async function setupDevtest(createApplet: CreateAppletFn, names: DevTestNames, createWeServicesMock: CreateWeServicesMockFn)
+    : Promise<HappElement> {
     console.log("setupDevtest()", process.env.BUILD_MODE, process.env.HC_APP_PORT, process.env.HC_ADMIN_PORT);
 
     setBasePath('../../node_modules/@shoelace-style/shoelace/dist');
@@ -24,7 +22,7 @@ export async function setupDevtest(createApplet: CreateAppletFn, names: DevTestN
     let devtestAppletHash: EntryHash;
     let devtestAppletId = window.localStorage[localStorageId];
     if (!devtestAppletId) {
-        devtestAppletHash = fakeEntryHash();
+        devtestAppletHash = await fakeEntryHash();
         devtestAppletId = encodeHashToBase64(devtestAppletHash);
         window.localStorage[localStorageId] = devtestAppletId;
     } else {
@@ -33,38 +31,49 @@ export async function setupDevtest(createApplet: CreateAppletFn, names: DevTestN
     console.log("setupDevtest() devtestAppletId", devtestAppletId);
 
     /** Create custom WeServiceMock */
-    const myWeServicesMock = createDefaultWeServicesMock(devtestAppletId);
-
-    /** AppWebsocket */
-    // const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);
-    // const appInfo = await appWs.appInfo({installed_app_id: names.installed_app_id});
-    // console.log("setup() appInfo", appInfo);
+    const myWeServicesMock = await createWeServicesMock(devtestAppletId);
 
     /** AppAgentWebsocket */
     const appAgentWs = await AppAgentWebsocket.connect(new URL(`ws://localhost:${process.env.HC_APP_PORT}`), names.installed_app_id);
-    console.log(appAgentWs.appWebsocket);
+    console.log("appAgentWs", appAgentWs);
     const appInfo = await appAgentWs.appInfo();
-    console.log(appInfo);
-    const cellInfo = appInfo.cell_info[names.provisionedRoleName][0];
-    let cellId;
-    if ("provisioned" in cellInfo) {
-        cellId = cellInfo.provisioned.cell_id;
-    } else {
-        console.error("Cell found is not a 'provisioned");
-    }
+    console.log("appInfo", appInfo);
+
+    // const cellInfo = appInfo.cell_info[names.provisionedRoleName][0];
+    // let cellId;
+    // if ("provisioned" in cellInfo) {
+    //     cellId = cellInfo.provisioned.cell_id;
+    // } else {
+    //     console.error("Cell found is not a 'provisioned");
+    //}
     //console.log("main agentId", cellId[1]);
     //console.log("main agentId", encodeHashToBase64(cellId[1]));
 
     /** AdminWebsocket */
+    let mainCellId;
     const adminWs = await AdminWebsocket.connect(new URL(`ws://localhost:${process.env.HC_ADMIN_PORT}`));
     const apps = await adminWs.listApps({});
     console.log("setupDevtest() apps", apps);
-    await adminWs.authorizeSigningCredentials(cellId);
+    for (const [roleName, cells] of Object.entries(appInfo.cell_info)) {
+        for (const cell of cells) {
+            let cellId;
+            if ("provisioned" in cell) {
+                cellId = cell.provisioned.cell_id;
+                if (roleName == names.provisionedRoleName) {
+                    mainCellId = cellId;
+                }
+            } else {
+                continue;
+            }
+            await adminWs.authorizeSigningCredentials(cellId);
+        }
+
+    }
 
     /** Creating mock lobby app with profiles dna & zome */
     const mockProfilesZome = new ProfilesZomeMock();
     //console.log("mock agentId", mockProfilesZome.myPubKey);
-    mockProfilesZome.myPubKey = cellId[1];
+    mockProfilesZome.myPubKey = mainCellId[1];
     //console.log("mock agentId", encodeHashToBase64(mockProfilesZome.myPubKey));
     mockProfilesZome.create_profile({nickname: "Alex", fields: {}})
     const mockAppInfo = await mockProfilesZome.appInfo();

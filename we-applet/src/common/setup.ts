@@ -1,7 +1,7 @@
 import {WeClient, WeServices} from "@lightningrodlabs/we-applet";
 import {setBasePath, getBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 import {delay, HappElement} from "@ddd-qc/lit-happ";
-import {appletServices} from "./appletServices/appletServices";
+import {appletServices} from "../appletServices/appletServices";
 import {setupDevtest} from "./setupDevtest";
 import {AppAgentClient, EntryHash} from "@holochain/client";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
@@ -14,6 +14,9 @@ export type CreateAppletFn = (
     weServices: WeServices
 ) => Promise<HappElement>;
 
+
+export type CreateWeServicesMockFn = (devtestAppletId: string) => Promise<WeServices>;
+
 export interface DevTestNames {
     installed_app_id: string,
     provisionedRoleName: string,
@@ -21,8 +24,8 @@ export interface DevTestNames {
 
 
 
-
-export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestNames): Promise<HappElement> {
+/** */
+export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestNames, createWeServicesMock: CreateWeServicesMockFn): Promise<HappElement> {
     let BUILD_MODE = "prod";
     try {
         BUILD_MODE = process.env.BUILD_MODE;
@@ -32,7 +35,7 @@ export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestN
     console.log("BUILD_MODE", BUILD_MODE);
 
     if (BUILD_MODE == "devtest") {
-        return setupDevtest(createApplet, devtestNames);
+        return setupDevtest(createApplet, devtestNames, createWeServicesMock);
     } else {
         return setupProd(createApplet);
     }
