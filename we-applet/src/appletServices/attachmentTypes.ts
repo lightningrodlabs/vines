@@ -7,7 +7,7 @@ import {
   EntryLocationAndInfo,
   Hrl
 } from "@lightningrodlabs/we-applet";
-import {asCellProxy, wrapPathInSvg} from "../common/we-utils";
+import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {ThreadsProxy, CreatePpInput} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import {ViewThreadContext} from "../viewEntry";

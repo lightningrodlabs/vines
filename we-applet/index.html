@@ -15,9 +15,9 @@
   <body style="margin: 0px;">
     <script type="module">
       console.log("Threads we-applet index.html START");
-      import threadsAPI from "./out-tsc";
-      console.log("Imported threadsAPI");
-      const happElem = await threadsAPI.setup(threadsAPI.createThreadsApplet, threadsAPI.threadsNames);
+      import setupThreadsApplet from "./out-tsc";
+      console.log("Imported setupThreadsApplet");
+      const happElem = await setupThreadsApplet();
       document.body.append(happElem);
     </script>
   </body>
