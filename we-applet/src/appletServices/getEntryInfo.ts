@@ -1,6 +1,7 @@
 import {asCellProxy} from "../we-utils";
 import {encodeHashToBase64} from "@holochain/client";
 import {ThreadsProxy} from "@threads/elements";
+import {threadsNames} from "./appletServices";
 
 
 /** */
@@ -11,7 +12,7 @@ export async function getEntryInfo(
     entryType,
     hrl
 ) {
-    if (roleName != "role_threads") {
+    if (roleName != threadsNames.provisionedRoleName) {
         throw new Error(`Threads/we-applet: Unknown role name '${roleName}'.`);
     }
     if (integrityZomeName != "threads_integrity") {
@@ -27,7 +28,7 @@ export async function getEntryInfo(
                 appletClient,
                 undefined, //hrl[0],
                 mainAppInfo.installed_app_id, //"ThreadsWeApplet",
-                "role_threads",
+                threadsNames.provisionedRoleName,
             );
             const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
             const tuple = await proxy.getTextMessage(hrl[1]);
@@ -42,7 +43,7 @@ export async function getEntryInfo(
                 appletClient,
                 undefined, // hrl[0],
                 mainAppInfo.installed_app_id,
-                "role_threads");
+                threadsNames.provisionedRoleName);
             console.log("Threads/we-applet: cellProxy", cellProxy);
             const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
             console.log("Threads/we-applet: getPp()", encodeHashToBase64(hrl[1]), proxy);

@@ -22,6 +22,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
     thread: {
       label: "Thread",
       icon_src: wrapPathInSvg(mdiCommentTextMultiple),
+      /** */
       async create(attachToHrl: Hrl) {
         console.log("Threads/attachmentTypes/thread: CREATE", attachToHrl);
         const entryLocInfo = await weServices.entryInfo(attachToHrl);

@@ -35,34 +35,34 @@ export async function createThreadsApplet(
   const mainAppInfo = await client.appInfo();
 
   /** Determine profilesAppInfo */
-    const mainAppAgentWs = client as AppAgentWebsocket;
-    const mainAppWs = mainAppAgentWs.appWebsocket;
-    // const mainAppWs = client as unknown as AppWebsocket;
-    // const mainAppInfo = await mainAppWs.appInfo({installed_app_id: 'threads-applet'});
-    console.log("createThreadsApplet() mainAppInfo", mainAppInfo);
-    //const profilesAppAgentClient: AppAgentClient = profilesClient.client;
-    let profilesAppInfo = await profilesClient.client.appInfo();
-    console.log("createThreadsApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
-    /** Check if roleName is actually a cloneId */
-    let maybeCloneId = undefined;
-    let baseRoleName = profilesClient.roleName;
-    const maybeBaseRoleName = destructureCloneId(profilesClient.roleName);
-    if (maybeBaseRoleName) {
-      baseRoleName = maybeBaseRoleName[0];
-      maybeCloneId = profilesClient.roleName;
-    }
-    /** Determine profilesCellProxy */
-    const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
-    const profilesApi = new ProfilesApi(profilesClient);
-    const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
-    await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
-    const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
-    console.log("createThreadsApplet() profilesCellProxy", profilesCellProxy);
-    /** Create ThreadsApp */
-    const app = await ThreadsApp.fromWe(
-        mainAppWs, undefined, false, mainAppInfo.installed_app_id,
-        profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
-        weServices, thisAppletHash, showCommentThreadOnly);
-    /** Done */
-    return app;
+  const mainAppAgentWs = client as AppAgentWebsocket;
+  const mainAppWs = mainAppAgentWs.appWebsocket;
+  // const mainAppWs = client as unknown as AppWebsocket;
+  // const mainAppInfo = await mainAppWs.appInfo({installed_app_id: 'threads-applet'});
+  console.log("createThreadsApplet() mainAppInfo", mainAppInfo);
+  //const profilesAppAgentClient: AppAgentClient = profilesClient.client;
+  let profilesAppInfo = await profilesClient.client.appInfo();
+  console.log("createThreadsApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+  /** Check if roleName is actually a cloneId */
+  let maybeCloneId = undefined;
+  let baseRoleName = profilesClient.roleName;
+  const maybeBaseRoleName = destructureCloneId(profilesClient.roleName);
+  if (maybeBaseRoleName) {
+    baseRoleName = maybeBaseRoleName[0];
+    maybeCloneId = profilesClient.roleName;
+  }
+  /** Determine profilesCellProxy */
+  const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
+  const profilesApi = new ProfilesApi(profilesClient);
+  const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
+  await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
+  const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
+  console.log("createThreadsApplet() profilesCellProxy", profilesCellProxy);
+  /** Create ThreadsApp */
+  const app = await ThreadsApp.fromWe(
+      mainAppWs, undefined, false, mainAppInfo.installed_app_id,
+      profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
+      weServices, thisAppletHash, showCommentThreadOnly);
+  /** Done */
+  return app;
 }

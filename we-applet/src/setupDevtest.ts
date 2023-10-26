@@ -5,10 +5,10 @@ import { fakeEntryHash } from '@holochain-open-dev/utils';
 import { ProfilesClient } from '@holochain-open-dev/profiles';
 import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
 import { setBasePath, getBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-import {weServicesMock} from "./mock";
 import {AppletInfo, EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {HappElement} from "@ddd-qc/lit-happ";
 import {CreateAppletFn, DevTestNames} from "./setup";
+import {createDefaultWeServicesMock} from "./mocks/weServicesMock";
 
 
 /** */
@@ -30,32 +30,10 @@ export async function setupDevtest(createApplet: CreateAppletFn, names: DevTestN
     } else {
         devtestAppletHash = decodeHashFromBase64(devtestAppletId);
     }
+    console.log("setupDevtest() devtestAppletId", devtestAppletId);
 
     /** Create custom WeServiceMock */
-    console.log("setupDevtest() devtestAppletId", devtestAppletId);
-    const myWeServicesMock = weServicesMock;
-    myWeServicesMock.appletInfo = async (appletId) => {
-        const appletIdB64 = encodeHashToBase64(appletId);
-        console.log("setupDevtest() myWeServicesMock.appletInfo()", appletIdB64, devtestAppletId);
-        if (appletIdB64 == devtestAppletId) {
-            const appletInfo: AppletInfo = {
-                appletBundleId: await fakeActionHash(),
-                appletName: "DevTestWeApplet",
-                groupsIds: [await fakeDnaHash()],
-            };
-            return appletInfo;
-        }
-        return undefined;
-    };
-    myWeServicesMock.entryInfo = async (hrl) => {
-        return {
-            appletHash: devtestAppletHash,
-            entryInfo: {
-                icon_src: "",
-                name: "demo:" + encodeHashToBase64(hrl[1]),
-            }
-        } as EntryLocationAndInfo;
-    }
+    const myWeServicesMock = createDefaultWeServicesMock(devtestAppletId);
 
     /** AppWebsocket */
     // const appWs = await AppWebsocket.connect(`ws://localhost:${process.env.HC_APP_PORT}`);

@@ -1,6 +1,7 @@
 import {getEntryInfo} from "./getEntryInfo";
 import {AppletServices} from "@lightningrodlabs/we-applet";
 import {DevTestNames} from "../setup";
+import {attachmentTypes} from "./attachmentTypes";
 
 /** */
 export const threadsNames: DevTestNames = {
@@ -11,8 +12,8 @@ export const threadsNames: DevTestNames = {
 
 /** */
 export const appletServices: AppletServices = {
-    //attachmentTypes,
-    attachmentTypes: async (_appletClient) => ({}),
+    attachmentTypes,
+    //attachmentTypes: async (_appletClient) => ({}),
     getEntryInfo,
     blockTypes: {},
     search: async (appletClient, searchFilter) => {return []},

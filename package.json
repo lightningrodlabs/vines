@@ -85,13 +85,12 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@holochain/client": "=0.16.2",
     "@ddd-qc/cell-proxy": "=0.19.11",
     "@ddd-qc/lit-happ": "=0.19.11",
     "@ddd-qc/path-explorer": "0.2.0",
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.16.1",
-    "@holochain/client": "=0.16.2",
-    "@lightningrodlabs/attachments": "0.2.0",
     "@lightningrodlabs/we-applet": "0.10.0",
     "@lit-labs/context": "^0.2.0",
     "lit": "2.6.0"

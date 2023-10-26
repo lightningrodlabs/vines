@@ -1,5 +1,5 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
+//import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import copy from "rollup-plugin-copy";
 //import replace from "@rollup/plugin-replace";
@@ -32,7 +32,7 @@ export default {
   plugins: [
     /** Enable using HTML as rollup entrypoint */
     html({
-      minify: true,
+      //minify: true,
       //injectServiceWorker: true,
       //serviceWorkerPath: "dist/sw.js",
     }),
