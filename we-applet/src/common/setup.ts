@@ -5,6 +5,7 @@ import {appletServices} from "../appletServices/appletServices";
 import {setupDevtest} from "./setupDevtest";
 import {AppAgentClient, EntryHash} from "@holochain/client";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
+import {createDefaultWeServicesMock} from "./mocks/weServicesMock";
 
 
 export type CreateAppletFn = (
@@ -25,7 +26,7 @@ export interface DevTestNames {
 
 
 /** */
-export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestNames, createWeServicesMock: CreateWeServicesMockFn): Promise<HappElement> {
+export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestNames, createWeServicesMock?: CreateWeServicesMockFn): Promise<HappElement> {
     let BUILD_MODE = "prod";
     try {
         BUILD_MODE = process.env.BUILD_MODE;
@@ -35,7 +36,7 @@ export async function setup(createApplet: CreateAppletFn, devtestNames: DevTestN
     console.log("BUILD_MODE", BUILD_MODE);
 
     if (BUILD_MODE == "devtest") {
-        return setupDevtest(createApplet, devtestNames, createWeServicesMock);
+        return setupDevtest(createApplet, devtestNames, createWeServicesMock? createWeServicesMock : createDefaultWeServicesMock);
     } else {
         return setupProd(createApplet);
     }

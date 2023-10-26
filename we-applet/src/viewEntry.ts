@@ -41,14 +41,15 @@ export async function setupCommentThread(): Promise<HappElement> {
 
 
   /** Append Element */
+  const template = html``;
   /** TODO: Figure out why cell-context doesn't propagate normally via ThreadsApp and has to be inserted again within the slot */
-  const template = html`
-          <cell-context .cell=${happElem.threadsDvm.cell}>
-              <comment-thread-view .threadHash=${encodeHashToBase64(weClient.renderInfo.view.hrl[1])} showInput="true"
-                                   .subjectName=${context.subjectName}
-                                   .subjectType=${context.subjectType}></comment-thread-view>
-          </cell-context>
-      `;
+  // const template = html`
+  //         <cell-context .cell=${happElem.threadsDvm.cell}>
+  //             <comment-thread-view .threadHash=${encodeHashToBase64(weClient.renderInfo.view.hrl[1])} showInput="true"
+  //                                  .subjectName=${context.subjectName}
+  //                                  .subjectType=${context.subjectType}></comment-thread-view>
+  //         </cell-context>
+  //     `;
   console.log("Appending <comment-thread-view> to ThreadsApp...");
   render(template, happElem);
   console.log("DONE - Appending <comment-thread-view> to ThreadsApp");

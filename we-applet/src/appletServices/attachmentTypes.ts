@@ -7,10 +7,10 @@ import {
   EntryLocationAndInfo,
   Hrl
 } from "@lightningrodlabs/we-applet";
-import {asCellProxy, wrapPathInSvg} from "../we-utils";
+import {asCellProxy, wrapPathInSvg} from "../common/we-utils";
 import {ThreadsProxy, CreatePpInput} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
-import {ViewThreadContext} from "./applet-view";
+import {ViewThreadContext} from "../viewEntry";
 import { mdiCommentTextMultiple } from "@mdi/js";
 
 

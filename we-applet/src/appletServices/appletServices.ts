@@ -1,6 +1,6 @@
 import {getEntryInfo} from "./getEntryInfo";
 import {AppletServices} from "@lightningrodlabs/we-applet";
-import {DevTestNames} from "../setup";
+import {DevTestNames} from "../common/setup";
 import {attachmentTypes} from "./attachmentTypes";
 
 /** */

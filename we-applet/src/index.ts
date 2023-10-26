@@ -1,6 +1,6 @@
-import {setup} from "./setup";
+import {setup} from "./common/setup";
 import {threadsNames} from "./appletServices/appletServices";
-import {createThreadsApplet} from "./appletServices/createThreadsApplet";
+import {createThreadsApplet} from "./createThreadsApplet";
 
 
 export default {
