@@ -1,12 +1,4 @@
-import {createDefaultWeServicesMock, setup} from "@ddd-qc/we-utils";
-import {appletServices, threadsNames} from "./appletServices/appletServices";
-import {createThreadsApplet} from "./createThreadsApplet";
+import {setupThreadsApplet} from "./setup";
+
 
 export default setupThreadsApplet;
-
-
-/** */
-async function setupThreadsApplet() {
-  return setup(appletServices, createThreadsApplet, threadsNames, createDefaultWeServicesMock);
-}
-
