@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
 
-///
+/// FIXME: Change name as this will commit an entry
 #[hdk_extern]
 fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
   let (_ah, gql) = search_global_log()?;
@@ -24,7 +24,7 @@ fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
       time: sys_time()?,
       maybe_last_known_pp_ah: None,
     };
-    let ah = create_entry(ThreadsEntry::GlobalProbeLog(first_log.clone()))?;
+    let ah = create_entry_relaxed(ThreadsEntry::GlobalProbeLog(first_log.clone()))?;
     return Ok((ah, first_log))
   }
   /// Search for updates
