@@ -25,7 +25,7 @@ import {
   ProfilesDvm, DEFAULT_THREADS_WE_DEF,
 } from "@threads/elements";
 
-import {HC_ADMIN_PORT, HC_APP_PORT, IS_WE} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, ALLOW_WE} from "./globals"
 import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 
@@ -45,7 +45,7 @@ export class ThreadsApp extends HappElement {
 
   @state() private _currentSpaceEh: null | EntryHashB64 = null;
 
-  static readonly HVM_DEF: HvmDef = IS_WE? DEFAULT_THREADS_WE_DEF : DEFAULT_THREADS_DEF;
+  static readonly HVM_DEF: HvmDef = ALLOW_WE? DEFAULT_THREADS_WE_DEF : DEFAULT_THREADS_DEF;
 
   @state() private _canShowBuildView = false;
   @state() private _canShowDebug = false;
@@ -161,7 +161,7 @@ export class ThreadsApp extends HappElement {
       }
     }
 
-    if (!IS_WE) {
+    if (!ALLOW_WE) {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.threadsDvm.cell.agentPubKey);
     }
 

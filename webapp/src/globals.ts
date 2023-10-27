@@ -1,26 +1,4 @@
-import {BUILD_MODE, DEFAULT_THREADS_DEF, IS_ELECTRON} from "@threads/elements";
-
-
-/** -- BUILD_MODE & IS_ELECTRON -- */
-
-// export let BUILD_MODE: string;
-// export const MY_ELECTRON_API = 'electronBridge' in window? window.electronBridge as any : undefined;
-// export const IS_ELECTRON = typeof MY_ELECTRON_API !== 'undefined'
-// if (MY_ELECTRON_API) {
-//   BUILD_MODE = MY_ELECTRON_API.BUILD_MODE;
-// } else {
-//   try {
-//     BUILD_MODE = process.env.BUILD_MODE;
-//   } catch (e) {
-//     console.log("BUILD_MODE not set. Defaulting to prod.")
-//     BUILD_MODE = 'prod';
-//   }
-// }
-//
-// export const IS_DEV = BUILD_MODE === 'dev';
-//
-// console.log("BUILD_MODE =", BUILD_MODE);
-// console.log("IS_ELECTRON =", IS_ELECTRON);
+import {DEFAULT_THREADS_DEF} from "@threads/elements";
 
 
 /** -- HC_APP_PORT & friends -- */
@@ -34,21 +12,13 @@ try {
   console.log("HC_APP_PORT not defined")
 }
 
-export let IS_WE = true;
+export let ALLOW_WE = true;
 try {
-  IS_WE = !Boolean(process.env.NO_WE);
+  ALLOW_WE = !Boolean(process.env.NO_WE);
 } catch (e) {
   console.log("NO_WE not defined")
 }
-console.log("IS_WE =", IS_WE)
-
-console.log("HAPP_ID =", DEFAULT_THREADS_DEF.id)
-console.log("HC_APP_PORT =", HC_APP_PORT);
+console.log("     ALLOW_WE =", ALLOW_WE)
+console.log("      HAPP_ID =", DEFAULT_THREADS_DEF.id)
+console.log("  HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
-
-
-/** Remove console.log() in PROD */
-// if (BUILD_MODE === 'prod') {
-//   console.log("console.log() disabled");
-//   console.log = () => {};
-// }

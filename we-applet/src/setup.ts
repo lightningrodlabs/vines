@@ -1,11 +1,13 @@
 import {createDefaultWeServicesMock, setupDevtest} from "@ddd-qc/we-utils";
 import {appletServices, threadsNames} from "./appletServices/appletServices";
 import {createThreadsApplet} from "./createThreadsApplet";
-import {delay, HappElement} from "@ddd-qc/lit-happ";
+import {delay, HAPP_BUILD_MODE, HAPP_ENV, HappElement, HappEnvType} from "@ddd-qc/lit-happ";
 import {getBasePath, setBasePath} from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 import {WeClient} from "@lightningrodlabs/we-applet";
 import {html, render} from "lit";
 import {encodeHashToBase64} from "@holochain/client";
+import {AppletView} from "@lightningrodlabs/we-applet/dist/types";
+
 
 
 
@@ -17,15 +19,8 @@ import {encodeHashToBase64} from "@holochain/client";
 
 /** */
 export async function setupThreadsApplet() {
-  let BUILD_MODE = "prod";
-  try {
-    BUILD_MODE = process.env.BUILD_MODE;
-  } catch (e) {
-    console.log(`BUILD_MODE env variable not set. Defaulting to "prod".`)
-  }
-  console.log("BUILD_MODE", BUILD_MODE);
-
-  if (BUILD_MODE == "devtest") {
+  console.log("HAPP_ENV", HAPP_ENV);
+  if (HAPP_ENV == HappEnvType.DevtestWe) {
     return setupDevtest(createThreadsApplet, threadsNames, createDefaultWeServicesMock);
   } else {
     return setupProdView();
@@ -48,7 +43,7 @@ export async function setupProdView(): Promise<HappElement> {
   setBasePath('./');
   console.log("shoelace basePath", getBasePath());
 
-  console.log("WeClient.connect()...", WeClient);
+  console.log("WeClient.connect()...");
   const weClient = await WeClient.connect(appletServices);
   console.log("weClient", weClient);
   if (weClient.renderInfo.type == "cross-applet-view") {
@@ -56,15 +51,17 @@ export async function setupProdView(): Promise<HappElement> {
     return;
   }
 
-  let showCommentsOnly = false;
+  const renderInfo = weClient.renderInfo as any;
+  const renderView = renderInfo.view as AppletView;
 
-  switch (this.weClient.renderInfo.view.type) {
+  let showCommentsOnly = false;
+  switch (renderView.type) {
     case "main": break;
     case "block": throw new Error("Block view is not implemented.");
     case "entry": {
-      switch (this.weClient.renderInfo.view.entryType) {
+      switch (renderView.entryType) {
         case "participation_protocol": showCommentsOnly = true; break;
-        default: throw new Error(`Unknown entry type ${this.weClient.renderInfo.view.entryType}.`);
+        default: throw new Error(`Unknown entry type ${renderView.entryType}.`);
       }
     } break;
     default: throw new Error("Unknown render view type");
@@ -73,20 +70,20 @@ export async function setupProdView(): Promise<HappElement> {
   /** Delay because of We 'CellDisabled' bug at startup race condition */
   await delay(1000);
 
-  const renderInfo = weClient.renderInfo as any;
+
   const happElem = await createThreadsApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient, showCommentsOnly);
   console.log("happElem", happElem);
 
   /** Append Element */
   //let template = html``;
   if (showCommentsOnly) {
-    const view = this.weClient.renderInfo.view as any;
-    const viewContext = view.context as ViewThreadContext;
+    const entryView = renderView as any;
+    const viewContext = entryView.context as ViewThreadContext;
     /** participation_protocol entry type */
     /** TODO: Figure out why cell-context doesn't propagate normally via ThreadsApp and has to be inserted again within the slot */
     const template = html`
       <cell-context .cell=${happElem.threadsDvm.cell}>
-        <comment-thread-view .threadHash=${encodeHashToBase64(view.hrl[1])} showInput="true"
+        <comment-thread-view .threadHash=${encodeHashToBase64(entryView.hrl[1])} showInput="true"
                              .subjectName=${viewContext.subjectName}
                              .subjectType=${viewContext.subjectType}></comment-thread-view>
       </cell-context>

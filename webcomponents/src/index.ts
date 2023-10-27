@@ -1,5 +1,3 @@
-export * from "./globals"
-
 // export * from './elements/devtest/semantic-topic-list';
 // export * from './elements/devtest/text-message-list';
 // export * from './elements/devtest/thread-list';

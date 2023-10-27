@@ -13,8 +13,11 @@
   </head>
 
   <body style="margin: 0px;">
+  <script type="module">
+    console.log("Threads we-applet index.html START");
+    window.IN_WE = true;
+  </script>
     <script type="module">
-      console.log("Threads we-applet index.html START");
       import setupThreadsApplet from "./out-tsc";
       console.log("Imported setupThreadsApplet");
       const happElem = await setupThreadsApplet();
