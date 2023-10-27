@@ -79,14 +79,14 @@ export class ThreadsApp extends HappElement {
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
     weServices: WeServices,
-    thisAppletId: EntryHash,
+    thisAppletHash: EntryHash,
     showCommentThreadOnly?: boolean,
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, showCommentThreadOnly);
     /** Provide it as context */
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     app._weProvider = new ContextProvider(app, weClientContext, weServices);
-    app.appletId = encodeHashToBase64(thisAppletId);
+    app.appletId = encodeHashToBase64(thisAppletHash);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);

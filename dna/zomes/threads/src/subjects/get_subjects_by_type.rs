@@ -9,7 +9,7 @@ use zome_utils::tp_children_paths;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetProtocolsInput {
-  pub applet_id: EntryHash,
+  pub applet_id: String,
   pub subject_type: String,
 }
 

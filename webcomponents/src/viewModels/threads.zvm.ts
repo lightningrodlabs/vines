@@ -362,7 +362,8 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Get all SubjectTypes for a AppletId */
   async probeSubjectTypes(appletId: EntryHashB64): Promise<Dictionary<string>> {
-    let subjectTypesRaw = await this.zomeProxy.getSubjectTypesForApplet(decodeHashFromBase64(appletId));
+    //const appletHash = decodeHashFromBase64(appletId);
+    let subjectTypesRaw = await this.zomeProxy.getSubjectTypesForApplet(appletId);
     let subjectTypes: Dictionary<string> = {}//subjectTypesRaw.map(([st, hash]) => [st, encodeHashToBase64(hash)]);
     console.log("probeSubjectTypes()", subjectTypes);
     for (const [subjectType, pathHash] of subjectTypesRaw) {
@@ -379,7 +380,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return Promise.reject("Unknown pathHash for dnaHash");
     }
     const subjectType = this.getSubjectType(appletId, pathHash);
-    const subjects = await this.zomeProxy.getSubjectsByType({appletId: decodeHashFromBase64(appletId), subjectType});
+    const subjects = await this.zomeProxy.getSubjectsByType({appletId, subjectType});
     const subjectB64s: [DnaHashB64, AnyLinkableHashB64][] = subjects.map(([dnaHash, subjectHash]) => [encodeHashToBase64(dnaHash), encodeHashToBase64(subjectHash)]);
     this._subjectsPerType[pathHash] = subjectB64s;
     return subjectB64s;
@@ -599,7 +600,8 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const [ah, ts] = await this.zomeProxy.createParticipationProtocol({
       pp,
-      appletHash: decodeHashFromBase64(appletId),
+      //appletHash: decodeHashFromBase64(appletId),
+      appletId,
       dnaHash: decodeHashFromBase64(dnaHash),
     });
     const ahB64 = encodeHashToBase64(ah);
@@ -763,11 +765,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async generateTestData(appletId: EntryHashB64): Promise<void> {
-      const hashs = await this.zomeProxy.getSubjectsForApplet(decodeHashFromBase64(appletId));
-      console.log("generateTestData(), subjects found", hashs.length)
-      if (hashs.length > 0) {
+    //const appletHash = decodeHashFromBase64(appletId);
+    const hashs = await this.zomeProxy.getSubjectsForApplet(appletId);
+    console.log("generateTestData(), subjects found", hashs.length)
+    if (hashs.length > 0) {
         return;
-      }
+    }
     console.log("*** generateTestData()", appletId);
 
     const top1 = await this.publishSemanticTopic("topic-many");

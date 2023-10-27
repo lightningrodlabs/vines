@@ -179,7 +179,7 @@ export interface ProbeAllLatestOutput {
 
 export interface CreatePpInput {
   pp: ParticipationProtocol
-  appletHash: EntryHash
+  appletId: string
   dnaHash: DnaHash
 }
 
@@ -219,12 +219,12 @@ export interface Subject {
   hash: Uint8Array
   typeName: string
   dnaHash: DnaHash
-  appletId: EntryHash
+  appletId: string
 }
 
 /**  */
 export interface GetProtocolsInput {
-  appletId: EntryHash
+  appletId: string
   subjectType: string
 }
 

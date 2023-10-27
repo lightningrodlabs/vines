@@ -373,7 +373,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           subjectHash: decodeHashFromBase64(request.subjectHash),
           subjectType: request.subjectType,
         },
-        appletHash: decodeHashFromBase64(this.appletId),
+        //appletHash: decodeHashFromBase64(this.appletId),
+        appletId: this.appletId,
         dnaHash: decodeHashFromBase64(this.cell.dnaHash),
       };
       const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);

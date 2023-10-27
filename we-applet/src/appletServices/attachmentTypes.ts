@@ -26,7 +26,6 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
         const entryLocInfo = await weServices.entryInfo(attachToHrl);
         const subjectName = entryLocInfo.entryInfo.name;
         //const subjectName = "FIXME";
-        const appletHash = new Uint8Array(); // FIXME
 
         const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, "role_threads"); // FIXME use appInfo.appId and roleName
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
@@ -37,7 +36,8 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
           subjectHash: attachToHrl[1],
           subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
         },
-          appletHash,
+          //appletHash,
+          appletId: encodeHashToBase64(appletHash),
           dnaHash: attachToHrl[0],
         };
 

@@ -89,7 +89,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     //   console.warn("Did not find Threads applet");
     //   return undefined;
     // }
-    for (const [appletId, atts] of this.weServices.attachmentTypes.entries()) {
+    for (const [_appletHash, atts] of this.weServices.attachmentTypes.entries()) {
       //if (encodeHashToBase64(appletId) == threadsAppletId) {
       for (const [attName, att] of Object.entries(atts)) {
         if (attName == "thread") {

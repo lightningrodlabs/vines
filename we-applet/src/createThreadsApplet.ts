@@ -1,6 +1,6 @@
 import {
   AppAgentClient,
-  AppAgentWebsocket,
+  AppAgentWebsocket, encodeHashToBase64,
   EntryHash
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
@@ -30,7 +30,8 @@ export async function createThreadsApplet(
 ): Promise<ThreadsApp> {
 
   console.log("createThreadsApplet() client", client);
-  console.log("createThreadsApplet() thisAppletId", thisAppletHash);
+  console.log("createThreadsApplet() thisAppletHash", thisAppletHash);
+  console.log("createThreadsApplet()   thisAppletId", encodeHashToBase64(thisAppletHash));
 
   const mainAppInfo = await client.appInfo();
 

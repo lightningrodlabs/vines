@@ -32,7 +32,7 @@ pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp)
 
 
 ///
-fn get_subject_tp(applet_id: EntryHash, subject_type_name: &str, dna_hash: DnaHash, subject_hash: AnyLinkableHash) -> ExternResult<TypedPath> {
+fn get_subject_tp(applet_id: String, subject_type_name: &str, dna_hash: DnaHash, subject_hash: AnyLinkableHash) -> ExternResult<TypedPath> {
   debug!("get_subject_tp() applet_id: {}", applet_id);
   let mut tp = get_subject_type_tp(applet_id, subject_type_name)?;
   //let subject_hash_comp = hash2comp(subject_hash);
@@ -43,7 +43,7 @@ fn get_subject_tp(applet_id: EntryHash, subject_type_name: &str, dna_hash: DnaHa
 
 
 ///
-pub fn get_subject_type_tp(applet_id: EntryHash, subject_type_name: &str) -> ExternResult<TypedPath> {
+pub fn get_subject_type_tp(applet_id: String, subject_type_name: &str) -> ExternResult<TypedPath> {
   let mut tp = get_applet_tp(applet_id)?;
   tp.path.append_component(subject_type_name.into());
   Ok(tp)
@@ -51,8 +51,9 @@ pub fn get_subject_type_tp(applet_id: EntryHash, subject_type_name: &str) -> Ext
 
 
 ///
-pub fn get_applet_tp(applet_id: EntryHash) -> ExternResult<TypedPath> {
-  let applet_id_comp = hash2comp(applet_id);
+pub fn get_applet_tp(applet_id: String) -> ExternResult<TypedPath> {
+  //let applet_id_comp = hash2comp(applet_hash);
+  let applet_id_comp = Component::from(applet_id);
   let mut tp = Path::from(ROOT_ANCHOR_SUBJECTS)
     .typed(ThreadsLinkType::SubjectPath)?;
   tp.path.append_component(applet_id_comp);

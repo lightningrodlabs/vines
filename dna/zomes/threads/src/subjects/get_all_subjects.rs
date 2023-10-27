@@ -2,7 +2,7 @@ use hdk::hash_path::path::Component;
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
-use zome_utils::*;
+//use zome_utils::*;
 use path_explorer_types::*;
 use crate::participation_protocols::comp2subject;
 
@@ -13,7 +13,7 @@ pub struct Subject {
   //hash_type: AppletSubjectType,
   type_name: String,
   dna_hash: DnaHash,
-  applet_id: EntryHash,
+  applet_id: String,
 }
 
 
@@ -32,7 +32,9 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     let path = Path::from(tp.anchor.clone());
     let comps: Vec<Component> = path.into();
     debug!("Parsing leaf_anchor: {}", tp.anchor);
-    let applet_id = comp2hash(&comps[1])?;
+    //let applet_hash = comp2hash(&comps[1])?;
+    let applet_id = String::try_from(&comps[1])
+        .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     let topic_type = comps[2].clone();
     //let subject_hash = comp2hash(&comps[3])?;
     let (dna_hash, subject_hash) = comp2subject(&comps[3])?;

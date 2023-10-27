@@ -8,7 +8,7 @@ use crate::subjects::get_subjects_by_type::{get_subjects_by_type, GetProtocolsIn
 
 ///
 #[hdk_extern]
-pub fn get_subjects_for_applet(applet_id: EntryHash) -> ExternResult<Vec<(DnaHash, AnyLinkableHash)>> {
+pub fn get_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(DnaHash, AnyLinkableHash)>> {
   let tp = get_applet_tp(applet_id.clone())?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subjects_for_dna() found {} children", children.len());
@@ -25,7 +25,7 @@ pub fn get_subjects_for_applet(applet_id: EntryHash) -> ExternResult<Vec<(DnaHas
 
 /// Returns list of SubjectTypes and their PathEntryHash
 #[hdk_extern]
-pub fn get_subject_types_for_applet(applet_id: EntryHash) -> ExternResult<Vec<(String, EntryHash)>> {
+pub fn get_subject_types_for_applet(applet_id: String) -> ExternResult<Vec<(String, EntryHash)>> {
   let tp = get_applet_tp(applet_id.clone())?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subject_types_for_dna() found {} children", children.len());

@@ -284,11 +284,11 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_subjects_by_type', input);
   }
 
-  async getSubjectsForApplet(appletId: EntryHash): Promise<[DnaHash, Uint8Array][]> {
+  async getSubjectsForApplet(appletId: string): Promise<[DnaHash, Uint8Array][]> {
     return this.call('get_subjects_for_applet', appletId);
   }
 
-  async getSubjectTypesForApplet(appletId: EntryHash): Promise<[string, EntryHash][]> {
+  async getSubjectTypesForApplet(appletId: string): Promise<[string, EntryHash][]> {
     return this.call('get_subject_types_for_applet', appletId);
   }
 }
