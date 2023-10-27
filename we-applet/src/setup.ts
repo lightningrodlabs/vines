@@ -1,7 +1,7 @@
 import {createDefaultWeServicesMock, setup, setupDevtest} from "@ddd-qc/we-utils";
 import {appletServices, threadsNames} from "./appletServices/appletServices";
 import {createThreadsApplet} from "./createThreadsApplet";
-import {delay, HAPP_BUILD_MODE, HAPP_ENV, HappElement, HappEnvType} from "@ddd-qc/lit-happ";
+import {delay, HAPP_ENV, HappElement, HappEnvType} from "@ddd-qc/lit-happ";
 import {getBasePath, setBasePath} from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 import {WeClient} from "@lightningrodlabs/we-applet";
 import {html, render} from "lit";
@@ -11,23 +11,23 @@ import {AppletView} from "@lightningrodlabs/we-applet/dist/types";
 
 
 
-/** */
-export async function setupThreadsApplet() {
-  console.log("Using default we-applet setup()");
-  return setup(appletServices, createThreadsApplet, threadsNames, createDefaultWeServicesMock);
-}
-
-
 // /** */
 // export async function setupThreadsApplet() {
-//   console.log("setupThreadsApplet() HAPP_ENV", HAPP_ENV);
-//   console.log("setupThreadsApplet() window", window);
-//   if (HAPP_ENV == HappEnvType.DevtestWe) {
-//     return setupDevtest(createThreadsApplet, threadsNames, createDefaultWeServicesMock);
-//   } else {
-//     return setupProdView();
-//   }
+//   console.log("Using default we-applet setup()");
+//   return setup(appletServices, createThreadsApplet, threadsNames, createDefaultWeServicesMock);
 // }
+
+
+/** */
+export async function setupThreadsApplet() {
+  console.log("setupThreadsApplet() HAPP_ENV", HAPP_ENV);
+  console.log("setupThreadsApplet() window", window);
+  if (HAPP_ENV == HappEnvType.DevtestWe) {
+    return setupDevtest(createThreadsApplet, threadsNames, createDefaultWeServicesMock);
+  } else {
+    return setupProdView();
+  }
+}
 
 
 export interface ViewThreadContext {
@@ -57,23 +57,23 @@ export async function setupProdView(): Promise<HappElement> {
   const renderView = renderInfo.view as AppletView;
 
   let showCommentsOnly = false;
-  switch (renderView.type) {
-    case "main": break;
-    case "block": throw new Error("Block view is not implemented.");
-    case "entry": {
-      switch (renderView.entryType) {
-        case "participation_protocol": showCommentsOnly = true; break;
-        default: throw new Error(`Unknown entry type ${renderView.entryType}.`);
-      }
-    } break;
-    default: throw new Error("Unknown render view type");
-  }
+  // switch (renderView.type) {
+  //   case "main": break;
+  //   case "block": throw new Error("Block view is not implemented.");
+  //   case "entry": {
+  //     switch (renderView.entryType) {
+  //       case "participation_protocol": showCommentsOnly = true; break;
+  //       default: throw new Error(`Unknown entry type ${renderView.entryType}.`);
+  //     }
+  //   } break;
+  //   default: throw new Error("Unknown render view type");
+  // }
 
   /** Delay because of We 'CellDisabled' bug at startup race condition */
   await delay(1000);
 
   console.log("setupProdView()", showCommentsOnly);
-  const happElem = await createThreadsApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient, showCommentsOnly);
+  const happElem = await createThreadsApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient/*, showCommentsOnly*/);
   console.log("happElem", happElem);
 
   /** Append Element */
