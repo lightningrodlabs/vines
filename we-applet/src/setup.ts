@@ -1,4 +1,4 @@
-import {createDefaultWeServicesMock, setupDevtest} from "@ddd-qc/we-utils";
+import {createDefaultWeServicesMock, setup, setupDevtest} from "@ddd-qc/we-utils";
 import {appletServices, threadsNames} from "./appletServices/appletServices";
 import {createThreadsApplet} from "./createThreadsApplet";
 import {delay, HAPP_BUILD_MODE, HAPP_ENV, HappElement, HappEnvType} from "@ddd-qc/lit-happ";
@@ -11,21 +11,23 @@ import {AppletView} from "@lightningrodlabs/we-applet/dist/types";
 
 
 
-// /** */
-// async function setupThreadsApplet() {
-//   return setup(appletServices, createThreadsApplet, threadsNames, createDefaultWeServicesMock);
-// }
-
-
 /** */
 export async function setupThreadsApplet() {
-  console.log("HAPP_ENV", HAPP_ENV);
-  if (HAPP_ENV == HappEnvType.DevtestWe) {
-    return setupDevtest(createThreadsApplet, threadsNames, createDefaultWeServicesMock);
-  } else {
-    return setupProdView();
-  }
+  console.log("Using default we-applet setup()");
+  return setup(appletServices, createThreadsApplet, threadsNames, createDefaultWeServicesMock);
 }
+
+
+// /** */
+// export async function setupThreadsApplet() {
+//   console.log("setupThreadsApplet() HAPP_ENV", HAPP_ENV);
+//   console.log("setupThreadsApplet() window", window);
+//   if (HAPP_ENV == HappEnvType.DevtestWe) {
+//     return setupDevtest(createThreadsApplet, threadsNames, createDefaultWeServicesMock);
+//   } else {
+//     return setupProdView();
+//   }
+// }
 
 
 export interface ViewThreadContext {
@@ -70,7 +72,7 @@ export async function setupProdView(): Promise<HappElement> {
   /** Delay because of We 'CellDisabled' bug at startup race condition */
   await delay(1000);
 
-
+  console.log("setupProdView()", showCommentsOnly);
   const happElem = await createThreadsApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient, showCommentsOnly);
   console.log("happElem", happElem);
 

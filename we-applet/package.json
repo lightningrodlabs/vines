@@ -31,7 +31,7 @@
     "typescript": "^4.9.0"
   },
   "dependencies": {
-    "@ddd-qc/we-utils": "=0.1.2",
+    "@ddd-qc/we-utils": "=0.1.3",
     "@threads/app": "file:../webapp",
     "@mdi/js": "^7.2.0"
   }

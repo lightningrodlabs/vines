@@ -1,7 +1,7 @@
-import {asCellProxy} from "@ddd-qc/we-utils";
 import {encodeHashToBase64} from "@holochain/client";
 import {ThreadsProxy} from "@threads/elements";
 import {threadsNames} from "./appletServices";
+import {asCellProxy} from "@ddd-qc/we-utils";
 
 
 /** */
