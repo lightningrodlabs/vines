@@ -56,24 +56,24 @@ export async function setupProdView(): Promise<HappElement> {
   const renderInfo = weClient.renderInfo as any;
   const renderView = renderInfo.view as AppletView;
 
-  let showCommentsOnly = false;
-  // switch (renderView.type) {
-  //   case "main": break;
-  //   case "block": throw new Error("Block view is not implemented.");
-  //   case "entry": {
-  //     switch (renderView.entryType) {
-  //       case "participation_protocol": showCommentsOnly = true; break;
-  //       default: throw new Error(`Unknown entry type ${renderView.entryType}.`);
-  //     }
-  //   } break;
-  //   default: throw new Error("Unknown render view type");
-  // }
+  let showCommentsOnly = undefined; // important to be undefined!
+  switch (renderView.type) {
+    case "main": break;
+    case "block": throw new Error("Block view is not implemented.");
+    case "entry": {
+      switch (renderView.entryType) {
+        case "participation_protocol": showCommentsOnly = true; break;
+        default: throw new Error(`Unknown entry type ${renderView.entryType}.`);
+      }
+    } break;
+    default: throw new Error("Unknown render view type");
+  }
 
   /** Delay because of We 'CellDisabled' bug at startup race condition */
   await delay(1000);
 
-  console.log("setupProdView()", showCommentsOnly);
-  const happElem = await createThreadsApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient/*, showCommentsOnly*/);
+  console.log("setupProdView() showCommentsOnly", showCommentsOnly);
+  const happElem = await createThreadsApplet(renderInfo.appletClient, renderInfo.appletHash, renderInfo.profilesClient, weClient, showCommentsOnly);
   console.log("happElem", happElem);
 
   /** Append Element */
