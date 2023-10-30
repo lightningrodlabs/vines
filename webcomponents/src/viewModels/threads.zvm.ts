@@ -91,7 +91,7 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  private _allAppletIds: EntryHashB64[] = [];
+  private _allAppletIds: string[] = [];
   /** ah -> Subject */
   private _allSubjects: Dictionary<Subject> = {};
   /** ah -> SemanticTopic */
@@ -309,11 +309,13 @@ export class ThreadsZvm extends ZomeViewModel {
     /* await */ this.initializePerspectiveOnline();
   }
 
+
   /** */
-  async probeAllAppletIds(): Promise<EntryHashB64[]> {
+  async probeAllAppletIds(): Promise<string[]> {
     console.log("probeAllAppletIds()")
-    const appletIds = await this.zomeProxy.getApplets();
-    this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
+    // const appletIds = await this.zomeProxy.getApplets();
+    // this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
+    this._allAppletIds = await this.zomeProxy.getApplets();
     console.log("probeAllAppletIds() res", this._allAppletIds);
     this.notifySubscribers();
     return this._allAppletIds;

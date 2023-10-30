@@ -276,7 +276,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_all_subjects', null);
   }
 
-  async getApplets(): Promise<EntryHash[]> {
+  async getApplets(): Promise<string[]> {
     return this.call('get_applets', null);
   }
 

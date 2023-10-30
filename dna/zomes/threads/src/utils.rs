@@ -21,7 +21,7 @@ pub(crate) fn get_Threads_zome_index() -> u8 {
 
 /// For some unknown reason we get a Bad Checksum error with appletIds when using comp2hash(),
 /// so we are doing the decoding manually without the checksum check here.
-pub fn comp2appletId(comp: &Component) -> ExternResult<EntryHash> {
+pub fn comp2appletHash(comp: &Component) -> ExternResult<EntryHash> {
   let hash_str = String::try_from(comp)
     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
   let str = &hash_str[1..]; //remove the starting 'u' char added during string::try_from()
