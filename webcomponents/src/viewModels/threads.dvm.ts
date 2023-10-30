@@ -12,6 +12,7 @@ import {
 import {DirectMessageType, SignalPayload} from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer/dist/viewModels/path-explorer.zvm";
+import {AppletId} from "@lightningrodlabs/we-applet";
 
 
 /** */
@@ -189,7 +190,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishThreadFromSemanticTopic(appletId: EntryHashB64, topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
+  async publishThreadFromSemanticTopic(appletId: AppletId, topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
     let ah = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, topicHash, purpose);
     const signal: SignalPayload = {
       maybePpHash: ah,
@@ -204,7 +205,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Debug -- */
 
   /** */
-  async generateTestSignals(appletId: EntryHashB64): Promise<void> {
+  async generateTestSignals(appletId: AppletId): Promise<void> {
     console.log("generateTestSignals() START");
     const stEh = await this.publishSemanticTopic("signal-topic");
     await delay(1000);

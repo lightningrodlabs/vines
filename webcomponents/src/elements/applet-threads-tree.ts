@@ -4,7 +4,7 @@ import {consume} from "@lit-labs/context";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
-import {AttachmentType, Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AttachmentType, Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
@@ -36,7 +36,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
   }
 
   /** ID of the applet to display threads of */
-  @property() appletId: EntryHashB64 = ''
+  @property() appletId: AppletId = ''
 
 
   @consume({ context: weClientContext, subscribe: true })

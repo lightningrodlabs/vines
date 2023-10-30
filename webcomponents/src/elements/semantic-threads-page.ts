@@ -74,6 +74,7 @@ import {
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
 import {
+  AppletId,
   AppletInfo,
   Hrl, weClientContext,
   WeServices,
@@ -122,7 +123,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _appletToShow: DnaHashB64 | null = null;
 
 
-  @property() appletId: EntryHashB64;
+  @property() appletId: AppletId;
 
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -239,7 +240,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** Generate test data */
     if (!this.appletId) {
-      this.appletId = encodeHashToBase64(await emptyAppletId());
+      this.appletId = "FakeAppletId";
+      //this.appletId = encodeHashToBase64(await emptyAppletId());
       console.warn("no appletId provided. A fake one has been generated", this.appletId);
     }
     //await this._dvm.threadsZvm.generateTestData(this.appletId);
