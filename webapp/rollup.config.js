@@ -33,8 +33,7 @@ export default {
     /** Enable using HTML as rollup entrypoint */
     html({
       //minify: true,
-      //injectServiceWorker: true,
-      //serviceWorkerPath: "dist/sw.js",
+      //injectServiceWorker: true, serviceWorkerPath: "dist/sw.js",
     }),
     /** Resolve bare module imports */
     nodeResolve({
