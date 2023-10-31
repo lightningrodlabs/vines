@@ -3,12 +3,11 @@ import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
-import {getInitials, truncate} from "../utils";
+import {truncate} from "../utils";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 //import {ChatThreadView} from "./chat-thread-view";
 
 
@@ -145,7 +144,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
-    let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
+    let agent = {nickname: "unknown", fields: {}} as ProfileMat;
     if (this._profilesZvm) {
       const maybeAgent = this._profilesZvm.perspective.profiles[texto.author];
       if (maybeAgent) {

@@ -6,10 +6,9 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
-import {getInitials, timeSince} from "../utils";
+import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
+import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 
@@ -64,7 +63,7 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
 
         const date_str = timeSince(date) + " ago";
 
-        let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
+        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
         if (this._profilesZvm) {
           const maybeAgent = this._profilesZvm.perspective.profiles[author];
           if (maybeAgent) {

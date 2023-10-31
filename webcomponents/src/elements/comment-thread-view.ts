@@ -3,13 +3,11 @@ import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
-import {getInitials, parseMentions} from "../utils";
+import {parseMentions} from "../utils";
 
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {ActionHashB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -21,6 +19,7 @@ import "@ui5/webcomponents/dist/List.js"
 import {inputBarStyleTemplate} from "../styles";
 import {Thread} from "../viewModels/thread";
 import "./input-bar";
+import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /**
@@ -214,7 +213,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         }
         const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
-        let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
+        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
         if (this._profilesZvm) {
           let maybeAgent = this._profilesZvm.perspective.profiles[info.author];
           if (maybeAgent) {

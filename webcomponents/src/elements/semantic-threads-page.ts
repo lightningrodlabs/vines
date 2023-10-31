@@ -57,12 +57,8 @@ import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
 import {ChatThreadView} from "./chat-thread-view";
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {emptyAppletId, getInitials} from "../utils";
 
-import {EditProfile} from "./edit-profile";
-//import {PeerList} from "./peer-list";
 
 import {
   ActionHashB64,
@@ -80,7 +76,6 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
-import {ProfilesZvm} from "../viewModels/profiles.zvm";
 import {globalProfilesContext} from "../viewModels/happDef";
 import {shellBarStyleTemplate} from "../styles";
 
@@ -89,6 +84,7 @@ import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
 import  "./mentions-notification-list";
 import "./input-bar";
+import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /**
@@ -136,7 +132,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServices;
 
-  private _myProfile: ThreadsProfile = {nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}}
+  private _myProfile: ProfileMat = {nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}}
 
   /** AppletHash -> AppletInfo */
   @state() private _appletInfos: Dictionary<AppletInfo> = {}
@@ -321,7 +317,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  private async onProfileEdited(profile: ThreadsProfile) {
+  private async onProfileEdited(profile: ProfileMat) {
     console.log("onProfileEdited()", this._myProfile)
     try {
       await this._profilesZvm.updateMyProfile(profile);
@@ -443,7 +439,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** This agent's profile info */
-    let agent = {nickname: "unknown", fields: {}} as ThreadsProfile;
+    let agent = {nickname: "unknown", fields: {}} as ProfileMat;
     let maybeAgent = undefined;
     if (this._profilesZvm) {
       maybeAgent = this._myProfile;

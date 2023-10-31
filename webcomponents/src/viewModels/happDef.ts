@@ -2,8 +2,7 @@
 import {HvmDef} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "./threads.dvm";
 import {Context, createContext} from "@lit-labs/context";
-import {ProfilesZvm} from "./profiles.zvm";
-import {ProfilesDvm} from "./profiles.dvm";
+import {ProfilesDvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 export const DEFAULT_THREADS_WE_DEF: HvmDef = {

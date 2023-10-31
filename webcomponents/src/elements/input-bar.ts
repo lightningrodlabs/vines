@@ -1,7 +1,5 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
 
 import {inputBarStyleTemplate} from "../styles";
 
@@ -9,6 +7,7 @@ import {inputBarStyleTemplate} from "../styles";
 import Input from "@ui5/webcomponents/dist/Input";
 //import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
 import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";
+import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 //import SuggestionListItem from "@ui5/webcomponents/dist/SuggestionListItem";
 
 

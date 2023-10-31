@@ -19,13 +19,12 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, snake,
+  DnaViewModel, snake, pascal,
 } from "@ddd-qc/lit-happ";
 import {
   DEFAULT_THREADS_DEF,
   globalProfilesContext,
   ThreadsDvm,
-  ProfilesDvm,
   DEFAULT_THREADS_WE_DEF,
   THREADS_DEFAULT_ROLE_NAME,
   ThreadsEntryType,
@@ -36,10 +35,8 @@ import {HC_ADMIN_PORT, HC_APP_PORT, ALLOW_WE} from "./globals"
 import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
+import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 
-
-/** remove and use the one from lit-happ instead */
-export const pascal = str => str[0].toUpperCase() + str.slice(1, str.length).replace(/_([a-z])/g, letter => `${letter[1].toUpperCase()}`);
 
 export interface ViewThreadContext {
   detail: string,

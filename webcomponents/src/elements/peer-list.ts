@@ -3,11 +3,9 @@ import { property, state, customElement } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ProfilesPerspective, ProfilesZvm} from "../viewModels/profiles.zvm";
 import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
@@ -15,6 +13,7 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import {consume} from "@lit-labs/context";
 import {globalProfilesContext} from "../viewModels/happDef";
+import {ProfileMat, ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 /** @element peer-list */
 @localized()
@@ -109,7 +108,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  renderList(profiles:  Dictionary<ThreadsProfile>) {
+  renderList(profiles:  Dictionary<ProfileMat>) {
 
     if (Object.keys(profiles).length === 0) {
       return html`

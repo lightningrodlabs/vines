@@ -1,7 +1,6 @@
 import { html, css, LitElement } from 'lit';
 import { property, query, state, customElement } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
-import {ThreadsProfile} from "../viewModels/profiles.proxy";
 
 import Input from "@ui5/webcomponents/dist/Input";
 import "@ui5/webcomponents/dist/Input.js";
@@ -11,6 +10,7 @@ import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js"
 import "@shoelace-style/shoelace/dist/components/radio/radio.js";
 import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
+import {ProfileMat} from "@ddd-qc/profiles-dvm";
 
 /** Crop the image and return a base64 bytes string of its content */
 export function resizeAndExport(img: HTMLImageElement) {
@@ -56,7 +56,7 @@ export class EditProfile extends LitElement {
    * The profile to be edited.
    */
   @property({ type: Object })
-  profile: ThreadsProfile | undefined;
+  profile: ProfileMat | undefined;
 
   /**
    * Label for the save profile button.
@@ -235,7 +235,7 @@ export class EditProfile extends LitElement {
       fields['lang'] = this._lang;
     }
 
-    const profile: ThreadsProfile = {
+    const profile: ProfileMat = {
       fields,
       nickname,
     };

@@ -1,6 +1,5 @@
 import {delay, DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
-import {ProfilesZvm} from "./profiles.zvm";
 import {
   ActionHashB64,
   AgentPubKeyB64,
@@ -11,6 +10,7 @@ import {
 import {DirectMessageType, SignalPayload, THREADS_DEFAULT_ROLE_NAME} from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
 import {AppletId} from "@lightningrodlabs/we-applet";
+import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
 
 /** */
