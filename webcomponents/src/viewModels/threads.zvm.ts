@@ -219,7 +219,7 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.querySemanticTopics();
     await this.queryThreads();
     await this.queryTextMessages();
-    await this.queryProbeLogs();
+    await this.queryProbeLogs(true);
 
     this.notifySubscribers(); // check if this is useful
   }
@@ -256,9 +256,17 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Query: Query the local source-chain, and store the results (async) -- */
 
   /** */
-  private async queryProbeLogs(): Promise<void> {
-    /** Global Log */
-    this._globalProbeLog = await this.zomeProxy.getGlobalLog();
+  private async queryProbeLogs(retryOnFail: boolean): Promise<void> {
+    /** HACK: retry on fail as this is called twice by We, which can cause "head has moved" error */
+    if (retryOnFail) {
+      try {
+        this._globalProbeLog = await this.zomeProxy.getGlobalLog();
+      } catch(e) {
+        this._globalProbeLog = await this.zomeProxy.getGlobalLog();
+      }
+    } else {
+      this._globalProbeLog = await this.zomeProxy.getGlobalLog();
+    }
     /** Thread logs */
     const threadLogs = await this.zomeProxy.queryThreadLogs();
     for (const threadLog of threadLogs) {
