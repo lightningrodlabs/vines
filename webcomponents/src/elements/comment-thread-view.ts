@@ -172,14 +172,19 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
     if (this.threadHash == "") {
-      return html `<div style="color:#c10a0a">No comment thread selected</div>`;
+      return html `<div style="color:#c10a0a; margin:auto; width:50%; height:50%;">No comment thread selected</div>`;
     }
 
     const bg_color = this._loading? "#ededf0" : ""
 
     const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
     if (!pp) {
-      return html `<div>Loading thread...</div>`;
+      //return html `<div>Loading thread...</div>`;
+      return html `
+        <ui5-busy-indicator size="Medium" active
+                            style="margin:auto; width:50%; height:50%;"
+        ></ui5-busy-indicator>
+      `;
     }
     // if (pp.subjectType == SEMANTIC_TOPIC_TYPE_NAME) {
     //   const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);

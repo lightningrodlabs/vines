@@ -31,6 +31,7 @@
 
     "devtest"            : "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run start:mem\"",
     "devtest:we"         : "npm run build:devtest && npm run build:happ:we && npm run devtest -w we-applet",
+    "devtest:we:pp"      : "npm run build:devtest && npm run build:happ:we && npm run devtest:pp -w we-applet",
 
     "prodtest"           : "npm run dist -w webapp && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
 
@@ -86,9 +87,9 @@
   },
   "dependencies": {
     "@holochain/client": "=0.16.2",
-    "@ddd-qc/cell-proxy": "=0.19.16",
-    "@ddd-qc/lit-happ": "=0.19.16",
-    "@ddd-qc/we-utils": "=0.19.16",
+    "@ddd-qc/cell-proxy": "=0.19.17",
+    "@ddd-qc/lit-happ": "=0.19.17",
+    "@ddd-qc/we-utils": "=0.19.17",
     "@ddd-qc/path-explorer": "0.2.0",
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.16.1",
