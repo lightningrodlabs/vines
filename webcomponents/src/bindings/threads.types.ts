@@ -239,8 +239,14 @@ export interface TextMessage {
   bead: Bead
 }
 
-export const THREADS_ZOME_NAME = "threads";
+/** DNA/Zome names */
+export const THREADS_DEFAULT_ROLE_NAME = "role_threads";
 
+export const THREADS_DEFAULT_COORDINATOR_ZOME_NAME = "zThreads";
+
+export const THREADS_DEFAULT_INTEGRITY_ZOME_NAME = "threads_integrity";
+
+/** ANCHOR NAMES */
 export const ROOT_ANCHOR_SEMANTIC_TOPICS = "all_semantic_topics";
 
 export const ROOT_ANCHOR_SUBJECTS = "all_subjects";

@@ -9,7 +9,7 @@ import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {ThreadsProxy, CreatePpInput} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
-import {ViewThreadContext} from "../setup";
+import {ViewThreadContext} from "@threads/app";
 
 
 /** */

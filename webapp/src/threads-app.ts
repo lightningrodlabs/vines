@@ -4,12 +4,13 @@ import {localized, msg} from '@lit/localize';
 import {
   AdminWebsocket, AgentPubKeyB64,
   AppSignal,
-  AppWebsocket, encodeHashToBase64, EntryHash,
+  AppWebsocket, encodeHashToBase64,
   EntryHashB64,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
 import {
+  AppletId, AppletView,
   weClientContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
@@ -18,16 +19,33 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel,
+  DnaViewModel, snake,
 } from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF, globalProfilesContext, ThreadsDvm,
-  ProfilesDvm, DEFAULT_THREADS_WE_DEF,
+  DEFAULT_THREADS_DEF,
+  globalProfilesContext,
+  ThreadsDvm,
+  ProfilesDvm,
+  DEFAULT_THREADS_WE_DEF,
+  THREADS_DEFAULT_ROLE_NAME,
+  ThreadsEntryType,
+  THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
 } from "@threads/elements";
 
 import {HC_ADMIN_PORT, HC_APP_PORT, ALLOW_WE} from "./globals"
 import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
+import {EntryViewInfo} from "@ddd-qc/we-utils";
+
+
+/** remove and use the one from lit-happ instead */
+const pascal = str => str[0].toUpperCase() + str.slice(1, str.length).replace(/_([a-z])/g, letter => `${letter[1].toUpperCase()}`);
+
+export interface ViewThreadContext {
+  detail: string,
+  subjectType: string,
+  subjectName: string,
+}
 
 
 /**
@@ -38,7 +56,7 @@ import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 export class ThreadsApp extends HappElement {
 
   @state() private _offlinePerspectiveloaded = false;
-
+  @state() private _hasHolochainFailed = true;
 
   @state() private _hasStartingProfile = false;
   @state() private _lang?: string
@@ -47,12 +65,12 @@ export class ThreadsApp extends HappElement {
 
   static readonly HVM_DEF: HvmDef = ALLOW_WE? DEFAULT_THREADS_WE_DEF : DEFAULT_THREADS_DEF;
 
-  @state() private _canShowBuildView = false;
-  @state() private _canShowDebug = false;
+  //@state() private _canShowBuildView = false;
+  //@state() private _canShowDebug = false;
 
 
   /** All arguments should be provided when constructed explicity */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public showCommentThreadOnly?: boolean) {
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
     super(appWs? appWs : HC_APP_PORT, appId);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
@@ -79,14 +97,15 @@ export class ThreadsApp extends HappElement {
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
     weServices: WeServices,
-    thisAppletHash: EntryHash,
-    showCommentThreadOnly?: boolean,
+    thisAppletId: AppletId,
+    //showCommentThreadOnly?: boolean,
+    appletView: AppletView,
   ) : Promise<ThreadsApp> {
-    const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, showCommentThreadOnly);
+    const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     app._weProvider = new ContextProvider(app, weClientContext, weServices);
-    app.appletId = encodeHashToBase64(thisAppletHash);
+    app.appletId = thisAppletId;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
     await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
@@ -145,6 +164,7 @@ export class ThreadsApp extends HappElement {
   /** */
   async hvmConstructed() {
     console.log("hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
+
     /** Authorize all zome calls */
     if (!this._adminWs && this._canAuthorizeZfns) {
       this._adminWs = await AdminWebsocket.connect(new URL(`ws://localhost:${HC_ADMIN_PORT}`));
@@ -161,13 +181,21 @@ export class ThreadsApp extends HappElement {
       }
     }
 
+    /** Probe EntryDefs */
+    const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
+    console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
+    console.log(`${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
+    if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+      console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+    } else {
+      this._hasHolochainFailed = false;
+    }
+
+    /** Add Profiles DVM dna present */
     if (!ALLOW_WE) {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.threadsDvm.cell.agentPubKey);
     }
 
-    /** Grab ludo cells */
-    const entryDefs = await this.threadsDvm.fetchAllEntryDefs();
-    console.log("threads.entryDefs", entryDefs);
   }
 
 
@@ -183,10 +211,9 @@ export class ThreadsApp extends HappElement {
   async perspectiveInitializedOnline(): Promise<void> {
     console.log("<threads-app>.perspectiveInitializedOnline()");
 
-    await this.hvm.probeAll();
-
-    /** Done */
-    //this._loaded = true;
+    if (this.appletView && this.appletView.type == "main") {
+      await this.hvm.probeAll();
+    }
   }
 
 
@@ -202,7 +229,8 @@ export class ThreadsApp extends HappElement {
 
   /** */
   render() {
-    console.log("*** <threads-app> render()", this._hasStartingProfile, this.threadsDvm.cell.print())
+    console.log("*** <threads-app> render()", this._hasStartingProfile, this.threadsDvm.cell.print());
+
     if (!this._offlinePerspectiveloaded) {
       return html`        
       <div style="display: flex; justify-content: center; align-items: center; height: 100vh">
@@ -210,75 +238,68 @@ export class ThreadsApp extends HappElement {
       </div>
       `;
     }
-
-
-    // const threadTestPage = html`
-    //     <cell-context .cell="${this.threadsDvm.cell}">
-    //         <threads-test-page></threads-test-page>
-    //     </cell-context>
-    // `;
-
-
-    // const createProfile = html `
-    //     <div class="column"
-    //          style="align-items: center; justify-content: center; flex: 1; padding-bottom: 10px;"
-    //     >
-    //       <h1 style="font-family: arial;color: #5804A8;"><img src="logo.svg" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/> Threads</h1>
-    //       <div class="column" style="align-items: center;">
-    //         <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
-    //             <div class="title" style="margin-bottom: 24px; align-self: flex-start">
-    //               ${msg('Create Profile')}
-    //             </div>
-    //               <edit-profile
-    //                       .saveProfileLabel=${msg('Create Profile')}
-    //                       @save-profile=${(e: CustomEvent) => this.createMyProfile(e.detail.profile)}
-    //                       @lang-selected=${(e: CustomEvent) => {console.log("<app> set lang", e.detail); /*setLocale(e.detail)*/}}
-    //               ></edit-profile>
-    //         </sl-card>
-    //         </div>
-    //     </div>`;
-
-    //const guardedPage = threadTestPage //this._hasStartingProfile? threadTestPage : createProfile;
-
-    //const cells = this.conductorAppProxy.getAppCells(this.conductorAppProxy.appIdOfShame);
-
-
-    let inner = html`<slot></slot>`;
-    // let inner = html`
-    //     <comment-thread-view .threadHash=${this.showCommentThreadOnly} showInput="true"></comment-thread-view>
-    // `;
-
-
-    if (this.showCommentThreadOnly == undefined) {
-      if (this._canShowDebug) {
-        inner = html`            
-            <threads-devtest-page id="test" 
-              @debug=${(e) => this._canShowDebug = e.detail}>
-            </threads-devtest-page>
-        `;
-      } else {
-        inner = html`            
-            <semantic-threads-page style="height:100vh;"
-              .appletId=${this.appletId}
-              @debug=${(e) => this._canShowDebug = e.detail}>
-            </semantic-threads-page>
-        `;
-      }
+    if(this._hasHolochainFailed) {
+      return html`<div style="width: auto; height: auto; font-size: 4rem;">Failed to connect to Holochain Conductor</div>`;
     }
 
-    /** Dump button */
-    //   <button @click="${() => {
-    //   console.log("dumpLogs");
-    //   //const el = this.shadowRoot.getElementById("test") as ThreadsTestPage;
-    //   //el.requestUpdate();
-    //   this.threadsDvm.dumpLogs();
-    // }}">dumpLogs</button>
 
+    let view = html`<slot></slot>`;
+
+    if (this.appletView) {
+      console.log("appletView", this.appletView);
+      switch (this.appletView.type) {
+        case "main": {
+            // if (this._canShowDebug) {
+            //   view = html`
+            //     <threads-devtest-page id="test"
+            //       @debug=${(e) => this._canShowDebug = e.detail}>
+            //     </threads-devtest-page>
+            //   `;
+            // } else {
+              view = html`            
+                <semantic-threads-page style="height:100vh;"
+                  .appletId=${this.appletId}
+                </semantic-threads-page>
+              `;
+            //}
+        }
+          break;
+        case "block":
+          throw new Error("Threads/we-applet: Block view is not implemented.");
+        case "entry":
+          const entryViewInfo = this.appletView as EntryViewInfo;
+          if (entryViewInfo.roleName != THREADS_DEFAULT_ROLE_NAME) {
+            throw new Error(`Threads/we-applet: Unknown role name '${this.appletView.roleName}'.`);
+          }
+          if (entryViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
+            throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
+          }
+          const entryType = pascal(entryViewInfo.entryType);
+          console.log("pascal entryType", entryViewInfo.entryType, entryType);
+          switch (entryType) {
+            case ThreadsEntryType.ParticipationProtocol:
+              console.log("pp entry:", encodeHashToBase64(entryViewInfo.hrl[1]));
+              const viewContext = entryViewInfo.context as ViewThreadContext;
+              view = html`
+                  <comment-thread-view .threadHash=${encodeHashToBase64(entryViewInfo.hrl[1])} showInput="true"
+                                       .subjectName=${viewContext.subjectName}
+                                       .subjectType=${viewContext.subjectType}></comment-thread-view>
+              `;
+              break;
+            default:
+              throw new Error(`Unhandled entry type ${entryViewInfo.entryType}.`);
+          }
+          break;
+        default:
+          console.error("Unknown We applet-view type", this.appletView);
+          throw new Error(`Unknown We applet-view type`);
+      }
+    }
 
     /** Render all */
     return html`
         <cell-context .cell="${this.threadsDvm.cell}">
-          ${inner}
+          ${view}
         </cell-context>
     `;
   }

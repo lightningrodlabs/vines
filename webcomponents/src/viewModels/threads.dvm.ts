@@ -6,12 +6,10 @@ import {
   AgentPubKeyB64,
   AppSignal, AppSignalCb,
   decodeHashFromBase64,
-  encodeHashToBase64,
   EntryHashB64
 } from "@holochain/client";
-import {DirectMessageType, SignalPayload} from "../bindings/threads.types";
+import {DirectMessageType, SignalPayload, THREADS_DEFAULT_ROLE_NAME} from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
-import {PathExplorerZvm} from "@ddd-qc/path-explorer/dist/viewModels/path-explorer.zvm";
 import {AppletId} from "@lightningrodlabs/we-applet";
 
 
@@ -29,7 +27,7 @@ export interface ThreadsDnaPerspective {
  */
 export class ThreadsDvm extends DnaViewModel {
 
-  static readonly DEFAULT_BASE_ROLE_NAME = "role_threads";
+  static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
   static readonly ZVM_DEFS = [ThreadsZvm /*, PathExplorerZvm*/ /*, ProfilesZvm*/]
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 

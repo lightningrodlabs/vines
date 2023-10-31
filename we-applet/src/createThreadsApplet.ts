@@ -6,6 +6,7 @@ import {
 //import { msg } from "@lit/localize";
 
 import {
+  RenderInfo,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
@@ -13,8 +14,7 @@ import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
-import {ProfilesClient} from "@holochain-open-dev/profiles";
-import {ProfilesApi} from "@ddd-qc/we-utils";
+import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 import {ThreadsApp} from "@threads/app";
@@ -22,21 +22,28 @@ import {ThreadsApp} from "@threads/app";
 
 /** */
 export async function createThreadsApplet(
-  client: AppAgentClient,
-  thisAppletHash: EntryHash,
-  profilesClient: ProfilesClient,
+  // client: AppAgentClient,
+  // thisAppletHash: EntryHash,
+  // profilesClient: ProfilesClient,
+  renderInfo: RenderInfo,
   weServices: WeServices,
-  showCommentThreadOnly?: boolean,
 ): Promise<ThreadsApp> {
 
-  console.log("createThreadsApplet() client", client);
-  console.log("createThreadsApplet() thisAppletHash", thisAppletHash);
-  console.log("createThreadsApplet()   thisAppletId", encodeHashToBase64(thisAppletHash));
+  if (renderInfo.type =="cross-applet-view") {
+    throw Error("cross-applet-view not implemented by Threads");
+  }
 
-  const mainAppInfo = await client.appInfo();
+  const appletViewInfo = renderInfo as AppletViewInfo;
+
+  console.log("createThreadsApplet() client", appletViewInfo.appletClient);
+  console.log("createThreadsApplet() thisAppletHash", appletViewInfo.appletHash);
+  console.log("createThreadsApplet()   thisAppletId", encodeHashToBase64(appletViewInfo.appletHash));
+
+  const profilesClient = appletViewInfo.profilesClient;
+  const mainAppInfo = await appletViewInfo.appletClient.appInfo();
 
   /** Determine profilesAppInfo */
-  const mainAppAgentWs = client as AppAgentWebsocket;
+  const mainAppAgentWs = appletViewInfo.appletClient as AppAgentWebsocket;
   const mainAppWs = mainAppAgentWs.appWebsocket;
   // const mainAppWs = client as unknown as AppWebsocket;
   // const mainAppInfo = await mainAppWs.appInfo({installed_app_id: 'threads-applet'});
@@ -63,7 +70,10 @@ export async function createThreadsApplet(
   const app = await ThreadsApp.fromWe(
       mainAppWs, undefined, false, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
-      weServices, thisAppletHash, showCommentThreadOnly);
+      weServices,
+      encodeHashToBase64(appletViewInfo.appletHash),
+      appletViewInfo.view,
+      );
   /** Done */
   return app;
 }
