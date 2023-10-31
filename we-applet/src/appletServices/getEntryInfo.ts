@@ -1,7 +1,8 @@
 import {encodeHashToBase64} from "@holochain/client";
-import {ThreadsProxy} from "@threads/elements";
+import {ThreadsEntryType, ThreadsProxy} from "@threads/elements";
 import {threadsNames} from "./appletServices";
 import {asCellProxy} from "@ddd-qc/we-utils";
+import {pascal} from "@threads/app";
 
 
 /** */
@@ -21,8 +22,10 @@ export async function getEntryInfo(
 
     const mainAppInfo = await appletClient.appInfo();
 
-    switch (entryType) {
-        case "text_message": {
+    const pEntryType = pascal(entryType);
+
+    switch (pEntryType) {
+        case ThreadsEntryType.TextMessage: {
             console.log("Threads/we-applet: text_message info", hrl);
             const cellProxy = await asCellProxy(
                 appletClient,
@@ -37,7 +40,7 @@ export async function getEntryInfo(
                 name: tuple[2].value,
             };
         }
-        case "participation_protocol": {
+        case ThreadsEntryType.ParticipationProtocol: {
             console.log("Threads/we-applet: pp info", hrl);
             const cellProxy = await asCellProxy(
                 appletClient,

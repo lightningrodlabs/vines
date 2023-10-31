@@ -1,7 +1,5 @@
 import {
-  AppAgentClient,
   AppAgentWebsocket, encodeHashToBase64,
-  EntryHash
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
 
@@ -22,9 +20,6 @@ import {ThreadsApp} from "@threads/app";
 
 /** */
 export async function createThreadsApplet(
-  // client: AppAgentClient,
-  // thisAppletHash: EntryHash,
-  // profilesClient: ProfilesClient,
   renderInfo: RenderInfo,
   weServices: WeServices,
 ): Promise<ThreadsApp> {

@@ -39,7 +39,7 @@ import {EntryViewInfo} from "@ddd-qc/we-utils";
 
 
 /** remove and use the one from lit-happ instead */
-const pascal = str => str[0].toUpperCase() + str.slice(1, str.length).replace(/_([a-z])/g, letter => `${letter[1].toUpperCase()}`);
+export const pascal = str => str[0].toUpperCase() + str.slice(1, str.length).replace(/_([a-z])/g, letter => `${letter[1].toUpperCase()}`);
 
 export interface ViewThreadContext {
   detail: string,
