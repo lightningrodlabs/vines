@@ -4,18 +4,32 @@
 #![allow(non_snake_case)]
 #![allow(unused_attributes)]
 
-pub mod beads;
-pub mod last_probe_log;
-pub mod globals;
+mod entries;
+pub use entries::*;
 
-//--------------------------------------------------------------------------------------------------
+
+///-------------------------------------------------------------------------------------------------
+/// Global consts
+///-------------------------------------------------------------------------------------------------
+
+/// DNA/Zome names
+pub const THREADS_DEFAULT_ROLE_NAME: &'static str = "role_threads";
+pub const THREADS_DEFAULT_COORDINATOR_ZOME_NAME: &'static str = "zThreads";
+pub const THREADS_DEFAULT_INTEGRITY_ZOME_NAME: &'static str = "threads_integrity";
+
+/// ANCHOR NAMES
+pub const ROOT_ANCHOR_SEMANTIC_TOPICS: &'static str = "all_semantic_topics";
+pub const ROOT_ANCHOR_SUBJECTS: &'static str = "all_subjects";
+pub const SEMANTIC_TOPIC_TYPE_NAME: &'static str = "SemanticTopic";
+pub const GLOBAL_TIME_INDEX: &'static str = "global_time";
+pub const PP_ITEM_TYPE: &'static str = "__protocol";
+
+
+///-------------------------------------------------------------------------------------------------
+/// Declaration of this zome's entry types
+///-------------------------------------------------------------------------------------------------
 
 use hdi::prelude::*;
-
-pub use beads::*;
-pub use last_probe_log::*;
-pub use globals::*;
-
 
 #[hdk_entry_defs]
 #[unit_enum(ThreadsEntryTypes)]
@@ -33,7 +47,10 @@ pub enum ThreadsEntry {
 }
 
 
-/// List of all link kinds handled by this Zome
+///-------------------------------------------------------------------------------------------------
+/// Declaration of this zome's link types
+///-------------------------------------------------------------------------------------------------
+
 #[hdk_link_types]
 #[derive(Serialize, Deserialize)]
 pub enum ThreadsLinkType {
@@ -50,65 +67,3 @@ pub enum ThreadsLinkType {
     Invalid,
     Mention,
 }
-
-
-//--------------------------------------------------------------------------------------------------
-
-///
-#[hdk_entry_helper]
-#[derive(Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct SemanticTopic {
-    pub title: String,
-}
-
-
-///
-#[hdk_entry_helper]
-#[derive(Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct ParticipationProtocol {
-    pub purpose: String,
-    pub rules: String,
-    pub subject_hash: AnyLinkableHash,
-    pub subject_type: String,
-}
-
-
-// ///
-// #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-// #[serde(rename_all = "camelCase")]
-// pub enum SubjectType {
-//     Dna,
-//     Agent,
-//     Bead,
-//     SemanticTopic,
-//     Applet(AppletSubjectType),
-// }
-//
-//
-// ///
-// #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-// #[serde(rename_all = "camelCase")]
-// pub enum AppletSubjectType {
-//     Entry,
-//     Action,
-//     External,
-// }
-//
-// impl AppletSubjectType {
-//     pub fn from(lh: AnyLinkableHash) -> Self {
-//         match lh.hash_type() {
-//             hash_type::AnyLinkable::Entry => {
-//                 AppletSubjectType::Entry
-//             }
-//             hash_type::AnyLinkable::Action => {
-//                 AppletSubjectType::Entry
-//             }
-//             hash_type::AnyLinkable::External => {
-//                 AppletSubjectType::External
-//             }
-//         }
-//     }
-// }
-//
