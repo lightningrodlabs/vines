@@ -1,8 +1,8 @@
 import {encodeHashToBase64} from "@holochain/client";
 import {ThreadsEntryType, ThreadsProxy} from "@threads/elements";
-import {threadsNames} from "./appletServices";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {pascal} from "@ddd-qc/cell-proxy";
+import {devtestNames} from "../setup";
 
 
 /** */

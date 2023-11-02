@@ -29,17 +29,6 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
 
         const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, "role_threads"); // FIXME use appInfo.appId and roleName
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-        const input: CreatePpInput = {
-          pp: {
-          purpose: "comment",
-          rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
-          subjectHash: attachToHrl[1],
-          subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
-        },
-          //appletHash,
-          appletId: encodeHashToBase64(appletHash),
-          dnaHash: attachToHrl[0],
-        };
 
         let ppAh: ActionHash = undefined;
         let context: ViewThreadContext;
@@ -61,6 +50,17 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
 
         /** Create PP */
         if (!ppAh) {
+          const input: CreatePpInput = {
+            pp: {
+              purpose: "comment",
+              rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
+              subjectHash: attachToHrl[1],
+              subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
+            },
+            //appletHash,
+            appletId: encodeHashToBase64(appletHash),
+            dnaHash: attachToHrl[0],
+          };
           console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", input);
           const res = await proxy.createParticipationProtocol(input);
           console.log("Threads/attachmentTypes/thread: res", res);
