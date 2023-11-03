@@ -228,6 +228,7 @@ export interface GetProtocolsInput {
   subjectType: string
 }
 
+/**  */
 export interface Bead {
   forProtocolAh: ActionHash
   maybeReplyOfAh?: ActionHash
@@ -239,7 +240,36 @@ export interface TextMessage {
   bead: Bead
 }
 
-/** DNA/Zome names */
+/**  */
+export interface SemanticTopic {
+  title: string
+}
+
+/**  */
+export interface ParticipationProtocol {
+  purpose: string
+  rules: string
+  subjectHash: Uint8Array
+  subjectType: string
+}
+
+export interface GlobalLastProbeLog {
+  time: Timestamp
+  maybeLastKnownPpAh?: ActionHash
+}
+
+export interface ThreadLastProbeLog {
+  time: Timestamp
+  ppAh: ActionHash
+  maybeLastKnownBeadAh?: ActionHash
+}
+
+/**
+ * -------------------------------------------------------------------------------------------------
+ * Threads Global consts
+ * -------------------------------------------------------------------------------------------------
+ * DNA/Zome names
+ */
 export const THREADS_DEFAULT_ROLE_NAME = "role_threads";
 
 export const THREADS_DEFAULT_COORDINATOR_ZOME_NAME = "zThreads";
@@ -257,17 +287,11 @@ export const GLOBAL_TIME_INDEX = "global_time";
 
 export const PP_ITEM_TYPE = "__protocol";
 
-export interface GlobalLastProbeLog {
-  time: Timestamp
-  maybeLastKnownPpAh?: ActionHash
-}
-
-export interface ThreadLastProbeLog {
-  time: Timestamp
-  ppAh: ActionHash
-  maybeLastKnownBeadAh?: ActionHash
-}
-
+/**
+ * -------------------------------------------------------------------------------------------------
+ * Threads zome's entry types
+ * -------------------------------------------------------------------------------------------------
+ */
 export enum ThreadsEntryType {
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
@@ -283,7 +307,11 @@ export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbe
 export type ThreadsEntry = 
  | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
-/** List of all link kinds handled by this Zome */
+/**
+ * -------------------------------------------------------------------------------------------------
+ * Threads zome's link types
+ * -------------------------------------------------------------------------------------------------
+ */
 export type ThreadsLinkType =
   | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null};
 export enum ThreadsLinkTypeType {
@@ -299,17 +327,4 @@ export enum ThreadsLinkTypeType {
 	Protocols = 'Protocols',
 	Invalid = 'Invalid',
 	Mention = 'Mention',
-}
-
-/**  */
-export interface SemanticTopic {
-  title: string
-}
-
-/**  */
-export interface ParticipationProtocol {
-  purpose: string
-  rules: string
-  subjectHash: Uint8Array
-  subjectType: string
 }

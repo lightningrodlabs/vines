@@ -7,7 +7,6 @@ import {parseMentions} from "../utils";
 
 import {ActionHashB64} from "@holochain/client";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -16,10 +15,10 @@ import "@ui5/webcomponents-fiori/dist/Bar.js";
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/List.js"
 
-import {inputBarStyleTemplate} from "../styles";
-import {Thread} from "../viewModels/thread";
+
 import "./input-bar";
 import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {globalProfilesContext} from "../contexts";
 
 
 /**

@@ -76,7 +76,6 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
 import {shellBarStyleTemplate} from "../styles";
 
 import {AppletThreadsTree} from "./applet-threads-tree";
@@ -85,6 +84,7 @@ import {SemanticTopicsView} from "./semantic-topics-view";
 import  "./mentions-notification-list";
 import "./input-bar";
 import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {globalProfilesContext} from "../contexts";
 
 
 /**

@@ -5,7 +5,8 @@
     "hc_version": "0.2.2",
     "zits_version": "1.9.0",
     "bin": "bin",
-    "we_test_folder": "../we-main"
+    "we_test_folder": "../we-main",
+    "files_repo": "../file-share"
   },
   "private": true,
   "workspaces": [
@@ -21,11 +22,14 @@
     "install:hash-zome"  : "bash submodules/hc-prebuilt/install-hash-zome.sh $npm_package_config_bin",
     "install:zits"       : "cargo install zits --version $npm_package_config_zits_version",
     "version"            : "$npm_package_config_bin/hc --version & holochain --version & lair-keystore --version & tsc --version",
+
     "build:zome"         : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:dna"          : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
-    "build:profiles"     : "$npm_package_config_bin/hc dna pack -o artifacts/profiles.dna dna/workdir_profiles",
-    "build:happ:we"      : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads-we_applet.happ dna/workdir",
-    "build:happ"         : "npm run build:dna && npm run build:profiles && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir_profiles",
+    "build:dna"          : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir && cp $npm_package_config_files_repo/artifacts/files.dna ./artifacts",
+    "build:dna:profiles" : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/profiles.dna dna/workdir_profiles",
+    "build:happ:we"      : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads-we_applet.happ dna/workdir_files",
+    "build:happ"         : "npm run build:dna && npm run build:dna:profiles && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir_profiles",
+    "build:happ:no-files": "npm run build:dna && npm run build:dna:profiles && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir",
+
     "build:webapp"       : "npm run build -w webcomponents && npm run dist -w webapp",
     "build:devtest"      : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
 
@@ -91,7 +95,9 @@
     "@ddd-qc/lit-happ": "=0.19.19",
     "@ddd-qc/we-utils": "=0.19.19",
     "@ddd-qc/profiles-dvm": "=0.19.20",
+    "@ddd-qc/files": "=0.1.0",
     "@ddd-qc/path-explorer": "0.2.0",
+    "@ddd-qc/delivery": "=0.7.9",
     "@holochain-open-dev/core-types": "0.6.3",
     "@holochain-open-dev/profiles": "^0.16.1",
     "@lightningrodlabs/we-applet": "0.10.0",

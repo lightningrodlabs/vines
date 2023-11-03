@@ -22,10 +22,8 @@ import {
   DnaViewModel, snake, pascal,
 } from "@ddd-qc/lit-happ";
 import {
-  DEFAULT_THREADS_DEF,
   globalProfilesContext,
   ThreadsDvm,
-  DEFAULT_THREADS_WE_DEF,
   THREADS_DEFAULT_ROLE_NAME,
   ThreadsEntryType,
   THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
@@ -36,6 +34,8 @@ import {ContextProvider} from "@lit-labs/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
+import {FilesDvm} from "@ddd-qc/files";
+import {DEFAULT_THREADS_DEF, DEFAULT_THREADS_WE_DEF} from "./happDef";
 
 
 export interface ViewThreadContext {
@@ -148,6 +148,8 @@ export class ThreadsApp extends HappElement {
 
   get threadsDvm(): ThreadsDvm { return this.hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)! as ThreadsDvm }
 
+  get filesDvm(): FilesDvm { return this.hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm }
+
 
   /** -- Methods -- */
 
@@ -193,6 +195,10 @@ export class ThreadsApp extends HappElement {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.threadsDvm.cell.agentPubKey);
     }
 
+    ///** Provide Files as context */
+    //const filesContext = this.filesDvm.getContext();
+    //console.log(`\t\tProviding context "${filesContext}" | in host `, this);
+    //this._profilesProvider = new ContextProvider(this, filesContext, this.filesDvm);
   }
 
 
@@ -240,7 +246,12 @@ export class ThreadsApp extends HappElement {
     }
 
 
-    let view = html`<slot></slot>`;
+    //let view = html`<slot></slot>`;
+    let view = html`            
+                <semantic-threads-page style="height:100vh;"
+                  .appletId=${this.appletId}
+                </semantic-threads-page>
+              `
 
     if (this.appletView) {
       console.log("appletView", this.appletView);

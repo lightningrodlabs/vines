@@ -12,8 +12,8 @@ import "@shoelace-style/shoelace/dist/components/badge/badge.js"
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
 import {ProfileMat, ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {globalProfilesContext} from "../contexts";
 
 /** @element peer-list */
 @localized()

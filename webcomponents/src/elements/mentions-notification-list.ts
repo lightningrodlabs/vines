@@ -5,10 +5,10 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {consume} from "@lit-labs/context";
-import {globalProfilesContext} from "../viewModels/happDef";
 import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
 import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {globalProfilesContext} from "../contexts";
 
 
 

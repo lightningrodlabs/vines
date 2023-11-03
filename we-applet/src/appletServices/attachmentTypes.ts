@@ -6,7 +6,7 @@ import {
   Hrl
 } from "@lightningrodlabs/we-applet";
 import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
-import {ThreadsProxy, CreatePpInput} from "@threads/elements";
+import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
 import {ViewThreadContext} from "@threads/app";
@@ -27,7 +27,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
         const subjectName = entryLocInfo.entryInfo.name;
         //const subjectName = "FIXME";
 
-        const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, "role_threads"); // FIXME use appInfo.appId and roleName
+        const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, THREADS_DEFAULT_ROLE_NAME); // FIXME use appInfo.appId and roleName
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
 
         let ppAh: ActionHash = undefined;

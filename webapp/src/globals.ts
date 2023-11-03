@@ -1,7 +1,6 @@
-import {DEFAULT_THREADS_DEF} from "@threads/elements";
-
-
 /** -- HC_APP_PORT & friends -- */
+import {DEFAULT_THREADS_DEF} from "./happDef";
+
 
 export let HC_APP_PORT: number;
 export let HC_ADMIN_PORT: number;
@@ -18,6 +17,7 @@ try {
 } catch (e) {
   console.log("NO_WE not defined")
 }
+
 console.log("     ALLOW_WE =", ALLOW_WE)
 console.log("      HAPP_ID =", DEFAULT_THREADS_DEF.id)
 console.log("  HC_APP_PORT =", HC_APP_PORT);
