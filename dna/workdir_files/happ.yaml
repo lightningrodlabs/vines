@@ -1,15 +1,8 @@
 ---
 manifest_version: "1"
-name: hThreads
-description: File sharing happ
+name: hThreadsWeApplet
+description: We applet for Threads. Holds Files DNA.
 roles:
-  - name: role_threads
-    provisioning:
-      strategy: create
-      deferred: true
-    dna:
-      bundled: "../../artifacts/threads.dna"
-      clone_limit: 0
   - name: rFiles
     provisioning:
       strategy: create
@@ -25,3 +18,10 @@ roles:
           minParcelNameLength: 1
           maxTagNameLength: 32
           minTagNameLength: 2
+  - name: role_threads
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/threads.dna"
+      clone_limit: 0

@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {DnaElement, HAPP_ENV, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {CommentRequest, parseMentions} from "../utils";
@@ -44,6 +44,7 @@ import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
+import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/home.js"
@@ -59,23 +60,25 @@ import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 import {ChatThreadView} from "./chat-thread-view";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 
+import '@vaadin/grid/theme/lumo/vaadin-grid.js';
+import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
+
 
 import {
   ActionHashB64,
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
-  EntryHashB64,
 } from "@holochain/client";
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
 import {
   AppletId,
   AppletInfo,
-  Hrl, weClientContext,
+  weClientContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import {consume} from "@lit-labs/context";
+import {consume, createContext} from "@lit-labs/context";
 import {shellBarStyleTemplate} from "../styles";
 
 import {AppletThreadsTree} from "./applet-threads-tree";
@@ -85,6 +88,15 @@ import  "./mentions-notification-list";
 import "./input-bar";
 import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globalProfilesContext} from "../contexts";
+import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
+import {FilesDvm} from "@ddd-qc/files";
+import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
+import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
+
+// HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
+const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
+
+console.log("FILES_CELL_NAME", FILES_CELL_NAME);
 
 
 /**
@@ -128,6 +140,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   @consume({ context: globalProfilesContext, subscribe: true })
   _profilesZvm!: ProfilesZvm;
+
+  @consume({ context: createContext<FilesDvm>('dvm/' + FILES_CELL_NAME), subscribe: true })
+  _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServices;
@@ -412,6 +427,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
+  @state() private _hideFiles = true;
 
   /** */
   render() {
@@ -465,6 +481,31 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     }
     );
     console.log("appletOptions", appletOptions);
+
+
+    let fileTable = html``;
+    if (!this._hideFiles) {
+      const publicItems = Object.entries(this._filesDvm.deliveryZvm.perspective.publicParcels)
+          .map(([ppEh, [description, timestamp, author]]) => {
+            //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
+            const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests[ppEh];
+            return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
+          });
+      console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
+      console.log("dFiles filesDvm cell", this._filesDvm.cell);
+      fileTable = html`
+        <cell-context .cell=${this._filesDvm.cell}>
+            <h2>Public Files</h2>
+            <button @click=${(e) => {
+                const storeDialogElem = this.shadowRoot.querySelector("store-dialog") as StoreDialog;
+                storeDialogElem.open(false);
+            }}>Add Public file</button>
+            <store-dialog></store-dialog>        
+            <file-table .items=${publicItems}></file-table>
+            <activity-timeline></activity-timeline>
+        </cell-context>          
+      `;
+    }
 
     /** Render all */
     return html`
@@ -533,7 +574,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                 design="Transparent" icon="action-settings" tooltip="Edit profile"
                                 @click=${() => this.profileDialogElem.show()}
                     ></ui5-button>
-                    <!-- <ui5-button style="margin-top:10px;"
+                    <ui5-button style="margin-top:10px;"
+                                design="Transparent" icon="documents" tooltip="Refresh"
+                                @click=${() => {this._hideFiles = !this._hideFiles;}}></ui5-button> 
+                  <!-- <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="synchronize" tooltip="Refresh"
                                 @click=${this.refresh}></ui5-button>  -->                  
                 </div>
@@ -569,6 +613,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <div id="lowerSide">
                 <div id="centerSide">
                     ${centerSide}
+                    ${fileTable}
                 </div>
                 <div id="commentSide"
                      style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
@@ -586,13 +631,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
          <!-- DIALOGS -->
         <!-- ProfileDialog -->
         <ui5-dialog id="profile-dialog" header-text="Edit Profile">
-            <edit-profile
+            <threads-edit-profile
                     allowCancel
                     .profile="${this._myProfile}"
                     .saveProfileLabel= ${'Edit Profile'}
                     @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
                     @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
-            ></edit-profile>
+            ></threads-edit-profile>
         </ui5-dialog>
         <!-- CreateTopicDialog -->
         <ui5-dialog id="create-topic-dialog" header-text="Create Topic">
