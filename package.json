@@ -95,7 +95,7 @@
     "@ddd-qc/lit-happ": "=0.19.19",
     "@ddd-qc/we-utils": "=0.19.19",
     "@ddd-qc/profiles-dvm": "=0.19.20",
-    "@ddd-qc/files": "=0.1.0",
+    "@ddd-qc/files": "=0.1.1",
     "@ddd-qc/path-explorer": "0.2.0",
     "@ddd-qc/delivery": "=0.7.9",
     "@holochain-open-dev/core-types": "0.6.3",

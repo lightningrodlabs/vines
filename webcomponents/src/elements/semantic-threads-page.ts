@@ -247,7 +247,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
-    console.log("<semantic-threads-page> firstUpdated() _appletInfos", this.appletId);
+    console.log("<semantic-threads-page> firstUpdated() appletId", this.appletId);
 
     /** Generate test data */
     if (!this.appletId) {
@@ -264,10 +264,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** Grab all AppletIds */
     if (this.weServices) {
+      console.log("<semantic-threads-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
       const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
+      console.log("<semantic-threads-page> appletIds", appletIds);
       for (const appletId of appletIds) {
         const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
-        console.log("_appletInfos", appletId, appletInfo);
+        console.log("<semantic-threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
         this._appletInfos[appletId] = appletInfo;
       }
     }

@@ -24,6 +24,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
       async create(attachToHrl: Hrl) {
         console.log("Threads/attachmentTypes/thread: CREATE", attachToHrl);
         const entryLocInfo = await weServices.entryInfo(attachToHrl);
+        console.log("Threads/attachmentTypes/thread: entryLocInfo", entryLocInfo);
         const subjectName = entryLocInfo.entryInfo.name;
         //const subjectName = "FIXME";
 
@@ -58,7 +59,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
               subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
             },
             //appletHash,
-            appletId: encodeHashToBase64(appletHash),
+            appletId: encodeHashToBase64(entryLocInfo.appletHash),
             dnaHash: attachToHrl[0],
           };
           console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", input);
