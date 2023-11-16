@@ -30,7 +30,7 @@ import {
 } from "@threads/elements";
 
 import {HC_ADMIN_PORT, HC_APP_PORT, ALLOW_WE} from "./globals"
-import {ContextProvider} from "@lit-labs/context";
+import {ContextProvider} from "@lit/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";

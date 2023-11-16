@@ -27,7 +27,7 @@
     "@ui5/webcomponents": "=1.13.3",
     "@ui5/webcomponents-fiori": "=1.13.3",
     "@ui5/webcomponents-icons": "=1.13.3",
-    "@shoelace-style/shoelace": "^2.4.0",
+    "@shoelace-style/shoelace": "2.11.2",
     "eslint-plugin-html": "^7.1.0"
   }
 }

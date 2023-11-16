@@ -28,9 +28,9 @@ export async function createThreadsApplet(
     throw Error("cross-applet-view not implemented by Threads");
   }
 
-  const appletViewInfo = renderInfo as AppletViewInfo;
+  const appletViewInfo = renderInfo as unknown as AppletViewInfo;
 
-  console.log("createThreadsApplet() client", appletViewInfo.appletClient);
+  console.log("createThreadsApplet()         client", appletViewInfo.appletClient);
   console.log("createThreadsApplet() thisAppletHash", appletViewInfo.appletHash);
   console.log("createThreadsApplet()   thisAppletId", encodeHashToBase64(appletViewInfo.appletHash));
 

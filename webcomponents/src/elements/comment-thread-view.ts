@@ -6,7 +6,7 @@ import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspec
 import {parseMentions} from "../utils";
 
 import {ActionHashB64} from "@holochain/client";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -17,7 +17,7 @@ import "@ui5/webcomponents/dist/List.js"
 
 
 import "./input-bar";
-import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globalProfilesContext} from "../contexts";
 
 

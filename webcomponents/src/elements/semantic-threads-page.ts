@@ -78,7 +78,7 @@ import {
   weClientContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import {consume, createContext} from "@lit-labs/context";
+import {consume, createContext} from "@lit/context";
 import {shellBarStyleTemplate} from "../styles";
 
 import {AppletThreadsTree} from "./applet-threads-tree";
@@ -86,7 +86,7 @@ import {CommentThreadView} from "./comment-thread-view";
 import {SemanticTopicsView} from "./semantic-topics-view";
 import  "./mentions-notification-list";
 import "./input-bar";
-import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globalProfilesContext} from "../contexts";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm} from "@ddd-qc/files";

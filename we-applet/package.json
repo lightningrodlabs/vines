@@ -29,7 +29,7 @@
     "new-port-cli": "^1.0.0",
     "rollup": "^2.56.2",
     "tslib": "^2.4.0",
-    "typescript": "^4.9.0"
+    "typescript": "~5.2.0"
   },
   "dependencies": {
     "@threads/app": "file:../webapp",

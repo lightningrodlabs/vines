@@ -4,10 +4,10 @@ import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {consume} from "@lit-labs/context";
+import {consume} from "@lit/context";
 import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
-import {getInitials, ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globalProfilesContext} from "../contexts";
 
 
