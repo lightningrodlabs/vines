@@ -36,6 +36,9 @@ jobs:
       - name: Build happ
         shell: bash
         run: |
+          echo $CARGO_NET_GIT_FETCH_WITH_CLI
+          set CARGO_NET_GIT_FETCH_WITH_CLI=1
+          echo $CARGO_NET_GIT_FETCH_WITH_CLI
           npm run build:happ
       # Build webapp
       - name: Build webapp
