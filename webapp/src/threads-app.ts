@@ -26,7 +26,7 @@ import {
   ThreadsDvm,
   THREADS_DEFAULT_ROLE_NAME,
   ThreadsEntryType,
-  THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
+  THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME, globaFilesContext,
 } from "@threads/elements";
 
 import {HC_ADMIN_PORT, HC_APP_PORT, ALLOW_WE} from "./globals"
@@ -77,6 +77,7 @@ export class ThreadsApp extends HappElement {
 
   /** -- We-applet specifics -- */
 
+  protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   private _profilesDvm?: ProfilesDvm;
   protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
@@ -195,10 +196,10 @@ export class ThreadsApp extends HappElement {
       await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.threadsDvm.cell.agentPubKey);
     }
 
-    ///** Provide Files as context */
+    /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();
-    //console.log(`\t\tProviding context "${filesContext}" | in host `, this);
-    //this._profilesProvider = new ContextProvider(this, filesContext, this.filesDvm);
+    console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
+    this._filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
 
 

@@ -134,6 +134,11 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
+export interface AddAnyAsBead {
+  ah: ActionHash
+  forProtocolAh: ActionHash
+}
+
 export interface GetLatestBeadsInput {
   ppAh: ActionHash
   beginTime?: Timestamp

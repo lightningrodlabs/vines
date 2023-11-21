@@ -21,6 +21,15 @@ export declare type AnyLinkableHash = HoloHash;
 export declare type AnyLinkableHashB64 = HoloHashB64;
 export const HOLOCHAIN_EPOCH = 1640995200000000;
 
+/** */
+export interface BeadsLinkInfo {
+  creationTime: Timestamp,
+  author: AgentPubKeyB64,
+  beadAh: ActionHashB64,
+  beadType: string,
+  extraInfo: string,
+}
+
 
 /** */
 export interface TextMessageInfo {
@@ -54,6 +63,8 @@ export interface ThreadsPerspective {
   threads: Dictionary<Thread>,
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
+  /** Ah -> BeadLinkMaterialized */
+  anyBeads: Dictionary<BeadsLinkInfo>,
 
   /**  -- Applet threads  -- */
   /** AppletId -> PathEntryHash -> subjectType */
