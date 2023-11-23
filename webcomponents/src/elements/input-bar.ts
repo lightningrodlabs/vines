@@ -46,6 +46,9 @@ export class InputBar extends LitElement {
     return html`
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
+            <ui5-button design="Positive" icon="add" @click=${(e) => {
+                this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
+            }}></ui5-button>
             <ui5-input id="textMessageInput" type="Text" placeholder="Message #${this.topic}"
                        show-clear-icon show-suggestions
 

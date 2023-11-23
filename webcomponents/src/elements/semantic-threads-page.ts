@@ -19,6 +19,7 @@ import "@ui5/webcomponents/dist/Button.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
+import "@ui5/webcomponents/dist/List.js";
 import "@ui5/webcomponents/dist/Option.js";
 import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/Dialog.js";
@@ -37,12 +38,18 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
+import "@ui5/webcomponents-icons/dist/attachment-text-file.js"
+import "@ui5/webcomponents-icons/dist/attachment-photo.js"
+import "@ui5/webcomponents-icons/dist/attachment-video.js"
+import "@ui5/webcomponents-icons/dist/attachment-audio.js"
+import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/document.js"
+import "@ui5/webcomponents-icons/dist/document-text.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
@@ -52,6 +59,7 @@ import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/process.js"
+import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
@@ -436,12 +444,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickAddFile() {
-    this.uploadFile();
-  }
-
-
-  /** */
   uploadFile() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -483,9 +485,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
       centerSide = html`
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
-          <ui5-button design="Positive" icon="add" @click=${(e) => {this.onClickAddFile()}}></ui5-button>
           <threads-input-bar .profilesZvm=${this._profilesZvm} .topic=${topic}
-                             @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}></threads-input-bar>
+                             @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
+                             @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
+          ></threads-input-bar>
       `;
     }
 

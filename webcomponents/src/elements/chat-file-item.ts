@@ -3,14 +3,12 @@ import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
-import {truncate} from "../utils";
 import {consume} from "@lit/context";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globaFilesContext, globalProfilesContext} from "../contexts";
-import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
-//import {ChatThreadView} from "./chat-thread-view";
-
+import {FilesDvm, kind2Type, prettyFileSize} from "@ddd-qc/files";
+import {type2ui5Icon} from "../utils";
 
 /**
  * @element
@@ -170,12 +168,12 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
                     <abbr title=${fileAuthor}><span><b>${agent.nickname}</b></span></abbr>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
-                <div class="chatMsg">${txt}</div>
-              <ui5-button icon="document" accessible-name=${fileDesc.name}
-                          @click="${(e) => this.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}"
-              >
-                ${txt}
-              </ui5-button>
+                <ui5-list id="fileList">
+                  <ui5-li id="fileLi" icon=${type2ui5Icon(kind2Type(fileDesc.kind_info))} description=${prettyFileSize(fileDesc.size)}
+                          @click=${(e) => this.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}>
+                      ${fileDesc.name}
+                  </ui5-li>
+                </ui5-list>
             </div>
             ${commentButton}
         </div>
@@ -187,24 +185,38 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
+        #fileList {
+          min-width: 350px;
+          border: 1px solid #282727;
+          border-radius: 3px;
+          margin: 10px 5px 10px 5px;
+        }
+
+        #fileLi {
+          background: rgb(230, 237, 249);
+        }        
+        
         .chatItem {
-          display: flex; 
+          display: flex;
           flex-direction: row;
           min-height: 55px;
           margin: 5px 5px 10px 5px;
         }
+
         .chatAvatar {
           margin-right: 5px;
           min-width: 48px;
         }
+
         .chatDate {
           margin: 0px 0px 0px 5px;
           font-size: smaller;
           color: gray;
         }
+
         .chatMsg {
           margin: 5px 5px 5px 5px;
-        }        
+        }
       `,];
   }
 }

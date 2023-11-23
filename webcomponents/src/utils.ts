@@ -1,6 +1,26 @@
 import {ActionHashB64} from "@holochain/client";
 import {AnyLinkableHashB64, BeadLinkMaterialized} from "./viewModels/threads.perspective";
 import {html, TemplateResult} from "lit";
+import {FileType} from "@ddd-qc/files";
+
+
+/** */
+export function type2ui5Icon(type: FileType): string {
+  switch (type) {
+    case FileType.Document: return "document";
+    case FileType.Pdf: return "pdf-attachment";
+    case FileType.Text: return "document-text";
+    case FileType.Font: return "attachment-text-file";
+    case FileType.Image: return "attachment-photo";
+    case FileType.Video: return "attachment-video";
+    case FileType.Audio: return "attachment-audio";
+    case FileType.Zip: return "attachment-zip-file";
+    case FileType.Binary: return "document";
+    case FileType.Other: return "document";
+    default: return "document";
+  }
+  return "document";
+}
 
 
 /** */
