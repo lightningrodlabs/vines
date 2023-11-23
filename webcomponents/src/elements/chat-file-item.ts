@@ -66,7 +66,7 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    //console.log("<chat-file-item>.render()", this.hash);
+    console.log("<chat-file-item>.render()", this.hash, this._dataHash);
     if (this.hash == "") {
       return html`
           <div>No message found</div>`;
@@ -143,7 +143,14 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
     const txt = `${fileDesc.name} (${prettyFileSize(fileDesc.size)})`
     const fileType = kind2Type(fileDesc.kind_info);
 
-    let item =html`Loading image...`;
+    //let item =html`<ui5-busy-indicator size="Medium" active style="margin:10px; /*width:50%; height:50%;*/"></ui5-busy-indicator>`;
+    let item = html`
+        <ui5-list id="fileList">
+          <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
+                  @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}>
+            ${fileDesc.name}
+          </ui5-li>
+        </ui5-list>`;
     let maybeCachedData = undefined;
     if (fileType == FileType.Image) {
       maybeCachedData = null;
@@ -165,14 +172,6 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
                          @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}
         >`;
       }
-    } else {
-      item = html`
-        <ui5-list id="fileList">
-          <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}>
-            ${fileDesc.name}
-          </ui5-li>
-        </ui5-list>`;
     }
 
     /** render all */
@@ -238,6 +237,7 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
         .thumb {
           max-width: 50%;
           cursor: pointer;
+          margin: 10px; 
         }
       `,];
   }
