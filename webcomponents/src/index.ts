@@ -2,6 +2,7 @@ export * from './contexts';
 
 export * from './elements/chat-header';
 export * from './elements/chat-message-item';
+export * from './elements/chat-file-item';
 export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';
 export * from './elements/applet-threads-tree';

@@ -4,7 +4,7 @@ mod get_latest_beads;
 mod get_all_beads;
 mod index_bead;
 mod mentions;
-mod add_any_as_bead;
+mod entry_bead;
 
 pub use index_bead::*;
 pub use text_message::*;

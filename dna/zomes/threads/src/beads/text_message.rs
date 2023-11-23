@@ -27,10 +27,10 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
       //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
       //let mut msg: String = "<unknown type>".to_string();
       let Ok(typed) = get_typed_from_record::<TextMessage>(record)
-      else { return zome_error!("get_text_message(): Entry not a TextMessage") };
+        else { return error("get_text_message(): Entry not a TextMessage") };
       Ok((action.timestamp(), action.author().to_owned(), typed))
     }
-    None => zome_error!("get_text_message(): Entry not found"),
+    None => error("get_text_message(): Entry not found"),
   };
   //let fn_end = sys_time()?;
   //debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);

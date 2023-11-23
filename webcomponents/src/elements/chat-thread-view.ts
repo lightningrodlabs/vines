@@ -8,6 +8,7 @@ import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.pers
 import {ChatMessageItem} from "./chat-message-item";
 import {ChatHeader} from "./chat-header";
 import {BeadLink} from "../bindings/threads.types";
+import {beadToChatItem} from "../utils";
 
 
 /**
@@ -242,7 +243,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
               <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>
               <hr style="border: 1px solid red; margin-left:5px;margin-right:10px;"/>`
         }
-        return html`<chat-message-item hash="${blm.beadAh}"></chat-message-item>${hr}`;
+        console.log("<chat-thread-view> blm.beadType ", blm.beadType);
+        const chatItem = beadToChatItem(blm);
+        return html`${chatItem}${hr}`;
       }
     );
 

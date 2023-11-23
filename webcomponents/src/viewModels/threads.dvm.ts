@@ -107,7 +107,9 @@ export class ThreadsDvm extends DnaViewModel {
         const [beadAh, beadType, _beadData] = signalPayload.dm.content;
         console.log("Signal is NewBead of type", beadType);
         if (beadType == "TextMessage") {
-          this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
+          /*await */this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
+        } else {
+          /*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
         }
         break;
     }

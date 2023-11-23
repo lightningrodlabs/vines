@@ -10,6 +10,7 @@ import {
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
+  EntryBead,
   GlobalLastProbeLog,
   ParticipationProtocol,
   Subject, TextMessage,
@@ -22,12 +23,10 @@ export declare type AnyLinkableHashB64 = HoloHashB64;
 export const HOLOCHAIN_EPOCH = 1640995200000000;
 
 /** */
-export interface BeadsLinkInfo {
+export interface EntryBeadInfo {
   creationTime: Timestamp,
   author: AgentPubKeyB64,
-  beadAh: ActionHashB64,
-  beadType: string,
-  extraInfo: string,
+  entryBead: EntryBead,
 }
 
 
@@ -64,7 +63,7 @@ export interface ThreadsPerspective {
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
   /** Ah -> BeadLinkMaterialized */
-  anyBeads: Dictionary<BeadsLinkInfo>,
+  entryBeads: Dictionary<EntryBeadInfo>,
 
   /**  -- Applet threads  -- */
   /** AppletId -> PathEntryHash -> subjectType */

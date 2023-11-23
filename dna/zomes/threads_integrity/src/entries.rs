@@ -8,6 +8,17 @@ pub struct Bead {
     pub maybe_reply_of_ah: Option<ActionHash>,
 }
 
+///
+#[hdk_entry_helper]
+#[derive(Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct EntryBead {
+    pub bead: Bead,
+    pub from_role: String,
+    pub from_zome: String,
+    pub sub_type: String,
+    pub eh: EntryHash,
+}
 
 ///
 #[hdk_entry_helper]

@@ -134,9 +134,11 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
-export interface AddAnyAsBead {
-  ah: ActionHash
+export interface AddEntryAsBead {
+  eh: EntryHash
   forProtocolAh: ActionHash
+  roleName: string
+  zomeName: string
 }
 
 export interface GetLatestBeadsInput {
@@ -240,6 +242,15 @@ export interface Bead {
 }
 
 /**  */
+export interface EntryBead {
+  bead: Bead
+  fromRole: string
+  fromZome: string
+  subType: string
+  eh: EntryHash
+}
+
+/**  */
 export interface TextMessage {
   value: string
   bead: Bead
@@ -298,19 +309,21 @@ export const PP_ITEM_TYPE = "__protocol";
  * -------------------------------------------------------------------------------------------------
  */
 export enum ThreadsEntryType {
+	EntryBead = 'EntryBead',
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
 	TextMessage = 'TextMessage',
 	GlobalProbeLog = 'GlobalProbeLog',
 	ThreadProbeLog = 'ThreadProbeLog',
 }
+export type ThreadsEntryVariantEntryBead = {EntryBead: EntryBead}
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
 export type ThreadsEntryVariantTextMessage = {TextMessage: TextMessage}
 export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
 export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
 export type ThreadsEntry = 
- | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
+ | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
 /**
  * -------------------------------------------------------------------------------------------------

@@ -1,5 +1,16 @@
 import {ActionHashB64} from "@holochain/client";
-import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
+import {AnyLinkableHashB64, BeadLinkMaterialized} from "./viewModels/threads.perspective";
+import {html, TemplateResult} from "lit";
+
+
+/** */
+export function beadToChatItem(blm: BeadLinkMaterialized): TemplateResult<1> {
+  switch (blm.beadType) {
+    case "TextMessage": return html`<chat-message-item hash="${blm.beadAh}"></chat-message-item>`;
+    default:
+      return html`<chat-file-item hash="${blm.beadAh}"></chat-file-item>`;
+  }
+}
 
 
 /** Truncate string to given length and add ellipse */

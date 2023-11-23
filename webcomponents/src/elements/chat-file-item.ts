@@ -2,13 +2,13 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64} from "@holochain/client";
+import {ActionHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 import {truncate} from "../utils";
 import {consume} from "@lit/context";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globaFilesContext, globalProfilesContext} from "../contexts";
-import {FilesDvm} from "@ddd-qc/files";
+import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 //import {ChatThreadView} from "./chat-thread-view";
 
 
@@ -65,6 +65,20 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+  /** */
+  async downloadFile(manifestEh: EntryHashB64): Promise<void> {
+    console.log("downloadFile()", manifestEh);
+    const file = await this._filesDvm.localParcel2File(manifestEh);
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name || 'download';
+    a.addEventListener('click', () => {}, false);
+    a.click();
+  }
+
+
   /** */
   render() {
     //console.log("<chat-file-item>.render()", this.hash);
@@ -73,12 +87,12 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
           <div>No message found</div>`;
     }
 
-    const anyBead = this.threadsPerspective.anyBeads[this.hash];
-    if (!anyBead) {
+    const entryBeadInfo = this.threadsPerspective.entryBeads[this.hash];
+    if (!entryBeadInfo) {
       // FIXME Spinner
       return html `<div>Loading ...</div>`;
     }
-    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[anyBead.extraInfo];
+    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[encodeHashToBase64(entryBeadInfo.entryBead.eh)];
     if (!fileTuple) {
       // FIXME Spinner
       return html `<div>Loading 2 ...</div>`;
@@ -120,7 +134,7 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
     //           </ui5-badge>`;
     // }
 
-    const date = new Date(anyBead.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date = new Date(entryBeadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
@@ -139,6 +153,8 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
 
     const id = "chat-item__" + this.hash;
 
+    const txt = `${fileDesc.name} (${prettyFileSize(fileDesc.size)})`
+
     /** render all */
     return html`
         <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
@@ -154,7 +170,12 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
                     <abbr title=${fileAuthor}><span><b>${agent.nickname}</b></span></abbr>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
-                <div class="chatMsg">${fileDesc.name} (${fileDesc.size} bytes)</div>
+                <div class="chatMsg">${txt}</div>
+              <ui5-button icon="document" accessible-name=${fileDesc.name}
+                          @click="${(e) => this.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}"
+              >
+                ${txt}
+              </ui5-button>
             </div>
             ${commentButton}
         </div>

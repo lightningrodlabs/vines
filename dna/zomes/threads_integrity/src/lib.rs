@@ -36,6 +36,8 @@ pub const PP_ITEM_TYPE: &'static str = "__protocol";
 #[unit_enum(ThreadsEntryTypes)]
 pub enum ThreadsEntry {
     #[entry_def(required_validations = 3, visibility = "public")]
+    EntryBead(EntryBead),
+    #[entry_def(required_validations = 3, visibility = "public")]
     SemanticTopic(SemanticTopic),
     #[entry_def(required_validations = 3, visibility = "public")]
     ParticipationProtocol(ParticipationProtocol),

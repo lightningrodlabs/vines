@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement, HAPP_ENV, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {delay, DnaElement, HAPP_ENV, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {CommentRequest, parseMentions} from "../utils";
@@ -42,6 +42,7 @@ import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
+import "@ui5/webcomponents-icons/dist/document.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
@@ -68,7 +69,7 @@ import {
   ActionHashB64,
   decodeHashFromBase64,
   DnaHashB64,
-  encodeHashToBase64,
+  encodeHashToBase64, EntryHashB64,
 } from "@holochain/client";
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
@@ -89,9 +90,10 @@ import "./input-bar";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globalProfilesContext} from "../contexts";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
-import {FilesDvm} from "@ddd-qc/files";
+import {FilesDvm, splitFile, SplitObject} from "@ddd-qc/files";
 import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
+import {DeliveryPerspective} from "@ddd-qc/delivery";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -131,12 +133,13 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   @state() private _appletToShow: DnaHashB64 | null = null;
 
 
+  @state() private _splitObj?: SplitObject;
+
   @property() appletId: AppletId;
 
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
-
 
   @consume({ context: globalProfilesContext, subscribe: true })
   _profilesZvm!: ProfilesZvm;
@@ -431,6 +434,36 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _hideFiles = true;
 
+
+  /** */
+  onClickAddFile() {
+    this.uploadFile();
+  }
+
+
+  /** */
+  uploadFile() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async (e:any) => {
+      console.log("target uplaod file", e);
+      const file = e.target.files[0];
+      // if (file.size > this._dvm.dnaProperties.maxParcelSize) {
+      //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
+      //   return;
+      // }
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
+        console.log("<semantic-threads-page> startPublishFile callback", eh);
+        await delay(100); // Wait for Files DVM to be updated before publishing EntryBead so UI can display it.
+        /*let ah =*/ this._dvm.threadsZvm.publishEntryBead(eh, this._selectedThreadHash);
+        this._splitObj = undefined;
+      });
+      console.log("uploadFile()", this._splitObj);
+    }
+    input.click();
+  }
+
+
   /** */
   render() {
     console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash, this._profilesZvm);
@@ -450,6 +483,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
       centerSide = html`
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
+          <ui5-button design="Positive" icon="add" @click=${(e) => {this.onClickAddFile()}}></ui5-button>
           <threads-input-bar .profilesZvm=${this._profilesZvm} .topic=${topic}
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}></threads-input-bar>
       `;
