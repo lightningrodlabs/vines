@@ -1,5 +1,5 @@
-import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {css, html} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
@@ -7,7 +7,7 @@ import {consume} from "@lit/context";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {globaFilesContext, globalProfilesContext} from "../contexts";
-import {FilesDvm, kind2Type, prettyFileSize} from "@ddd-qc/files";
+import {FileHash, FilesDvm, FileType, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
 
 /**
@@ -23,7 +23,8 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of File bead to display */
-  @property() hash: ActionHashB64 = ''
+  @property() hash: ActionHashB64 = '' // BeadAh
+  @state() private _dataHash?: FileHash;
 
   @consume({ context: globalProfilesContext, subscribe: true })
   _profilesZvm!: ProfilesZvm;
@@ -63,20 +64,6 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-
-  /** */
-  async downloadFile(manifestEh: EntryHashB64): Promise<void> {
-    console.log("downloadFile()", manifestEh);
-    const file = await this._filesDvm.localParcel2File(manifestEh);
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name || 'download';
-    a.addEventListener('click', () => {}, false);
-    a.click();
-  }
-
-
   /** */
   render() {
     //console.log("<chat-file-item>.render()", this.hash);
@@ -90,7 +77,8 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
       // FIXME Spinner
       return html `<div>Loading ...</div>`;
     }
-    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[encodeHashToBase64(entryBeadInfo.entryBead.eh)];
+    const manifestEh = encodeHashToBase64(entryBeadInfo.entryBead.eh);
+    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
     if (!fileTuple) {
       /** auto refresh since we can't observe filesDvm */
       delay(100).then(() => {this.requestUpdate()});
@@ -153,6 +141,39 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
     const id = "chat-item__" + this.hash;
 
     const txt = `${fileDesc.name} (${prettyFileSize(fileDesc.size)})`
+    const fileType = kind2Type(fileDesc.kind_info);
+
+    let item =html`Loading image...`;
+    let maybeCachedData = undefined;
+    if (fileType == FileType.Image) {
+      maybeCachedData = null;
+      if (!this._dataHash) {
+        this._filesDvm.getFile(manifestEh).then(([manifest, data]) => {
+          const file = this._filesDvm.data2File(manifest, data);
+          this._filesDvm.cacheFile(file);
+          this._dataHash = manifest.data_hash;
+          //this.requestUpdate();
+        });
+      } else {
+        maybeCachedData = this._filesDvm.getFileFromCache(this._dataHash);
+        if (!maybeCachedData) {
+          console.warn("File cache not found", this._dataHash);
+        }
+      }
+      if (maybeCachedData) {
+        item = html`<img class="thumb" src=${"data:image/png;base64," + maybeCachedData}
+                         @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}
+        >`;
+      }
+    } else {
+      item = html`
+        <ui5-list id="fileList">
+          <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
+                  @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}>
+            ${fileDesc.name}
+          </ui5-li>
+        </ui5-list>`;
+    }
 
     /** render all */
     return html`
@@ -169,12 +190,7 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
                     <abbr title=${fileAuthor}><span><b>${agent.nickname}</b></span></abbr>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
-                <ui5-list id="fileList">
-                  <ui5-li id="fileLi" icon=${type2ui5Icon(kind2Type(fileDesc.kind_info))} description=${prettyFileSize(fileDesc.size)}
-                          @click=${(e) => this.downloadFile(encodeHashToBase64(entryBeadInfo.entryBead.eh))}>
-                      ${fileDesc.name}
-                  </ui5-li>
-                </ui5-list>
+              ${item}
             </div>
             ${commentButton}
         </div>
@@ -217,6 +233,11 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
 
         .chatMsg {
           margin: 5px 5px 5px 5px;
+        }
+        
+        .thumb {
+          max-width: 50%;
+          cursor: pointer;
         }
       `,];
   }
