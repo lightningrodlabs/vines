@@ -25,6 +25,7 @@ import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Popover.js";
+import "@ui5/webcomponents/dist/ProgressIndicator.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
@@ -456,7 +457,6 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<semantic-threads-page> startPublishFile callback", eh);
-        await delay(100); // Wait for Files DVM to be updated before publishing EntryBead so UI can display it.
         /*let ah =*/ this._dvm.threadsZvm.publishEntryBead(eh, this._selectedThreadHash);
         this._splitObj = undefined;
       });
@@ -483,12 +483,27 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       const topic = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
       threadTitle = `# ${topic}: ${thread.pp.purpose}`;
 
+      /** Check uploading state */
+      let pct = 100;
+      if (this._splitObj) {
+        /** auto refresh since we can't observe filesDvm */
+        delay(500).then(() => {this.requestUpdate()});
+        pct = Math.ceil(this._filesDvm.perspective.uploadState.chunks.length / this._filesDvm.perspective.uploadState.splitObj.numChunks * 100)
+      }
+
       centerSide = html`
           <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
+          ${this._splitObj? html`
+            <div id="uploadCard">
+              <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
+              <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
+            </div>
+          ` : html`
           <threads-input-bar .profilesZvm=${this._profilesZvm} .topic=${topic}
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
                              @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
-          ></threads-input-bar>
+          ></threads-input-bar>`
+          }
       `;
     }
 
@@ -815,6 +830,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           background: #FBFCFD;
           display: flex;
           flex-direction: column;
+          margin-bottom: 5px;
         }
 
         #topicBar {
@@ -850,7 +866,17 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
           font-weight: bold;
         }
 
-
+        #uploadCard {
+          margin:auto;
+          /*margin-left:10px;*/          
+          min-width: 350px;
+          width: 90%;
+          padding: 5px;
+          display: flex;
+          flex-direction: column;
+          border:1px solid black;
+          background: beige;
+        }
       `,
 
     ];

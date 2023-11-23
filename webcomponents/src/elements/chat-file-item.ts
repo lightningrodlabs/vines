@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
 import {consume} from "@lit/context";
@@ -92,8 +92,9 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
     }
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[encodeHashToBase64(entryBeadInfo.entryBead.eh)];
     if (!fileTuple) {
-      // FIXME Spinner
-      return html `<div>Loading 2 ...</div>`;
+      /** auto refresh since we can't observe filesDvm */
+      delay(100).then(() => {this.requestUpdate()});
+      return html `<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const fileDesc = fileTuple[0];
     const fileAuthor = fileTuple[2];
