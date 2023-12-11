@@ -2,10 +2,8 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64, EntryHashB64} from "@holochain/client";
-import {consume} from "@lit/context";
-import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
-import {globalProfilesContext} from "../contexts";
 //import {ChatThreadView} from "./chat-thread-view";
 
 
@@ -22,16 +20,11 @@ export class ImageMessageItem extends DnaElement<unknown, FilesDvm> {
   /** -- Properties -- */
 
   /** Hash of TextMessage to display */
-  @property() hash: EntryHashB64 = ''
+  @property() hash: EntryHashB64 = '';
 
-
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
-
+  @property() profile?: ProfileMat;
 
   @state() private _isHovered = false;
-
-
 
 
   /** */
@@ -86,16 +79,11 @@ export class ImageMessageItem extends DnaElement<unknown, FilesDvm> {
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    if (this._profilesZvm) {
-      const maybeAgent = this._profilesZvm.perspective.profiles[author];
-      if (maybeAgent) {
-        agent = maybeAgent;
-      } else {
-        console.log("Profile not found for agent", author, this._profilesZvm.perspective.profiles)
-        this._profilesZvm.probeProfile(author)
-        //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-      }
+    const maybeAgent = this.profile;
+    if (maybeAgent) {
+      agent = maybeAgent;
     }
+
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 

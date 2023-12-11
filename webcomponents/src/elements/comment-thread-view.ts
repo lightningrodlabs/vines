@@ -6,7 +6,6 @@ import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspec
 import {parseMentions} from "../utils";
 
 import {ActionHashB64} from "@holochain/client";
-import {consume} from "@lit/context";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -18,7 +17,6 @@ import "@ui5/webcomponents/dist/List.js"
 
 import "./input-bar";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {globalProfilesContext} from "../contexts";
 
 
 /**
@@ -27,13 +25,11 @@ import {globalProfilesContext} from "../contexts";
 @customElement("comment-thread-view")
 export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
+  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     console.log("<comment-thread-view>.ctor()", this.threadHash)
   }
-
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
 
 
   /** -- Properties -- */
@@ -156,10 +152,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
     let mentionedAgents = undefined;
-    if (this._profilesZvm) {
-      const mentions = parseMentions(inputText);
-      mentionedAgents = this._profilesZvm.findProfiles(mentions);
-    }
+
+    const mentions = parseMentions(inputText);
+    mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
 
     const path_str = await this._dvm.publishTextMessage(inputText, this.threadHash, mentionedAgents);
     console.log("onCreateComment() res:", path_str);
@@ -213,12 +208,12 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
         let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-        if (this._profilesZvm) {
-          let maybeAgent = this._profilesZvm.perspective.profiles[info.author];
-          if (maybeAgent) {
-            agent = maybeAgent;
-          }
+
+        let maybeAgent = this._dvm.profilesZvm.perspective.profiles[info.author];
+        if (maybeAgent) {
+          agent = maybeAgent;
         }
+
         const isNew = thread.latestProbeLogTime < info.creationTime;
         console.log("Is msg new?", isNew, thread.latestProbeLogTime, info.creationTime);
 
@@ -260,7 +255,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     let maybeInput = html``;
     if (this.showInput) {
       maybeInput = html`
-          <threads-input-bar .topic=${subjectName} .profilesZvm=${this._profilesZvm}
+          <threads-input-bar .topic=${subjectName} .profilesZvm=${this._dvm.profilesZvm}
                               style="border:none;width:100%;"
                               @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></threads-input-bar>`
     }

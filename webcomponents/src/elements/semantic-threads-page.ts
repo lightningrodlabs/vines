@@ -78,14 +78,13 @@ import {
   ActionHashB64,
   decodeHashFromBase64,
   DnaHashB64,
-  encodeHashToBase64, EntryHashB64,
+  encodeHashToBase64,
 } from "@holochain/client";
 import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
 import {
   AppletId,
   AppletInfo,
-  weClientContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {consume, createContext} from "@lit/context";
@@ -97,12 +96,12 @@ import {SemanticTopicsView} from "./semantic-topics-view";
 import  "./mentions-notification-list";
 import "./input-bar";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {globalProfilesContext} from "../contexts";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm, splitFile, SplitObject} from "@ddd-qc/files";
 import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
-import {DeliveryPerspective} from "@ddd-qc/delivery";
+import {msg} from "@lit/localize";
+import {weClientContext} from "../contexts";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -146,12 +145,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   @property() appletId: AppletId;
 
-
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
-
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
 
   @consume({ context: createContext<FilesDvm>('dvm/' + FILES_CELL_NAME), subscribe: true })
   _filesDvm!: FilesDvm;
@@ -225,13 +220,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     console.log("onCreateTextMessage", inputText)
 
     let mentionedAgents = undefined;
-    if (this._profilesZvm) {
-       const mentions = parseMentions(inputText);
-       console.log("parseMentions", mentions);
-       console.log("parseMentions reversed", this._profilesZvm.perspective.reversed);
-       mentionedAgents = this._profilesZvm.findProfiles(mentions);
-      console.log("parseMentions mentionedAgents", mentionedAgents);
-    }
+    const mentions = parseMentions(inputText);
+    console.log("parseMentions", mentions);
+    console.log("parseMentions reversed", this._dvm.profilesZvm.perspective.reversed);
+    mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
+    console.log("parseMentions mentionedAgents", mentionedAgents);
+
 
     let ah = await this._dvm.publishTextMessage(inputText, this._selectedThreadHash, mentionedAgents);
     console.log("onCreateTextMessage() res:", ah);
@@ -333,10 +327,10 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._profilesZvm.getProfile(this._dvm.cell.agentPubKey)) {
-        await this._profilesZvm.updateMyProfile({nickname, fields});
+      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentPubKey)) {
+        await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
-        await this._profilesZvm.createMyProfile({nickname, fields});
+        await this._dvm.profilesZvm.createMyProfile({nickname, fields});
       }
     } catch (e) {
       console.log("createMyProfile() failed");
@@ -349,9 +343,9 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   private async onProfileEdited(profile: ProfileMat) {
     console.log("onProfileEdited()", this._myProfile)
     try {
-      await this._profilesZvm.updateMyProfile(profile);
+      await this._dvm.profilesZvm.updateMyProfile(profile);
     } catch(e) {
-      await this._profilesZvm.createMyProfile(profile);
+      await this._dvm.profilesZvm.createMyProfile(profile);
       this._myProfile = profile;
     }
     this.profileDialogElem.close(false);
@@ -366,7 +360,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async pingActiveOthers() {
     //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
-    const currentPeers = this._dvm.allCurrentOthers(this._profilesZvm.getAgents());
+    const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.getAgents());
     await this._dvm.pingPeers(undefined, currentPeers);
     //}
   }
@@ -374,11 +368,8 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async pingAllOthers() {
-    if (!this._profilesZvm) {
-      return;
-    }
     //if (this._currentSpaceEh) {
-    const agents = this._profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
+    const agents = this._dvm.profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -468,13 +459,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash, this._profilesZvm);
-
-    if (!this._profilesZvm) {
-      console.error("this._profilesZvm not found");
-    } else {
-      this._myProfile = this._profilesZvm.getMyProfile();
-    }
+    console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
 
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     let threadTitle = "Threads";
@@ -499,7 +484,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
               <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
             </div>
           ` : html`
-          <threads-input-bar .profilesZvm=${this._profilesZvm} .topic=${topic}
+          <threads-input-bar .profilesZvm=${this._dvm.profilesZvm} .topic=${topic}
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
                              @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
           ></threads-input-bar>`
@@ -511,16 +496,15 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     /** This agent's profile info */
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
     let maybeAgent = undefined;
-    if (this._profilesZvm) {
       maybeAgent = this._myProfile;
       if (maybeAgent) {
         agent = maybeAgent;
       } else {
         //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-        this._profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
+        this._dvm.profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
         //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
       }
-    }
+
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 
@@ -590,12 +574,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                     console.log("createTopicDialogElem", this.createTopicDialogElem);
                                     this.createTopicDialogElem.show()
                                 }}>
-                        Add New Topic
+                        ${msg("Add New Topic")}
                     </ui5-button>
                     <ui5-button icon="save" design="Positive"
                                 style="margin:10px 30px 10px 30px;"
                                 @click=${this.onCommitBtn}>
-                        Mark all as read
+                       ${msg("Mark all as read")}
                     </ui5-button>
                     <hr style="width:100%;margin:0px;color:aliceblue;"/>
                 `}
@@ -688,8 +672,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
             <threads-edit-profile
                     allowCancel
                     .profile="${this._myProfile}"
-                    .saveProfileLabel= ${'Edit Profile'}
+                    .saveProfileLabel= ${msg('Edit Profile')}
                     @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
+                    @lang-selected=${(e: CustomEvent) => {
+                      console.log("set locale", e.detail);
+                      setLocale(e.detail)
+                    }}
                     @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
             ></threads-edit-profile>
         </ui5-dialog>

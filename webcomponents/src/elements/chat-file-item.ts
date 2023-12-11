@@ -2,11 +2,11 @@ import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64, encodeHashToBase64, EntryHashB64} from "@holochain/client";
+import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {consume} from "@lit/context";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {globaFilesContext, globalProfilesContext} from "../contexts";
+import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
+import {globaFilesContext} from "../contexts";
 import {FileHash, FilesDvm, FileType, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
 
@@ -25,9 +25,6 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of File bead to display */
   @property() hash: ActionHashB64 = '' // BeadAh
   @state() private _dataHash?: FileHash;
-
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
 
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -125,16 +122,16 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    if (this._profilesZvm) {
-      const maybeAgent = this._profilesZvm.perspective.profiles[fileAuthor];
+
+      const maybeAgent = this._dvm.profilesZvm.perspective.profiles[fileAuthor];
       if (maybeAgent) {
         agent = maybeAgent;
       } else {
-        console.log("Profile not found for agent", fileAuthor, this._profilesZvm.perspective.profiles)
-        this._profilesZvm.probeProfile(fileAuthor)
+        console.log("Profile not found for agent", fileAuthor, this._dvm.profilesZvm.perspective.profiles)
+        this._dvm.profilesZvm.probeProfile(fileAuthor)
         //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
       }
-    }
+
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 

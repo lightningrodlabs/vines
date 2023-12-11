@@ -6,6 +6,8 @@ integrity:
   zomes:
     - name: threads_integrity
       bundled: ../../target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm
+    - name: profiles_integrity
+      bundled: ../../target/wasm32-unknown-unknown/release/profiles_integrity_zome.wasm
 coordinator:
   zomes:
     #- name: zPathExplorer
@@ -14,3 +16,7 @@ coordinator:
       bundled: ../../target/wasm32-unknown-unknown/release/threads_zome.wasm
       dependencies:
         - name: threads_integrity
+    - name: profiles
+      bundled: ../../target/wasm32-unknown-unknown/release/profiles_zome.wasm
+      dependencies:
+        - name: profiles_integrity

@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
-name: hThreadsWeApplet
-description: Threads We happ
+name: hThreads
+description: File sharing happ
 roles:
   - name: role_threads
     provisioning:
@@ -10,3 +10,25 @@ roles:
     dna:
       bundled: "../../artifacts/threads.dna"
       clone_limit: 0
+  - name: profiles
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/profiles.dna"
+      clone_limit: 0
+  - name: rFiles
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../../artifacts/files.dna"
+      clone_limit: 0
+      modifiers:
+        properties:
+          maxChunkSize: 524288
+          maxParcelSize: 104857600
+          maxParcelNameLength: 256
+          minParcelNameLength: 1
+          maxTagNameLength: 32
+          minTagNameLength: 2

@@ -28,14 +28,14 @@ export interface ThreadsDnaPerspective {
 export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
-  static readonly ZVM_DEFS = [ThreadsZvm /*, PathExplorerZvm*/ /*, ProfilesZvm*/]
+  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm/*, PathExplorerZvm*/ ]
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
 
   /** QoL Helpers */
-  // get profilesZvm(): ProfilesZvm {
-  //   return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm
-  // }
+  get profilesZvm(): ProfilesZvm {
+    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm
+  }
 
   get threadsZvm(): ThreadsZvm {
     return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm

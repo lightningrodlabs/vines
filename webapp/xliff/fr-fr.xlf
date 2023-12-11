@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="fr-fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="sb258870344dbea5f">
+  <source>Failed to connect to Holochain Conductor and/or &lt;b&gt;Threads&lt;/b&gt; cell.</source>
+  <target>Echec de connection à la cell &lt;b&gt;Threads&lt;/b&gt; ou a Holochain</target>
+</trans-unit>
+<trans-unit id="s15e2ffb6e6776c4a">
+  <source>Import Profile into Files applet</source>
+  <target>Importer le Profile dans l'application Files</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

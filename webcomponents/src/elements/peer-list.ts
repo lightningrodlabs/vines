@@ -11,9 +11,7 @@ import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import {consume} from "@lit/context";
 import {Profile as ProfileMat, ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {globalProfilesContext} from "../contexts";
 
 /** @element peer-list */
 @localized()
@@ -22,9 +20,6 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
-
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
 
   @property() soloAgent: AgentPubKeyB64 | null  = null; // filter for a specific agent
 
@@ -43,9 +38,8 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** After first render only */
   firstUpdated() {
-    if (this._profilesZvm) {
-      this._profilesZvm.subscribe(this, "profilesPerspective");
-    }
+    this._dvm.profilesZvm.subscribe(this, "profilesPerspective");
+
     console.log("<peer-list> firstUpdated()", this.profilesPerspective);
     this._loaded = true;
   }
@@ -53,11 +47,8 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   determineAgentStatus(key: AgentPubKeyB64): string {
-    if (!this._profilesZvm) {
-      return "";
-    }
     // const status = "primary"; // "neutral"
-    if (key == this._profilesZvm.cell.agentPubKey) {
+    if (key == this._dvm.profilesZvm.cell.agentPubKey) {
       return "success";
     }
     const lastPingTime: number = this.perspective.agentPresences[key];
@@ -193,13 +184,6 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         Loading...
       </div>`;
     }
-
-    if (!this._profilesZvm) {
-      return html`<div class="fill center-content">
-        No Profiles Service found
-      </div>`;
-    }
-
 
     return this.renderList(this.profilesPerspective.profiles);
   }

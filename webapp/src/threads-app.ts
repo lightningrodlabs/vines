@@ -1,6 +1,5 @@
 import {html, css} from "lit";
 import { state, customElement } from "lit/decorators.js";
-import {localized, msg} from '@lit/localize';
 import {
   AdminWebsocket, AgentPubKeyB64,
   AppSignal,
@@ -11,7 +10,6 @@ import {
 } from "@holochain/client";
 import {
   AppletId, AppletView,
-  weClientContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {
@@ -22,20 +20,22 @@ import {
   DnaViewModel, snake, pascal,
 } from "@ddd-qc/lit-happ";
 import {
-  globalProfilesContext,
   ThreadsDvm,
   THREADS_DEFAULT_ROLE_NAME,
   ThreadsEntryType,
-  THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME, globaFilesContext,
+  THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME, globaFilesContext, weClientContext,
 } from "@threads/elements";
+import {setLocale} from "./localization";
+import { msg, localized } from '@lit/localize';
 
-import {HC_ADMIN_PORT, HC_APP_PORT, ALLOW_WE} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ContextProvider} from "@lit/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF, DEFAULT_THREADS_WE_DEF} from "./happDef";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 export interface ViewThreadContext {
@@ -55,12 +55,12 @@ export class ThreadsApp extends HappElement {
   @state() private _offlinePerspectiveloaded = false;
   @state() private _hasHolochainFailed = true;
 
-  @state() private _hasStartingProfile = false;
+  @state() private _hasWeProfile = false;
   @state() private _lang?: string
 
   @state() private _currentSpaceEh: null | EntryHashB64 = null;
 
-  static readonly HVM_DEF: HvmDef = ALLOW_WE? DEFAULT_THREADS_WE_DEF : DEFAULT_THREADS_DEF;
+  static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
@@ -78,8 +78,7 @@ export class ThreadsApp extends HappElement {
   /** -- We-applet specifics -- */
 
   protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-  private _profilesDvm?: ProfilesDvm;
-  protected _profilesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+  private _weProfilesDvm?: ProfilesDvm;
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   public appletId?: EntryHashB64;
 
@@ -106,15 +105,15 @@ export class ThreadsApp extends HappElement {
     app.appletId = thisAppletId;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
-    await app.createProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
+    await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
     return app;
   }
 
 
   /** Create a Profiles DVM out of a different happ */
-  async createProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
-                          profilesCloneId: CloneId | undefined,
-                          _profilesZomeName: ZomeName): Promise<void> {
+  async createWeProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
+                            profilesCloneId: CloneId | undefined,
+                            _profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
@@ -123,25 +122,23 @@ export class ThreadsApp extends HappElement {
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
-    await this.setupProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    await this.setupWeProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
   }
 
 
   /** */
-  async setupProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
-    this._profilesDvm = dvm as ProfilesDvm;
+  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
+    this._weProfilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._profilesDvm.profilesZvm.probeProfile(agent);
+    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
-        //setLocale(maybeLang);
+        console.log("Setting locale from We Profile", maybeLang);
+        setLocale(maybeLang);
       }
-      this._hasStartingProfile = true;
+      this._hasWeProfile = true;
     }
-    /** Provide it as context */
-    console.log(`\t\tProviding context "${globalProfilesContext}" | in host `, this);
-    this._profilesProvider = new ContextProvider(this, globalProfilesContext, this._profilesDvm.profilesZvm);
   }
 
 
@@ -191,10 +188,6 @@ export class ThreadsApp extends HappElement {
       this._hasHolochainFailed = false;
     }
 
-    /** Add Profiles DVM dna present */
-    if (!ALLOW_WE) {
-      await this.setupProfilesDvm(this.hvm.getDvm("profiles") as ProfilesDvm, this.threadsDvm.cell.agentPubKey);
-    }
 
     /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();
@@ -233,45 +226,30 @@ export class ThreadsApp extends HappElement {
 
   /** */
   render() {
-    console.log("*** <threads-app> render()", this._hasStartingProfile, this.threadsDvm.cell.print());
+    console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
 
     if (!this._offlinePerspectiveloaded) {
-      return html`        
-      <div style="display: flex; justify-content: center; align-items: center; height: 100vh">
-        <span>Loading...</span>
-      </div>
+      return html `
+        <ui5-busy-indicator size="Medium" active
+                            style="margin:auto; width:50%; height:50%;"
+        ></ui5-busy-indicator>
       `;
     }
     if(this._hasHolochainFailed) {
-      return html`<div style="width: auto; height: auto; font-size: 4rem;">Failed to connect to Holochain Conductor</div>`;
+      return html`<div style="width: auto; height: auto; font-size: 4rem;">
+        ${msg("Failed to connect to Holochain Conductor and/or <b>Threads</b> cell.")};
+      </div>
+      `;
     }
 
 
     //let view = html`<slot></slot>`;
-    let view = html`            
-                <semantic-threads-page style="height:100vh;"
-                  .appletId=${this.appletId}
-                </semantic-threads-page>
-              `
+    let view = html`<semantic-threads-page style="height:100vh;" .appletId=${this.appletId}</semantic-threads-page>`;
 
     if (this.appletView) {
       console.log("appletView", this.appletView);
       switch (this.appletView.type) {
-        case "main": {
-            // if (this._canShowDebug) {
-            //   view = html`
-            //     <threads-devtest-page id="test"
-            //       @debug=${(e) => this._canShowDebug = e.detail}>
-            //     </threads-devtest-page>
-            //   `;
-            // } else {
-              view = html`            
-                <semantic-threads-page style="height:100vh;"
-                  .appletId=${this.appletId}
-                </semantic-threads-page>
-              `;
-            //}
-        }
+        case "main":
           break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
@@ -303,6 +281,41 @@ export class ThreadsApp extends HappElement {
           console.error("Unknown We applet-view type", this.appletView);
           throw new Error(`Unknown We applet-view type`);
       }
+    }
+
+
+    /** Import profile from We */
+    let guardedView = view;
+    const maybeMyProfile = this.threadsDvm.profilesZvm.getMyProfile();
+    console.log("<files-app> Profile", this._hasWeProfile, maybeMyProfile);
+    if (this._hasWeProfile && !maybeMyProfile) {
+      guardedView = html`
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
+          <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
+                                                              style="padding-left: 5px;padding-top: 5px;"/> Files</h1>
+          <div class="column" style="align-items: center;">
+            <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
+              <div style="margin-bottom: 24px; align-self: flex-start; font-size: 20px;">
+                ${msg('Import Profile into Files applet')}
+              </div>
+              <threads-edit-profile
+                  .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
+                  @lang-selected=${(e: CustomEvent) => {
+                    console.log("set locale", e.detail);
+                    setLocale(e.detail)
+                  }}
+                  @save-profile=${async (e: CustomEvent<ProfileMat>) => {
+        await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
+        this.requestUpdate();
+      }}
+                  @lang-selected=${(e: CustomEvent) => {
+        console.log("set locale", e.detail);
+        setLocale(e.detail)
+      }}
+              ></threads-edit-profile>
+            </sl-card>
+          </div>
+        </div>`;
     }
 
     /** Render all */

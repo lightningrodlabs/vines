@@ -4,12 +4,9 @@ import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {consume} from "@lit/context";
 import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {globalProfilesContext} from "../contexts";
-
 
 
 /**
@@ -18,12 +15,11 @@ import {globalProfilesContext} from "../contexts";
 @customElement("mentions-notification-list")
 export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
 
+  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
 
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -48,7 +44,7 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<mentions-notification-list>.render()", this.threadsPerspective.mentions, this._profilesZvm);
+    console.log("<mentions-notification-list>.render()", this.threadsPerspective.mentions, this._dvm.profilesZvm);
     if (this._dvm.threadsZvm.perspective.mentions.length == 0) {
       return html `<div style="color:#c10a0a">No mentions found</div>`;
     }
@@ -64,16 +60,16 @@ export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
         const date_str = timeSince(date) + " ago";
 
         let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-        if (this._profilesZvm) {
-          const maybeAgent = this._profilesZvm.perspective.profiles[author];
-          if (maybeAgent) {
-            agent = maybeAgent;
-          } else {
-            console.log("Profile not found for agent", texto.author, this._profilesZvm.perspective.profiles)
-            this._profilesZvm.probeProfile(texto.author)
-            //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-          }
+
+        const maybeAgent = this._dvm.profilesZvm.perspective.profiles[author];
+        if (maybeAgent) {
+          agent = maybeAgent;
+        } else {
+          console.log("Profile not found for agent", texto.author, this._dvm.profilesZvm.perspective.profiles)
+          this._dvm.profilesZvm.probeProfile(texto.author)
+          //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
         }
+
         const initials = getInitials(agent.nickname);
         const avatarUrl = agent.fields['avatar'];
 

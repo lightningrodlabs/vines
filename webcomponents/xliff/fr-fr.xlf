@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="fr-fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="sb4f1dffbb6be6302">
+  <source>Clear</source>
+  <target>Effacer</target>
+</trans-unit>
+<trans-unit id="s1967faf9ed8d3504">
+  <source>Avatar</source>
+  <target>Avatar</target>
+</trans-unit>
+<trans-unit id="se9f30e4492cee2cd">
+  <source>Nickname</source>
+  <target>Pseudonyme</target>
+</trans-unit>
+<trans-unit id="sc50e29580fec9a72">
+  <source>Min. 3 characters</source>
+  <target>Min. 3 caractères</target>
+</trans-unit>
+<trans-unit id="s344ea8f4939cdc98">
+  <source>Color</source>
+  <target>Couleur</target>
+</trans-unit>
+<trans-unit id="sefcf950b3cc4fc3b">
+  <source>Language</source>
+  <target>Langage</target>
+</trans-unit>
+<trans-unit id="sc93a9aa3e5bcbf5d">
+  <source>Save Profile</source>
+  <target>Enregistrer Profile</target>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+  <target>Annuler</target>
+</trans-unit>
+<trans-unit id="s1202046c1b160829">
+  <source>Add New Topic</source>
+  <target>Ajouter Nouveau Sujet</target>
+</trans-unit>
+<trans-unit id="sfeddbc6c931b7ad7">
+  <source>Mark all as read</source>
+  <target>Marquer tout comme lu</target>
+</trans-unit>
+<trans-unit id="s8641b6c3688a0cec">
+  <source>Edit Profile</source>
+  <target>Éditer Profile</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

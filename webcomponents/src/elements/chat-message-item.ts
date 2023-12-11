@@ -4,10 +4,8 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {truncate} from "../utils";
-import {consume} from "@lit/context";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {globalProfilesContext} from "../contexts";
 //import {ChatThreadView} from "./chat-thread-view";
 
 
@@ -25,10 +23,6 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of TextMessage to display */
   @property() hash: ActionHashB64 = ''
-
-
-  @consume({ context: globalProfilesContext, subscribe: true })
-  _profilesZvm!: ProfilesZvm;
 
 
   @state() private _isHovered = false;
@@ -145,16 +139,15 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    if (this._profilesZvm) {
-      const maybeAgent = this._profilesZvm.perspective.profiles[texto.author];
+      const maybeAgent = this._dvm.profilesZvm.perspective.profiles[texto.author];
       if (maybeAgent) {
         agent = maybeAgent;
       } else {
-        console.log("Profile not found for agent", texto.author, this._profilesZvm.perspective.profiles)
-        this._profilesZvm.probeProfile(texto.author)
+        console.log("Profile not found for agent", texto.author, this._dvm.profilesZvm.perspective.profiles)
+        this._dvm.profilesZvm.probeProfile(texto.author)
         //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
       }
-    }
+
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
 

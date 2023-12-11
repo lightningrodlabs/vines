@@ -4,7 +4,7 @@ import {consume} from "@lit/context";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
-import {AppletId, AttachmentType, Hrl, weClientContext, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AttachmentType, Hrl, WeServices} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
@@ -23,6 +23,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
+import {weClientContext} from "../contexts";
 
 
 /**

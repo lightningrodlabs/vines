@@ -73,8 +73,7 @@ export class EditProfile extends LitElement {
   allowCancel = false;
 
   @state() private _avatar: string | undefined;
-  @state() private _color: string | undefined;
-  @state() private _lang: string | undefined;
+  //@state() private _color: string | undefined;
 
   /** Private properties */
 
@@ -88,33 +87,6 @@ export class EditProfile extends LitElement {
 
 
   /** -- Methods -- */
-
-  /** */
-  firstUpdated() {
-    this._avatar = this.profile?.fields['avatar'];
-    this._color = this.profile?.fields['color'];
-    this._lang = this.profile?.fields['lang'];
-    if (!this._lang) this._lang = 'en';
-
-    // this._nicknameField.validityTransform = (newValue: string) => {
-    //   this.requestUpdate();
-    //   if (newValue.length < 3) {
-    //     this._nicknameField.setCustomValidity(msg(`Nickname is too short`));
-    //     return {
-    //       valid: false,
-    //     };
-    //   } else if (this._existingUsernames[newValue]) {
-    //     this._nicknameField.setCustomValidity(
-    //       msg('This nickname already exists')
-    //     );
-    //     return { valid: false };
-    //   }
-    //
-    //   return {
-    //     valid: true,
-    //   };
-    // };
-  }
 
 
   /** */
@@ -146,27 +118,28 @@ export class EditProfile extends LitElement {
           ? html`
               <div class="column" style="align-items: center; ">
                 <sl-avatar
-                  image="${this._avatar}"
+                  image=${this._avatar}
                   alt="Avatar"
                   style="margin-bottom: 4px; --size: 3.5rem;"
                   initials=""
                 ></sl-avatar>
                 <span
                   class="placeholder label"
-                  style="cursor: pointer;   text-decoration: underline;"
+                  style="cursor:pointer; text-decoration:underline;"
                   @click=${() => (this._avatar = undefined)}
                   >${msg('Clear')}</span
                 >
               </div>
-            `
-          : html` <div class="column" style="align-items: center;">
-              <ui5-button
-                icon="add"
-                @click=${() => this._avatarFilePicker.click()}
-                style="margin-bottom: 4px;"
-              ></ui5-button>
-              <span class="placeholder label">${msg('Avatar')}</span>
-            </div>`}
+            ` : html`
+                  <div class="column" style="align-items: center;">
+                  <ui5-button
+                    icon="add"
+                    @click=${() => this._avatarFilePicker.click()}
+                    style="margin-bottom: 4px;"
+                  ></ui5-button>
+                  <span class="placeholder label">${msg('Avatar')}</span>
+              </div>
+            `}
       </div>
     `;
   }
@@ -222,18 +195,23 @@ export class EditProfile extends LitElement {
   /** */
   fireSaveProfile() {
     const nickname = this._nicknameField.value;
-
     const fields: Record<string, string> = this.getAdditionalFieldsValues();
-    if (this._avatar) {
-      fields['avatar'] = this._avatar;
-    }
-    if (this._color) {
-      fields['color'] = this._color;
-    }
 
-    if (this._lang) {
-      fields['lang'] = this._lang;
-    }
+    console.log("fireSaveProfile()", fields);
+
+    /** avatar */
+    fields['avatar'] = this._avatar? this._avatar : "";
+
+    /** lang */
+    const langRadioGroup = this.shadowRoot!.getElementById("langRadioGroup") as any;
+    console.log({langRadioGroup});
+    fields['lang'] = langRadioGroup.value? langRadioGroup.value : "";
+
+    /** Color */
+    const colorPicker = this.shadowRoot!.getElementById("colorPicker") as any;
+    console.log({colorPicker});
+    fields['color'] = colorPicker.value? colorPicker.value : "";
+
 
     const profile: ProfileMat = {
       fields,
@@ -263,46 +241,20 @@ export class EditProfile extends LitElement {
   }
 
 
-  // renderField(fieldName: string) {
-  //   return html`
-  //     <mwc-textfield
-  //       id="profile-field-${fieldName}"
-  //       outlined
-  //       required
-  //       autoValidate
-  //       .validationMessage=${msg('This field is required')}
-  //       .label=${fieldName}
-  //       .value=${this.profile?.fields[fieldName] || ''}
-  //       @input=${() => this.requestUpdate()}
-  //       style="margin-top: 8px;"
-  //     ></mwc-textfield>
-  //   `;
-  // }
-
-
-  async handleColorChange(e: any) {
-    console.log("handleColorChange: " + e.target.lastValueEmitted)
-    this._color = e.target.lastValueEmitted;
-    //const profile = this._myProfile!;
-    //await this.setMyProfile(profile.nickname, profile.fields['avatar'], color)
-  }
-
-
+  /** */
   async handleLangChange(_e: any) {
     //console.log({langChangeEvent: e});
-    const frBtn = this.shadowRoot!.getElementById("frBtn") as any;
-    console.log({frBtn})
-    this._lang = frBtn.__checked? frBtn.value : "en";
-    //console.log("handleLangChange: ", this._lang)
-    //this._lang = grp.value;
-    this.dispatchEvent(new CustomEvent('lang-selected', { detail: this._lang, bubbles: true, composed: true }));
-
+    const langRadioGroup = this.shadowRoot!.getElementById("langRadioGroup") as any;
+    console.log({langRadioGroup});
+    const lang = langRadioGroup.value;
+    console.log("handleLangChange: lang =", lang);
+    this.dispatchEvent(new CustomEvent('lang-selected', { detail: lang, bubbles: true, composed: true }));
   }
 
 
   /** */
   render() {
-    console.log("<edit-profile> render()", this._lang);
+    console.log("<edit-profile> render()", this.profile);
 
     return html`
       <section>
@@ -323,9 +275,7 @@ export class EditProfile extends LitElement {
               outlined
               .label=${msg('Nickname')}
               .value=${this.profile?.nickname || ''}
-              .helper=${msg(
-                str`Min. 3 characters`
-              )}
+              .helper=${msg(`Min. 3 characters`)}
               style="margin-left: 8px;"
             ></ui5-input>
 
@@ -333,15 +283,15 @@ export class EditProfile extends LitElement {
 
           <div class="row" style="justify-content: center; margin-bottom: 18px; align-self: start;" >
               <span style="font-size:18px;padding-right:10px;padding-top:5px;">${msg('Color')}:</span>
-              <sl-color-picker hoist slot="meta" size="small" noFormatToggle format='rgb' @click="${this.handleColorChange}"
+              <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format='rgb'
                                value=${this.profile?.fields['color']}></sl-color-picker>
           </div>
 
             <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
                 <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
-                <sl-radio-group id="langRadioGroup" @click="${this.handleLangChange}">
-                    <sl-radio value="en" .checked="${this._lang == 'en'}">🇬🇧</sl-radio>
-                    <sl-radio id="frBtn" value="fr-fr" .checked="${this._lang == 'fr-fr'}">🇫🇷</sl-radio>
+                <sl-radio-group id="langRadioGroup" @click="${this.handleLangChange}" .value=${this.profile.fields['lang']}>
+                    <sl-radio value="en">🇬🇧</sl-radio>
+                    <sl-radio id="frBtn" value="fr-fr">🇫🇷</sl-radio>
                 </sl-radio-group>
             </div>
       </section>
@@ -352,13 +302,13 @@ export class EditProfile extends LitElement {
                   design="Emphasized"
                   .disabled=${!this.shouldSaveButtonBeEnabled()}
                   @click=${() => this.fireSaveProfile()}
-          >Save Profile</ui5-button>          
+          >${msg("Save Profile")}</ui5-button>          
             ${this.allowCancel
               ? html`
               <ui5-button
                 style="flex:1; margin-top:15px;"
                 @click=${() => this.fireCancel()}
-              >Cancel</ui5-button>
+              >${msg("Cancel")}</ui5-button>
               `
               : html``
             }
