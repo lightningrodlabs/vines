@@ -34,8 +34,10 @@ import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {EntryViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
-import {DEFAULT_THREADS_DEF, DEFAULT_THREADS_WE_DEF} from "./happDef";
+import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+
+import "./threads-page"
 
 
 export interface ViewThreadContext {
@@ -244,7 +246,7 @@ export class ThreadsApp extends HappElement {
 
 
     //let view = html`<slot></slot>`;
-    let view = html`<semantic-threads-page style="height:100vh;" .appletId=${this.appletId}</semantic-threads-page>`;
+    let view = html`<threads-page style="height:100vh;" .appletId=${this.appletId}</semantic-threads-page>`;
 
     if (this.appletView) {
       console.log("appletView", this.appletView);

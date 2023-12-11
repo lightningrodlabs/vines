@@ -1,9 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {delay, DnaElement, HAPP_ENV, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
-import {CommentRequest, parseMentions} from "../utils";
+
 import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
@@ -67,12 +65,23 @@ import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {ChatThreadView} from "./chat-thread-view";
+
 import {Dictionary} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
+import {
+  ThreadsDvm,
+  CreatePpInput,
+  ThreadsEntryType,
+  ThreadsPerspective,
+  CommentRequest,
+  parseMentions,
+  ChatThreadView,
+  weClientContext,
+  AnyLinkableHashB64
+} from "@threads/elements";
 
 import {
   ActionHashB64,
@@ -80,7 +89,6 @@ import {
   DnaHashB64,
   encodeHashToBase64,
 } from "@holochain/client";
-import {CreatePpInput, ThreadsEntryType} from "../bindings/threads.types";
 
 import {
   AppletId,
@@ -88,20 +96,18 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {consume, createContext} from "@lit/context";
-import {shellBarStyleTemplate} from "../styles";
+import {shellBarStyleTemplate} from "@threads/elements";
 
-import {AppletThreadsTree} from "./applet-threads-tree";
-import {CommentThreadView} from "./comment-thread-view";
-import {SemanticTopicsView} from "./semantic-topics-view";
-import  "./mentions-notification-list";
-import "./input-bar";
+//import  "./mentions-notification-list";
+//import "./input-bar";
+
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm, splitFile, SplitObject} from "@ddd-qc/files";
 import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
-import {weClientContext} from "../contexts";
+import {setLocale} from "./localization";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -112,8 +118,8 @@ console.log("FILES_CELL_NAME", FILES_CELL_NAME);
 /**
  * @element
  */
-@customElement("semantic-threads-page")
-export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
+@customElement("threads-page")
+export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
@@ -121,7 +127,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
     //fakeEntryHash().then((eh) => this.appletId = encodeHashToBase64(eh));
 
     this.addEventListener('beforeunload', (e) => {
-      console.log("<semantic-threads-page> beforeunload", e);
+      console.log("<threads-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
 
@@ -179,7 +185,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<semantic-threads-page>.dvmUpdated()");
+    console.log("<threads-page>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -253,7 +259,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
-    console.log("<semantic-threads-page> firstUpdated() appletId", this.appletId);
+    console.log("<threads-page> firstUpdated() appletId", this.appletId);
 
     /** Generate test data */
     if (!this.appletId) {
@@ -270,12 +276,12 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
     /** Grab all AppletIds */
     if (this.weServices) {
-      console.log("<semantic-threads-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
+      console.log("<threads-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
       const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
-      console.log("<semantic-threads-page> appletIds", appletIds);
+      console.log("<threads-page> appletIds", appletIds);
       for (const appletId of appletIds) {
         const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
-        console.log("<semantic-threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
+        console.log("<threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
         this._appletInfos[appletId] = appletInfo;
       }
     }
@@ -447,7 +453,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
       //   return;
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
-        console.log("<semantic-threads-page> startPublishFile callback", eh);
+        console.log("<threads-page> startPublishFile callback", eh);
         /*let ah =*/ this._dvm.threadsZvm.publishEntryBead(eh, this._selectedThreadHash);
         this._splitObj = undefined;
       });
@@ -459,7 +465,7 @@ export class SemanticThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<semantic-threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
+    console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
 
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     let threadTitle = "Threads";
