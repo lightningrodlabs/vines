@@ -498,11 +498,15 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** This agent's profile info */
     let myProfile = this._dvm.profilesZvm.getMyProfile();
     if (!myProfile) {
-      myProfile = {nickname: "unknown", fields: {}} as ProfileMat;
+      myProfile = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     }
     const initials = getInitials(myProfile.nickname);
     const avatarUrl = myProfile.fields['avatar'];
-    setLocale(myProfile.fields['lang']);
+    let lang = myProfile.fields['lang'];
+    if (!lang || lang == "") {
+      lang = "en";
+    }
+    setLocale(lang);
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
     console.log("this._appletInfos", this._appletInfos, myProfile);
