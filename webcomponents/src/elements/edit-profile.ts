@@ -73,7 +73,6 @@ export class EditProfile extends LitElement {
   allowCancel = false;
 
   @state() private _avatar: string | undefined;
-  //@state() private _color: string | undefined;
 
   /** Private properties */
 
@@ -87,6 +86,11 @@ export class EditProfile extends LitElement {
 
 
   /** -- Methods -- */
+
+
+  firstUpdated() {
+    this._avatar = this.profile.fields["avatar"];
+  }
 
 
   /** */
@@ -219,10 +223,8 @@ export class EditProfile extends LitElement {
     };
 
     this.dispatchEvent(
-      new CustomEvent('save-profile', {
-        detail: {
-          profile,
-        },
+      new CustomEvent<ProfileMat>('save-profile', {
+        detail: profile,
         bubbles: true,
         composed: true,
       })

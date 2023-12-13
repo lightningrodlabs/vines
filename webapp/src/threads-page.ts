@@ -15,6 +15,8 @@ import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/Button.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
+import "@ui5/webcomponents/dist/Card.js";
+import "@ui5/webcomponents/dist/CardHeader.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
 import "@ui5/webcomponents/dist/List.js";
@@ -80,7 +82,7 @@ import {
   parseMentions,
   ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64
+  AnyLinkableHashB64, ThreadsDnaPerspective
 } from "@threads/elements";
 
 import {
@@ -119,7 +121,7 @@ console.log("FILES_CELL_NAME", FILES_CELL_NAME);
  * @element
  */
 @customElement("threads-page")
-export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
+export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
@@ -159,8 +161,6 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServices;
-
-  private _myProfile: ProfileMat = {nickname: "guest_" + Math.floor(Math.random() * 100), fields: {}}
 
   /** AppletHash -> AppletInfo */
   @state() private _appletInfos: Dictionary<AppletInfo> = {}
@@ -319,11 +319,9 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   async handleColorChange(e: any) {
     console.log("handleColorChange: " + e.target.lastValueEmitted)
     const color = e.target.lastValueEmitted;
-    const profile = this._myProfile!;
+    const profile = this._dvm.profilesZvm.getMyProfile()!;
     await this.setMyProfile(profile.nickname, profile.fields['avatar'], color)
   }
-
-
 
 
   /** */
@@ -346,18 +344,14 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  private async onProfileEdited(profile: ProfileMat) {
-    console.log("onProfileEdited()", this._myProfile)
+  private async onSaveProfile(profile: ProfileMat) {
+    console.log("onSaveProfile()", profile)
     try {
       await this._dvm.profilesZvm.updateMyProfile(profile);
     } catch(e) {
       await this._dvm.profilesZvm.createMyProfile(profile);
-      this._myProfile = profile;
     }
     this.profileDialogElem.close(false);
-    /** Make sure a redraw is triggered */
-    this._myProfile.fields.avatar = profile.fields.avatar;
-    this._myProfile.fields.color = profile.fields.color;
     this.requestUpdate();
   }
 
@@ -467,6 +461,8 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
 
+
+
     let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
     let threadTitle = "Threads";
     if (this._selectedThreadHash) {
@@ -500,22 +496,16 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** This agent's profile info */
-    let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    let maybeAgent = undefined;
-      maybeAgent = this._myProfile;
-      if (maybeAgent) {
-        agent = maybeAgent;
-      } else {
-        //console.log("Profile not found for", texto.author, this._dvm.profilesZvm.perspective.profiles)
-        this._dvm.profilesZvm.probeProfile(this._dvm.cell.agentPubKey);
-        //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-      }
-
-    const initials = getInitials(agent.nickname);
-    const avatarUrl = agent.fields['avatar'];
+    let myProfile = this._dvm.profilesZvm.getMyProfile();
+    if (!myProfile) {
+      myProfile = {nickname: "unknown", fields: {}} as ProfileMat;
+    }
+    const initials = getInitials(myProfile.nickname);
+    const avatarUrl = myProfile.fields['avatar'];
+    setLocale(myProfile.fields['lang']);
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
-    console.log("this._appletInfos", this._appletInfos);
+    console.log("this._appletInfos", this._appletInfos, myProfile);
     let appletOptions = Object.entries(this._appletInfos).map(([appletId, appletInfo]) => {
       console.log("appletInfo", appletInfo);
       if (!appletInfo) {
@@ -611,7 +601,7 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
                                     color-scheme="Accent2"></ui5-avatar>
                     `}
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
-                        <div><abbr title=${this.cell.agentPubKey}>${agent.nickname}</abbr></div>
+                        <div><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
                             <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
                     </div>
                     <ui5-button style="margin-top:10px;"
@@ -677,14 +667,14 @@ export class ThreadsPage extends DnaElement<unknown, ThreadsDvm> {
         <ui5-dialog id="profile-dialog" header-text="Edit Profile">
             <threads-edit-profile
                     allowCancel
-                    .profile="${this._myProfile}"
+                    .profile="${myProfile}"
                     .saveProfileLabel= ${msg('Edit Profile')}
                     @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
                     @lang-selected=${(e: CustomEvent) => {
                       console.log("set locale", e.detail);
                       setLocale(e.detail)
                     }}
-                    @save-profile=${(e: CustomEvent) => this.onProfileEdited(e.detail.profile)}
+                    @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
             ></threads-edit-profile>
         </ui5-dialog>
         <!-- CreateTopicDialog -->

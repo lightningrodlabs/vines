@@ -20,3 +20,13 @@ shellBarStyleTemplate.innerHTML = `
   }
 </style>
 `;
+
+
+export const cardStyleTemplate = document.createElement('template');
+cardStyleTemplate.innerHTML = `
+<style>
+  .ui5-card-root {
+    padding:10px;
+  }
+</style>
+`;

@@ -23,7 +23,11 @@ import {
   ThreadsDvm,
   THREADS_DEFAULT_ROLE_NAME,
   ThreadsEntryType,
-  THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME, globaFilesContext, weClientContext,
+  THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
+  THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
+  globaFilesContext,
+  weClientContext,
+  ChatThreadView, shellBarStyleTemplate, cardStyleTemplate,
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -38,6 +42,7 @@ import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 import "./threads-page"
+import {PropertyValues} from "lit/development";
 
 
 export interface ViewThreadContext {
@@ -208,7 +213,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<threads-app>.perspectiveInitializedOnline()");
+    console.log("<threads-app>.perspectiveInitializedOnline()", this.appletView);
 
     if (this.appletView && this.appletView.type == "main") {
       await this.hvm.probeAll();
@@ -220,9 +225,18 @@ export class ThreadsApp extends HappElement {
   shouldUpdate(): boolean {
     const canUpdate = super.shouldUpdate();
     console.log("<threads-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
-
     /** Wait for offlinePerspective */
     return canUpdate && this._offlinePerspectiveloaded;
+  }
+
+
+  /** */
+  protected async updated(_changedProperties: PropertyValues) {
+    /** Fiddle with shadow parts CSS */
+    const profileCard = this.shadowRoot.getElementById('profileCard') as HTMLElement;
+    if (profileCard) {
+      profileCard.shadowRoot.appendChild(cardStyleTemplate.content.cloneNode(true));
+    }
   }
 
 
@@ -294,12 +308,10 @@ export class ThreadsApp extends HappElement {
       guardedView = html`
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
           <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
-                                                              style="padding-left: 5px;padding-top: 5px;"/> Files</h1>
-          <div class="column" style="align-items: center;">
-            <sl-card style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
-              <div style="margin-bottom: 24px; align-self: flex-start; font-size: 20px;">
-                ${msg('Import Profile into Files applet')}
-              </div>
+                                                              style="padding-left: 5px;padding-top: 5px;"/> Threads</h1>
+          <div style="align-items: center;">
+            <ui5-card id="profileCard">
+              <ui5-card-header title-text=${msg('Import Profile into Threads applet')}></ui5-card-header>
               <threads-edit-profile
                   .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
                   @lang-selected=${(e: CustomEvent) => {
@@ -307,15 +319,16 @@ export class ThreadsApp extends HappElement {
                     setLocale(e.detail)
                   }}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
-        await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
-        this.requestUpdate();
-      }}
+                    console.log("createMyProfile()", e.detail);
+                    await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
+                    this.requestUpdate();
+                  }}
                   @lang-selected=${(e: CustomEvent) => {
-        console.log("set locale", e.detail);
-        setLocale(e.detail)
-      }}
+                    console.log("set locale", e.detail);
+                    setLocale(e.detail)
+                  }}
               ></threads-edit-profile>
-            </sl-card>
+            </ui5-card>
           </div>
         </div>`;
     }
@@ -323,7 +336,7 @@ export class ThreadsApp extends HappElement {
     /** Render all */
     return html`
         <cell-context .cell="${this.threadsDvm.cell}">
-          ${view}
+          ${guardedView}
         </cell-context>
     `;
   }
@@ -336,7 +349,7 @@ export class ThreadsApp extends HappElement {
         :host {
           background: #f7f6f8;
           display: block;
-          /*height: 100vh;*/
+          height: 100vh;
           width: 100%;
           font-family: '72';
         }
@@ -350,6 +363,9 @@ export class ThreadsApp extends HappElement {
           font-size: 20px;
         }
 
+        ui5-card::part(region) {
+          padding:10px;
+        }
       `,
 
     ];
