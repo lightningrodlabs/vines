@@ -9,6 +9,7 @@ import {ChatMessageItem} from "./chat-message-item";
 import {ChatHeader} from "./chat-header";
 import {BeadLink} from "../bindings/threads.types";
 import {beadToChatItem} from "../utils";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -200,7 +201,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<chat-thread-view>.render()", this._firstLoad, this._loading, this.threadHash);
     if (this.threadHash == "") {
-      return html `<div>No thread selected</div>`;
+      return html `<div>${msg("No thread selected")}</div>`;
     }
 
     //const bg_color = this._loading? "#ededf0" : "white"

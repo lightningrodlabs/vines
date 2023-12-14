@@ -34,6 +34,14 @@
   <source>Cancel</source>
   <target>Annuler</target>
 </trans-unit>
+<trans-unit id="seef51e1596b93277">
+  <source>No thread selected</source>
+  <target>Aucun fil selectionné</target>
+</trans-unit>
+<trans-unit id="s2b3859261c42db06">
+  <source>No topics found</source>
+  <target>Aucun sujet trouvé</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

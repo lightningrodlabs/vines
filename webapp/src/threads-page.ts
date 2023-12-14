@@ -463,7 +463,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
 
-    let centerSide = html`<h1 style="margin:auto;">No thread selected</h1>`
+    let centerSide = html`<h1 style="margin:auto;">${msg("No thread selected")}</h1>`
     let threadTitle = "Threads";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads[this._selectedThreadHash];

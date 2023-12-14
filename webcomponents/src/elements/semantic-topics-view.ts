@@ -6,6 +6,7 @@ import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {CommentRequest} from "../utils";
+import {msg} from "@lit/localize";
 
 
 
@@ -254,7 +255,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     /** render all */
     return html`
       <ui5-busy-indicator id="busy" style="width: 100%">
-        <ui5-tree id="semTree" mode="SingleSelect" no-data-text="No topics found"
+        <ui5-tree id="semTree" mode="SingleSelect" no-data-text=${msg("No topics found")}
                   @item-toggle="${this.toggleTreeItem}"
                   @item-click="${this.clickTree}"
                   @item-mouseover=${(e) => {this._isHovered[e.detail.item.id] = true; this.requestUpdate();}}

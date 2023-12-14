@@ -22,6 +22,10 @@
   <source>Import Profile into Threads applet</source>
   <target>Importer votre Profile dans Threads</target>
 </trans-unit>
+<trans-unit id="seef51e1596b93277">
+  <source>No thread selected</source>
+  <target>Aucun fil selectionné</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
