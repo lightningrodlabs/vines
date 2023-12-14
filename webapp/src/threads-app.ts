@@ -60,6 +60,7 @@ export interface ViewThreadContext {
 export class ThreadsApp extends HappElement {
 
   @state() private _offlinePerspectiveloaded = false;
+  @state() private _onlinePerspectiveloaded = false;
   @state() private _hasHolochainFailed = true;
 
   @state() private _hasWeProfile = false;
@@ -218,6 +219,7 @@ export class ThreadsApp extends HappElement {
     if (this.appletView && this.appletView.type == "main") {
       await this.hvm.probeAll();
     }
+    this._onlinePerspectiveloaded = true;
   }
 
 
@@ -244,7 +246,7 @@ export class ThreadsApp extends HappElement {
   render() {
     console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
 
-    if (!this._offlinePerspectiveloaded) {
+    if (!this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) { // because we need to probe my Profile
       return html `
         <ui5-busy-indicator size="Medium" active
                             style="margin:auto; width:50%; height:50%;"
@@ -303,11 +305,11 @@ export class ThreadsApp extends HappElement {
     /** Import profile from We */
     let guardedView = view;
     const maybeMyProfile = this.threadsDvm.profilesZvm.getMyProfile();
-    console.log("<files-app> Profile", this._hasWeProfile, maybeMyProfile);
+    console.log("<threads-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = html`
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
-          <h1 style="font-family: arial;color: #5804A8;"><img src="assets/icon.png" width="32" height="32"
+          <h1 style="font-family: arial;color: #5804A8;"><img src="icon.png" width="32" height="32"
                                                               style="padding-left: 5px;padding-top: 5px;"/> Threads</h1>
           <div style="align-items: center;">
             <ui5-card id="profileCard">
@@ -320,7 +322,11 @@ export class ThreadsApp extends HappElement {
                   }}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
                     console.log("createMyProfile()", e.detail);
-                    await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
+                    try {
+                      await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
+                    } catch(e) {
+                      console.warn("Failed creating my Profile", e);
+                    }
                     this.requestUpdate();
                   }}
                   @lang-selected=${(e: CustomEvent) => {

@@ -6,9 +6,21 @@
   <source>Failed to connect to Holochain Conductor and/or &lt;b&gt;Threads&lt;/b&gt; cell.</source>
   <target>Echec de connection à la cell &lt;b&gt;Threads&lt;/b&gt; ou a Holochain</target>
 </trans-unit>
-<trans-unit id="s15e2ffb6e6776c4a">
-  <source>Import Profile into Files applet</source>
-  <target>Importer le Profile dans l'application Files</target>
+<trans-unit id="s1202046c1b160829">
+  <source>Add New Topic</source>
+  <target>Ajouter un nouveau Sujet</target>
+</trans-unit>
+<trans-unit id="sfeddbc6c931b7ad7">
+  <source>Mark all as read</source>
+  <target>Marquer tout comme lu</target>
+</trans-unit>
+<trans-unit id="s8641b6c3688a0cec">
+  <source>Edit Profile</source>
+  <target>Editer Profile</target>
+</trans-unit>
+<trans-unit id="seee3334e15436a24">
+  <source>Import Profile into Threads applet</source>
+  <target>Importer votre Profile dans Threads</target>
 </trans-unit>
 </body>
 </file>
