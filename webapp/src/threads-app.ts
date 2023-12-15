@@ -207,6 +207,8 @@ export class ThreadsApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<threads-app>.perspectiveInitializedOffline()");
+    const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
+    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
     /** Done */
     this._offlinePerspectiveloaded = true;
   }
@@ -246,7 +248,7 @@ export class ThreadsApp extends HappElement {
   render() {
     console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
 
-    if (!this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) { // because we need to probe my Profile
+    if (!this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) { // because we need to probe my Profile // FIXME REMOVE THIS
       return html `
         <ui5-busy-indicator size="Medium" active
                             style="margin:auto; width:50%; height:50%;"

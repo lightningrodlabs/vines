@@ -35,8 +35,12 @@ pub fn query_semantic_topics(_: ()) -> ExternResult<Vec<(Timestamp, EntryHash, S
 pub(crate) fn determine_topic_anchor(title: String) -> ExternResult<TypedPath> {
   // conver to lowercase for path for ease of search
   let lower_title = title.to_lowercase();
-  let (prefix, _) = lower_title.as_str().split_at(3);
+  let mut anchor = title.as_str();
+  if title.len() > 3 {
+    let (prefix, _) = lower_title.as_str().split_at(3);
+    anchor = prefix;
+  }
   // FIXME remove first letter depth
-  Path::from(format!("{}{}{}{}{}", ROOT_ANCHOR_SEMANTIC_TOPICS, DELIMITER, lower_title.chars().next().unwrap(), DELIMITER, prefix))
+  Path::from(format!("{}{}{}{}{}", ROOT_ANCHOR_SEMANTIC_TOPICS, DELIMITER, lower_title.chars().next().unwrap(), DELIMITER, anchor))
     .typed(ThreadsLinkType::SemanticTopicPath)
 }
