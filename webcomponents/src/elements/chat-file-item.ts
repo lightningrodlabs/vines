@@ -7,7 +7,7 @@ import {consume} from "@lit/context";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {globaFilesContext} from "../contexts";
-import {FileHash, FilesDvm, FileType, kind2Type, prettyFileSize} from "@ddd-qc/files";
+import {FileHashB64, FilesDvm, FileType, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
 
 /**
@@ -24,7 +24,7 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of File bead to display */
   @property() hash: ActionHashB64 = '' // BeadAh
-  @state() private _dataHash?: FileHash;
+  @state() private _dataHash?: FileHashB64;
 
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -152,7 +152,9 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
     if (fileType == FileType.Image) {
       maybeCachedData = null;
       if (!this._dataHash) {
+        console.log("File is image, dataHash not known");
         this._filesDvm.getFile(manifestEh).then(([manifest, data]) => {
+          console.log("File is image, manifest", manifest.description.name, manifest.data_hash);
           const file = this._filesDvm.data2File(manifest, data);
           this._filesDvm.cacheFile(file);
           this._dataHash = manifest.data_hash;

@@ -59,6 +59,7 @@ import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
+import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/save.js"
@@ -82,7 +83,7 @@ import {
   parseMentions,
   ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64, ThreadsDnaPerspective
+  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext
 } from "@threads/elements";
 
 import {
@@ -156,7 +157,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: createContext<FilesDvm>('dvm/' + FILES_CELL_NAME), subscribe: true })
+  @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
@@ -440,7 +441,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {
-      console.log("target uplaod file", e);
+      console.log("target upload file", e);
       const file = e.target.files[0];
       // if (file.size > this._dvm.dnaProperties.maxParcelSize) {
       //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
@@ -553,7 +554,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             @change=${this.onAppletSelected}>
                     ${appletOptions}
                         <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
-                    <ui5-option id="topics-option" icon="number-sign" selected>Topics</ui5-option>
+                    <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
                 </ui5-select>
                 ${this._appletToShow ? html`
                     <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}
