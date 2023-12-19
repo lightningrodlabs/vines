@@ -5,6 +5,7 @@ import {AppletServices} from "@lightningrodlabs/we-applet";
 import {attachmentTypes} from "./appletServices/attachmentTypes";
 import {getEntryInfo} from "./appletServices/getEntryInfo";
 import {setupThreadsEntryView, devtestNames} from "./devtest";
+import {search} from "./appletServices/search";
 
 
 /** */
@@ -30,10 +31,9 @@ export async function setupThreadsApplet() {
 async function setupThreadsMainView() {
   const appletServices: AppletServices = {
     attachmentTypes,
-    //attachmentTypes: async (_appletClient) => ({}),
     getEntryInfo,
     blockTypes: {},
-    search: async (appletClient, searchFilter) => {return []},
+    search,
   };
   return setup(appletServices, createThreadsApplet, devtestNames, createDefaultWeServicesMock);
 }

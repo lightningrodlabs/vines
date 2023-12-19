@@ -165,7 +165,8 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                   `}
             <div style="display: flex; flex-direction: column">
                 <div>
-                    <abbr title=${texto.author}><span><b>${agent.nickname}</b></span></abbr>
+                    <!-- <abbr title=${texto.author}></abbr> -->
+                    <span><b>${agent.nickname}</b></span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
                 <div class="chatMsg">${texto.message}</div>

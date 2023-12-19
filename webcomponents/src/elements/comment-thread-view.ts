@@ -107,7 +107,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     console.log("<comment-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
-    if (changedProperties.has("threadHash") && this._dvm) {
+    if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
       console.log("<comment-thread-view>.willUpdate()", this.threadHash);
       this._dvm.threadsZvm.probeAllBeads(this.threadHash);
     }
@@ -250,7 +250,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const subjectType = this.subjectType? this.subjectType : pp.subjectType;
     const subjectName = this.subjectName? this.subjectName : pp.subjectHash;
-    const title = `Comments on ${subjectType} "${subjectName}"`;
+    const title = `Comments on ${subjectType}:`;
 
     let maybeInput = html``;
     if (this.showInput) {
@@ -263,7 +263,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
-        <h4 style="margin-left: 5px;">${title}</h4>
+        <h4 style="margin-left: 5px;">${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span></h4>
         <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
             ${textLi}
         </ui5-list>

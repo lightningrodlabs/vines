@@ -248,7 +248,7 @@ export class ThreadsApp extends HappElement {
   render() {
     console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
 
-    if (!this._offlinePerspectiveloaded || !this._onlinePerspectiveloaded) { // because we need to probe my Profile // FIXME REMOVE THIS
+    if (!this._offlinePerspectiveloaded) {
       return html `
         <ui5-busy-indicator size="Medium" active
                             style="margin:auto; width:50%; height:50%;"
