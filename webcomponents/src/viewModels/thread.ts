@@ -51,6 +51,8 @@ export class Thread {
   private _beadLinksTree: Tree<number, BeadLinkMaterialized>;
 
 
+  private _isHidden: boolean = false;
+
 
   /** Ctor */
   //[Date.now() * 1000, interval]
@@ -72,6 +74,7 @@ export class Thread {
 
   get creationTime(): Timestamp | undefined { return this._creationTime}
 
+  get isHidden(): boolean | undefined { return this._isHidden}
 
   get latestProbeLogTime(): Timestamp | undefined { return this._latestProbeLogTime}
 
@@ -108,6 +111,11 @@ export class Thread {
   /** */
   setCreationTime(time: Timestamp): void {
     this._creationTime = time;
+  }
+
+  /** */
+  setIsHidden(isHidden: boolean): void {
+    this._isHidden = isHidden;
   }
 
   /** */

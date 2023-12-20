@@ -321,8 +321,10 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Get all Threads from a subject */
   async queryThreads(): Promise<void> {
     const tuples = await this.zomeProxy.queryPps();
+    const hiddens = await this.probeHiddens();
     for (const [ts, ah, pp] of tuples) {
-      this.storePp(encodeHashToBase64(ah), pp, ts);
+      const ppAh = encodeHashToBase64(ah);
+      this.storePp(encodeHashToBase64(ah), pp, ts, hiddens.includes(ppAh));
     }
     console.log("queryThreads()", Object.keys(this._threads).length);
   }
@@ -390,12 +392,13 @@ export class ThreadsZvm extends ZomeViewModel {
   async probeThreads(subjectHash: AnyLinkableHashB64): Promise<Dictionary<ParticipationProtocol>> {
     let res = {};
     const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
+    const hiddens = await this.probeHiddens();
     // FIXME resolve promise all at once
-    for (const [ppAh, _linkTs] of pps) {
-      const ahB64 = encodeHashToBase64(ppAh);
-      const [pp, ts] = await this.zomeProxy.getPp(ppAh);
-      this.storePp(ahB64, pp, ts);
-      res[ahB64] = pp;
+    for (const [pp_ah, _linkTs] of pps) {
+      const ppAh = encodeHashToBase64(pp_ah);
+      const [pp, ts] = await this.zomeProxy.getPp(pp_ah);
+      this.storePp(ppAh, pp, ts, hiddens.includes(ppAh));
+      res[ppAh] = pp;
     }
     return res;
   }
@@ -646,7 +649,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const [ppAh, ts] = await this.zomeProxy.createParticipationProtocol(input);
     const ppAhB64 = encodeHashToBase64(ppAh);
     const [pp, _ts2] = await this.zomeProxy.getPp(ppAh);
-    const ppMat = this.storePp(ppAhB64, pp, ts);
+    const ppMat = this.storePp(ppAhB64, pp, ts, false);
     return [ppAhB64, ppMat];
   }
 
@@ -667,7 +670,7 @@ export class ThreadsZvm extends ZomeViewModel {
       dnaHash: decodeHashFromBase64(dnaHash),
     });
     const ahB64 = encodeHashToBase64(ah);
-    this.storePp(ahB64, pp, ts);
+    this.storePp(ahB64, pp, ts, false);
     return ahB64;
   }
 
@@ -681,7 +684,8 @@ export class ThreadsZvm extends ZomeViewModel {
     if (pp === null) {
       Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
-    const ppMat = this.storePp(ppAh, pp, ts);
+    const isHidden = await this.zomeProxy.getHideLink(decodeHashFromBase64(ppAh));
+    const ppMat = this.storePp(ppAh, pp, ts, isHidden != null);
     return ppMat;
   }
 
@@ -749,9 +753,17 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async hideSubject(hash: AnyLinkableHashB64) {
     await this.zomeProxy.hideSubject(decodeHashFromBase64(hash));
+    /** Check if it's a topic */
     const maybeTopicEh = Object.keys(this._allSemanticTopics).find(key => key === hash);
     if (maybeTopicEh) {
       this.storeSemanticTopic(maybeTopicEh, this._allSemanticTopics[maybeTopicEh][0], true);
+      return;
+    }
+    /** Check if it's a thread */
+    const maybeThreadAh = Object.keys(this._threads).find(key => key === hash);
+    if (maybeThreadAh) {
+      this._threads[maybeThreadAh].setIsHidden(true);
+      this.notifySubscribers();
       return;
     }
   }
@@ -760,16 +772,24 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async unhideSubject(hash: AnyLinkableHashB64) {
     await this.zomeProxy.unhideSubject(decodeHashFromBase64(hash));
+    /** Check if it's a topic */
     const maybeTopicEh = Object.keys(this._allSemanticTopics).find(key => key === hash);
     if (maybeTopicEh) {
       this.storeSemanticTopic(maybeTopicEh, this._allSemanticTopics[maybeTopicEh][0], false);
+      return;
+    }
+    /** Check if it's a thread */
+    const maybeThreadAh = Object.keys(this._threads).find(key => key === hash);
+    if (maybeThreadAh) {
+      this._threads[maybeThreadAh].setIsHidden(false);
+      this.notifySubscribers();
       return;
     }
   }
 
 
   /** */
-  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp): ParticipationProtocolMat {
+  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp, isHidden: boolean): ParticipationProtocolMat {
     let thread = this._threads[ppAh]
     if (!thread) {
       thread = new Thread();
@@ -779,9 +799,10 @@ export class ThreadsZvm extends ZomeViewModel {
       }
     }
     thread.setCreationTime(creationTime);
+    thread.setIsHidden(isHidden);
     let ppMat = materializeParticipationProtocol(pp);
     thread.setPp(ppMat);
-    console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subjectHash}"| creationTime: "`, creationTime);
+    console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subjectHash}"| creationTime: "`, creationTime, isHidden);
     this._threads[ppAh] = thread;
     if (!this._threadsPerSubject[ppMat.subjectHash]) {
       this._threadsPerSubject[ppMat.subjectHash] = [];

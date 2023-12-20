@@ -161,7 +161,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
           const threadIsNew = this.perspective.newThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
-          if (!thread.pp) {
+          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics)) {
             return html``;
           }
 
@@ -194,11 +194,23 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
             newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">!</ui5-badge>`;
           }
 
+          let hideShowBtn = html`
+        <ui5-button icon="hide" tooltip="Hide" design="Transparent"
+                    style="border:none; padding:0px" 
+                    @click="${(e) => this._zvm.hideSubject(ppHash)}"></ui5-button>`;
+
+          if (this.showArchivedTopics && thread.isHidden) {
+            hideShowBtn = html`
+        <ui5-button icon="show" tooltip="Show" design="Transparent"
+                    style="border:none; padding:0px" 
+                    @click="${(e) => this._zvm.unhideSubject(ppHash)}"></ui5-button>`;
+          }
 
           // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
           return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
               <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
                   <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
+                  ${hideShowBtn}
                   ${commentButton}
                   ${newBadge}                  
               </div>               
