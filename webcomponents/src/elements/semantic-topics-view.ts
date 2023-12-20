@@ -260,7 +260,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       @click="${(e) => this._zvm.hideSubject(topicHash)}"></ui5-button>          
         `
       }
-      
+
       const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`
           <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"

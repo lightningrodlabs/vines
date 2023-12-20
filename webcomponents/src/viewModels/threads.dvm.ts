@@ -109,7 +109,11 @@ export class ThreadsDvm extends DnaViewModel {
         if (beadType == "TextMessage") {
           /*await */this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
         } else {
-          /*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
+          if (beadType == "EntryBead") {
+            /*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
+          } else {
+            /*await */this.threadsZvm.fetchAnyBead(decodeHashFromBase64(beadAh), true);
+          }
         }
         break;
     }

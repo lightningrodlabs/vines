@@ -25,8 +25,19 @@ pub struct EntryBead {
 #[derive(Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TextMessage {
-    pub value: String,
     pub bead: Bead,
+    pub value: String,
+}
+
+
+///
+#[hdk_entry_helper]
+#[derive(Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct AnyBead {
+    pub bead: Bead,
+    pub value: String,
+    pub type_info: String,
 }
 
 

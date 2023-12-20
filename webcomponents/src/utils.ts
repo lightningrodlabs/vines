@@ -27,8 +27,10 @@ export function type2ui5Icon(type: FileType): string {
 export function beadToChatItem(blm: BeadLinkMaterialized): TemplateResult<1> {
   switch (blm.beadType) {
     case "TextMessage": return html`<chat-message-item hash="${blm.beadAh}"></chat-message-item>`;
+    case "EntryBead": return html`<chat-file-item hash="${blm.beadAh}"></chat-file-item>`;
+    case "AnyBead": return html`<chat-hrl-item hash="${blm.beadAh}"></chat-hrl-item>`;
     default:
-      return html`<chat-file-item hash="${blm.beadAh}"></chat-file-item>`;
+      return html``;
   }
 }
 

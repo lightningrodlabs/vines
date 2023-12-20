@@ -47,6 +47,7 @@ import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/document.js"
@@ -252,6 +253,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //msgList.requestUpdate();
   }
 
+  /** */
+  async onCreateHrlMessage() {
+    const maybeHrlc = await this.weServices.userSelectHrl();
+    if (!maybeHrlc) return;
+    //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
+    // FIXME make sure hrl is an entryHash
+    /*let ah =*/ await this._dvm.threadsZvm.publishHrlBead(maybeHrlc.hrl, this._selectedThreadHash);
+  }
 
   /** */
   async onCreateSemanticTopic(topic: string) {
@@ -491,8 +500,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
           ` : html`
           <threads-input-bar .profilesZvm=${this._dvm.profilesZvm} .topic=${topic}
+                             .showHrlBtn=${!!this.weServices}
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
                              @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
+                             @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
           ></threads-input-bar>`
           }
       `;

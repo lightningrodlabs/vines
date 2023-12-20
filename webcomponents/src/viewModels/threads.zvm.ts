@@ -6,6 +6,7 @@ import {
   encodeHashToBase64, Entry, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
+  AnyBead,
   Bead,
   BeadLink, CreatePpInput, EntryBead,
   GetLatestBeadsInput, GlobalLastProbeLog,
@@ -19,6 +20,7 @@ import {
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
+  AnyBeadInfo,
   AnyLinkableHashB64, BeadLinkMaterialized, EntryBeadInfo, HOLOCHAIN_EPOCH,
   materializeParticipationProtocol,
   ParticipationProtocolMat,
@@ -27,7 +29,7 @@ import {
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
-import {AppletId} from "@lightningrodlabs/we-applet";
+import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 
 
 
@@ -75,6 +77,7 @@ export class ThreadsZvm extends ZomeViewModel {
       threads: this._threads,
       textMessages: this._textMessages,
       entryBeads: this._entryBeads,
+      anyBeads: this._anyBeads,
       appletSubjectTypes: this._appletSubjectTypes,
       subjectsPerType: this._subjectsPerType,
 
@@ -101,6 +104,8 @@ export class ThreadsZvm extends ZomeViewModel {
   //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> BeadInfo */
   private _entryBeads: Dictionary<EntryBeadInfo> = {};
+  /** ah -> BeadInfo */
+  private _anyBeads: Dictionary<AnyBeadInfo> = {};
   /** ah -> TextMessageInfo */
   private _textMessages: Dictionary<TextMessageInfo> = {};
   /** lh -> ppAhs */
@@ -566,15 +571,37 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Returns beadType & global_time_anchor */
+  async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64) {
+    return this.publishHrlBeadAt(hrl, ppAh, Date.now() * 1000);
+  }
+
+  /** */
+  async publishHrlBeadAt(hrl: Hrl, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[AnyBead, string]> {
+    const obj = [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])]
+    const input = {forProtocolAh: decodeHashFromBase64(protocolAh), value: JSON.stringify(obj), typeInfo: "hrl"}
+    console.log("publishHrlBeadAt()", obj, input.value);
+    /** Add Bead */
+    const [beadAh, anyBead, global_time_anchor, bucket_ts] = await this.zomeProxy.addAnyBead(input);
+    console.log("publishHrlBeadAt() added bead", beadAh, creationTime);
+    /** Insert in perspective */
+    if (!dontStore) {
+      this.fetchAnyBead(beadAh, true, creationTime);
+    }
+    /** Done */
+    return [anyBead, global_time_anchor];
+  }
+
+
+  /** Returns beadType & global_time_anchor */
   async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64) {
     return this.publishEntryBeadAt(eh, ppAh, Date.now() * 1000);
   }
 
-
   /** */
   async publishEntryBeadAt(eh: EntryHashB64, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[EntryBead, string]> {
+    const entryInfo = {eh: decodeHashFromBase64(eh), forProtocolAh: decodeHashFromBase64(protocolAh), zomeName: "zFiles", roleName: "rFiles"};
     /** Add Bead */
-    const [beadAh, entryBead, global_time_anchor, bucket_ts] = await this.zomeProxy.addEntryAsBead({eh: decodeHashFromBase64(eh), forProtocolAh: decodeHashFromBase64(protocolAh), zomeName: "zFiles", roleName: "rFiles"});
+    const [beadAh, entryBead, global_time_anchor, bucket_ts] = await this.zomeProxy.addEntryAsBead(entryInfo);
     console.log("publishEntryBeadAt() added bead", beadAh, creationTime);
     /** Insert in perspective */
     if (!dontStore) {
@@ -583,6 +610,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Done */
     return [entryBead, global_time_anchor];
   }
+
 
   /** */
   async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string]> {
@@ -715,7 +743,22 @@ export class ThreadsZvm extends ZomeViewModel {
       return entryBead;
     } catch(e) {
       console.error(e);
-      Promise.reject("TextMessage not found at " + encodeHashToBase64(beadAh));
+      Promise.reject("EntryBead not found at " + encodeHashToBase64(beadAh));
+    }
+  }
+
+
+  /** */
+  async fetchAnyBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<AnyBead> {
+    try {
+      const [creationTime, author, anyBead] = await this.zomeProxy.getAnyBead(beadAh);
+      const ts = alternateCreationTime? alternateCreationTime : creationTime;
+      //console.log("fetchTextMessage", ts);
+      this.storeAnyBead(encodeHashToBase64(beadAh), encodeHashToBase64(anyBead.bead.forProtocolAh), ts, encodeHashToBase64(author), anyBead, canNotify);
+      return anyBead;
+    } catch(e) {
+      console.error(e);
+      Promise.reject("AnyBead not found at " + encodeHashToBase64(beadAh));
     }
   }
 
@@ -728,11 +771,15 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** fetch each TextMessage */
     for (const bl of beadLinks) {
-      //console.log("fetchBeads()", bl.t)
+      console.log("fetchBeads()", bl.beadType)
       if (bl.beadType == "TextMessage") {
         await this.fetchTextMessage(bl.beadAh, false, bl.creationTime);
       } else {
-        await this.fetchEntryBead(bl.beadAh, false, bl.creationTime);
+        if (bl.beadType == "EntryBead") {
+          await this.fetchEntryBead(bl.beadAh, false, bl.creationTime);
+        } else {
+          await this.fetchAnyBead(bl.beadAh, false, bl.creationTime);
+        }
       }
     }
     this._threads[ppAhB64].addProbedInterval(probedInterval);
@@ -815,6 +862,30 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  storeAnyBead(beadAh: ActionHashB64, forProtocolAh: ActionHashB64, creationTime: Timestamp, author: AgentPubKeyB64, anyBead: AnyBead, canNotify: boolean): void {
+    if (this._entryBeads[beadAh]) {
+      return;
+    }
+    /* Store BeadLinkMaterialized */
+    this._anyBeads[beadAh] = {
+      creationTime,
+      author,
+      anyBead,
+    };
+    /* Store Bead in its Thread */
+    if (!this._threads[forProtocolAh]) {
+      this._threads[forProtocolAh] = new Thread();
+    }
+    const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType: "AnyBead" /*anyBead.typeInfo*/};
+    this._threads[forProtocolAh].addItem(blMat);
+    /* Done */
+    if (canNotify) {
+      this.notifySubscribers();
+    }
+  }
+
+
+  /** */
   storeEntryBead(beadAh: ActionHashB64, forProtocolAh: ActionHashB64, creationTime: Timestamp, author: AgentPubKeyB64, entryBead: EntryBead, canNotify: boolean): void {
     if (this._entryBeads[beadAh]) {
       return;
@@ -829,7 +900,7 @@ export class ThreadsZvm extends ZomeViewModel {
     if (!this._threads[forProtocolAh]) {
       this._threads[forProtocolAh] = new Thread();
     }
-    const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType: entryBead.subType};
+    const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType: "EntryBead" /*entryBead.subType*/};
     this._threads[forProtocolAh].addItem(blMat);
     /* Done */
     if (canNotify) {

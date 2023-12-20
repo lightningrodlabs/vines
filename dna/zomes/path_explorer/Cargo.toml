@@ -9,4 +9,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 hdk.workspace = true
-path_explorer = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-2.2"}
+path_explorer = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-2.4"}

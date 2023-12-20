@@ -134,6 +134,12 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
+export interface AddAnyBead {
+  forProtocolAh: ActionHash
+  value: string
+  typeInfo: string
+}
+
 export interface AddEntryAsBead {
   eh: EntryHash
   forProtocolAh: ActionHash
@@ -252,8 +258,15 @@ export interface EntryBead {
 
 /**  */
 export interface TextMessage {
-  value: string
   bead: Bead
+  value: string
+}
+
+/**  */
+export interface AnyBead {
+  bead: Bead
+  value: string
+  typeInfo: string
 }
 
 /**  */
@@ -309,6 +322,7 @@ export const PP_ITEM_TYPE = "__protocol";
  * -------------------------------------------------------------------------------------------------
  */
 export enum ThreadsEntryType {
+	AnyBead = 'AnyBead',
 	EntryBead = 'EntryBead',
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
@@ -316,6 +330,7 @@ export enum ThreadsEntryType {
 	GlobalProbeLog = 'GlobalProbeLog',
 	ThreadProbeLog = 'ThreadProbeLog',
 }
+export type ThreadsEntryVariantAnyBead = {AnyBead: AnyBead}
 export type ThreadsEntryVariantEntryBead = {EntryBead: EntryBead}
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
@@ -323,7 +338,7 @@ export type ThreadsEntryVariantTextMessage = {TextMessage: TextMessage}
 export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
 export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
 export type ThreadsEntry = 
- | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
+ | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
 /**
  * -------------------------------------------------------------------------------------------------

@@ -1,11 +1,14 @@
-import {createDefaultWeServicesMock, setup} from "@ddd-qc/we-utils";
+import {createDefaultWeServicesMock, setup, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {createThreadsApplet} from "./createThreadsApplet";
 import {ThreadsEntryType} from "@threads/elements";
-import {AppletServices} from "@lightningrodlabs/we-applet";
+import {AppletServices, HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import {attachmentTypes} from "./appletServices/attachmentTypes";
 import {getEntryInfo} from "./appletServices/getEntryInfo";
 import {setupThreadsEntryView, devtestNames} from "./devtest";
 import {search} from "./appletServices/search";
+import {encodeHashToBase64, fakeDnaHash, fakeEntryHash} from "@holochain/client";
+import {EntryLocationAndInfo, Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {mdiCommentTextMultiple, mdiFileExcelOutline} from "@mdi/js";
 
 
 /** */
@@ -35,5 +38,29 @@ async function setupThreadsMainView() {
     blockTypes: {},
     search,
   };
-  return setup(appletServices, createThreadsApplet, devtestNames, createDefaultWeServicesMock);
+  return setup(appletServices, createThreadsApplet, devtestNames, createWeServicesMock);
+}
+
+
+/** Implement userSelectHrl */
+async function createWeServicesMock(devtestAppletId: string): Promise<WeServices> {
+  const weServices =  await createDefaultWeServicesMock(devtestAppletId);
+
+  weServices.userSelectHrl = async () => {
+    return {
+    hrl: [await fakeDnaHash(), await fakeEntryHash()],
+    context: null,
+    } as HrlWithContext;}
+
+  weServices.entryInfo = async (hrl: Hrl) => {
+    return {
+      appletHash: await fakeDnaHash(),
+      entryInfo:  {
+        name: encodeHashToBase64(hrl[1]),
+        icon_src: wrapPathInSvg(mdiFileExcelOutline),
+      }
+    } as EntryLocationAndInfo;}
+
+
+  return weServices;
 }

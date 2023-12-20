@@ -18,13 +18,18 @@ import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 export class InputBar extends LitElement {
 
 
-  /** */
-  @property() topic: string = ''
+  /** Properties */
 
-  private _cacheInputValue: string = "";
+  @property() topic: string = ''
+  @property() showHrlBtn?: string;
 
   @property({type: Object})
   profilesZvm!: ProfilesZvm;
+
+
+  /** -- Fields -- */
+
+  private _cacheInputValue: string = "";
 
 
   /** -- Methods -- */
@@ -40,13 +45,17 @@ export class InputBar extends LitElement {
 
   /** */
   render() {
-    console.log("<threads-input-bar>.render()", this.profilesZvm);
+    console.log("<threads-input-bar>.render()", this.profilesZvm, this.showHrlBtn);
 
     /** render all */
     return html`
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
+            ${this.showHrlBtn? html`
             <ui5-button design="Positive" icon="add" @click=${(e) => {
+                this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));
+            }}></ui5-button>` : html``}
+            <ui5-button design="Positive" icon="attachment" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
             }}></ui5-button>
             <ui5-input id="textMessageInput" type="Text" placeholder="Message #${this.topic}"
@@ -69,8 +78,8 @@ export class InputBar extends LitElement {
 
                        @keydown=${(e) => {
                            const input = this.shadowRoot.getElementById("textMessageInput") as Input;
-                           console.log("keydown", e);
-                           console.log("keydown keyCode", e.keyCode);
+                           //console.log("keydown", e);
+                           //console.log("keydown keyCode", e.keyCode);
                            
                            /** Remove previous suggestions */
                            Array.from(input.children).forEach((child) => {

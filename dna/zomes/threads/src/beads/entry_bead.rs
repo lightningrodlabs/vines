@@ -47,7 +47,7 @@ pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, Ent
 
     };
     let ah = create_entry(ThreadsEntry::EntryBead(entryBead.clone()))?;
-    let tp_pair = index_bead(entryBead.bead.clone(), ah.clone(), &bead_type, ah_time)?;
+    let tp_pair = index_bead(entryBead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, ah_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     Ok((ah, entryBead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
@@ -61,10 +61,10 @@ pub fn get_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubK
         Some(record) => {
             let action = record.action().clone();
             let Ok(typed) = get_typed_from_record::<EntryBead>(record)
-                else { return error("get_text_message(): Entry not a TextMessage") };
+                else { return error("get_entry_bead(): Entry not an EntryBead") };
             Ok((action.timestamp(), action.author().to_owned(), typed))
         }
-        None => error("get_any_bead(): Entry not found"),
+        None => error("get_entry_bead(): Entry not found"),
     };
     //let fn_end = sys_time()?;
     //debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
