@@ -307,4 +307,20 @@ export class ThreadsProxy extends ZomeProxy {
   async getSubjectTypesForApplet(appletId: string): Promise<[string, EntryHash][]> {
     return this.call('get_subject_types_for_applet', appletId);
   }
+
+  async getHideLink(subjectHash: Uint8Array): Promise<ActionHash | null> {
+    return this.call('get_hide_link', subjectHash);
+  }
+
+  async hideSubject(subjectHash: Uint8Array): Promise<ActionHash> {
+    return this.call('hide_subject', subjectHash);
+  }
+
+  async unhideSubject(subjectHash: Uint8Array): Promise<void> {
+    return this.call('unhide_subject', subjectHash);
+  }
+
+  async getHiddenSubjects(): Promise<Uint8Array[]> {
+    return this.call('get_hidden_subjects', null);
+  }
 }

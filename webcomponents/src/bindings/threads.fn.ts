@@ -50,7 +50,11 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_applets",
 	"get_subjects_by_type",
 	"get_subjects_for_applet",
-	"get_subject_types_for_applet",];
+	"get_subject_types_for_applet",
+	"get_hide_link",
+	"hide_subject",
+	"unhide_subject",
+	"get_hidden_subjects",];
 
 
 /** Generate tuple array of function names with given zomeName */

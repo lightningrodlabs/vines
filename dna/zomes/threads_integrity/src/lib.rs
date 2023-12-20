@@ -69,4 +69,5 @@ pub enum ThreadsLinkType {
     Protocols,
     Invalid,
     Mention,
+    Hide,
 }

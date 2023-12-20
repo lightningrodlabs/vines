@@ -57,6 +57,7 @@ import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/home.js"
+import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
@@ -64,6 +65,7 @@ import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
+import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
@@ -149,6 +151,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
 
+  @state() private _canViewArchivedTopics = false;
 
   @state() private _splitObj?: SplitObject;
 
@@ -468,7 +471,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let threadTitle = "Threads";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads[this._selectedThreadHash];
-      const topic = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
+      const [topic, topicHidden] = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
       threadTitle = `# ${topic}: ${thread.pp.purpose}`;
 
       /** Check uploading state */
@@ -561,6 +564,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                          @selected="${this.onDnaThreadSelected}"></applet-threads-tree>
                 ` : html`
                     <semantic-topics-view
+                            .showArchivedTopics=${this._canViewArchivedTopics} 
                             @createThreadClicked=${(e) => {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
@@ -577,6 +581,19 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 }}>
                         ${msg("Add New Topic")}
                     </ui5-button>
+                    ${this._canViewArchivedTopics? html`
+                      <ui5-button icon="hide" design="Attention"
+                                  style="margin:10px 30px 10px 30px;"
+                                  @click=${this.onShowArchiveTopicsBtn}>
+                        ${msg("Hide Archived Topics")}
+                      </ui5-button>
+                    ` : html`
+                    <ui5-button icon="show"
+                                style="margin:10px 30px 10px 30px;"
+                                @click=${this.onShowArchiveTopicsBtn}>
+                      ${msg("View Archived Topics")}
+                    </ui5-button>
+                    `}                    
                     <ui5-button icon="save" design="Positive"
                                 style="margin:10px 30px 10px 30px;"
                                 @click=${this.onCommitBtn}>
@@ -769,6 +786,13 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCommitBtn(_e?: any) {
     await this._dvm.threadsZvm.commitProbeLogs();
   }
+
+
+  /** */
+  onShowArchiveTopicsBtn(_e?: any) {
+    this._canViewArchivedTopics = !this._canViewArchivedTopics;
+  }
+
 
 
   /** */

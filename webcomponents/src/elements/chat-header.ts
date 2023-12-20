@@ -42,7 +42,7 @@ export class ChatHeader extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
     const pp = this._zvm.perspective.threads[this.hash].pp;
-    const semTopic = this._zvm.perspective.allSemanticTopics[pp.subjectHash];
+    const [semTopic, _topicHidden] = this._zvm.perspective.allSemanticTopics[pp.subjectHash];
 
     // FIXME: Generate Top icon according to topic type or bead type
 

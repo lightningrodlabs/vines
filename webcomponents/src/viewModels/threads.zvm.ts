@@ -95,8 +95,8 @@ export class ThreadsZvm extends ZomeViewModel {
   private _allAppletIds: string[] = [];
   /** ah -> Subject */
   private _allSubjects: Dictionary<Subject> = {};
-  /** ah -> SemanticTopic */
-  private _allSemanticTopics: Dictionary<string> = {};
+  /** eh -> (title, isHidden) */
+  private _allSemanticTopics: Dictionary<[string, boolean]> = {};
   ///** ah -> ParticipationProtocol */
   //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> BeadInfo */
@@ -132,8 +132,12 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._allSubjects[ah];
   }
 
-  getSemanticTopic(ah: ActionHashB64): string | undefined {
-    return this._allSemanticTopics[ah];
+  getSemanticTopic(eh: EntryHashB64): string | undefined {
+    const maybeTopic = this._allSemanticTopics[eh];
+    if (maybeTopic) {
+      return maybeTopic[0];
+    }
+    return undefined;
   }
 
   getParticipationProtocol(ah: ActionHashB64): ParticipationProtocolMat | undefined {
@@ -246,8 +250,8 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.probeSemanticTopics();
     /** Grab all threads of SemanticTopics to see if there are new ones */
     let probes = []
-    for (const topicAh of Object.keys(this._allSemanticTopics)) {
-      probes.push(this.probeThreads(topicAh));
+    for (const topicEh of Object.keys(this._allSemanticTopics)) {
+      probes.push(this.probeThreads(topicEh));
     }
     await Promise.all(probes);
     /** Get last elements since last time (global search log) */
@@ -259,6 +263,12 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.probeAllAppletIds();
   }
 
+
+  /** */
+  async probeHiddens(): Promise<AnyLinkableHashB64[]> {
+    const hiddens = await this.zomeProxy.getHiddenSubjects();
+    return hiddens.map((hidden) => encodeHashToBase64(hidden))
+  }
 
   /** */
   async probeMentions() {
@@ -296,10 +306,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Get all SemanticTopics from the RootAnchor */
-  private async querySemanticTopics(): Promise<Dictionary<string>> {
+  private async querySemanticTopics(): Promise<Dictionary<[string, boolean]>> {
     const tuples = await this.zomeProxy.querySemanticTopics();
+    const hiddens = await this.probeHiddens();
     for (const [_ts, eh, st] of tuples) {
-      this.storeSemanticTopic(encodeHashToBase64(eh), st.title);
+      const topicEh = encodeHashToBase64(eh);
+      this.storeSemanticTopic(topicEh, st.title, hiddens.includes(topicEh));
     }
     console.log("querySemanticTopics()", Object.keys(this._allSemanticTopics).length);
     return this._allSemanticTopics;
@@ -356,15 +368,18 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
     return this._allSubjects;
   }
+
   // TODO: probeDnaSubjects()
   // TODO: probeEntryTypeSubjects()
 
 
   /** Get all SemanticTopics from the RootAnchor */
-  async probeSemanticTopics(): Promise<Dictionary<string>> {
+  async probeSemanticTopics(): Promise<Dictionary<[string, boolean]>> {
     const sts = await this.zomeProxy.getAllSemanticTopics();
+    const hiddens = await this.probeHiddens();
     for (const tuple of sts) {
-      this.storeSemanticTopic(encodeHashToBase64(tuple[0]), tuple[1]);
+      const topicEh = encodeHashToBase64(tuple[0]);
+      this.storeSemanticTopic(topicEh, tuple[1], hiddens.includes(topicEh));
     }
     console.log("probeSemanticTopics()", Object.keys(this._allSemanticTopics).length);
     return this._allSemanticTopics;
@@ -617,15 +632,16 @@ export class ThreadsZvm extends ZomeViewModel {
   async publishSemanticTopic(title: string) : Promise<EntryHashB64> {
     const eh = await this.zomeProxy.createSemanticTopic({title});
     const ehB64 = encodeHashToBase64(eh);
-    this.storeSemanticTopic(ehB64, title);
-    console.log("publishSemanticTopic()", title,ehB64);
+    this.storeSemanticTopic(ehB64, title, false);
+    console.log("publishSemanticTopic()", title, ehB64);
     console.log("publishSemanticTopic()", this._allSemanticTopics);
-
+    /** Done */
     this.notifySubscribers();
     return ehB64;
   }
 
 
+  /** */
   async publishParticipationProtocol(input: CreatePpInput): Promise<[ActionHashB64, ParticipationProtocolMat]> {
     const [ppAh, ts] = await this.zomeProxy.createParticipationProtocol(input);
     const ppAhB64 = encodeHashToBase64(ppAh);
@@ -724,9 +740,31 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
-  storeSemanticTopic(eh: EntryHashB64, title: string): void {
-    this._allSemanticTopics[eh] = title;
+  storeSemanticTopic(eh: EntryHashB64, title: string, isHidden: boolean): void {
+    this._allSemanticTopics[eh] = [title, isHidden];
     this.notifySubscribers();
+  }
+
+
+  /** */
+  async hideSubject(hash: AnyLinkableHashB64) {
+    await this.zomeProxy.hideSubject(decodeHashFromBase64(hash));
+    const maybeTopicEh = Object.keys(this._allSemanticTopics).find(key => key === hash);
+    if (maybeTopicEh) {
+      this.storeSemanticTopic(maybeTopicEh, this._allSemanticTopics[maybeTopicEh][0], true);
+      return;
+    }
+  }
+
+
+  /** */
+  async unhideSubject(hash: AnyLinkableHashB64) {
+    await this.zomeProxy.unhideSubject(decodeHashFromBase64(hash));
+    const maybeTopicEh = Object.keys(this._allSemanticTopics).find(key => key === hash);
+    if (maybeTopicEh) {
+      this.storeSemanticTopic(maybeTopicEh, this._allSemanticTopics[maybeTopicEh][0], false);
+      return;
+    }
   }
 
 

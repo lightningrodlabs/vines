@@ -97,7 +97,7 @@ export class ThreadsDvm extends DnaViewModel {
         break;
       case DirectMessageType.NewSemanticTopic:
         const [stEh, title] = signalPayload.dm.content;
-        this.threadsZvm.storeSemanticTopic(stEh, title);
+        this.threadsZvm.storeSemanticTopic(stEh, title, false);
         break;
       case DirectMessageType.NewPp:
         const ppAh = signalPayload.dm.content

@@ -69,8 +69,9 @@ export class InputBar extends LitElement {
 
                        @keydown=${(e) => {
                            const input = this.shadowRoot.getElementById("textMessageInput") as Input;
-                           //console.log("keydown", e);
-
+                           console.log("keydown", e);
+                           console.log("keydown keyCode", e.keyCode);
+                           
                            /** Remove previous suggestions */
                            Array.from(input.children).forEach((child) => {
                                input.removeChild(child);
@@ -79,11 +80,15 @@ export class InputBar extends LitElement {
                            /** Enter: commit message */
                            if (e.keyCode === 13) {
                                e.preventDefault();
-                               if (input.value && input.value.length != 0) {
-                                 this.dispatchEvent(new CustomEvent('input', {
-                                   detail: input.value, bubbles: true, composed: true
-                                 }));
-                                 input.value = "";
+                               if (e.shiftKey) {
+                                   /* FIXME add newline to input.value */
+                               } else {
+                                   if (input.value && input.value.length != 0) {
+                                       this.dispatchEvent(new CustomEvent('input', {
+                                           detail: input.value, bubbles: true, composed: true
+                                       }));
+                                       input.value = "";
+                                   }
                                }
                            }
 

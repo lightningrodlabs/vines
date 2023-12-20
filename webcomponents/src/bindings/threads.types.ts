@@ -331,7 +331,7 @@ export type ThreadsEntry =
  * -------------------------------------------------------------------------------------------------
  */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null} | {Hide: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
@@ -345,4 +345,5 @@ export enum ThreadsLinkTypeType {
 	Protocols = 'Protocols',
 	Invalid = 'Invalid',
 	Mention = 'Mention',
+	Hide = 'Hide',
 }

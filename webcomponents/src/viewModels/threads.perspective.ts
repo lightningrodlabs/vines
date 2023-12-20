@@ -53,7 +53,7 @@ export interface ThreadsPerspective {
   /** Store of all Subjects: eh -> Subject */
   allSubjects: Dictionary<Subject>,
   /** Store of all SemTopic: eh -> Topic Title */
-  allSemanticTopics: Dictionary<string>,
+  allSemanticTopics: Dictionary<[string, boolean]>,
   ///** Store of all PPmat: pp_ah -> PP */
   //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */

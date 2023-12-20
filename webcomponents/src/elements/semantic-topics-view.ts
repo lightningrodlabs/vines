@@ -21,6 +21,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
+  @property() showArchivedTopics?: string;
 
   @state() private _isHovered: Dictionary<boolean> = {};
 
@@ -142,7 +143,11 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     //   return html`Loading...`;
     // }
 
-    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, title]) => {
+    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, [title, isHidden]]) => {
+      /** Skip if hidden */
+      if (isHidden && !this.showArchivedTopics) {
+        return;
+      }
       /** Render threads for Topic */
       const topicThreads = this.perspective.threadsPerSubject[topicHash];
       //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
@@ -215,12 +220,13 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         if (this._isHovered[topicHash]) {
           commentButton = maybeCommentThread != null
             ? html`
-                      <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
-                                  @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
+                <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" 
+                            style="border:none;"
+                            @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
             : html`
-                      <ui5-button icon="sys-add" style="padding:0px" tooltip="Create Comment Thread"
-                                  style="border:none;" design="Transparent"
-                                  @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+                <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent"
+                            style="border:none; padding:0px;" 
+                            @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
         }
       }
       /** 'new' badge to display */
@@ -228,6 +234,19 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       if (topicIsNew) {
         newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
       }
+
+      let hideShowBtn = html`
+        <ui5-button icon="hide" tooltip="Hide" design="Transparent"
+                    style="border:none; padding:0px" 
+                    @click="${(e) => this._zvm.hideSubject(topicHash)}"></ui5-button>`;
+
+      if (this.showArchivedTopics && isHidden) {
+        hideShowBtn = html`
+        <ui5-button icon="show" tooltip="Show" design="Transparent"
+                    style="border:none; padding:0px" 
+                    @click="${(e) => this._zvm.unhideSubject(topicHash)}"></ui5-button>`;
+      }
+
 
       const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
       return html`
@@ -244,6 +263,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       composed: true
                   }));
               }}></ui5-button>
+              ${hideShowBtn}
               ${commentButton}
               ${newBadge}              
           </span>
