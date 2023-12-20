@@ -1,0 +1,76 @@
+{
+  "groups": [
+    {
+      "name": "Batiment 7",
+      "networkSeed": "test",
+      "icon": {
+        "type": "filesystem",
+        "path": "S:\\media\\images\\b7.jpg"
+      },
+      "creatingAgent": {
+        "agentNum": 1,
+        "agentProfile": {
+          "nickname": "Alex",
+          "avatar": {
+            "type": "filesystem",
+            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+          }
+        }
+      },
+      "joiningAgents": [
+        {
+          "agentNum": 2,
+          "agentProfile": {
+            "nickname": "Billy",
+            "avatar": {
+              "type": "filesystem",
+              "path": "S:\\media\\images\\308954_10150302956291669_246474565_n.jpg"
+            }
+          }
+        }
+      ],
+      "applets": [
+        {
+          "name": "Threads",
+          "instanceName": "Threads",
+          "registeringAgent": 1,
+          "joiningAgents": [2]
+        },
+        {
+          "name": "Files",
+          "instanceName": "Files",
+          "registeringAgent": 1,
+          "joiningAgents": [2]
+        }
+      ]
+    }
+  ],
+  "applets": [
+    {
+      "name": "Threads",
+      "subtitle": "Tooling for conversation in group spaces on holochain\n",
+      "description": "...",
+      "icon": {
+        "type": "filesystem",
+        "path": "./webapp/icon.png"
+      },
+      "source": {
+        "type": "filesystem",
+        "path": "./artifacts/threads-we_applet.webhapp"
+      }
+    },
+    {
+      "name": "Files",
+      "subtitle": "File storing and sharing applet",
+      "description": "...",
+      "icon": {
+        "type": "filesystem",
+        "path": "../file-share/assets/icon.png"
+      },
+      "source": {
+        "type": "filesystem",
+        "path": "../file-share/artifacts/files-we_applet.webhapp"
+      }
+    }
+  ]
+}

@@ -42,6 +42,10 @@
     "prodtest:we"        : "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run prodtest:we-launch\"",
     "prodtest:we-launch" : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.prodtest.config.json --agent-num 1",
 
+    "multitest"           : "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run multitest:we-launch\"",
+    "multitest:we-launch" : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.multitest.config.json --agent-num 1",
+
+
     "start:mem"          : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
     "start:local"        : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
 
