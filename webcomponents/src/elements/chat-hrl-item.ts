@@ -7,7 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
-import {Hrl, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, Hrl, WeServices} from "@lightningrodlabs/we-applet";
 import {EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 
 
@@ -36,6 +36,7 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
   @state() private _isHovered = false;
 
   @state() private _entryInfo?: EntryLocationAndInfo;
+  @state() private _appletInfo?: AppletInfo;
 
   /**
    * In dvmUpdated() this._dvm is not already set!
@@ -83,6 +84,10 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
     const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
     if (!this._entryInfo) {
       this.weServices.entryInfo(hrl).then((entryInfo) => this._entryInfo = entryInfo);
+      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+    }
+    if (!this._appletInfo) {
+      this.weServices.appletInfo(hrl[0]).then((appletInfo) => this._appletInfo = appletInfo);
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
 
@@ -139,7 +144,7 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
     //let item =html`<ui5-busy-indicator size="Medium" active style="margin:10px; /*width:50%; height:50%;*/"></ui5-busy-indicator>`;
     let item = html`
         <ui5-list id="fileList">
-          <ui5-li id="fileLi" icon="chain-link" description="HRL"
+          <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
                   @click=${(e) => this.weServices.openHrl(hrl, null)}>
             ${this._entryInfo.entryInfo.name}
           </ui5-li>

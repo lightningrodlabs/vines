@@ -38,29 +38,5 @@ async function setupThreadsMainView() {
     blockTypes: {},
     search,
   };
-  return setup(appletServices, createThreadsApplet, devtestNames, createWeServicesMock);
-}
-
-
-/** Implement userSelectHrl */
-async function createWeServicesMock(devtestAppletId: string): Promise<WeServices> {
-  const weServices =  await createDefaultWeServicesMock(devtestAppletId);
-
-  weServices.userSelectHrl = async () => {
-    return {
-    hrl: [await fakeDnaHash(), await fakeEntryHash()],
-    context: null,
-    } as HrlWithContext;}
-
-  weServices.entryInfo = async (hrl: Hrl) => {
-    return {
-      appletHash: await fakeDnaHash(),
-      entryInfo:  {
-        name: encodeHashToBase64(hrl[1]),
-        icon_src: wrapPathInSvg(mdiFileExcelOutline),
-      }
-    } as EntryLocationAndInfo;}
-
-
-  return weServices;
+  return setup(appletServices, createThreadsApplet, devtestNames, createDefaultWeServicesMock);
 }
