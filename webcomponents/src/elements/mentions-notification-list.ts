@@ -1,19 +1,19 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement, ZomeElement} from "@ddd-qc/lit-happ";
+import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
-import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 
 
 /**
  * @element
  */
 @customElement("mentions-notification-list")
-export class MentionsList extends DnaElement<unknown, ThreadsDvm> {
+export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   constructor() {

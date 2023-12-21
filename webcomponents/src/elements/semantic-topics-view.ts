@@ -191,7 +191,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           /** 'new' badge to display */
           let newBadge = html``;
           if (threadIsNew) {
-            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">!</ui5-badge>`;
+            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">+1</ui5-badge>`;
           }
 
           let hideShowBtn = html``;
@@ -245,7 +245,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       /** 'new' badge to display */
       let newBadge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
+        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
       }
 
       let hideShowBtn =html``;

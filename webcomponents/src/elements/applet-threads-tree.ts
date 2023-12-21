@@ -234,7 +234,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         /** 'new' badge to display */
         let newBadge = html``;
         if (threadIsNew) {
-          newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
+          newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
         }
 
         const tmpl = html`
@@ -298,7 +298,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
       /** 'new' badge to display */
       let newBadge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">!</ui5-badge>`;
+        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
       }
 
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);

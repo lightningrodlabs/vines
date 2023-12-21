@@ -2,14 +2,17 @@ export * from './contexts';
 export * from './utils';
 export * from './styles';
 
-export * from './elements/chat-header';
-export * from './elements/chat-message-item';
+export * from './elements/applet-threads-tree';
 export * from './elements/chat-file-item';
+export * from './elements/chat-header';
 export * from './elements/chat-hrl-item';
+export * from './elements/chat-message-item';
 export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';
-export * from './elements/applet-threads-tree';
 export * from './elements/edit-profile';
+export * from './elements/input-bar';
+export * from './elements/mentions-list';
+export * from './elements/mentions-notification-list';
 export * from './elements/peer-list';
 export * from './elements/semantic-topics-view';
 
