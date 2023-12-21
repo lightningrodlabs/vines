@@ -185,7 +185,7 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
                   `}
             <div style="display: flex; flex-direction: column">
                 <div>
-                    <abbr title=${fileAuthor}><span><b>${agent.nickname}</b></span></abbr>
+                    <span><b>${agent.nickname}</b></span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
               ${item}

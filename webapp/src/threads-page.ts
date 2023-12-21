@@ -39,15 +39,15 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
+import "@ui5/webcomponents-icons/dist/action-settings.js"
+import "@ui5/webcomponents-icons/dist/activate.js"
+import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/attachment-text-file.js"
 import "@ui5/webcomponents-icons/dist/attachment-photo.js"
 import "@ui5/webcomponents-icons/dist/attachment-video.js"
 import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
-import "@ui5/webcomponents-icons/dist/action-settings.js"
-import "@ui5/webcomponents-icons/dist/activate.js"
-import "@ui5/webcomponents-icons/dist/add.js"
-import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/document.js"
