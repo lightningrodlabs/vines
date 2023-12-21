@@ -33,6 +33,7 @@ NetworkInfo,
 FetchPoolInfo,
 /** hdk/action.ts */
 SignedActionHashed,
+RegisterAgentActivity,
 ActionHashed,
 ActionType,
 Action,
@@ -53,6 +54,7 @@ CapClaim,
 GrantedFunctionsType,
 GrantedFunctions,
 ZomeCallCapGrant,
+CapAccessType,
 CapAccess,
 CapGrant,
 ///** hdk/countersigning.ts */
@@ -80,6 +82,15 @@ Entry,
 /** hdk/record.ts */
 Record as HcRecord,
 RecordEntry as HcRecordEntry,
+/** hdk/link.ts */
+AnyLinkableHash,
+ZomeIndex,
+LinkType,
+LinkTag,
+RateWeight,
+RateBucketId,
+RateUnits,
+Link,
 /** api/admin/types.ts */
 InstalledAppInfoStatus,
 DeactivationReason,
@@ -115,6 +126,8 @@ ZomeLocation,
 import {
 /** Common */
 DhtOpHashB64,
+//DnaHashB64, (duplicate)
+//AnyDhtHashB64, (duplicate)
 DhtOpHash,
 /** DnaFile */
 DnaFile,
@@ -263,7 +276,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('create_participation_protocol', input);
   }
 
-  async getPpsFromSubjectHash(lh: Uint8Array): Promise<[ActionHash, Timestamp][]> {
+  async getPpsFromSubjectHash(lh: AnyLinkableHash): Promise<[ActionHash, Timestamp][]> {
     return this.call('get_pps_from_subject_hash', lh);
   }
 
@@ -312,11 +325,11 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_applets', null);
   }
 
-  async getSubjectsByType(input: GetProtocolsInput): Promise<[DnaHash, Uint8Array][]> {
+  async getSubjectsByType(input: GetProtocolsInput): Promise<[DnaHash, AnyLinkableHash][]> {
     return this.call('get_subjects_by_type', input);
   }
 
-  async getSubjectsForApplet(appletId: string): Promise<[DnaHash, Uint8Array][]> {
+  async getSubjectsForApplet(appletId: string): Promise<[DnaHash, AnyLinkableHash][]> {
     return this.call('get_subjects_for_applet', appletId);
   }
 
@@ -324,19 +337,19 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_subject_types_for_applet', appletId);
   }
 
-  async getHideLink(subjectHash: Uint8Array): Promise<ActionHash | null> {
+  async getHideLink(subjectHash: AnyLinkableHash): Promise<ActionHash | null> {
     return this.call('get_hide_link', subjectHash);
   }
 
-  async hideSubject(subjectHash: Uint8Array): Promise<ActionHash> {
+  async hideSubject(subjectHash: AnyLinkableHash): Promise<ActionHash> {
     return this.call('hide_subject', subjectHash);
   }
 
-  async unhideSubject(subjectHash: Uint8Array): Promise<void> {
+  async unhideSubject(subjectHash: AnyLinkableHash): Promise<void> {
     return this.call('unhide_subject', subjectHash);
   }
 
-  async getHiddenSubjects(): Promise<Uint8Array[]> {
+  async getHiddenSubjects(): Promise<AnyLinkableHash[]> {
     return this.call('get_hidden_subjects', null);
   }
 }

@@ -14,12 +14,12 @@ import {
   EntryBead,
   GlobalLastProbeLog,
   ParticipationProtocol,
-  Subject, TextMessage,
+  Subject,
 } from "../bindings/threads.types";
 
 
 /** -- Should be defined in @holochain/client */
-export declare type AnyLinkableHash = HoloHash;
+//export declare type AnyLinkableHash = HoloHash;
 export declare type AnyLinkableHashB64 = HoloHashB64;
 export const HOLOCHAIN_EPOCH = 1640995200000000;
 

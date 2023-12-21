@@ -32,6 +32,7 @@ NetworkInfo,
 FetchPoolInfo,
 /** hdk/action.ts */
 SignedActionHashed,
+RegisterAgentActivity,
 ActionHashed,
 ActionType,
 Action,
@@ -52,6 +53,7 @@ CapClaim,
 GrantedFunctionsType,
 GrantedFunctions,
 ZomeCallCapGrant,
+CapAccessType,
 CapAccess,
 CapGrant,
 ///** hdk/countersigning.ts */
@@ -79,6 +81,15 @@ Entry,
 /** hdk/record.ts */
 Record as HcRecord,
 RecordEntry as HcRecordEntry,
+/** hdk/link.ts */
+AnyLinkableHash,
+ZomeIndex,
+LinkType,
+LinkTag,
+RateWeight,
+RateBucketId,
+RateUnits,
+Link,
 /** api/admin/types.ts */
 InstalledAppInfoStatus,
 DeactivationReason,
@@ -114,6 +125,8 @@ ZomeLocation,
 import {
 /** Common */
 DhtOpHashB64,
+//DnaHashB64, (duplicate)
+//AnyDhtHashB64, (duplicate)
 DhtOpHash,
 /** DnaFile */
 DnaFile,
@@ -186,7 +199,7 @@ export interface AddManyTextMessageAtInput {
 
 export interface ProbeAllLatestOutput {
   searchedInterval: SweepInterval
-  newThreadsBySubject: [Uint8Array, ActionHash][]
+  newThreadsBySubject: [AnyLinkableHash, ActionHash][]
   newBeadsByThread: [ActionHash, BeadLink][]
 }
 
@@ -229,7 +242,7 @@ export interface NotifyInput {
 }
 
 export interface Subject {
-  hash: Uint8Array
+  hash: AnyLinkableHash
   typeName: string
   dnaHash: DnaHash
   appletId: string
@@ -278,7 +291,7 @@ export interface SemanticTopic {
 export interface ParticipationProtocol {
   purpose: string
   rules: string
-  subjectHash: Uint8Array
+  subjectHash: AnyLinkableHash
   subjectType: string
 }
 

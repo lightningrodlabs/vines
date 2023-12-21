@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "config": {
     "hc_version": "0.2.2",
-    "zits_version": "1.11.0",
+    "zits_version": "1.12.0",
     "bin": "bin",
     "we_test_folder": "../we-main",
     "files_repo": "../file-share"
