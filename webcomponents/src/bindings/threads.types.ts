@@ -238,7 +238,7 @@ export interface SignalPayload {
 /** Input to the notify call */
 export interface NotifyInput {
   signal: SignalPayload
-  peers: AgentPubKeyB64[]
+  peers: AgentPubKey[]
 }
 
 export interface Subject {

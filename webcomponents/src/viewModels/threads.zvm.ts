@@ -575,8 +575,9 @@ export class ThreadsZvm extends ZomeViewModel {
     return this.publishHrlBeadAt(hrl, ppAh, Date.now() * 1000);
   }
 
+
   /** */
-  async publishHrlBeadAt(hrl: Hrl, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[AnyBead, string]> {
+  async publishHrlBeadAt(hrl: Hrl, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[ActionHashB64, string]> {
     const obj = [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])]
     const input = {forProtocolAh: decodeHashFromBase64(protocolAh), value: JSON.stringify(obj), typeInfo: "hrl"}
     console.log("publishHrlBeadAt()", obj, input.value);
@@ -588,7 +589,7 @@ export class ThreadsZvm extends ZomeViewModel {
       this.fetchAnyBead(beadAh, true, creationTime);
     }
     /** Done */
-    return [anyBead, global_time_anchor];
+    return [encodeHashToBase64(beadAh), global_time_anchor];
   }
 
 
@@ -598,7 +599,7 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   /** */
-  async publishEntryBeadAt(eh: EntryHashB64, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[EntryBead, string]> {
+  async publishEntryBeadAt(eh: EntryHashB64, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[ActionHashB64, string]> {
     const entryInfo = {eh: decodeHashFromBase64(eh), forProtocolAh: decodeHashFromBase64(protocolAh), zomeName: "zFiles", roleName: "rFiles"};
     /** Add Bead */
     const [beadAh, entryBead, global_time_anchor, bucket_ts] = await this.zomeProxy.addEntryAsBead(entryInfo);
@@ -608,7 +609,7 @@ export class ThreadsZvm extends ZomeViewModel {
       this.fetchEntryBead(beadAh, true, creationTime);
     }
     /** Done */
-    return [entryBead, global_time_anchor];
+    return [encodeHashToBase64(beadAh), global_time_anchor];
   }
 
 
@@ -975,7 +976,8 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Signaling -- */
 
   /** */
-  async notifyPeers(signal: SignalPayload, peers: Array<AgentPubKeyB64>): Promise<void> {
+  async notifyPeers(signal: SignalPayload, agents: Array<AgentPubKeyB64>): Promise<void> {
+    const peers = agents.map((key) => decodeHashFromBase64(key));
     return this.zomeProxy.notifyPeers({signal, peers});
   }
 

@@ -9,8 +9,9 @@ import {
 } from "@holochain/client";
 import {DirectMessageType, SignalPayload, THREADS_DEFAULT_ROLE_NAME} from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
-import {AppletId} from "@lightningrodlabs/we-applet";
+import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {stringifyHrl} from "@ddd-qc/we-utils";
 
 
 /** */
@@ -73,7 +74,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   handleSignal(signal: AppSignal) {
-    console.log("Received Signal", signal);
+    console.log("[threads.dvm] Received Signal", signal);
     if (signal.zome_name === ProfilesZvm.DEFAULT_ZOME_NAME) {
       return;
     }
@@ -125,25 +126,27 @@ export class ThreadsDvm extends DnaViewModel {
     // if (signal.message.type != "Ping" && signal.message.type != "Pong") {
     //   console.log(`NOTIFYING ${signal.message.type}`, signal, peers)
     // };
-    console.log(`notifyPeers() Sending Signal "${signal.dm.type}" to`, peers, this._cellProxy.cell.agentPubKey);
+    const filtered = peers.filter((key) => key != this._cellProxy.cell.agentPubKey);
+    console.log(`[threads.dvm] notifyPeers() Sending Signal "${signal.dm.type}" to`, filtered, this._cellProxy.cell.agentPubKey);
     /* Skip if no recipients or sending to self only */
-    if (!peers || peers.length == 1 && peers[0] === this._cellProxy.cell.agentPubKey) {
-      console.log("notifyPeers() aborted: No recipients for notification")
+    //if (!peers || peers.length == 1 && peers[0] === this._cellProxy.cell.agentPubKey) {
+    if (!filtered || filtered.length == 0) {
+      console.log("[threads.dvm] notifyPeers() aborted: No recipients for notification")
       return;
     }
-    return this.threadsZvm.notifyPeers(signal, peers);
+    return this.threadsZvm.notifyPeers(signal, filtered);
   }
 
 
   /** */
   async pingPeers(maybePpHash: ActionHashB64 | null, peers: Array<AgentPubKeyB64>) {
-    const ping: SignalPayload = {
-      maybePpHash: maybePpHash ? maybePpHash : undefined,
-      from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.Ping, content: this._cellProxy.cell.agentPubKey}
-    };
-    // console.log({signal})
-    this.notifyPeers(ping, peers);
+    // const ping: SignalPayload = {
+    //   maybePpHash: maybePpHash ? maybePpHash : undefined,
+    //   from: this._cellProxy.cell.agentPubKey,
+    //   dm: {type: DirectMessageType.Ping, content: this._cellProxy.cell.agentPubKey}
+    // };
+    // // console.log({signal})
+    // this.notifyPeers(ping, peers);
   }
 
 
@@ -167,16 +170,46 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** -- Call ZVM and notify peers -- */
 
-  /** */
-  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-
-    let [ah, _time_anchor] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
+  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64) {
+    let [ah, _time_anchor] = await this.threadsZvm.publishEntryBead(eh, ppAh);
+    /** Send signal to peers */
+    //var uint8array = Array.from(new TextEncoder().encode(eh));
     const signal: SignalPayload = {
       maybePpHash: ppAh,
       from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.NewBead, content: [ah, msg, []]}
+      dm: {type: DirectMessageType.NewBead, content: [ah, "EntryBead", []]}
     };
-    //await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    return ah;
+  }
+
+
+  /** */
+  async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64): Promise<ActionHashB64> {
+    let [ah, _time_anchor] = await this.threadsZvm.publishHrlBead(hrl, ppAh);
+    /** Send signal to peers */
+    //var uint8array = Array.from(new TextEncoder().encode(stringifyHrl(hrl)));
+    const signal: SignalPayload = {
+      maybePpHash: ppAh,
+      from: this._cellProxy.cell.agentPubKey,
+      dm: {type: DirectMessageType.NewBead, content: [ah, "AnyBead", []]}
+    };
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    return ah;
+  }
+
+
+  /** */
+  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
+    let [ah, _time_anchor] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
+    /** Send signal to peers */
+    //var uint8array = Array.from(new TextEncoder().encode(msg));
+    const signal: SignalPayload = {
+      maybePpHash: ppAh,
+      from: this._cellProxy.cell.agentPubKey,
+      dm: {type: DirectMessageType.NewBead, content: [ah, "TextMessage", []]}
+    };
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
 
@@ -188,7 +221,7 @@ export class ThreadsDvm extends DnaViewModel {
       from: this._cellProxy.cell.agentPubKey,
       dm: {type: DirectMessageType.NewSemanticTopic, content: [eh, title]}
     };
-    //await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return eh;
   }
 
@@ -201,7 +234,7 @@ export class ThreadsDvm extends DnaViewModel {
       from: this._cellProxy.cell.agentPubKey,
       dm: {type: DirectMessageType.NewPp, content: ah}
     };
-    //await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
 

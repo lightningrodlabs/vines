@@ -5,9 +5,11 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {truncate} from "../utils";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 //import {ChatThreadView} from "./chat-thread-view";
-
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import markdownit from 'markdown-it'
+//import { full as emoji } from 'markdown-it-emoji/dist/markdown-it-emoji.js'
 
 /**
  * @element
@@ -153,6 +155,11 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
     const id = "chat-item__" + this.hash;
 
+    const md = markdownit()
+    //const md = markdownit().use(emoji/* , options */);
+    const result = md.render(texto.message);
+    const parsed = unsafeHTML(result);
+
     /** render all */
     return html`
         <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
@@ -169,7 +176,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                     <span><b>${agent.nickname}</b></span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
-                <div class="chatMsg">${texto.message}</div>
+                <div class="chatMsg">${parsed}</div>
             </div>
             ${commentButton}
         </div>
@@ -181,6 +188,18 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
+        blockquote {
+          border-left: 4px solid #c1b2b2;
+          margin: 0px;
+          padding-left: 20px;
+          padding-top: 1px;
+          padding-bottom: 1px;
+        }
+        code {
+          border: 1px solid #cac4c4;
+          padding: 4px;
+          background: #f0f0f0;
+        }
         .chatItem {
           display: flex; 
           flex-direction: row;

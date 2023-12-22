@@ -4,7 +4,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {inputBarStyleTemplate} from "../styles";
 
 
-import Input from "@ui5/webcomponents/dist/Input";
+import Input from "@ui5/webcomponents/dist/Input.js";
 //import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
 import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
@@ -42,6 +42,7 @@ export class InputBar extends LitElement {
       inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
     }
   }
+
 
   /** */
   render() {

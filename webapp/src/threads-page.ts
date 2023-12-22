@@ -17,13 +17,14 @@ import "@ui5/webcomponents/dist/Button.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import "@ui5/webcomponents/dist/Card.js";
 import "@ui5/webcomponents/dist/CardHeader.js";
+import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
 import "@ui5/webcomponents/dist/List.js";
-import "@ui5/webcomponents/dist/Option.js";
-import "@ui5/webcomponents/dist/Menu.js";
-import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Input.js";
+import "@ui5/webcomponents/dist/Menu.js";
+import "@ui5/webcomponents/dist/MultiInput.js";
+import "@ui5/webcomponents/dist/Option.js";
 import "@ui5/webcomponents/dist/Popover.js";
 import "@ui5/webcomponents/dist/ProgressIndicator.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
@@ -230,27 +231,20 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCreateTextMessage(inputText: string) {
     console.log("onCreateTextMessage", inputText)
 
-    let mentionedAgents = undefined;
     const mentions = parseMentions(inputText);
     console.log("parseMentions", mentions);
     console.log("parseMentions reversed", this._dvm.profilesZvm.perspective.reversed);
-    mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
+    const mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
     console.log("parseMentions mentionedAgents", mentionedAgents);
-
 
     let ah = await this._dvm.publishTextMessage(inputText, this._selectedThreadHash, mentionedAgents);
     console.log("onCreateTextMessage() res:", ah);
 
-
-    /** DEBUG */
-    if (this.weServices) {
-      const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
-      console.log("entryInfo2", this.cell.dnaHash, entryInfo);
-    }
-
-    //await this.probeLatestMessages();
-    //const msgList = this.shadowRoot!.getElementById("textMessageList") as TextMessageList;
-    //msgList.requestUpdate();
+    // /** DEBUG */
+    // if (this.weServices) {
+    //   const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
+    //   console.log("entryInfo2", this.cell.dnaHash, entryInfo);
+    // }
   }
 
   /** */
@@ -259,7 +253,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!maybeHrlc) return;
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.threadsZvm.publishHrlBead(maybeHrlc.hrl, this._selectedThreadHash);
+    /*let ah =*/ await this._dvm.publishHrlBead(maybeHrlc.hrl, this._selectedThreadHash);
   }
 
   /** */
@@ -461,7 +455,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<threads-page> startPublishFile callback", eh);
-        /*let ah =*/ this._dvm.threadsZvm.publishEntryBead(eh, this._selectedThreadHash);
+        /*let ah =*/ this._dvm.publishEntryBead(eh, this._selectedThreadHash);
         this._splitObj = undefined;
       });
       console.log("uploadFile()", this._splitObj);
