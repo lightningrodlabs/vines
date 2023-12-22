@@ -238,6 +238,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('add_many_text_message_at', input);
   }
 
+
   async getLatestItems(): Promise<SweepResponse> {
     return this.call('get_latest_items', null);
   }

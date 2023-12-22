@@ -10,6 +10,8 @@ import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import markdownit from 'markdown-it'
 //import { full as emoji } from 'markdown-it-emoji/dist/markdown-it-emoji.js'
+//import * as emoji from 'markdown-it-emoji/dist/markdown-it-emoji.js'
+
 
 /**
  * @element

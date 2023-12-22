@@ -225,8 +225,8 @@ export type DirectMessage =
  | {type: "Ping", content: AgentPubKeyB64}
  | {type: "Pong", content: AgentPubKeyB64}
  | {type: "NewSemanticTopic", content: [EntryHashB64, string]}
- | {type: "NewPp", content: ActionHashB64}
- | {type: "NewBead", content: [ActionHashB64, string, number[]]}
+ | {type: "NewPp", content: [Timestamp, ActionHashB64, ParticipationProtocol]}
+ | {type: "NewBead", content: [Timestamp, ActionHashB64, string, ActionHashB64, number[]]}
 
 
 export interface SignalPayload {

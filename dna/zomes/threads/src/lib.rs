@@ -12,6 +12,7 @@ mod subjects;
 mod signals;
 mod last_probe_log;
 mod get_latest_items;
+mod callbacks;
 
 use hdk::prelude::*;
 

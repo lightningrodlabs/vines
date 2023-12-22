@@ -4,10 +4,16 @@ import {
   ActionHashB64,
   AgentPubKeyB64,
   AppSignal, AppSignalCb,
-  decodeHashFromBase64,
+  decodeHashFromBase64, encodeHashToBase64,
   EntryHashB64
 } from "@holochain/client";
-import {DirectMessageType, SignalPayload, THREADS_DEFAULT_ROLE_NAME} from "../bindings/threads.types";
+import {
+  DirectMessageType,
+  ParticipationProtocol,
+  SignalPayload,
+  TextMessage,
+  THREADS_DEFAULT_ROLE_NAME
+} from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
@@ -101,19 +107,31 @@ export class ThreadsDvm extends DnaViewModel {
         this.threadsZvm.storeSemanticTopic(stEh, title, false);
         break;
       case DirectMessageType.NewPp:
-        const ppAh = signalPayload.dm.content
-        /*await */ this.threadsZvm.fetchPp(ppAh);
+        const [tss, newPpAh, pp] = signalPayload.dm.content
+        ///*await */ this.threadsZvm.fetchPp(newPpAh);
+        this.threadsZvm.storePp(newPpAh, pp, tss, false);
         break;
       case DirectMessageType.NewBead:
-        const [beadAh, beadType, _beadData] = signalPayload.dm.content;
+        const [ts, beadAh, beadType, ppAh, beadData] = signalPayload.dm.content;
         console.log("Signal is NewBead of type", beadType);
         if (beadType == "TextMessage") {
-          /*await */this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
+          ///*await */this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
+          const tm: TextMessage = {
+            value: new TextDecoder().decode(new Uint8Array(beadData)),
+            bead: { forProtocolAh: decodeHashFromBase64(ppAh)}
+          }
+          this.threadsZvm.storeTextMessage(beadAh, ts, signalPayload.from, tm, true);
         } else {
           if (beadType == "EntryBead") {
-            /*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
+            ///*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
+            const json = new TextDecoder().decode(new Uint8Array(beadData));
+            const entryBead = JSON.parse(json);
+            this.threadsZvm.storeEntryBead(beadAh, ppAh, ts, signalPayload.from, entryBead, true);
           } else {
-            /*await */this.threadsZvm.fetchAnyBead(decodeHashFromBase64(beadAh), true);
+            ///*await */this.threadsZvm.fetchAnyBead(decodeHashFromBase64(beadAh), true);
+            const json = new TextDecoder().decode(new Uint8Array(beadData));
+            const anyBead = JSON.parse(json);
+            this.threadsZvm.storeAnyBead(beadAh, ppAh, ts, signalPayload.from, anyBead, true);
           }
         }
         break;
@@ -171,13 +189,14 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Call ZVM and notify peers -- */
 
   async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64) {
-    let [ah, _time_anchor] = await this.threadsZvm.publishEntryBead(eh, ppAh);
+    let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishEntryBead(eh, ppAh);
     /** Send signal to peers */
-    //var uint8array = Array.from(new TextEncoder().encode(eh));
+    const data = JSON.stringify(entryBead);
+    const uint8array = Array.from(new TextEncoder().encode(data));
     const signal: SignalPayload = {
       maybePpHash: ppAh,
       from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.NewBead, content: [ah, "EntryBead", []]}
+      dm: {type: DirectMessageType.NewBead, content: [creationTime, ah, "EntryBead", ppAh, uint8array]}
     };
     await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
@@ -186,13 +205,14 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64): Promise<ActionHashB64> {
-    let [ah, _time_anchor] = await this.threadsZvm.publishHrlBead(hrl, ppAh);
+    let [ah, _time_anchor, creationTime, anyBead] = await this.threadsZvm.publishHrlBead(hrl, ppAh);
     /** Send signal to peers */
-    //var uint8array = Array.from(new TextEncoder().encode(stringifyHrl(hrl)));
+    const data = JSON.stringify(anyBead);
+    const uint8array = Array.from(new TextEncoder().encode(data));
     const signal: SignalPayload = {
       maybePpHash: ppAh,
       from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.NewBead, content: [ah, "AnyBead", []]}
+      dm: {type: DirectMessageType.NewBead, content: [creationTime, ah, "AnyBead", ppAh, uint8array]}
     };
     await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
@@ -201,13 +221,13 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
+    let [ah, _time_anchor, creation_time] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
     /** Send signal to peers */
-    //var uint8array = Array.from(new TextEncoder().encode(msg));
+    const uint8array = Array.from(new TextEncoder().encode(msg));
     const signal: SignalPayload = {
       maybePpHash: ppAh,
       from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.NewBead, content: [ah, "TextMessage", []]}
+      dm: {type: DirectMessageType.NewBead, content: [creation_time, ah, "TextMessage", ppAh, uint8array]}
     };
     await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
@@ -227,15 +247,15 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishThreadFromSemanticTopic(appletId: AppletId, topicHash: AnyLinkableHashB64, purpose: string): Promise<ActionHashB64> {
-    let ah = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, topicHash, purpose);
+  async publishThreadFromSemanticTopic(appletId: AppletId, topicHash: AnyLinkableHashB64, purpose: string): Promise<[number, ActionHashB64, ParticipationProtocol]> {
+    let [ts, ah, pp] = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, topicHash, purpose);
     const signal: SignalPayload = {
       maybePpHash: ah,
       from: this._cellProxy.cell.agentPubKey,
-      dm: {type: DirectMessageType.NewPp, content: ah}
+      dm: {type: DirectMessageType.NewPp, content: [ts, ah, pp]}
     };
     await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
-    return ah;
+    return [ts, ah, pp];
   }
 
 
@@ -246,7 +266,7 @@ export class ThreadsDvm extends DnaViewModel {
     console.log("generateTestSignals() START");
     const stEh = await this.publishSemanticTopic("signal-topic");
     await delay(1000);
-    const ppAh = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
+    const [_ts, ppAh, _pp] = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
     await delay(1000);
     const msgAh = await this.publishTextMessage("msg-1", ppAh, []);
     console.log("generateTestSignals() END", msgAh);

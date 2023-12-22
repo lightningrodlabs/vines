@@ -571,13 +571,15 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Returns beadType & global_time_anchor */
-  async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64) {
-    return this.publishHrlBeadAt(hrl, ppAh, Date.now() * 1000);
+  async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64): Promise<[ActionHashB64, string, number, AnyBead]> {
+    const creationTime = Date.now() * 1000;
+    const [ah, global_time_anchor, anyBead] = await this.publishHrlBeadAt(hrl, ppAh, creationTime);
+    return [ah, global_time_anchor, creationTime, anyBead];
   }
 
 
   /** */
-  async publishHrlBeadAt(hrl: Hrl, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[ActionHashB64, string]> {
+  async publishHrlBeadAt(hrl: Hrl, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean): Promise<[ActionHashB64, string, AnyBead]> {
     const obj = [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])]
     const input = {forProtocolAh: decodeHashFromBase64(protocolAh), value: JSON.stringify(obj), typeInfo: "hrl"}
     console.log("publishHrlBeadAt()", obj, input.value);
@@ -589,17 +591,20 @@ export class ThreadsZvm extends ZomeViewModel {
       this.fetchAnyBead(beadAh, true, creationTime);
     }
     /** Done */
-    return [encodeHashToBase64(beadAh), global_time_anchor];
+    return [encodeHashToBase64(beadAh), global_time_anchor, anyBead];
   }
 
 
   /** Returns beadType & global_time_anchor */
-  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64) {
-    return this.publishEntryBeadAt(eh, ppAh, Date.now() * 1000);
+  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64): Promise<[ActionHashB64, string, number, EntryBead]> {
+    const creationTime = Date.now() * 1000;
+    const [ah, global_time_anchor, entryBead] = await  this.publishEntryBeadAt(eh, ppAh, creationTime);
+    return [ah, global_time_anchor, creationTime, entryBead];
   }
 
+
   /** */
-  async publishEntryBeadAt(eh: EntryHashB64, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean) : Promise<[ActionHashB64, string]> {
+  async publishEntryBeadAt(eh: EntryHashB64, protocolAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean): Promise<[ActionHashB64, string, EntryBead]> {
     const entryInfo = {eh: decodeHashFromBase64(eh), forProtocolAh: decodeHashFromBase64(protocolAh), zomeName: "zFiles", roleName: "rFiles"};
     /** Add Bead */
     const [beadAh, entryBead, global_time_anchor, bucket_ts] = await this.zomeProxy.addEntryAsBead(entryInfo);
@@ -609,13 +614,15 @@ export class ThreadsZvm extends ZomeViewModel {
       this.fetchEntryBead(beadAh, true, creationTime);
     }
     /** Done */
-    return [encodeHashToBase64(beadAh), global_time_anchor];
+    return [encodeHashToBase64(beadAh), global_time_anchor, entryBead];
   }
 
 
   /** */
-  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string]> {
-    return this.publishTextMessageAt(msg, ppAh, Date.now() * 1000, ments? ments : []);
+  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number]> {
+    const creation_time = Date.now() * 1000
+    const [ah, global_time_anchor] = await this.publishTextMessageAt(msg, ppAh, creation_time, ments? ments : []);
+    return [ah, global_time_anchor, creation_time];
   }
 
 
@@ -627,7 +634,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const mentionees = ments.map((m) => decodeHashFromBase64(m));
     /** Commit Entry */
-    const texto = {value: msg, bead}
+    const texto: TextMessage = {value: msg, bead}
     const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
     //console.log("publishTextMessageAt() added bead", encodeHashToBase64(ah), creationTime);
     const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: "TextMessage"}
@@ -684,7 +691,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: AppletId, dnaHash: DnaHashB64, subjectHash: AnyLinkableHashB64, purpose: string) : Promise<ActionHashB64> {
+  async publishThreadFromSemanticTopic(appletId: AppletId, dnaHash: DnaHashB64, subjectHash: AnyLinkableHashB64, purpose: string): Promise<[number, ActionHashB64, ParticipationProtocol]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const pp: ParticipationProtocol = {
       purpose,
@@ -700,7 +707,7 @@ export class ThreadsZvm extends ZomeViewModel {
     });
     const ahB64 = encodeHashToBase64(ah);
     this.storePp(ahB64, pp, ts, false);
-    return ahB64;
+    return [ts, ahB64, pp];
   }
 
 
@@ -1000,19 +1007,19 @@ export class ThreadsZvm extends ZomeViewModel {
     const top3 = await this.publishSemanticTopic("topic-none");
     const top4 = await this.publishSemanticTopic("time-test");
 
-    const th1 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "general");
+    const [_ts1, th1, _pp1] = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "general");
     console.log("*** generateTestData() general", th1);
-    const th2 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "none");
+    /*const th2 =*/ await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "none");
 
-    const th4 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "full");
-    const th01 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top2, "general");
+    /*const th4 =*/ await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top1, "full");
+    const th01 = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top2, "general")[1];
     //const th11 = await this.publishThreadFromSemanticTopic(top1, "general");
 
-    const timeMin = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "minute");
+    const timeMin = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "minute")[1];
     console.log("*** generateTestData() minute", timeMin);
-    const timeHour = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "hour");
-    const timeDay = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "day");
-    const timeMon = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "month");
+    const timeHour = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "hour")[1];
+    const timeDay = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "day")[1];
+    const timeMon = await this.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, top4, "month")[1];
     //const timeYear = await this.publishThreadFromSemanticTopic(top4, "year");
 
 

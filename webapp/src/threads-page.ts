@@ -219,7 +219,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    let ah = await this._dvm.publishThreadFromSemanticTopic(this.appletId, this._createTopicHash, input.value);
+    const ah = await this._dvm.publishThreadFromSemanticTopic(this.appletId, this._createTopicHash, input.value)[1];
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedThreadHash = ah;
@@ -237,8 +237,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
     console.log("parseMentions mentionedAgents", mentionedAgents);
 
-    let ah = await this._dvm.publishTextMessage(inputText, this._selectedThreadHash, mentionedAgents);
-    console.log("onCreateTextMessage() res:", ah);
+    let res = await this._dvm.publishTextMessage(inputText, this._selectedThreadHash, mentionedAgents);
+    console.log("onCreateTextMessage() res:", res);
 
     // /** DEBUG */
     // if (this.weServices) {

@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
+use threads_integrity::ParticipationProtocol;
 
 ///
 /// Data sent by UI ONLY. That's why we use B64 here.
@@ -11,8 +12,8 @@ pub enum DirectMessage {
     Pong(AgentPubKeyB64),
 
     NewSemanticTopic((EntryHashB64, String)), // topic_eh, title
-    NewPp(ActionHashB64),
-    NewBead((ActionHashB64, String, Vec<u8>)), // bead_ah, bead_type, SerializedBytes specific to the bead_type
+    NewPp((Timestamp, ActionHashB64, ParticipationProtocol)),
+    NewBead((Timestamp, ActionHashB64, String, ActionHashB64, Vec<u8>)), // creation_time, bead_ah, bead_type, pp_ah, SerializedBytes specific to the bead_type
 }
 
 #[derive(Serialize, Deserialize, Debug)]
