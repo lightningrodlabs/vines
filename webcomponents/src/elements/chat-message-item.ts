@@ -12,6 +12,8 @@ import markdownit from 'markdown-it'
 //import { full as emoji } from 'markdown-it-emoji/dist/markdown-it-emoji.js'
 //import * as emoji from 'markdown-it-emoji/dist/markdown-it-emoji.js'
 
+import 'emoji-picker-element';
+import {Picker} from "emoji-picker-element";
 
 /**
  * @element
@@ -35,6 +37,12 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+
+  get emojiPickerElem() : Picker {
+    return this.shadowRoot!.getElementById("emoji-picker") as Picker;
+  }
+
 
   /**
    * In dvmUpdated() this._dvm is not already set!
@@ -84,6 +92,23 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
   // }
 
 
+  /** Probe reactions of first render */
+  protected firstUpdated(_changedProperties: PropertyValues) {
+    super.firstUpdated(_changedProperties);
+
+    this._dvm.threadsZvm.probeEmojiReactions(this.hash);
+
+    this.emojiPickerElem.addEventListener('emoji-click', (event: any) => {
+      const unicode = event?.detail?.unicode
+      console.log("emoji-click: " + unicode)
+      if (unicode) {
+        this._dvm.publishEmoji(this.hash, unicode);
+        this.emojiPickerElem.style.display = 'none';
+      }
+    });
+  }
+
+
   /** */
   onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
@@ -91,6 +116,12 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       bubbles: true,
       composed: true,
     }));
+  }
+
+
+  /** */
+  onClickAddEmoji() {
+    this.emojiPickerElem.style.display = 'block';
   }
 
 
@@ -107,6 +138,8 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       return html `<div>Loading message...</div>`;
     }
 
+
+
     /** Determine the comment button to display depending on current comments for this message */
     const msg = truncate(texto.message, 60, true);
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
@@ -116,18 +149,26 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     if (isUnread) {
       commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
     } else {
-      if (this._isHovered) {
-        console.log("threadButton", msg, texto.message);
-        if (!maybeCommentThread) {
-          commentButton = html`
-              <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" style="border:none;"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
-        } else {
-          commentButton = html`
-              <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
-        }
+      console.log("threadButton", msg, texto.message);
+      if (!maybeCommentThread) {
+        commentButton = html`
+            <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" style="border:none;"
+                        @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+      } else {
+        commentButton = html`
+            <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
+                        @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
       }
+    }
+
+    const reactionButton = html`
+              <ui5-button icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"
+                          @click="${(e) => this.onClickAddEmoji()}"></ui5-button>`;
+
+    let sideButtons = [];
+    if (this._isHovered) {
+      sideButtons.push(reactionButton);
+      sideButtons.push(commentButton);
     }
 
     // /** Determine the unread badge to display depending on current comments for this message */
@@ -180,8 +221,10 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                 </div>
                 <div class="chatMsg">${parsed}</div>
             </div>
-            ${commentButton}
+            ${sideButtons}
         </div>
+        <!-- Emoji Picker -->
+        <emoji-picker id="emoji-picker" class="light" style="display: none"></emoji-picker>
     `;
 
   }

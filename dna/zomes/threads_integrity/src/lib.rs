@@ -72,4 +72,5 @@ pub enum ThreadsLinkType {
     Invalid,
     Mention,
     Hide,
+    EmojiReaction,
 }

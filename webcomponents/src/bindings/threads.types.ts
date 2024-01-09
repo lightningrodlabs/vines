@@ -153,6 +153,12 @@ export interface AddAnyBead {
   typeInfo: string
 }
 
+/**  */
+export interface AddReactionInput {
+  emoji: string
+  bead_ah: ActionHash
+}
+
 export interface AddEntryAsBead {
   eh: EntryHash
   forProtocolAh: ActionHash
@@ -220,6 +226,7 @@ export enum DirectMessageType {
 	NewSemanticTopic = 'NewSemanticTopic',
 	NewPp = 'NewPp',
 	NewBead = 'NewBead',
+	EmojiReactionChange = 'EmojiReactionChange',
 }
 export type DirectMessage = 
  | {type: "Ping", content: AgentPubKeyB64}
@@ -227,6 +234,7 @@ export type DirectMessage =
  | {type: "NewSemanticTopic", content: [EntryHashB64, string]}
  | {type: "NewPp", content: [Timestamp, ActionHashB64, ParticipationProtocol]}
  | {type: "NewBead", content: [Timestamp, ActionHashB64, string, ActionHashB64, number[]]}
+ | {type: "EmojiReactionChange", content: [ActionHashB64, AgentPubKeyB64, string, boolean]}
 
 
 export interface SignalPayload {
@@ -359,7 +367,7 @@ export type ThreadsEntry =
  * -------------------------------------------------------------------------------------------------
  */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null} | {Hide: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null} | {Hide: null} | {EmojiReaction: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
@@ -374,4 +382,5 @@ export enum ThreadsLinkTypeType {
 	Invalid = 'Invalid',
 	Mention = 'Mention',
 	Hide = 'Hide',
+	EmojiReaction = 'EmojiReaction',
 }

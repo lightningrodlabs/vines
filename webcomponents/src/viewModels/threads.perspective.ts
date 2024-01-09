@@ -64,11 +64,11 @@ export interface ThreadsPerspective {
   allSubjects: Dictionary<Subject>,
   /** Store of all SemTopic: eh -> Topic Title */
   allSemanticTopics: Dictionary<[string, boolean]>,
-  ///** Store of all PPmat: pp_ah -> PP */
+  ///** Store of all PPmat: ppAh -> PP */
   //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: Dictionary<ActionHashB64[]>,
-  /** pp_ah -> Thread */
+  /** ppAh -> Thread */
   threads: Dictionary<Thread>,
   /** Ah -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
@@ -76,6 +76,9 @@ export interface ThreadsPerspective {
   entryBeads: Dictionary<EntryBeadInfo>,
   /** Ah -> BeadLinkMaterialized */
   anyBeads: Dictionary<AnyBeadInfo>,
+  /** bead_ah -> [agent, emoji] */
+  emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
+
 
   /**  -- Applet threads  -- */
   /** AppletId -> PathEntryHash -> subjectType */

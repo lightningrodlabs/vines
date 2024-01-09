@@ -135,6 +135,14 @@ export class ThreadsDvm extends DnaViewModel {
           }
         }
         break;
+      case DirectMessageType.EmojiReactionChange:
+        const [beadAh2, author, emoji, isAdded] = signalPayload.dm.content
+          if (isAdded) {
+            this.threadsZvm.storeEmojiReaction(beadAh2, author, emoji);
+          } else {
+            this.threadsZvm.unstoreEmojiReaction(beadAh2, author, emoji);
+          }
+        break;
     }
   }
 
@@ -256,6 +264,32 @@ export class ThreadsDvm extends DnaViewModel {
     };
     await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return [ts, ah, pp];
+  }
+
+
+
+  /** */
+  async publishEmoji(beadAh: ActionHashB64, emoji: string) {
+    await this.threadsZvm.zomeProxy.addReaction({bead_ah: decodeHashFromBase64(beadAh), emoji});
+    await this.threadsZvm.storeEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+    /** Send signal to peers */
+    const signal: SignalPayload = {
+      from: this.cell.agentPubKey,
+      dm: {type: DirectMessageType.EmojiReactionChange, content: [beadAh, this.cell.agentPubKey, emoji, true]}
+    };
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+  }
+
+  /** */
+  async unpublishEmoji(beadAh: ActionHashB64, emoji: string) {
+    await this.threadsZvm.zomeProxy.removeReaction(decodeHashFromBase64(beadAh));
+    await this.threadsZvm.unstoreEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+    /** Send signal to peers */
+    const signal: SignalPayload = {
+      from: this.cell.agentPubKey,
+      dm: {type: DirectMessageType.EmojiReactionChange, content: [beadAh, this.cell.agentPubKey, emoji, false]}
+    };
+    await this.notifyPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
   }
 
 

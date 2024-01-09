@@ -6,6 +6,7 @@ mod index_bead;
 mod mentions;
 mod entry_bead;
 mod any_bead;
+mod emoji_reaction;
 
 pub use index_bead::*;
 pub use text_message::*;

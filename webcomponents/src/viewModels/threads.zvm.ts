@@ -8,7 +8,7 @@ import {
 import {
   AnyBead,
   Bead,
-  BeadLink, CreatePpInput, EntryBead,
+  BeadLink, CreatePpInput, DirectMessageType, EntryBead,
   GetLatestBeadsInput, GlobalLastProbeLog,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
@@ -80,6 +80,7 @@ export class ThreadsZvm extends ZomeViewModel {
       anyBeads: this._anyBeads,
       appletSubjectTypes: this._appletSubjectTypes,
       subjectsPerType: this._subjectsPerType,
+      emojiReactions:  this._emojiReactions,
 
       globalProbeLog: this._globalProbeLog,
       newSubjects: this._newSubjects,
@@ -119,6 +120,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** SubjectType PathEntryHash -> subjectHash[] */
   private _subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]> = {}
 
+  private _emojiReactions: Dictionary<[AgentPubKeyB64, string][]> = {}
 
   /** */
   private _globalProbeLog?: GlobalLastProbeLog;
@@ -173,6 +175,10 @@ export class ThreadsZvm extends ZomeViewModel {
     return this._subjectsPerType[pathHash];
   }
 
+  getEmojiReactions(beadAh: ActionHashB64): [AgentPubKeyB64, string][] | undefined {
+    return this._emojiReactions[beadAh];
+  }
+
 
   /** */
   getMostRecentTextMessages(pp_ah: ActionHashB64): TextMessageInfo[] {
@@ -188,8 +194,8 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  getAllTextMessages(pp_ah: ActionHashB64): TextMessageInfo[] {
-    const threadInfo = this._threads[pp_ah];
+  getAllTextMessages(ppAh: ActionHashB64): TextMessageInfo[] {
+    const threadInfo = this._threads[ppAh];
     if (!threadInfo) {
       return [];
     }
@@ -496,6 +502,31 @@ export class ThreadsZvm extends ZomeViewModel {
     this._newThreads = newThreads;
     this._unreadThreads = unreadThreads;
     this.notifySubscribers();
+  }
+
+
+  /** Probe all emojis on this bead */
+  async probeEmojiReactions(beadAh: ActionHashB64) {
+    const reactions = await this.zomeProxy.getReactions(decodeHashFromBase64(beadAh));
+    this._emojiReactions[beadAh] = reactions.map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
+    this.notifySubscribers();
+  }
+
+
+  /** */
+  async storeEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
+    // TODO: Make sure this reaction is not already stored
+    this._emojiReactions[beadAh].push([agent, emoji]);
+    this.notifySubscribers();
+  }
+
+  /** */
+  async unstoreEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
+    const filtered = this._emojiReactions[beadAh].filter(([a, e]) => !(agent == a && e == emoji));
+    if (filtered.length < this._emojiReactions[beadAh].length) {
+      this._emojiReactions[beadAh] = filtered;
+      this.notifySubscribers();
+    }
   }
 
 

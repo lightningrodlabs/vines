@@ -11,9 +11,10 @@ pub enum DirectMessage {
     Ping(AgentPubKeyB64),
     Pong(AgentPubKeyB64),
 
-    NewSemanticTopic((EntryHashB64, String)), // topic_eh, title
+    NewSemanticTopic((EntryHashB64, String)), // topicEh, title
     NewPp((Timestamp, ActionHashB64, ParticipationProtocol)),
-    NewBead((Timestamp, ActionHashB64, String, ActionHashB64, Vec<u8>)), // creation_time, bead_ah, bead_type, pp_ah, SerializedBytes specific to the bead_type
+    NewBead((Timestamp, ActionHashB64, String, ActionHashB64, Vec<u8>)), // creation_time, beadAh, bead_type, ppAh, SerializedBytes specific to the bead_type
+    EmojiReactionChange((ActionHashB64, AgentPubKeyB64, String, bool)), // beadAh, author, emoji, isAdded
 }
 
 #[derive(Serialize, Deserialize, Debug)]
