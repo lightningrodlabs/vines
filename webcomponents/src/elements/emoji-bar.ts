@@ -69,8 +69,10 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
 
     /** */
     let emojiButtons = Object.entries(emojiMap).map(([emoji, agents]) => {
+      let iReacted = false;
       let tooltip = "" + emoji + " reacted by "
       for (const key of agents) {
+        iReacted ||= key == this.cell.agentPubKey;
         let agent = {nickname: "unknown", fields: {}} as ProfileMat;
         const maybeAgent = this._dvm.profilesZvm.perspective.profiles[key];
         if (maybeAgent) {
@@ -81,7 +83,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       tooltip = tooltip.substring(0, tooltip.length - 2);
       return html`
         <sl-tooltip content=${tooltip} placement="top">
-          <button tooltip=${tooltip} @click=${(e) => this.onClickEmoji(emoji)}>
+          <button class=${iReacted? "reacted" : ""} tooltip=${tooltip} @click=${(e) => this.onClickEmoji(emoji, iReacted)}>
             ${emoji} ${agents.length > 1? agents.length : ""}
           </button>
         </sl-tooltip>
@@ -101,9 +103,13 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onClickEmoji(emoji: string) {
+  async onClickEmoji(emoji: string, iReacted: boolean) {
     console.log("onClickEmoji()", emoji);
-    await this._dvm.unpublishEmoji(this.hash, emoji);
+    if (iReacted) {
+      await this._dvm.unpublishEmoji(this.hash, emoji);
+    } else {
+      await this._dvm.publishEmoji(this.hash, emoji);
+    }
   }
 
 
@@ -113,6 +119,9 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       css`
         sl-tooltip {
           --show-delay: 500;
+        }
+        .reacted {
+          border: 1px solid blue;
         }
       `,];
   }

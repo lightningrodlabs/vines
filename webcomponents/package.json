@@ -28,7 +28,7 @@
     "functional-red-black-tree": "^1.0.1",
     "js-base64": "^3.7.3",
     "@msgpack/msgpack": "^2.7.2",
-    "emoji-picker-element": "^1.8.2",
+    "emoji-picker-element": "1.21.0",
     "@ui5/webcomponents": "=1.13.3",
     "@ui5/webcomponents-fiori": "=1.13.3",
     "@ui5/webcomponents-icons": "=1.13.3",

@@ -14,6 +14,7 @@ import markdownit from 'markdown-it'
 
 import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
+import Popover from "@ui5/webcomponents/dist/Popover";
 
 /**
  * @element
@@ -103,7 +104,11 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
       console.log("emoji-click: " + unicode)
       if (unicode) {
         this._dvm.publishEmoji(this.hash, unicode);
-        this.emojiPickerElem.style.display = 'none';
+        //this.emojiPickerElem.style.display = 'none';
+      }
+      const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
+      if (popover.isOpen()) {
+        popover.close();
       }
     });
   }
@@ -121,7 +126,10 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickAddEmoji() {
-    this.emojiPickerElem.style.display = 'block';
+    //this.emojiPickerElem.style.display = 'block';
+    const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
+    const btn = this.shadowRoot.getElementById("add-reaction-btn") as HTMLElement;
+    popover.showAt(btn);
   }
 
 
@@ -162,7 +170,7 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const reactionButton = html`
-              <ui5-button icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"
+              <ui5-button id="add-reaction-btn" icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"
                           @click="${(e) => this.onClickAddEmoji()}"></ui5-button>`;
 
     let sideButtons = [];
@@ -225,7 +233,9 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
             ${sideButtons}           
         </div>
         <!-- Emoji Picker -->
-        <emoji-picker id="emoji-picker" class="light" style="display: none"></emoji-picker>
+        <ui5-popover id="emojiPopover" header-text="Add Reaction">
+            <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
+        </ui5-popover>
     `;
 
   }
