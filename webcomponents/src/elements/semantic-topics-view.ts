@@ -161,7 +161,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
           const threadIsNew = this.perspective.newThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
-          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics)) {
+          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return html``;
           }
 
