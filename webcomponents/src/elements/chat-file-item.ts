@@ -99,11 +99,11 @@ export class ChatFileItem extends DnaElement<unknown, ThreadsDvm> {
         console.log("threadButton", fileDesc.name);
         if (!maybeCommentThread) {
           commentButton = html`
-              <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" style="border:none;"
+              <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
                           @click="${(e) => this.onClickComment(maybeCommentThread, fileDesc.name)}"></ui5-button>`;
         } else {
           commentButton = html`
-              <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
+              <ui5-button icon="comment" tooltip="View Thread" design="Transparent" style="border:none;"
                           @click="${(e) => this.onClickComment(maybeCommentThread, fileDesc.name)}"></ui5-button>`;
         }
       }

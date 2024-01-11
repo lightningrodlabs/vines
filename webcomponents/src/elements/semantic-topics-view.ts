@@ -171,18 +171,18 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
           let commentButton = html``;
           if (hasUnreadComments) {
-            commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
+            commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" class=${this._isHovered[ppHash]? "" : "transBtn"}
                                              @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
           } else {
             if (this._isHovered[ppHash]) {
               commentButton = maybeCommentThread != null
                 ? html`
-                          <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent"
+                          <ui5-button icon="comment" tooltip="View Thread" design="Transparent"
                                       style="border:none;"
                                       @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
                 : html`
-                          <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent"
+                          <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent"
                                       style="border:none;"
                                       @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
             }
@@ -226,18 +226,18 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
       let commentButton = html``;
       if (isUnread) {
-        commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
+        commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" class=${this._isHovered[topicHash]? "" : "transBtn"}
                                              @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
       } else {
         if (this._isHovered[topicHash]) {
           commentButton = maybeCommentThread != null
             ? html`
-                <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" 
+                <ui5-button icon="comment" tooltip="View Thread" design="Transparent" 
                             style="border:none;"
                             @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
             : html`
-                <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent"
+                <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent"
                             style="border:none; padding:0px;" 
                             @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
         }
@@ -267,7 +267,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                                 expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#DBE3EF" : ""};overflow: hidden;">
           <span slot="content" style="display:flex;overflow: hidden;">
               <span style="/*width:110px;*/height:18px;margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis;overflow:hidden;">${title}</span>
-              <ui5-button icon="add" tooltip="Create a new Thread for this Topic" design="Transparent" @click=${async (e) => {
+              <ui5-button icon="add" tooltip="Create a new channel for this Topic" design="Transparent" @click=${async (e) => {
                   e.stopPropagation(); //console.log("topic clicked:", title);
                   await this.updateComplete;
                   this.dispatchEvent(new CustomEvent('createThreadClicked', {

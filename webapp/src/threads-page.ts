@@ -62,6 +62,7 @@ import "@ui5/webcomponents-icons/dist/feedback.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
+import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/process.js"
@@ -727,7 +728,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
         </ui5-dialog>
         <!-- CreateThreadDialog -->
-        <ui5-dialog id="create-thread-dialog" header-text="Create Thread">
+        <ui5-dialog id="create-thread-dialog" header-text="Create new channel">
             <section>
                 <div>
                     <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>

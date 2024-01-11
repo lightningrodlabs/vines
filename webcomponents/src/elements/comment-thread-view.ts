@@ -240,7 +240,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (infos.length == 0) {
       textLi = [html`
             <ui5-li style="background: ${bg_color};">
-                ${this.showInput? "Add first comment:" : "No comments found"}                       
+                ${this.showInput? "Add first message:" : "No messages found"}                       
             </ui5-li>`]
     }
 
@@ -250,7 +250,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const subjectType = this.subjectType? this.subjectType : pp.subjectType;
     const subjectName = this.subjectName? this.subjectName : pp.subjectHash;
-    const title = `Comments on ${subjectType}:`;
+    const title = `Thread about`;
 
     let maybeInput = html``;
     if (this.showInput) {
@@ -263,7 +263,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
-        <h4 style="margin-left: 5px;">${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span></h4>
+        <h4 style="margin-left: 5px;">
+          ${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span>
+          <ui5-button icon="information" design="Transparent" tooltip=${subjectType}></ui5-button>
+        </h4>
         <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
             ${textLi}
         </ui5-list>

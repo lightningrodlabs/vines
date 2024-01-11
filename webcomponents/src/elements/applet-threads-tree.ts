@@ -283,13 +283,13 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
       let commentButton = html``;
       if (isUnread) {
-        commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" 
+        commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" class=${this._isHovered[pathHash]? "" : "transBtn"}
                                              @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`;
       } else {
         if (this._isHovered[pathHash]) {
           commentButton = html`
-              <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Comment Thread" : "Create Comment Thread"}"
+              <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Thread" : "Create new Thread"}"
                           design="Transparent"
                           @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`
         }

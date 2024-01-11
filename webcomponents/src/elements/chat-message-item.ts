@@ -147,16 +147,16 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
     let commentButton = html``;
     if (isUnread) {
-      commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
     } else {
       console.log("threadButton", msg, texto.message);
       if (!maybeCommentThread) {
         commentButton = html`
-            <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" style="border:none;"
+            <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
                         @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
       } else {
         commentButton = html`
-            <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
+            <ui5-button icon="comment" tooltip="View Thread" design="Transparent" style="border:none;"
                         @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
       }
     }
@@ -184,14 +184,14 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-      const maybeAgent = this._dvm.profilesZvm.perspective.profiles[texto.author];
-      if (maybeAgent) {
-        agent = maybeAgent;
-      } else {
-        console.log("Profile not found for agent", texto.author, this._dvm.profilesZvm.perspective.profiles)
-        this._dvm.profilesZvm.probeProfile(texto.author)
-        //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-      }
+    const maybeAgent = this._dvm.profilesZvm.perspective.profiles[texto.author];
+    if (maybeAgent) {
+      agent = maybeAgent;
+    } else {
+      console.log("Profile not found for agent", texto.author, this._dvm.profilesZvm.perspective.profiles)
+      this._dvm.profilesZvm.probeProfile(texto.author)
+      //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+    }
 
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
@@ -220,8 +220,9 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                     <span class="chatDate"> ${date_str}</span>
                 </div>
                 <div class="chatMsg">${parsed}</div>
+              <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
-            ${sideButtons}
+            ${sideButtons}           
         </div>
         <!-- Emoji Picker -->
         <emoji-picker id="emoji-picker" class="light" style="display: none"></emoji-picker>

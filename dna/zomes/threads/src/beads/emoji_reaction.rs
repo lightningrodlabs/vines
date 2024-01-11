@@ -13,8 +13,9 @@ pub struct AddReactionInput {
 #[hdk_extern]
 pub fn add_reaction(input: AddReactionInput) -> ExternResult<()> {
     // TODO: Check input string is a proper emoji. (todo also in validation)
+    //debug!("add_reaction({:?}) to {}", input.emoji, input.bead_ah);
     let me = agent_info()?.agent_latest_pubkey;
-    let _ = create_link(me, input.bead_ah, ThreadsLinkType::EmojiReaction, str2tag(&input.emoji))?;
+    let _ = create_link(input.bead_ah, me, ThreadsLinkType::EmojiReaction, str2tag(&input.emoji))?;
     Ok(())
 }
 
@@ -35,7 +36,8 @@ pub fn remove_reaction(bead_ah: ActionHash) -> ExternResult<()> {
 /// Return pairs of (agent, emoji)
 #[hdk_extern]
 pub fn get_reactions(bead_ah: ActionHash) -> ExternResult<Vec<(AgentPubKey, String)>> {
-    let links= get_links(bead_ah, ThreadsLinkType::EmojiReaction, None)?;
+    let links= get_links(bead_ah.clone(), ThreadsLinkType::EmojiReaction, None)?;
+    //debug!("get_reactions() found {} for {}", links.len(), bead_ah.clone());
     let pairs: Vec<(AgentPubKey, String)> = links.into_iter()
         .map(|link| (link.target.into_agent_pub_key().unwrap(), tag2str(&link.tag).unwrap()))
         .collect();

@@ -507,21 +507,35 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Probe all emojis on this bead */
   async probeEmojiReactions(beadAh: ActionHashB64) {
+    console.log("probeEmojiReactions()", beadAh);
     const reactions = await this.zomeProxy.getReactions(decodeHashFromBase64(beadAh));
+    console.log("probeEmojiReactions() count", reactions.length);
     this._emojiReactions[beadAh] = reactions.map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
     this.notifySubscribers();
   }
 
 
   /** */
-  async storeEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
-    // TODO: Make sure this reaction is not already stored
+  async storeEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string): Promise<boolean> {
+    if (!this._emojiReactions[beadAh]) {
+      this._emojiReactions[beadAh] = [];
+    } else {
+      /** Make sure this reaction is not already stored */
+      const maybeAlready = Object.values(this._emojiReactions[beadAh]).find(([a, e]) => (agent == a && e == emoji));
+      if (maybeAlready) {
+        return false;
+      }
+    }
     this._emojiReactions[beadAh].push([agent, emoji]);
     this.notifySubscribers();
+    return true;
   }
 
   /** */
   async unstoreEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
+    if (!this._emojiReactions[beadAh]) {
+      this._emojiReactions[beadAh] = [];
+    }
     const filtered = this._emojiReactions[beadAh].filter(([a, e]) => !(agent == a && e == emoji));
     if (filtered.length < this._emojiReactions[beadAh].length) {
       this._emojiReactions[beadAh] = filtered;

@@ -97,17 +97,17 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
 
     let commentButton = html``;
     if (isUnread) {
-      commentButton = html`<ui5-button icon="comment" tooltip="View Comment Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
+      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
     } else {
       if (this._isHovered) {
         console.log("threadButton", this._entryInfo.entryInfo.name);
         if (!maybeCommentThread) {
           commentButton = html`
-              <ui5-button icon="sys-add" tooltip="Create Comment Thread" design="Transparent" style="border:none;"
+              <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
                           @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
         } else {
           commentButton = html`
-              <ui5-button icon="comment" tooltip="View Comment Thread" design="Transparent" style="border:none;"
+              <ui5-button icon="comment" tooltip="View Thread" design="Transparent" style="border:none;"
                           @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
         }
       }

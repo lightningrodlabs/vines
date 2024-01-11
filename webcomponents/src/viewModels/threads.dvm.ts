@@ -270,8 +270,11 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishEmoji(beadAh: ActionHashB64, emoji: string) {
+    const succeeded = await this.threadsZvm.storeEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+    if (!succeeded) {
+      return;
+    }
     await this.threadsZvm.zomeProxy.addReaction({bead_ah: decodeHashFromBase64(beadAh), emoji});
-    await this.threadsZvm.storeEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
     /** Send signal to peers */
     const signal: SignalPayload = {
       from: this.cell.agentPubKey,
