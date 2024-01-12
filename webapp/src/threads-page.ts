@@ -118,6 +118,7 @@ import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
+import {renderAvatar} from "@threads/elements/dist/render";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -539,13 +540,13 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!myProfile) {
       myProfile = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     }
-    const initials = getInitials(myProfile.nickname);
-    const avatarUrl = myProfile.fields['avatar'];
     let lang = myProfile.fields['lang'];
     if (!lang || lang == "") {
       lang = "en";
     }
     setLocale(lang);
+
+    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "S");
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
     console.log("this._appletInfos", this._appletInfos, myProfile);
@@ -647,14 +648,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${this.onCommitBtn}></ui5-button>
                 </div> -->
                 <div id="profile-div" style="display: flex; flex-direction: row">
-                    ${avatarUrl ? html`
-                        <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                            <img src=${avatarUrl}>
-                        </ui5-avatar>
-                    ` : html`
-                        <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials}
-                                    color-scheme="Accent2"></ui5-avatar>
-                    `}
+                    ${avatar}
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
                         <div><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
                             <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->

@@ -17,6 +17,7 @@ import "@ui5/webcomponents/dist/List.js"
 
 import "./input-bar";
 import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {renderAvatar} from "../render";
 
 
 /**
@@ -207,30 +208,16 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         }
         const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
-        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-
-        let maybeAgent = this._dvm.profilesZvm.perspective.profiles[info.author];
-        if (maybeAgent) {
-          agent = maybeAgent;
-        }
 
         const isNew = thread.latestProbeLogTime < info.creationTime;
         console.log("Is msg new?", isNew, thread.latestProbeLogTime, info.creationTime);
 
-        const initials = getInitials(agent.nickname);
-        const avatarUrl = agent.fields['avatar'];
-        // const avatarUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets-big.cdn-mousquetaires.com%2Fmedias%2Fdomain11440%2Fmedia5541%2F832861-ksed1135d3-ewhr.jpg&f=1&nofb=1&ipt=1d1b2046a44ff9ac2e55397563503192c1b3ff1b33a670f00c6b3c0bb7187efd&ipo=images";
+
         return html`
             <ui5-li additional-text="${date_str}" style="background: ${isNew? bg_color: '#e6e6e6'};" type="Inactive">
                 ${info.textMessage.value}
                 <div slot="imageContent">                
-                  ${avatarUrl? html`
-                      <ui5-avatar style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                          <img src=${avatarUrl}>
-                      </ui5-avatar>                   
-                          ` : html`
-                        <ui5-avatar shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
-                  `}
+                  ${renderAvatar(this._dvm.profilesZvm, info.author, "S")}
                 </div>                    
             </ui5-li>`
       }

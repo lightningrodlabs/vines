@@ -7,6 +7,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
+import {renderAvatar} from "../render";
 
 
 /**
@@ -54,25 +55,12 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
         const tmInfo = this._dvm.threadsZvm.perspective.textMessages[beadAh];
         console.log("<mentions-list> texto", tmInfo.textMessage.value);
 
-        const date = new Date(tmInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+          const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
+
+
+          const date = new Date(tmInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const date_str = date.toLocaleString('en-US', {hour12: false});
-
         const date_str = timeSince(date) + " ago";
-
-        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-
-        const maybeAgent = this._dvm.profilesZvm.perspective.profiles[author];
-        if (maybeAgent) {
-          agent = maybeAgent;
-        } else {
-          console.log("Profile not found for agent", tmInfo.author, this._dvm.profilesZvm.perspective.profiles)
-          this._dvm.profilesZvm.probeProfile(tmInfo.author)
-          //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-        }
-
-        const initials = getInitials(agent.nickname);
-        const avatarUrl = agent.fields['avatar'];
-
 
         return html`
           <ui5-li-notification title-text=${tmInfo.textMessage.value} show-close
@@ -81,14 +69,8 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
                   e.detail.item.hidden = true;
                 }
               }>
-              ${avatarUrl? html`
-                      <ui5-avatar class="chatAvatar" slot="avatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                          <img src=${avatarUrl}>
-                      </ui5-avatar>                   
-                          ` : html`
-                        <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2" slot="avatar"></ui5-avatar>
-                  `}
-              <span slot="footnotes">${agent.nickname}</span>
+              ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
+              <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
               <ui5-notification-action text="Jump" slot="actions" @click=${(e) => {
                   this.dispatchEvent(new CustomEvent('jump', {detail: beadAh, bubbles: true, composed: true}));

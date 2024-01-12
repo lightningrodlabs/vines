@@ -15,6 +15,7 @@ import markdownit from 'markdown-it'
 import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
+import {renderAvatar} from "../render";
 
 /**
  * @element
@@ -206,35 +207,17 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
-    let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    const maybeAgent = this._dvm.profilesZvm.perspective.profiles[beadInfo.author];
-    if (maybeAgent) {
-      agent = maybeAgent;
-    } else {
-      console.log("Profile not found for agent", beadInfo.author, this._dvm.profilesZvm.perspective.profiles)
-      this._dvm.profilesZvm.probeProfile(beadInfo.author)
-      //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-    }
-
-    const initials = getInitials(agent.nickname);
-    const avatarUrl = agent.fields['avatar'];
-
     const id = "chat-item__" + this.hash;
 
+    const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
 
     /** render all */
     return html`
         <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
-            ${avatarUrl? html`
-                      <ui5-avatar size="S" class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                          <img src=${avatarUrl}>
-                      </ui5-avatar>                   
-                          ` : html`
-                        <ui5-avatar size="S" class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
-                  `}
+            ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
             <div style="display:flex; flex-direction:column; gap:0px;">
                 <div>
-                    <span><b>${agent.nickname}</b></span>
+                    <span><b>${agentName}</b></span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
                 ${item}

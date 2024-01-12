@@ -1,11 +1,12 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {truncate} from "../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
-import {getInitials} from "@ddd-qc/profiles-dvm";
+import {getInitials, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {renderAvatar} from "../render";
 
 
 /**
@@ -61,26 +62,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       if (subjectBead.beadType == "HRL") {
         subjectName = "HRL";
       }
-      let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-      const maybeAgent = this._dvm.profilesZvm.perspective.profiles[subjectBead.author];
-      if (maybeAgent) {
-        agent = maybeAgent;
-      } else {
-        console.log("Profile not found for agent", subjectBead.author, this._dvm.profilesZvm.perspective.profiles)
-        this._dvm.profilesZvm.probeProfile(subjectBead.author)
-        //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-      }
 
-      const initials = getInitials(agent.nickname);
-      const avatarUrl = agent.fields['avatar'];
-      const avatarElem = avatarUrl? html`
-              <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
-                  <img src=${avatarUrl}>
-              </ui5-avatar>`: html`
-              <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
-    `;
+      const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
 
-      title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
+          title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
       subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" @click=${(e) => this.dispatchEvent(new CustomEvent('selected', {detail: encodeHashToBase64(subjectBead.bead.forProtocolAh), bubbles: true, composed: true}))}>
                         ${subjectName}
@@ -98,8 +83,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         </div>
         <hr/>
     `;
-
   }
+
 
   /** */
   static get styles() {
