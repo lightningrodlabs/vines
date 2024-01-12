@@ -50,6 +50,7 @@ import "@ui5/webcomponents-icons/dist/attachment-video.js"
 import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
+import "@ui5/webcomponents-icons/dist/close-command-field.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/document.js"
 import "@ui5/webcomponents-icons/dist/document-text.js"
@@ -156,6 +157,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _appletToShow: DnaHashB64 | null = null;
 
   @state() private _canViewArchivedTopics = false;
+  @state() private _currentCommentRequest?: CommentRequest;
 
   @state() private _splitObj?: SplitObject;
 
@@ -239,7 +241,13 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
     console.log("parseMentions mentionedAgents", mentionedAgents);
 
-    let res = await this._dvm.publishTextMessage(inputText, this._selectedThreadHash, mentionedAgents);
+    let threadHash = this._selectedThreadHash;
+
+    if (this._currentCommentRequest) {
+      threadHash = await this.createAndShowCommentThread(this._currentCommentRequest);
+      this._currentCommentRequest = undefined;
+    }
+    let res = await this._dvm.publishTextMessage(inputText, threadHash, mentionedAgents);
     console.log("onCreateTextMessage() res:", res);
 
     // /** DEBUG */
@@ -389,6 +397,21 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCommentingClicked(e: CustomEvent<CommentRequest>) {
     console.log("onCommentingClicked()", e);
     const request = e.detail;
+    //await this.createAndShowCommentThread(request);
+
+    if (!request.maybeCommentThread) {
+      this._currentCommentRequest = request;
+      //this._selectedThreadSubjectName = request.subjectName;
+      return;
+    }
+
+    /** Display reply thread inline */
+  }
+
+
+
+  /** */
+  async createAndShowCommentThread(request: CommentRequest) {
     let maybeCommentThread: ActionHashB64 | null = request.maybeCommentThread;
 
     /** Create Comment thread for this TextMessage */
@@ -413,9 +436,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // if (item) item.requestUpdate();
     }
 
-    this._canShowComments = true;
-    this._selectedCommentThreadHash = maybeCommentThread;
-    this._selectedThreadSubjectName = e.detail.subjectName;
+    // this._canShowComments = true;
+    // this._selectedCommentThreadHash = maybeCommentThread;
+    // this._selectedThreadSubjectName = request.subjectName;
+
+    return maybeCommentThread;
   }
 
 
@@ -495,6 +520,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
             </div>
           ` : html`
+          <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
+            Thread about "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
+            <ui5-button icon="delete" design="Transparent"
+                        style="border:none; padding:0px"
+                        @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
+          </div>
           <threads-input-bar .profilesZvm=${this._dvm.profilesZvm} .topic=${topic}
                              .showHrlBtn=${!!this.weServices}
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
@@ -812,6 +843,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           height: inherit;
         }
 
+        .reply-info {
+          background: #b4c4be;
+          margin: 0px 10px -9px 10px;
+          padding: 5px;
+          border: 1px solid black;
+        }
         .ui5-select-label-root {
           font-size: larger;
           font-weight: bold;
