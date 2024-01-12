@@ -39,7 +39,7 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     const md = markdownit();
     //const md = markdownit().use(emoji/* , options */);
-    const result = md.render(texto.message);
+    const result = md.render(texto.textMessage.value);
     const parsed = unsafeHTML(result);
 
     /** render all */
@@ -51,8 +51,11 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   static get styles() {
     return [
       css`
+        p {
+          margin: 0px;
+        }
         .chatMsg {
-          margin: 5px 5px 5px 5px;
+          margin: 0px;
         }        
       `,];
   }

@@ -10,11 +10,11 @@ import {
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
-  AnyBead,
+  AnyBead, Bead,
   EntryBead,
   GlobalLastProbeLog,
   ParticipationProtocol,
-  Subject,
+  Subject, TextMessage,
 } from "../bindings/threads.types";
 import {truncate} from "../utils";
 
@@ -29,6 +29,7 @@ export interface BeadInfo {
   creationTime: Timestamp,
   author: AgentPubKeyB64,
   beadType: string,
+  bead: Bead,
 }
 
 
@@ -53,7 +54,7 @@ export interface TextMessageInfo {
   //index_begin_time_us: number,
   creationTime: Timestamp,
   author: AgentPubKeyB64,
-  message: string,
+  textMessage: TextMessage,
 }
 
 export interface BeadLinkMaterialized {

@@ -51,10 +51,10 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
 
     let notifsLi = Object.values(this._dvm.threadsZvm.perspective.mentions).map(
       ([linkAh, author, beadAh]) => {
-        const texto = this._dvm.threadsZvm.perspective.textMessages[beadAh];
-        console.log("<mentions-list> texto", texto.message);
+        const tmInfo = this._dvm.threadsZvm.perspective.textMessages[beadAh];
+        console.log("<mentions-list> texto", tmInfo.textMessage.value);
 
-        const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date = new Date(tmInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const date_str = date.toLocaleString('en-US', {hour12: false});
 
         const date_str = timeSince(date) + " ago";
@@ -65,8 +65,8 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
         if (maybeAgent) {
           agent = maybeAgent;
         } else {
-          console.log("Profile not found for agent", texto.author, this._dvm.profilesZvm.perspective.profiles)
-          this._dvm.profilesZvm.probeProfile(texto.author)
+          console.log("Profile not found for agent", tmInfo.author, this._dvm.profilesZvm.perspective.profiles)
+          this._dvm.profilesZvm.probeProfile(tmInfo.author)
           //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
         }
 
@@ -75,7 +75,7 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
 
 
         return html`
-          <ui5-li-notification title-text=${texto.message} show-close
+          <ui5-li-notification title-text=${tmInfo.textMessage.value} show-close
               @close=${async (e) => {
                   const _ = await this._dvm.threadsZvm.zomeProxy.deleteMention(decodeHashFromBase64(linkAh));
                   e.detail.item.hidden = true;

@@ -489,8 +489,15 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let threadTitle = "Threads";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads[this._selectedThreadHash];
-      const [topic, topicHidden] = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
-      threadTitle = `# ${topic}: ${thread.pp.purpose}`;
+      const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
+      let topic = "Reply";
+       if (maybeSemanticTopicThread) {
+         const [semTopic, _topicHidden] = maybeSemanticTopicThread;
+         threadTitle = `#${semTopic}: ${thread.pp.purpose}`;
+         topic = semTopic;
+       } else {
+         threadTitle = `Thread about TextMessage `;
+       }
 
       /** Check uploading state */
       let pct = 100;
@@ -501,7 +508,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
 
       centerSide = html`
-          <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}></chat-thread-view>
+          <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}
+                            @selected=${(e) => this.onThreadSelected(e.detail)}
+          ></chat-thread-view>
           ${this._splitObj? html`
             <div id="uploadCard">
               <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
@@ -595,9 +604,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
                             }}
-                            @selected=${(e) => {
-                                this.onThreadSelected(e.detail)
-                            }}
+                            @selected=${(e) => this.onThreadSelected(e.detail)}
                     ></semantic-topics-view>
 
                     <ui5-button icon="add" style="margin:10px 30px 0px 30px;"

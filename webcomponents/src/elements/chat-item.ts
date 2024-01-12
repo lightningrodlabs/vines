@@ -151,7 +151,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let subjectName = "";
     let item = html``;
     if (beadInfo.beadType == "TextMessage") {
-      subjectName = truncate(this.threadsPerspective.textMessages[this.hash].message, 60, true);
+      subjectName = truncate(this.threadsPerspective.textMessages[this.hash].textMessage.value, 60, true);
       item = html`<chat-message .hash=${this.hash}></chat-message>`;
     }
     if (beadInfo.beadType == "File") {
@@ -165,19 +165,23 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-    const isUnread = maybeCommentThread? this.threadsPerspective.unreadThreads.includes(maybeCommentThread) : false;
+    let isUnread = false;
+    let commentThread = html``;
+    if (maybeCommentThread) {
+      isUnread = this.threadsPerspective.unreadThreads.includes(maybeCommentThread);
+      const thread = this.threadsPerspective.threads[maybeCommentThread];
+      commentThread = html`<div class="thread-link"  style="color: ${isUnread? "red" : "blue"}"
+                                @click=${(e) => { this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
+      }}>
+        ${thread.beadLinksTree.length} replies
+      </div>`
+    }
 
     let commentButton = html``;
-    if (isUnread) {
-      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, subjectName)}"></ui5-button>`;
-    } else {
-      if (!maybeCommentThread) {
-        commentButton = html`
-            <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
-                        @click="${(e) => this.onClickComment(maybeCommentThread, subjectName)}"></ui5-button>`;
-      } else {
-        commentButton = html``;
-      }
+    if (!maybeCommentThread) {
+      commentButton = html`
+          <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
+                      @click="${(e) => this.onClickComment(maybeCommentThread, subjectName)}"></ui5-button>`;
     }
 
     const reactionButton = html`
@@ -222,21 +226,22 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
             ${avatarUrl? html`
-                      <ui5-avatar class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+                      <ui5-avatar size="S" class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
                           <img src=${avatarUrl}>
                       </ui5-avatar>                   
                           ` : html`
-                        <ui5-avatar class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
+                        <ui5-avatar size="S" class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
                   `}
-            <div style="display: flex; flex-direction: column">
+            <div style="display:flex; flex-direction:column; gap:0px;">
                 <div>
                     <span><b>${agent.nickname}</b></span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
                 ${item}
-              <emoji-bar .hash=${this.hash}></emoji-bar>
+                <emoji-bar .hash=${this.hash}></emoji-bar>
+                ${commentThread}
             </div>
-            ${sideButtons}           
+            ${sideButtons}
         </div>
         <!-- Emoji Picker -->
         <ui5-popover id="emojiPopover" header-text="Add Reaction">
@@ -250,9 +255,16 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
+
+        emoji-bar {
+          margin-bottom: 5px;
+          margin-top:5px;
+        }
+        
         .chatItem {
-          display: flex; 
+          display: flex;
           flex-direction: row;
+          gap:8px;
           min-height: 55px;
           margin: 5px 5px 10px 5px;
         }
@@ -264,6 +276,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           margin: 0px 0px 0px 5px;
           font-size: smaller;
           color: gray;
+        }
+        .thread-link {
+          cursor: pointer;
         }
       `,];
   }

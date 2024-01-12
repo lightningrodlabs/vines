@@ -188,6 +188,7 @@ export class ThreadsZvm extends ZomeViewModel {
         creationTime: maybeText.creationTime,
         author: maybeText.author,
         beadType: "TextMessage",
+        bead: maybeText.textMessage.bead,
       }
     }
     const maybeFile = this._entryBeads[beadAh];
@@ -196,6 +197,7 @@ export class ThreadsZvm extends ZomeViewModel {
         creationTime: maybeFile.creationTime,
         author: maybeFile.author,
         beadType: "File",
+        bead: maybeFile.entryBead.bead,
       }
     }
     const maybeHrl = this._anyBeads[beadAh];
@@ -204,6 +206,7 @@ export class ThreadsZvm extends ZomeViewModel {
         creationTime: maybeHrl.creationTime,
         author: maybeHrl.author,
         beadType: "HRL",
+        bead: maybeHrl.anyBead.bead,
       }
     }
     /** bad beadAh or bead not already stored */
@@ -1002,7 +1005,7 @@ export class ThreadsZvm extends ZomeViewModel {
     this._textMessages[beadAh] = {
       creationTime,
       author,
-      message: tm.value,
+      textMessage: tm,
     };
     /* Store Bead in its Thread */
     const ppAh = encodeHashToBase64(tm.bead.forProtocolAh);
