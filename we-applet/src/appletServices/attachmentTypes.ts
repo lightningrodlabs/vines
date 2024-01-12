@@ -9,7 +9,7 @@ import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
-import {ViewThreadContext} from "@threads/app";
+import {AttachableThreadContext} from "@threads/app";
 
 
 /** */
@@ -21,30 +21,36 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
       label: "Thread",
       icon_src: wrapPathInSvg(mdiCommentTextMultiple),
       /** */
-      async create(attachToHrl: Hrl) {
-        console.log("Threads/attachmentTypes/thread: CREATE", attachToHrl);
-        const entryLocInfo = await weServices.entryInfo(attachToHrl);
-        console.log("Threads/attachmentTypes/thread: entryLocInfo", entryLocInfo);
-        const subjectName = entryLocInfo.entryInfo.name;
-        //const subjectName = "FIXME";
+      async create(hrlc: HrlWithContext) {
+        console.log("Threads/attachmentTypes/Thread: CREATE", hrlc);
+        const context = hrlc.context as AttachableThreadContext;
 
+        /** Grab subjectName from context, otherwise grab it from attachableInfo */
+        if (!context.subjectName) {
+          const attLocInfo = await weServices.attachableInfo(hrlc);
+          console.log("Threads/attachmentTypes/Thread: entryLocInfo", attLocInfo);
+          context.subjectName = attLocInfo.attachableInfo.name;
+        }
+        if (!context.subjectType) {
+          context.subjectType = "unknown";
+        }
+
+        /** Grab cell's proxy */
         const cellProxy = await asCellProxy(appletClient, undefined, appInfo.installed_app_id, THREADS_DEFAULT_ROLE_NAME); // FIXME use appInfo.appId and roleName
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
 
-        let ppAh: ActionHash = undefined;
-        let context: ViewThreadContext;
-
         /** Check if PP already exists */
-        console.log("Threads/attachmentTypes/thread: calling getPpsFromSubjectHash():", encodeHashToBase64(attachToHrl[1]));
-        const maybeThreads = await proxy.getPpsFromSubjectHash(attachToHrl[1]);
-        console.log("Threads/attachmentTypes/thread: maybeThreads", maybeThreads);
+        let ppAh: ActionHash = undefined;
+        console.log("Threads/attachmentTypes/Thread: calling getPpsFromSubjectHash():", encodeHashToBase64(hrlc[1]));
+        const maybeThreads = await proxy.getPpsFromSubjectHash(hrlc[1]);
+        console.log("Threads/attachmentTypes/Thread: maybeThreads", maybeThreads);
         for (const ppPair of maybeThreads) {
           const res = await proxy.getPp(ppPair[0]);
-          console.log("Threads/attachmentTypes/thread: res", res);
+          console.log("Threads/attachmentTypes/Thread: res", res);
           const pp = res[0];
           if (pp.purpose == "comment") {
             ppAh = ppPair[0];
-            context = {detail: "existing", subjectType: 'unknown', subjectName};
+            context.detail = "existing";
             break;
           }
         }
@@ -55,19 +61,18 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
             pp: {
               purpose: "comment",
               rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
-              subjectHash: attachToHrl[1],
+              subjectHash: hrlc[1],
               subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
             },
-            //appletHash,
-            appletId: encodeHashToBase64(entryLocInfo.appletHash),
-            dnaHash: attachToHrl[0],
+            appletId: encodeHashToBase64(appletHash), //encodeHashToBase64(attLocInfo.appletHash),
+            dnaHash: hrlc[0],
           };
           console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", input);
           const res = await proxy.createParticipationProtocol(input);
           console.log("Threads/attachmentTypes/thread: res", res);
           ppAh = res[0];
           console.log("Threads/attachmentTypes/thread: ppAh", encodeHashToBase64(ppAh));
-          context = {detail: "create", subjectType: 'unknown', subjectName};
+          context.detail = "create";
         }
 
         /** Done */

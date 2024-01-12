@@ -113,7 +113,8 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
       return;
     }
     const spaceHrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(hash)];
-    const res = await attType.create(spaceHrl);
+    const hrlc = {hrl: spaceHrl, context: {subjectType, subjectName}}
+    const res = await attType.create(hrlc);
     console.log("Create/Open Thread result:", res);
     res.context.subjectType = subjectType;
     res.context.subjectName = subjectName;
@@ -188,15 +189,15 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         newItem.text = subjectHash;
         if (this.weServices) {
           //const dnaHash = toggledTreeItem['dnaHash'];
-          console.log("calling weServices.entryInfo()", dnaHash, subjectHash);
+          console.log("calling weServices.attachableInfo()", dnaHash, subjectHash);
           try {
-            const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(dnaHash), decodeHashFromBase64(subjectHash)]);
-            console.log("entryInfo", entryInfo);
-            if (entryInfo) {
-              newItem.text = entryInfo.entryInfo.name;
+            const attachableInfo = await this.weServices.attachableInfo({hrl: [decodeHashFromBase64(dnaHash), decodeHashFromBase64(subjectHash)], context: null});
+            console.log("attachableInfo", attachableInfo);
+            if (attachableInfo) {
+              newItem.text = attachableInfo.attachableInfo.name;
             }
           } catch(e) {
-            console.error("Couldn't find entryInfo:", e);
+            console.error("Couldn't find attachableInfo:", e);
           }
         }
         //newItem.additionalText = "[" + ta.anchor + "]";

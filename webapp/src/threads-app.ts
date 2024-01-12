@@ -27,7 +27,7 @@ import {
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-  ChatThreadView, shellBarStyleTemplate, cardStyleTemplate,
+   cardStyleTemplate,
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -35,7 +35,7 @@ import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {ContextProvider} from "@lit/context";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
-import {EntryViewInfo} from "@ddd-qc/we-utils";
+import {AttachableViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
@@ -45,7 +45,7 @@ import "./threads-page"
 import {PropertyValues} from "lit/development";
 
 
-export interface ViewThreadContext {
+export interface AttachableThreadContext {
   detail: string,
   subjectType: string,
   subjectName: string,
@@ -257,7 +257,7 @@ export class ThreadsApp extends HappElement {
     }
     if(this._hasHolochainFailed) {
       return html`<div style="width: auto; height: auto; font-size: 4rem;">
-        ${msg("Failed to connect to Holochain Conductor and/or <b>Threads</b> cell.")};
+        ${msg("Failed to connect to Holochain Conductor and/or \"Threads\" cell.")};
       </div>
       `;
     }
@@ -273,28 +273,28 @@ export class ThreadsApp extends HappElement {
           break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
-        case "entry":
-          const entryViewInfo = this.appletView as EntryViewInfo;
-          if (entryViewInfo.roleName != THREADS_DEFAULT_ROLE_NAME) {
+        case "attachable":
+          const attachableViewInfo = this.appletView as AttachableViewInfo;
+          if (attachableViewInfo.roleName != THREADS_DEFAULT_ROLE_NAME) {
             throw new Error(`Threads/we-applet: Unknown role name '${this.appletView.roleName}'.`);
           }
-          if (entryViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
+          if (attachableViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
             throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
           }
-          const entryType = pascal(entryViewInfo.entryType);
-          console.log("pascal entryType", entryViewInfo.entryType, entryType);
+          const entryType = pascal(attachableViewInfo.entryType);
+          console.log("pascal entryType", attachableViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              console.log("pp entry:", encodeHashToBase64(entryViewInfo.hrl[1]));
-              const viewContext = entryViewInfo.context as ViewThreadContext;
+              console.log("pp entry:", encodeHashToBase64(attachableViewInfo.hrl[1]));
+              const viewContext = attachableViewInfo.context as AttachableThreadContext;
               view = html`
-                  <comment-thread-view .threadHash=${encodeHashToBase64(entryViewInfo.hrl[1])} showInput="true"
+                  <comment-thread-view .threadHash=${encodeHashToBase64(attachableViewInfo.hrl[1])} showInput="true"
                                        .subjectName=${viewContext.subjectName}
                                        .subjectType=${viewContext.subjectType}></comment-thread-view>
               `;
               break;
             default:
-              throw new Error(`Unhandled entry type ${entryViewInfo.entryType}.`);
+              throw new Error(`Unhandled entry type ${attachableViewInfo.entryType}.`);
           }
           break;
         default:

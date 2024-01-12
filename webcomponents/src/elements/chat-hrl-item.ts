@@ -8,7 +8,7 @@ import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {AppletInfo, Hrl, WeServices} from "@lightningrodlabs/we-applet";
-import {EntryLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
+import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /**
@@ -35,7 +35,7 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _isHovered = false;
 
-  @state() private _entryInfo?: EntryLocationAndInfo;
+  @state() private _attLocAndInfo?: AttachableLocationAndInfo;
   @state() private _appletInfo?: AppletInfo;
 
   /**
@@ -82,8 +82,8 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
 
     const obj: [string, string] = JSON.parse(anyBeadInfo.anyBead.value);
     const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-    if (!this._entryInfo) {
-      this.weServices.entryInfo(hrl).then((entryInfo) => this._entryInfo = entryInfo);
+    if (!this._attLocAndInfo) {
+      this.weServices.attachableInfo({hrl, context: null}).then((attLocAndInfo) => this._attLocAndInfo = attLocAndInfo);
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     if (!this._appletInfo) {
@@ -97,18 +97,18 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
 
     let commentButton = html``;
     if (isUnread) {
-      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
+      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, this._attLocAndInfo.attachableInfo.name)}"></ui5-button>`;
     } else {
       if (this._isHovered) {
-        console.log("threadButton", this._entryInfo.entryInfo.name);
+        console.log("threadButton", this._attLocAndInfo.attachableInfo.name);
         if (!maybeCommentThread) {
           commentButton = html`
               <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
+                          @click="${(e) => this.onClickComment(maybeCommentThread, this._attLocAndInfo.attachableInfo.name)}"></ui5-button>`;
         } else {
           commentButton = html`
               <ui5-button icon="comment" tooltip="View Thread" design="Transparent" style="border:none;"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, this._entryInfo.entryInfo.name)}"></ui5-button>`;
+                          @click="${(e) => this.onClickComment(maybeCommentThread, this._attLocAndInfo.attachableInfo.name)}"></ui5-button>`;
         }
       }
     }
@@ -146,7 +146,7 @@ export class ChatHrlItem extends DnaElement<unknown, ThreadsDvm> {
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
                   @click=${(e) => this.weServices.openHrl(hrl, null)}>
-            ${this._entryInfo.entryInfo.name}
+            ${this._attLocAndInfo.attachableInfo.name}
           </ui5-li>
         </ui5-list>`;
 

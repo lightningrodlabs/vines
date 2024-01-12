@@ -3,16 +3,17 @@ import {ThreadsEntryType, ThreadsProxy} from "@threads/elements";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {pascal} from "@ddd-qc/cell-proxy";
 import {devtestNames} from "../devtest";
+import {AttachableInfo} from "@lightningrodlabs/we-applet";
 
 
 /** */
-export async function getEntryInfo(
+export async function getAttachableInfo(
     appletClient,
     roleName,
     integrityZomeName,
     entryType,
     hrl
-) {
+): Promise<AttachableInfo> {
     if (roleName != devtestNames.provisionedRoleName) {
         throw new Error(`Threads/we-applet: Unknown role name '${roleName}'.`);
     }
