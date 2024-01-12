@@ -3,10 +3,11 @@ export * from './utils';
 export * from './styles';
 
 export * from './elements/applet-threads-tree';
-export * from './elements/chat-file-item';
+export * from './elements/chat-file';
 export * from './elements/chat-header';
-export * from './elements/chat-hrl-item';
-export * from './elements/chat-message-item';
+export * from './elements/chat-hrl';
+export * from './elements/chat-message';
+export * from './elements/chat-item';
 export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';
 export * from './elements/edit-profile';

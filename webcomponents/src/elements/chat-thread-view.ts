@@ -3,12 +3,8 @@ import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
-
-import {ChatMessageItem} from "./chat-message-item";
-import {ChatHeader} from "./chat-header";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
-import {beadToChatItem} from "../utils";
 import {msg} from "@lit/localize";
 
 
@@ -245,7 +241,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
               <hr style="border: 1px solid red; margin-left:5px;margin-right:10px;"/>`
         }
         console.log("<chat-thread-view> blm.beadType ", blm.beadType);
-        const chatItem = beadToChatItem(blm);
+        const chatItem = html`<chat-item .hash=${(blm.beadAh)}></chat-item>`;
         return html`${chatItem}${hr}`;
       }
     );

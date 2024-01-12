@@ -244,7 +244,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let threadHash = this._selectedThreadHash;
 
     if (this._currentCommentRequest) {
-      threadHash = await this.createAndShowCommentThread(this._currentCommentRequest);
+      threadHash = await this.createCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
     }
     let res = await this._dvm.publishTextMessage(inputText, threadHash, mentionedAgents);
@@ -397,7 +397,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCommentingClicked(e: CustomEvent<CommentRequest>) {
     console.log("onCommentingClicked()", e);
     const request = e.detail;
-    //await this.createAndShowCommentThread(request);
+
+    if (request.subjectType != "TextMessage") {
+      const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
+      this._canShowComments = true;
+      this._selectedCommentThreadHash = threadHash;
+      this._selectedThreadSubjectName = request.subjectName;
+      return;
+    }
 
     if (!request.maybeCommentThread) {
       this._currentCommentRequest = request;
@@ -405,42 +412,23 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
 
-    /** Display reply thread inline */
   }
 
-
-
   /** */
-  async createAndShowCommentThread(request: CommentRequest) {
-    let maybeCommentThread: ActionHashB64 | null = request.maybeCommentThread;
-
-    /** Create Comment thread for this TextMessage */
-    if (!maybeCommentThread) {
-      const ppInput: CreatePpInput = {
-        pp: {
-          purpose: "comment",
-          rules: "N/A",
-          subjectHash: decodeHashFromBase64(request.subjectHash),
-          subjectType: request.subjectType,
-        },
-        //appletHash: decodeHashFromBase64(this.appletId),
-        appletId: this.appletId,
-        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-      };
-      const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
-      maybeCommentThread = ppAh;
-      // /** Grab chat-message-item to request an update */
-      // const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
-      // const item = chatView.shadowRoot.getElementById("chat-item__" + beadAh) as any;
-      // console.log("onCommentingClicked() item", item);
-      // if (item) item.requestUpdate();
-    }
-
-    // this._canShowComments = true;
-    // this._selectedCommentThreadHash = maybeCommentThread;
-    // this._selectedThreadSubjectName = request.subjectName;
-
-    return maybeCommentThread;
+  async createCommentThread(request: CommentRequest) {
+    const ppInput: CreatePpInput = {
+      pp: {
+        purpose: "comment",
+        rules: "N/A",
+        subjectHash: decodeHashFromBase64(request.subjectHash),
+        subjectType: request.subjectType,
+      },
+      //appletHash: decodeHashFromBase64(this.appletId),
+      appletId: this.appletId,
+      dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+    };
+    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
+    return ppAh;
   }
 
 

@@ -1,10 +1,10 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {Dictionary, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {truncate} from "../utils";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyBeadInfo, EntryBeadInfo, TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 //import {ChatThreadView} from "./chat-thread-view";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -19,8 +19,8 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 /**
  * @element
  */
-@customElement("chat-message-item")
-export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
+@customElement("chat-item")
+export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
@@ -133,39 +133,50 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+
+
   /** */
   render() {
     //console.log("<chat-message-item>.render()", this.hash);
     if (this.hash == "") {
       return html`
-          <div>No message found</div>`;
+          <div>No bead found</div>`;
     }
 
-    const texto = this.threadsPerspective.textMessages[this.hash];
-    if (!texto) {
-      return html `<div>Loading message...</div>`;
-    }
-
+    let beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
 
 
     /** Determine the comment button to display depending on current comments for this message */
-    const msg = truncate(texto.message, 60, true);
+    let subjectName = "";
+    let item = html``;
+    if (beadInfo.beadType == "TextMessage") {
+      subjectName = truncate(this.threadsPerspective.textMessages[this.hash].message, 60, true);
+      item = html`<chat-message .hash=${this.hash}></chat-message>`;
+    }
+    if (beadInfo.beadType == "File") {
+      subjectName = "File";
+      item = html`<chat-file .hash=${this.hash}></chat-file>`;
+    }
+    if (beadInfo.beadType == "HRL") {
+      subjectName = "HRL";
+      item = html`<chat-hrl .hash=${this.hash}></chat-hrl>`;
+    }
+
+
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     const isUnread = maybeCommentThread? this.threadsPerspective.unreadThreads.includes(maybeCommentThread) : false;
 
     let commentButton = html``;
     if (isUnread) {
-      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+      commentButton = html`<ui5-button icon="comment" tooltip="View Thread" design="Negative" style="border:none;" @click="${(e) => this.onClickComment(maybeCommentThread, subjectName)}"></ui5-button>`;
     } else {
-      console.log("threadButton", msg, texto.message);
       if (!maybeCommentThread) {
         commentButton = html`
             <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
-                        @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+                        @click="${(e) => this.onClickComment(maybeCommentThread, subjectName)}"></ui5-button>`;
       } else {
-        commentButton = html`
-            <ui5-button icon="comment" tooltip="View Thread" design="Transparent" style="border:none;"
-                        @click="${(e) => this.onClickComment(maybeCommentThread, msg)}"></ui5-button>`;
+        commentButton = html``;
       }
     }
 
@@ -188,16 +199,16 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
     //           </ui5-badge>`;
     // }
 
-    const date = new Date(texto.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    const maybeAgent = this._dvm.profilesZvm.perspective.profiles[texto.author];
+    const maybeAgent = this._dvm.profilesZvm.perspective.profiles[beadInfo.author];
     if (maybeAgent) {
       agent = maybeAgent;
     } else {
-      console.log("Profile not found for agent", texto.author, this._dvm.profilesZvm.perspective.profiles)
-      this._dvm.profilesZvm.probeProfile(texto.author)
+      console.log("Profile not found for agent", beadInfo.author, this._dvm.profilesZvm.perspective.profiles)
+      this._dvm.profilesZvm.probeProfile(beadInfo.author)
       //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
     }
 
@@ -206,10 +217,6 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
 
     const id = "chat-item__" + this.hash;
 
-    const md = markdownit()
-    //const md = markdownit().use(emoji/* , options */);
-    const result = md.render(texto.message);
-    const parsed = unsafeHTML(result);
 
     /** render all */
     return html`
@@ -223,11 +230,10 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
                   `}
             <div style="display: flex; flex-direction: column">
                 <div>
-                    <!-- <abbr title=${texto.author}></abbr> -->
                     <span><b>${agent.nickname}</b></span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
-                <div class="chatMsg">${parsed}</div>
+                ${item}
               <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             ${sideButtons}           
@@ -244,18 +250,6 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
-        blockquote {
-          border-left: 4px solid #c1b2b2;
-          margin: 0px;
-          padding-left: 20px;
-          padding-top: 1px;
-          padding-bottom: 1px;
-        }
-        code {
-          border: 1px solid #cac4c4;
-          padding: 4px;
-          background: #f0f0f0;
-        }
         .chatItem {
           display: flex; 
           flex-direction: row;
@@ -271,9 +265,6 @@ export class ChatMessageItem extends DnaElement<unknown, ThreadsDvm> {
           font-size: smaller;
           color: gray;
         }
-        .chatMsg {
-          margin: 5px 5px 5px 5px;
-        }        
       `,];
   }
 }

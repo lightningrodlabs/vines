@@ -21,7 +21,7 @@ import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
   AnyBeadInfo,
-  AnyLinkableHashB64, BeadLinkMaterialized, EntryBeadInfo, HOLOCHAIN_EPOCH,
+  AnyLinkableHashB64, BeadInfo, BeadLinkMaterialized, EntryBeadInfo, HOLOCHAIN_EPOCH,
   materializeParticipationProtocol,
   ParticipationProtocolMat,
   TextMessageInfo,
@@ -30,6 +30,7 @@ import {
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
+import {truncate} from "../utils";
 
 
 
@@ -177,6 +178,36 @@ export class ThreadsZvm extends ZomeViewModel {
 
   getEmojiReactions(beadAh: ActionHashB64): [AgentPubKeyB64, string][] | undefined {
     return this._emojiReactions[beadAh];
+  }
+
+
+  getBeadInfo(beadAh: ActionHashB64): BeadInfo {
+    const maybeText = this._textMessages[beadAh];
+    if (maybeText) {
+      return {
+        creationTime: maybeText.creationTime,
+        author: maybeText.author,
+        beadType: "TextMessage",
+      }
+    }
+    const maybeFile = this._entryBeads[beadAh];
+    if (maybeFile) {
+      return {
+        creationTime: maybeFile.creationTime,
+        author: maybeFile.author,
+        beadType: "File",
+      }
+    }
+    const maybeHrl = this._anyBeads[beadAh];
+    if (maybeHrl) {
+      return {
+        creationTime: maybeHrl.creationTime,
+        author: maybeHrl.author,
+        beadType: "HRL",
+      }
+    }
+    /** bad beadAh or bead not already stored */
+    return null;
   }
 
 

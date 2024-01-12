@@ -16,6 +16,7 @@ import {
   ParticipationProtocol,
   Subject,
 } from "../bindings/threads.types";
+import {truncate} from "../utils";
 
 
 /** -- Should be defined in @holochain/client */
@@ -23,8 +24,15 @@ import {
 export declare type AnyLinkableHashB64 = HoloHashB64;
 export const HOLOCHAIN_EPOCH = 1640995200000000;
 
-
 /** */
+export interface BeadInfo {
+  creationTime: Timestamp,
+  author: AgentPubKeyB64,
+  beadType: string,
+}
+
+
+/** (used for HRL) */
 export interface AnyBeadInfo {
   creationTime: Timestamp,
   author: AgentPubKeyB64,
@@ -32,7 +40,7 @@ export interface AnyBeadInfo {
 }
 
 
-/** */
+/** (used for Files) */
 export interface EntryBeadInfo {
   creationTime: Timestamp,
   author: AgentPubKeyB64,
@@ -70,11 +78,11 @@ export interface ThreadsPerspective {
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** ppAh -> Thread */
   threads: Dictionary<Thread>,
-  /** Ah -> TextMessageInfo */
+  /** beadAh -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
-  /** Ah -> BeadLinkMaterialized */
+  /** beadAh -> BeadLinkMaterialized */
   entryBeads: Dictionary<EntryBeadInfo>,
-  /** Ah -> BeadLinkMaterialized */
+  /** beadAh -> BeadLinkMaterialized */
   anyBeads: Dictionary<AnyBeadInfo>,
   /** bead_ah -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
