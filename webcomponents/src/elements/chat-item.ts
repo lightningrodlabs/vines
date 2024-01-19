@@ -171,11 +171,28 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (maybeCommentThread) {
       isUnread = this.threadsPerspective.unreadThreads.includes(maybeCommentThread);
       const thread = this.threadsPerspective.threads[maybeCommentThread];
-      commentThread = html`<div class="thread-link"  style="color: ${isUnread? "red" : "blue"}"
-                                @click=${(e) => { this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
-      }}>
-        ${thread.beadLinksTree.length} replies
-      </div>`
+      /** Grab all authors */
+      let authors = {};
+      for (const bead of thread.beadLinksTree.values) {
+        const beadInfo = this._dvm.threadsZvm.getBeadInfo(bead.beadAh);
+        if (!authors[beadInfo.author]) {
+          authors[beadInfo.author] = 0;
+        }
+        authors[beadInfo.author] += 1;
+      }
+      /** Create avatar for each author */
+      const avatars = Object.keys(authors).map((author) => {
+        return renderAvatar(this._dvm.profilesZvm, author, "XS");
+      });
+      commentThread = html`
+        <div style="display:flex; flex-direction:row;">
+          <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>
+          <span class="thread-link" style="color: ${isUnread? "red" : "blue"}"
+                                    @click=${(e) => { this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
+          }}>
+            ${thread.beadLinksTree.length > 1? "" + thread.beadLinksTree.length + " replies" : "" + thread.beadLinksTree.length + " reply"} 
+          </span>
+        </div>`
     }
 
     let commentButton = html``;
@@ -213,8 +230,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
+        <!-- main horizontal div -->
         <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
+            <!-- avatar column -->
+            <div style="display: flex; flex-direction: column">
             ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
+              <!-- split in middle horizontal -->
+              <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:5px;">
+                <div style="flex-grow:1;"></div>
+                <div class="${maybeCommentThread? "bordered" : ""}"></div>
+              </div>
+              <div style="min-height: 15px;"></div>
+            </div>
+            <!-- message column -->
             <div style="display:flex; flex-direction:column; gap:0px;">
                 <div>
                     <span><b>${agentName}</b></span>
@@ -238,7 +266,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
-
+        .bordered {
+          flex-grow: 1;
+          border-left: 2px solid #939393;
+          border-bottom: 2px solid #939393;
+          border-bottom-left-radius: 4px;
+        }
         emoji-bar {
           margin-bottom: 5px;
           margin-top:5px;
@@ -253,7 +286,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
         .chatAvatar {
           margin-right: 5px;
-          min-width: 48px;
         }
         .chatDate {
           margin: 0px 0px 0px 5px;
@@ -262,6 +294,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
         .thread-link {
           cursor: pointer;
+          padding-top: 7px; 
+          margin-left: 5px;
         }
       `,];
   }

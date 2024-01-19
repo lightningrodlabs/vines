@@ -1,5 +1,7 @@
 import {html, css} from "lit";
 import { state, customElement } from "lit/decorators.js";
+import {ContextProvider} from "@lit/context";
+import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket, AgentPubKeyB64,
   AppSignal,
@@ -31,9 +33,8 @@ import {
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
-
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
-import {ContextProvider} from "@lit/context";
+
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {AttachableViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
@@ -42,9 +43,9 @@ import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 import "./threads-page"
-import {PropertyValues} from "lit/development";
 
 
+/** */
 export interface AttachableThreadContext {
   detail: string,
   subjectType: string,
@@ -52,9 +53,7 @@ export interface AttachableThreadContext {
 }
 
 
-/**
- *
- */
+/** */
 @localized()
 @customElement("threads-app")
 export class ThreadsApp extends HappElement {
@@ -73,6 +72,15 @@ export class ThreadsApp extends HappElement {
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
+  /** -- We-applet specifics -- */
+
+  protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+  private _weProfilesDvm?: ProfilesDvm;
+  protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
+  public appletId?: EntryHashB64;
+
+
+  /** -- Ctor -- */
 
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
@@ -82,13 +90,6 @@ export class ThreadsApp extends HappElement {
     }
   }
 
-
-  /** -- We-applet specifics -- */
-
-  protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-  private _weProfilesDvm?: ProfilesDvm;
-  protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-  public appletId?: EntryHashB64;
 
   /**  */
   static async fromWe(
@@ -318,10 +319,6 @@ export class ThreadsApp extends HappElement {
               <ui5-card-header title-text=${msg('Import Profile into Threads applet')}></ui5-card-header>
               <threads-edit-profile
                   .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
-                  @lang-selected=${(e: CustomEvent) => {
-                    console.log("set locale", e.detail);
-                    setLocale(e.detail)
-                  }}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
                     console.log("createMyProfile()", e.detail);
                     try {

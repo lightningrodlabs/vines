@@ -9,8 +9,6 @@ import {
 } from "@lightningrodlabs/we-applet";
 
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-//import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
-//import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
 import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";

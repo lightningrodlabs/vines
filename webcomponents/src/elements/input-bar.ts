@@ -3,7 +3,8 @@ import {property, state, customElement} from "lit/decorators.js";
 
 import {inputBarStyleTemplate} from "../styles";
 
-
+//import "@ui5/webcomponents/dist/TextArea.js";
+//import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import Input from "@ui5/webcomponents/dist/Input.js";
 //import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
 import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";

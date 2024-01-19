@@ -11,6 +11,8 @@ import "@ui5/webcomponents-fiori/dist/NotificationAction.js";
 import "@ui5/webcomponents-fiori/dist/ShellBar.js";
 import "@ui5/webcomponents-fiori/dist/ShellBarItem.js";
 /** @ui5/webcomponents */
+import "@ui5/webcomponents/dist/Avatar.js"
+import "@ui5/webcomponents/dist/AvatarGroup.js"
 import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/Button.js";

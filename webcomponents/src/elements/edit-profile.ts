@@ -291,9 +291,9 @@ export class EditProfile extends LitElement {
 
             <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
                 <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
-                <sl-radio-group id="langRadioGroup" @click="${this.handleLangChange}" .value=${this.profile.fields['lang']}>
+                <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile?.fields['lang']}>
                     <sl-radio value="en">🇬🇧</sl-radio>
-                    <sl-radio id="frBtn" value="fr-fr">🇫🇷</sl-radio>
+                    <sl-radio value="fr-fr">🇫🇷</sl-radio>
                 </sl-radio-group>
             </div>
       </section>
