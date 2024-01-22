@@ -22,13 +22,13 @@ export class MentionsList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<mentions-list>.render()");
-    if (this.perspective.mentions.length == 0) {
+    console.log("<mentions-list>.render()", Object.keys(this.perspective.mentions).length);
+    if (Object.keys(this.perspective.mentions).length == 0) {
       return html `<div style="color:#c10a0a">No mentions found</div>`;
     }
 
     let textLi = Object.values(this.perspective.mentions).map(
-      ([linkAh, _author, beadAh]) => {
+      ([_author, beadAh]) => {
         return html`<chat-item hash="${beadAh}"></chat-item>`;
       }
     );

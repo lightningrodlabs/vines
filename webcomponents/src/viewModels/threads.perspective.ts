@@ -105,8 +105,8 @@ export interface ThreadsPerspective {
   unreadSubjects: AnyLinkableHashB64[],
   unreadThreads: ActionHashB64[],
 
-  /** */
-  mentions: [ActionHashB64, AgentPubKeyB64, ActionHashB64][],
+  /** linkAh -> [agent, beadAh] */
+  mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
 }
 
 

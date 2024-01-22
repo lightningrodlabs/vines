@@ -174,6 +174,12 @@ export interface GetLatestBeadsInput {
 }
 
 /**  */
+export interface MentionAgentsInput {
+  bead_ah: ActionHash
+  mentionee: AgentPubKey
+}
+
+/**  */
 export interface AddTextWithMentionsInput {
   texto: TextMessage
   mentionees: AgentPubKey[]
@@ -210,22 +216,25 @@ export interface ProbeAllLatestOutput {
 }
 
 /**  */
-export type NotifiableEvent =
-  | {MENTION: null} | {REPLY: null} | {FORK: null} | {DM: null};
 export enum NotifiableEventType {
 	Mention = 'Mention',
 	Reply = 'Reply',
 	Fork = 'Fork',
 	Dm = 'Dm',
 }
+export type NotifiableEvent = 
+ | {type: "Mention", content: [ActionHash, ActionHash]}
+ | {type: "Reply", content: null}
+ | {type: "Fork", content: null}
+ | {type: "Dm", content: null}
+
 
 /** Data sent by UI ONLY. That's why we use B64 here. */
 export interface WeaveNotification {
-  eventType: string
+  event: NotifiableEvent
   author: AgentPubKeyB64
   timestamp: Timestamp
   title: string
-  context?: Uint8Array
 }
 
 /** Input to the notify call */

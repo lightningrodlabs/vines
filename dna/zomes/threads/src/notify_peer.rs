@@ -8,10 +8,11 @@ use crate::signals::WeaveSignal;
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(tag = "type", content = "content")]
 enum NotifiableEvent {
-    MENTION, // Another agent mentionned you in a textMessage ; Title is
-    REPLY, // Another agent replied to one of your bead
-    FORK, // Another agent created a thread off of some entry you own
-    DM, // Another agent sent you a private bead to your agentPubKey
+    /// Another agent mentionned you in a textMessage ; Title is
+    Mention((ActionHash, ActionHash)), // linkAh, beadAh
+    Reply, // Another agent replied to one of your bead
+    Fork, // Another agent created a thread off of some entry you own
+    Dm, // Another agent sent you a private bead to your agentPubKey
 }
 
 
@@ -19,11 +20,11 @@ enum NotifiableEvent {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct WeaveNotification {
-    event_type: String,
+    event: NotifiableEvent,
     author: AgentPubKeyB64,
     timestamp: Timestamp,
     title: String,
-    context: Option<SerializedBytes>,
+    //context: Option<SerializedBytes>,
 }
 
 

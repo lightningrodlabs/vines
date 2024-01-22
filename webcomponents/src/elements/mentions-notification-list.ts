@@ -42,15 +42,15 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<mentions-notification-list>.render()", this.threadsPerspective.mentions, this._dvm.profilesZvm);
-    if (this._dvm.threadsZvm.perspective.mentions.length == 0) {
+    console.log("<mentions-notification-list>.render()", Object.entries(this._dvm.threadsZvm.perspective.mentions).length, this.threadsPerspective.mentions/*, this._dvm.profilesZvm*/);
+    if (Object.entries(this._dvm.threadsZvm.perspective.mentions).length == 0) {
       return html `<div style="color:#c10a0a">No mentions found</div>`;
     }
 
-    let notifsLi = Object.values(this._dvm.threadsZvm.perspective.mentions).map(
-      ([linkAh, author, beadAh]) => {
+    let notifsLi = Object.entries(this._dvm.threadsZvm.perspective.mentions).map(
+      ([linkAh, [author, beadAh]]) => {
         const tmInfo = this._dvm.threadsZvm.perspective.textMessages[beadAh];
-        console.log("<mentions-list> texto", tmInfo.textMessage.value);
+        console.log("<mentions-notification-list> texto", tmInfo.textMessage.value);
 
         const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
 
@@ -63,11 +63,7 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
           <ui5-li-notification 
               show-close
               title-text=${tmInfo.textMessage.value} 
-              @close=${async (e) => {
-                  const _ = await this._dvm.threadsZvm.zomeProxy.deleteMention(decodeHashFromBase64(linkAh));
-                  e.detail.item.hidden = true;
-                }
-              }>
+              @close=${async (_e) => {await this._dvm.threadsZvm.deleteMention(linkAh);}}>
               ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>

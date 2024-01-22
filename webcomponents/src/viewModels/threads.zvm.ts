@@ -9,13 +9,13 @@ import {
   AnyBead,
   Bead,
   BeadLink, CreatePpInput, DirectMessageType, EntryBead,
-  GetLatestBeadsInput, GlobalLastProbeLog,
+  GetLatestBeadsInput, GlobalLastProbeLog, NotifiableEventType,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
-  SignalPayload,
+  SignalPayload, SignalPayloadType,
   Subject,
   TextMessage, ThreadLastProbeLog,
-  ThreadsEntryType, WeaveSignal,
+  ThreadsEntryType, WeaveNotification, WeaveSignal,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -131,7 +131,8 @@ export class ThreadsZvm extends ZomeViewModel {
   private _newThreads: ActionHashB64[] = [];
   private _unreadThreads: ActionHashB64[] = [];
 
-  private _mentions: [ActionHashB64, AgentPubKeyB64, ActionHashB64][] = [];
+  /** */
+  private _mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]> = {};
 
 
   /** -- Get: Return a stored element -- */
@@ -318,7 +319,10 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async probeMentions() {
     const mentions = await this.zomeProxy.probeMentions();
-    this._mentions = mentions.map(([linkAh, agentId, ah]) => {return [encodeHashToBase64(linkAh), encodeHashToBase64(agentId), encodeHashToBase64(ah)]});
+    this._mentions = {};
+    mentions.map(([linkAh, agentId, ah]) => {
+      this._mentions[encodeHashToBase64(linkAh)] = [encodeHashToBase64(agentId), encodeHashToBase64(ah)];
+    });
     this.notifySubscribers();
   }
 
@@ -714,13 +718,24 @@ export class ThreadsZvm extends ZomeViewModel {
     const mentionees = ments.map((m) => decodeHashFromBase64(m));
     /** Commit Entry */
     const texto: TextMessage = {value: msg, bead}
-    const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
-    //console.log("publishTextMessageAt() added bead", encodeHashToBase64(ah), creationTime);
+    const [ah, global_time_anchor, links] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
+    // FIXME: assert links.length == mentionees.length
+    //const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
+    const beadAh = encodeHashToBase64(ah)
+    console.log("publishTextMessageAt() added bead", beadAh, creationTime);
     const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: "TextMessage"}
     /** Insert in ThreadInfo */
     if (!dontStore) {
       //await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
       await this.fetchTextMessage(beadLink.beadAh, true, creationTime);
+    }
+    /** Notify Mentions asychronously */
+    let i = 0;
+    for (const mentionee of mentionees) {
+      const recipient = encodeHashToBase64(mentionee);
+      const signal = this.createMentionNotification(recipient, beadAh, encodeHashToBase64(links[i]));
+      /*await*/ this.notifyPeer(recipient, signal);
+      i += 1;
     }
     /** Done */
     return [encodeHashToBase64(ah), global_time_anchor];
@@ -874,16 +889,6 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-
-  /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
-
-  /** */
-  storeSemanticTopic(eh: EntryHashB64, title: string, isHidden: boolean): void {
-    this._allSemanticTopics[eh] = [title, isHidden];
-    this.notifySubscribers();
-  }
-
-
   /** */
   async hideSubject(hash: AnyLinkableHashB64) {
     await this.zomeProxy.hideSubject(decodeHashFromBase64(hash));
@@ -920,6 +925,32 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
   }
+
+
+  /** */
+  async deleteMention(linkAh: ActionHashB64): Promise<void> {
+    await this.zomeProxy.deleteMention(decodeHashFromBase64(linkAh));
+    delete this._mentions[linkAh]; // = undefined;
+    this.notifySubscribers();
+  }
+
+
+  /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
+
+  storeMention(linkAh: ActionHashB64, agentId: AgentPubKeyB64, beadAh: ActionHashB64): void {
+    this._mentions[linkAh] = [agentId, beadAh];
+    this.notifySubscribers();
+    // FIXME: Do Live Toast / notification
+  }
+
+
+
+  /** */
+  storeSemanticTopic(eh: EntryHashB64, title: string, isHidden: boolean): void {
+    this._allSemanticTopics[eh] = [title, isHidden];
+    this.notifySubscribers();
+  }
+
 
 
   /** */
@@ -1059,7 +1090,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
 
-  /** -- Signaling -- */
+  /** -- Signaling / Notifying -- */
 
   /** */
   async signalPeers(signal: WeaveSignal, agents: Array<AgentPubKeyB64>): Promise<void> {
@@ -1067,10 +1098,58 @@ export class ThreadsZvm extends ZomeViewModel {
     return this.zomeProxy.signalPeers({signal, peers});
   }
 
-  /** */
-  notifyPeer(agent: AgentPubKeyB64, payload: WeaveSignal): void {
-    this.zomeProxy.notifyPeer({peer: decodeHashFromBase64(agent), payload});
+  /** Return true if sent synchronously*/
+  async notifyPeer(agent: AgentPubKeyB64, signal: WeaveSignal): Promise<boolean> {
+    try {
+      await this.zomeProxy.notifyPeer({peer: decodeHashFromBase64(agent), payload: signal});
+      return true;
+    } catch (e) {
+      /** Peer might not be online, use notificationZome instead */
+      // FIXME
+    }
+    return false;
   }
+
+
+  /** I am notifying someone else that I have mentionned them */
+  async notifyMention(agent: AgentPubKeyB64, beadAh: ActionHashB64, linkAh: ActionHashB64): Promise<boolean> {
+    console.log("notifyMention() agent", agent);
+    const notif = this.createMentionNotification(agent, beadAh, linkAh);
+    return /* await */ this.notifyPeer(agent, notif);
+  }
+
+
+  /** Create Mention Notifcation */
+  private createMentionNotification(agent: AgentPubKeyB64, beadAh: ActionHashB64, linkAh: ActionHashB64): WeaveSignal {
+    const tmInfo = this._textMessages[beadAh];
+    console.log("createMentionNotification() texto", tmInfo.textMessage.value);
+    //const me = this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey]? this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey].nickname : "unnamed";
+    const thread = this._threads[encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh)];
+    let title;
+    const maybeSemantic = this.perspective.allSemanticTopics[thread.pp.subjectHash];
+    if (maybeSemantic) {
+      title = `"${maybeSemantic[1]}"`
+    } else {
+      const subject = this._allSubjects[thread.pp.subjectHash];
+      title = `of type ${subject.typeName}`;
+    }
+
+    const notification: WeaveNotification = {
+      event: {type: NotifiableEventType.Mention, content: [decodeHashFromBase64(linkAh), decodeHashFromBase64(beadAh)] },
+      author: this.cell.agentPubKey,
+      timestamp: tmInfo.creationTime,
+      title: `New mention in thread ${title}`,
+    }
+
+    const signal: WeaveSignal = {
+      maybePpHash: encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh),
+      from: this.cell.agentPubKey,
+      payload: { type: SignalPayloadType.Notification, content: notification }
+    }
+
+    return signal;
+  }
+
 
   /** -- Debug -- */
 

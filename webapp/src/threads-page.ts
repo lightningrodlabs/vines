@@ -668,7 +668,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </div>
             <div id="mainSide">
-              <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${this._dvm.threadsZvm.perspective.mentions.length? this._dvm.threadsZvm.perspective.mentions.length : ""}" show-notifications
+              <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${Object.keys(this._dvm.threadsZvm.perspective.mentions).length? Object.keys(this._dvm.threadsZvm.perspective.mentions).length : ""}" show-notifications
                             @notifications-click=${() => {
                   const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
                   if (popover.isOpen()) {
@@ -789,7 +789,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async refresh(_e?: any) {
     await this._dvm.threadsZvm.probeMentions();
-    console.log("mentions:", this._dvm.threadsZvm.perspective.mentions.length);
+    console.log("mentions:", Object.keys(this._dvm.threadsZvm.perspective.mentions).length);
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }

@@ -9,14 +9,14 @@ import {
 } from "@holochain/client";
 import {
   DirectMessage,
-  DirectMessageType,
+  DirectMessageType, NotifiableEventType,
   ParticipationProtocol,
   SignalPayload, SignalPayloadType,
   TextMessage,
-  THREADS_DEFAULT_ROLE_NAME, WeaveSignal
+  THREADS_DEFAULT_ROLE_NAME, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
-import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
+import {AppletId, Hrl, NotificationId} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {stringifyHrl} from "@ddd-qc/we-utils";
 
@@ -89,13 +89,28 @@ export class ThreadsDvm extends DnaViewModel {
     //const signalPayload = weaveSignal.payload;
     /* Update agent's presence stat */
     this.updatePresence(weaveSignal.from);
+
+    /** -- Handle Notification -- */
     if (weaveSignal.payload.type == SignalPayloadType.Notification) {
+      const notif = weaveSignal.payload.content as WeaveNotification;
       // FIXME handle notifications
+      switch (notif.event.type as NotifiableEventType) {
+        case NotifiableEventType.Mention:
+          this.threadsZvm.storeMention(encodeHashToBase64(notif.event.content[0]), weaveSignal.from, encodeHashToBase64(notif.event.content[1]));
+          break;
+        case NotifiableEventType.Dm:
+        case NotifiableEventType.Reply:
+        case NotifiableEventType.Fork:
+          break;
+        default:
+          console.error("Bad eventType", notif.event.type);
+          break;
+      }
       return;
     }
 
+    /** -- Handle DM -- */
     const dm = weaveSignal.payload.content as DirectMessage;
-
     /* Send pong response */
     if (dm.type != DirectMessageType.Pong) {
       console.log("PONGING ", weaveSignal.from)

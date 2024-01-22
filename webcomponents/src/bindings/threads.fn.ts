@@ -21,6 +21,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_entry_beads",
 	"get_all_beads",
 	"get_latest_beads",
+	"mention_agent",
 	"add_text_message_with_mentions",
 	"add_text_message_at_with_mentions",
 	"probe_mentions",

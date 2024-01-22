@@ -6,17 +6,33 @@ use crate::beads::*;
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MentionAgentsInput {
+  bead_ah: ActionHash,
+  mentionee: AgentPubKey,
+}
+
+
+#[hdk_extern]
+pub fn mention_agent(input: MentionAgentsInput) -> ExternResult<ActionHash> {
+  let link_ah = create_link(input.mentionee, input.bead_ah.clone(), ThreadsLinkType::Mention, LinkTag::from(()))?;
+  Ok(link_ah)
+}
+
+
+///
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AddTextWithMentionsInput {
   texto: TextMessage,
   mentionees: Vec<AgentPubKey>,
 }
+
 
 #[hdk_extern]
 pub fn add_text_message_with_mentions(input: AddTextWithMentionsInput) -> ExternResult<(ActionHash, String, Timestamp)> {
   let tuple = add_text_message(input.texto)?;
   //let me = agent_info()?.agent_latest_pubkey;
   for mentionee in input.mentionees {
-    let _ = create_link(EntryHash::from(mentionee), tuple.0.clone(), ThreadsLinkType::Mention, LinkTag::from(()))?;
+    let _ = create_link(mentionee, tuple.0.clone(), ThreadsLinkType::Mention, LinkTag::from(()))?;
   }
   Ok(tuple)
 }
@@ -32,7 +48,7 @@ pub struct AddTextAndMentionsAtInput {
 
 ///
 #[hdk_extern]
-pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String)> {
+pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<ActionHash>)> {
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextMessage", input.creation_time)?;
@@ -40,11 +56,13 @@ pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> Ex
   //let fn_end = sys_time()?;
   //debug!("               ADD TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
   /// Add Mentions
+  let mut links = Vec::new();
   for mentionee in input.mentionees {
-    let _ = create_link(EntryHash::from(mentionee), ah.clone(), ThreadsLinkType::Mention, LinkTag::from(()))?;
+    let link_ah = create_link(EntryHash::from(mentionee), ah.clone(), ThreadsLinkType::Mention, LinkTag::from(()))?;
+    links.push(link_ah);
   }
   /// Done
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
+  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), links))
 }
 
 
