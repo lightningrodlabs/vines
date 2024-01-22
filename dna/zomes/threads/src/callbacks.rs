@@ -6,8 +6,9 @@ use hdk::prelude::*;
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
    let mut fns = BTreeSet::new();
    fns.insert((zome_info()?.name, FunctionName("recv_remote_signal".into())));
+   fns.insert((zome_info()?.name, FunctionName("recv_notification".into())));
    let cap_grant_entry: CapGrantEntry = CapGrantEntry::new(
-      String::from("remote signals"), // A string by which to later query for saved grants.
+      String::from("remote signals & notification"), // A string by which to later query for saved grants.
       ().into(), // Unrestricted access means any external agent can call the extern
       GrantedFunctions::Listed(fns),
    );

@@ -3,6 +3,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused_attributes)]
+#![allow(ill_formed_attribute_input)]
 
 mod semantic_topic;
 pub(crate) mod utils;
@@ -13,6 +14,7 @@ mod signals;
 mod last_probe_log;
 mod get_latest_items;
 mod callbacks;
+mod notify_peer;
 
 use hdk::prelude::*;
 

@@ -209,10 +209,56 @@ export interface ProbeAllLatestOutput {
   newBeadsByThread: [ActionHash, BeadLink][]
 }
 
+/**  */
+export type NotifiableEvent =
+  | {MENTION: null} | {REPLY: null} | {FORK: null} | {DM: null};
+export enum NotifiableEventType {
+	Mention = 'Mention',
+	Reply = 'Reply',
+	Fork = 'Fork',
+	Dm = 'Dm',
+}
+
+/** Data sent by UI ONLY. That's why we use B64 here. */
+export interface WeaveNotification {
+  eventType: string
+  author: AgentPubKeyB64
+  timestamp: Timestamp
+  title: string
+  context?: Uint8Array
+}
+
+/** Input to the notify call */
+export interface NotifyPeerInput {
+  payload: WeaveSignal
+  peer: AgentPubKey
+}
+
 export interface CreatePpInput {
   pp: ParticipationProtocol
   appletId: string
   dnaHash: DnaHash
+}
+
+/**
+ * 
+ * Data sent by UI ONLY. That's why we use B64 here.
+ * 
+ */
+export enum SignalPayloadType {
+	Dm = 'Dm',
+	Notification = 'Notification',
+}
+export type SignalPayload = 
+ | {type: "Dm", content: DirectMessage}
+ | {type: "Notification", content: WeaveNotification}
+
+
+/**  */
+export interface WeaveSignal {
+  maybePpHash?: ActionHashB64
+  from: AgentPubKeyB64
+  payload: SignalPayload
 }
 
 /**
@@ -237,15 +283,9 @@ export type DirectMessage =
  | {type: "EmojiReactionChange", content: [ActionHashB64, AgentPubKeyB64, string, boolean]}
 
 
-export interface SignalPayload {
-  maybePpHash?: ActionHashB64
-  from: AgentPubKeyB64
-  dm: DirectMessage
-}
-
 /** Input to the notify call */
-export interface NotifyInput {
-  signal: SignalPayload
+export interface SignalPeersInput {
+  signal: WeaveSignal
   peers: AgentPubKey[]
 }
 

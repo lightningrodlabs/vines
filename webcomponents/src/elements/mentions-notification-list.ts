@@ -6,7 +6,6 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {timeSince} from "../utils";
 import {decodeHashFromBase64} from "@holochain/client";
-import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {renderAvatar} from "../render";
 
 
@@ -41,8 +40,6 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-
-
   /** */
   render() {
     console.log("<mentions-notification-list>.render()", this.threadsPerspective.mentions, this._dvm.profilesZvm);
@@ -55,15 +52,17 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
         const tmInfo = this._dvm.threadsZvm.perspective.textMessages[beadAh];
         console.log("<mentions-list> texto", tmInfo.textMessage.value);
 
-          const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
+        const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
 
-
-          const date = new Date(tmInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date = new Date(tmInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const date_str = date.toLocaleString('en-US', {hour12: false});
         const date_str = timeSince(date) + " ago";
 
+        /** */
         return html`
-          <ui5-li-notification title-text=${tmInfo.textMessage.value} show-close
+          <ui5-li-notification 
+              show-close
+              title-text=${tmInfo.textMessage.value} 
               @close=${async (e) => {
                   const _ = await this._dvm.threadsZvm.zomeProxy.deleteMention(decodeHashFromBase64(linkAh));
                   e.detail.item.hidden = true;

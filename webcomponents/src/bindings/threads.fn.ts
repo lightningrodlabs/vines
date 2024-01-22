@@ -42,6 +42,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_thread_logs",
 
 
+	"notify_peer",
 	"create_participation_protocol",
 	"get_pps_from_subject_hash",
 	"get_pps_from_subject_anchor",
@@ -53,7 +54,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_topic",
 	"query_semantic_topics",
 
-	"notify_peers",
+	"signal_peers",
 	"get_all_subjects",
 	"get_applets",
 	"get_subjects_by_type",

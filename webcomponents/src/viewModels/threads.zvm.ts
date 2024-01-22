@@ -15,7 +15,7 @@ import {
   SignalPayload,
   Subject,
   TextMessage, ThreadLastProbeLog,
-  ThreadsEntryType,
+  ThreadsEntryType, WeaveSignal,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -1062,11 +1062,15 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Signaling -- */
 
   /** */
-  async notifyPeers(signal: SignalPayload, agents: Array<AgentPubKeyB64>): Promise<void> {
+  async signalPeers(signal: WeaveSignal, agents: Array<AgentPubKeyB64>): Promise<void> {
     const peers = agents.map((key) => decodeHashFromBase64(key));
-    return this.zomeProxy.notifyPeers({signal, peers});
+    return this.zomeProxy.signalPeers({signal, peers});
   }
 
+  /** */
+  notifyPeer(agent: AgentPubKeyB64, payload: WeaveSignal): void {
+    this.zomeProxy.notifyPeer({peer: decodeHashFromBase64(agent), payload});
+  }
 
   /** -- Debug -- */
 
