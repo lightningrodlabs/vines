@@ -230,7 +230,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppAh);
         const hasUnreadComments = this._zvm.perspective.unreadSubjects.includes(ppAh);
         const threadIsNew = this.perspective.newThreads[ppAh] != undefined;
-        const hasNewBeads = this.perspective.unreadThreads.includes(ppAh);
+        const hasNewBeads = Object.keys(this.perspective.unreadThreads).includes(ppAh);
 
         /** 'new' badge to display */
         let newBadge = html``;
@@ -279,7 +279,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
-      const isUnread = this._zvm.perspective.unreadThreads.includes(maybeCommentThread);
+      const isUnread = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
       const topicIsNew = this.perspective.newSubjects[pathHash] != undefined;
 
       let commentButton = html``;

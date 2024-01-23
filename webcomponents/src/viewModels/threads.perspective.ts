@@ -95,18 +95,24 @@ export interface ThreadsPerspective {
   /** PathEntryHash -> subjectHash[] */
   subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
 
-  /** -- New / unread -- */
-  globalProbeLog?: GlobalLastProbeLog,
-  /** New = First time seen */
-  /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
-  newSubjects: Dictionary<[ActionHash, Timestamp][]>,
-  newThreads: ActionHashB64[],
-  /** unread = Has new beads on one if its threads */
-  unreadSubjects: AnyLinkableHashB64[],
-  unreadThreads: ActionHashB64[],
-
+  /** -- Notification Inbox -- */
   /** linkAh -> [agent, beadAh] */
   mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
+
+  /** -- New / unread -- */
+  globalProbeLog?: GlobalLastProbeLog,
+
+  /** New == Found when doing probeAllLatest() */
+  /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
+  /** subjectHash -> array of [ppAh, pp index-time] */
+  newSubjects: Dictionary<[ActionHash, Timestamp][]>,
+  newThreads: ActionHashB64[],
+  /** Unread subject == Has "new" beads on one if its threads OR has new threads */
+  unreadSubjects: AnyLinkableHashB64[],
+  /** ppAh -> beadAh[] */
+  unreadThreads: Dictionary<ActionHashB64[]>, // Unread thread == Has "new" beads
+
+
 }
 
 

@@ -20,6 +20,7 @@ pub struct ProbeAllLatestOutput {
 pub fn probe_all_latest(begin_time: Timestamp)
   -> ExternResult<ProbeAllLatestOutput>
 {
+  /// From beginning of time to now (begin_time is expected to be last global search log time)
   let searched_interval = SweepInterval::new(begin_time, sys_time()?)?;
   /// Query DHT
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;

@@ -157,7 +157,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         threads = Object.values(topicThreads).map((ppHash)=> {
           const thread = this.perspective.threads[ppHash];
           //const hasNewBeads = thread && thread.hasUnreads();
-          const hasNewBeads = this.perspective.unreadThreads.includes(ppHash);
+          const maybeNewBeads = this.perspective.unreadThreads[ppHash];
+          const hasNewBeads = maybeNewBeads && maybeNewBeads.length > 0;
           //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
           const threadIsNew = this.perspective.newThreads.includes(ppHash);
           //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
@@ -167,7 +168,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
           /** Determine badge & buttons */
           const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
-          const hasUnreadComments = this._zvm.perspective.unreadThreads.includes(maybeCommentThread);
+          const hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
 
           let commentButton = html``;
           if (hasUnreadComments) {
@@ -191,7 +192,11 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           /** 'new' badge to display */
           let newBadge = html``;
           if (threadIsNew) {
-            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">+1</ui5-badge>`;
+            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">New</ui5-badge>`;
+          } else {
+            if (hasNewBeads) {
+              newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">${maybeNewBeads.length}</ui5-badge>`;
+            }
           }
 
           let hideShowBtn = html``;
@@ -211,9 +216,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
               <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
                   <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
-                  ${hideShowBtn}
                   ${commentButton}
-                  ${newBadge}                  
+                  ${newBadge}
+                  ${hideShowBtn}
               </div>               
           </ui5-tree-item-custom>`
         })
@@ -245,7 +250,18 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       /** 'new' badge to display */
       let newBadge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
+        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">New</ui5-badge>`;
+      } else {
+        /** Agregate count of unread beads on all topic's threads */
+        let count = 0;
+        for (const ppAh of topicThreads) {
+          if (this.perspective.unreadThreads[ppAh]) {
+            count += this.perspective.unreadThreads[ppAh].length;
+          }
+        }
+        if (count > 0) {
+          newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">${count}</ui5-badge>`;
+        }
       }
 
       let hideShowBtn =html``;
@@ -276,9 +292,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       composed: true
                   }));
               }}></ui5-button>
-              ${hideShowBtn}
               ${commentButton}
-              ${newBadge}              
+              ${newBadge}     
+              ${hideShowBtn}              
           </span>
               ${threads}
           </ui5-tree-item-custom>`

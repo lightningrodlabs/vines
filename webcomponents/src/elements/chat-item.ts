@@ -169,7 +169,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let isUnread = false;
     let commentThread = html``;
     if (maybeCommentThread) {
-      isUnread = this.threadsPerspective.unreadThreads.includes(maybeCommentThread);
+      isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const thread = this.threadsPerspective.threads[maybeCommentThread];
       /** Grab all authors */
       let authors = {};

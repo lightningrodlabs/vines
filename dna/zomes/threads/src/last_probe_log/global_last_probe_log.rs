@@ -45,7 +45,8 @@ fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
 }
 
 
-/// Return ActionHash
+/// Update global log entry to current time.
+/// Return time of newly created global log entry.
 #[hdk_extern]
 pub fn commit_global_log(maybe_last_known_pp_ah: Option<ActionHash>) -> ExternResult<Timestamp> {
   /// Get Previous one (this also makes sure that one has been created so we can do update)

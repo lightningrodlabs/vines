@@ -1,11 +1,13 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {DnaElement, prettyDate} from "@ddd-qc/lit-happ";
 import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
+import {timeSince} from "../utils";
+import {prettyTimestamp} from "@ddd-qc/files";
 
 
 /**
@@ -235,10 +237,16 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       (blm ) => {
         let hr = html``;
         if (!passedLog && blm.creationTime > threadInfo.latestProbeLogTime) {
+          const beadDateStr = prettyTimestamp(blm.creationTime);
+          const threadProbeDateStr = prettyTimestamp(threadInfo.latestProbeLogTime);
+          //  | ${threadProbeDateStr}
           passedLog = true;
           hr = html`
-              <div style="width: fit-content;background: red;color:white;font-size:small;padding:1px;margin-top:-10px;margin-left:auto">New</div>
-              <hr style="border: 1px solid red; margin-left:5px;margin-right:10px;"/>`
+              <div style="margin-left:10px; margin-right:10px; margin-bottom:-25px">
+                  <div style="width: fit-content;background: red;color:white;font-size:small;padding:2px; margin-top:-25px;margin-bottom:-30px;margin-left:auto">${beadDateStr}</div>
+                <hr style="border: 1px solid red;"/>
+              </div>
+          `
         }
         console.log("<chat-thread-view> blm.beadType ", blm.beadType);
         const chatItem = html`<chat-item .hash=${(blm.beadAh)}></chat-item>`;

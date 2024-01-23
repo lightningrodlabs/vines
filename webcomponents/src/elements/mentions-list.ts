@@ -34,7 +34,6 @@ export class MentionsList extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     );
 
 
-
     const title = `Mentions`;
     /** render all */
     return html`

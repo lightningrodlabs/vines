@@ -11,14 +11,16 @@ import {
   DirectMessage,
   DirectMessageType, NotifiableEventType,
   ParticipationProtocol,
-  SignalPayload, SignalPayloadType,
+  SignalPayloadType,
   TextMessage,
   THREADS_DEFAULT_ROLE_NAME, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
-import {AppletId, Hrl, NotificationId} from "@lightningrodlabs/we-applet";
+import {AppletId, Hrl, WeNotification} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {stringifyHrl} from "@ddd-qc/we-utils";
+import {toasty} from "../toast";
+import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
+import {timeSince} from "../utils";
 
 
 /** */
@@ -93,6 +95,10 @@ export class ThreadsDvm extends DnaViewModel {
     /** -- Handle Notification -- */
     if (weaveSignal.payload.type == SignalPayloadType.Notification) {
       const notif = weaveSignal.payload.content as WeaveNotification;
+      const author = this.profilesZvm.perspective.profiles[notif.author]? this.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
+      const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+      const date_str = timeSince(date) + " ago";
+      let message = `From ${author} | ${date_str}`;
       // FIXME handle notifications
       switch (notif.event.type as NotifiableEventType) {
         case NotifiableEventType.Mention:
@@ -106,6 +112,19 @@ export class ThreadsDvm extends DnaViewModel {
           console.error("Bad eventType", notif.event.type);
           break;
       }
+      /** in-app toast */
+      toasty(notif.title, message);
+      // /** We Notification */
+      // if (this.weServices) {
+      //   const myNotif: WeNotification  = {
+      //     title: notif.title,
+      //     body: message,
+      //     notification_type: notif.event.type,
+      //     icon_src: wrapPathInSvg(mdiInformationOutline),
+      //     urgency: 'medium',
+      //     timestamp: notif.timestamp,
+      //   }
+      //   this.weServices.notifyWe([myNotif]);
       return;
     }
 
@@ -126,12 +145,12 @@ export class ThreadsDvm extends DnaViewModel {
         break;
       case DirectMessageType.NewSemanticTopic:
         const [stEh, title] = dm.content;
-        this.threadsZvm.storeSemanticTopic(stEh, title, false);
+        this.threadsZvm.storeSemanticTopic(stEh, title, false, true);
         break;
       case DirectMessageType.NewPp:
         const [tss, newPpAh, pp] = dm.content
         ///*await */ this.threadsZvm.fetchPp(newPpAh);
-        this.threadsZvm.storePp(newPpAh, pp, tss, false);
+        this.threadsZvm.storePp(newPpAh, pp, tss, false, true);
         break;
       case DirectMessageType.NewBead:
         const [ts, beadAh, beadType, ppAh, beadData] = dm.content;
@@ -142,18 +161,18 @@ export class ThreadsDvm extends DnaViewModel {
             value: new TextDecoder().decode(new Uint8Array(beadData)),
             bead: { forProtocolAh: decodeHashFromBase64(ppAh)}
           }
-          this.threadsZvm.storeTextMessage(beadAh, ts, weaveSignal.from, tm, true);
+          this.threadsZvm.storeTextMessage(beadAh, ts, weaveSignal.from, tm, true, true);
         } else {
           if (beadType == "EntryBead") {
             ///*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
             const json = new TextDecoder().decode(new Uint8Array(beadData));
             const entryBead = JSON.parse(json);
-            this.threadsZvm.storeEntryBead(beadAh, ppAh, ts, weaveSignal.from, entryBead, true);
+            this.threadsZvm.storeEntryBead(beadAh, ppAh, ts, weaveSignal.from, entryBead, true, true);
           } else {
             ///*await */this.threadsZvm.fetchAnyBead(decodeHashFromBase64(beadAh), true);
             const json = new TextDecoder().decode(new Uint8Array(beadData));
             const anyBead = JSON.parse(json);
-            this.threadsZvm.storeAnyBead(beadAh, ppAh, ts, weaveSignal.from, anyBead, true);
+            this.threadsZvm.storeAnyBead(beadAh, ppAh, ts, weaveSignal.from, anyBead, true, true);
           }
         }
         break;

@@ -33,10 +33,12 @@ import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/SuggestionItem.js";
+import "@ui5/webcomponents/dist/Toast.js";
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
 
+import Toast from "@ui5/webcomponents/dist/Toast";
 import Dialog from "@ui5/webcomponents/dist/Dialog";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
@@ -193,6 +195,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
   }
 
+  get toastElem(): Toast {
+    return this.shadowRoot.getElementById("main-toast") as Toast;
+  }
 
   /** -- Update -- */
 
@@ -589,7 +594,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Render all */
     return html`
-        <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
+        <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked} @toast=${(e) => {this.toastElem.show()}}>
+            <ui5-toast id="main-toast" placement="TopCenter" duration="2000">Basic Toast</ui5-toast>
             <div id="leftSide">
                 <ui5-select id="dna-select" class="select" style="background:#B9CCE7; width:auto; margin:0px;"
                             @change=${this.onAppletSelected}>
@@ -661,10 +667,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ></ui5-button>
                     <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="documents" tooltip="Refresh"
-                                @click=${() => {this._hideFiles = !this._hideFiles;}}></ui5-button> 
+                                @click=${() => {this._hideFiles = !this._hideFiles;}}></ui5-button>
                   <!-- <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="synchronize" tooltip="Refresh"
-                                @click=${this.refresh}></ui5-button>  -->                  
+                                @click=${this.refresh}></ui5-button>  -->
                 </div>
             </div>
             <div id="mainSide">
@@ -694,7 +700,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       }
                     }}></mentions-notification-list>
                 </ui5-popover>
-                
+
               <div id="lowerSide">
                 <div id="centerSide">
                     ${centerSide}
@@ -710,7 +716,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <!-- <peer-list></peer-list> -->
                 </div>
                   <anchor-tree id="debugSide"
-                               style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>                  
+                               style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
               </div>
             </div>
          <!-- DIALOGS -->
@@ -844,7 +850,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: larger;
           font-weight: bold;
         }
-        
+
         #mainDiv {
           display: flex;
           flex-direction: row;
@@ -865,14 +871,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           display: flex;
           flex-direction: column;
         }
-        
+
         #lowerSide {
           display: flex;
           flex-direction: row;
           flex: 1;
           overflow-y: auto;
         }
-        
+
         #centerSide {
           width: 100%;
           background: #FBFCFD;
@@ -890,8 +896,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*background: #DBE3EF;*/
           /*border: 1px solid dimgray;*/
         }
-        
-       
+
+
         #rightSide {
           width: 300px;
           /*height: 100vh;*/
@@ -916,7 +922,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #uploadCard {
           margin:auto;
-          /*margin-left:10px;*/          
+          /*margin-left:10px;*/
           min-width: 350px;
           width: 90%;
           padding: 5px;
