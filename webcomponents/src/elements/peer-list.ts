@@ -11,7 +11,7 @@ import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import {Profile as ProfileMat, ProfilesPerspective, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {Profile as ProfileMat, ProfilesPerspective} from "@ddd-qc/profiles-dvm";
 
 /** @element peer-list */
 @localized()

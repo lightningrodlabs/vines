@@ -238,7 +238,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         let hr = html``;
         if (!passedLog && blm.creationTime > threadInfo.latestProbeLogTime) {
           const beadDateStr = prettyTimestamp(blm.creationTime);
-          const threadProbeDateStr = prettyTimestamp(threadInfo.latestProbeLogTime);
+          //const threadProbeDateStr = prettyTimestamp(threadInfo.latestProbeLogTime);
           //  | ${threadProbeDateStr}
           passedLog = true;
           hr = html`

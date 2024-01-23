@@ -63,12 +63,14 @@ import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/email.js"
+import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
+import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
@@ -76,6 +78,7 @@ import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
+import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
@@ -123,6 +126,7 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {renderAvatar} from "@threads/elements/dist/render";
+import {toasty} from "@threads/elements/dist/toast";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -195,9 +199,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
   }
 
-  get toastElem(): Toast {
-    return this.shadowRoot.getElementById("main-toast") as Toast;
-  }
 
   /** -- Update -- */
 
@@ -594,8 +595,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Render all */
     return html`
-        <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked} @toast=${(e) => {this.toastElem.show()}}>
-            <ui5-toast id="main-toast" placement="TopCenter" duration="2000">Basic Toast</ui5-toast>
+        <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
                 <ui5-select id="dna-select" class="select" style="background:#B9CCE7; width:auto; margin:0px;"
                             @change=${this.onAppletSelected}>
@@ -819,6 +819,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCommitBtn(_e?: any) {
+    toasty("All marked 'read'");
     await this._dvm.threadsZvm.commitProbeLogs();
   }
 

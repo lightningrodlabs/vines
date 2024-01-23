@@ -7,6 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {CommentRequest} from "../utils";
 import {msg} from "@lit/localize";
+import {toasty} from "../toast";
 
 
 
@@ -205,11 +206,17 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
               html`
               <ui5-button icon="show" tooltip="Show" design="Transparent"
                           style="border:none; padding:0px" 
-                          @click="${(e) => this._zvm.unhideSubject(ppHash)}"></ui5-button>
+                          @click=${async (e) => {
+                            await this._zvm.unhideSubject(ppHash);
+                            toasty(`Subject unarchived: ${thread.pp.purpose}`);
+              }}></ui5-button>
                     ` : html`
               <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                           style="border:none; padding:0px" 
-                          @click="${(e) => this._zvm.hideSubject(ppHash)}"></ui5-button>`;
+                          @click=${async (e) => {
+                            await this._zvm.hideSubject(ppHash);
+                            toasty(`Subject archived: ${thread.pp.purpose}`);
+            }}></ui5-button>`;
           }
 
           // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
@@ -269,11 +276,17 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         hideShowBtn = this.showArchivedTopics && isHidden? html`
           <ui5-button icon="show" tooltip="Show" design="Transparent"
                       style="border:none; padding:0px"
-                      @click="${(e) => this._zvm.unhideSubject(topicHash)}"></ui5-button>
+                      @click="${async (e) => {
+                        await this._zvm.unhideSubject(topicHash);
+                        toasty(`Topic unarchived: ${title}`)
+        }}"></ui5-button>
         `: html`
           <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                       style="border:none; padding:0px"
-                      @click="${(e) => this._zvm.hideSubject(topicHash)}"></ui5-button>          
+                      @click="${async (e) => {
+                        await this._zvm.hideSubject(topicHash);
+                        toasty(`Topic archived: ${title}`)
+        }}"></ui5-button>          
         `
       }
 
