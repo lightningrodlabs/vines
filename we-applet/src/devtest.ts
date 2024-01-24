@@ -30,13 +30,13 @@ export async function setupThreadsEntryView() {
 
 
 /** */
-function createPpEntryRenderInfo(ppAh: ActionHash, context: AttachableThreadContext): AttachableViewInfo {
+function createPpEntryRenderInfo(pp_ah: ActionHash, context: AttachableThreadContext): AttachableViewInfo {
     const attachableInfo = emptyEntryAppletView as AttachableViewInfo;
     attachableInfo.roleName = THREADS_DEFAULT_ROLE_NAME;
     attachableInfo.integrityZomeName = THREADS_DEFAULT_INTEGRITY_ZOME_NAME;
     attachableInfo.entryType = snake(ThreadsEntryType.ParticipationProtocol);
-    attachableInfo.hrl[1] = ppAh;
-    attachableInfo.context = context;
+    attachableInfo.hrlWithContext.hrl[1] = pp_ah;
+    attachableInfo.hrlWithContext.context = context;
 
     return attachableInfo;
 }

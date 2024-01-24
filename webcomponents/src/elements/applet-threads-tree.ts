@@ -118,7 +118,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     console.log("Create/Open Thread result:", res);
     res.context.subjectType = subjectType;
     res.context.subjectName = subjectName;
-    this.weServices.openHrl(res.hrl, res.context);
+    this.weServices.openHrl({hrl: res.hrl, context: res.context});
   }
 
 

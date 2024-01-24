@@ -127,7 +127,7 @@ import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {renderAvatar} from "@threads/elements/dist/render";
 import {toasty} from "@threads/elements/dist/toast";
-import {wrapPathInSvg} from "@ddd-qc/we-utils";
+import {stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -272,6 +272,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCreateHrlMessage() {
     const maybeHrlc = await this.weServices.userSelectHrl();
     if (!maybeHrlc) return;
+    console.log("onCreateHrlMessage()", stringifyHrl(maybeHrlc.hrl), maybeHrlc);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
     /*let ah =*/ await this._dvm.publishHrlBead(maybeHrlc.hrl, this._selectedThreadHash);

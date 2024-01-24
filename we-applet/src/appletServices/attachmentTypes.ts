@@ -23,12 +23,15 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
       /** */
       async create(hrlc: HrlWithContext) {
         console.log("Threads/attachmentTypes/Thread: CREATE", hrlc);
-        const context = hrlc.context as AttachableThreadContext;
+        let context: AttachableThreadContext = {subjectName: "", subjectType: "", detail: ""};
+        if (hrlc.context) {
+          context = hrlc.context as AttachableThreadContext;
+        }
 
         /** Grab subjectName from context, otherwise grab it from attachableInfo */
         if (!context.subjectName) {
           const attLocInfo = await weServices.attachableInfo(hrlc);
-          console.log("Threads/attachmentTypes/Thread: entryLocInfo", attLocInfo);
+          console.log("Threads/attachmentTypes/Thread: attLocInfo", attLocInfo);
           context.subjectName = attLocInfo.attachableInfo.name;
         }
         if (!context.subjectType) {
@@ -41,8 +44,8 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
 
         /** Check if PP already exists */
         let ppAh: ActionHash = undefined;
-        console.log("Threads/attachmentTypes/Thread: calling getPpsFromSubjectHash():", encodeHashToBase64(hrlc[1]));
-        const maybeThreads = await proxy.getPpsFromSubjectHash(hrlc[1]);
+        console.log("Threads/attachmentTypes/Thread: calling getPpsFromSubjectHash():", encodeHashToBase64(hrlc.hrl[1]));
+        const maybeThreads = await proxy.getPpsFromSubjectHash(hrlc.hrl[1]);
         console.log("Threads/attachmentTypes/Thread: maybeThreads", maybeThreads);
         for (const ppPair of maybeThreads) {
           const res = await proxy.getPp(ppPair[0]);
@@ -61,11 +64,11 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
             pp: {
               purpose: "comment",
               rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
-              subjectHash: hrlc[1],
+              subjectHash: hrlc.hrl[1],
               subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
             },
             appletId: encodeHashToBase64(appletHash), //encodeHashToBase64(attLocInfo.appletHash),
-            dnaHash: hrlc[0],
+            dnaHash: hrlc.hrl[0],
           };
           console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", input);
           const res = await proxy.createParticipationProtocol(input);

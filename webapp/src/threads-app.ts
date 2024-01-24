@@ -286,10 +286,10 @@ export class ThreadsApp extends HappElement {
           console.log("pascal entryType", attachableViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              console.log("pp entry:", encodeHashToBase64(attachableViewInfo.hrl[1]));
-              const viewContext = attachableViewInfo.context as AttachableThreadContext;
+              console.log("pp entry:", encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]));
+              const viewContext = attachableViewInfo.hrlWithContext.context as AttachableThreadContext;
               view = html`
-                  <comment-thread-view .threadHash=${encodeHashToBase64(attachableViewInfo.hrl[1])} showInput="true"
+                  <comment-thread-view .threadHash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])} showInput="true"
                                        .subjectName=${viewContext.subjectName}
                                        .subjectType=${viewContext.subjectType}></comment-thread-view>
               `;

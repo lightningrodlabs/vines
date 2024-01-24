@@ -15,7 +15,7 @@ import {html} from "lit";
 
 
 /** Emit toast notifications */
-export function toasty(title: string, icon = 'message-success', placement = "TopCenter", duration = 2500/*, extraHtml = ""*/) {
+export function toasty(title: string, icon = 'message-success', placement = "TopCenter", duration = 3500/*, extraHtml = ""*/) {
     const prevToasts = document.querySelectorAll("ui5-toast");
     console.log("prevToasts:", prevToasts.length);
     //for (const prevToast of prevToasts) { };
