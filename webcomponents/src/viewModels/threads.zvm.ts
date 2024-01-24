@@ -1134,7 +1134,7 @@ export class ThreadsZvm extends ZomeViewModel {
     return this.zomeProxy.signalPeers({signal, peers});
   }
 
-  /** Return true if sent synchronously*/
+  /** Return true if sent synchronously */
   async notifyPeer(agent: AgentPubKeyB64, signal: WeaveSignal): Promise<boolean> {
     try {
       await this.zomeProxy.notifyPeer({peer: decodeHashFromBase64(agent), payload: signal});
@@ -1160,21 +1160,16 @@ export class ThreadsZvm extends ZomeViewModel {
     const tmInfo = this._textMessages[beadAh];
     console.log("createMentionNotification() texto", tmInfo.textMessage.value);
     //const me = this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey]? this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey].nickname : "unnamed";
-    const thread = this._threads[encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh)];
-    let title;
-    const maybeSemantic = this.perspective.allSemanticTopics[thread.pp.subjectHash];
-    if (maybeSemantic) {
-      title = `"${maybeSemantic[1]}"`
-    } else {
-      const subject = this._allSubjects[thread.pp.subjectHash];
-      title = `of type ${subject.typeName}`;
-    }
+
+    let title = this.threadName(encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh));
+
+    console.log("createMentionNotification() title", title);
 
     const notification: WeaveNotification = {
       event: {type: NotifiableEventType.Mention, content: [decodeHashFromBase64(linkAh), decodeHashFromBase64(beadAh)] },
       author: this.cell.agentPubKey,
       timestamp: tmInfo.creationTime,
-      title: `New mention in thread ${title}`,
+      title: `New mention in thread "${title}"`,
     }
 
     const signal: WeaveSignal = {
@@ -1184,6 +1179,23 @@ export class ThreadsZvm extends ZomeViewModel {
     }
 
     return signal;
+  }
+
+
+  /** -- Misc. -- */
+
+  threadName(ppAh: ActionHashB64): string | undefined {
+    const thread = this._threads[ppAh];
+    if (!thread) return;
+
+    let threadTitle;
+    if (thread.pp.subjectType == "SemanticTopic") {
+      const semTopic = this._allSemanticTopics[thread.pp.subjectHash];
+      threadTitle = `#${semTopic[0]}: ${thread.pp.purpose}`;
+    } else {
+      threadTitle = `${thread.pp.subjectType}: ${thread.pp.purpose}`;
+    }
+    return threadTitle;
   }
 
 

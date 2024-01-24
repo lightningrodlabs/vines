@@ -97,7 +97,7 @@ import {
   parseMentions,
   ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext
+  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext, timeSince
 } from "@threads/elements";
 
 import {
@@ -109,7 +109,7 @@ import {
 
 import {
   AppletId,
-  AppletInfo,
+  AppletInfo, WeNotification,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {consume, createContext} from "@lit/context";
@@ -127,6 +127,8 @@ import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {renderAvatar} from "@threads/elements/dist/render";
 import {toasty} from "@threads/elements/dist/toast";
+import {wrapPathInSvg} from "@ddd-qc/we-utils";
+import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -316,12 +318,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.pingAllOthers();
   }
 
-
+  private _lastKnownNotificationIndex = 0;
 
   /** */
   protected async updated(_changedProperties: PropertyValues) {
+    /** ??? */
     try {
-
       const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
       const view = await chatView.updateComplete;
       //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
@@ -337,6 +339,30 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
     if (shellBar) {
       shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
+    }
+
+    /** handle notifications */
+    //if (this.perspective.notificationLog.length)
+    for (const notif of this.perspective.notificationLog.slice(this._lastKnownNotificationIndex)) {
+      const author = this._dvm.profilesZvm.perspective.profiles[notif.author] ? this._dvm.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
+      //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+      //const date_str = timeSince(date) + " ago";
+      let message = `from @${author}` ; // | ${date_str}`;
+      /** in-app toast */
+      toasty(notif.title + " " + message);
+      /** We Notification */
+      if (this.weServices) {
+        const myNotif: WeNotification = {
+          title: notif.title,
+          body: message,
+          notification_type: notif.event.type,
+          icon_src: wrapPathInSvg(mdiInformationOutline),
+          urgency: 'medium',
+          timestamp: notif.timestamp,
+        }
+        this.weServices.notifyWe([myNotif]);
+      }
+      this._lastKnownNotificationIndex += 1;
     }
   }
 
@@ -488,11 +514,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+
+
   /** */
   render() {
     console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
-
-
 
     let centerSide = html`<h1 style="margin:auto;">${msg("No thread selected")}</h1>`
     let threadTitle = "Threads";
@@ -502,7 +528,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       let topic = "Reply";
        if (maybeSemanticTopicThread) {
          const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-         threadTitle = `#${semTopic}: ${thread.pp.purpose}`;
+         threadTitle = this._dvm.threadsZvm.threadName(this._selectedThreadHash);
          topic = semTopic;
        } else {
          threadTitle = `Thread about TextMessage `;
@@ -665,9 +691,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 design="Transparent" icon="action-settings" tooltip="Edit profile"
                                 @click=${() => this.profileDialogElem.show()}
                     ></ui5-button>
+                        <!--
                     <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="documents" tooltip="Refresh"
                                 @click=${() => {this._hideFiles = !this._hideFiles;}}></ui5-button>
+                    -->
                   <!-- <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="synchronize" tooltip="Refresh"
                                 @click=${this.refresh}></ui5-button>  -->

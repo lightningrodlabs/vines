@@ -150,86 +150,88 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         return;
       }
       /** Render threads for Topic */
-      const topicThreads = this.perspective.threadsPerSubject[topicHash];
+      let topicThreads = this.perspective.threadsPerSubject[topicHash];
+      if (!topicThreads) {
+        topicThreads = [];
+      }
       //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
 
       let threads = [html``];
-      if (topicThreads) {
-        threads = Object.values(topicThreads).map((ppHash)=> {
-          const thread = this.perspective.threads[ppHash];
-          //const hasNewBeads = thread && thread.hasUnreads();
-          const maybeNewBeads = this.perspective.unreadThreads[ppHash];
-          const hasNewBeads = maybeNewBeads && maybeNewBeads.length > 0;
-          //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
-          const threadIsNew = this.perspective.newThreads.includes(ppHash);
-          //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
-          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
-            return html``;
-          }
+      threads = Object.values(topicThreads).map((ppHash)=> {
+        const thread = this.perspective.threads[ppHash];
+        //const hasNewBeads = thread && thread.hasUnreads();
+        const maybeNewBeads = this.perspective.unreadThreads[ppHash];
+        const hasNewBeads = maybeNewBeads && maybeNewBeads.length > 0;
+        //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
+        const threadIsNew = this.perspective.newThreads.includes(ppHash);
+        //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
+        if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
+          return html``;
+        }
 
-          /** Determine badge & buttons */
-          const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
-          const hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
+        /** Determine badge & buttons */
+        const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
+        const hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
 
-          let commentButton = html``;
-          if (hasUnreadComments) {
-            commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
-                                             design="Negative" class=${this._isHovered[ppHash]? "" : "transBtn"}
-                                             @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
-          } else {
-            if (this._isHovered[ppHash]) {
-              commentButton = maybeCommentThread != null
-                ? html`
-                          <ui5-button icon="comment" tooltip="View Thread" design="Transparent"
-                                      style="border:none;"
-                                      @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
-                : html`
-                          <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent"
-                                      style="border:none;"
-                                      @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
-            }
-          }
-
-          /** 'new' badge to display */
-          let newBadge = html``;
-          if (threadIsNew) {
-            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">New</ui5-badge>`;
-          } else {
-            if (hasNewBeads) {
-              newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">${maybeNewBeads.length}</ui5-badge>`;
-            }
-          }
-
-          let hideShowBtn = html``;
+        let commentButton = html``;
+        if (hasUnreadComments) {
+          commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
+                                           design="Negative" class=${this._isHovered[ppHash]? "" : "transBtn"}
+                                           @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
+        } else {
           if (this._isHovered[ppHash]) {
-          hideShowBtn = this.showArchivedTopics && thread.isHidden?
-              html`
-              <ui5-button icon="show" tooltip="Show" design="Transparent"
-                          style="border:none; padding:0px" 
-                          @click=${async (e) => {
-                            await this._zvm.unhideSubject(ppHash);
-                            toasty(`Subject unarchived: ${thread.pp.purpose}`);
-              }}></ui5-button>
-                    ` : html`
-              <ui5-button icon="hide" tooltip="Hide" design="Transparent"
-                          style="border:none; padding:0px" 
-                          @click=${async (e) => {
-                            await this._zvm.hideSubject(ppHash);
-                            toasty(`Subject archived: ${thread.pp.purpose}`);
-            }}></ui5-button>`;
+            commentButton = maybeCommentThread != null
+              ? html`
+                        <ui5-button icon="comment" tooltip="View Thread" design="Transparent"
+                                    style="border:none;"
+                                    @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
+              : html`
+                        <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent"
+                                    style="border:none;"
+                                    @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
           }
+        }
 
-          // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
-          return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
-              <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
-                  <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
-                  ${commentButton}
-                  ${newBadge}
-                  ${hideShowBtn}
-              </div>               
-          </ui5-tree-item-custom>`
-        })
-      }
+        /** 'new' badge to display */
+        let newBadge = html``;
+        if (threadIsNew) {
+          newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">New</ui5-badge>`;
+        } else {
+          if (hasNewBeads) {
+            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">${maybeNewBeads.length}</ui5-badge>`;
+          }
+        }
+
+        let hideShowBtn = html``;
+        if (this._isHovered[ppHash]) {
+        hideShowBtn = this.showArchivedTopics && thread.isHidden?
+            html`
+            <ui5-button icon="show" tooltip="Show" design="Transparent"
+                        style="border:none; padding:0px" 
+                        @click=${async (e) => {
+                          await this._zvm.unhideSubject(ppHash);
+                          toasty(`Unarchived Subject "${thread.pp.purpose}"`);
+            }}></ui5-button>
+                  ` : html`
+            <ui5-button icon="hide" tooltip="Hide" design="Transparent"
+                        style="border:none; padding:0px" 
+                        @click=${async (e) => {
+                          await this._zvm.hideSubject(ppHash);
+                          toasty(`Archived Subject "${thread.pp.purpose}`);
+          }}></ui5-button>`;
+        }
+
+        // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
+        return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
+            <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
+                <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
+                ${commentButton}
+                ${newBadge}
+                ${hideShowBtn}
+            </div>               
+        </ui5-tree-item-custom>`
+      })
+
 
       /** Render Topic */
       const maybeCommentThread = this._zvm.getCommentThreadForSubject(topicHash);
@@ -278,14 +280,14 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       style="border:none; padding:0px"
                       @click="${async (e) => {
                         await this._zvm.unhideSubject(topicHash);
-                        toasty(`Topic unarchived: ${title}`)
+                        toasty(`Unarchived Topic "${title}"`)
         }}"></ui5-button>
         `: html`
           <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                       style="border:none; padding:0px"
                       @click="${async (e) => {
                         await this._zvm.hideSubject(topicHash);
-                        toasty(`Topic archived: ${title}`)
+                        toasty(`Archived Topic "${title}"`)
         }}"></ui5-button>          
         `
       }

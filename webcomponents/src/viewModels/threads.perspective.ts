@@ -14,7 +14,7 @@ import {
   EntryBead,
   GlobalLastProbeLog,
   ParticipationProtocol,
-  Subject, TextMessage,
+  Subject, TextMessage, WeaveNotification,
 } from "../bindings/threads.types";
 import {truncate} from "../utils";
 
@@ -111,7 +111,6 @@ export interface ThreadsPerspective {
   unreadSubjects: AnyLinkableHashB64[],
   /** ppAh -> beadAh[] */
   unreadThreads: Dictionary<ActionHashB64[]>, // Unread thread == Has "new" beads
-
 
 }
 

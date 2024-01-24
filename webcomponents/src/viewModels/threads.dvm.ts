@@ -16,16 +16,17 @@ import {
   THREADS_DEFAULT_ROLE_NAME, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
-import {AppletId, Hrl, WeNotification} from "@lightningrodlabs/we-applet";
+import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {toasty} from "../toast";
-import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
-import {timeSince} from "../utils";
+
 
 
 /** */
 export interface ThreadsDnaPerspective {
   agentPresences: Record<AgentPubKeyB64, number>,
+
+  /** */
+  notificationLog: WeaveNotification[],
 }
 
 
@@ -61,11 +62,14 @@ export class ThreadsDvm extends DnaViewModel {
   get perspective(): ThreadsDnaPerspective {
     return {
       agentPresences: this._agentPresences,
+      notificationLog: this._notificationLog,
     }
   }
 
   /** agentPubKey -> timestamp */
   private _agentPresences: Record<string, number> = {};
+
+  private _notificationLog: WeaveNotification[] = [];
 
 
   /** -- Methods -- */
@@ -82,50 +86,39 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Signaling -- */
 
   /** */
+  private handleNotification(notif: WeaveNotification, from: AgentPubKeyB64) {
+    switch (notif.event.type as NotifiableEventType) {
+      case NotifiableEventType.Mention:
+        this.threadsZvm.storeMention(encodeHashToBase64(notif.event.content[0]), from, encodeHashToBase64(notif.event.content[1]));
+        break;
+      case NotifiableEventType.Dm:
+      case NotifiableEventType.Reply:
+      case NotifiableEventType.Fork:
+        break;
+      default:
+        console.error("Bad eventType", notif.event.type);
+        return;
+        break;
+    }
+    this._notificationLog.push(notif);
+    this.notifySubscribers();
+  }
+
+
+  /** */
   handleSignal(signal: AppSignal) {
     console.log("[threads.dvm] Received Signal", signal);
     if (signal.zome_name === ProfilesZvm.DEFAULT_ZOME_NAME) {
       return;
     }
     const weaveSignal = signal.payload as WeaveSignal;
-    //const signalPayload = weaveSignal.payload;
+
     /* Update agent's presence stat */
     this.updatePresence(weaveSignal.from);
 
     /** -- Handle Notification -- */
     if (weaveSignal.payload.type == SignalPayloadType.Notification) {
-      const notif = weaveSignal.payload.content as WeaveNotification;
-      const author = this.profilesZvm.perspective.profiles[notif.author]? this.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
-      const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-      const date_str = timeSince(date) + " ago";
-      let message = `From ${author} | ${date_str}`;
-      // FIXME handle notifications
-      switch (notif.event.type as NotifiableEventType) {
-        case NotifiableEventType.Mention:
-          this.threadsZvm.storeMention(encodeHashToBase64(notif.event.content[0]), weaveSignal.from, encodeHashToBase64(notif.event.content[1]));
-          break;
-        case NotifiableEventType.Dm:
-        case NotifiableEventType.Reply:
-        case NotifiableEventType.Fork:
-          break;
-        default:
-          console.error("Bad eventType", notif.event.type);
-          break;
-      }
-      /** in-app toast */
-      toasty(notif.title, message);
-      // /** We Notification */
-      // if (this.weServices) {
-      //   const myNotif: WeNotification  = {
-      //     title: notif.title,
-      //     body: message,
-      //     notification_type: notif.event.type,
-      //     icon_src: wrapPathInSvg(mdiInformationOutline),
-      //     urgency: 'medium',
-      //     timestamp: notif.timestamp,
-      //   }
-      //   this.weServices.notifyWe([myNotif]);
-      return;
+      return this.handleNotification(weaveSignal.payload.content as WeaveNotification, weaveSignal.from);
     }
 
     /** -- Handle DM -- */
