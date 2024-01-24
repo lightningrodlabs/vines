@@ -347,7 +347,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const author = this._dvm.profilesZvm.perspective.profiles[notif.author] ? this._dvm.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
-      let message = `from @${author}` ; // | ${date_str}`;
+      let message = `from @${author}.` ; // | ${date_str}`;
       /** in-app toast */
       toasty(notif.title + " " + message);
       /** We Notification */
@@ -358,7 +358,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           notification_type: notif.event.type,
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'medium',
-          timestamp: notif.timestamp,
+          timestamp: notif.timestamp / 1000,
         }
         this.weServices.notifyWe([myNotif]);
       }

@@ -170,8 +170,12 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         }
 
         /** Determine badge & buttons */
-        const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppHash);
-        const hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
+        const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(ppHash);
+        let hasUnreadComments = false;
+        if (maybeCommentThread != null) {
+          hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
+        }
+        //console.log("<semantic-topics-view> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
         let commentButton = html``;
         if (hasUnreadComments) {
@@ -234,12 +238,15 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
 
       /** Render Topic */
-      const maybeCommentThread = this._zvm.getCommentThreadForSubject(topicHash);
+      const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(topicHash);
       const topicIsNew = this.perspective.newSubjects[topicHash] != undefined;
-      const isUnread = this._zvm.perspective.unreadSubjects.includes(topicHash);
+      let topicHasUnreadComments = false;
+      if (maybeCommentThread != null) {
+        topicHasUnreadComments = this._zvm.perspective.unreadSubjects.includes(topicHash);
+      }
 
       let commentButton = html``;
-      if (isUnread) {
+      if (topicHasUnreadComments) {
         commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" class=${this._isHovered[topicHash]? "" : "transBtn"}
                                              @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
