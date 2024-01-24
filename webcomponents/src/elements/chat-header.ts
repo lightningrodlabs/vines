@@ -48,7 +48,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     if (maybeSemanticTopicThread) {
       const [semTopic, _topicHidden] = maybeSemanticTopicThread;
       title = html`<h3>Welcome to #${semTopic} !</h3>`;
-      subText = `This is the start of thread ${semTopic}: ${pp.purpose}.`;
+      const threadName = this._dvm.threadsZvm.threadName(this.hash);
+      subText = `This is the start of thread ${threadName}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", pp.subjectHash);
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(pp.subjectHash);
