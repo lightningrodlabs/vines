@@ -51,8 +51,7 @@ export class MentionsNotificationList extends DnaElement<unknown, ThreadsDvm> {
       ([linkAh, [author, beadAh]]) => {
         const tmInfo = this._dvm.threadsZvm.perspective.textMessages[beadAh];
         if (!tmInfo) {
-          // FIXME: should probe missing bead only, and not 'All'
-          this._dvm.threadsZvm.probeAll();
+          // FIXME: probe missing bead?
           return html``;
         }
         console.log("<mentions-notification-list> texto", tmInfo.textMessage.value);

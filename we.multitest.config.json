@@ -41,6 +41,12 @@
           "instanceName": "Files",
           "registeringAgent": 1,
           "joiningAgents": [2]
+        },
+        {
+          "name": "Where",
+          "instanceName": "Where",
+          "registeringAgent": 1,
+          "joiningAgents": [2]
         }
       ]
     }
@@ -57,6 +63,19 @@
       "source": {
         "type": "filesystem",
         "path": "./artifacts/threads-we_applet.webhapp"
+      }
+    },
+    {
+      "name": "Where",
+      "subtitle": "Group awareness\n",
+      "description": "...",
+      "icon": {
+        "type": "filesystem",
+        "path": "../where/we-applet/icon.png"
+      },
+      "source": {
+        "type": "filesystem",
+        "path": "../where/artifacts/where-we_applet.webhapp"
       }
     },
     {

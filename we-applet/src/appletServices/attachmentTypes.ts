@@ -5,7 +5,7 @@ import {
   AttachmentType,
   Hrl
 } from "@lightningrodlabs/we-applet";
-import {asCellProxy, wrapPathInSvg} from "@ddd-qc/we-utils";
+import {asCellProxy, stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
@@ -22,15 +22,15 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
       icon_src: wrapPathInSvg(mdiCommentTextMultiple),
       /** */
       async create(hrlc: HrlWithContext) {
-        console.log("Threads/attachmentTypes/Thread: CREATE", hrlc);
+        console.log("Threads/attachmentTypes/Thread: CREATE", stringifyHrl(hrlc.hrl));
         let context: AttachableThreadContext = {subjectName: "", subjectType: "", detail: ""};
         if (hrlc.context) {
           context = hrlc.context as AttachableThreadContext;
         }
 
         /** Grab subjectName from context, otherwise grab it from attachableInfo */
+        const attLocInfo = await weServices.attachableInfo(hrlc);
         if (!context.subjectName) {
-          const attLocInfo = await weServices.attachableInfo(hrlc);
           console.log("Threads/attachmentTypes/Thread: attLocInfo", attLocInfo);
           context.subjectName = attLocInfo.attachableInfo.name;
         }
@@ -67,10 +67,11 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
               subjectHash: hrlc.hrl[1],
               subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
             },
-            appletId: encodeHashToBase64(appletHash), //encodeHashToBase64(attLocInfo.appletHash),
+            // appletId: encodeHashToBase64(appletHash), // (Threads appletHash)
+            appletId: encodeHashToBase64(attLocInfo.appletHash),
             dnaHash: hrlc.hrl[0],
           };
-          console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", input);
+          console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", encodeHashToBase64(input.dnaHash), input);
           const res = await proxy.createParticipationProtocol(input);
           console.log("Threads/attachmentTypes/thread: res", res);
           ppAh = res[0];

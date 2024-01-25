@@ -447,7 +447,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //this._selectedThreadSubjectName = request.subjectName;
       return;
     }
-
   }
 
   /** */
