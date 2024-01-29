@@ -24,7 +24,6 @@ import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 /** */
 export interface ThreadsDnaPerspective {
   agentPresences: Record<AgentPubKeyB64, number>,
-
   /** */
   notificationLog: WeaveNotification[],
 }
