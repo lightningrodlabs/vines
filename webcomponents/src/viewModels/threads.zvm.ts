@@ -352,8 +352,12 @@ export class ThreadsZvm extends ZomeViewModel {
       content = beadInfo.name;
     }
     if (NotifiableEventType.Fork in notif.event) {
-      // TODO
-      title = "New thread about " + "your message"
+      const ppAh = encodeHashToBase64(notif.content);
+      // const subjectHash = this._threads[ppAh].pp.subjectHash;
+      // const subject = this.getSubject(subjectHash);
+      // title = "New thread about a " + subject.typeName;
+      title = "New thread: " + this.threadName(ppAh);
+      content = "Rules: " + this._threads[ppAh].pp.rules;
     }
     if (NotifiableEventType.Dm in notif.event) {
       // TODO
@@ -821,11 +825,19 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async publishParticipationProtocol(input: CreatePpInput): Promise<[ActionHashB64, ParticipationProtocolMat]> {
-    const [ppAh, ts] = await this.zomeProxy.createParticipationProtocol(input);
-    const ppAhB64 = encodeHashToBase64(ppAh);
-    const [pp, _ts2] = await this.zomeProxy.getPp(ppAh);
-    const ppMat = this.storePp(ppAhB64, pp, ts, false, false);
-    return [ppAhB64, ppMat];
+    const [pp_ah, ts, maybeNotif] = await this.zomeProxy.createParticipationProtocol(input);
+    /** Notify subject author */
+    if (maybeNotif) {
+      const recipient = encodeHashToBase64(maybeNotif.author);
+      const signal = this.createNotificationSignal(maybeNotif);
+      /*await*/ this.notifyPeer(recipient, signal);
+    }
+    /** Store PP */
+    const ppAh = encodeHashToBase64(pp_ah);
+    const [pp, _ts2] = await this.zomeProxy.getPp(pp_ah);
+    const ppMat = this.storePp(ppAh, pp, ts, false, false);
+    /** */
+    return [ppAh, ppMat];
   }
 
 
@@ -838,15 +850,16 @@ export class ThreadsZvm extends ZomeViewModel {
       rules: "FFA",
       subjectType: SEMANTIC_TOPIC_TYPE_NAME,
     }
-    const [ah, ts] = await this.zomeProxy.createParticipationProtocol({
+    const [pp_ah, ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol({
       pp,
       //appletHash: decodeHashFromBase64(appletId),
       appletId,
       dnaHash: decodeHashFromBase64(dnaHash),
     });
-    const ahB64 = encodeHashToBase64(ah);
-    this.storePp(ahB64, pp, ts, false, false);
-    return [ts, ahB64, pp];
+    const ppAh = encodeHashToBase64(pp_ah);
+    this.storePp(ppAh, pp, ts, false, false);
+    /** */
+    return [ts, ppAh, pp];
   }
 
 
@@ -1185,25 +1198,19 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  // /** I am notifying someone else that I have mentionned them */
-  // async notifyMention(agent: AgentPubKeyB64, beadAh: ActionHashB64, linkAh: ActionHashB64): Promise<boolean> {
-  //   console.log("notifyMention() agent", agent);
-  //   const notif = this.createMentionNotification(agent, beadAh, linkAh);
-  //   return /* await */ this.notifyPeer(agent, notif);
-  // }
-
-
   /** */
   private createNotificationSignal(notification: WeaveNotification): WeaveSignal {
-    // FIXME should not assume content is beadAh
-    const beadAh = encodeHashToBase64(notification.content);
-    const beadInfo = this.getBeadInfo(beadAh);
+    let maybePpHash;
+    if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification) {
+      const beadAh = encodeHashToBase64(notification.content);
+      const beadInfo = this.getBeadInfo(beadAh);
+      maybePpHash = encodeHashToBase64(beadInfo.bead.forProtocolAh);
+    }
     const signal: WeaveSignal = {
-      maybePpHash: encodeHashToBase64(beadInfo.bead.forProtocolAh),
+      maybePpHash,
       from: this.cell.agentPubKey,
       payload: { type: SignalPayloadType.Notification, content: notification }
     }
-
     return signal;
   }
 

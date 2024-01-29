@@ -85,9 +85,11 @@ pub struct AnnounceInput {
 }
 
 
-///
-#[hdk_extern]
-pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<(ActionHash, WeaveNotification)> {
+/// Don't notify self
+pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<Option<(ActionHash, WeaveNotification)>> {
+    if input.who == agent_info()?.agent_latest_pubkey {
+        return Ok(None);
+    }
     let repr: u8 = input.event.into();
     let link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, LinkTag::from(vec![repr]))?;
     let notif = WeaveNotification {
@@ -97,7 +99,7 @@ pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<(ActionHash, WeaveN
         link_ah: link_ah.clone(),
         content: input.content.clone(),
     };
-    Ok((link_ah, notif))
+    Ok(Some((link_ah, notif)))
 }
 
 

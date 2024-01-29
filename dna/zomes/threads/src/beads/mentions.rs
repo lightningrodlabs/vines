@@ -14,18 +14,18 @@ pub struct AddTextWithMentionsInput {
 }
 
 
-#[hdk_extern]
-pub fn add_text_message_with_mentions(input: AddTextWithMentionsInput) -> ExternResult<(ActionHash, String, Timestamp)> {
-  let tuple = add_text_message(input.texto)?;
-  /// Mentions
-  for mentionee in input.mentionees {
-    let _ =  send_inbox_item(AnnounceInput {content: tuple.0.clone().into(), who: mentionee, event: NotifiableEvent::Mention})?;
-  }
-  /// Reply
-  ///
-  /// Done
-  Ok(tuple)
-}
+// #[hdk_extern]
+// pub fn add_text_message_with_mentions(input: AddTextWithMentionsInput) -> ExternResult<(ActionHash, String, Timestamp)> {
+//   let tuple = add_text_message(input.texto)?;
+//   /// Mentions
+//   for mentionee in input.mentionees {
+//     let _ =  send_inbox_item(AnnounceInput {content: tuple.0.clone().into(), who: mentionee, event: NotifiableEvent::Mention})?;
+//   }
+//   /// Reply
+//   ///
+//   /// Done
+//   Ok(tuple)
+// }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -48,14 +48,18 @@ pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> Ex
   /// Add Mentions
   let mut notifs = Vec::new();
   for mentionee in input.mentionees {
-    let (_link_ah, notif) = send_inbox_item(AnnounceInput {content: ah.clone().into(), who: mentionee, event: NotifiableEvent::Mention})?;
-    notifs.push(notif);
+    let maybe = send_inbox_item(AnnounceInput {content: ah.clone().into(), who: mentionee, event: NotifiableEvent::Mention})?;
+    if let Some((_link_ah, notif)) = maybe {
+      notifs.push(notif);
+    }
   }
   /// Reply
   if let Some(reply_ah) = input.texto.bead.maybe_reply_of_ah.clone() {
     let reply_author = get_author(&reply_ah.clone().into())?;
-    let (_link_ah, notif) = send_inbox_item(AnnounceInput {content: ah.clone().into(), who: reply_author, event: NotifiableEvent::Reply})?;
-    notifs.push(notif);
+    let maybe= send_inbox_item(AnnounceInput {content: ah.clone().into(), who: reply_author, event: NotifiableEvent::Reply})?;
+    if let Some((_link_ah, notif)) = maybe {
+      notifs.push(notif);
+    }
   }
   /// Done
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), notifs))

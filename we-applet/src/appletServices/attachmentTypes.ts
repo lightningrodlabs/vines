@@ -43,7 +43,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
         const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
 
         /** Check if PP already exists */
-        let ppAh: ActionHash = undefined;
+        let pp_ah: ActionHash = undefined;
         console.log("Threads/attachmentTypes/Thread: calling getPpsFromSubjectHash():", encodeHashToBase64(hrlc.hrl[1]));
         const maybeThreads = await proxy.getPpsFromSubjectHash(hrlc.hrl[1]);
         console.log("Threads/attachmentTypes/Thread: maybeThreads", maybeThreads);
@@ -52,14 +52,14 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
           console.log("Threads/attachmentTypes/Thread: res", res);
           const pp = res[0];
           if (pp.purpose == "comment") {
-            ppAh = ppPair[0];
+            pp_ah = ppPair[0];
             context.detail = "existing";
             break;
           }
         }
 
         /** Create PP */
-        if (!ppAh) {
+        if (!pp_ah) {
           const input: CreatePpInput = {
             pp: {
               purpose: "comment",
@@ -72,17 +72,18 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
             dnaHash: hrlc.hrl[0],
           };
           console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", encodeHashToBase64(input.dnaHash), input);
-          const res = await proxy.createParticipationProtocol(input);
-          console.log("Threads/attachmentTypes/thread: res", res);
-          ppAh = res[0];
-          console.log("Threads/attachmentTypes/thread: ppAh", encodeHashToBase64(ppAh));
+          const [new_pp_ah, ts, maybeNotif] = await proxy.createParticipationProtocol(input);
+          console.log("Threads/attachmentTypes/thread: res", [new_pp_ah, ts, maybeNotif]);
+          pp_ah = new_pp_ah;
+          console.log("Threads/attachmentTypes/thread: ppAh", encodeHashToBase64(pp_ah));
           context.detail = "create";
+          // FIXME: Notify subject author
         }
 
         /** Done */
         console.log("Threads/attachmentTypes/thread: DONE", context);
         return {
-          hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), ppAh],
+          hrl: [decodeHashFromBase64(cellProxy.cell.dnaHash), pp_ah],
           context,
         } as HrlWithContext;
       }

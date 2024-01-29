@@ -18,10 +18,10 @@ export function renderAvatar(profilesZvm: ProfilesZvm, agentKey: AgentPubKeyB64,
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
     return avatarUrl? html`
-              <ui5-avatar size=${size} class="chatAvatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
+              <ui5-avatar size=${size} class="chatAvatar" slot="avatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
                   <img src=${avatarUrl}>
               </ui5-avatar>
             `: html`
-              <ui5-avatar size=${size} class="chatAvatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
+              <ui5-avatar size=${size} class="chatAvatar" slot="avatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
     `;
 }

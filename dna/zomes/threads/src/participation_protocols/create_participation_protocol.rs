@@ -4,6 +4,7 @@ use threads_integrity::*;
 use zome_utils::*;
 use time_indexing::{index_item};
 use path_explorer_types::*;
+use crate::notify_peer::{AnnounceInput, NotifiableEvent, send_inbox_item, WeaveNotification};
 use crate::participation_protocols::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -17,22 +18,20 @@ pub struct CreatePpInput {
 
 /// Create a Pp off anything
 #[hdk_extern]
-pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp)> {
+pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp, Option<WeaveNotification>)> {
   return create_pp(input.pp, input.applet_id, input.dna_hash, None);
 }
 
 
 ///
-pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp)> {
-
+pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp, Option<WeaveNotification>)> {
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
-
   /// Global Subjects Index
-  let tp = get_subject_tp(applet_id, &pp.subject_type, dna_hash, pp.subject_hash.clone())?;
+  let tp = get_subject_tp(applet_id, &pp.subject_type, dna_hash.clone(), pp.subject_hash.clone())?;
   tp.ensure()?;
-  debug!("create_pp_from_semantic_topic(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
+  debug!("create_pp(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
 
   /// Use given index_time or use the PP's creation time
@@ -73,7 +72,20 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash
 
   debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject_hash);
 
+  /// Notify Subject author
+  let mut maybe_notif = None;
+  if dna_hash == dna_info()?.hash {
+    if let Ok(subject_hash) = AnyDhtHash::try_from(pp.subject_hash) {
+      let maybe_author = get_author(&subject_hash);
+      if let Ok(author) = maybe_author {
+        let maybe= send_inbox_item(AnnounceInput { content: pp_ah.clone().into(), who: author, event: NotifiableEvent::Fork })?;
+        if let Some((_link_ah, notif)) = maybe {
+          maybe_notif = Some(notif)
+        }
+      }
+    }
+  }
 
   /// Done
-  Ok((pp_ah, index_time))
+  Ok((pp_ah, index_time, maybe_notif))
 }

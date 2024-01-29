@@ -210,10 +210,6 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_latest_beads', input);
   }
 
-  async addTextMessageWithMentions(input: AddTextWithMentionsInput): Promise<[ActionHash, string, Timestamp]> {
-    return this.call('add_text_message_with_mentions', input);
-  }
-
   async addTextMessageAtWithMentions(input: AddTextAndMentionsAtInput): Promise<[ActionHash, string, WeaveNotification[]]> {
     return this.call('add_text_message_at_with_mentions', input);
   }
@@ -281,10 +277,6 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('notify_peer', input);
   }
 
-  async sendInboxItem(input: AnnounceInput): Promise<[ActionHash, WeaveNotification]> {
-    return this.call('send_inbox_item', input);
-  }
-
   async probeInbox(): Promise<WeaveNotification[]> {
     return this.call('probe_inbox', null);
   }
@@ -293,7 +285,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('delete_inbox_item', linkAh);
   }
 
-  async createParticipationProtocol(input: CreatePpInput): Promise<[ActionHash, Timestamp]> {
+  async createParticipationProtocol(input: CreatePpInput): Promise<[ActionHash, Timestamp, WeaveNotification | null]> {
     return this.call('create_participation_protocol', input);
   }
 

@@ -16,7 +16,6 @@ import "@ui5/webcomponents/dist/List.js"
 
 
 import "./input-bar";
-import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {renderAvatar} from "../render";
 
 

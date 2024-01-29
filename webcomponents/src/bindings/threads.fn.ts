@@ -21,7 +21,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_entry_beads",
 	"get_all_beads",
 	"get_latest_beads",
-	"add_text_message_with_mentions",
 	"add_text_message_at_with_mentions",
 	"query_text_messages",
 	"get_text_message",
@@ -41,7 +40,6 @@ export const threadsFunctionNames: FunctionName[] = [
 
 
 	"notify_peer",
-	"send_inbox_item",
 	"probe_inbox",
 	"delete_inbox_item",
 	"create_participation_protocol",
