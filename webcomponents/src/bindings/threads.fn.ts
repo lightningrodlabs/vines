@@ -40,6 +40,7 @@ export const threadsFunctionNames: FunctionName[] = [
 
 
 	"notify_peer",
+	"send_inbox_item",
 	"probe_inbox",
 	"delete_inbox_item",
 	"create_participation_protocol",

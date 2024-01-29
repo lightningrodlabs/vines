@@ -97,7 +97,7 @@ import {
   parseMentions,
   ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext, timeSince
+  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext, timeSince, NotifiableEventType
 } from "@threads/elements";
 
 import {
@@ -723,8 +723,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
                     <notification-list @jump=${ async (e) => {
                       console.log("requesting jump to bead", e.detail);
-                      const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
-                      this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+                      if (NotifiableEventType.Fork in e.detail.type) {
+                          this._selectedThreadHash = e.detail.hash;
+                      }
+                      if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type) {
+                          //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
+                          //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+                          const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
+                          this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.forProtocolAh);
+                      }
+                      if (NotifiableEventType.Dm in e.detail.type) {
+                        // TODO
+                      }                      
                       const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
                       if (popover.isOpen()) {
                           popover.close();

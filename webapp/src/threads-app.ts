@@ -50,6 +50,7 @@ export interface AttachableThreadContext {
   detail: string,
   subjectType: string,
   subjectName: string,
+  subjectAuthor?: AgentPubKeyB64,
 }
 
 

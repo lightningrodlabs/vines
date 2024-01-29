@@ -1,4 +1,11 @@
-import {ActionHash, AppAgentClient, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {
+  ActionHash,
+  AgentPubKey,
+  AnyLinkableHash,
+  AppAgentClient,
+  decodeHashFromBase64,
+  encodeHashToBase64
+} from "@holochain/client";
 import {
   AppletHash,
   AttachmentName,
@@ -22,7 +29,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
       icon_src: wrapPathInSvg(mdiCommentTextMultiple),
       /** */
       async create(hrlc: HrlWithContext) {
-        console.log("Threads/attachmentTypes/Thread: CREATE", stringifyHrl(hrlc.hrl));
+        console.log("Threads/attachmentTypes/Thread: CREATE", stringifyHrl(hrlc.hrl), hrlc.context);
         let context: AttachableThreadContext = {subjectName: "", subjectType: "", detail: ""};
         if (hrlc.context) {
           context = hrlc.context as AttachableThreadContext;
@@ -77,7 +84,20 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
           pp_ah = new_pp_ah;
           console.log("Threads/attachmentTypes/thread: ppAh", encodeHashToBase64(pp_ah));
           context.detail = "create";
-          // FIXME: Notify subject author
+          // Notify subject author if provided
+          if (context.subjectAuthor) {
+            console.log("Threads/attachmentTypes/thread: notifying author", context.subjectAuthor, new_pp_ah);
+            const input = {
+              content: new_pp_ah,
+              who: decodeHashFromBase64(context.subjectAuthor),
+              event: {Fork: null}
+            };
+            const maybe = await proxy.sendInboxItem(input);
+            if (maybe) {
+              const signal = this.createNotificationSignal(maybe[1]);
+              /*await*/ this.notifyPeer(context.subjectAuthor, signal);
+            }
+          }
         }
 
         /** Done */

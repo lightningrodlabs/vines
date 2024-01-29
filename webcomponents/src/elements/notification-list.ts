@@ -1,13 +1,14 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {timeSince} from "../utils";
-import {encodeHashToBase64} from "@holochain/client";
+import {AnyLinkableHash, encodeHashToBase64} from "@holochain/client";
 import {renderAvatar} from "../render";
 import {msg} from "@lit/localize";
+import {NotifiableEvent, NotifiableEventType} from "../bindings/threads.types";
 
 
 /**
@@ -73,7 +74,10 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
               <ui5-notification-action text="Jump" slot="actions" @click=${(e) => {
-                  this.dispatchEvent(new CustomEvent('jump', {detail: encodeHashToBase64(notif.content), bubbles: true, composed: true}));
+                  this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
+                  hash: encodeHashToBase64(notif.content),
+                  type: notif.event,
+                  }, bubbles: true, composed: true}));
               }}>
               </ui5-notification-action>
               ${notifBody}
@@ -90,5 +94,9 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
         </ui5-list>
     `;
   }
+}
 
+export interface JumpEvent {
+  hash: AnyLinkableHashB64,
+  type: NotifiableEvent,
 }

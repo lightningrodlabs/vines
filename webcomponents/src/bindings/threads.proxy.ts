@@ -277,6 +277,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('notify_peer', input);
   }
 
+  async sendInboxItem(input: AnnounceInput): Promise<[ActionHash, WeaveNotification] | null> {
+    return this.call('send_inbox_item', input);
+  }
+
   async probeInbox(): Promise<WeaveNotification[]> {
     return this.call('probe_inbox', null);
   }
