@@ -85,21 +85,23 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Signaling -- */
 
   /** */
-  private handleNotification(notif: WeaveNotification, from: AgentPubKeyB64) {
-    switch (notif.event.type as NotifiableEventType) {
-      case NotifiableEventType.Mention:
-        this.threadsZvm.storeMention(encodeHashToBase64(notif.event.content[0]), from, encodeHashToBase64(notif.event.content[1]));
-        break;
-      case NotifiableEventType.Dm:
-      case NotifiableEventType.Reply:
-      case NotifiableEventType.Fork:
-        break;
-      default:
-        console.error("Bad eventType", notif.event.type);
-        return;
-        break;
-    }
-    this._notificationLog.push(notif);
+  private handleNotification(notif: WeaveNotification) {
+    this.threadsZvm.storeInboxItem(notif);
+
+    // if (NotifiableEventType.Mention in notif.event) {
+    //   this.threadsZvm.storeInboxItem(encodeHashToBase64(notif.link_ah), from, encodeHashToBase64(notif.content));
+    // }
+    //
+    //   case NotifiableEventType.Dm:
+    //   case NotifiableEventType.Reply:
+    //   case NotifiableEventType.Fork:
+    //     break;
+    //   default:
+    //     console.error("Bad eventType", notif.event.type);
+    //     return;
+    //     break;
+    // }
+    //this._notificationLog.push(notif);
     this.notifySubscribers();
   }
 
@@ -117,7 +119,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     /** -- Handle Notification -- */
     if (weaveSignal.payload.type == SignalPayloadType.Notification) {
-      return this.handleNotification(weaveSignal.payload.content as WeaveNotification, weaveSignal.from);
+      return this.handleNotification(weaveSignal.payload.content as WeaveNotification/*, weaveSignal.from*/);
     }
 
     /** -- Handle DM -- */

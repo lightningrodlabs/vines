@@ -12,7 +12,7 @@ import {Thread} from "./thread";
 import {
   AnyBead, Bead,
   EntryBead,
-  GlobalLastProbeLog,
+  GlobalLastProbeLog, NotifiableEventType,
   ParticipationProtocol,
   Subject, TextMessage, WeaveNotification,
 } from "../bindings/threads.types";
@@ -64,6 +64,16 @@ export interface BeadLinkMaterialized {
 }
 
 
+// /**  */
+// export interface WeaveNotificationMat {
+//   event: NotifiableEventType,
+//   author: AgentPubKeyB64,
+//   timestamp: Timestamp
+//   linkAh: ActionHashB64,
+//   content: AnyLinkableHashB64,
+// }
+
+
 
 /** */
 export interface ThreadsPerspective {
@@ -95,10 +105,6 @@ export interface ThreadsPerspective {
   /** PathEntryHash -> subjectHash[] */
   subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
 
-  /** -- Notification Inbox -- */
-  /** linkAh -> [agent, beadAh] */
-  mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
-
   /** -- New / unread -- */
   globalProbeLog?: GlobalLastProbeLog,
 
@@ -112,6 +118,12 @@ export interface ThreadsPerspective {
   /** ppAh -> beadAh[] */
   unreadThreads: Dictionary<ActionHashB64[]>, // Unread thread == Has "new" beads
 
+  /** -- Notification Inbox -- */
+  /** linkAh -> [agent, beadAh] */
+  //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
+
+  /** linkAh -> obj */
+  inbox: Dictionary<WeaveNotification>,
 }
 
 

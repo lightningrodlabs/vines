@@ -13,8 +13,7 @@ export * from './elements/comment-thread-view';
 export * from './elements/edit-profile';
 export * from './elements/emoji-bar';
 export * from './elements/input-bar';
-export * from './elements/mentions-list';
-export * from './elements/mentions-notification-list';
+export * from './elements/notification-list';
 export * from './elements/peer-list';
 export * from './elements/semantic-topics-view';
 

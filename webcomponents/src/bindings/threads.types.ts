@@ -174,12 +174,6 @@ export interface GetLatestBeadsInput {
 }
 
 /**  */
-export interface MentionAgentsInput {
-  bead_ah: ActionHash
-  mentionee: AgentPubKey
-}
-
-/**  */
 export interface AddTextWithMentionsInput {
   texto: TextMessage
   mentionees: AgentPubKey[]
@@ -216,31 +210,35 @@ export interface ProbeAllLatestOutput {
 }
 
 /**  */
+export type NotifiableEvent =
+  | {Mention: null} | {Reply: null} | {Fork: null} | {Dm: null};
 export enum NotifiableEventType {
 	Mention = 'Mention',
 	Reply = 'Reply',
 	Fork = 'Fork',
 	Dm = 'Dm',
 }
-export type NotifiableEvent = 
- | {type: "Mention", content: [ActionHash, ActionHash]}
- | {type: "Reply", content: null}
- | {type: "Fork", content: null}
- | {type: "Dm", content: null}
 
-
-/** Data sent by UI ONLY. That's why we use B64 here. */
+/**  */
 export interface WeaveNotification {
   event: NotifiableEvent
-  author: AgentPubKeyB64
+  author: AgentPubKey
   timestamp: Timestamp
-  title: string
+  link_ah: ActionHash
+  content: AnyLinkableHash
 }
 
 /** Input to the notify call */
 export interface NotifyPeerInput {
   payload: WeaveSignal
   peer: AgentPubKey
+}
+
+/**  */
+export interface AnnounceInput {
+  content: AnyLinkableHash
+  who: AgentPubKey
+  event: NotifiableEvent
 }
 
 export interface CreatePpInput {
@@ -416,7 +414,7 @@ export type ThreadsEntry =
  * -------------------------------------------------------------------------------------------------
  */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Mention: null} | {Hide: null} | {EmojiReaction: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Inbox: null} | {Hide: null} | {EmojiReaction: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
@@ -429,7 +427,7 @@ export enum ThreadsLinkTypeType {
 	Beads = 'Beads',
 	Protocols = 'Protocols',
 	Invalid = 'Invalid',
-	Mention = 'Mention',
+	Inbox = 'Inbox',
 	Hide = 'Hide',
 	EmojiReaction = 'EmojiReaction',
 }

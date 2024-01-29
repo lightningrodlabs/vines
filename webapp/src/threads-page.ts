@@ -115,12 +115,11 @@ import {
 import {consume, createContext} from "@lit/context";
 import {shellBarStyleTemplate} from "@threads/elements";
 
-//import  "./mentions-notification-list";
 //import "./input-bar";
 
-import {getInitials, Profile as ProfileMat, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
-import {FilesDvm, splitFile, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
@@ -345,21 +344,22 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** handle notifications */
     //if (this.perspective.notificationLog.length)
     for (const notif of this.perspective.notificationLog.slice(this._lastKnownNotificationIndex)) {
-      const author = this._dvm.profilesZvm.perspective.profiles[notif.author] ? this._dvm.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
+      const author = this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)] ? this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)].nickname : "unknown";
       const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       let message = `from @${author}.` ; // | ${date_str}`;
+      const [notifTitle, _content] = this._dvm.threadsZvm.composeNotificationTitle(notif);
       /** in-app toast */
       if (canPopup) {
-        toasty(notif.title + " " + message);
+        toasty(notifTitle + " " + message);
       }
       /** We Notification */
       if (this.weServices) {
         const myNotif: WeNotification = {
-          title: notif.title,
+          title: notifTitle,
           body: message,
-          notification_type: notif.event.type,
+          notification_type: JSON.stringify(notif.event),
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'high',
           timestamp: notif.timestamp / 1000,
@@ -705,7 +705,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </div>
             <div id="mainSide">
-              <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${Object.keys(this._dvm.threadsZvm.perspective.mentions).length? Object.keys(this._dvm.threadsZvm.perspective.mentions).length : ""}" show-notifications
+              <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}" show-notifications
                             @notifications-click=${() => {
                   const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
                   if (popover.isOpen()) {
@@ -721,7 +721,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               </ui5-shellbar>
 
                 <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
-                    <mentions-notification-list @jump=${ async (e) => {
+                    <notification-list @jump=${ async (e) => {
                       console.log("requesting jump to bead", e.detail);
                       const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
                       this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
@@ -729,7 +729,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       if (popover.isOpen()) {
                           popover.close();
                       }
-                    }}></mentions-notification-list>
+                    }}></notification-list>
                 </ui5-popover>
 
               <div id="lowerSide">
@@ -742,10 +742,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
                 </div>
-                <div id="rightSide" style="display: ${this._canShowMentions? "block" : "none"}">
-                    <mentions-list id="mentionsList"></mentions-list>
-                    <!-- <peer-list></peer-list> -->
-                </div>
+                  <!-- <peer-list></peer-list> -->
+                  <!--
+                  <div id="rightSide" style="display: ${this._canShowMentions? "block" : "none"}">
+                      <mentions-list id="mentionsList"></mentions-list>                   
+                  </div>
+                   -->
                   <anchor-tree id="debugSide"
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
               </div>
@@ -825,8 +827,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async refresh(_e?: any) {
-    await this._dvm.threadsZvm.probeMentions();
-    console.log("mentions:", Object.keys(this._dvm.threadsZvm.perspective.mentions).length);
+    await this._dvm.threadsZvm.probeInbox();
+    console.log("Inbox:", Object.keys(this._dvm.threadsZvm.perspective.inbox).length);
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }

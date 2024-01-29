@@ -25,7 +25,7 @@ import {
   materializeParticipationProtocol,
   ParticipationProtocolMat,
   TextMessageInfo,
-  ThreadsPerspective
+  ThreadsPerspective,
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
@@ -90,7 +90,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
       allAppletIds: this._allAppletIds,
 
-      mentions: this._mentions,
+      inbox: this._inbox,
 
     };
   }
@@ -131,7 +131,7 @@ export class ThreadsZvm extends ZomeViewModel {
   private _unreadThreads: Dictionary<ActionHashB64[]> = {};
 
   /** */
-  private _mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]> = {};
+  private _inbox: Dictionary<WeaveNotification> = {};
 
 
   /** -- Get: Return a stored element -- */
@@ -302,7 +302,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Get last elements since last time (global search log) */
     await this.probeAllLatest();
 
-    await this.probeMentions();
+    await this.probeInbox();
 
     /** */
     await this.probeAllAppletIds();
@@ -316,13 +316,47 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   /** */
-  async probeMentions() {
-    const mentions = await this.zomeProxy.probeMentions();
-    this._mentions = {};
-    mentions.map(([linkAh, agentId, ah]) => {
-      this._mentions[encodeHashToBase64(linkAh)] = [encodeHashToBase64(agentId), encodeHashToBase64(ah)];
+  async probeInbox() {
+    const items = await this.zomeProxy.probeInbox();
+    this._inbox = {};
+    items.map((notif) => {
+      // const mat: WeaveNotificationMat = {
+      //   event: JSON.stringify(notif.event) as NotifiableEventType,
+      //   author: encodeHashToBase64(notif.author),
+      //   timestamp: notif.timestamp,
+      //   linkAh: encodeHashToBase64(notif.link_ah),
+      //   content: encodeHashToBase64(notif.content),
+      // };
+      this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
     });
     this.notifySubscribers();
+  }
+
+
+  /** Return [notifTitle, notifBody] */
+  composeNotificationTitle(notif: WeaveNotification): [string, string] {
+    let title: string = "";
+    let content: string = "";
+    if (NotifiableEventType.Mention in notif.event) {
+      const tmInfo = this._textMessages[encodeHashToBase64(notif.content)];
+      // FIXME do other bead types
+      title = "Mention in channel " + this.threadName(encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh));
+      content = tmInfo.textMessage.value;
+    }
+    if (NotifiableEventType.Reply in notif.event) {
+      const tmInfo = this._textMessages[encodeHashToBase64(notif.content)];
+      // FIXME do other bead types
+      title = "Reply in channel " + this.threadName(encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh));
+      content = tmInfo.textMessage.value;
+    }
+    if (NotifiableEventType.Fork in notif.event) {
+      // TODO
+      title = "New thread about " + "your message"
+    }
+    if (NotifiableEventType.Dm in notif.event) {
+      // TODO
+    }
+    return [title, content];
   }
 
 
@@ -936,17 +970,18 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async deleteMention(linkAh: ActionHashB64): Promise<void> {
-    await this.zomeProxy.deleteMention(decodeHashFromBase64(linkAh));
-    delete this._mentions[linkAh]; // = undefined;
+  async deleteInboxItem(linkAh: ActionHashB64): Promise<void> {
+    await this.zomeProxy.deleteInboxItem(decodeHashFromBase64(linkAh));
+
+    delete this._inbox[linkAh]; // = undefined;
     this.notifySubscribers();
   }
 
 
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
-  storeMention(linkAh: ActionHashB64, agentId: AgentPubKeyB64, beadAh: ActionHashB64): void {
-    this._mentions[linkAh] = [agentId, beadAh];
+  storeInboxItem(notif: WeaveNotification): void {
+    this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
     this.notifySubscribers();
     // FIXME: Do Live Toast / notification
   }
@@ -1166,10 +1201,12 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("createMentionNotification() title", title);
 
     const notification: WeaveNotification = {
-      event: {type: NotifiableEventType.Mention, content: [decodeHashFromBase64(linkAh), decodeHashFromBase64(beadAh)] },
-      author: this.cell.agentPubKey,
+      event: {Mention: null},
+      content: decodeHashFromBase64(beadAh),
+      link_ah: decodeHashFromBase64(linkAh),
+      author: decodeHashFromBase64(this.cell.agentPubKey),
       timestamp: tmInfo.creationTime,
-      title: `New mention in thread "${title}"`,
+      //title: `New mention in thread "${title}"`,
     }
 
     const signal: WeaveSignal = {
