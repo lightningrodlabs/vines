@@ -189,6 +189,8 @@ export class ThreadsZvm extends ZomeViewModel {
         author: maybeText.author,
         beadType: "TextMessage",
         bead: maybeText.textMessage.bead,
+        name: maybeText.textMessage.value,
+
       }
     }
     const maybeFile = this._entryBeads[beadAh];
@@ -198,6 +200,7 @@ export class ThreadsZvm extends ZomeViewModel {
         author: maybeFile.author,
         beadType: "File",
         bead: maybeFile.entryBead.bead,
+        name: maybeFile.entryBead.subType, // FIXME
       }
     }
     const maybeHrl = this._anyBeads[beadAh];
@@ -207,6 +210,7 @@ export class ThreadsZvm extends ZomeViewModel {
         author: maybeHrl.author,
         beadType: "HRL",
         bead: maybeHrl.anyBead.bead,
+        name: maybeHrl.anyBead.typeInfo, // FIXME
       }
     }
     /** bad beadAh or bead not already stored */
@@ -338,16 +342,14 @@ export class ThreadsZvm extends ZomeViewModel {
     let title: string = "";
     let content: string = "";
     if (NotifiableEventType.Mention in notif.event) {
-      const tmInfo = this._textMessages[encodeHashToBase64(notif.content)];
-      // FIXME do other bead types
-      title = "Mention in channel " + this.threadName(encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh));
-      content = tmInfo.textMessage.value;
+      const beadInfo = this.getBeadInfo(encodeHashToBase64(notif.content));
+      title = "Mention in channel " + this.threadName(encodeHashToBase64(beadInfo.bead.forProtocolAh));
+      content = beadInfo.name;
     }
     if (NotifiableEventType.Reply in notif.event) {
-      const tmInfo = this._textMessages[encodeHashToBase64(notif.content)];
-      // FIXME do other bead types
-      title = "Reply in channel " + this.threadName(encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh));
-      content = tmInfo.textMessage.value;
+      const beadInfo = this.getBeadInfo(encodeHashToBase64(notif.content));
+      title = "Reply in channel " + this.threadName(encodeHashToBase64(beadInfo.bead.forProtocolAh));
+      content = beadInfo.name;
     }
     if (NotifiableEventType.Fork in notif.event) {
       // TODO

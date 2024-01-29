@@ -4,7 +4,7 @@ import {
   AgentPubKeyB64, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
-  HoloHash, HoloHashB64,
+  HoloHashB64,
   Timestamp
 } from "@holochain/client";
 import {Dictionary} from "@ddd-qc/lit-happ";
@@ -12,11 +12,11 @@ import {Thread} from "./thread";
 import {
   AnyBead, Bead,
   EntryBead,
-  GlobalLastProbeLog, NotifiableEventType,
+  GlobalLastProbeLog,
   ParticipationProtocol,
   Subject, TextMessage, WeaveNotification,
 } from "../bindings/threads.types";
-import {truncate} from "../utils";
+
 
 
 /** -- Should be defined in @holochain/client */
@@ -30,6 +30,7 @@ export interface BeadInfo {
   author: AgentPubKeyB64,
   beadType: string,
   bead: Bead,
+  name: string,
 }
 
 
