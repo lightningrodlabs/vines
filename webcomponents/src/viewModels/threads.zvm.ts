@@ -755,14 +755,17 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, creationTime: Timestamp, ments: AgentPubKeyB64[], dontStore?: boolean) : Promise<[ActionHashB64, string]> {
+    /** Figure out last known bead for this thread */
+    const lastKnownBeadOnThread = this._threads[protocolAh].getLast(1);
     /** Make out bead */
     const bead: Bead = {
-      forProtocolAh: decodeHashFromBase64(protocolAh)
+      forProtocolAh: decodeHashFromBase64(protocolAh),
+      maybeReplyOfAh: lastKnownBeadOnThread.length > 0? decodeHashFromBase64(lastKnownBeadOnThread[0].beadAh) : undefined,
     }
     const mentionees = ments.map((m) => decodeHashFromBase64(m));
     /** Commit Entry */
     const texto: TextMessage = {value: msg, bead}
-    const [ah, global_time_anchor, links] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
+    const [ah, global_time_anchor, notifs] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
     // FIXME: assert links.length == mentionees.length
     //const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
     const beadAh = encodeHashToBase64(ah)
@@ -774,12 +777,10 @@ export class ThreadsZvm extends ZomeViewModel {
       await this.fetchTextMessage(beadLink.beadAh, true, creationTime);
     }
     /** Notify Mentions asychronously */
-    let i = 0;
-    for (const mentionee of mentionees) {
-      const recipient = encodeHashToBase64(mentionee);
-      const signal = this.createMentionNotification(recipient, beadAh, encodeHashToBase64(links[i]));
+    for (const notif of notifs) {
+      const recipient = encodeHashToBase64(notif.author);
+      const signal = this.createNotificationSignal(notif);
       /*await*/ this.notifyPeer(recipient, signal);
-      i += 1;
     }
     /** Done */
     return [encodeHashToBase64(ah), global_time_anchor];
@@ -1184,35 +1185,21 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** I am notifying someone else that I have mentionned them */
-  async notifyMention(agent: AgentPubKeyB64, beadAh: ActionHashB64, linkAh: ActionHashB64): Promise<boolean> {
-    console.log("notifyMention() agent", agent);
-    const notif = this.createMentionNotification(agent, beadAh, linkAh);
-    return /* await */ this.notifyPeer(agent, notif);
-  }
+  // /** I am notifying someone else that I have mentionned them */
+  // async notifyMention(agent: AgentPubKeyB64, beadAh: ActionHashB64, linkAh: ActionHashB64): Promise<boolean> {
+  //   console.log("notifyMention() agent", agent);
+  //   const notif = this.createMentionNotification(agent, beadAh, linkAh);
+  //   return /* await */ this.notifyPeer(agent, notif);
+  // }
 
 
-  /** Create Mention Notifcation */
-  private createMentionNotification(agent: AgentPubKeyB64, beadAh: ActionHashB64, linkAh: ActionHashB64): WeaveSignal {
-    const tmInfo = this._textMessages[beadAh];
-    console.log("createMentionNotification() texto", tmInfo.textMessage.value);
-    //const me = this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey]? this._dvm.profilesZvm.perspective.profiles[this._dvm.cell.agentPubKey].nickname : "unnamed";
-
-    let title = this.threadName(encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh));
-
-    console.log("createMentionNotification() title", title);
-
-    const notification: WeaveNotification = {
-      event: {Mention: null},
-      content: decodeHashFromBase64(beadAh),
-      link_ah: decodeHashFromBase64(linkAh),
-      author: decodeHashFromBase64(this.cell.agentPubKey),
-      timestamp: tmInfo.creationTime,
-      //title: `New mention in thread "${title}"`,
-    }
-
+  /** */
+  private createNotificationSignal(notification: WeaveNotification): WeaveSignal {
+    // FIXME should not assume content is beadAh
+    const beadAh = encodeHashToBase64(notification.content);
+    const beadInfo = this.getBeadInfo(beadAh);
     const signal: WeaveSignal = {
-      maybePpHash: encodeHashToBase64(tmInfo.textMessage.bead.forProtocolAh),
+      maybePpHash: encodeHashToBase64(beadInfo.bead.forProtocolAh),
       from: this.cell.agentPubKey,
       payload: { type: SignalPayloadType.Notification, content: notification }
     }

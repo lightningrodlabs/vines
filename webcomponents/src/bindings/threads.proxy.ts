@@ -214,7 +214,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('add_text_message_with_mentions', input);
   }
 
-  async addTextMessageAtWithMentions(input: AddTextAndMentionsAtInput): Promise<[ActionHash, string, ActionHash[]]> {
+  async addTextMessageAtWithMentions(input: AddTextAndMentionsAtInput): Promise<[ActionHash, string, WeaveNotification[]]> {
     return this.call('add_text_message_at_with_mentions', input);
   }
 
@@ -281,7 +281,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('notify_peer', input);
   }
 
-  async sendInboxItem(input: AnnounceInput): Promise<ActionHash> {
+  async sendInboxItem(input: AnnounceInput): Promise<[ActionHash, WeaveNotification]> {
     return this.call('send_inbox_item', input);
   }
 

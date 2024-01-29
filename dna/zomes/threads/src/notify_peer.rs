@@ -28,7 +28,18 @@ pub struct WeaveNotification {
     link_ah: ActionHash,
     content: AnyLinkableHash,
 }
-
+impl WeaveNotification {
+    fn from(link: &Link) -> Self {
+        let repr: u8 = link.tag.clone().into_inner()[0];
+        WeaveNotification {
+            event: NotifiableEvent::from_repr(repr).unwrap(),
+            author: link.author.clone(),
+            timestamp: link.timestamp,
+            link_ah: link.create_link_hash.clone(),
+            content: link.target.clone(),
+        }
+    }
+}
 
 /// Input to the notify call
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
@@ -74,11 +85,19 @@ pub struct AnnounceInput {
 }
 
 
+///
 #[hdk_extern]
-pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<ActionHash> {
+pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<(ActionHash, WeaveNotification)> {
     let repr: u8 = input.event.into();
     let link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, LinkTag::from(vec![repr]))?;
-    Ok(link_ah)
+    let notif = WeaveNotification {
+        event: NotifiableEvent::from_repr(repr).unwrap(),
+        author: agent_info()?.agent_latest_pubkey,
+        timestamp: sys_time()?,
+        link_ah: link_ah.clone(),
+        content: input.content.clone(),
+    };
+    Ok((link_ah, notif))
 }
 
 
@@ -87,19 +106,8 @@ pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<ActionHash> {
 pub fn probe_inbox(_ : ()) -> ExternResult<Vec<WeaveNotification>> {
     let me = agent_info()?.agent_latest_pubkey;
     let links = get_links(me, ThreadsLinkType::Inbox, None)?;
-    let mut res = Vec::new();
-    for link in links {
-        let repr: u8 = link.tag.into_inner()[0];
-        let notif = WeaveNotification {
-            event: NotifiableEvent::from_repr(repr).unwrap(),
-            author: link.author,
-            timestamp: link.timestamp,
-            link_ah: link.create_link_hash,
-            content: link.target,
-        };
-        res.push(notif);
-    }
-    Ok(res)
+    let notifs = links.into_iter().map(|link| { WeaveNotification::from(&link)}).collect();
+    Ok(notifs)
 }
 
 
