@@ -41,6 +41,7 @@ import "@ui5/webcomponents/dist/TreeItemCustom.js";
 import Toast from "@ui5/webcomponents/dist/Toast";
 import Dialog from "@ui5/webcomponents/dist/Dialog";
 import Popover from "@ui5/webcomponents/dist/Popover";
+import Input from "@ui5/webcomponents/dist/Input";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -97,7 +98,7 @@ import {
   parseMentions,
   ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext, timeSince, NotifiableEventType
+  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext, timeSince, NotifiableEventType, JumpEvent
 } from "@threads/elements";
 
 import {
@@ -162,7 +163,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
-  @state() private _canShowMentions = false;
+  @state() private _canShowSearchResults = false;
   @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
 
@@ -517,6 +518,27 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** */
+  async onJump(e: CustomEvent<JumpEvent>) {
+    //console.log("requesting jump to bead", e.detail);
+    if (NotifiableEventType.Fork in e.detail.type) {
+      this._selectedThreadHash = e.detail.hash;
+    }
+    if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type) {
+      //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
+      //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+      const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
+      this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.forProtocolAh);
+    }
+    if (NotifiableEventType.Dm in e.detail.type) {
+      // TODO
+    }
+    const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+    if (popover.isOpen()) {
+      popover.close();
+    }
+    this._canShowSearchResults = false;
+  }
 
 
   /** */
@@ -622,6 +644,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       `;
     }
 
+    const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
+
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
@@ -705,41 +729,63 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </div>
             <div id="mainSide">
-              <ui5-shellbar id="topicBar" primary-title=${threadTitle} notifications-count="${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}" show-notifications
+              <ui5-shellbar id="topicBar" primary-title=${threadTitle}
+                            show-search-field show-notifications
+                            notifications-count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""} 
                             @notifications-click=${() => {
-                  const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
-                  if (popover.isOpen()) {
-                    popover.close();
-                    return;
-                  }
-                  const shellbar = this.shadowRoot.getElementById("topicBar");
-                  popover.showAt(shellbar);
+                              const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                              if (popover.isOpen()) {
+                                popover.close();
+                                return;
+                              }
+                              const shellbar = this.shadowRoot.getElementById("topicBar");
+                              popover.showAt(shellbar);
               }}>
-                  <!-- <ui5-input slot="searchField" placeholder="Enter text..."></ui5-input> -->
+                  <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
+                             @input=${(e) => {
+                                 console.log("<search-field>@input", e.keyCode, e);
+                                 let searchElem = this.shadowRoot.getElementById("search-field") as Input;
+                                 let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+                                 if (searchElem.value == "") {
+                                   searchPopElem.close();
+                                   this._canShowSearchResults = false;
+                                   return;
+                                 }
+                                 searchPopElem.showAt(searchElem, true);
+                                 searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
+                             }}
+                             @change=${(e) => {
+                               console.log("<search-field>@change", e.keyCode, e);
+                               //let searchElem = this.shadowRoot.getElementById("search-field") as Input;
+                               let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;                              
+                               searchPopElem.close();
+                               this._canShowSearchResults = true;
+                               //this.requestUpdate();
+                             }}                             
+                  ></ui5-input>
                       <!--<ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item> -->
                   <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
               </ui5-shellbar>
 
+                <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
+                    <div class="popover-content">
+                        <ui5-list mode="SingleSelect" separators="None">
+                            <ui5-li-groupheader class="search-group-header">${msg("message contains")}</ui5-li-groupheader>
+                            <ui5-li>Bulgaria</ui5-li>
+                            <ui5-li icon="map" icon-end>China</ui5-li>
+                            <ui5-li icon="map" icon-end>Denmark</ui5-li>
+                            <hr style="color:#f4f4f4"/>
+                            <ui5-li-groupheader class="search-group-header">${msg("Subject")}</ui5-li-groupheader>
+                            <ui5-li icon="map" icon-end>Bulgaria</ui5-li>
+                            <ui5-li icon="map" icon-end>China</ui5-li>
+                            <ui5-li>USA</ui5-li>
+                        </ui5-list>
+                    </div>
+                </ui5-popover>
+                
                 <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
-                    <notification-list @jump=${ async (e) => {
-                      console.log("requesting jump to bead", e.detail);
-                      if (NotifiableEventType.Fork in e.detail.type) {
-                          this._selectedThreadHash = e.detail.hash;
-                      }
-                      if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type) {
-                          //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
-                          //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
-                          const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
-                          this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.forProtocolAh);
-                      }
-                      if (NotifiableEventType.Dm in e.detail.type) {
-                        // TODO
-                      }                      
-                      const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
-                      if (popover.isOpen()) {
-                          popover.close();
-                      }
-                    }}></notification-list>
+                    <notification-list @jump=${this.onJump}></notification-list>
                 </ui5-popover>
 
               <div id="lowerSide">
@@ -753,11 +799,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                          .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
                 </div>
                   <!-- <peer-list></peer-list> -->
-                  <!--
-                  <div id="rightSide" style="display: ${this._canShowMentions? "block" : "none"}">
-                      <mentions-list id="mentionsList"></mentions-list>                   
+                  <div id="rightSide" style="display: ${this._canShowSearchResults? "block" : "none"}">
+                      <search-result-panel .search=${searchValue} @jump=${this.onJump}></search-result-panel>                 
                   </div>
-                   -->
                   <anchor-tree id="debugSide"
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
               </div>
@@ -943,11 +987,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
         #rightSide {
-          width: 300px;
+          width: 500px;
           /*height: 100vh;*/
           background: #eaeaea;
-          display: flex;
-          flex-direction: column;
+          /*display: flex;*/
+          /*flex-direction: column;*/
           background: #B9CCE7;
         }
 
@@ -974,6 +1018,32 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: column;
           border:1px solid black;
           background: beige;
+        }
+
+        .popover-content {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          margin-top: -20px;
+          margin-left: -12px;
+        }
+
+        .flex-column {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .popover-footer {
+          display: flex;
+          justify-content: flex-end;
+          width: 100%;
+          align-items: center;
+          padding: 0.5rem 0;
+        }
+
+        .search-group-header {
+          text-transform: uppercase;
+          padding-top: 0px;
         }
       `,
 

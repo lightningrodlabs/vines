@@ -16,6 +16,7 @@ export * from './elements/input-bar';
 export * from './elements/notification-list';
 export * from './elements/peer-list';
 export * from './elements/semantic-topics-view';
+export * from './elements/search-result';
 
 export * from './viewModels/threads.perspective';
 export * from './viewModels/threads.zvm';

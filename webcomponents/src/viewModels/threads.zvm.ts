@@ -279,6 +279,26 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  /** Search */
+
+  /** Return matching beadAhs */
+  search(searchFilter: string, parameters?: Object): ActionHashB64[] {
+    console.log("ThreadsZvm.search():", searchFilter);
+    const searchLC = searchFilter.toLowerCase();
+
+    // /** search Threads */
+    // const matchingThreadPurposes = Object.entries(this._threads)
+    //   .filter(([_ppAh, thread]) => thread.pp.purpose.toLowerCase().includes(searchLC))
+    //   .map(([ppAh, thread]) => thread);
+
+    /** search text beads */
+    const matchingTextBeads = Object.entries(this._textMessages)
+      .filter(([_beadAh, tmInfo]) => tmInfo.textMessage.value.toLowerCase().includes(searchLC))
+      .map(([beadAh, tmInfo]) => beadAh);
+
+    return matchingTextBeads;
+  }
+
   /** -- Init -- */
 
   /** Query all entries from local source-chain */

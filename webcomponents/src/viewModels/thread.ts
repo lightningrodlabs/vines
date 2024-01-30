@@ -55,14 +55,10 @@ export class Thread {
 
 
   /** Ctor */
-  //[Date.now() * 1000, interval]
   constructor() {
-
     this._creationTime = 0; // Date.now() / 1000;
     this._latestProbeLogTime = HOLOCHAIN_EPOCH;
-
     this._probedTimeIntervals = [];
-
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
   }

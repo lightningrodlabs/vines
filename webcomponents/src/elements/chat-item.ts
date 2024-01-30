@@ -33,6 +33,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @property() hash: ActionHashB64 = ''
 
 
+  @property() jump?: string;
+
   @state() private _isHovered = false;
 
 
@@ -139,7 +141,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    //console.log("<chat-message-item>.render()", this.hash);
+    console.log("<chat-item>.render()", this.jump);
     if (this.hash == "") {
       return html`
           <div>No bead found</div>`;
@@ -252,7 +254,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
                 ${commentThread}
             </div>
-            ${sideButtons}
+            ${this.jump == "true"? "" : sideButtons}
         </div>
         <!-- Emoji Picker -->
         <ui5-popover id="emojiPopover" header-text="Add Reaction">
