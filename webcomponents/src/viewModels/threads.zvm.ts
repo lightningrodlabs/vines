@@ -284,6 +284,9 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Return matching beadAhs */
   search(searchFilter: string, parameters?: Object): ActionHashB64[] {
     console.log("ThreadsZvm.search():", searchFilter);
+    if (searchFilter.length <= 2) {
+      return [];
+    }
     const searchLC = searchFilter.toLowerCase();
 
     // /** search Threads */

@@ -754,14 +754,15 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  searchPopElem.showAt(searchElem, true);
                                  searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                              }}
-                             @change=${(e) => {
+                             @keypress=${(e) => {
                                console.log("<search-field>@change", e.keyCode, e);
                                //let searchElem = this.shadowRoot.getElementById("search-field") as Input;
                                let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
-                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;                              
-                               searchPopElem.close();
-                               this._canShowSearchResults = true;
-                               //this.requestUpdate();
+                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;      
+                               if (e.keyCode === 13) {
+                                 searchPopElem.close();
+                                 this._canShowSearchResults = true;
+                               }
                              }}                             
                   ></ui5-input>
                       <!--<ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item> -->
