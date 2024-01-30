@@ -13,7 +13,7 @@ import {
   Hrl
 } from "@lightningrodlabs/we-applet";
 import {asCellProxy, stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
-import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME} from "@threads/elements";
+import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME, WeaveNotification} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
 import {AttachableThreadContext} from "@threads/app";
@@ -95,6 +95,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
             const maybe = await proxy.sendInboxItem(input);
             if (maybe) {
               const signal = this.createNotificationSignal(maybe[1]);
+              console.log("Threads/attachmentTypes/thread: signaling notification to peer", context.subjectAuthor, (signal.payload.content as WeaveNotification).event)
               /*await*/ this.notifyPeer(context.subjectAuthor, signal);
             }
           }

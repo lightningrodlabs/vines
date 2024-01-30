@@ -17,6 +17,9 @@ import "@ui5/webcomponents/dist/List.js"
 
 import "./input-bar";
 import {renderAvatar} from "../render";
+import {consume} from "@lit/context";
+import {weClientContext} from "../contexts";
+import {WeServices} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -54,6 +57,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   // @property()
   // batchSize: number = 20
 
+
+  @consume({ context: weClientContext, subscribe: true })
+  weServices: WeServices;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -251,7 +257,13 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <h4 style="margin-left: 5px;">
           ${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span>
-          <ui5-button icon="information" design="Transparent" tooltip=${subjectType}></ui5-button>
+          <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
+            if (this.weServices) {
+              // TODO: Grab HrlWithContext somehow
+              //this.weServices.openHrl();
+              return;
+            }
+          }}></ui5-button>
         </h4>
         <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
             ${textLi}

@@ -173,28 +173,35 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (maybeCommentThread) {
       isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const thread = this.threadsPerspective.threads[maybeCommentThread];
-      /** Grab all authors */
-      let authors = {};
-      for (const bead of thread.beadLinksTree.values) {
-        const beadInfo = this._dvm.threadsZvm.getBeadInfo(bead.beadAh);
-        if (!authors[beadInfo.author]) {
-          authors[beadInfo.author] = 0;
+      if (thread && thread.beadLinksTree.length > 0) {
+        /** Grab all authors */
+        let authors = {};
+        for (const bead of thread.beadLinksTree.values) {
+          const beadInfo = this._dvm.threadsZvm.getBeadInfo(bead.beadAh);
+          if (!beadInfo) {
+            console.warn("Bead not found in <chat-item>.render()", bead.beadAh);
+            continue;
+          }
+          if (!authors[beadInfo.author]) {
+            authors[beadInfo.author] = 0;
+          }
+          authors[beadInfo.author] += 1;
         }
-        authors[beadInfo.author] += 1;
+        /** Create avatar for each author */
+        const avatars = Object.keys(authors).map((author) => {
+          return renderAvatar(this._dvm.profilesZvm, author, "XS");
+        });
+        commentThread = html`
+            <div style="display:flex; flex-direction:row;">
+                <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>
+                <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
+                      @click=${(e) => {
+                          this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
+                      }}>
+                  ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " replies" : "" + thread.beadLinksTree.length + " reply"} 
+                </span>
+            </div>`
       }
-      /** Create avatar for each author */
-      const avatars = Object.keys(authors).map((author) => {
-        return renderAvatar(this._dvm.profilesZvm, author, "XS");
-      });
-      commentThread = html`
-        <div style="display:flex; flex-direction:row;">
-          <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>
-          <span class="thread-link" style="color: ${isUnread? "red" : "blue"}"
-                                    @click=${(e) => { this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
-          }}>
-            ${thread.beadLinksTree.length > 1? "" + thread.beadLinksTree.length + " replies" : "" + thread.beadLinksTree.length + " reply"} 
-          </span>
-        </div>`
     }
 
     let commentButton = html``;

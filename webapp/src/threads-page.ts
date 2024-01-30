@@ -773,14 +773,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div class="popover-content">
                         <ui5-list mode="SingleSelect" separators="None">
                             <ui5-li-groupheader class="search-group-header">${msg("message contains")}</ui5-li-groupheader>
-                            <ui5-li>Bulgaria</ui5-li>
-                            <ui5-li icon="map" icon-end>China</ui5-li>
-                            <ui5-li icon="map" icon-end>Denmark</ui5-li>
+                            <ui5-li>Channels</ui5-li>
+                            <ui5-li>FIXME</ui5-li>
+                            <ui5-li>FIXME</ui5-li>
                             <hr style="color:#f4f4f4"/>
                             <ui5-li-groupheader class="search-group-header">${msg("Subject")}</ui5-li-groupheader>
-                            <ui5-li icon="map" icon-end>Bulgaria</ui5-li>
-                            <ui5-li icon="map" icon-end>China</ui5-li>
-                            <ui5-li>USA</ui5-li>
+                            <ui5-li>FIXME</ui5-li>
+                            <ui5-li>FIXME</ui5-li>
+                            <ui5-li>FIXME</ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>

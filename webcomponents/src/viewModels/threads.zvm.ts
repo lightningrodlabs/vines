@@ -283,7 +283,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Return matching beadAhs */
   search(searchFilter: string, parameters?: Object): ActionHashB64[] {
-    console.log("ThreadsZvm.search():", searchFilter);
+    console.log(`ThreadsZvm.search() "${searchFilter}"`);
     if (searchFilter.length <= 2) {
       return [];
     }
@@ -363,24 +363,37 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Return [notifTitle, notifBody] */
   composeNotificationTitle(notif: WeaveNotification): [string, string] {
     let title: string = "";
-    let content: string = "";
+    let content: string = "<unknown>";
+    const ah = encodeHashToBase64(notif.content);
     if (NotifiableEventType.Mention in notif.event) {
-      const beadInfo = this.getBeadInfo(encodeHashToBase64(notif.content));
-      title = "Mention in channel " + this.threadName(encodeHashToBase64(beadInfo.bead.forProtocolAh));
-      content = beadInfo.name;
+      const beadInfo = this.getBeadInfo(ah);
+      if (!beadInfo) {
+        title = "Mention in channel";
+      } else {
+        title = "Mention in channel " + this.threadName(encodeHashToBase64(beadInfo.bead.forProtocolAh));
+        content = beadInfo.name;
+      }
     }
     if (NotifiableEventType.Reply in notif.event) {
-      const beadInfo = this.getBeadInfo(encodeHashToBase64(notif.content));
-      title = "Reply in channel " + this.threadName(encodeHashToBase64(beadInfo.bead.forProtocolAh));
-      content = beadInfo.name;
+      const beadInfo = this.getBeadInfo(ah);
+      if (!beadInfo) {
+        title = "Reply in channel";
+      } else {
+        title = "Reply in channel " + this.threadName(encodeHashToBase64(beadInfo.bead.forProtocolAh));
+        content = beadInfo.name;
+      }
     }
     if (NotifiableEventType.Fork in notif.event) {
-      const ppAh = encodeHashToBase64(notif.content);
-      // const subjectHash = this._threads[ppAh].pp.subjectHash;
-      // const subject = this.getSubject(subjectHash);
-      // title = "New thread about a " + subject.typeName;
-      title = "New thread: " + this.threadName(ppAh);
-      content = "Rules: " + this._threads[ppAh].pp.rules;
+      const maybeThread = this._threads[ah];
+      if (!maybeThread)  {
+        title = "New thread";
+      } else {
+        // const subjectHash = maybeThread.pp.subjectHash;
+        // const subject = this.getSubject(subjectHash);
+        // title = "New thread about a " + subject.typeName;
+        title = "New thread: " + this.threadName(ah);
+        content = "Rules: " + this._threads[ah].pp.rules;
+      }
     }
     if (NotifiableEventType.Dm in notif.event) {
       // TODO
@@ -784,15 +797,20 @@ export class ThreadsZvm extends ZomeViewModel {
   async publishTextMessageAt(msg: string, protocolAh: ActionHashB64, creationTime: Timestamp, ments: AgentPubKeyB64[], dontStore?: boolean) : Promise<[ActionHashB64, string]> {
     /** Figure out last known bead for this thread */
     const lastKnownBeadOnThread = this._threads[protocolAh].getLast(1);
+    let maybeReplyOfAh;
+    if (lastKnownBeadOnThread && lastKnownBeadOnThread.length > 0) {
+      maybeReplyOfAh = decodeHashFromBase64(lastKnownBeadOnThread[0].beadAh)
+    }
+    console.log("publishTextMessageAt() added bead", maybeReplyOfAh? encodeHashToBase64(maybeReplyOfAh): undefined, this._threads[protocolAh]);
     /** Make out bead */
     const bead: Bead = {
       forProtocolAh: decodeHashFromBase64(protocolAh),
-      maybeReplyOfAh: lastKnownBeadOnThread.length > 0? decodeHashFromBase64(lastKnownBeadOnThread[0].beadAh) : undefined,
+      maybeReplyOfAh,
     }
     const mentionees = ments.map((m) => decodeHashFromBase64(m));
     /** Commit Entry */
     const texto: TextMessage = {value: msg, bead}
-    const [ah, global_time_anchor, notifs] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
+    const [ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
     // FIXME: assert links.length == mentionees.length
     //const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
     const beadAh = encodeHashToBase64(ah)
@@ -804,9 +822,10 @@ export class ThreadsZvm extends ZomeViewModel {
       await this.fetchTextMessage(beadLink.beadAh, true, creationTime);
     }
     /** Notify Mentions asychronously */
-    for (const notif of notifs) {
-      const recipient = encodeHashToBase64(notif.author);
+    for (const [recip, notif] of notifPairs) {
+      const recipient = encodeHashToBase64(recip);
       const signal = this.createNotificationSignal(notif);
+      console.log("publishTextMessageAt() signaling notification to peer", recipient, (signal.payload.content as WeaveNotification).event)
       /*await*/ this.notifyPeer(recipient, signal);
     }
     /** Done */
@@ -848,11 +867,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async publishParticipationProtocol(input: CreatePpInput): Promise<[ActionHashB64, ParticipationProtocolMat]> {
-    const [pp_ah, ts, maybeNotif] = await this.zomeProxy.createParticipationProtocol(input);
+    const [pp_ah, ts, maybeNotifPair] = await this.zomeProxy.createParticipationProtocol(input);
     /** Notify subject author */
-    if (maybeNotif) {
-      const recipient = encodeHashToBase64(maybeNotif.author);
-      const signal = this.createNotificationSignal(maybeNotif);
+    if (maybeNotifPair) {
+      const recipient = encodeHashToBase64(maybeNotifPair[0]);
+      const signal = this.createNotificationSignal(maybeNotifPair[1]);
+      console.log("publishParticipationProtocol() signaling notification to peer", recipient, (signal.payload.content as WeaveNotification).event)
       /*await*/ this.notifyPeer(recipient, signal);
     }
     /** Store PP */
@@ -1017,9 +1037,13 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+
+
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   storeInboxItem(notif: WeaveNotification): void {
+    ///*await*/ this.probeInboxItem(notif);
+    /*await*/ this.probeAllLatest(); // Brutal way to make sure we have the content signaled in the notification
     this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
     this.notifySubscribers();
     // FIXME: Do Live Toast / notification
@@ -1240,10 +1264,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** -- Misc. -- */
 
+  /** */
   threadName(ppAh: ActionHashB64): string | undefined {
     const thread = this._threads[ppAh];
-    if (!thread) return;
-
+    if (!thread || !thread.pp) {
+      return;
+    }
     let threadTitle;
     if (thread.pp.subjectType == "SemanticTopic") {
       const semTopic = this._allSemanticTopics[thread.pp.subjectHash];

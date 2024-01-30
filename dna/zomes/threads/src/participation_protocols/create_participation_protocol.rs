@@ -4,7 +4,7 @@ use threads_integrity::*;
 use zome_utils::*;
 use time_indexing::{index_item};
 use path_explorer_types::*;
-use crate::notify_peer::{AnnounceInput, NotifiableEvent, send_inbox_item, WeaveNotification};
+use crate::notify_peer::{SendInboxItemInput, NotifiableEvent, send_inbox_item, WeaveNotification};
 use crate::participation_protocols::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -18,13 +18,13 @@ pub struct CreatePpInput {
 
 /// Create a Pp off anything
 #[hdk_extern]
-pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp, Option<WeaveNotification>)> {
+pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
   return create_pp(input.pp, input.applet_id, input.dna_hash, None);
 }
 
 
 ///
-pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp, Option<WeaveNotification>)> {
+pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
@@ -78,9 +78,9 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash
     if let Ok(subject_hash) = AnyDhtHash::try_from(pp.subject_hash) {
       let maybe_author = get_author(&subject_hash);
       if let Ok(author) = maybe_author {
-        let maybe= send_inbox_item(AnnounceInput { content: pp_ah.clone().into(), who: author, event: NotifiableEvent::Fork })?;
+        let maybe= send_inbox_item(SendInboxItemInput { content: pp_ah.clone().into(), who: author.clone(), event: NotifiableEvent::Fork })?;
         if let Some((_link_ah, notif)) = maybe {
-          maybe_notif = Some(notif)
+          maybe_notif = Some((author, notif))
         }
       }
     }

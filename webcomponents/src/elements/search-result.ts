@@ -69,7 +69,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
                          //console.log("<search-result-panel> jump request", beadAh);
                          this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
                                  hash: beadAh,
-                                 type: {Reply: null},
+                                 type: {Reply: null}, // TODO: better API. Using Reply just to tell it to display the bead.
                              }, bubbles: true, composed: true}));
                      }}>
           </chat-item>

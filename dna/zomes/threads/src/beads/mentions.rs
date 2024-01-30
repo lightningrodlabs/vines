@@ -3,7 +3,7 @@ use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::*;
-use crate::notify_peer::{AnnounceInput, NotifiableEvent, send_inbox_item, WeaveNotification};
+use crate::notify_peer::{SendInboxItemInput, NotifiableEvent, send_inbox_item, WeaveNotification};
 
 
 ///
@@ -38,7 +38,7 @@ pub struct AddTextAndMentionsAtInput {
 
 ///
 #[hdk_extern]
-pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<WeaveNotification>)> {
+pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<(AgentPubKey, WeaveNotification)>)> {
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextMessage(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead.clone(), ah.clone(), "TextMessage", input.creation_time)?;
@@ -48,17 +48,17 @@ pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> Ex
   /// Add Mentions
   let mut notifs = Vec::new();
   for mentionee in input.mentionees {
-    let maybe = send_inbox_item(AnnounceInput {content: ah.clone().into(), who: mentionee, event: NotifiableEvent::Mention})?;
+    let maybe = send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: mentionee.clone(), event: NotifiableEvent::Mention})?;
     if let Some((_link_ah, notif)) = maybe {
-      notifs.push(notif);
+      notifs.push((mentionee, notif));
     }
   }
   /// Reply
   if let Some(reply_ah) = input.texto.bead.maybe_reply_of_ah.clone() {
     let reply_author = get_author(&reply_ah.clone().into())?;
-    let maybe= send_inbox_item(AnnounceInput {content: ah.clone().into(), who: reply_author, event: NotifiableEvent::Reply})?;
+    let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
     if let Some((_link_ah, notif)) = maybe {
-      notifs.push(notif);
+      notifs.push((reply_author, notif));
     }
   }
   /// Done

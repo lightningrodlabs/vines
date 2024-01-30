@@ -78,7 +78,7 @@ fn recv_notification(signal: ExternIO) -> ExternResult<()> {
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AnnounceInput {
+pub struct SendInboxItemInput {
     pub content: AnyLinkableHash,
     pub who: AgentPubKey,
     pub event: NotifiableEvent,
@@ -87,7 +87,7 @@ pub struct AnnounceInput {
 
 ///
 #[hdk_extern]
-pub fn send_inbox_item(input: AnnounceInput) -> ExternResult<Option<(ActionHash, WeaveNotification)>> {
+pub fn send_inbox_item(input: SendInboxItemInput) -> ExternResult<Option<(ActionHash, WeaveNotification)>> {
     // Don't notify self
     if input.who == agent_info()?.agent_latest_pubkey {
         return Ok(None);

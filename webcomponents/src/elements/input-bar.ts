@@ -68,10 +68,8 @@ export class InputBar extends LitElement {
 
   /** */
   handlekeydown(e) {
-    console.log("keydown", e);
-
+    //console.log("keydown", e);
     //console.log("keydown keyCode", e.keyCode);
-
 
     /** Enter: commit message */
     if (e.keyCode === 13) {

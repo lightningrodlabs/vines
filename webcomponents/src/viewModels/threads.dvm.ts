@@ -9,7 +9,7 @@ import {
 } from "@holochain/client";
 import {
   DirectMessage,
-  DirectMessageType, NotifiableEventType,
+  DirectMessageType,
   ParticipationProtocol,
   SignalPayloadType,
   TextMessage,
@@ -102,7 +102,7 @@ export class ThreadsDvm extends DnaViewModel {
     //     break;
     // }
     //this._notificationLog.push(notif);
-    this.notifySubscribers();
+    //this.notifySubscribers();
   }
 
 

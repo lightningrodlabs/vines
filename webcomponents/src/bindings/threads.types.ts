@@ -235,7 +235,7 @@ export interface NotifyPeerInput {
 }
 
 /**  */
-export interface AnnounceInput {
+export interface SendInboxItemInput {
   content: AnyLinkableHash
   who: AgentPubKey
   event: NotifiableEvent
