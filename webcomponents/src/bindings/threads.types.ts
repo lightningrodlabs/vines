@@ -253,11 +253,11 @@ export interface CreatePpInput {
  * 
  */
 export enum SignalPayloadType {
-	Dm = 'Dm',
+	DirectGossip = 'DirectGossip',
 	Notification = 'Notification',
 }
 export type SignalPayload = 
- | {type: "Dm", content: DirectMessage}
+ | {type: "DirectGossip", content: DirectGossip}
  | {type: "Notification", content: WeaveNotification}
 
 
@@ -273,7 +273,7 @@ export interface WeaveSignal {
  * Data sent by UI ONLY. That's why we use B64 here.
  * 
  */
-export enum DirectMessageType {
+export enum DirectGossipType {
 	Ping = 'Ping',
 	Pong = 'Pong',
 	NewSemanticTopic = 'NewSemanticTopic',
@@ -281,7 +281,7 @@ export enum DirectMessageType {
 	NewBead = 'NewBead',
 	EmojiReactionChange = 'EmojiReactionChange',
 }
-export type DirectMessage = 
+export type DirectGossip = 
  | {type: "Ping", content: AgentPubKeyB64}
  | {type: "Pong", content: AgentPubKeyB64}
  | {type: "NewSemanticTopic", content: [EntryHashB64, string]}

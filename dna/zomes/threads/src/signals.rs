@@ -10,7 +10,7 @@ use crate::notify_peer::WeaveNotification;
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(tag = "type", content = "content")]
 pub enum SignalPayload {
-    Dm(DirectMessage),
+    DirectGossip(DirectGossip),
     Notification(WeaveNotification),
 }
 
@@ -46,7 +46,7 @@ pub struct WeaveSignal {
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(tag = "type", content = "content")]
-pub enum DirectMessage {
+pub enum DirectGossip {
     Ping(AgentPubKeyB64),
     Pong(AgentPubKeyB64),
 
@@ -65,6 +65,7 @@ fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
     Ok(emit_signal(&sig)?)
 }
 
+
 /// Input to the notify call
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -72,7 +73,6 @@ pub struct SignalPeersInput {
     pub signal: WeaveSignal,
     pub peers: Vec<AgentPubKey>,
 }
-
 
 ///
 #[hdk_extern]
