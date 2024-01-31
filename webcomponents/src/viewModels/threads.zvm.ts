@@ -48,7 +48,7 @@ export class ThreadsZvm extends ZomeViewModel {
     if (!this._previousPerspective) {
       return true;
     }
-    let hasChanged = true; // FIXME
+    let hasChanged = true; // TODO
     return hasChanged;
   }
 
@@ -189,7 +189,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return {
         creationTime: maybeText.creationTime,
         author: maybeText.author,
-        beadType: "TextMessage",
+        beadType: ThreadsEntryType.TextMessage,
         bead: maybeText.textMessage.bead,
         name: maybeText.textMessage.value,
 
@@ -280,7 +280,7 @@ export class ThreadsZvm extends ZomeViewModel {
     if (!thread) {
       return false;
     }
-    return thread.beginningOfTime != this.cell.dnaModifiers.origin_time;
+    return thread.hasSearchedOldestBead;
   }
 
 
@@ -331,6 +331,8 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.querySemanticTopics();
     await this.queryThreads();
     await this.queryTextMessages();
+    await this.queryAnyBeads();
+    await this.queryEntryBeads();
     await this.queryProbeLogs(true);
 
     this.notifySubscribers(); // check if this is useful
@@ -341,12 +343,14 @@ export class ThreadsZvm extends ZomeViewModel {
   async initializePerspectiveOnline(): Promise<void> {
     /** Grab all semantic topics to see if there are new ones */
     await this.probeSemanticTopics();
+
     /** Grab all threads of SemanticTopics to see if there are new ones */
     let probes = []
     for (const topicEh of Object.keys(this._allSemanticTopics)) {
       probes.push(this.probeSubjectThreads(topicEh));
     }
     await Promise.all(probes);
+
     /** Get last elements since last time (global search log) */
     await this.probeAllLatest();
 
@@ -427,6 +431,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   private async queryProbeLogs(retryOnFail: boolean): Promise<void> {
+    console.log("queryProbeLogs()", retryOnFail);
     /** HACK: retry on fail as this is called twice by We, which can cause "head has moved" error */
     if (retryOnFail) {
       try {
@@ -476,7 +481,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const ppAh = encodeHashToBase64(ah);
       this.storePp(encodeHashToBase64(ah), pp, ts, hiddens.includes(ppAh), false, true);
     }
-    console.log("queryThreads()", Object.keys(this._threads).length);
+    console.log("queryThreads()", this._threads.size);
     this.notifySubscribers();
   }
 
@@ -487,7 +492,21 @@ export class ThreadsZvm extends ZomeViewModel {
     for (const [ts, ah, tm] of tuples) {
       await this.storeTextMessage(encodeHashToBase64(ah), ts, this.cell.agentPubKey, tm, false, false);
     }
-    console.log("queryThreads()", Object.keys(this._threads).length);
+    console.log("queryTextMessages()", this._threads.size);
+  }
+  async queryAnyBeads(): Promise<void> {
+    const tuples = await this.zomeProxy.queryAnyBeads();
+    for (const [ts, ah, bead] of tuples) {
+      await this.storeAnyBead(encodeHashToBase64(ah), ts, this.cell.agentPubKey, bead, false, false);
+    }
+    console.log("queryAnyBeads()", this._threads.size);
+  }
+  async queryEntryBeads(): Promise<void> {
+    const tuples = await this.zomeProxy.queryEntryBeads();
+    for (const [ts, ah, bead] of tuples) {
+      await this.storeEntryBead(encodeHashToBase64(ah), ts, this.cell.agentPubKey, bead, false, false);
+    }
+    console.log("queryEntryBeads()", this._threads.size);
   }
 
 
@@ -517,7 +536,7 @@ export class ThreadsZvm extends ZomeViewModel {
     for (const subject of subjects) {
       this._allSubjects.set(encodeHashToBase64(subject.hash), subject);
     }
-    console.log("probeAllSubjects()", Object.keys(this._allSubjects).length);
+    console.log("probeAllSubjects()", this._allSubjects.size);
     this.notifySubscribers();
     return this._allSubjects;
   }
@@ -709,7 +728,8 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Store */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval));
     if (this._threads.get(ppAh)) {
-      this._threads.get(ppAh).setOldestBeadAsBeginningOfTime();
+      this._threads.get(ppAh).setSearchedOldestBead();
+      console.log("setSearchedOldestBead for", ppAh, this._threads.get(ppAh).hasSearchedOldestBead);
     }
     /** Done */
     return beadLinks;
@@ -724,8 +744,7 @@ export class ThreadsZvm extends ZomeViewModel {
       try {
         await this.fetchPp(ppAh);
       } catch(e) {
-        // FIXME: fetch thread instead of aborting
-        console.error("probeLatestBeads() Failed. ppAh not provided.")
+        console.error("probeLatestBeads() Failed. ParticipationProtocol not found");
         return [];
       }
       thread = this._threads.get(ppAh);
@@ -737,9 +756,8 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Cache them */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval));
     /** Check if beginning of time reached */
-    if (searchedInterval.begin <= this.cell.dnaModifiers.origin_time) {
-      thread.setOldestBeadAsBeginningOfTime(); // FIXME: Check thread data is persisted after call
-      console.log("BeginningOfTime reached for", ppAh, thread.beginningOfTime);
+    if (searchedInterval.begin <= thread.creationTime) {
+      thread.setSearchedOldestBead();
     }
     /** Done */
     return beadLinks;
@@ -853,7 +871,7 @@ export class ThreadsZvm extends ZomeViewModel {
     //const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
     const beadAh = encodeHashToBase64(ah)
     console.log("publishTextMessageAt() added bead", beadAh, creationTime);
-    const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: "TextMessage"}
+    const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: ThreadsEntryType.TextMessage}
     /** Insert in ThreadInfo */
     if (!dontStore) {
       //await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
@@ -882,7 +900,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const texto = {value: msg, bead}
     const tuples = await this.zomeProxy.addManyTextMessageAt({texto, intervalUs, count});
     for (const [ah, _global_time_anchor, _indexTime] of tuples) {
-      const beadLink: BeadLink = {creationTime: intervalUs, beadAh: ah, beadType: "TextMessage"}
+      const beadLink: BeadLink = {creationTime: intervalUs, beadAh: ah, beadType: ThreadsEntryType.TextMessage}
       /** Insert in ThreadInfo */
       if (!dontStore) {
         await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
@@ -1012,9 +1030,10 @@ export class ThreadsZvm extends ZomeViewModel {
     if (beadLinks.length == 0) {
       return;
     }
-    const thread = this._threads.get(ppAh);
+    let thread = this._threads.get(ppAh);
     if (!thread) {
       await this.fetchPp(ppAh, true);
+      thread = this._threads.get(ppAh);
     }
     /** fetch each TextMessage */
     for (const bl of beadLinks) {
@@ -1057,7 +1076,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     /** Check if it's a thread */
-    const maybeThreadAh = Object.keys(this._threads).find(key => key === hash);
+    const maybeThreadAh = Array.from(this._threads.keys()).find(key => key === hash);
     if (maybeThreadAh && this._threads.has(maybeThreadAh)) {
       this._threads.get(maybeThreadAh).setIsHidden(canHide);
       this.notifySubscribers();
@@ -1082,7 +1101,6 @@ export class ThreadsZvm extends ZomeViewModel {
     /*await*/ this.probeAllLatest(); // Brutal way to make sure we have the content signaled in the notification
     this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
     this.notifySubscribers();
-    // FIXME: Do Live Toast / notification
   }
 
 
@@ -1189,11 +1207,11 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   getLatestThread(): [ActionHashB64, Thread] | undefined {
     let res = undefined;
-    for (const [ah, thread] of Object.entries(this._threads)) {
+    this._threads.forEach((thread, ah, _map) => {
       if (!res || thread.creationTime > res.creationTime) {
         res = [ah, thread];
       }
-    }
+    });
     return res;
   }
 
@@ -1203,11 +1221,12 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("commitProbeLogs() start");
     /** Commit Global Log */
     const maybeLatest = this.getLatestThread();
+    console.log("commitProbeLogs() maybeLatest", maybeLatest);
     let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
     console.log("commitProbeLogs()", prettyTimestamp(latestGlobalLogTime));
     this._globalProbeLog.time = latestGlobalLogTime;
     /** Commit each Thread Log */
-    for (const [ppAh, thread] of Object.entries(this._threads)) {
+    for (const [ppAh, thread] of this._threads.entries()) {
       //console.log(`commitProbeLogs() Thread "${thread.pp.purpose}":`, thread.probedUnion, thread.beadLinksTree.end.key, thread.latestProbeLogTime);
       if (thread.probedUnion && thread.probedUnion.end > thread.latestProbeLogTime) {
         const threadLog: ThreadLastProbeLog = {

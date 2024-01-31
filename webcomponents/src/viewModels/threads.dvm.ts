@@ -250,7 +250,7 @@ export class ThreadsDvm extends DnaViewModel {
     /** Send signal to peers */
     const data = JSON.stringify(entryBead);
     const uint8array = Array.from(new TextEncoder().encode(data));
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, "EntryBead", ppAh, uint8array]}, ppAh);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.EntryBead, ppAh, uint8array]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
@@ -262,7 +262,7 @@ export class ThreadsDvm extends DnaViewModel {
     /** Send signal to peers */
     const data = JSON.stringify(anyBead);
     const uint8array = Array.from(new TextEncoder().encode(data));
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, "AnyBead", ppAh, uint8array]}, ppAh);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.AnyBead, ppAh, uint8array]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
@@ -273,7 +273,7 @@ export class ThreadsDvm extends DnaViewModel {
     let [ah, _time_anchor, creation_time] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
     /** Send signal to peers */
     const uint8array = Array.from(new TextEncoder().encode(msg));
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, "TextMessage", ppAh, uint8array]}, ppAh);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextMessage, ppAh, uint8array]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }

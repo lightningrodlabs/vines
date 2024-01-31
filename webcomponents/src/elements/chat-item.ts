@@ -9,6 +9,7 @@ import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
 import {renderAvatar} from "../render";
+import {ThreadsEntryType} from "../bindings/threads.types";
 
 /**
  * @element
@@ -146,7 +147,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     /** Determine the comment button to display depending on current comments for this message */
     let subjectName = "";
     let item = html``;
-    if (beadInfo.beadType == "TextMessage") {
+    if (beadInfo.beadType == ThreadsEntryType.TextMessage) {
       subjectName = truncate(this.threadsPerspective.textMessages[this.hash].textMessage.value, 60, true);
       item = html`<chat-message .hash=${this.hash}></chat-message>`;
     }

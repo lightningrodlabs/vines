@@ -5,6 +5,7 @@ import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {truncate} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar} from "../render";
+import {ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -54,7 +55,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subjectHash);
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subjectHash);
       let subjectName = "";
-      if (subjectBead.beadType == "TextMessage") {
+      if (subjectBead.beadType == ThreadsEntryType.TextMessage) {
         subjectName = truncate(this._dvm.threadsZvm.perspective.textMessages[thread.pp.subjectHash].textMessage.value, 60, true);
       }
       if (subjectBead.beadType == "File") {

@@ -232,8 +232,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
             <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
                 <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
-                ${commentButton}
                 ${newBadge}
+                ${commentButton}                
                 ${hideShowBtn}
             </div>               
         </ui5-tree-item-custom>`
@@ -317,8 +317,8 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       composed: true
                   }));
               }}></ui5-button>
+              ${newBadge}                 
               ${commentButton}
-              ${newBadge}     
               ${hideShowBtn}              
           </span>
               ${threads}

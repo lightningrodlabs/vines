@@ -38,7 +38,7 @@ export class Thread {
   /* Participation Protocol */
   private _pp: ParticipationProtocolMat;
   /* Flag if first node is the oldest node possible */
-  private _beginningOfTime: Timestamp;
+  private _hasSearchedOldestBead: boolean = false;
   /* CreationTime of the thread's PP entry */
   private _creationTime: Timestamp;
   /* Logged last known bead */
@@ -55,8 +55,8 @@ export class Thread {
 
   /** Ctor */
   constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp) {
+    console.log("New Thread() dnaOriginTime", dnaOriginTime);
     this._pp = pp;
-    this._beginningOfTime = dnaOriginTime;
     this._latestProbeLogTime = dnaOriginTime;
     this._creationTime = creationTime;
 
@@ -75,7 +75,7 @@ export class Thread {
 
   get latestProbeLogTime(): Timestamp { return this._latestProbeLogTime}
 
-  get beginningOfTime(): Timestamp { return this._beginningOfTime}
+  get hasSearchedOldestBead(): boolean { return this._hasSearchedOldestBead}
 
 
   get probedTimeIntervals(): [Timestamp, TimeInterval][] { return this._probedTimeIntervals}
@@ -107,6 +107,7 @@ export class Thread {
 
   /** */
   setLatestProbeLogTime(time: Timestamp): void {
+    //console.log("setLatestProbeLogTime()", time, this._latestProbeLogTime);
     if (this._latestProbeLogTime >= time) {
       return;
     }
@@ -114,14 +115,9 @@ export class Thread {
   }
 
 
-  /**
-   * Set beginning of time to the oldest bead (i.e. first bead in the tree)
-   */
-  setOldestBeadAsBeginningOfTime(): void {
-    if (!this._beadLinksTree.begin.key) {
-      return;
-    }
-    this._beginningOfTime = this._beadLinksTree.begin.key
+  /** */
+  setSearchedOldestBead(): void {
+    this._hasSearchedOldestBead = true;
   }
 
 
