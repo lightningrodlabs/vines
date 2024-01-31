@@ -11,7 +11,7 @@ use crate::notify_peer::WeaveNotification;
 #[serde(tag = "type", content = "content")]
 pub enum SignalPayload {
     DirectGossip(DirectGossip),
-    Notification(WeaveNotification),
+    Notification((WeaveNotification, SerializedBytes)),
 }
 
 ///

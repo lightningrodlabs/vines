@@ -32,6 +32,7 @@ import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
+import {encode} from "@msgpack/msgpack";
 
 
 /**
@@ -362,18 +363,12 @@ export class ThreadsZvm extends ZomeViewModel {
     return hiddens.map((hidden) => encodeHashToBase64(hidden))
   }
 
+
   /** */
   async probeInbox() {
     const items = await this.zomeProxy.probeInbox();
     this._inbox = {};
     items.map((notif) => {
-      // const mat: WeaveNotificationMat = {
-      //   event: JSON.stringify(notif.event) as NotifiableEventType,
-      //   author: encodeHashToBase64(notif.author),
-      //   timestamp: notif.timestamp,
-      //   linkAh: encodeHashToBase64(notif.link_ah),
-      //   content: encodeHashToBase64(notif.content),
-      // };
       this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
     });
     this.notifySubscribers();
@@ -848,6 +843,12 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Commit Entry */
     const texto: TextMessage = {value: msg, bead}
     const [ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextMessageAtWithMentions({texto, creationTime, mentionees});
+    const [_tmTs, _auth, tm] = await this.zomeProxy.getTextMessage(ah);
+    // let replyTm;
+    // if (tm.bead.maybeReplyOfAh) {
+    //   const tuple = await this.zomeProxy.getTextMessage(tm.bead.maybeReplyOfAh);
+    //   replyTm = tuple[2];
+    // }
     // FIXME: assert links.length == mentionees.length
     //const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
     const beadAh = encodeHashToBase64(ah)
@@ -861,8 +862,9 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Notify Mentions asychronously */
     for (const [recip, notif] of notifPairs) {
       const recipient = encodeHashToBase64(recip);
-      const signal = this.createNotificationSignal(notif);
-      console.log("publishTextMessageAt() signaling notification to peer", recipient, (signal.payload.content as WeaveNotification).event)
+      const extra = encode(tm);
+      const signal = this.createNotificationSignal(notif, extra); //(NotifiableEventType.Mention in notif.event)? tm : replyTm);
+      console.log("publishTextMessageAt() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
       /*await*/ this.notifyPeer(recipient, signal);
     }
     /** Done */
@@ -908,8 +910,9 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Notify subject author */
     if (maybeNotifPair) {
       const recipient = encodeHashToBase64(maybeNotifPair[0]);
-      const signal = this.createNotificationSignal(maybeNotifPair[1]);
-      console.log("publishParticipationProtocol() signaling notification to peer", recipient, (signal.payload.content as WeaveNotification).event)
+      const extra = encode(input.pp);
+      const signal = this.createNotificationSignal(maybeNotifPair[1], extra);
+      console.log("publishParticipationProtocol() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
       /*await*/ this.notifyPeer(recipient, signal);
     }
     /** Store PP */
@@ -1242,7 +1245,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private createNotificationSignal(notification: WeaveNotification): WeaveSignal {
+  private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): WeaveSignal {
     let maybePpHash;
     if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification) {
       const beadAh = encodeHashToBase64(notification.content);
@@ -1252,7 +1255,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const signal: WeaveSignal = {
       maybePpHash,
       from: this.cell.agentPubKey,
-      payload: { type: SignalPayloadType.Notification, content: notification }
+      payload: { type: SignalPayloadType.Notification, content: [notification, extra]}
     }
     return signal;
   }

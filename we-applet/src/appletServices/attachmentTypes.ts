@@ -17,7 +17,7 @@ import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME, WeaveNotificatio
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
 import {AttachableThreadContext} from "@threads/app";
-
+import { decode, encode } from "@msgpack/msgpack";
 
 /** */
 //export async function attachmentTypes(appletClient: AppAgentClient): Promise<Record<string, AttachmentType>> {
@@ -80,6 +80,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
           };
           console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", encodeHashToBase64(input.dnaHash), input);
           const [new_pp_ah, ts, maybeNotif] = await proxy.createParticipationProtocol(input);
+          const [pp, _ppTs] = await proxy.getPp(new_pp_ah);
           console.log("Threads/attachmentTypes/thread: res", [new_pp_ah, ts, maybeNotif]);
           pp_ah = new_pp_ah;
           console.log("Threads/attachmentTypes/thread: ppAh", encodeHashToBase64(pp_ah));
@@ -94,7 +95,8 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
             };
             const maybe = await proxy.sendInboxItem(input);
             if (maybe) {
-              const signal = this.createNotificationSignal(maybe[1]);
+              const extra = encode(pp);
+              const signal = this.createNotificationSignal(maybe[1], extra);
               console.log("Threads/attachmentTypes/thread: signaling notification to peer", context.subjectAuthor, (signal.payload.content as WeaveNotification).event)
               /*await*/ this.notifyPeer(context.subjectAuthor, signal);
             }

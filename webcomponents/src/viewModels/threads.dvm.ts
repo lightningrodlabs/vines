@@ -4,11 +4,11 @@ import {
   ActionHashB64,
   AgentPubKeyB64,
   AppSignal, AppSignalCb,
-  decodeHashFromBase64,
+  decodeHashFromBase64, encodeHashToBase64,
   EntryHashB64
 } from "@holochain/client";
 import {
-  DirectGossip, DirectGossipType,
+  DirectGossip, DirectGossipType, NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
   TextMessage,
@@ -17,6 +17,7 @@ import {
 import {AnyLinkableHashB64} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {decode} from "@msgpack/msgpack";
 
 
 
@@ -24,7 +25,7 @@ import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 export interface ThreadsDnaPerspective {
   agentPresences: Record<AgentPubKeyB64, number>,
   /** */
-  notificationLog: WeaveNotification[],
+  signaledNotifications: WeaveNotification[],
 }
 
 
@@ -38,36 +39,38 @@ export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
   static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm/*, PathExplorerZvm*/ ]
+
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
 
   /** QoL Helpers */
   get profilesZvm(): ProfilesZvm {
-    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm
+    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm;
   }
 
   get threadsZvm(): ThreadsZvm {
-    return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm
+    return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm;
   }
 
 
   /** -- Perspective -- */
 
   protected hasChanged(): boolean {
+    // TODO
     return true
   }
 
   get perspective(): ThreadsDnaPerspective {
     return {
       agentPresences: this._agentPresences,
-      notificationLog: this._notificationLog,
+      signaledNotifications: this._signaledNotifications,
     }
   }
 
   /** agentPubKey -> timestamp */
   private _agentPresences: Record<string, number> = {};
 
-  private _notificationLog: WeaveNotification[] = [];
+  private _signaledNotifications: WeaveNotification[] = [];
 
 
   /** -- Methods -- */
@@ -84,24 +87,25 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Signaling -- */
 
   /** */
-  private handleNotification(notif: WeaveNotification) {
-    this.threadsZvm.storeInboxItem(notif);
+  private async handleNotificationSignal(notifSignal: WeaveSignal) {
+    const notif = notifSignal.payload.content[0] as WeaveNotification;
+    const extra: Uint8Array = notifSignal.payload.content[1];
 
-    // if (NotifiableEventType.Mention in notif.event) {
-    //   this.threadsZvm.storeInboxItem(encodeHashToBase64(notif.link_ah), from, encodeHashToBase64(notif.content));
-    // }
-    //
-    //   case NotifiableEventType.Dm:
-    //   case NotifiableEventType.Reply:
-    //   case NotifiableEventType.Fork:
-    //     break;
-    //   default:
-    //     console.error("Bad eventType", notif.event.type);
-    //     return;
-    //     break;
-    // }
-    //this._notificationLog.push(notif);
-    //this.notifySubscribers();
+    /** Store received Entry */
+    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event) {
+      const tm: TextMessage = decode(extra) as TextMessage;
+      console.log("Received NotificationSignal of type TextMessage:", tm);
+      await this.threadsZvm.storeTextMessage(encodeHashToBase64(notif.content), notif.timestamp, encodeHashToBase64(notif.author), tm, false, true);
+    }
+    if (NotifiableEventType.Fork in notif.event) {
+      const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
+      console.log("Received NotificationSignal of type ParticipationProtocol:", pp);
+      await this.threadsZvm.storePp(encodeHashToBase64(notif.content), pp, notif.timestamp, true, true);
+    }
+
+    /** Store Notification */
+    this._signaledNotifications.push(notif);
+    this.threadsZvm.storeInboxItem(notif);
   }
 
 
@@ -118,7 +122,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     /** -- Handle Notification -- */
     if (weaveSignal.payload.type == SignalPayloadType.Notification) {
-      return this.handleNotification(weaveSignal.payload.content as WeaveNotification/*, weaveSignal.from*/);
+      return this.handleNotificationSignal(weaveSignal);
     }
 
     /** -- Handle Gossip -- */

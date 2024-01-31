@@ -321,6 +321,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   private _lastKnownNotificationIndex = 0;
 
+
   /** */
   protected async updated(_changedProperties: PropertyValues) {
     /** ??? */
@@ -342,9 +343,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
     }
 
-    /** handle notifications */
+    /** Create popups from signaled Notifications */
     //if (this.perspective.notificationLog.length)
-    for (const notif of this.perspective.notificationLog.slice(this._lastKnownNotificationIndex)) {
+    for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       const author = this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)] ? this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)].nickname : "unknown";
       const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds

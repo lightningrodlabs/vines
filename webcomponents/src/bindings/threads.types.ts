@@ -258,7 +258,7 @@ export enum SignalPayloadType {
 }
 export type SignalPayload = 
  | {type: "DirectGossip", content: DirectGossip}
- | {type: "Notification", content: WeaveNotification}
+ | {type: "Notification", content: [WeaveNotification, Uint8Array]}
 
 
 /**  */

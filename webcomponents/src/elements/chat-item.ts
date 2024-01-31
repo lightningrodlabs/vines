@@ -163,6 +163,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     let isUnread = false;
     let commentThread = html``;
+    let commentButton = html`
+        <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
+                      @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName)}">                      
+        </ui5-button>`;
+
     if (maybeCommentThread) {
       isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const thread = this.threadsPerspective.threads.get(maybeCommentThread);
@@ -187,28 +192,22 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         });
         const avatarGroup = avatars.length > 1? html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>` : html`${avatars}`;
         commentThread = html`
-            <div style="display:flex; flex-direction:row;">
-                ${avatarGroup}
-                <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
-                      @click=${(e) => {
-                          this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
-                      }}>
-                  ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " replies" : "" + thread.beadLinksTree.length + " reply"} 
-                </span>
-            </div>`
+          <div style="display:flex; flex-direction:row;">
+              ${avatarGroup}
+              <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
+                    @click=${(_e) => {
+                        this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
+                    }}>
+                ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " replies" : "" + thread.beadLinksTree.length + " reply"} 
+              </span>
+          </div>
+        `;
       }
-    }
-
-    let commentButton = html``;
-    if (!maybeCommentThread) {
-      commentButton = html`
-          <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
-                      @click="${(e) => this.onClickComment(maybeCommentThread, subjectName)}"></ui5-button>`;
     }
 
     const reactionButton = html`
               <ui5-button id="add-reaction-btn" icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"
-                          @click="${(e) => this.onClickAddEmoji()}"></ui5-button>`;
+                          @click="${(_e) => this.onClickAddEmoji()}"></ui5-button>`;
 
     let sideButtons = [];
     if (this._isHovered) {
