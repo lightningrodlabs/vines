@@ -1,10 +1,8 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {truncate} from "../utils";
-import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
-import {getInitials, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar} from "../render";
 
@@ -21,7 +19,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** Hash of TextMessage to display */
-  @property() hash: ActionHashB64 = ''
+  @property() threadHash: ActionHashB64 = ''
 
 
   /** */
@@ -35,27 +33,29 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     //console.log("<chat-header>.render():", this.hash);
-    if (this.hash == "") {
+    if (this.threadHash == "") {
       return html`
-          <div>No thread found</div>`;
+          <div>Thread hash missing</div>`;
+    }
+    const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
+    if (!thread) {
+      return html`<div>No thread found</div>`;
     }
 
-
-    const pp = this._dvm.threadsZvm.perspective.threads[this.hash].pp;
-    const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[pp.subjectHash];
+    const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subjectHash];
     let subText;
     let title;
     if (maybeSemanticTopicThread) {
       const [semTopic, _topicHidden] = maybeSemanticTopicThread;
       title = html`<h3>Welcome to #${semTopic} !</h3>`;
-      const threadName = this._dvm.threadsZvm.threadName(this.hash);
+      const threadName = this._dvm.threadsZvm.threadName(thread.pp);
       subText = `This is the start of thread ${threadName}`;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", pp.subjectHash);
-      const subjectBead = this._dvm.threadsZvm.getBeadInfo(pp.subjectHash);
+      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subjectHash);
+      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subjectHash);
       let subjectName = "";
       if (subjectBead.beadType == "TextMessage") {
-        subjectName = truncate(this._dvm.threadsZvm.perspective.textMessages[pp.subjectHash].textMessage.value, 60, true);
+        subjectName = truncate(this._dvm.threadsZvm.perspective.textMessages[thread.pp.subjectHash].textMessage.value, 60, true);
       }
       if (subjectBead.beadType == "File") {
         subjectName = "File";
@@ -80,7 +80,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         <div id="chat-header">
           ${title}
           <div class="subtext">${subText}</div>
-          <!--<div class="subtext">Participation rules: ${pp.rules}</div>-->
+          <!--<div class="subtext">Participation rules: ${thread.pp.rules}</div>-->
         </div>
         <hr/>
     `;

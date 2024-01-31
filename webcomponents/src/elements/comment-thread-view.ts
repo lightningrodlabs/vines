@@ -173,6 +173,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this.threadHash == "") {
       return html `<div style="color:#c10a0a; margin:auto; width:50%; height:50%;">No comment thread selected</div>`;
     }
+    const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
+    if (!thread) {
+      return html `<div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>`;
+    }
 
     const bg_color = this._loading? "#ededf0" : ""
 
@@ -200,7 +204,6 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     console.log("<comment-thread-view>.render() len =", infos.length);
 
-    const thread = this._dvm.threadsZvm.perspective.threads[this.threadHash];
     console.log("Has thread some unreads?", thread.hasUnreads());
 
 

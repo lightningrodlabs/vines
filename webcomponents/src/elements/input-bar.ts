@@ -6,11 +6,8 @@ import {inputBarStyleTemplate} from "../styles";
 import "@ui5/webcomponents/dist/TextArea.js";
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
-//import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
-import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {AgentPubKeyB64} from "@holochain/client";
-//import SuggestionListItem from "@ui5/webcomponents/dist/SuggestionListItem";
 
 
 /**
@@ -78,6 +75,7 @@ export class InputBar extends LitElement {
       } else {
         if (this.inputElem.value && this.inputElem.value.length != 0) {
           e.preventDefault();
+          console.log(`Inputting value "${this.inputElem.value}"`);
           this.dispatchEvent(new CustomEvent('input', {
               detail: this.inputElem.value, bubbles: true, composed: true
           }));

@@ -121,7 +121,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Check if beads have comments */
   protected async loadTextMessageComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
     for (const bl of bls) {
-      const pps = await dvm.threadsZvm.probeThreads(encodeHashToBase64(bl.beadAh));
+      const pps = await dvm.threadsZvm.probeSubjectThreads(encodeHashToBase64(bl.beadAh));
       for (const [ppAh, pp] of Object.entries(pps)) {
         if (pp.purpose == "comment") {
           await dvm.threadsZvm.getAllTextMessages(ppAh);
@@ -137,7 +137,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash, !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
     //dvm.threadsZvm.probeAllBeads(this.threadHash)
-    dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(this.threadHash), targetLimit: 20})
+    dvm.threadsZvm.probeLatestBeads(this.threadHash, undefined, undefined, 20)
       .then(async (beadLinks) => {
         this._loading = false;
         await this.loadTextMessageComments(beadLinks, dvm);
@@ -210,8 +210,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (!pp) {
       return html `<div>Loading thread...</div>`;
     }
-    const threadInfo = this._dvm.threadsZvm.perspective.threads[this.threadHash];
-    if (!threadInfo) {
+    const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
+    if (!thread) {
       return html `<div>Loading messages...</div>`;
     }
 
@@ -219,14 +219,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** */
     let maybeHeader = html``
     if (this._dvm.threadsZvm.hasReachedBeginning(this.threadHash)) {
-      maybeHeader = html`<chat-header .hash="${this.threadHash}" style="margin:10px;"></chat-header>`;
+      maybeHeader = html`<chat-header .threadHash="${this.threadHash}" style="margin:10px;"></chat-header>`;
     }
 
 
     /** Should grab all probed and request probes if end is reached */
     //const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
 
-    const all = threadInfo.getAll();
+    const all = thread.getAll();
 
     //console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length, threadInfo.latestSearchLogTime);
 
@@ -234,9 +234,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(all).map(
-      (blm ) => {
+      (blm) => {
         let hr = html``;
-        if (!passedLog && blm.creationTime > threadInfo.latestProbeLogTime) {
+        if (!passedLog && blm.creationTime > thread.latestProbeLogTime) {
           const beadDateStr = prettyTimestamp(blm.creationTime);
           //const threadProbeDateStr = prettyTimestamp(threadInfo.latestProbeLogTime);
           //  | ${threadProbeDateStr}

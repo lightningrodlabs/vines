@@ -158,7 +158,10 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
       let threads = [html``];
       threads = Object.values(topicThreads).map((ppHash)=> {
-        const thread = this.perspective.threads[ppHash];
+        const thread = this.perspective.threads.get(ppHash);
+        if (!thread) {
+          return html``;
+        }
         //const hasNewBeads = thread && thread.hasUnreads();
         const maybeNewBeads = this.perspective.unreadThreads[ppHash];
         const hasNewBeads = maybeNewBeads && maybeNewBeads.length > 0;

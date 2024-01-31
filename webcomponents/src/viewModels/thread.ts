@@ -35,30 +35,31 @@ export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
  */
 export class Thread {
 
+  /* Participation Protocol */
   private _pp: ParticipationProtocolMat;
-
+  /* Flag if first node is the oldest node possible */
+  private _beginningOfTime: Timestamp;
   /* CreationTime of the thread's PP entry */
   private _creationTime: Timestamp;
-  /* Flag if first node is the oldest node possible */
-  private _beginningOfTime?: Timestamp;
   /* Logged last known bead */
   private _latestProbeLogTime: Timestamp;
-
-  /* Time interval of the probed beads */
-  private _probedTimeIntervals: [Timestamp, TimeInterval][];
 
   /* Tree of BeadLinks keyed by creation time */
   private _beadLinksTree: Tree<number, BeadLinkMaterialized>;
 
+  /* Time interval of the probed beads */
+  private _probedTimeIntervals: [Timestamp, TimeInterval][] = [];
 
   private _isHidden: boolean = false;
 
 
   /** Ctor */
-  constructor() {
-    this._creationTime = 0; // Date.now() / 1000;
-    this._latestProbeLogTime = HOLOCHAIN_EPOCH;
-    this._probedTimeIntervals = [];
+  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp) {
+    this._pp = pp;
+    this._beginningOfTime = dnaOriginTime;
+    this._latestProbeLogTime = dnaOriginTime;
+    this._creationTime = creationTime;
+
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
   }
@@ -66,15 +67,15 @@ export class Thread {
 
   /** -- Getters -- */
 
-  get pp(): ParticipationProtocolMat | undefined { return this._pp}
+  get pp(): ParticipationProtocolMat { return this._pp}
 
-  get creationTime(): Timestamp | undefined { return this._creationTime}
+  get creationTime(): Timestamp { return this._creationTime}
 
-  get isHidden(): boolean | undefined { return this._isHidden}
+  get isHidden(): boolean { return this._isHidden}
 
-  get latestProbeLogTime(): Timestamp | undefined { return this._latestProbeLogTime}
+  get latestProbeLogTime(): Timestamp { return this._latestProbeLogTime}
 
-  get beginningOfTime(): Timestamp | undefined { return this._beginningOfTime}
+  get beginningOfTime(): Timestamp { return this._beginningOfTime}
 
 
   get probedTimeIntervals(): [Timestamp, TimeInterval][] { return this._probedTimeIntervals}
@@ -100,16 +101,6 @@ export class Thread {
   /** -- Methods -- */
 
   /** */
-  setPp(pp: ParticipationProtocolMat): void {
-    this._pp = pp;
-  }
-
-  /** */
-  setCreationTime(time: Timestamp): void {
-    this._creationTime = time;
-  }
-
-  /** */
   setIsHidden(isHidden: boolean): void {
     this._isHidden = isHidden;
   }
@@ -124,15 +115,13 @@ export class Thread {
 
 
   /**
-   * Set beginning of time to the oldest bead (i.e. first bead in the tree) if there is one,
-   * otherwise use EPOCH (FIXME: dna origin)
+   * Set beginning of time to the oldest bead (i.e. first bead in the tree)
    */
-  setBeginningOfTime(): void {
-    if (!this._beginningOfTime && this._beadLinksTree.begin.key) {
-      this._beginningOfTime = this._beadLinksTree.begin.key
-    } else {
-      this._beginningOfTime = HOLOCHAIN_EPOCH; // FIXME should be DNA.origin_time
+  setOldestBeadAsBeginningOfTime(): void {
+    if (!this._beadLinksTree.begin.key) {
+      return;
     }
+    this._beginningOfTime = this._beadLinksTree.begin.key
   }
 
 
@@ -172,6 +161,7 @@ export class Thread {
   //   }
   //   console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   // }
+
 
   /**  */
   addItem(blMat: BeadLinkMaterialized): void {
@@ -282,23 +272,23 @@ export class Thread {
   }
 
 
-  /** Return all items between these time values */
-  getBetween(begin: number, end: number): BeadLinkMaterialized[] {
-    // tree.forEach(visitor(key,value)[, lo[, hi]])
-    return [];
-  }
-
-
-  /** Return the first n items starting from */
-  getNext(begin: number): BeadLinkMaterialized[] {
-    return [];
-  }
-
-
-  /** Return the first n items before */
-  getPrev(begin: number): BeadLinkMaterialized[] {
-    return [];
-  }
+  // /** Return all items between these time values */
+  // getBetween(begin: number, end: number): BeadLinkMaterialized[] {
+  //   // tree.forEach(visitor(key,value)[, lo[, hi]])
+  //   return [];
+  // }
+  //
+  //
+  // /** Return the first n items starting from */
+  // getNext(begin: number): BeadLinkMaterialized[] {
+  //   return [];
+  // }
+  //
+  //
+  // /** Return the first n items before */
+  // getPrev(begin: number): BeadLinkMaterialized[] {
+  //   return [];
+  // }
 }
 
 

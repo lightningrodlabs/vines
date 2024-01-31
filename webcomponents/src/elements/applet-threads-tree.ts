@@ -214,7 +214,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     /** SubjectHash has been toggled */
     if (event.detail.item.level == 2) {
       /** Grab children */
-      let pps = await this._zvm.probeThreads(toggledTreeItem.id);
+      let pps = await this._zvm.probeSubjectThreads(toggledTreeItem.id);
 
       const tmpls = [];
       /** Convert to TreeItem and append to Tree */

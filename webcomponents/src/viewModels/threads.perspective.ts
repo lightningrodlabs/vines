@@ -81,7 +81,7 @@ export interface ThreadsPerspective {
   /** */
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: eh -> Subject */
-  allSubjects: Dictionary<Subject>,
+  allSubjects: Map<AnyLinkableHashB64, Subject>,
   /** Store of all SemTopic: eh -> Topic Title */
   allSemanticTopics: Dictionary<[string, boolean]>,
   ///** Store of all PPmat: ppAh -> PP */
@@ -89,7 +89,7 @@ export interface ThreadsPerspective {
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** ppAh -> Thread */
-  threads: Dictionary<Thread>,
+  threads: Map<ActionHashB64, Thread>,
   /** beadAh -> TextMessageInfo */
   textMessages: Dictionary<TextMessageInfo>,
   /** beadAh -> BeadLinkMaterialized */

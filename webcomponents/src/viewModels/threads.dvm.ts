@@ -13,7 +13,7 @@ import {
   ParticipationProtocol,
   SignalPayloadType,
   TextMessage,
-  THREADS_DEFAULT_ROLE_NAME, WeaveNotification, WeaveSignal
+  THREADS_DEFAULT_ROLE_NAME, ThreadsEntryType, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
 import {AnyLinkableHashB64} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
@@ -149,24 +149,24 @@ export class ThreadsDvm extends DnaViewModel {
       case DirectMessageType.NewBead:
         const [ts, beadAh, beadType, ppAh, beadData] = dm.content;
         console.log("Signal is NewBead of type", beadType);
-        if (beadType == "TextMessage") {
+        if (beadType == ThreadsEntryType.TextMessage) {
           ///*await */this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
           const tm: TextMessage = {
             value: new TextDecoder().decode(new Uint8Array(beadData)),
             bead: { forProtocolAh: decodeHashFromBase64(ppAh)}
           }
-          this.threadsZvm.storeTextMessage(beadAh, ts, weaveSignal.from, tm, true, true);
+          /* await*/ this.threadsZvm.storeTextMessage(beadAh, ts, weaveSignal.from, tm, true, true);
         } else {
-          if (beadType == "EntryBead") {
+          if (beadType == ThreadsEntryType.EntryBead) {
             ///*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
             const json = new TextDecoder().decode(new Uint8Array(beadData));
             const entryBead = JSON.parse(json);
-            this.threadsZvm.storeEntryBead(beadAh, ppAh, ts, weaveSignal.from, entryBead, true, true);
+            /* await*/ this.threadsZvm.storeEntryBead(beadAh, ts, weaveSignal.from, entryBead, true, true);
           } else {
             ///*await */this.threadsZvm.fetchAnyBead(decodeHashFromBase64(beadAh), true);
             const json = new TextDecoder().decode(new Uint8Array(beadData));
             const anyBead = JSON.parse(json);
-            this.threadsZvm.storeAnyBead(beadAh, ppAh, ts, weaveSignal.from, anyBead, true, true);
+            /* await*/ this.threadsZvm.storeAnyBead(beadAh, ts, weaveSignal.from, anyBead, true, true);
           }
         }
         break;

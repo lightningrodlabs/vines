@@ -167,10 +167,10 @@ export interface AddEntryAsBead {
 }
 
 export interface GetLatestBeadsInput {
-  ppAh: ActionHash
-  beginTime?: Timestamp
-  endTime?: Timestamp
-  targetLimit?: number
+  pp_ah: ActionHash
+  begin_time?: Timestamp
+  end_time?: Timestamp
+  target_limit?: number
 }
 
 /**  */

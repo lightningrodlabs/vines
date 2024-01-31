@@ -1,17 +1,10 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {Dictionary, DnaElement} from "@ddd-qc/lit-happ";
+import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {truncate} from "../utils";
-import {AnyBeadInfo, EntryBeadInfo, TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
-import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
-//import {ChatThreadView} from "./chat-thread-view";
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import markdownit from 'markdown-it'
-//import { full as emoji } from 'markdown-it-emoji/dist/markdown-it-emoji.js'
-//import * as emoji from 'markdown-it-emoji/dist/markdown-it-emoji.js'
-
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
@@ -172,7 +165,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let commentThread = html``;
     if (maybeCommentThread) {
       isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
-      const thread = this.threadsPerspective.threads[maybeCommentThread];
+      const thread = this.threadsPerspective.threads.get(maybeCommentThread);
       if (thread && thread.beadLinksTree.length > 0) {
         /** Grab all authors */
         let authors = {};
@@ -188,12 +181,14 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           authors[beadInfo.author] += 1;
         }
         /** Create avatar for each author */
-        const avatars = Object.keys(authors).map((author) => {
+        //console.log("Authors' Avatar", Object.keys(authors).length);
+        let avatars = Object.keys(authors).map((author) => {
           return renderAvatar(this._dvm.profilesZvm, author, "XS");
         });
+        const avatarGroup = avatars.length > 1? html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>` : html`${avatars}`;
         commentThread = html`
             <div style="display:flex; flex-direction:row;">
-                <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>
+                ${avatarGroup}
                 <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
                       @click=${(e) => {
                           this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));

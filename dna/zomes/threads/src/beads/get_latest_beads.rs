@@ -8,7 +8,7 @@ use time_indexing::*;
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 pub struct GetLatestBeadsInput {
   pp_ah: ActionHash,
   begin_time: Option<Timestamp>,
@@ -21,8 +21,9 @@ pub struct GetLatestBeadsInput {
 #[hdk_extern]
 pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
   /// Convert arguments
+  let origin_time = dna_info()?.modifiers.origin_time;
   let pp_comp = hash2comp(input.pp_ah.clone());
-  let begin = input.begin_time.unwrap_or(Timestamp::HOLOCHAIN_EPOCH); // FIXME use dna_info.origin_time
+  let begin = input.begin_time.unwrap_or(origin_time);
   let end = input.end_time.unwrap_or(sys_time().unwrap());
   let limit = input.target_limit.unwrap_or(usize::MAX);
   debug!("start = {} | target_count = {}",begin, limit);

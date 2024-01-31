@@ -548,49 +548,53 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let centerSide = html`<h1 style="margin:auto;">${msg("No thread selected")}</h1>`
     let threadTitle = "Threads";
     if (this._selectedThreadHash) {
-      const thread = this.threadsPerspective.threads[this._selectedThreadHash];
-      const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
-      let topic = "Reply";
-       if (maybeSemanticTopicThread) {
-         const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-         threadTitle = this._dvm.threadsZvm.threadName(this._selectedThreadHash);
-         topic = semTopic;
-       } else {
-         threadTitle = `Thread about TextMessage `;
-       }
+      const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
+      if (!thread) {
+        this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
+      } else {
+        const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
+        let topic = "Reply";
+         if (maybeSemanticTopicThread) {
+           const [semTopic, _topicHidden] = maybeSemanticTopicThread;
+           threadTitle = this._dvm.threadsZvm.threadName(thread.pp);
+           topic = semTopic;
+         } else {
+           threadTitle = `Thread about TextMessage `;
+         }
 
-      /** Check uploading state */
-      let pct = 100;
-      if (this._splitObj) {
-        /** auto refresh since we can't observe filesDvm */
-        delay(500).then(() => {this.requestUpdate()});
-        pct = Math.ceil(this._filesDvm.perspective.uploadState.chunks.length / this._filesDvm.perspective.uploadState.splitObj.numChunks * 100)
-      }
+        /** Check uploading state */
+        let pct = 100;
+        if (this._splitObj) {
+          /** auto refresh since we can't observe filesDvm */
+          delay(500).then(() => {this.requestUpdate()});
+          pct = Math.ceil(this._filesDvm.perspective.uploadState.chunks.length / this._filesDvm.perspective.uploadState.splitObj.numChunks * 100)
+        }
 
-      centerSide = html`
-          <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}
-                            @selected=${(e) => this.onThreadSelected(e.detail)}
-          ></chat-thread-view>
-          ${this._splitObj? html`
-            <div id="uploadCard">
-              <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
-              <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
+        centerSide = html`
+            <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}
+                              @selected=${(e) => this.onThreadSelected(e.detail)}
+            ></chat-thread-view>
+            ${this._splitObj? html`
+              <div id="uploadCard">
+                <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
+                <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
+              </div>
+            ` : html`
+            <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
+              Thread about "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
+              <ui5-button icon="delete" design="Transparent"
+                          style="border:none; padding:0px"
+                          @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
-          ` : html`
-          <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
-            Thread about "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
-            <ui5-button icon="delete" design="Transparent"
-                        style="border:none; padding:0px"
-                        @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
-          </div>
-          <threads-input-bar .profilesZvm=${this._dvm.profilesZvm} .topic=${topic}
-                             .showHrlBtn=${!!this.weServices}
-                             @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-                             @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
-                             @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
-          ></threads-input-bar>`
-          }
-      `;
+            <threads-input-bar .profilesZvm=${this._dvm.profilesZvm} .topic=${topic}
+                               .showHrlBtn=${!!this.weServices}
+                               @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
+                               @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
+                               @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
+            ></threads-input-bar>`
+            }
+        `;
+      }
     }
 
 

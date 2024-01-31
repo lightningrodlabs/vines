@@ -17,6 +17,7 @@ export function renderAvatar(profilesZvm: ProfilesZvm, agentKey: AgentPubKeyB64,
     }
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
+    //console.log("renderAvatar()", initials, avatarUrl);
     return avatarUrl? html`
               <ui5-avatar size=${size} class="chatAvatar" slot="avatar" style="box-shadow: 1px 1px 1px 1px rgba(130, 122, 122, 0.88)">
                   <img src=${avatarUrl}>
