@@ -42,7 +42,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
           context.subjectName = attLocInfo.attachableInfo.name;
         }
         if (!context.subjectType) {
-          context.subjectType = "unknown";
+          context.subjectType = attLocInfo.attachableInfo.icon_src;
         }
 
         /** Grab cell's proxy */

@@ -286,7 +286,7 @@ export class ThreadsZvm extends ZomeViewModel {
     if (parameters.beforeTs && parameters.afterTs && parameters.afterTs < parameters.beforeTs) {
       throw new Error(`Invalid search parameters. Search time interval: [${parameters.afterTs}; ${parameters.beforeTs}]'.`);
     }
-    
+
     /** Filter bead type */
     let matchingTextBeads: [ActionHashB64, BeadInfo, string][] = Object.entries(this._beads)
       .filter(([_beadAh, beadPair]) => beadPair[0].beadType == ThreadsEntryType.TextMessage)
