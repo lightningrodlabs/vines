@@ -34,6 +34,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"commit_global_log",
 	"query_global_log",
 	"probe_all_latest",
+	"probe_all_between",
 	"get_thread_log",
 	"commit_thread_log",
 	"query_thread_logs",

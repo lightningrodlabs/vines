@@ -72,7 +72,7 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
               purpose: "comment",
               rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
               subjectHash: hrlc.hrl[1],
-              subjectType: "unknown type", //FIXME: 'We' should provide entryInfo.type
+              subjectType: context.subjectType,
             },
             // appletId: encodeHashToBase64(appletHash), // (Threads appletHash)
             appletId: encodeHashToBase64(attLocInfo.appletHash),

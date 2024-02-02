@@ -197,7 +197,7 @@ export interface AddManyTextMessageAtInput {
   count: number
 }
 
-export interface ProbeAllLatestOutput {
+export interface ProbeAllOutput {
   searchedInterval: SweepInterval
   newThreadsBySubject: [AnyLinkableHash, ActionHash][]
   newBeadsByThread: [ActionHash, BeadLink][]

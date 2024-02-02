@@ -34,6 +34,22 @@ import {encode} from "@msgpack/msgpack";
 import {encodeHrl} from "../utils";
 
 
+
+/** */
+export interface SearchParameters {
+  keyword?: string,
+  author?: AgentPubKeyB64,
+  mentionsAgentByName?: string,
+  threadOrApplet?: AnyLinkableHashB64,
+  beforeTs?: Timestamp,
+  afterTs?: Timestamp,
+  canProbe?: boolean,
+  // entryType: string,
+  // beadType: string,
+  //starredOnly: boolean,
+}
+
+
 /**
  *
  */
@@ -256,26 +272,86 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Search */
 
+
+  // /** search Threads */
+  // const matchingThreadPurposes = Object.entries(this._threads)
+  //   .filter(([_ppAh, thread]) => thread.pp.purpose.toLowerCase().includes(searchLC))
+  //   .map(([ppAh, thread]) => thread);
+
+
   /** Return matching beadAhs */
-  search(searchFilter: string, parameters?: Object): ActionHashB64[] {
-    console.log(`ThreadsZvm.search() "${searchFilter}"`);
-    if (searchFilter.length <= 2) {
-      return [];
+  searchTextMessages(parameters: SearchParameters): [ActionHashB64, BeadInfo, string][] {
+    console.log("searchTextMessages()", parameters);
+
+    if (parameters.beforeTs && parameters.afterTs && parameters.afterTs < parameters.beforeTs) {
+      throw new Error(`Invalid search parameters. Search time interval: [${parameters.afterTs}; ${parameters.beforeTs}]'.`);
     }
-    const searchLC = searchFilter.toLowerCase();
-
-    // /** search Threads */
-    // const matchingThreadPurposes = Object.entries(this._threads)
-    //   .filter(([_ppAh, thread]) => thread.pp.purpose.toLowerCase().includes(searchLC))
-    //   .map(([ppAh, thread]) => thread);
-
-    /** search text beads only */
-    const matchingTextBeads = Object.entries(this._beads)
+    
+    /** Filter bead type */
+    let matchingTextBeads: [ActionHashB64, BeadInfo, string][] = Object.entries(this._beads)
       .filter(([_beadAh, beadPair]) => beadPair[0].beadType == ThreadsEntryType.TextMessage)
-      .filter(([_beadAh, beadPair]) => (beadPair[1] as TextMessage).value.toLowerCase().includes(searchLC))
-      .map(([beadAh, _beadPair]) => beadAh);
+      .map(([beadAh, beadPair]) => [beadAh, beadPair[0], (beadPair[1] as TextMessage).value]);
 
+    /** filter threadOrApplet */
+    if (parameters.threadOrApplet) {
+      const ppAh = parameters.threadOrApplet; // FIXME check hash if its DnaHash or ActionHash
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => encodeHashToBase64(beadInfo.bead.forProtocolAh) == ppAh);
+    }
+    /** filter author */
+    if (parameters.author) {
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.author == parameters.author) //
+    }
+    /** filter mention */
+    if (parameters.mentionsAgentByName) {
+      const mentionLC = `@${parameters.mentionsAgentByName}`.toLowerCase();
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, _beadInfo, text]) => text.toLowerCase().includes(mentionLC))
+    }
+    /** filter beforeTs */
+    if (parameters.beforeTs) {
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.creationTime <= parameters.beforeTs);
+    }
+    /** filter afterTs */
+    if (parameters.afterTs) {
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.creationTime >= parameters.afterTs);
+    }
+    /** Filter by keyword */
+    if (parameters.keyword) {
+      const keywordLC = parameters.keyword.toLowerCase();
+      matchingTextBeads.filter(([_beadAh, beadPair]) => (beadPair[1] as TextMessage).value.toLowerCase().includes(keywordLC))
+    }
+
+    /** DONE */
     return matchingTextBeads;
+  }
+
+
+  /** TODO */
+  async searchAndProbe(parameters: SearchParameters, limit: number): Promise<[ActionHashB64, BeadInfo, string][]> {
+    console.log("searchAndProbe()", parameters);
+    let result: [ActionHashB64, BeadInfo, string][] = [];
+
+    /** Maybe initial search is enough */
+    const initialResult = this.searchTextMessages(parameters);
+    if (initialResult.length > limit) {
+      return initialResult;
+    }
+
+    /** Full probe thread if possible */
+    if (parameters.threadOrApplet) {
+      await this.probeAllBeads(parameters.threadOrApplet)
+      result = this.searchTextMessages(parameters);
+    } else {
+      // TODO: progressive timeframe search
+      /** Get beads on all threads within timeframe */
+      for (const ppAh of this._threads.keys()) {
+        await this.probeLatestBeads(ppAh, parameters.afterTs, parameters.beforeTs, limit);
+      }
+      result = this.searchTextMessages(parameters);
+    }
+
+
+    /** */
+    return result;
   }
 
 
@@ -707,6 +783,13 @@ export class ThreadsZvm extends ZomeViewModel {
     return [ah, global_time_anchor, creationTime, anyBead];
   }
 
+  /** Returns beadType & global_time_anchor */
+  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64): Promise<[ActionHashB64, string, number, EntryBead]> {
+    const creationTime = Date.now() * 1000;
+    const [ah, global_time_anchor, entryBead] = await  this.publishEntryBeadAt(eh, ppAh, creationTime);
+    return [ah, global_time_anchor, creationTime, entryBead];
+  }
+
 
   /** */
   async publishHrlBeadAt(hrl: Hrl, ppAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean): Promise<[ActionHashB64, string, AnyBead]> {
@@ -737,14 +820,6 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** Returns beadType & global_time_anchor */
-  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64): Promise<[ActionHashB64, string, number, EntryBead]> {
-    const creationTime = Date.now() * 1000;
-    const [ah, global_time_anchor, entryBead] = await  this.publishEntryBeadAt(eh, ppAh, creationTime);
-    return [ah, global_time_anchor, creationTime, entryBead];
-  }
-
-
   /** */
   async publishEntryBeadAt(eh: EntryHashB64, ppAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean): Promise<[ActionHashB64, string, EntryBead]> {
     const entryInfo = {
@@ -770,14 +845,6 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Done */
     return [encodeHashToBase64(beadAh), global_time_anchor, entryBead];
-  }
-
-
-  /** */
-  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TextMessage]> {
-    const creation_time = Date.now() * 1000
-    const [ah, global_time_anchor, tm] = await this.publishTextMessageAt(msg, ppAh, creation_time, ments? ments : []);
-    return [ah, global_time_anchor, creation_time, tm];
   }
 
 
@@ -833,6 +900,14 @@ export class ThreadsZvm extends ZomeViewModel {
         await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
       }
     }
+  }
+
+
+  /** */
+  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TextMessage]> {
+    const creation_time = Date.now() * 1000
+    const [ah, global_time_anchor, tm] = await this.publishTextMessageAt(msg, ppAh, creation_time, ments? ments : []);
+    return [ah, global_time_anchor, creation_time, tm];
   }
 
 

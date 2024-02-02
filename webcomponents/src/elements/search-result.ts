@@ -34,7 +34,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<notification-list>.dvmUpdated()");
+    console.log("<search-result-panel>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -48,9 +48,9 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<search-result-panel>.render()", this.search);
 
-    const beadAhs = this._dvm.threadsZvm.search(this.search);
+    const beadAhs = this._dvm.threadsZvm.searchTextMessages({keyword: this.search});
 
-    const matches = beadAhs.map((beadAh) => {
+    const matches = beadAhs.map(([beadAh, _info, _text]) => {
       //const beadPair = this.threadsPerspective.beads[beadAh];
       //return html`<ui5-li key=${beadAh}>${tmInfo.textMessage.value}</ui5-li>`
       return html`<ui5-li key=${beadAh} style="height:auto">
@@ -86,6 +86,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
         </ui5-panel>
     `;
   }
+
 
   /** */
   static get styles() {

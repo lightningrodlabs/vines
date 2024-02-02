@@ -3,25 +3,31 @@ use threads_integrity::*;
 use time_indexing::*;
 use crate::beads::{BeadLink};
 
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProbeAllLatestOutput {
+pub struct ProbeAllOutput {
   pub searched_interval: SweepInterval,
   pub new_threads_by_subject: Vec<(AnyLinkableHash, ActionHash)>,
   pub new_beads_by_thread: Vec<(ActionHash, BeadLink)>,
 }
 
+
 /// Get latest links from the global time index
+#[hdk_extern]
+pub fn probe_all_latest(begin: Timestamp) -> ExternResult<ProbeAllOutput> {
+  /// From beginning of time to now (begin_time is expected to be last global search log time)
+  return probe_all_between(SweepInterval {begin, end: sys_time()?});
+}
+
+
+/// Get links from the global time index
 /// Returns:
 ///  - searched interval
 ///  - all new threads (as pp_ah & subject hash)
 ///  - all new beads (as bead links && pp_ah)
 #[hdk_extern]
-pub fn probe_all_latest(begin_time: Timestamp)
-  -> ExternResult<ProbeAllLatestOutput>
-{
-  /// From beginning of time to now (begin_time is expected to be last global search log time)
-  let searched_interval = SweepInterval::new(begin_time, sys_time()?)?;
+pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<ProbeAllOutput> {
   /// Query DHT
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
   let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None, ThreadsLinkType::TimeItem)?.1;
@@ -40,7 +46,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
         let pp_ah: ActionHash = ActionHash::try_from(link.target).unwrap();
         let subject_hash: AnyLinkableHash = AnyLinkableHash::from_raw_39(item_tag.custom_data).unwrap();
         /// Add only if after begin_time since we may have older items from the same time bucket
-        if item_tag.devtest_timestamp > begin_time {
+        if item_tag.devtest_timestamp > searched_interval.begin {
           pps.push((subject_hash.clone(), pp_ah.clone()));
           //debug!("Thread found: {} (for subject: {:?})", pp_ah, topic_hash);
         }
@@ -55,7 +61,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
           //bead_type: tag2str(&link.tag).unwrap(),
         };
         /// Add only if after begin_time since we may have older items from the same time bucket
-        if bl.creation_time > begin_time {
+        if bl.creation_time > searched_interval.begin {
           bls.push((pp_ah, bl));
           //debug!("Bead found: {} (for thread: {:?})", bl.bead_ah, pp_ah);
         }
@@ -64,7 +70,7 @@ pub fn probe_all_latest(begin_time: Timestamp)
   /// Done
   debug!("new_threads_by_subject.len = {}", pps.len());
   debug!("   new_beads_by_thread.len = {}", bls.len());
-  Ok(ProbeAllLatestOutput {
+  Ok(ProbeAllOutput {
     searched_interval,
     new_threads_by_subject: pps,
     new_beads_by_thread: bls,
