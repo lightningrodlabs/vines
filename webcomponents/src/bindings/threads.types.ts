@@ -147,12 +147,6 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
-export interface AddAnyBead {
-  forProtocolAh: ActionHash
-  value: string
-  typeInfo: string
-}
-
 /**  */
 export interface AddReactionInput {
   emoji: string
@@ -161,7 +155,7 @@ export interface AddReactionInput {
 
 export interface AddEntryAsBead {
   eh: EntryHash
-  forProtocolAh: ActionHash
+  bead: Bead
   roleName: string
   zomeName: string
 }
@@ -286,7 +280,7 @@ export type DirectGossip =
  | {type: "Pong", content: AgentPubKeyB64}
  | {type: "NewSemanticTopic", content: [EntryHashB64, string]}
  | {type: "NewPp", content: [Timestamp, ActionHashB64, ParticipationProtocol]}
- | {type: "NewBead", content: [Timestamp, ActionHashB64, string, ActionHashB64, number[]]}
+ | {type: "NewBead", content: [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array]}
  | {type: "EmojiReactionChange", content: [ActionHashB64, AgentPubKeyB64, string, boolean]}
 
 

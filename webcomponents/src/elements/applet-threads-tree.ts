@@ -147,8 +147,12 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectHash: ActionHashB64, subjectType: string, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash, subjectType, subjectName}, bubbles: true, composed: true }));
+  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectHash: ActionHashB64, subjectType: string, subjectName: string, viewType?: string) {
+    const request: CommentRequest =  {
+      maybeCommentThread, subjectHash, subjectType, subjectName,
+      viewType: viewType? viewType : "side",
+    };
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: request, bubbles: true, composed: true }));
   }
 
 

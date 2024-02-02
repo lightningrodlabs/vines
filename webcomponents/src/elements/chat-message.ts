@@ -7,6 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import markdownit from 'markdown-it'
 import {ThreadsZvm} from "../viewModels/threads.zvm";
+import {TextMessage} from "../bindings/threads.types";
 
 
 /**
@@ -32,14 +33,14 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           <div style="color:red">No message found</div>`;
     }
 
-    const texto = this.perspective.textMessages[this.hash];
-    if (!texto) {
+    const beadPair = this.perspective.beads[this.hash];
+    if (!beadPair) {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-
+    const tm = beadPair[1] as TextMessage;
     const md = markdownit();
     //const md = markdownit().use(emoji/* , options */);
-    const result = md.render(texto.textMessage.value);
+    const result = md.render(tm.value);
     const parsed = unsafeHTML(result);
 
     /** render all */

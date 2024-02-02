@@ -1,6 +1,7 @@
-import {ActionHashB64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
 import {FileType} from "@ddd-qc/files";
+import {Hrl} from "@lightningrodlabs/we-applet";
 
 
 /** */
@@ -66,6 +67,7 @@ export interface CommentRequest {
   subjectHash: AnyLinkableHashB64,
   subjectType: string,
   subjectName: string,
+  viewType: string,
 }
 
 
@@ -86,3 +88,17 @@ export function parseMentions(str: string): string[]  {
   }
   return tokens.matches.map((m) => m.name);
 };
+
+
+
+/** Find better solution */
+export function encodeHrl(hrl: Hrl): string {
+  const obj = [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])];
+  return JSON.stringify(obj);
+}
+
+export function decodeHrl(encHrl: string): Hrl {
+  const hrlPair: [string, string] = JSON.parse(encHrl);
+  const hrl: Hrl = [decodeHashFromBase64(hrlPair[0]), decodeHashFromBase64(hrlPair[1])];
+  return hrl;
+}

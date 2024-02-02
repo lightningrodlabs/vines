@@ -2,7 +2,7 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {TextMessageInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {parseMentions} from "../utils";
 
 import {ActionHashB64} from "@holochain/client";
@@ -20,6 +20,7 @@ import {renderAvatar} from "../render";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
+import {TextMessage, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -200,39 +201,54 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     // }
 
 
-    const infos: TextMessageInfo[] = this._dvm.threadsZvm.getAllTextMessages(this.threadHash);
+    const infoPairs = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
 
-    console.log("<comment-thread-view>.render() len =", infos.length);
+    console.log("<comment-thread-view>.render() len =", infoPairs.length);
 
     console.log("Has thread some unreads?", thread.hasUnreads());
 
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.values(infos).map(
-      (info) => {
-        console.log("<comment-thread-view> info", info);
-        if (info == undefined) {
+    let textLi = Object.values(infoPairs).map(
+      ([beadInfo, typedBead]) => {
+        console.log("<comment-thread-view> beadInfo", beadInfo);
+        if (beadInfo == undefined) {
           return html``;
         }
-        const date = new Date(info.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+        const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
 
-        const isNew = thread.latestProbeLogTime < info.creationTime;
-        console.log("Is msg new?", isNew, thread.latestProbeLogTime, info.creationTime);
+        const isNew = thread.latestProbeLogTime < beadInfo.creationTime;
+        console.log("Is msg new?", isNew, thread.latestProbeLogTime, beadInfo.creationTime);
 
+
+        let content = "<unknown>";
+        switch(beadInfo.beadType) {
+          case ThreadsEntryType.TextMessage:
+            content = (typedBead as TextMessage).value;
+            break;
+          case ThreadsEntryType.AnyBead:
+            content = "<HRL>"; // FIXME
+            break;
+          case ThreadsEntryType.EntryBead:
+            content = "<File>"; // FIXME
+            break;
+          default:
+            break;
+        }
 
         return html`
             <ui5-li additional-text="${date_str}" style="background: ${isNew? bg_color: '#e6e6e6'};" type="Inactive">
-                ${info.textMessage.value}
+                ${content}
                 <div slot="imageContent">                
-                  ${renderAvatar(this._dvm.profilesZvm, info.author, "S")}
+                  ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
                 </div>                    
             </ui5-li>`
       }
     );
 
     /** Different UI if no message found for thread */
-    if (infos.length == 0) {
+    if (infoPairs.length == 0) {
       textLi = [html`
             <ui5-li style="background: ${bg_color};">
                 ${this.showInput? "Add first message:" : "No messages found"}                       

@@ -98,22 +98,30 @@ import {
   parseMentions,
   ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64, ThreadsDnaPerspective, globaFilesContext, timeSince, NotifiableEventType, JumpEvent
+  AnyLinkableHashB64,
+  ThreadsDnaPerspective,
+  globaFilesContext,
+  timeSince,
+  NotifiableEventType,
+  JumpEvent,
+  BeadInfo,
+  TypedBead, ThreadsZvm, TextMessage, EntryBead, AnyBead, decodeHrl, wePerspectiveContext, WePerspective
 } from "@threads/elements";
 
 import {
+  ActionHash,
   ActionHashB64,
-  decodeHashFromBase64,
+  decodeHashFromBase64, DnaHash,
   DnaHashB64,
-  encodeHashToBase64,
+  encodeHashToBase64, EntryHash,
 } from "@holochain/client";
 
 import {
   AppletId,
-  AppletInfo, WeNotification,
+  AppletInfo, Hrl, WeNotification,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import {consume, createContext} from "@lit/context";
+import {consume, ContextProvider, createContext} from "@lit/context";
 import {shellBarStyleTemplate} from "@threads/elements";
 
 //import "./input-bar";
@@ -125,7 +133,7 @@ import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
-import {renderAvatar} from "@threads/elements/dist/render";
+import {composeNotificationTitle, renderAvatar} from "@threads/elements/dist/render";
 import {toasty} from "@threads/elements/dist/toast";
 import {stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
@@ -152,6 +160,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
 
+    new ContextProvider(this, wePerspectiveContext, this.wePerspective);
   }
 
 
@@ -183,8 +192,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServices;
 
-  /** AppletHash -> AppletInfo */
-  @state() private _appletInfos: Dictionary<AppletInfo> = {}
+  private wePerspective: WePerspective = { applets: {}, attachables: {}};
 
 
   /** -- Getters -- */
@@ -311,7 +319,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       for (const appletId of appletIds) {
         const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
         console.log("<threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
-        this._appletInfos[appletId] = appletInfo;
+        this.wePerspective.applets[appletId] = appletInfo;
       }
     }
     this.requestUpdate();
@@ -343,15 +351,30 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
     }
 
+    /** Grab AttachableInfo for all AnyBeads */
+    for (const [beadInfo, beadPair] of Object.entries(this.threadsPerspective.beads)) {
+      if (beadInfo != ThreadsEntryType.AnyBead) {
+        continue;
+      }
+      const anyBead = beadPair[1] as AnyBead;
+      const hrl = decodeHrl(anyBead.value);
+      const sHrl = stringifyHrl(hrl);
+      if (!this.wePerspective.attachables[sHrl]) {
+        this.wePerspective.attachables[sHrl] = await this.weServices.attachableInfo({hrl});
+        this.requestUpdate();
+      }
+    }
+
+
     /** Create popups from signaled Notifications */
-    //if (this.perspective.notificationLog.length)
+    const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       const author = this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)] ? this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)].nickname : "unknown";
       const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
-      let message = `from @${author}.` ; // | ${date_str}`;
-      const [notifTitle, _content] = this._dvm.threadsZvm.composeNotificationTitle(notif);
+      const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.wePerspective);
+      let message = `${notifBody} from @${author}.` ; // | ${date_str}`;
       /** in-app toast */
       if (canPopup) {
         toasty(notifTitle + " " + message);
@@ -366,9 +389,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           urgency: 'high',
           timestamp: notif.timestamp / 1000,
         }
-        this.weServices.notifyWe([myNotif]);
+        weNotifs.push(myNotif);
       }
       this._lastKnownNotificationIndex += 1;
+    }
+    if (this.weServices) {
+      this.weServices.notifyWe(weNotifs);
     }
   }
 
@@ -439,7 +465,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCommentingClicked()", e);
     const request = e.detail;
 
-    if (request.subjectType != "TextMessage") {
+    if (request.viewType == "side") {
       const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
       this._canShowComments = true;
       this._selectedCommentThreadHash = threadHash;
@@ -613,8 +639,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "S");
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
-    console.log("this._appletInfos", this._appletInfos, myProfile);
-    let appletOptions = Object.entries(this._appletInfos).map(([appletId, appletInfo]) => {
+    console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
+    let appletOptions = Object.entries(this.wePerspective.applets).map(([appletId, appletInfo]) => {
       console.log("appletInfo", appletInfo);
       if (!appletInfo) {
         return html``;
@@ -767,6 +793,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                if (e.keyCode === 13) {
                                  searchPopElem.close();
                                  this._canShowSearchResults = true;
+                                 this.requestUpdate(); // !important
                                }
                              }}                             
                   ></ui5-input>

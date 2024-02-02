@@ -18,44 +18,20 @@ import {
 } from "../bindings/threads.types";
 
 
-
 /** -- Should be defined in @holochain/client */
 //export declare type AnyLinkableHash = HoloHash;
 export declare type AnyLinkableHashB64 = HoloHashB64;
-export const HOLOCHAIN_EPOCH = 1640995200000000;
+//export const HOLOCHAIN_EPOCH = 1640995200000000;
+
+export type TypedBead = EntryBead | AnyBead | TextMessage;
 
 /** */
 export interface BeadInfo {
   creationTime: Timestamp,
   author: AgentPubKeyB64,
-  beadType: string,
+  beadType: string, // ThreadsEntryType
   bead: Bead,
-  name: string,
-}
-
-
-/** (used for HRL) */
-export interface AnyBeadInfo {
-  creationTime: Timestamp,
-  author: AgentPubKeyB64,
-  anyBead: AnyBead,
-}
-
-
-/** (used for Files) */
-export interface EntryBeadInfo {
-  creationTime: Timestamp,
-  author: AgentPubKeyB64,
-  entryBead: EntryBead,
-}
-
-
-/** */
-export interface TextMessageInfo {
-  //index_begin_time_us: number,
-  creationTime: Timestamp,
-  author: AgentPubKeyB64,
-  textMessage: TextMessage,
+  //name: string,
 }
 
 export interface BeadLinkMaterialized {
@@ -91,11 +67,7 @@ export interface ThreadsPerspective {
   /** ppAh -> Thread */
   threads: Map<ActionHashB64, Thread>,
   /** beadAh -> TextMessageInfo */
-  textMessages: Dictionary<TextMessageInfo>,
-  /** beadAh -> BeadLinkMaterialized */
-  entryBeads: Dictionary<EntryBeadInfo>,
-  /** beadAh -> BeadLinkMaterialized */
-  anyBeads: Dictionary<AnyBeadInfo>,
+  beads: Dictionary<[BeadInfo, TypedBead]>,
   /** bead_ah -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
 

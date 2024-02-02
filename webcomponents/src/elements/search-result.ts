@@ -1,21 +1,11 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 
-import {inputBarStyleTemplate} from "../styles";
-
 import "@ui5/webcomponents/dist/TextArea.js";
-import TextArea from "@ui5/webcomponents/dist/TextArea.js";
-import List from "@ui5/webcomponents/dist/List.js";
-//import {InputSuggestionText, SuggestionComponent} from "@ui5/webcomponents/dist/features/InputSuggestions";
-import SuggestionItem from "@ui5/webcomponents/dist/SuggestionItem";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {AppletId} from "@lightningrodlabs/we-applet";
 import {JumpEvent} from "./notification-list";
-//import SuggestionListItem from "@ui5/webcomponents/dist/SuggestionListItem";
 
 
 /**
@@ -44,7 +34,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<comment-thread-view>.dvmUpdated()");
+    console.log("<notification-list>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -61,7 +51,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
     const beadAhs = this._dvm.threadsZvm.search(this.search);
 
     const matches = beadAhs.map((beadAh) => {
-      const tmInfo = this.threadsPerspective.textMessages[beadAh];
+      //const beadPair = this.threadsPerspective.beads[beadAh];
       //return html`<ui5-li key=${beadAh}>${tmInfo.textMessage.value}</ui5-li>`
       return html`<ui5-li key=${beadAh} style="height:auto">
           <chat-item .hash=${beadAh} jump="true"

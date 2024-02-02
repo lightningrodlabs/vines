@@ -8,16 +8,16 @@ import {
   EntryHashB64
 } from "@holochain/client";
 import {
-  DirectGossip, DirectGossipType, NotifiableEventType,
+  DirectGossip, DirectGossipType, EntryBead, NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
-  TextMessage,
+  TextMessage, AnyBead,
   THREADS_DEFAULT_ROLE_NAME, ThreadsEntryType, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
-import {AnyLinkableHashB64} from "./threads.perspective";
+import {AnyLinkableHashB64, TypedBead} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {decode} from "@msgpack/msgpack";
+import {decode, encode} from "@msgpack/msgpack";
 
 
 
@@ -93,14 +93,16 @@ export class ThreadsDvm extends DnaViewModel {
 
     /** Store received Entry */
     if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event) {
-      const tm: TextMessage = decode(extra) as TextMessage;
-      console.log("Received NotificationSignal of type TextMessage:", tm);
-      await this.threadsZvm.storeTextMessage(encodeHashToBase64(notif.content), notif.timestamp, encodeHashToBase64(notif.author), tm, false, true);
+      const bead = decode(extra) as TypedBead;
+      const beadAh = encodeHashToBase64(notif.content);
+      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, bead);
+      await this.threadsZvm.storeBead(beadAh, notif.timestamp, encodeHashToBase64(notif.author), bead, true, true);
     }
     if (NotifiableEventType.Fork in notif.event) {
       const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
-      console.log("Received NotificationSignal of type ParticipationProtocol:", pp);
-      await this.threadsZvm.storePp(encodeHashToBase64(notif.content), pp, notif.timestamp, true, true);
+      const ppAh = encodeHashToBase64(notif.content);
+      console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
+      await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, true, true);
     }
 
     /** Store Notification */
@@ -150,28 +152,11 @@ export class ThreadsDvm extends DnaViewModel {
         this.threadsZvm.storePp(newPpAh, pp, tss, false, true);
         break;
       case DirectGossipType.NewBead:
-        const [ts, beadAh, beadType, ppAh, beadData] = gossip.content;
+        const [ts, beadAh, beadType, ppAh, encBead] = gossip.content;
         console.log("Signal is NewBead of type", beadType);
-        if (beadType == ThreadsEntryType.TextMessage) {
-          ///*await */this.threadsZvm.fetchTextMessage(decodeHashFromBase64(beadAh), true);
-          const tm: TextMessage = {
-            value: new TextDecoder().decode(new Uint8Array(beadData)),
-            bead: { forProtocolAh: decodeHashFromBase64(ppAh)}
-          }
-          /* await*/ this.threadsZvm.storeTextMessage(beadAh, ts, weaveSignal.from, tm, true, true);
-        } else {
-          if (beadType == ThreadsEntryType.EntryBead) {
-            ///*await */this.threadsZvm.fetchEntryBead(decodeHashFromBase64(beadAh), true);
-            const json = new TextDecoder().decode(new Uint8Array(beadData));
-            const entryBead = JSON.parse(json);
-            /* await*/ this.threadsZvm.storeEntryBead(beadAh, ts, weaveSignal.from, entryBead, true, true);
-          } else {
-            ///*await */this.threadsZvm.fetchAnyBead(decodeHashFromBase64(beadAh), true);
-            const json = new TextDecoder().decode(new Uint8Array(beadData));
-            const anyBead = JSON.parse(json);
-            /* await*/ this.threadsZvm.storeAnyBead(beadAh, ts, weaveSignal.from, anyBead, true, true);
-          }
-        }
+        const typedBead: TypedBead = decode(encBead) as TypedBead;
+        console.log("NewBead", typedBead);
+        /* await*/ this.threadsZvm.storeBead(beadAh, ts, weaveSignal.from, typedBead, true, true);
         break;
       case DirectGossipType.EmojiReactionChange:
         const [beadAh2, author, emoji, isAdded] = gossip.content
@@ -248,9 +233,8 @@ export class ThreadsDvm extends DnaViewModel {
   async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64) {
     let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishEntryBead(eh, ppAh);
     /** Send signal to peers */
-    const data = JSON.stringify(entryBead);
-    const uint8array = Array.from(new TextEncoder().encode(data));
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.EntryBead, ppAh, uint8array]}, ppAh);
+    const data = encode(entryBead);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.EntryBead, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
@@ -260,9 +244,8 @@ export class ThreadsDvm extends DnaViewModel {
   async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64): Promise<ActionHashB64> {
     let [ah, _time_anchor, creationTime, anyBead] = await this.threadsZvm.publishHrlBead(hrl, ppAh);
     /** Send signal to peers */
-    const data = JSON.stringify(anyBead);
-    const uint8array = Array.from(new TextEncoder().encode(data));
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.AnyBead, ppAh, uint8array]}, ppAh);
+    const data = encode(anyBead);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.AnyBead, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
@@ -270,10 +253,10 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creation_time] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
+    let [ah, _time_anchor, creation_time, tm] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
     /** Send signal to peers */
-    const uint8array = Array.from(new TextEncoder().encode(msg));
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextMessage, ppAh, uint8array]}, ppAh);
+    const data = encode(tm);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextMessage, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }

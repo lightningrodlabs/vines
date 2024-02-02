@@ -1,34 +1,29 @@
 use hdk::prelude::*;
 use time_indexing::convert_timepath_to_timestamp;
-use zome_utils::{error, get_all_typed_local, get_typed_from_record, path2anchor};
-use threads_integrity::{Bead, ThreadsEntry, ThreadsEntryTypes, AnyBead};
+use zome_utils::{error, get_all_typed_local, get_author, get_typed_from_record, path2anchor};
+use threads_integrity::{ThreadsEntry, ThreadsEntryTypes, AnyBead};
 use crate::beads::index_bead;
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AddAnyBead {
-    pub for_protocol_ah: ActionHash,
-    pub value: String,
-    pub type_info: String,
-}
+use crate::notify_peer::{NotifiableEvent, send_inbox_item, SendInboxItemInput, WeaveNotification};
 
 /// Return bead type, Global Time Anchor, bucket time
 #[hdk_extern]
-pub fn add_any_bead(input: AddAnyBead) -> ExternResult<(ActionHash, AnyBead, String, Timestamp)> {
-    debug!("add_any_bead() {:?}", input);
-    let anyBead = AnyBead {
-        bead: Bead {
-            for_protocol_ah: input.for_protocol_ah,
-            maybe_reply_of_ah: None,
-        },
-        value: input.value,
-        type_info: input.type_info.clone(),
-    };
+pub fn add_any_bead(anyBead: AnyBead) -> ExternResult<(ActionHash, String, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
+    debug!("add_any_bead() {:?}", anyBead);
     let ah = create_entry(ThreadsEntry::AnyBead(anyBead.clone()))?;
     //let bead_type = format!("__any::{}", input.type_info);
     let tp_pair = index_bead(anyBead.bead.clone(), ah.clone(), "AnyBead"/*&bead_type*/, sys_time()?)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
-    Ok((ah, anyBead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+    /// Reply
+    let mut maybe_notif = None;
+    if let Some(reply_ah) = anyBead.bead.maybe_reply_of_ah.clone() {
+        let reply_author = get_author(&reply_ah.clone().into())?;
+        let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
+        if let Some((_link_ah, notif)) = maybe {
+            maybe_notif = Some((reply_author, notif));
+        }
+    }
+    /// Done
+    Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time, maybe_notif))
 }
 
 

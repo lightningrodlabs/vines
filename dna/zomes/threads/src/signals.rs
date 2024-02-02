@@ -52,7 +52,7 @@ pub enum DirectGossip {
 
     NewSemanticTopic((EntryHashB64, String)), // topicEh, title
     NewPp((Timestamp, ActionHashB64, ParticipationProtocol)),
-    NewBead((Timestamp, ActionHashB64, String, ActionHashB64, Vec<u8>)), // creation_time, beadAh, bead_type, ppAh, SerializedBytes specific to the bead_type
+    NewBead((Timestamp, ActionHashB64, String, ActionHashB64, SerializedBytes)), // creation_time, beadAh, bead_type, ppAh, SerializedBytes specific to the bead_type
     EmojiReactionChange((ActionHashB64, AgentPubKeyB64, String, bool)), // beadAh, author, emoji, isAdded
 }
 

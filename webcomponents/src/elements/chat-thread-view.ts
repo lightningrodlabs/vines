@@ -1,12 +1,11 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement, prettyDate} from "@ddd-qc/lit-happ";
-import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {DnaElement} from "@ddd-qc/lit-happ";
+import {encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {timeSince} from "../utils";
 import {prettyTimestamp} from "@ddd-qc/files";
 
 
@@ -15,7 +14,7 @@ import {prettyTimestamp} from "@ddd-qc/files";
  */
 @customElement("chat-thread-view")
 export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
-
+  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     this.addEventListener('scroll', this.onWheel);
@@ -124,7 +123,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       const pps = await dvm.threadsZvm.probeSubjectThreads(encodeHashToBase64(bl.beadAh));
       for (const [ppAh, pp] of Object.entries(pps)) {
         if (pp.purpose == "comment") {
-          await dvm.threadsZvm.getAllTextMessages(ppAh);
+          await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
           break;
         }
       }
@@ -263,6 +262,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
             ${maybeHeader}
     `;
   }
+
 
   /** */
   static get styles() {

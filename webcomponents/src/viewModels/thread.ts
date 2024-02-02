@@ -4,7 +4,7 @@ import {TimeInterval} from "./timeInterval";
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
 import {Base64} from "js-base64";
-import {BeadLinkMaterialized, HOLOCHAIN_EPOCH, ParticipationProtocolMat} from "./threads.perspective";
+import {BeadLinkMaterialized, ParticipationProtocolMat} from "./threads.perspective";
 
 /** Importing this from holochain will cause jest to fail */
 function encodeHashToBase64(hash: Uint8Array) {

@@ -5,10 +5,13 @@ import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.pers
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {timeSince} from "../utils";
-import {AnyLinkableHash, encodeHashToBase64} from "@holochain/client";
-import {renderAvatar} from "../render";
+import {encodeHashToBase64} from "@holochain/client";
+import {composeNotificationTitle, determineBeadName, renderAvatar} from "../render";
 import {msg} from "@lit/localize";
-import {NotifiableEvent, NotifiableEventType} from "../bindings/threads.types";
+import {NotifiableEvent} from "../bindings/threads.types";
+import {consume} from "@lit/context";
+import {globaFilesContext, WePerspective, wePerspectiveContext} from "../contexts";
+import {FilesDvm} from "@ddd-qc/files";
 
 
 /**
@@ -28,11 +31,18 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   threadsPerspective!: ThreadsPerspective;
 
 
+  @consume({ context: globaFilesContext, subscribe: true })
+  filesDvm!: FilesDvm;
+
+  @consume({ context: wePerspectiveContext, subscribe: true })
+  wePerspective!: WePerspective;
+
+
   /** -- Methods -- */
 
   /** */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<comment-thread-view>.dvmUpdated()");
+    console.log("<notification-list>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -53,7 +63,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
       ([linkAh, notif]) => {
 
         /** Content */
-        const [notifTitle, notifBody] = this._dvm.threadsZvm.composeNotificationTitle(notif);
+        const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.wePerspective);
 
         /** Author */
         const author = encodeHashToBase64(notif.author);

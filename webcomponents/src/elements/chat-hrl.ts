@@ -8,6 +8,7 @@ import {weClientContext} from "../contexts";
 import {AppletInfo, Hrl, WeServices} from "@lightningrodlabs/we-applet";
 import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
+import {AnyBead} from "../bindings/threads.types";
 
 
 /**
@@ -41,16 +42,17 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (this.hash == "") {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    const anyBeadInfo = this.perspective.anyBeads[this.hash];
-    if (!anyBeadInfo) {
+    const anyBeadInfoPair = this.perspective.beads[this.hash];
+    if (!anyBeadInfoPair) {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    if (anyBeadInfo.anyBead.typeInfo != "hrl") {
+    const anyBead = anyBeadInfoPair[1] as AnyBead;
+    if (anyBead.typeInfo != "hrl") {
       return html`<div style="color: red">Bead not an HRL</div>`;
     }
 
-    //console.log("<chat-hrl>.render() anyBead", anyBeadInfo.anyBead.value);
-    const obj: [string, string] = JSON.parse(anyBeadInfo.anyBead.value);
+    //console.log("<chat-hrl>.render() anyBead", anyBead.value);
+    const obj: [string, string] = JSON.parse(anyBead.value);
     const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
     //console.log("<chat-hrl>.render()", stringifyHrl(hrl));
     if (!this._attLocAndInfo) {

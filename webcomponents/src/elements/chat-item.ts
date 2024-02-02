@@ -9,7 +9,7 @@ import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
 import {renderAvatar} from "../render";
-import {ThreadsEntryType} from "../bindings/threads.types";
+import {TextMessage, ThreadsEntryType} from "../bindings/threads.types";
 
 /**
  * @element
@@ -112,9 +112,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string) {
+  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
-      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextMessage", subjectName},
+      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextMessage", subjectName, viewType: viewType? viewType : "side"},
       bubbles: true,
       composed: true,
     }));
@@ -142,20 +142,23 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
 
     let beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
-
+    if (!beadInfo) {
+      return html`
+          <div>Loading...</div>`;
+    }
 
     /** Determine the comment button to display depending on current comments for this message */
     let subjectName = "";
     let item = html``;
     if (beadInfo.beadType == ThreadsEntryType.TextMessage) {
-      subjectName = truncate(this.threadsPerspective.textMessages[this.hash].textMessage.value, 60, true);
+      subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextMessage).value, 60, true);
       item = html`<chat-message .hash=${this.hash}></chat-message>`;
     }
-    if (beadInfo.beadType == "File") {
+    if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
       subjectName = "File";
       item = html`<chat-file .hash=${this.hash}></chat-file>`;
     }
-    if (beadInfo.beadType == "HRL") {
+    if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
       subjectName = "HRL";
       item = html`<chat-hrl .hash=${this.hash}></chat-hrl>`;
     }
@@ -166,10 +169,14 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
-                      @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName)}">                      
+                      @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">                      
         </ui5-button>`;
 
     if (maybeCommentThread) {
+      commentButton = html`              
+          <ui5-button icon="discussion" tooltip="View Thread on the side" design="Transparent" style="border:none;"
+                       @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">
+          </ui5-button>`;
       isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const thread = this.threadsPerspective.threads.get(maybeCommentThread);
       if (thread && thread.beadLinksTree.length > 0) {
