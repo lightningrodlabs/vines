@@ -21,10 +21,10 @@ import {
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
-  AnyLinkableHashB64, BeadInfo, BeadLinkMaterialized,
-  materializeParticipationProtocol,
-  ParticipationProtocolMat,
-  ThreadsPerspective, TypedBead,
+  AnyLinkableHashB64, BeadInfo, BeadInfoMat, BeadLinkMaterialized, materializedTypedBead,
+  materializeParticipationProtocol, materializeSubject,
+  ParticipationProtocolMat, SubjectMat,
+  ThreadsPerspective, ThreadsPerspectiveMat, TypedBead, TypedBeadMat,
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
@@ -1304,6 +1304,41 @@ export class ThreadsZvm extends ZomeViewModel {
       threadTitle = `${pp.subjectType}: ${pp.purpose}`;
     }
     return threadTitle;
+  }
+
+
+  /** Dump perspective as JSON */
+  exportPerspective(): string {
+    /** allSubjects */
+    const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
+    Array.from(this._allSubjects.entries()).map(([subjectAh, subject]) => allSubjects.set(subjectAh, materializeSubject(subject)));
+
+    /** pps */
+    const pps: Array<[ActionHashB64, ParticipationProtocolMat]> = new Array();
+    Array.from(this._threads.entries()).map(([ppAh, thread]) => pps.push([ppAh, thread.pp]));
+
+    /** beads */
+    const beads: Dictionary<[BeadInfoMat, TypedBeadMat]> = {};
+    Object.entries(this._beads).map(([beadAh, [beadInfo, typed]]) => beads[beadAh] = materializedTypedBead(beadInfo, typed));
+
+    /** Package */
+    let perspMat: ThreadsPerspectiveMat = {
+      allAppletIds: this._allAppletIds,
+      allSubjects: Array.from(allSubjects.entries()),
+      appletSubjectTypes: this._appletSubjectTypes,
+      allSemanticTopics: this._allSemanticTopics,
+      pps,
+      beads,
+      emojiReactions: this._emojiReactions,
+    };
+    //console.log("exportPerspective()", perspMat);
+    return JSON.stringify(perspMat, null, 2);
+  }
+
+
+  /** */
+  importPerspective(json: string) {
+    const perspective = JSON.parse(json);
   }
 
 

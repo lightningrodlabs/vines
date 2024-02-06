@@ -570,6 +570,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  downloadTextFile(filename: string, content: string): void {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+
+  /** */
   render() {
     console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
 
@@ -751,6 +763,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 design="Transparent" icon="action-settings" tooltip="Edit profile"
                                 @click=${() => this.profileDialogElem.show()}
                     ></ui5-button>
+                    <ui5-button style="margin-top:10px;"
+                                design="Transparent" icon="synchronize" tooltip="Export"
+                                @click=${() => {
+                                  const content = this._dvm.threadsZvm.exportPerspective();
+                                    this.downloadTextFile("dump.json", content);
+                                }}></ui5-button>
                         <!--
                     <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="documents" tooltip="Refresh"

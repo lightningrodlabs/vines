@@ -1,7 +1,7 @@
 import {
   ActionHash,
   ActionHashB64,
-  AgentPubKeyB64, DnaHashB64,
+  AgentPubKeyB64, AnyLinkableHash, decodeHashFromBase64, DnaHash, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
   HoloHashB64,
@@ -14,7 +14,7 @@ import {
   EntryBead,
   GlobalLastProbeLog,
   ParticipationProtocol,
-  Subject, TextBead, WeaveNotification,
+  Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
 
 
@@ -33,6 +33,15 @@ export interface BeadInfo {
   bead: Bead,
   //name: string,
 }
+
+export interface BeadInfoMat {
+  creationTime: Timestamp,
+  author: AgentPubKeyB64,
+  beadType: string, // ThreadsEntryType
+  bead: BeadMat,
+  //name: string,
+}
+
 
 export interface BeadLinkMaterialized {
   creationTime: Timestamp,
@@ -142,3 +151,157 @@ export function materializeParticipationProtocol(pp: ParticipationProtocol): Par
 //   obj[tt] = null;
 //   return obj as SubjectType;
 // }
+
+
+/** -- Subject -- */
+
+export interface SubjectMat {
+  hash: AnyLinkableHashB64,
+  typeName: string,
+  dnaHash: DnaHashB64
+  appletId: string,
+}
+export function materializeSubject(subject: Subject): SubjectMat {
+  return {
+    hash: encodeHashToBase64(subject.hash),
+    typeName: subject.typeName,
+    dnaHash: encodeHashToBase64(subject.dnaHash),
+    appletId: subject.appletId,
+  }
+}
+export function dematerializeSubject(subject: SubjectMat): Subject {
+  return {
+    hash: decodeHashFromBase64(subject.hash),
+    typeName: subject.typeName,
+    dnaHash: decodeHashFromBase64(subject.dnaHash),
+    appletId: subject.appletId,
+  }
+}
+
+
+/** -- Bead -- */
+export interface BeadMat {
+  ppAh: ActionHashB64,
+  prevKnownBeadAh?: ActionHashB64,
+}
+export function materializeBead(bead: Bead): BeadMat {
+  return {
+    ppAh: encodeHashToBase64(bead.ppAh),
+    prevKnownBeadAh: bead.prevKnownBeadAh? encodeHashToBase64(bead.prevKnownBeadAh) : undefined,
+  }
+}
+export function dematerializeBead(bead: BeadMat): Bead {
+  return {
+    ppAh: decodeHashFromBase64(bead.ppAh),
+    prevKnownBeadAh: bead.prevKnownBeadAh? decodeHashFromBase64(bead.prevKnownBeadAh) : undefined,
+  }
+}
+
+
+/**  */
+export interface EntryBeadMat {
+  bead: BeadMat,
+  sourceEh: EntryHashB64,
+  sourceType: string,
+  sourceRole: string,
+  sourceZome: string,
+}
+export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
+  return {
+    bead: materializeBead(bead.bead),
+    sourceEh: encodeHashToBase64(bead.sourceEh),
+    sourceType: bead.sourceType,
+    sourceRole: bead.sourceRole,
+    sourceZome: bead.sourceZome,
+  }
+}
+export function dematerializeEntryBead(bead: EntryBeadMat): EntryBead {
+  return {
+    bead: dematerializeBead(bead.bead),
+    sourceEh: decodeHashFromBase64(bead.sourceEh),
+    sourceType: bead.sourceType,
+    sourceRole: bead.sourceRole,
+    sourceZome: bead.sourceZome,
+  }
+}
+
+
+/**  */
+export interface TextBeadMat {
+  bead: BeadMat,
+  value: string,
+}
+export function materializeTextBead(bead: TextBead): TextBeadMat {
+  return {
+    bead: materializeBead(bead.bead),
+    value: bead.value,
+  }
+}
+export function dematerializeTextBead(bead: TextBeadMat): TextBead {
+  return {
+    bead: dematerializeBead(bead.bead),
+    value: bead.value,
+  }
+}
+
+
+/**  */
+export interface AnyBeadMat {
+  bead: BeadMat,
+  value: string,
+  typeInfo: string,
+}
+export function materializeAnyBead(bead: AnyBead): AnyBeadMat {
+  return {
+    bead: materializeBead(bead.bead),
+    value: bead.value,
+    typeInfo: bead.typeInfo,
+  }
+}
+export function dematerializeAnyBead(bead: AnyBeadMat): AnyBead {
+  return {
+    bead: dematerializeBead(bead.bead),
+    value: bead.value,
+    typeInfo: bead.typeInfo,
+  }
+}
+
+
+export type TypedBeadMat = EntryBeadMat | AnyBeadMat | TextBeadMat;
+
+
+/** */
+export function materializedTypedBead(beadInfo: BeadInfo, typed: TypedBead): [BeadInfoMat, TypedBeadMat] {
+  let typedMat: TypedBeadMat;
+  switch(beadInfo.beadType) {
+    case ThreadsEntryType.TextBead: typedMat = materializeTextBead(typed as TextBead); break;
+    case ThreadsEntryType.AnyBead: typedMat = materializeAnyBead(typed as AnyBead); break;
+    case ThreadsEntryType.EntryBead: typedMat = materializeEntryBead(typed as EntryBead); break;
+    default: throw Error("Unknown bead type: " + beadInfo.beadType); break;
+  }
+  let beadInfoMat: BeadInfoMat = beadInfo as unknown as BeadInfoMat; // HACK
+  beadInfoMat.bead = materializeBead(beadInfo.bead);
+  return [beadInfoMat, typedMat];
+}
+
+
+/** */
+export interface ThreadsPerspectiveMat {
+  /** */
+  allAppletIds: EntryHashB64[],
+  /** Store of all Subjects: eh -> Subject */
+  allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>, //Map<AnyLinkableHashB64, SubjectMat>,
+  /** AppletId -> PathEntryHash -> subjectType */
+  appletSubjectTypes: Dictionary<Dictionary<string>>,
+  /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
+  allSemanticTopics: Dictionary<[string, boolean]>,
+
+  /** ppAh -> ppMat */
+  pps: Array<[ActionHashB64, ParticipationProtocolMat]>, // Map
+  /** beadAh -> TextMessageInfo */
+  beads: Dictionary<[BeadInfoMat, TypedBeadMat]>,
+
+  /** bead_ah -> [agent, emoji] */
+  emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
+
+}
