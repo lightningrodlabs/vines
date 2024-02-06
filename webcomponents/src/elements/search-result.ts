@@ -48,7 +48,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<search-result-panel>.render()", this.search);
 
-    const beadAhs = this._dvm.threadsZvm.searchTextMessages({keyword: this.search});
+    const beadAhs = this._dvm.threadsZvm.searchTextMessages({keywords: [this.search], canSearchHidden: false});
 
     const matches = beadAhs.map(([beadAh, _info, _text]) => {
       //const beadPair = this.threadsPerspective.beads[beadAh];

@@ -58,7 +58,7 @@ export interface ThreadsPerspective {
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: eh -> Subject */
   allSubjects: Map<AnyLinkableHashB64, Subject>,
-  /** Store of all SemTopic: eh -> Topic Title */
+  /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
   allSemanticTopics: Dictionary<[string, boolean]>,
   ///** Store of all PPmat: ppAh -> PP */
   //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,

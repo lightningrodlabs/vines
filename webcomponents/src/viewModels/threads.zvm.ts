@@ -32,23 +32,10 @@ import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {encode} from "@msgpack/msgpack";
 import {encodeHrl} from "../utils";
+import {generateSearchTest, SearchParameters} from "../search";
 
 
-
-/** */
-export interface SearchParameters {
-  keyword?: string,
-  author?: AgentPubKeyB64,
-  mentionsAgentByName?: string,
-  threadOrApplet?: AnyLinkableHashB64,
-  beforeTs?: Timestamp,
-  afterTs?: Timestamp,
-  canProbe?: boolean,
-  // entryType: string,
-  // beadType: string,
-  //starredOnly: boolean,
-}
-
+generateSearchTest();
 
 /**
  *
@@ -314,10 +301,17 @@ export class ThreadsZvm extends ZomeViewModel {
     if (parameters.afterTs) {
       matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.creationTime >= parameters.afterTs);
     }
-    /** Filter by keyword */
-    if (parameters.keyword) {
-      const keywordLC = parameters.keyword.toLowerCase();
-      matchingTextBeads.filter(([_beadAh, beadPair]) => (beadPair[1] as TextMessage).value.toLowerCase().includes(keywordLC))
+    /** Filter by keywords OR */
+    if (parameters.keywords) {
+        const keywordsLC = parameters.keywords.map((word) => word.toLowerCase());
+        matchingTextBeads.filter(([_beadAh, beadPair]) => {
+          const msg = (beadPair[1] as TextMessage).value.toLowerCase();
+          for (const keyword of keywordsLC) {
+            if (msg.includes(keyword)) {
+              return true;
+            }
+          }
+        })
     }
 
     /** DONE */
