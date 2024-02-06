@@ -78,6 +78,7 @@ export class ThreadsZvm extends ZomeViewModel {
       allSemanticTopics: this._allSemanticTopics,
       //allParticipationProtocols: this._allParticipationProtocols,
       threadsPerSubject: this._threadsPerSubject,
+      threadsByName: this._threadsByName,
       threads: this._threads,
       beads: this._beads,
       appletSubjectTypes: this._appletSubjectTypes,
@@ -109,6 +110,8 @@ export class ThreadsZvm extends ZomeViewModel {
   private _beads: Dictionary<[BeadInfo, TypedBead]> = {};
   /** lh -> ppAhs */
   private _threadsPerSubject: Dictionary<ActionHashB64[]> = {};
+  /** Name -> ppAh */
+  private _threadsByName: Dictionary<ActionHashB64> = {};
   /** ppAh -> Thread */
   private _threads: Map<ActionHashB64, Thread> = new Map();
 
@@ -290,9 +293,17 @@ export class ThreadsZvm extends ZomeViewModel {
       .filter(([_beadAh, beadPair]) => beadPair[0].beadType == ThreadsEntryType.TextMessage)
       .map(([beadAh, beadPair]) => [beadAh, beadPair[0], (beadPair[1] as TextMessage).value.toLowerCase()]);
 
-    /** filter threadOrApplet */
-    if (parameters.threadOrApplet) {
-      const ppAh = parameters.threadOrApplet; // FIXME check hash if its DnaHash or ActionHash
+    /** filter applet */
+    if (parameters.appletByName) {
+      // TODO
+    }
+    /** filter thread */
+    if (parameters.threadByName) {
+      /** Bail if thread does not exist */
+      if (!this._threadsByName[parameters.threadByName]) {
+        return [];
+      }
+      const ppAh = this._threadsByName[parameters.threadByName]
       matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => encodeHashToBase64(beadInfo.bead.forProtocolAh) == ppAh);
     }
     /** filter author */
@@ -344,8 +355,9 @@ export class ThreadsZvm extends ZomeViewModel {
     }
 
     /** Full probe thread if possible */
-    if (parameters.threadOrApplet) {
-      await this.probeAllBeads(parameters.threadOrApplet)
+    if (parameters.threadByName && this._threadsByName[parameters.threadByName]) {
+      const ppAh = this._threadsByName[parameters.threadByName];
+      await this.probeAllBeads(ppAh)
       result = this.searchTextMessages(parameters);
     } else {
       // TODO: progressive timeframe search
@@ -1133,11 +1145,14 @@ export class ThreadsZvm extends ZomeViewModel {
     }
 
     let ppMat = materializeParticipationProtocol(pp);
-    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime);
+    const threadName = this.threadName(ppMat);
+    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, threadName);
     thread.setIsHidden(isHidden);
     console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subjectHash}"| creationTime: "`, creationTime, isHidden);
     this._threads.set(ppAh, thread);
-
+    /** threadsByName */
+    this._threadsByName[threadName] = ppAh;
+    /** threadsPerSubject */
     if (!this._threadsPerSubject[ppMat.subjectHash]) {
       this._threadsPerSubject[ppMat.subjectHash] = [];
     }
@@ -1146,6 +1161,7 @@ export class ThreadsZvm extends ZomeViewModel {
       this._newThreads.push(ppAh);
     }
     //console.log("storePp()", ppMat.subjectHash, ppAh)
+    /** Done */
     if (!preventNotify) {
       this.notifySubscribers();
     }
@@ -1281,7 +1297,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Misc. -- */
 
   /** */
-  threadName(pp: ParticipationProtocolMat): string {
+  private threadName(pp: ParticipationProtocolMat): string {
     let threadTitle;
     if (pp.subjectType == "SemanticTopic") {
       const semTopic = this._allSemanticTopics[pp.subjectHash];

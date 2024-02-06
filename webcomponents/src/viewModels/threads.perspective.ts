@@ -66,6 +66,8 @@ export interface ThreadsPerspective {
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** ppAh -> Thread */
   threads: Map<ActionHashB64, Thread>,
+  /** Name  -> ppAh */
+  threadsByName: Dictionary<ActionHashB64>,
   /** beadAh -> TextMessageInfo */
   beads: Dictionary<[BeadInfo, TypedBead]>,
   /** bead_ah -> [agent, emoji] */

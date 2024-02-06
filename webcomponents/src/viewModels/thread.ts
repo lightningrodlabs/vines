@@ -54,7 +54,7 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp) {
+  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, public readonly name: string) {
     console.log("New Thread() dnaOriginTime", dnaOriginTime);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;

@@ -11,12 +11,11 @@ import {
     WeaveNotification
 } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
-import {WeServices} from "@lightningrodlabs/we-applet";
 import {BeadInfo, TypedBead} from "./viewModels/threads.perspective";
 import {stringifyHrl} from "@ddd-qc/we-utils";
 import {decodeHrl} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
-import {WePerspective, wePerspectiveContext} from "./contexts";
+import {WePerspective} from "./contexts";
 
 
 /** */
@@ -57,7 +56,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             const typedBead = beadPair[1];
             const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.forProtocolAh));
             if (maybeThread) {
-                title = "Mention in channel " + threadsZvm.threadName(maybeThread.pp);
+                title = "Mention in channel " + maybeThread.name;
             }
             content = determineBeadName(beadInfo, typedBead, filesDvm, wePerspective);
         }
@@ -71,7 +70,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             const typedBead = beadPair[1];
             const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.forProtocolAh));
             if (maybeThread) {
-                title = "Reply in channel " + threadsZvm.threadName(maybeThread.pp);
+                title = "Reply in channel " + maybeThread.name;
             }
             content = determineBeadName(beadInfo, typedBead, filesDvm, wePerspective);
         }
@@ -84,7 +83,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             // const subjectHash = maybeThread.pp.subjectHash;
             // const subject = this.getSubject(subjectHash);
             // title = "New thread about a " + subject.typeName;
-            title = "New thread: " + threadsZvm.threadName(maybeThread.pp);
+            title = "New thread: " + maybeThread.name;
             content = "Rules: " + maybeThread.pp.rules;
         }
     }

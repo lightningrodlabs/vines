@@ -584,7 +584,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         let topic = "Reply";
          if (maybeSemanticTopicThread) {
            const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-           threadTitle = this._dvm.threadsZvm.threadName(thread.pp);
+           threadTitle = thread.name;
            topic = semTopic;
          } else {
            threadTitle = `Thread about TextMessage `;
@@ -783,7 +783,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  //searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                              }}
                              @input=${(e) => {
-                                 console.log("<search-field>@input", e.keyCode, e);
+                                 //console.log("<search-field>@input", e.keyCode, e);
                                  let searchElem = this.shadowRoot.getElementById("search-field") as Input;
                                  let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
                                  if (searchElem.value == "") {
@@ -795,7 +795,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                              }}
                              @keypress=${(e) => {
-                               console.log("<search-field>@change", e.keyCode, e);
+                               //console.log("<search-field>@change", e.keyCode, e);
                                //let searchElem = this.shadowRoot.getElementById("search-field") as Input;
                                let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
                                //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;      
@@ -819,10 +819,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-li>FIXME</ui5-li>
                             <hr style="color:#f4f4f4"/> -->
                             <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <ui5-li><b>from:</b> user</ui5-li>
-                            <ui5-li><b>mentions:</b> user</ui5-li>
-                            <ui5-li><b>before:</b> date</ui5-li>
-                            <ui5-li><b>after:</b> date</ui5-li>
+                            <ui5-li><b>in:</b> <i>thread name</i></ui5-li>
+                            <ui5-li><b>from:</b> <i>user</i></ui5-li>
+                            <ui5-li><b>mentions:</b> <i>user</i></ui5-li>
+                            <ui5-li><b>before:</b> <i>date</i></ui5-li>
+                            <ui5-li><b>after:</b> <i>date</i></ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>

@@ -1,5 +1,4 @@
 import {AgentPubKeyB64, encodeHashToBase64, fakeAgentPubKey, Timestamp} from "@holochain/client";
-import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
 import {ProfilesPerspective} from "@ddd-qc/profiles-dvm";
 import {emptyAgentPubKey} from "./utils";
 
@@ -9,7 +8,8 @@ export interface SearchParameters {
   keywords?: string[],
   author?: AgentPubKeyB64, // "from:"
   mentionsAgentByName?: string, //"mentions:"
-  threadOrApplet?: AnyLinkableHashB64, //"in:" "app:"
+  threadByName?: string, //"in:"
+  appletByName?: string, // "app:"
   beforeTs?: Timestamp, //"before:"
   afterTs?: Timestamp, //"after:"
 
@@ -49,7 +49,7 @@ function splitStringAtFirstColon(input: string): string[] {
 /** */
 export function parseSearchInput(input: string, profilesPerspective: ProfilesPerspective/*, threadsPerspective: ThreadsPerspective*/): SearchParameters {
   //console.log("parseSearchInput() input", input);
-  const sanitized = input.trim().replace(/[^a-zA-Z0-9:"\-,]/g, ' ');
+  const sanitized = input.trim()//.replace(/[^a-zA-Z0-9:"\-,]/g, ' ');
   const quoted = splitSpacesExcludeQuotesDetailed(sanitized);
   const words = mergeSearchKeywords(quoted);
   //const words = sanitized.split(/\s+/)
@@ -107,11 +107,13 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesPer
         }
         break;
       case "in:":
-        // const threadPurpose = subs[1]; // FIXME: handle thread purpose with whitespaces.
-        // const thread = threadsPerspective.threads.threadByPurpose(threadPurpose)
-        //if (subs.length < 4 && subs.slice(3) != "uhC") {}
+        const threadName = subs[1];
+        result.threadByName = threadName;
         break;
-      case "app:": break;
+      case "app:":
+        const appletName = subs[1];
+        result.appletByName = appletName;
+        break;
       //case "is:": break;
       //case "pinned:": break;
       default: break;
@@ -153,10 +155,10 @@ export function splitSpacesExcludeQuotesDetailed(string: string): ParsedValue[] 
 
   while ((match = groupsRegex.exec(string))) {
     if (match[2]) {
-      // Single quoted group
+      // Single-quoted group
       matches.push({ type: 'single', value: match[2] });
     } else if (match[1]) {
-      // Double quoted group
+      // Double-quoted group
       matches.push({ type: 'double', value: match[1] });
     } else {
       // No quote group present
@@ -224,7 +226,7 @@ export async function generateSearchTest() {
 
   result &&= testSeachParse("alex",  {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse("   alex \t ",  {keywords: ["alex"], canSearchHidden: false});
-  result &&= testSeachParse("£ !alex ??",  {keywords: ["alex"], canSearchHidden: false});
+  //result &&= testSeachParse("£ !alex ??",  {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('"alex"', {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('bill-y', {keywords: ["bill-y"], canSearchHidden: false});
   result &&= testSeachParse("alex billy",  {keywords: ["alex", "billy"], canSearchHidden: false});
@@ -237,6 +239,9 @@ export async function generateSearchTest() {
   result &&= testSeachParse("from:tic tac", {author: encodeHashToBase64(emptyAgentPubKey()), keywords: ["tac"], canSearchHidden: false});
   result &&= testSeachParse('from:"tic tac"', {author: persp.reversed["tic tac"], canSearchHidden: false});
   result &&= testSeachParse("mentions:alex", {mentionsAgentByName: "alex", canSearchHidden: false});
+
+  result &&= testSeachParse('in:"#General: off-topic"', {threadByName: "#General: off-topic", canSearchHidden: false});
+
 
   result &&= testSeachParse("before:2030-01-01", {beforeTs: 1893456000000000, canSearchHidden: false});
   result &&= testSeachParse("after:2020-01-01", {afterTs: 1577836800000000, canSearchHidden: false});
