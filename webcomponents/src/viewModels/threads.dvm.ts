@@ -11,7 +11,7 @@ import {
   DirectGossip, DirectGossipType, EntryBead, NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
-  TextMessage, AnyBead,
+  TextBead, AnyBead,
   THREADS_DEFAULT_ROLE_NAME, ThreadsEntryType, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
 import {AnyLinkableHashB64, TypedBead} from "./threads.perspective";
@@ -256,7 +256,7 @@ export class ThreadsDvm extends DnaViewModel {
     let [ah, _time_anchor, creation_time, tm] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
     /** Send signal to peers */
     const data = encode(tm);
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextMessage, ppAh, data]}, ppAh);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextBead, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }

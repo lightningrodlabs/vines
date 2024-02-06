@@ -20,7 +20,7 @@ import {renderAvatar} from "../render";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
-import {TextMessage, ThreadsEntryType} from "../bindings/threads.types";
+import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -224,8 +224,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
         let content = "<unknown>";
         switch(beadInfo.beadType) {
-          case ThreadsEntryType.TextMessage:
-            content = (typedBead as TextMessage).value;
+          case ThreadsEntryType.TextBead:
+            content = (typedBead as TextBead).value;
             break;
           case ThreadsEntryType.AnyBead:
             content = "<HRL>"; // FIXME

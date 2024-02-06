@@ -14,7 +14,7 @@ import {
   EntryBead,
   GlobalLastProbeLog,
   ParticipationProtocol,
-  Subject, TextMessage, WeaveNotification,
+  Subject, TextBead, WeaveNotification,
 } from "../bindings/threads.types";
 
 
@@ -23,7 +23,7 @@ import {
 export declare type AnyLinkableHashB64 = HoloHashB64;
 //export const HOLOCHAIN_EPOCH = 1640995200000000;
 
-export type TypedBead = EntryBead | AnyBead | TextMessage;
+export type TypedBead = EntryBead | AnyBead | TextBead;
 
 /** */
 export interface BeadInfo {

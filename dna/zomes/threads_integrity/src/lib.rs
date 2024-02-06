@@ -44,7 +44,7 @@ pub enum ThreadsEntry {
     #[entry_def(required_validations = 3, visibility = "public")]
     ParticipationProtocol(ParticipationProtocol),
     #[entry_def(required_validations = 3, visibility = "public")]
-    TextMessage(TextMessage),
+    TextBead(TextBead),
     #[entry_def(required_validations = 1, visibility = "private")]
     GlobalProbeLog(GlobalLastProbeLog),
     #[entry_def(required_validations = 1, visibility = "private")]

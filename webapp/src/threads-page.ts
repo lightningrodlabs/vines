@@ -105,7 +105,7 @@ import {
   NotifiableEventType,
   JumpEvent,
   BeadInfo,
-  TypedBead, ThreadsZvm, TextMessage, EntryBead, AnyBead, decodeHrl, wePerspectiveContext, WePerspective
+  TypedBead, ThreadsZvm, TextBead, EntryBead, AnyBead, decodeHrl, wePerspectiveContext, WePerspective
 } from "@threads/elements";
 
 import {
@@ -394,7 +394,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       this._lastKnownNotificationIndex += 1;
     }
-    if (this.weServices) {
+    if (this.weServices && weNotifs.length > 0) {
       this.weServices.notifyWe(weNotifs);
     }
   }
@@ -556,7 +556,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
-      this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.forProtocolAh);
+      this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.ppAh);
     }
     if (NotifiableEventType.Dm in e.detail.type) {
       // TODO
@@ -587,7 +587,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
            threadTitle = thread.name;
            topic = semTopic;
          } else {
-           threadTitle = `Thread about TextMessage `;
+           threadTitle = `Thread about Message `;
          }
 
         /** Check uploading state */

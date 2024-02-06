@@ -1,5 +1,5 @@
 import {encodeHashToBase64, ZomeName, RoleName, AppAgentClient} from "@holochain/client";
-import {ThreadsEntryType, ThreadsProxy} from "@threads/elements";
+import {TextBead, ThreadsEntryType, ThreadsProxy} from "@threads/elements";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {pascal} from "@ddd-qc/cell-proxy";
 import {devtestNames} from "../devtest";
@@ -26,7 +26,7 @@ export async function getAttachableInfo(
     const pEntryType = pascal(entryType);
 
     switch (pEntryType) {
-        case ThreadsEntryType.TextMessage: {
+        case ThreadsEntryType.TextBead: {
             console.log("Threads/we-applet: text_message info", hrlc);
             const cellProxy = await asCellProxy(
                 appletClient,

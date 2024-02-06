@@ -50,7 +50,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
     let Some(prev_log) = hashmap.get(&update.original_action_address)
       else {return zome_error!("Should have a Create for each Update Action")};
     let updated_log: ThreadLastProbeLog = get_typed_from_record(record)?;
-    if updated_log.time > prev_log.time {
+    if updated_log.ts > prev_log.ts {
       let _prev = hashmap.insert(update.original_action_address.clone(), updated_log);
     }
   }

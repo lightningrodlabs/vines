@@ -21,7 +21,7 @@ fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
   /// Create First log if none was created
   if tuples.is_empty() {
     let first_log = GlobalLastProbeLog {
-      time: sys_time()?,
+      ts: sys_time()?,
       maybe_last_known_pp_ah: None,
     };
     let ah = create_entry(ThreadsEntry::GlobalProbeLog(first_log.clone()))?;
@@ -54,13 +54,13 @@ pub fn commit_global_log(maybe_last_known_pp_ah: Option<ActionHash>) -> ExternRe
   let (ah, _) = search_global_log()?;
   /// Create latest log
   let gql = GlobalLastProbeLog {
-    time: sys_time()?,
+    ts: sys_time()?,
     maybe_last_known_pp_ah,
   };
   /// Update the entry
   let _ah = update_entry(ah, ThreadsEntry::GlobalProbeLog(gql.clone()))?;
   /// Done
-  Ok(gql.time)
+  Ok(gql.ts)
 }
 
 

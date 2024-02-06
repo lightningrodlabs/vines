@@ -169,12 +169,12 @@ export interface GetLatestBeadsInput {
 
 /**  */
 export interface AddTextWithMentionsInput {
-  texto: TextMessage
+  texto: TextBead
   mentionees: AgentPubKey[]
 }
 
 export interface AddTextAndMentionsAtInput {
-  texto: TextMessage
+  texto: TextBead
   creationTime: Timestamp
   mentionees: AgentPubKey[]
 }
@@ -187,12 +187,12 @@ export interface BeadLink {
 
 /** DEBUG ONLY */
 export interface AddTextMessageAtInput {
-  texto: TextMessage
+  texto: TextBead
   creationTime: Timestamp
 }
 
 export interface AddManyTextMessageAtInput {
-  texto: TextMessage
+  texto: TextBead
   intervalUs: number
   count: number
 }
@@ -305,21 +305,21 @@ export interface GetProtocolsInput {
 
 /**  */
 export interface Bead {
-  forProtocolAh: ActionHash
-  maybeReplyOfAh?: ActionHash
+  ppAh: ActionHash
+  prevKnownBeadAh?: ActionHash
 }
 
 /**  */
 export interface EntryBead {
   bead: Bead
-  fromRole: string
-  fromZome: string
-  subType: string
-  eh: EntryHash
+  sourceEh: EntryHash
+  sourceType: string
+  sourceRole: string
+  sourceZome: string
 }
 
 /**  */
-export interface TextMessage {
+export interface TextBead {
   bead: Bead
   value: string
 }
@@ -345,12 +345,12 @@ export interface ParticipationProtocol {
 }
 
 export interface GlobalLastProbeLog {
-  time: Timestamp
+  ts: Timestamp
   maybeLastKnownPpAh?: ActionHash
 }
 
 export interface ThreadLastProbeLog {
-  time: Timestamp
+  ts: Timestamp
   ppAh: ActionHash
   maybeLastKnownBeadAh?: ActionHash
 }
@@ -388,7 +388,7 @@ export enum ThreadsEntryType {
 	EntryBead = 'EntryBead',
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
-	TextMessage = 'TextMessage',
+	TextBead = 'TextBead',
 	GlobalProbeLog = 'GlobalProbeLog',
 	ThreadProbeLog = 'ThreadProbeLog',
 }
@@ -396,11 +396,11 @@ export type ThreadsEntryVariantAnyBead = {AnyBead: AnyBead}
 export type ThreadsEntryVariantEntryBead = {EntryBead: EntryBead}
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
-export type ThreadsEntryVariantTextMessage = {TextMessage: TextMessage}
+export type ThreadsEntryVariantTextBead = {TextBead: TextBead}
 export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
 export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
 export type ThreadsEntry = 
- | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextMessage | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
+ | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextBead | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
 /**
  * -------------------------------------------------------------------------------------------------

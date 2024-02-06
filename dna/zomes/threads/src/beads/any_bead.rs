@@ -15,7 +15,7 @@ pub fn add_any_bead(anyBead: AnyBead) -> ExternResult<(ActionHash, String, Times
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     /// Reply
     let mut maybe_notif = None;
-    if let Some(reply_ah) = anyBead.bead.maybe_reply_of_ah.clone() {
+    if let Some(reply_ah) = anyBead.bead.prev_known_bead_ah.clone() {
         let reply_author = get_author(&reply_ah.clone().into())?;
         let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
         if let Some((_link_ah, notif)) = maybe {

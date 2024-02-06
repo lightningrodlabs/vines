@@ -38,10 +38,10 @@ pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, Ent
     let bead_type = format!("{}::{}", entry_def.zome_index, entry_def.entry_index.0);
     let entryBead = EntryBead {
         bead: input.bead.clone(),
-        from_role: input.role_name,
-        from_zome: input.zome_name,
-        eh: input.eh,
-        sub_type: bead_type.clone(),
+        source_role: input.role_name,
+        source_zome: input.zome_name,
+        source_eh: input.eh,
+        source_type: bead_type.clone(),
 
     };
     let ah = create_entry(ThreadsEntry::EntryBead(entryBead.clone()))?;
@@ -49,7 +49,7 @@ pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, Ent
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     /// Reply
     let mut maybe_notif = None;
-    if let Some(reply_ah) = input.bead.maybe_reply_of_ah.clone() {
+    if let Some(reply_ah) = input.bead.prev_known_bead_ah.clone() {
         let reply_author = get_author(&reply_ah.clone().into())?;
         let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
         if let Some((_link_ah, notif)) = maybe {

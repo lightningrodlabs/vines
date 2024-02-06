@@ -6,7 +6,7 @@ import {
     AnyBead,
     EntryBead,
     NotifiableEventType,
-    TextMessage,
+  TextBead,
     ThreadsEntryType,
     WeaveNotification
 } from "./bindings/threads.types";
@@ -54,7 +54,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
-            const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.forProtocolAh));
+            const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.ppAh));
             if (maybeThread) {
                 title = "Mention in channel " + maybeThread.name;
             }
@@ -68,7 +68,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
-            const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.forProtocolAh));
+            const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.ppAh));
             if (maybeThread) {
                 title = "Reply in channel " + maybeThread.name;
             }
@@ -98,12 +98,12 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
 /** */
 export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBead, filesDvm: FilesDvm, wePerspective: WePerspective): string {
     switch (beadInfo.beadType) {
-      /** TextMessage: text content */
-      case ThreadsEntryType.TextMessage: return (typedBead as TextMessage).value; break;
+      /** TextBead: text content */
+      case ThreadsEntryType.TextBead: return (typedBead as TextBead).value; break;
       /** EntryBead: Filename */
       case ThreadsEntryType.EntryBead:
             const fileBead = typedBead as EntryBead;
-            const tuple = filesDvm.deliveryZvm.perspective.publicParcels[encodeHashToBase64(fileBead.eh)];
+            const tuple = filesDvm.deliveryZvm.perspective.publicParcels[encodeHashToBase64(fileBead.sourceEh)];
             if (!tuple) {
                 return "<file>";
             }

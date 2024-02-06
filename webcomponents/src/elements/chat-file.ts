@@ -43,7 +43,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const entryBead = beadInfoPair[1] as EntryBead;
-    const manifestEh = encodeHashToBase64(entryBead.eh);
+    const manifestEh = encodeHashToBase64(entryBead.sourceEh);
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
     if (!fileTuple) {
       /** auto refresh since we can't observe filesDvm */
@@ -63,7 +63,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBead.eh))}>
+                  @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBead.sourceEh))}>
             ${fileDesc.name}
           </ui5-li>
         </ui5-list>`;
@@ -87,7 +87,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       }
       if (maybeCachedData) {
         item = html`<img class="thumb" src=${"data:image/png;base64," + maybeCachedData}
-                         @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBead.eh))}>
+                         @click=${(e) => this._filesDvm.downloadFile(encodeHashToBase64(entryBead.sourceEh))}>
         `;
       }
     }

@@ -5,7 +5,7 @@ import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {truncate} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar} from "../render";
-import {TextMessage, ThreadsEntryType} from "../bindings/threads.types";
+import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -54,8 +54,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subjectHash);
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subjectHash);
       let subjectName = "";
-      if (subjectBead.beadType == ThreadsEntryType.TextMessage) {
-        subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subjectHash][1] as TextMessage).value, 60, true);
+      if (subjectBead.beadType == ThreadsEntryType.TextBead) {
+        subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subjectHash][1] as TextBead).value, 60, true);
       }
       if (subjectBead.beadType == ThreadsEntryType.EntryBead) {
         subjectName = "File";
@@ -68,7 +68,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
           title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
       subText = html`This is the start of thread about chat message 
-                      <span style="color:blue; cursor:pointer" @click=${(e) => this.dispatchEvent(new CustomEvent('selected', {detail: encodeHashToBase64(subjectBead.bead.forProtocolAh), bubbles: true, composed: true}))}>
+                      <span style="color:blue; cursor:pointer" @click=${(e) => this.dispatchEvent(new CustomEvent('selected', {detail: encodeHashToBase64(subjectBead.bead.ppAh), bubbles: true, composed: true}))}>
                         ${subjectName}
                       </span>`;
     }

@@ -4,8 +4,8 @@ use hdi::prelude::*;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bead {
-    pub for_protocol_ah: ActionHash,
-    pub maybe_reply_of_ah: Option<ActionHash>,
+    pub pp_ah: ActionHash,
+    pub prev_known_bead_ah: Option<ActionHash>,
 }
 
 ///
@@ -14,17 +14,17 @@ pub struct Bead {
 #[serde(rename_all = "camelCase")]
 pub struct EntryBead {
     pub bead: Bead,
-    pub from_role: String,
-    pub from_zome: String,
-    pub sub_type: String,
-    pub eh: EntryHash,
+    pub source_eh: EntryHash,
+    pub source_type: String,
+    pub source_role: String,
+    pub source_zome: String,
 }
 
 ///
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct TextMessage {
+pub struct TextBead {
     pub bead: Bead,
     pub value: String,
 }
@@ -67,7 +67,7 @@ pub struct ParticipationProtocol {
 #[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct GlobalLastProbeLog {
-    pub time: Timestamp,
+    pub ts: Timestamp,
     pub maybe_last_known_pp_ah: Option<ActionHash>,
 }
 
@@ -76,9 +76,9 @@ pub struct GlobalLastProbeLog {
 #[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ThreadLastProbeLog {
-    pub time: Timestamp,
-    pp_ah: ActionHash,
-    maybe_last_known_bead_ah: Option<ActionHash>,
+    pub ts: Timestamp,
+    pub pp_ah: ActionHash,
+    pub maybe_last_known_bead_ah: Option<ActionHash>,
 }
 
 

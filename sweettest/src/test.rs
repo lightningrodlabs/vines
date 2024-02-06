@@ -139,7 +139,7 @@ pub async fn test_handle() {
 
    let msg = "message".to_string();
    let input = AddTextMessageAtInput {
-      texto: TextMessage { value: msg.clone(), bead },
+      texto: TextBead { value: msg.clone(), bead },
       time_us: Timestamp::from_micros(42),
    };
    let ah1: ActionHash = conductor.call(&cell1.zome("zThreads"), "add_text_message_at", input).await;

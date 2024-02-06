@@ -9,7 +9,7 @@ import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
 import {renderAvatar} from "../render";
-import {TextMessage, ThreadsEntryType} from "../bindings/threads.types";
+import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 
 /**
  * @element
@@ -23,7 +23,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  /** Hash of TextMessage to display */
+  /** Hash of TextBead to display */
   @property() hash: ActionHashB64 = ''
 
 
@@ -114,7 +114,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
-      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextMessage", subjectName, viewType: viewType? viewType : "side"},
+      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextBead", subjectName, viewType: viewType? viewType : "side"},
       bubbles: true,
       composed: true,
     }));
@@ -150,8 +150,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     /** Determine the comment button to display depending on current comments for this message */
     let subjectName = "";
     let item = html``;
-    if (beadInfo.beadType == ThreadsEntryType.TextMessage) {
-      subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextMessage).value, 60, true);
+    if (beadInfo.beadType == ThreadsEntryType.TextBead) {
+      subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextBead).value, 60, true);
       item = html`<chat-message .hash=${this.hash}></chat-message>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
