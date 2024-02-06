@@ -1,6 +1,7 @@
 import {AgentPubKeyB64, encodeHashToBase64, fakeAgentPubKey, Timestamp} from "@holochain/client";
 import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
 import {ProfilesPerspective} from "@ddd-qc/profiles-dvm";
+import {emptyAgentPubKey} from "./utils";
 
 
 /** */
@@ -26,7 +27,7 @@ function hasQuotes(input: string): boolean {
 
 
 /** */
-function parseSearchInput(input: string, profilesPerspective: ProfilesPerspective/*, threadsPerspective: ThreadsPerspective*/): SearchParameters {
+export function parseSearchInput(input: string, profilesPerspective: ProfilesPerspective/*, threadsPerspective: ThreadsPerspective*/): SearchParameters {
   //console.log("parseSearchInput() input", input);
   const sanitized = input.trim().replace(/[^a-zA-Z0-9:"\-]/g, ' ');
   const words = sanitized.split(/\s+/)
@@ -60,24 +61,26 @@ function parseSearchInput(input: string, profilesPerspective: ProfilesPerspectiv
     switch (subs[0]) {
       case "from":
         const author = subs[1];
-        result.author = profilesPerspective.reversed[author];
+        if (author && author != "") {
+          result.author = profilesPerspective.reversed[author] ? profilesPerspective.reversed[author] : encodeHashToBase64(emptyAgentPubKey());
+        }
         break;
       case "mentions":
         const mention = subs[1];
-        result.mentionsAgentByName = profilesPerspective.reversed[mention];
+        result.mentionsAgentByName = mention;
         break;
       case "before":
         const before = subs[1];
         const beforeTs = Date.parse(before);
         if (!isNaN(beforeTs)) {
-          result.beforeTs = beforeTs; // * 1000 ? FIXME
+          result.beforeTs = beforeTs * 1000;
         }
         break;
       case "after":
         const after = subs[1];
         const afterTs = Date.parse(after);
         if (!isNaN(afterTs)) {
-          result.afterTs = afterTs; // * 1000 ? FIXME
+          result.afterTs = afterTs * 1000;
         }
         break;
       // case "in":
@@ -130,13 +133,14 @@ export async function generateSearchTest() {
   result &&= testSeachParse("from: alex", {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('alex billy', {keywords: ["alex", "billy"], canSearchHidden: false});
   result &&= testSeachParse("from:alex", {author: persp.reversed["alex"], canSearchHidden: false});
-  result &&= testSeachParse("mentions:alex", {mentionsAgentByName: persp.reversed["alex"], canSearchHidden: false});
+  result &&= testSeachParse("from:jack", {author: encodeHashToBase64(emptyAgentPubKey()), canSearchHidden: false});
+  result &&= testSeachParse("mentions:alex", {mentionsAgentByName: "alex", canSearchHidden: false});
 
-  result &&= testSeachParse("before:2030-01-01", {beforeTs: 1893456000000, canSearchHidden: false});
-  result &&= testSeachParse("after:2020-01-01", {afterTs: 1577836800000, canSearchHidden: false});
+  result &&= testSeachParse("before:2030-01-01", {beforeTs: 1893456000000000, canSearchHidden: false});
+  result &&= testSeachParse("after:2020-01-01", {afterTs: 1577836800000000, canSearchHidden: false});
 
   result &&= testSeachParse("before:2030-01-01 after:2020-01-01 golden from:camille mentions:bill-y lady",
-    {beforeTs: 1893456000000, afterTs: 1577836800000, keywords: ["golden", "lady"], mentionsAgentByName: persp.reversed["bill-y"],  author: persp.reversed["camille"], canSearchHidden: false});
+    {beforeTs: 1893456000000000, afterTs: 1577836800000000, keywords: ["golden", "lady"], mentionsAgentByName: "bill-y",  author: persp.reversed["camille"], canSearchHidden: false});
 
   console.log("generateSearchTest() succeeded", result);
 }

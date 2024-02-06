@@ -1,4 +1,4 @@
-import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, dhtLocationFrom32, encodeHashToBase64} from "@holochain/client";
 import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
 import {FileType} from "@ddd-qc/files";
 import {Hrl} from "@lightningrodlabs/we-applet";
@@ -101,4 +101,17 @@ export function decodeHrl(encHrl: string): Hrl {
   const hrlPair: [string, string] = JSON.parse(encHrl);
   const hrl: Hrl = [decodeHashFromBase64(hrlPair[0]), decodeHashFromBase64(hrlPair[1])];
   return hrl;
+}
+
+
+
+function emptyValidHash(prefix) {
+  let core = new Uint8Array(32).fill(0);
+  const checksum = dhtLocationFrom32(core);
+  return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]);
+}
+
+
+export function emptyAgentPubKey() {
+  return emptyValidHash([0x84, 0x20, 0x24]);
 }

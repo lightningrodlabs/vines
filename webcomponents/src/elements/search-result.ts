@@ -6,6 +6,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {JumpEvent} from "./notification-list";
+import {parseSearchInput, SearchParameters} from "../search";
 
 
 /**
@@ -24,7 +25,10 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  @property() search: string = ''
+  //@property() search: string = ''
+
+  @property({type: Object})
+  parameters: SearchParameters
 
 
   /** -- Methods -- */
@@ -46,9 +50,10 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<search-result-panel>.render()", this.search);
+    console.log("<search-result-panel>.render()", this.parameters);
 
-    const beadAhs = this._dvm.threadsZvm.searchTextMessages({keywords: [this.search], canSearchHidden: false});
+    //const searchParams = parseSearchInput(this.search, this.prof)
+    const beadAhs = this._dvm.threadsZvm.searchTextMessages(this.parameters);
 
     const matches = beadAhs.map(([beadAh, _info, _text]) => {
       //const beadPair = this.threadsPerspective.beads[beadAh];

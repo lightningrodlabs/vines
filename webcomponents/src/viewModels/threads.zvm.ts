@@ -266,6 +266,17 @@ export class ThreadsZvm extends ZomeViewModel {
   //   .map(([ppAh, thread]) => thread);
 
 
+
+  // beadText(info: BeadInfo, typed: TypedBead): string {
+  //   switch (info.beadType) {
+  //     case ThreadsEntryType.TextMessage: return (typed as TextMessage).value; break;
+  //     case ThreadsEntryType.EntryBead: return (typed as EntryBead); break;
+  //     case ThreadsEntryType.AnyBead: return (typed as AnyBead).value; break;
+  //   }
+  //   throw Error("Unknown beadType", info.beadType);
+  // }
+
+
   /** Return matching beadAhs */
   searchTextMessages(parameters: SearchParameters): [ActionHashB64, BeadInfo, string][] {
     console.log("searchTextMessages()", parameters);
@@ -277,42 +288,44 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Filter bead type */
     let matchingTextBeads: [ActionHashB64, BeadInfo, string][] = Object.entries(this._beads)
       .filter(([_beadAh, beadPair]) => beadPair[0].beadType == ThreadsEntryType.TextMessage)
-      .map(([beadAh, beadPair]) => [beadAh, beadPair[0], (beadPair[1] as TextMessage).value]);
+      .map(([beadAh, beadPair]) => [beadAh, beadPair[0], (beadPair[1] as TextMessage).value.toLowerCase()]);
 
     /** filter threadOrApplet */
     if (parameters.threadOrApplet) {
       const ppAh = parameters.threadOrApplet; // FIXME check hash if its DnaHash or ActionHash
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => encodeHashToBase64(beadInfo.bead.forProtocolAh) == ppAh);
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => encodeHashToBase64(beadInfo.bead.forProtocolAh) == ppAh);
     }
     /** filter author */
     if (parameters.author) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.author == parameters.author) //
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.author == parameters.author) //
     }
     /** filter mention */
     if (parameters.mentionsAgentByName) {
       const mentionLC = `@${parameters.mentionsAgentByName}`.toLowerCase();
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, _beadInfo, text]) => text.toLowerCase().includes(mentionLC))
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, _beadInfo, textLC]) => textLC.includes(mentionLC))
     }
     /** filter beforeTs */
     if (parameters.beforeTs) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.creationTime <= parameters.beforeTs);
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.creationTime <= parameters.beforeTs);
     }
     /** filter afterTs */
     if (parameters.afterTs) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _tm]) => beadInfo.creationTime >= parameters.afterTs);
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.creationTime >= parameters.afterTs);
     }
     /** Filter by keywords OR */
     if (parameters.keywords) {
         const keywordsLC = parameters.keywords.map((word) => word.toLowerCase());
-        matchingTextBeads.filter(([_beadAh, beadPair]) => {
-          const msg = (beadPair[1] as TextMessage).value.toLowerCase();
-          for (const keyword of keywordsLC) {
-            if (msg.includes(keyword)) {
+        matchingTextBeads = matchingTextBeads.filter(([_beadAh, _beadPair, textLC]) => {
+          for (const keywordLC of keywordsLC) {
+            if (textLC.includes(keywordLC)) {
+              console.log("searchTextMessages() has", keywordLC, textLC);
               return true;
             }
           }
         })
     }
+
+    console.log("searchTextMessages() result", matchingTextBeads.length, matchingTextBeads);
 
     /** DONE */
     return matchingTextBeads;

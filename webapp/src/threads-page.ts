@@ -137,6 +137,7 @@ import {composeNotificationTitle, renderAvatar} from "@threads/elements/dist/ren
 import {toasty} from "@threads/elements/dist/toast";
 import {stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
+import {parseSearchInput} from "@threads/elements/dist/search";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -676,6 +677,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
+    const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
     /** Render all */
     return html`
@@ -773,6 +775,13 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               popover.showAt(shellbar);
               }}>
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
+                             @focusin=${(e) => {
+                                 //console.log("<search-field>@focusin", e);
+                                 let searchElem = this.shadowRoot.getElementById("search-field") as Input;
+                                 let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+                                 searchPopElem.showAt(searchElem, true);
+                                 //searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
+                             }}
                              @input=${(e) => {
                                  console.log("<search-field>@input", e.keyCode, e);
                                  let searchElem = this.shadowRoot.getElementById("search-field") as Input;
@@ -804,15 +813,16 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
                     <div class="popover-content">
                         <ui5-list mode="SingleSelect" separators="None">
-                            <ui5-li-groupheader class="search-group-header">${msg("message contains")}</ui5-li-groupheader>
+                            <!-- <ui5-li-groupheader class="search-group-header">${msg("message contains")}</ui5-li-groupheader>
                             <ui5-li>Channels</ui5-li>
                             <ui5-li>FIXME</ui5-li>
                             <ui5-li>FIXME</ui5-li>
-                            <hr style="color:#f4f4f4"/>
-                            <ui5-li-groupheader class="search-group-header">${msg("Subject")}</ui5-li-groupheader>
-                            <ui5-li>FIXME</ui5-li>
-                            <ui5-li>FIXME</ui5-li>
-                            <ui5-li>FIXME</ui5-li>
+                            <hr style="color:#f4f4f4"/> -->
+                            <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
+                            <ui5-li><b>from:</b> user</ui5-li>
+                            <ui5-li><b>mentions:</b> user</ui5-li>
+                            <ui5-li><b>before:</b> date</ui5-li>
+                            <ui5-li><b>after:</b> date</ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>
@@ -833,7 +843,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
                   <!-- <peer-list></peer-list> -->
                   <div id="rightSide" style="display: ${this._canShowSearchResults? "block" : "none"}">
-                      <search-result-panel .search=${searchValue} @jump=${this.onJump}></search-result-panel>                 
+                      <search-result-panel .parameters=${searchParameters} @jump=${this.onJump}></search-result-panel>                 
                   </div>
                   <anchor-tree id="debugSide"
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
