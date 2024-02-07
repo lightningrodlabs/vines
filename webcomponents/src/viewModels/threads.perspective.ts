@@ -66,7 +66,7 @@ export interface ThreadsPerspective {
   /** */
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: eh -> Subject */
-  allSubjects: Map<AnyLinkableHashB64, Subject>,
+  allSubjects: Map<AnyLinkableHashB64, SubjectMat>,
   /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
   allSemanticTopics: Dictionary<[string, boolean]>,
   ///** Store of all PPmat: ppAh -> PP */
@@ -288,13 +288,24 @@ export function materializedTypedBead(beadInfo: BeadInfo, typed: TypedBead): [Be
   beadInfoMat.bead = materializeBead(beadInfo.bead);
   return [beadInfoMat, typedMat];
 }
-
+export function dematerializedTypedBead(beadInfoMat: BeadInfoMat, typedMat: TypedBeadMat): [BeadInfo, TypedBead] {
+  let typed: TypedBead;
+  switch(beadInfoMat.beadType) {
+    case ThreadsEntryType.TextBead: typed = dematerializeTextBead(typedMat as TextBeadMat); break;
+    case ThreadsEntryType.AnyBead: typed = dematerializeAnyBead(typedMat as AnyBeadMat); break;
+    case ThreadsEntryType.EntryBead: typed = dematerializeEntryBead(typedMat as EntryBeadMat); break;
+    default: throw Error("Unknown bead type: " + beadInfoMat.beadType); break;
+  }
+  let beadInfo: BeadInfo = beadInfoMat as unknown as BeadInfo; // HACK
+  beadInfo.bead = dematerializeBead(beadInfoMat.bead);
+  return [beadInfo, typed];
+}
 
 /** */
 export interface ThreadsPerspectiveMat {
   /** */
   allAppletIds: EntryHashB64[],
-  /** Store of all Subjects: eh -> Subject */
+  /** Store of all Subjects: hash -> Subject */
   allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>, //Map<AnyLinkableHashB64, SubjectMat>,
   /** AppletId -> PathEntryHash -> subjectType */
   appletSubjectTypes: Dictionary<Dictionary<string>>,
@@ -302,7 +313,7 @@ export interface ThreadsPerspectiveMat {
   allSemanticTopics: Dictionary<[string, boolean]>,
 
   /** ppAh -> ppMat */
-  pps: Array<[ActionHashB64, ParticipationProtocolMat]>, // Map
+  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>, // Map
   /** beadAh -> TextMessageInfo */
   beads: Dictionary<[BeadInfoMat, TypedBeadMat]>,
 

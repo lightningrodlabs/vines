@@ -19,10 +19,21 @@ import {
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
-  AnyLinkableHashB64, BeadInfo, BeadInfoMat, BeadLinkMaterialized, materializedTypedBead,
-  materializeParticipationProtocol, materializeSubject,
-  ParticipationProtocolMat, SubjectMat,
-  ThreadsPerspective, ThreadsPerspectiveMat, TypedBead, TypedBeadMat,
+  AnyLinkableHashB64,
+  BeadInfo,
+  BeadInfoMat,
+  BeadLinkMaterialized,
+  dematerializeBead,
+  dematerializedTypedBead, dematerializeParticipationProtocol,
+  materializedTypedBead,
+  materializeParticipationProtocol,
+  materializeSubject,
+  ParticipationProtocolMat,
+  SubjectMat,
+  ThreadsPerspective,
+  ThreadsPerspectiveMat,
+  TypedBead,
+  TypedBeadMat,
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
@@ -99,7 +110,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   private _allAppletIds: string[] = [];
   /** ah -> Subject */
-  private _allSubjects: Map<AnyLinkableHashB64, Subject> = new Map();
+  private _allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
   /** eh -> (title, isHidden) */
   private _allSemanticTopics: Dictionary<[string, boolean]> = {};
   ///** ah -> ParticipationProtocol */
@@ -135,7 +146,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** -- Get: Return a stored element -- */
 
-  getSubject(subjectHash: AnyLinkableHashB64): Subject | undefined {
+  getSubject(subjectHash: AnyLinkableHashB64): SubjectMat | undefined {
     return this._allSubjects.get(subjectHash);
   }
 
@@ -517,10 +528,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Get all Subjects from the RootAnchor */
-  async probeAllSubjects(): Promise<Map<AnyLinkableHashB64, Subject>> {
+  async probeAllSubjects(): Promise<Map<AnyLinkableHashB64, SubjectMat>> {
     const subjects = await this.zomeProxy.getAllSubjects();
     for (const subject of subjects) {
-      this._allSubjects.set(encodeHashToBase64(subject.hash), subject);
+      const subjectMat = materializeSubject(subject);
+      this._allSubjects.set(subjectMat.hash, subjectMat);
     }
     console.log("probeAllSubjects()", this._allSubjects.size);
     this.notifySubscribers();
@@ -1156,7 +1168,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** All Subjects */
     if (!this._allSubjects.get(ppMat.subject.hash)) {
-      this._allSubjects.set(ppMat.subject.hash, pp.subject);
+      this._allSubjects.set(ppMat.subject.hash, materializeSubject(pp.subject));
     }
     //console.log("storePp()", ppMat.subjectHash, ppAh)
     /** Done */
@@ -1311,11 +1323,11 @@ export class ThreadsZvm extends ZomeViewModel {
   exportPerspective(): string {
     /** allSubjects */
     const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
-    Array.from(this._allSubjects.entries()).map(([subjectAh, subject]) => allSubjects.set(subjectAh, materializeSubject(subject)));
+    Array.from(this._allSubjects.entries()).map(([subjectAh, subject]) => allSubjects.set(subjectAh, subject));
 
     /** pps */
-    const pps: Array<[ActionHashB64, ParticipationProtocolMat]> = new Array();
-    Array.from(this._threads.entries()).map(([ppAh, thread]) => pps.push([ppAh, thread.pp]));
+    const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]> = new Array();
+    Array.from(this._threads.entries()).map(([ppAh, thread]) => pps.push([ppAh, thread.pp, thread.creationTime]));
 
     /** beads */
     const beads: Dictionary<[BeadInfoMat, TypedBeadMat]> = {};
@@ -1326,8 +1338,8 @@ export class ThreadsZvm extends ZomeViewModel {
       emojiReactions: this._emojiReactions,
       allAppletIds: this._allAppletIds,
       allSubjects: Array.from(allSubjects.entries()),
-      appletSubjectTypes: this._appletSubjectTypes,
       allSemanticTopics: this._allSemanticTopics,
+      appletSubjectTypes: this._appletSubjectTypes,
       pps,
       beads,
     };
@@ -1340,16 +1352,44 @@ export class ThreadsZvm extends ZomeViewModel {
   importPerspective(json: string, mapping?: Object) {
     const external = JSON.parse(json) as ThreadsPerspectiveMat;
 
-    this._allAppletIds = external.allAppletIds;
-    this._emojiReactions = external.emojiReactions;
-
+    /** this._allAppletIds */
+    for (const appletId of Object.values(external.allAppletIds)) {
+      this._allAppletIds.push(appletId);
+    }
+    /** this._appletSubjectTypes */
+    for (const [appletId, dict] of Object.entries(external.appletSubjectTypes)) {
+      if (!this._appletSubjectTypes[appletId]) {
+        this._appletSubjectTypes[appletId] = {};
+      }
+      for (const [pathHash, subjectType] of Object.entries(dict)) {
+        this._appletSubjectTypes[appletId][pathHash] = subjectType
+      }
+    }
+    /** this._allSemanticTopics */
     for (const [topicEh, [title, isHidden]] of Object.entries(external.allSemanticTopics)) {
       this.storeSemanticTopic(topicEh, title, isHidden, true);
     }
-
-    for (const [topicEh, [title, isHidden]] of Object.entries(external.allSemanticTopics)) {
-      this.storeSemanticTopic(topicEh, title, isHidden, true);
+    /** this._allSubjects */
+    for (const [subjectHash, subject] of Object.values(external.allSubjects)) {
+      this._allSubjects.set(subjectHash, subject)
     }
+    /** this._threads */
+    for (const [ppAh, ppMat, creationTime] of Object.values(external.pps)) {
+      this.storePp(ppAh, dematerializeParticipationProtocol(ppMat), creationTime, false, true, true);
+    }
+    /** this._beads */
+    for (const [beadAh, [beadInfo, typedBead]] of Object.entries(external.beads)) {
+      this.storeBead(beadAh, beadInfo.creationTime, beadInfo.author, dematerializedTypedBead(beadInfo, typedBead)[1], false, true);
+    }
+    /** this._emojiReactions */
+    for (const [beadAh, pairs] of Object.entries(external.emojiReactions)) {
+      if (!this._emojiReactions[beadAh]) {
+        this._emojiReactions[beadAh] = [];
+      }
+      this._emojiReactions[beadAh] = this._emojiReactions[beadAh].concat(pairs);
+    }
+    /** Done */
+    this.notifySubscribers();
   }
 
 

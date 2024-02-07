@@ -63,6 +63,7 @@ import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
+import "@ui5/webcomponents-icons/dist/download.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
@@ -73,6 +74,7 @@ import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
+import "@ui5/webcomponents-icons/dist/open-folder.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/save.js"
@@ -759,11 +761,39 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${() => this.profileDialogElem.show()}
                     ></ui5-button>
                     <ui5-button style="margin-top:10px;"
-                                design="Transparent" icon="synchronize" tooltip="Export"
+                                design="Transparent" icon="download" tooltip="Export"
                                 @click=${() => {
                                   const content = this._dvm.threadsZvm.exportPerspective();
                                     this.downloadTextFile("dump.json", content);
                                 }}></ui5-button>
+                    <ui5-button style="margin-top:10px;"
+                                design="Transparent" icon="open-folder" tooltip="Import"
+                                @click=${() => {
+                                        console.log("onImport()");
+                                        //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
+                                        var input = document.createElement('input');
+                                        input.type = 'file';
+                                        input.accept = ".json";
+                                        input.onchange = async (e:any) => {
+                                            console.log("onImport() target download file", e);
+                                            const file = e.target.files[0];
+                                            if (!file) {
+                                              console.error("No file selected");
+                                              return;
+                                            }
+                                            const reader = new FileReader();
+                                            reader.onload = (e) => {
+                                                const contents = reader.result as string;
+                                                //console.log(contents);
+                                                this._dvm.threadsZvm.importPerspective(contents);
+                                            };
+                                            // Read the file as text
+                                            reader.readAsText(file);
+                                        }
+                                        input.click();
+                                    
+                                    //this.downloadTextFile("dump.json", content);
+                                }}></ui5-button>         
                         <!--
                     <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="documents" tooltip="Refresh"
