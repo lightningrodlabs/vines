@@ -43,7 +43,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return html`<div>No thread found</div>`;
     }
 
-    const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subjectHash];
+    const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];
     let subText;
     let title;
     if (maybeSemanticTopicThread) {
@@ -51,11 +51,11 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       title = html`<h3>Welcome to #${semTopic} !</h3>`;
       subText = `This is the start of thread ${thread.name}`;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subjectHash);
-      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subjectHash);
+      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
+      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
       let subjectName = "";
       if (subjectBead.beadType == ThreadsEntryType.TextBead) {
-        subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subjectHash][1] as TextBead).value, 60, true);
+        subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBead).value, 60, true);
       }
       if (subjectBead.beadType == ThreadsEntryType.EntryBead) {
         subjectName = "File";

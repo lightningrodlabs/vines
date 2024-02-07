@@ -57,10 +57,20 @@ pub struct SemanticTopic {
 pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
-    pub subject_hash: AnyLinkableHash,
-    pub subject_type: String,
+    pub subject: Subject,
+    //pub subject_hash: AnyLinkableHash,
+    //pub subject_type: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Subject {
+    pub hash: AnyLinkableHash,
+    //hash_type: AppletSubjectType,
+    pub type_name: String,
+    pub dna_hash: DnaHash,
+    pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)
+}
 
 
 #[hdk_entry_helper]

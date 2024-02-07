@@ -259,8 +259,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //<!--style="height: 400px" growing="Scroll" -->
     //<!-- @load-more=${this.onLoadMore}-->
 
-    const subjectType = this.subjectType? this.subjectType : pp.subjectType;
-    const subjectName = this.subjectName? this.subjectName : pp.subjectHash;
+    const subjectType = this.subjectType? this.subjectType : pp.subject.typeName;
+    const subjectName = this.subjectName? this.subjectName : pp.subject.hash;
     const title = `Thread about`;
 
     let maybeInput = html``;

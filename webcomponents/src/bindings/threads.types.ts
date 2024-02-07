@@ -235,12 +235,6 @@ export interface SendInboxItemInput {
   event: NotifiableEvent
 }
 
-export interface CreatePpInput {
-  pp: ParticipationProtocol
-  appletId: string
-  dnaHash: DnaHash
-}
-
 /**
  * 
  * Data sent by UI ONLY. That's why we use B64 here.
@@ -290,13 +284,6 @@ export interface SignalPeersInput {
   peers: AgentPubKey[]
 }
 
-export interface Subject {
-  hash: AnyLinkableHash
-  typeName: string
-  dnaHash: DnaHash
-  appletId: string
-}
-
 /**  */
 export interface GetProtocolsInput {
   appletId: string
@@ -340,8 +327,14 @@ export interface SemanticTopic {
 export interface ParticipationProtocol {
   purpose: string
   rules: string
-  subjectHash: AnyLinkableHash
-  subjectType: string
+  subject: Subject
+}
+
+export interface Subject {
+  hash: AnyLinkableHash
+  typeName: string
+  dnaHash: DnaHash
+  appletId: string
 }
 
 export interface GlobalLastProbeLog {

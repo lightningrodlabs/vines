@@ -116,8 +116,7 @@ export interface ThreadsPerspective {
 export interface ParticipationProtocolMat {
   purpose: string,
   rules: string,
-  subjectHash: AnyLinkableHashB64,
-  subjectType: string,
+  subject: SubjectMat,
 }
 
 
@@ -126,9 +125,15 @@ export function materializeParticipationProtocol(pp: ParticipationProtocol): Par
   return {
     purpose: pp.purpose,
     rules: pp.rules,
-    subjectHash: encodeHashToBase64(pp.subjectHash),
-    subjectType: pp.subjectType,
+    subject: materializeSubject(pp.subject),
   } as ParticipationProtocolMat;
+}
+export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat): ParticipationProtocol {
+  return {
+    purpose: pp.purpose,
+    rules: pp.rules,
+    subject: dematerializeSubject(pp.subject),
+  } as ParticipationProtocol;
 }
 
 

@@ -91,7 +91,6 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
 import {
   ThreadsDvm,
-  CreatePpInput,
   ThreadsEntryType,
   ThreadsPerspective,
   CommentRequest,
@@ -101,19 +100,15 @@ import {
   AnyLinkableHashB64,
   ThreadsDnaPerspective,
   globaFilesContext,
-  timeSince,
   NotifiableEventType,
   JumpEvent,
-  BeadInfo,
-  TypedBead, ThreadsZvm, TextBead, EntryBead, AnyBead, decodeHrl, wePerspectiveContext, WePerspective
+  AnyBead, decodeHrl, wePerspectiveContext, WePerspective, ParticipationProtocol
 } from "@threads/elements";
 
 import {
-  ActionHash,
-  ActionHashB64,
-  decodeHashFromBase64, DnaHash,
+  decodeHashFromBase64,
   DnaHashB64,
-  encodeHashToBase64, EntryHash,
+  encodeHashToBase64,
 } from "@holochain/client";
 
 import {
@@ -483,18 +478,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async createCommentThread(request: CommentRequest) {
-    const ppInput: CreatePpInput = {
-      pp: {
+    const pp: ParticipationProtocol = {
         purpose: "comment",
         rules: "N/A",
-        subjectHash: decodeHashFromBase64(request.subjectHash),
-        subjectType: request.subjectType,
-      },
-      //appletHash: decodeHashFromBase64(this.appletId),
-      appletId: this.appletId,
-      dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+        subject: {
+          hash: decodeHashFromBase64(request.subjectHash),
+          typeName: request.subjectType,
+          //appletHash: decodeHashFromBase64(this.appletId),
+          appletId: this.appletId,
+          dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+        }
     };
-    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(ppInput);
+    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }
 
@@ -592,7 +587,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (!thread) {
         this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
-        const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subjectHash];
+        const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
         let topic = "Reply";
          if (maybeSemanticTopicThread) {
            const [semTopic, _topicHidden] = maybeSemanticTopicThread;

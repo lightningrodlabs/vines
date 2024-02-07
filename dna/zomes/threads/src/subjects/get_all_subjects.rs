@@ -6,16 +6,6 @@ use threads_integrity::*;
 use path_explorer_types::*;
 use crate::participation_protocols::comp2subject;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Subject {
-  hash: AnyLinkableHash,
-  //hash_type: AppletSubjectType,
-  type_name: String,
-  dna_hash: DnaHash,
-  applet_id: String,
-}
-
 
 /// Walk Subjects AnchorTree
 /// Return Anchor, EntryHash of every threaded Subject.

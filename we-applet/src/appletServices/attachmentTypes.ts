@@ -13,7 +13,7 @@ import {
   Hrl
 } from "@lightningrodlabs/we-applet";
 import {asCellProxy, stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
-import {ThreadsProxy, CreatePpInput, THREADS_DEFAULT_ROLE_NAME, WeaveNotification} from "@threads/elements";
+import {ThreadsProxy, THREADS_DEFAULT_ROLE_NAME, WeaveNotification, ParticipationProtocol} from "@threads/elements";
 import {HrlWithContext, WeServices} from "@lightningrodlabs/we-applet";
 import { mdiCommentTextMultiple } from "@mdi/js";
 import {AttachableThreadContext} from "@threads/app";
@@ -67,19 +67,19 @@ export const attachmentTypes = async function (appletClient: AppAgentClient, app
 
         /** Create PP */
         if (!pp_ah) {
-          const input: CreatePpInput = {
-            pp: {
+          const ppInput: ParticipationProtocol = {
               purpose: "comment",
               rules: "FFA", //FIXME: 'We' should provide a way for a user to provide extra info
-              subjectHash: hrlc.hrl[1],
-              subjectType: context.subjectType,
+              subject: {
+                hash: hrlc.hrl[1],
+                typeName: context.subjectType,
+                // appletId: encodeHashToBase64(appletHash), // (Threads appletHash)
+                appletId: encodeHashToBase64(attLocInfo.appletHash),
+                dnaHash: hrlc.hrl[0],
             },
-            // appletId: encodeHashToBase64(appletHash), // (Threads appletHash)
-            appletId: encodeHashToBase64(attLocInfo.appletHash),
-            dnaHash: hrlc.hrl[0],
           };
-          console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", encodeHashToBase64(input.dnaHash), input);
-          const [new_pp_ah, ts, maybeNotif] = await proxy.createParticipationProtocol(input);
+          console.log("Threads/attachmentTypes/thread: calling createParticipationProtocol()", encodeHashToBase64(ppInput.subject.dnaHash), ppInput);
+          const [new_pp_ah, ts, maybeNotif] = await proxy.createParticipationProtocol(ppInput);
           const [pp, _ppTs] = await proxy.getPp(new_pp_ah);
           console.log("Threads/attachmentTypes/thread: res", [new_pp_ah, ts, maybeNotif]);
           pp_ah = new_pp_ah;

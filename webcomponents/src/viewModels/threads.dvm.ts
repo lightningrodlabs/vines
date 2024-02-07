@@ -1,4 +1,4 @@
-import {delay, DnaViewModel} from "@ddd-qc/lit-happ";
+import {delay, Dictionary, DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {
   ActionHashB64,
@@ -8,13 +8,15 @@ import {
   EntryHashB64
 } from "@holochain/client";
 import {
-  DirectGossip, DirectGossipType, EntryBead, NotifiableEventType,
+  DirectGossip, DirectGossipType, NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
-  TextBead, AnyBead,
   THREADS_DEFAULT_ROLE_NAME, ThreadsEntryType, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
-import {AnyLinkableHashB64, TypedBead} from "./threads.perspective";
+import {
+  AnyLinkableHashB64,
+  TypedBead,
+} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
@@ -300,6 +302,36 @@ export class ThreadsDvm extends DnaViewModel {
     const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.EmojiReactionChange, content: [beadAh, this.cell.agentPubKey, emoji, false]});
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
   }
+
+
+  /** -- Import & Export -- */
+
+  // /** Dump perspective as JSON */
+  // exportPerspective(): string {
+  //   //console.log("Dvm.exportPerspective()", name)
+  //   const dvmExport = {};
+  //   //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
+  //     const tJson = this.threadsZvm.exportPerspective();
+  //     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = tJson;
+  //
+  //   const pJson = this.profilesZvm.exportPerspective();
+  //   dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = pJson;
+  //   //}
+  //
+  //   const dvmJson = this.exportDvmPerspective();
+  //   dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
+  //
+  //   return JSON.stringify(dvmExport);
+  // }
+  //
+  //
+  // /** */
+  // importPerspective(json: string) {
+  //   //console.log("Dvm.importPerspective()", name)
+  //   for (const [_name, zvm] of Object.entries(this._zomeViewModels)) {
+  //     zvm.importPerspective();
+  //   }
+  // }
 
 
   /** -- Debug -- */

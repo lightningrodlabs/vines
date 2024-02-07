@@ -1,16 +1,14 @@
 import {
-  Action,
   ActionHash,
   ActionHashB64,
-  AgentPubKeyB64,
-  decodeHashFromBase64, DnaHashB64,
+  AgentPubKeyB64, decodeHashFromBase64, DnaHashB64,
   encodeHashToBase64, EntryHashB64, Timestamp,
 } from "@holochain/client";
 import {
   AnyBead,
   Bead,
-  BeadLink, CreatePpInput, EntryBead,
-  GetLatestBeadsInput, GlobalLastProbeLog, NotifiableEventType,
+  BeadLink, EntryBead,
+  GlobalLastProbeLog, NotifiableEventType,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
   SignalPayloadType,
@@ -613,7 +611,7 @@ export class ThreadsZvm extends ZomeViewModel {
         console.error("Unread thread is unknown");
         continue;
       }
-      const topicHash = thread.pp.subjectHash;
+      const topicHash = thread.pp.subject.hash;
       unreadSubjects.push(topicHash);
     }
     /** Dedup */
@@ -627,7 +625,7 @@ export class ThreadsZvm extends ZomeViewModel {
         console.error("Thread not found");
         continue;
       }
-      const topicHash = thread.pp.subjectHash;
+      const topicHash = thread.pp.subject.hash;
       if (!oldestNewThreadBySubject[topicHash] || thread.creationTime < oldestNewThreadBySubject[topicHash]) {
         oldestNewThreadBySubject[topicHash] = thread.creationTime;
       }
@@ -942,40 +940,39 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishParticipationProtocol(input: CreatePpInput): Promise<[ActionHashB64, ParticipationProtocolMat]> {
-    const [pp_ah, ts, maybeNotifPair] = await this.zomeProxy.createParticipationProtocol(input);
+  async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[ActionHashB64, ParticipationProtocolMat]> {
+    const [pp_ah, ts, maybeNotifPair] = await this.zomeProxy.createParticipationProtocol(pp);
     /** Notify subject author */
     if (maybeNotifPair) {
       const recipient = encodeHashToBase64(maybeNotifPair[0]);
-      const extra = encode(input.pp);
+      const extra = encode(pp);
       const signal = this.createNotificationSignal(maybeNotifPair[1], extra);
       console.log("publishParticipationProtocol() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
       /*await*/ this.notifyPeer(recipient, signal);
     }
     /** Store PP */
     const ppAh = encodeHashToBase64(pp_ah);
-    const [pp, _ts2] = await this.zomeProxy.getPp(pp_ah);
-    const ppMat = this.storePp(ppAh, pp, ts, false, false);
+    const [pp2, _ts2] = await this.zomeProxy.getPp(pp_ah);
+    const ppMat = this.storePp(ppAh, pp2, ts, false, false);
     /** */
     return [ppAh, ppMat];
   }
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: AppletId, dnaHash: DnaHashB64, subjectHash: AnyLinkableHashB64, purpose: string): Promise<[number, ActionHashB64, ParticipationProtocol]> {
+  async publishThreadFromSemanticTopic(appletId: AppletId, dnaHashB64: DnaHashB64, subjectHash: AnyLinkableHashB64, purpose: string): Promise<[number, ActionHashB64, ParticipationProtocol]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const pp: ParticipationProtocol = {
       purpose,
-      subjectHash: decodeHashFromBase64(subjectHash),
       rules: "FFA",
-      subjectType: SEMANTIC_TOPIC_TYPE_NAME,
+      subject: {
+        hash: decodeHashFromBase64(subjectHash),
+        typeName: SEMANTIC_TOPIC_TYPE_NAME,
+        appletId,
+        dnaHash: decodeHashFromBase64(dnaHashB64),
+      },
     }
-    const [pp_ah, ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol({
-      pp,
-      //appletHash: decodeHashFromBase64(appletId),
-      appletId,
-      dnaHash: decodeHashFromBase64(dnaHash),
-    });
+    const [pp_ah, ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol(pp);
     const ppAh = encodeHashToBase64(pp_ah);
     this.storePp(ppAh, pp, ts, false, false);
     /** */
@@ -1141,22 +1138,25 @@ export class ThreadsZvm extends ZomeViewModel {
       /** Return already stored PP */
       return this._threads.get(ppAh).pp;
     }
-
     let ppMat = materializeParticipationProtocol(pp);
     const threadName = this.threadName(ppMat);
     const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, threadName);
     thread.setIsHidden(isHidden);
-    console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subjectHash}"| creationTime: "`, creationTime, isHidden);
+    console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden);
     this._threads.set(ppAh, thread);
     /** threadsByName */
     this._threadsByName[threadName] = ppAh;
     /** threadsPerSubject */
-    if (!this._threadsPerSubject[ppMat.subjectHash]) {
-      this._threadsPerSubject[ppMat.subjectHash] = [];
+    if (!this._threadsPerSubject[ppMat.subject.hash]) {
+      this._threadsPerSubject[ppMat.subject.hash] = [];
     }
-    this._threadsPerSubject[ppMat.subjectHash].push(ppAh);
+    this._threadsPerSubject[ppMat.subject.hash].push(ppAh);
     if (isNew) {
       this._newThreads.push(ppAh);
+    }
+    /** All Subjects */
+    if (!this._allSubjects.get(ppMat.subject.hash)) {
+      this._allSubjects.set(ppMat.subject.hash, pp.subject);
     }
     //console.log("storePp()", ppMat.subjectHash, ppAh)
     /** Done */
@@ -1297,11 +1297,11 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   private threadName(pp: ParticipationProtocolMat): string {
     let threadTitle;
-    if (pp.subjectType == "SemanticTopic") {
-      const semTopic = this._allSemanticTopics[pp.subjectHash];
+    if (pp.subject.typeName == "SemanticTopic") {
+      const semTopic = this._allSemanticTopics[pp.subject.hash];
       threadTitle = `#${semTopic[0]}: ${pp.purpose}`;
     } else {
-      threadTitle = `${pp.subjectType}: ${pp.purpose}`;
+      threadTitle = `${pp.subject.hash}: ${pp.purpose}`;
     }
     return threadTitle;
   }
@@ -1323,13 +1323,13 @@ export class ThreadsZvm extends ZomeViewModel {
 
     /** Package */
     let perspMat: ThreadsPerspectiveMat = {
+      emojiReactions: this._emojiReactions,
       allAppletIds: this._allAppletIds,
       allSubjects: Array.from(allSubjects.entries()),
       appletSubjectTypes: this._appletSubjectTypes,
       allSemanticTopics: this._allSemanticTopics,
       pps,
       beads,
-      emojiReactions: this._emojiReactions,
     };
     //console.log("exportPerspective()", perspMat);
     return JSON.stringify(perspMat, null, 2);
@@ -1337,8 +1337,19 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  importPerspective(json: string) {
-    const perspective = JSON.parse(json);
+  importPerspective(json: string, mapping?: Object) {
+    const external = JSON.parse(json) as ThreadsPerspectiveMat;
+
+    this._allAppletIds = external.allAppletIds;
+    this._emojiReactions = external.emojiReactions;
+
+    for (const [topicEh, [title, isHidden]] of Object.entries(external.allSemanticTopics)) {
+      this.storeSemanticTopic(topicEh, title, isHidden, true);
+    }
+
+    for (const [topicEh, [title, isHidden]] of Object.entries(external.allSemanticTopics)) {
+      this.storeSemanticTopic(topicEh, title, isHidden, true);
+    }
   }
 
 

@@ -7,29 +7,16 @@ use path_explorer_types::*;
 use crate::notify_peer::{SendInboxItemInput, NotifiableEvent, send_inbox_item, WeaveNotification};
 use crate::participation_protocols::*;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreatePpInput {
-  pub pp: ParticipationProtocol,
-  pub applet_id: String,
-  pub dna_hash: DnaHash,
-}
 
-
-/// Create a Pp off anything
+/// Create a Pp off of anything
 #[hdk_extern]
-pub fn create_participation_protocol(input: CreatePpInput) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
-  return create_pp(input.pp, input.applet_id, input.dna_hash, None);
-}
-
-
-///
-pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash, maybe_index_time: Option<Timestamp>) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
+pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
+  let maybe_index_time: Option<Timestamp> = None; // FIXME
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
   /// Global Subjects Index
-  let tp = get_subject_tp(applet_id, &pp.subject_type, dna_hash.clone(), pp.subject_hash.clone())?;
+  let tp = get_subject_tp(pp.subject.applet_id, &pp.subject.type_name, pp.subject.dna_hash.clone(), pp.subject.hash.clone())?;
   tp.ensure()?;
   debug!("create_pp(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
@@ -52,7 +39,7 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash
   )?;
   /// Link from Subject Hash to Protocol
   create_link(
-    pp.subject_hash.clone(),
+    pp.subject.hash.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Threads,
     LinkTag::new(index_time.0.to_le_bytes().to_owned()), // Store index-time in Tag
@@ -68,14 +55,14 @@ pub fn create_pp(pp: ParticipationProtocol, applet_id: String, dna_hash: DnaHash
     PP_ITEM_TYPE,
     ThreadsLinkType::TimeItem.try_into().unwrap(),
     index_time,
-    pp.subject_hash.get_raw_39())?;
+    pp.subject.hash.get_raw_39())?;
 
-  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject_hash);
+  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.hash);
 
   /// Notify Subject author
   let mut maybe_notif = None;
-  if dna_hash == dna_info()?.hash {
-    if let Ok(subject_hash) = AnyDhtHash::try_from(pp.subject_hash) {
+  if pp.subject.dna_hash == dna_info()?.hash {
+    if let Ok(subject_hash) = AnyDhtHash::try_from(pp.subject.hash) {
       let maybe_author = get_author(&subject_hash);
       if let Ok(author) = maybe_author {
         let maybe= send_inbox_item(SendInboxItemInput { content: pp_ah.clone().into(), who: author.clone(), event: NotifiableEvent::Fork })?;
