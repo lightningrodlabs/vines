@@ -77,7 +77,7 @@ export interface ThreadsPerspective {
   threads: Map<ActionHashB64, Thread>,
   /** Name  -> ppAh */
   threadsByName: Dictionary<ActionHashB64>,
-  /** beadAh -> TextMessageInfo */
+  /** beadAh -> [BeadInfo, TypedBead] */
   beads: Dictionary<[BeadInfo, TypedBead]>,
   /** bead_ah -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
@@ -316,7 +316,7 @@ export interface ThreadsPerspectiveMat {
 
   /** ppAh -> ppMat */
   pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>, // Map
-  /** beadAh -> TextMessageInfo */
+  /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: Dictionary<[BeadInfoMat, TypedBeadMat]>,
 
   /** bead_ah -> [agent, emoji] */

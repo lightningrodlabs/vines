@@ -6,27 +6,6 @@ use crate::beads::*;
 use crate::notify_peer::{SendInboxItemInput, NotifiableEvent, send_inbox_item, WeaveNotification};
 
 
-///
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AddTextWithMentionsInput {
-  texto: TextBead,
-  mentionees: Vec<AgentPubKey>,
-}
-
-
-// #[hdk_extern]
-// pub fn add_text_message_with_mentions(input: AddTextWithMentionsInput) -> ExternResult<(ActionHash, String, Timestamp)> {
-//   let tuple = add_text_message(input.texto)?;
-//   /// Mentions
-//   for mentionee in input.mentionees {
-//     let _ =  send_inbox_item(AnnounceInput {content: tuple.0.clone().into(), who: mentionee, event: NotifiableEvent::Mention})?;
-//   }
-//   /// Reply
-//   ///
-//   /// Done
-//   Ok(tuple)
-// }
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AddTextAndMentionsAtInput {
@@ -38,7 +17,7 @@ pub struct AddTextAndMentionsAtInput {
 
 ///
 #[hdk_extern]
-pub fn add_text_message_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<(AgentPubKey, WeaveNotification)>)> {
+pub fn add_text_bead_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<(AgentPubKey, WeaveNotification)>)> {
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead.clone(), ah.clone(), "TextBead", input.creation_time)?;

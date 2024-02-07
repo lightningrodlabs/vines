@@ -254,8 +254,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishTextMessage(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creation_time, tm] = await this.threadsZvm.publishTextMessage(msg, ppAh, ments);
+  async publishTextBead(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
+    let [ah, _time_anchor, creation_time, tm] = await this.threadsZvm.publishTextBead(msg, ppAh, ments);
     /** Send signal to peers */
     const data = encode(tm);
     const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextBead, ppAh, data]}, ppAh);
@@ -294,6 +294,7 @@ export class ThreadsDvm extends DnaViewModel {
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
   }
 
+
   /** */
   async unpublishEmoji(beadAh: ActionHashB64, emoji: string) {
     await this.threadsZvm.zomeProxy.removeReaction(decodeHashFromBase64(beadAh));
@@ -328,7 +329,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   importPerspective(json: string) {
     //console.log("Dvm.importPerspective()", json)
-    
+
     // for (const [_name, zvm] of Object.entries(this._zomeViewModels)) {
     //   zvm.importPerspective();
     // }
@@ -339,7 +340,7 @@ export class ThreadsDvm extends DnaViewModel {
     //const dvmPersp = external[ThreadsDvm.DEFAULT_BASE_ROLE_NAME];
 
     this.profilesZvm.importPerspective(JSON.stringify(profiles));
-    this.threadsZvm.importPerspective(JSON.stringify(threadsPersp));
+    this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), true);
 
     this.notifySubscribers();
   }
@@ -354,7 +355,7 @@ export class ThreadsDvm extends DnaViewModel {
     await delay(1000);
     const [_ts, ppAh, _pp] = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
     await delay(1000);
-    const msgAh = await this.publishTextMessage("msg-1", ppAh, []);
+    const msgAh = await this.publishTextBead("msg-1", ppAh, []);
     console.log("generateTestSignals() END", msgAh);
   }
 }

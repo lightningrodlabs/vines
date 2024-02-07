@@ -7,7 +7,7 @@ use crate::beads::*;
 /// Get all TextBead in local source-chain
 /// WARN Will return actual action creation time and not devtest_timestamp
 #[hdk_extern]
-pub fn query_text_messages(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
+pub fn query_text_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
   let entry_type = EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap());
   let tuples = get_all_typed_local::<TextBead>(entry_type)?;
   let res = tuples.into_iter().map(|(ah, create_action, typed)| {
@@ -19,7 +19,7 @@ pub fn query_text_messages(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, Te
 
 /// WARN Will return actual action creation time and not devtest_timestamp
 #[hdk_extern]
-pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
+pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
   //let fn_start = sys_time()?;
   let res = match get(ah.clone(), GetOptions::content())? {
     Some(record) => {
@@ -27,10 +27,10 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
       //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
       //let mut msg: String = "<unknown type>".to_string();
       let Ok(typed) = get_typed_from_record::<TextBead>(record)
-        else { return error("get_text_message(): Entry not a TextBead") };
+        else { return error("get_text_bead(): Entry not a TextBead") };
       Ok((action.timestamp(), action.author().to_owned(), typed))
     }
-    None => error("get_text_message(): Entry not found"),
+    None => error("get_text_bead(): Entry not found"),
   };
   //let fn_end = sys_time()?;
   //debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
@@ -40,14 +40,14 @@ pub fn get_text_message(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey,
 
 ///
 #[hdk_extern]
-pub fn get_many_text_message(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
-  return ahs.into_iter().map(|ah| get_text_message(ah)).collect();
+pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
+  return ahs.into_iter().map(|ah| get_text_bead(ah)).collect();
 }
 
 
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
-pub fn add_text_message(texto: TextBead) -> ExternResult<(ActionHash, String, Timestamp)> {
+pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Timestamp)> {
   let ah = create_entry(ThreadsEntry::TextBead(texto.clone()))?;
   //let ah_time = sys_time()?; // FIXME: use Action's timestamp
   let ah_time = get(ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
@@ -62,13 +62,13 @@ pub fn add_text_message(texto: TextBead) -> ExternResult<(ActionHash, String, Ti
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AddTextMessageAtInput {
+pub struct AddTextBeadAtInput {
   pub texto: TextBead,
   pub creation_time: Timestamp,
 }
 
 #[hdk_extern]
-pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(ActionHash, String)> {
+pub fn add_text_bead_at(input: AddTextBeadAtInput) -> ExternResult<(ActionHash, String)> {
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextBead", input.creation_time)?;
@@ -81,14 +81,14 @@ pub fn add_text_message_at(input: AddTextMessageAtInput) -> ExternResult<(Action
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AddManyTextMessageAtInput {
+pub struct AddManyTextBeadAtInput {
   texto: TextBead,
   interval_us: u32,
   count: usize,
 }
 
 #[hdk_extern]
-pub fn add_many_text_message_at(input: AddManyTextMessageAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
+pub fn add_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
   let mut start = sys_time()?.0;
   let mut res = Vec::new();
   for i in 0..input.count {

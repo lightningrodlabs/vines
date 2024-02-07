@@ -149,8 +149,9 @@ import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
 /**  */
 export interface AddReactionInput {
-  emoji: string
   bead_ah: ActionHash
+  emoji: string
+  from?: AgentPubKey
 }
 
 export interface AddEntryAsBead {
@@ -167,12 +168,6 @@ export interface GetLatestBeadsInput {
   target_limit?: number
 }
 
-/**  */
-export interface AddTextWithMentionsInput {
-  texto: TextBead
-  mentionees: AgentPubKey[]
-}
-
 export interface AddTextAndMentionsAtInput {
   texto: TextBead
   creationTime: Timestamp
@@ -186,12 +181,12 @@ export interface BeadLink {
 }
 
 /** DEBUG ONLY */
-export interface AddTextMessageAtInput {
+export interface AddTextBeadAtInput {
   texto: TextBead
   creationTime: Timestamp
 }
 
-export interface AddManyTextMessageAtInput {
+export interface AddManyTextBeadAtInput {
   texto: TextBead
   intervalUs: number
   count: number

@@ -1,5 +1,4 @@
 use hdk::hash_path::path::Component;
-use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
 //use zome_utils::*;

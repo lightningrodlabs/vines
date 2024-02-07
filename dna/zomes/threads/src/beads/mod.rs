@@ -1,5 +1,5 @@
 
-mod text_message;
+mod text_bead;
 mod get_latest_beads;
 mod get_all_beads;
 mod index_bead;
@@ -9,7 +9,7 @@ mod any_bead;
 mod emoji_reaction;
 
 pub use index_bead::*;
-pub use text_message::*;
+pub use text_bead::*;
 
 //--------------------------------------------------------------------------------------------------
 

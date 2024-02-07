@@ -53,7 +53,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
     console.log("<search-result-panel>.render()", this.parameters);
 
     //const searchParams = parseSearchInput(this.search, this.prof)
-    const beadAhs = this._dvm.threadsZvm.searchTextMessages(this.parameters);
+    const beadAhs = this._dvm.threadsZvm.searchTextBeads(this.parameters);
 
     const matches = beadAhs.map(([beadAh, _info, _text]) => {
       //const beadPair = this.threadsPerspective.beads[beadAh];

@@ -1,4 +1,3 @@
-use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
@@ -16,10 +15,10 @@ pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
   /// Global Subjects Index
-  let tp = get_subject_tp(pp.subject.applet_id, &pp.subject.type_name, pp.subject.dna_hash.clone(), pp.subject.hash.clone())?;
-  tp.ensure()?;
-  debug!("create_pp(): {} --> {}", path2anchor(&tp.path).unwrap(), pp_ah);
-  let _ta = TypedAnchor::try_from(&tp).expect("Should hold a TypedAnchor");
+  let subject_tp = get_subject_tp(pp.subject.applet_id, &pp.subject.type_name, pp.subject.dna_hash.clone(), pp.subject.hash.clone())?;
+  subject_tp.ensure()?;
+  debug!("create_pp(): {} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
+  let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
 
   /// Use given index_time or use the PP's creation time
   let index_time = if let Some(index_time) = maybe_index_time {
@@ -31,7 +30,7 @@ pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<
 
   /// Link from Subject Path to Protocol
   create_link(
-    tp.path_entry_hash()?,
+    subject_tp.path_entry_hash()?,
     pp_ah.clone(),
     ThreadsLinkType::Protocols,
     LinkTag::new(pp.purpose),

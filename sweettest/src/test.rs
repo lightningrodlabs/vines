@@ -8,7 +8,7 @@ use holochain::prelude::Timestamp;
 
 use threads_integrity_zome::*;
 use threads_zome::*;
-use threads_zome::beads::AddTextMessageAtInput;
+use threads_zome::beads::AddTextBeadAtInput;
 
 use crate::DNA_FILEPATH;
 use sweettest_utils::*;
@@ -138,14 +138,14 @@ pub async fn test_handle() {
    };
 
    let msg = "message".to_string();
-   let input = AddTextMessageAtInput {
+   let input = AddTextBeadAtInput {
       texto: TextBead { value: msg.clone(), bead },
       time_us: Timestamp::from_micros(42),
    };
-   let ah1: ActionHash = conductor.call(&cell1.zome("zThreads"), "add_text_message_at", input).await;
+   let ah1: ActionHash = conductor.call(&cell1.zome("zThreads"), "add_text_bead_at", input).await;
    println!("ah1: {:?}", ah1);
    //tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-   let tuple: (Timestamp, AgentPubKey, String) = conductor.call(&cell1.zome("zThreads"), "get_text_message", ah1).await;
+   let tuple: (Timestamp, AgentPubKey, String) = conductor.call(&cell1.zome("zThreads"), "get_text_bead", ah1).await;
    println!("tuple: {:?}", tuple);
    assert_eq!(msg, tuple.2);
 }
@@ -160,13 +160,13 @@ pub async fn test_many_handle(n: usize) {
    // // set N handles
    // for i in 0..n {
    //    let name = format!("{}-{}", "alex", i);
-   //    let ah: ActionHash = conductor.call(&cell1.zome("zThreads"), "add_text_message_at", name.to_string()).await;
+   //    let ah: ActionHash = conductor.call(&cell1.zome("zThreads"), "add_text_bead_at", name.to_string()).await;
    //    ahs.push(ah);
    // }
    //
    // // Do some gets
    // for _ in 0..10u32 {
-   //    let _handle: String = conductor.call(&cell1.zome("zThreads"), "get_text_message", ahs[0].clone()).await;
+   //    let _handle: String = conductor.call(&cell1.zome("zThreads"), "get_text_bead", ahs[0].clone()).await;
    // }
 }
 

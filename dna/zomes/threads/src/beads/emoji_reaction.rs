@@ -6,8 +6,9 @@ use threads_integrity::*;
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AddReactionInput {
-    emoji: String,
     bead_ah: ActionHash,
+    emoji: String,
+    from: Option<AgentPubKey>, // For Importing
 }
 
 #[hdk_extern]
@@ -15,7 +16,8 @@ pub fn add_reaction(input: AddReactionInput) -> ExternResult<()> {
     // TODO: Check input string is a proper emoji. (todo also in validation)
     //debug!("add_reaction({:?}) to {}", input.emoji, input.bead_ah);
     let me = agent_info()?.agent_latest_pubkey;
-    let _ = create_link(input.bead_ah, me, ThreadsLinkType::EmojiReaction, str2tag(&input.emoji))?;
+    let author = input.from.unwrap_or(me);
+    let _ = create_link(input.bead_ah, author, ThreadsLinkType::EmojiReaction, str2tag(&input.emoji))?;
     Ok(())
 }
 

@@ -19,7 +19,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** Hash of TextMessage to display */
+  /** Hash of thread to display */
   @property() threadHash: ActionHashB64 = ''
 
 
