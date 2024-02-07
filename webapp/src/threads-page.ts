@@ -763,7 +763,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="download" tooltip="Export"
                                 @click=${() => {
-                                  const content = this._dvm.threadsZvm.exportPerspective();
+                                  const content = this._dvm.exportPerspective();
                                     this.downloadTextFile("dump.json", content);
                                 }}></ui5-button>
                     <ui5-button style="margin-top:10px;"
@@ -785,7 +785,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             reader.onload = (e) => {
                                                 const contents = reader.result as string;
                                                 //console.log(contents);
-                                                this._dvm.threadsZvm.importPerspective(contents);
+                                                this._dvm.importPerspective(contents);
                                             };
                                             // Read the file as text
                                             reader.readAsText(file);

@@ -678,7 +678,9 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("probeEmojiReactions()", beadAh);
     const reactions = await this.zomeProxy.getReactions(decodeHashFromBase64(beadAh));
     console.log("probeEmojiReactions() count", reactions.length);
-    this._emojiReactions[beadAh] = reactions.map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
+    if (reactions.length > 0) {
+      this._emojiReactions[beadAh] = reactions.map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
+    }
     this.notifySubscribers();
   }
 
@@ -702,11 +704,15 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async unstoreEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
     if (!this._emojiReactions[beadAh]) {
-      this._emojiReactions[beadAh] = [];
+      //this._emojiReactions[beadAh] = [];
+      return;
     }
     const filtered = this._emojiReactions[beadAh].filter(([a, e]) => !(agent == a && e == emoji));
     if (filtered.length < this._emojiReactions[beadAh].length) {
       this._emojiReactions[beadAh] = filtered;
+      if (this._emojiReactions[beadAh].length == 0) {
+        delete this._emojiReactions[beadAh];
+      }
       this.notifySubscribers();
     }
   }

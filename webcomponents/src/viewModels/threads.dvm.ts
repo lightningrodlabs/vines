@@ -14,7 +14,7 @@ import {
   THREADS_DEFAULT_ROLE_NAME, ThreadsEntryType, WeaveNotification, WeaveSignal
 } from "../bindings/threads.types";
 import {
-  AnyLinkableHashB64,
+  AnyLinkableHashB64, ThreadsPerspectiveMat,
   TypedBead,
 } from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
@@ -306,32 +306,43 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** -- Import & Export -- */
 
-  // /** Dump perspective as JSON */
-  // exportPerspective(): string {
-  //   //console.log("Dvm.exportPerspective()", name)
-  //   const dvmExport = {};
-  //   //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
-  //     const tJson = this.threadsZvm.exportPerspective();
-  //     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = tJson;
-  //
-  //   const pJson = this.profilesZvm.exportPerspective();
-  //   dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = pJson;
-  //   //}
-  //
-  //   const dvmJson = this.exportDvmPerspective();
-  //   dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
-  //
-  //   return JSON.stringify(dvmExport);
-  // }
-  //
-  //
-  // /** */
-  // importPerspective(json: string) {
-  //   //console.log("Dvm.importPerspective()", name)
-  //   for (const [_name, zvm] of Object.entries(this._zomeViewModels)) {
-  //     zvm.importPerspective();
-  //   }
-  // }
+  /** Dump perspective as JSON */
+  exportPerspective(): string {
+    //console.log("Dvm.exportPerspective()", name)
+    const dvmExport = {};
+    //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
+    const tJson = this.threadsZvm.exportPerspective();
+    dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
+
+    const pJson = this.profilesZvm.exportPerspective();
+    dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
+    //}
+
+    //const dvmJson = this.exportDvmPerspective();
+    //dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
+
+    return JSON.stringify(dvmExport, null, 2);
+  }
+
+
+  /** */
+  importPerspective(json: string) {
+    //console.log("Dvm.importPerspective()", json)
+    
+    // for (const [_name, zvm] of Object.entries(this._zomeViewModels)) {
+    //   zvm.importPerspective();
+    // }
+
+    const external = JSON.parse(json) as any;
+    const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
+    const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
+    //const dvmPersp = external[ThreadsDvm.DEFAULT_BASE_ROLE_NAME];
+
+    this.profilesZvm.importPerspective(JSON.stringify(profiles));
+    this.threadsZvm.importPerspective(JSON.stringify(threadsPersp));
+
+    this.notifySubscribers();
+  }
 
 
   /** -- Debug -- */

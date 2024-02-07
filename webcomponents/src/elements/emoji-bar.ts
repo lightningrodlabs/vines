@@ -47,7 +47,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    //console.log("<emoji-bar>.render()", this.threadsPerspective.emojiReactions);
+    console.log("<emoji-bar>.render()", this.hash, this.threadsPerspective.emojiReactions);
     if (this.hash == "") {
       return html`
           <div>No item found</div>`;

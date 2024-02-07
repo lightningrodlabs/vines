@@ -285,6 +285,7 @@ export function materializedTypedBead(beadInfo: BeadInfo, typed: TypedBead): [Be
     default: throw Error("Unknown bead type: " + beadInfo.beadType); break;
   }
   let beadInfoMat: BeadInfoMat = beadInfo as unknown as BeadInfoMat; // HACK
+  //console.log("materializedTypedBead()", beadInfoMat);
   beadInfoMat.bead = materializeBead(beadInfo.bead);
   return [beadInfoMat, typedMat];
 }
@@ -300,6 +301,7 @@ export function dematerializedTypedBead(beadInfoMat: BeadInfoMat, typedMat: Type
   beadInfo.bead = dematerializeBead(beadInfoMat.bead);
   return [beadInfo, typed];
 }
+
 
 /** */
 export interface ThreadsPerspectiveMat {

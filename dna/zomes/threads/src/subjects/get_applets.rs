@@ -14,7 +14,7 @@ pub fn get_applets(_:()) -> ExternResult<Vec<String>> {
   let mut appletIds = Vec::new();
   for tp in children {
     let comp = tp.leaf().unwrap();
-    debug!("comp: {:?}", comp);
+    //debug!("comp: {:?}", comp);
     let appletId = String::try_from(comp)
           .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     //let appletId = comp2appletHash(comp)?;

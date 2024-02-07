@@ -266,7 +266,7 @@ export class ThreadsApp extends HappElement {
 
 
     //let view = html`<slot></slot>`;
-    let view = html`<threads-page style="height:100vh;" .appletId=${this.appletId}</semantic-threads-page>`;
+    let view = html`<threads-page style="height:100vh;" .appletId=${this.appletId}></semantic-threads-page>`;
 
     if (this.appletView) {
       console.log("appletView", this.appletView);
