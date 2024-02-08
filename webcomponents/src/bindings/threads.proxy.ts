@@ -158,7 +158,7 @@ export class ThreadsProxy extends ZomeProxy {
   static readonly DEFAULT_ZOME_NAME = "zThreads"
   static readonly FN_NAMES = threadsFunctionNames
  
-  async addAnyBead(anyBead: AnyBead): Promise<[ActionHash, string, Timestamp, [AgentPubKey, WeaveNotification] | null]> {
+  async addAnyBead(anyBead: AnyBead): Promise<[ActionHash, string, Timestamp, [AgentPubKey, WeaveNotification][]]> {
     return this.call('add_any_bead', anyBead);
   }
 
@@ -186,7 +186,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_reactions', beadAh);
   }
 
-  async addEntryAsBead(input: AddEntryAsBead): Promise<[ActionHash, EntryBead, string, Timestamp, [AgentPubKey, WeaveNotification] | null]> {
+  async addEntryAsBead(input: AddEntryAsBead): Promise<[ActionHash, EntryBead, string, Timestamp, [AgentPubKey, WeaveNotification][]]> {
     return this.call('add_entry_as_bead', input);
   }
 
@@ -214,8 +214,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('add_text_bead_at_with_mentions', input);
   }
 
-  async queryTextBeads(): Promise<[Timestamp, ActionHash, TextBead][]> {
-    return this.call('query_text_beads', null);
+  async addTextBead(texto: TextBead): Promise<[ActionHash, string, Timestamp]> {
+    return this.call('add_text_bead', texto);
   }
 
   async getTextBead(ah: ActionHash): Promise<[Timestamp, AgentPubKey, TextBead]> {
@@ -226,8 +226,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_many_text_bead', ahs);
   }
 
-  async addTextBead(texto: TextBead): Promise<[ActionHash, string, Timestamp]> {
-    return this.call('add_text_bead', texto);
+  async queryTextBeads(): Promise<[Timestamp, ActionHash, TextBead][]> {
+    return this.call('query_text_beads', null);
   }
 
   async addTextBeadAt(input: AddTextBeadAtInput): Promise<[ActionHash, string]> {

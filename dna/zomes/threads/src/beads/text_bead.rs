@@ -4,46 +4,6 @@ use threads_integrity::*;
 use time_indexing::convert_timepath_to_timestamp;
 use crate::beads::*;
 
-/// Get all TextBead in local source-chain
-/// WARN Will return actual action creation time and not devtest_timestamp
-#[hdk_extern]
-pub fn query_text_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
-  let entry_type = EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap());
-  let tuples = get_all_typed_local::<TextBead>(entry_type)?;
-  let res = tuples.into_iter().map(|(ah, create_action, typed)| {
-    (create_action.timestamp, ah, typed)
-  }).collect();
-  Ok(res)
-}
-
-
-/// WARN Will return actual action creation time and not devtest_timestamp
-#[hdk_extern]
-pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
-  //let fn_start = sys_time()?;
-  let res = match get(ah.clone(), GetOptions::content())? {
-    Some(record) => {
-      let action = record.action().clone();
-      //let eh = action.entry_hash().expect("Converting ActionHash which does not have an Entry");
-      //let mut msg: String = "<unknown type>".to_string();
-      let Ok(typed) = get_typed_from_record::<TextBead>(record)
-        else { return error("get_text_bead(): Entry not a TextBead") };
-      Ok((action.timestamp(), action.author().to_owned(), typed))
-    }
-    None => error("get_text_bead(): Entry not found"),
-  };
-  //let fn_end = sys_time()?;
-  //debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
-  res
-}
-
-
-///
-#[hdk_extern]
-pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
-  return ahs.into_iter().map(|ah| get_text_bead(ah)).collect();
-}
-
 
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
@@ -54,6 +14,33 @@ pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Times
   let tp_pair = index_bead(texto.bead, ah.clone(), "TextBead", ah_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+}
+
+/// WARN Will return actual action creation time and not devtest_timestamp
+#[hdk_extern]
+pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
+  return get_typed_bead::<TextBead>(ah);
+
+}
+
+
+///
+#[hdk_extern]
+pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
+  return ahs.into_iter().map(|ah| get_typed_bead::<TextBead>(ah)).collect();
+}
+
+
+/// Get all TextBead in local source-chain
+/// WARN Will return actual action creation time and not devtest_timestamp
+#[hdk_extern]
+pub fn query_text_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
+  let entry_type = EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap());
+  let tuples = get_all_typed_local::<TextBead>(entry_type)?;
+  let res = tuples.into_iter().map(|(ah, create_action, typed)| {
+    (create_action.timestamp, ah, typed)
+  }).collect();
+  Ok(res)
 }
 
 

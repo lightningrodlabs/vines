@@ -25,6 +25,8 @@ export declare type AnyLinkableHashB64 = HoloHashB64;
 
 export type TypedBead = EntryBead | AnyBead | TextBead;
 
+export type BeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead;
+
 /** */
 export interface BeadInfo {
   creationTime: Timestamp,

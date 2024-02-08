@@ -1,35 +1,45 @@
 import {
   ActionHash,
   ActionHashB64,
-  AgentPubKeyB64, decodeHashFromBase64, DnaHashB64,
-  encodeHashToBase64, EntryHashB64, Timestamp,
+  AgentPubKeyB64,
+  decodeHashFromBase64,
+  DnaHashB64,
+  encodeHashToBase64,
+  EntryHashB64,
+  Timestamp,
 } from "@holochain/client";
 import {
   AnyBead,
   Bead,
-  BeadLink, EntryBead,
-  GlobalLastProbeLog, NotifiableEventType,
+  BeadLink,
+  GlobalLastProbeLog,
+  NotifiableEventType,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
   SignalPayloadType,
-  Subject, TextBead,
+  TextBead,
   ThreadLastProbeLog,
-  ThreadsEntryType, WeaveNotification, WeaveSignal,
+  ThreadsEntryType,
+  WeaveNotification,
+  WeaveSignal,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
-import {delay, Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
+import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
   AnyLinkableHashB64,
   BeadInfo,
   BeadInfoMat,
   BeadLinkMaterialized,
-  dematerializeBead,
-  dematerializedTypedBead, dematerializeParticipationProtocol, EntryBeadMat,
+  BeadType,
+  dematerializedTypedBead,
+  dematerializeParticipationProtocol,
+  EntryBeadMat,
   materializedTypedBead,
   materializeParticipationProtocol,
   materializeSubject,
   ParticipationProtocolMat,
-  SubjectMat, TextBeadMat,
+  SubjectMat,
+  TextBeadMat,
   ThreadsPerspective,
   ThreadsPerspectiveMat,
   TypedBead,
@@ -785,163 +795,119 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** Figure out last known bead for this thread */
-  async checkForReply(ppAh: ActionHashB64): Promise<Bead> {
+  /** */
+  async createNextBead(ppAh: ActionHashB64): Promise<Bead> {
+    /** Figure out last known bead for this thread */
     let thread = this._threads.get(ppAh);
     if (!thread) {
       await this.fetchPp(ppAh);
       thread = this._threads.get(ppAh);
+      if (!thread) {
+        return Promise.reject("Unknown thread: " + ppAh);
+      }
     }
     const lastKnownBeadOnThread = thread.getLast(1);
     let prevKnownBeadAh;
     if (lastKnownBeadOnThread && lastKnownBeadOnThread.length > 0) {
       prevKnownBeadAh = decodeHashFromBase64(lastKnownBeadOnThread[0].beadAh)
     }
-    /** Make out bead */
+    /** Make bead */
     const bead: Bead = {
       ppAh: decodeHashFromBase64(ppAh),
       prevKnownBeadAh,
     }
-    console.log("checkForReply() bead", prevKnownBeadAh? encodeHashToBase64(prevKnownBeadAh): undefined, ppAh);
+    console.log("createNextBead() bead", prevKnownBeadAh? encodeHashToBase64(prevKnownBeadAh): undefined, ppAh);
     return bead;
   }
 
 
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
 
-  /** Returns beadType & global_time_anchor */
-  async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64): Promise<[ActionHashB64, string, number, AnyBead]> {
-    const creationTime = Date.now() * 1000;
-    const [ah, global_time_anchor, anyBead] = await this.publishHrlBeadAt(hrl, ppAh, creationTime);
-    return [ah, global_time_anchor, creationTime, anyBead];
-  }
-
-  /** Returns beadType & global_time_anchor */
-  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64): Promise<[ActionHashB64, string, number, EntryBead]> {
-    const creationTime = Date.now() * 1000;
-    const [ah, global_time_anchor, entryBead] = await  this.publishEntryBeadAt(eh, ppAh, creationTime);
-    return [ah, global_time_anchor, creationTime, entryBead];
-  }
-
-
   /** */
-  async publishHrlBeadAt(hrl: Hrl, ppAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean): Promise<[ActionHashB64, string, AnyBead]> {
-    const encHrl = encodeHrl(hrl);
-    const anyBead: AnyBead = {
-      bead: await this.checkForReply(ppAh),
-      value: encHrl,
-      typeInfo: "hrl",
-    }
-    console.log("publishHrlBeadAt()", encHrl, anyBead);
-    /** Add Bead */
-    const [beadAh, global_time_anchor, _bucket_ts, maybeNotifPair] = await this.zomeProxy.addAnyBead(anyBead);
-    console.log("publishHrlBeadAt() added bead", beadAh, creationTime);
-    /** Insert in perspective */
-    if (!dontStore) {
-      this.fetchAnyBead(beadAh, true, creationTime);
-    }
-    /** Notify Reply asychronously */
-    if (anyBead.bead.prevKnownBeadAh && maybeNotifPair) {
-      const recipient = encodeHashToBase64(maybeNotifPair[0]);
-      const extra = encode(anyBead);
-      const signal = this.createNotificationSignal(maybeNotifPair[1], extra);
-      console.log("publishHrlBeadAt() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
-      /*await*/ this.notifyPeer(recipient, signal);
-    }
-    /** Done */
-    return [encodeHashToBase64(beadAh), global_time_anchor, anyBead];
-  }
-
-
-  /** */
-  async publishEntryBeadAt(eh: EntryHashB64, ppAh: ActionHashB64, creationTime: Timestamp, dontStore?: boolean): Promise<[ActionHashB64, string, EntryBead]> {
-    const entryInfo = {
-      eh: decodeHashFromBase64(eh),
-      bead: await this.checkForReply(ppAh),
-      zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
-      roleName: "rFiles", // FILES_CELL_NAME
-    };
-    /** Add Bead */
-    const [beadAh, entryBead, global_time_anchor, bucket_ts, maybeNotifPair] = await this.zomeProxy.addEntryAsBead(entryInfo);
-    console.log("publishEntryBeadAt() added bead", beadAh, creationTime);
-    /** Insert in perspective */
-    if (!dontStore) {
-      this.fetchEntryBead(beadAh, true, creationTime);
-    }
-    /** Notify Reply asychronously */
-    if (entryInfo.bead.prevKnownBeadAh && maybeNotifPair) {
-      const recipient = encodeHashToBase64(maybeNotifPair[0]);
-      const extra = encode(entryBead);
-      const signal = this.createNotificationSignal(maybeNotifPair[1], extra);
-      console.log("publishEntryBeadAt() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
-      /*await*/ this.notifyPeer(recipient, signal);
-    }
-    /** Done */
-    return [encodeHashToBase64(beadAh), global_time_anchor, entryBead];
-  }
-
-
-  /** */
-  async publishTextBeadAt(msg: string, ppAh: ActionHashB64, creationTime: Timestamp, ments: AgentPubKeyB64[], dontStore?: boolean) : Promise<[ActionHashB64, string, TextBead]> {
-    const bead = await this.checkForReply(ppAh);
-    const mentionees = ments.map((m) => decodeHashFromBase64(m));
-    /** Commit Entry */
-    const texto: TextBead = {value: msg, bead}
-    const [ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtWithMentions({texto, creationTime, mentionees});
-    const [_tmTs, _auth, tm] = await this.zomeProxy.getTextBead(ah);
-    // let replyTm;
-    // if (tm.bead.maybeReplyOfAh) {
-    //   const tuple = await this.zomeProxy.getTextMessage(tm.bead.maybeReplyOfAh);
-    //   replyTm = tuple[2];
-    // }
-    // FIXME: assert links.length == mentionees.length
-    //const [ah, global_time_anchor] = await this.zomeProxy.addTextMessageAt({texto, creationTime});
-    const beadAh = encodeHashToBase64(ah)
-    console.log("publishTextBeadAt() added bead", beadAh, creationTime);
-    const beadLink: BeadLink = {creationTime, beadAh: ah, beadType: ThreadsEntryType.TextBead}
-    /** Insert in ThreadInfo */
-    if (!dontStore) {
-      //await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
-      await this.fetchTextBead(beadLink.beadAh, true, creationTime);
-    }
-    /** Notify Mentions asychronously */
-    for (const [recip, notif] of notifPairs) {
-      const recipient = encodeHashToBase64(recip);
-      const extra = encode(tm);
-      const signal = this.createNotificationSignal(notif, extra);
-      console.log("publishTextBeadAt() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
-      /*await*/ this.notifyPeer(recipient, signal);
-    }
-    /** Done */
-    return [encodeHashToBase64(ah), global_time_anchor, texto];
-  }
-
-
-  /** */
-  async publishManyTextBeadAt(msg: string, protocolAh: ActionHashB64, intervalUs: Timestamp, count: number, dontStore?: boolean) : Promise<void> {
-    /** Make out bead */
-    const bead: Bead = {
-      ppAh: decodeHashFromBase64(protocolAh)
-    }
-    /** Commit Entry */
-    const texto = {value: msg, bead}
-    const tuples = await this.zomeProxy.addManyTextBeadAt({texto, intervalUs, count});
-    for (const [ah, _global_time_anchor, _indexTime] of tuples) {
-      const beadLink: BeadLink = {creationTime: intervalUs, beadAh: ah, beadType: ThreadsEntryType.TextBead}
-      /** Insert in ThreadInfo */
-      if (!dontStore) {
-        await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
-      }
-    }
-  }
-
-
-  /** */
-  async publishTextBead(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TextBead]> {
-    const creation_time = Date.now() * 1000
-    const [ah, global_time_anchor, tm] = await this.publishTextBeadAt(msg, ppAh, creation_time, ments? ments : []);
+  async publishTypedBead(type: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TypedBead]> {
+    const creation_time = Date.now() * 1000;
+    const nextBead = await this.createNextBead(ppAh);
+    const [ah, global_time_anchor, tm] = await this.publishTypedBeadAt(type, content, nextBead, creation_time, ments);
     return [ah, global_time_anchor, creation_time, tm];
   }
+
+
+
+  /** */
+  async publishTypedBeadAt(beadType: BeadType, content: string | Hrl | EntryHashB64, nextBead: Bead, creationTime: Timestamp, ments?: AgentPubKeyB64[], dontStore?: boolean)
+    : Promise<[ActionHashB64, string, TypedBead]>
+  {
+    const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
+    /** Commit Entry */
+    let typed, global_time_anchor, bucket_ts, notifPairs;
+    let bead_ah: ActionHash;
+    switch (beadType) {
+      case ThreadsEntryType.TextBead:
+        typed = {value: content as string, bead: nextBead} as TextBead;
+        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtWithMentions({texto: typed, creationTime, mentionees});
+        break;
+      case ThreadsEntryType.EntryBead:
+        const entryInfo = {
+          eh: decodeHashFromBase64(content as EntryHashB64),
+          bead: nextBead,
+          zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
+          roleName: "rFiles", // FILES_CELL_NAME
+        };
+        [bead_ah, typed, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addEntryAsBead(entryInfo);
+        break;
+      case ThreadsEntryType.AnyBead:
+        const encHrl = encodeHrl(content as Hrl);
+        const anyBead: AnyBead = {
+          bead: nextBead,
+          value: encHrl,
+          typeInfo: "hrl",
+        }
+        console.log("publishHrlBeadAt()", encHrl, anyBead);
+        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead(anyBead);
+        break;
+      default: throw Error("Unknown beadType: " + beadType);
+        break;
+    }
+    /** Insert in ThreadInfo */
+    console.log("publishTypedBeadAt() added bead", encodeHashToBase64(bead_ah), creationTime);
+    //const beadLink: BeadLink = {creationTime, beadAh: bead_ah, beadType}
+    if (!dontStore) {
+      //await this.fetchTypedBead(bead_ah, beadType, true, creationTime);
+      await this.storeBead(encodeHashToBase64(bead_ah), creationTime, this.cell.agentPubKey /* fixme */, typed, true, false);
+
+    }
+    /** Notify Mentions/reply asychronously */
+    for (const [recip, notif] of notifPairs) {
+      const recipient = encodeHashToBase64(recip);
+      const extra = encode(typed);
+      const signal = this.createNotificationSignal(notif, extra);
+      console.log("publishTypedBeadAt() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
+      /*await*/ this.notifyPeer(recipient, signal);
+    }
+    /** Done */
+    return [encodeHashToBase64(bead_ah), global_time_anchor, typed];
+  }
+
+
+
+  // /** */
+  // async publishManyTextBeadAt(msg: string, protocolAh: ActionHashB64, intervalUs: Timestamp, count: number, dontStore?: boolean) : Promise<void> {
+  //   /** Make out bead */
+  //   const bead: Bead = {
+  //     ppAh: decodeHashFromBase64(protocolAh)
+  //   }
+  //   /** Commit Entry */
+  //   const texto = {value: msg, bead}
+  //   const tuples = await this.zomeProxy.addManyTextBeadAt({texto, intervalUs, count});
+  //   for (const [ah, _global_time_anchor, _indexTime] of tuples) {
+  //     const beadLink: BeadLink = {creationTime: intervalUs, beadAh: ah, beadType: ThreadsEntryType.TextBead}
+  //     /** Insert in ThreadInfo */
+  //     if (!dontStore) {
+  //       await this.fetchBeads(protocolAh, [beadLink], TimeInterval.instant(beadLink.creationTime));
+  //     }
+  //   }
+  // }
+
 
 
   /** */
@@ -1016,43 +982,20 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async fetchTextBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<string> {
+  async fetchTypedBead(beadAh: ActionHash, beadType: BeadType, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<TypedBead> {
+    let creationTime, author, typed;
     try {
-      const [creationTime, author, tm] = await this.zomeProxy.getTextBead(beadAh);
+      switch (beadType) {
+        case ThreadsEntryType.TextBead: [creationTime, author, typed] = await this.zomeProxy.getTextBead(beadAh); break;
+        case ThreadsEntryType.EntryBead: [creationTime, author, typed] = await this.zomeProxy.getEntryBead(beadAh); break;
+        case ThreadsEntryType.AnyBead: [creationTime, author, typed] = await this.zomeProxy.getAnyBead(beadAh); break;
+      }
       const ts = alternateCreationTime? alternateCreationTime : creationTime;
-      await this.storeBead(encodeHashToBase64(beadAh), ts, encodeHashToBase64(author), tm, canNotify, false);
-      return tm.value;
+      await this.storeBead(encodeHashToBase64(beadAh), ts, encodeHashToBase64(author), typed, canNotify, false);
+      return typed;
     } catch(e) {
       console.error(e);
-      Promise.reject("TextBead not found at " + encodeHashToBase64(beadAh));
-    }
-  }
-
-
-  /** */
-  async fetchEntryBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<EntryBead> {
-    try {
-      const [creationTime, author, entryBead] = await this.zomeProxy.getEntryBead(beadAh);
-      const ts = alternateCreationTime? alternateCreationTime : creationTime;
-      await this.storeBead(encodeHashToBase64(beadAh), ts, encodeHashToBase64(author), entryBead, canNotify, false);
-      return entryBead;
-    } catch(e) {
-      console.error(e);
-      Promise.reject("EntryBead not found at " + encodeHashToBase64(beadAh));
-    }
-  }
-
-
-  /** */
-  async fetchAnyBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<AnyBead> {
-    try {
-      const [creationTime, author, anyBead] = await this.zomeProxy.getAnyBead(beadAh);
-      const ts = alternateCreationTime? alternateCreationTime : creationTime;
-      await this.storeBead(encodeHashToBase64(beadAh), ts, encodeHashToBase64(author), anyBead, canNotify, false);
-      return anyBead;
-    } catch(e) {
-      console.error(e);
-      Promise.reject("AnyBead not found at " + encodeHashToBase64(beadAh));
+      Promise.reject("Bead not found at " + encodeHashToBase64(beadAh));
     }
   }
 
@@ -1071,15 +1014,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** fetch each TextBead */
     for (const bl of beadLinks) {
       console.log("fetchBeads()", bl.beadType)
-      if (bl.beadType == ThreadsEntryType.TextBead) {
-        await this.fetchTextBead(bl.beadAh, false, bl.creationTime);
-      } else {
-        if (bl.beadType == ThreadsEntryType.EntryBead) {
-          await this.fetchEntryBead(bl.beadAh, false, bl.creationTime);
-        } else {
-          await this.fetchAnyBead(bl.beadAh, false, bl.creationTime);
-        }
-      }
+      await this.fetchTypedBead(bl.beadAh, bl.beadType as BeadType, false, bl.creationTime);
     }
     thread.addProbedInterval(probedInterval);
     this.notifySubscribers();
@@ -1409,63 +1344,135 @@ export class ThreadsZvm extends ZomeViewModel {
       /* const newTopicEh = */ await this.publishSemanticTopic(title);
     }
     /** this._allSubjects */
-    for (const [subjectHash, subject] of Object.values(perspMat.allSubjects)) {
-       // FIXME: Figure out how to map ppAh used as subjectHash
-       // Check if its an ActionHash?
-       // or check on export if ppAh has "threads" link off of it and add that to the perspective?
-    }
-    /** this._threads */
-    const ppAhMapping: Record<ActionHashB64, ActionHashB64> = {}
-    for (const [ppAh, ppMat, creationTime] of Object.values(perspMat.pps)) {
-      const pp = dematerializeParticipationProtocol(ppMat);
-      const [pp_ah, _ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol(pp);
-      const newPpAh = encodeHashToBase64(pp_ah);
-      ppAhMapping[ppAh] = newPpAh;
-      this.storePp(ppAh, pp, creationTime, false, true, true);
-    }
-    // FIXME: use Promise.AllSettled();
-    /** this._beads */
-    const beadAhMapping: Record<ActionHashB64, ActionHashB64> = {}
-    for (const [beadAh, [beadInfo, typedBead]] of Object.entries(perspMat.beads)) {
-      if (!ppAhMapping[beadInfo.bead.ppAh]) {
-        console.warn("Pp not found in mapping", beadInfo.bead.ppAh);
+    const ppAhs = perspMat.pps.map((tuple) => tuple[0]);
+    const entryAsSubjects: Dictionary<ThreadsEntryType> = {};
+    for (const [subjectHash, _subject] of Object.values(perspMat.allSubjects)) {
+      if (ppAhs.includes(subjectHash)) {
+        entryAsSubjects[subjectHash] = ThreadsEntryType.ParticipationProtocol;
         continue;
       }
-      const ppAh = ppAhMapping[beadInfo.bead.ppAh];
-      switch(beadInfo.beadType) {
-        case ThreadsEntryType.TextBead:
-          const tm = typedBead as TextBeadMat;
-          const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTextBeadAt(tm.value, ppAh, beadInfo.creationTime, []);
-          beadAhMapping[beadAh] = newBeadAh;
-          break;
-        case ThreadsEntryType.EntryBead:
-          const typed = typedBead as EntryBeadMat;
-          const [newEntryBeadAh, _gbt, _newEntryBead] = await this.publishEntryBeadAt(typed.sourceEh, ppAh, beadInfo.creationTime);
-          beadAhMapping[beadAh] = newEntryBeadAh;
-          break;
-        case ThreadsEntryType.AnyBead:
-          const typedAny = typedBead as TextBeadMat;
-          const hrl = decodeHrl(typedAny.value);
-          const [newAnyBeadAh, __gbt, _newAnyBead] = await this.publishHrlBeadAt(hrl, ppAh, beadInfo.creationTime);
-          beadAhMapping[beadAh] = newAnyBeadAh;
-          break;
-        default:
-          console.warn("Unknown bead type: " + beadInfo.beadType);
-          continue;
-          break;
+      const maybeBeadPair = perspMat.beads[subjectHash];
+      if (maybeBeadPair) {
+        entryAsSubjects[subjectHash] = maybeBeadPair[0].beadType as ThreadsEntryType;
+        continue;
       }
+      // FIXME: Figure out how to map ppAh used as subjectHash
+      // Check if its an ActionHash?
+      // or check on export if ppAh has "threads" link off of it and add that to the perspective?
     }
+
+    /** -- Threads & Beads -- */
+    const ppAhMapping: Record<ActionHashB64, ActionHashB64> = {}
+    /* Sort by creation time */
+    const sortedPps: [ActionHashB64, ParticipationProtocolMat, Timestamp][] = Object.values(perspMat.pps).sort(
+      ([ppAhA, ppMatA, creationTimeA], [ppAhB, ppMatB, creationTimeB]) => {
+        return creationTimeA - creationTimeB
+      })
+    const beadAhMapping: Record<ActionHashB64, ActionHashB64> = {}
+    /* Sort beads so they can get their prev bead equivalent ah */
+    const sortedBeads: [string, [BeadInfoMat, TypedBeadMat]][] = Object.entries(perspMat.beads).sort(
+      ([beadAhA, [beadInfoA, typedBeadA]], [beadAhB, [beadInfoB, typedBeadB]]) => {
+        return beadInfoA.creationTime - beadInfoB.creationTime
+      })
+
+    /* loop until all beads & pps have been processed ; check if progress is made, otherwise abort */
+    let loopCount = 0;
+    while(Object.keys(ppAhMapping).length != sortedPps.length && Object.keys(beadAhMapping).length != sortedBeads.length ) {
+      const totalStart = Object.keys(ppAhMapping).length + Object.keys(beadAhMapping).length;
+      /* Threads */
+      for (const [ppAh, ppMat, creationTime] of Object.values(sortedPps)) {
+        if (ppAhMapping[ppAh]) {
+          continue;
+        }
+        /* Grab subject mapping */
+        const maybeEntrySubject = entryAsSubjects[ppMat.subject.hash];
+        if (maybeEntrySubject) {
+          if (maybeEntrySubject == ThreadsEntryType.ParticipationProtocol) {
+            const newSubjectHash = ppAhMapping[ppMat.subject.hash];
+            if (!newSubjectHash) {
+              continue;
+            }
+            ppMat.subject.hash = newSubjectHash;
+          } else {
+            const newSubjectHash = beadAhMapping[ppMat.subject.hash];
+            if (!newSubjectHash) {
+              continue;
+            }
+            ppMat.subject.hash = newSubjectHash;
+          }
+        }
+        /* publish pp */
+        const pp = dematerializeParticipationProtocol(ppMat);
+        const [pp_ah, _ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol(pp);
+        const newPpAh = encodeHashToBase64(pp_ah);
+        ppAhMapping[ppAh] = newPpAh;
+        /* store pp */
+        this.storePp(newPpAh, pp, creationTime, false, true, true);
+      }
+      // FIXME: use Promise.AllSettled();
+
+      /* Threads */
+      for (const [beadAh, [beadInfo, typedBead]] of Object.values(sortedBeads)) {
+        if (beadAhMapping[beadAh]) {
+          continue;
+        }
+        console.log("PubImp() Bead", prettyTimestamp(beadInfo.creationTime), beadAh);
+        /* Grab pp mapping */
+        if (!ppAhMapping[beadInfo.bead.ppAh]) {
+          console.warn("PubImp() Pp not found in mapping", beadInfo.bead.ppAh);
+          continue;
+        }
+        /* Grab prev bead mapping */
+        let prevKnownBeadAh;
+        if (beadInfo.bead.prevKnownBeadAh) {
+          const prevKnownBeadAh = beadAhMapping[beadInfo.bead.prevKnownBeadAh];
+          if (!prevKnownBeadAh) {
+            console.warn("PubImp() Missing prev Bead", beadInfo.bead.prevKnownBeadAh);
+            continue;
+          }
+        }
+        /* Determine typed bead content */
+        let content: string | Hrl | EntryHashB64;
+        switch(beadInfo.beadType) {
+          case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
+          case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat).sourceEh; break;
+          case ThreadsEntryType.AnyBead:
+            const typedAny = typedBead as TextBeadMat;
+            content = decodeHrl(typedAny.value);
+            break;
+          default:
+            console.warn("PubImp() Unknown bead type: " + beadInfo.beadType);
+            continue;
+            break;
+        }
+        /* Publish */
+        const newPpAh = decodeHashFromBase64(ppAhMapping[beadInfo.bead.ppAh]);
+        console.log(`PubImp() Bead newPpAh: ${ppAhMapping[beadInfo.bead.ppAh]}`);
+        const nextBead: Bead = {ppAh: newPpAh, prevKnownBeadAh: prevKnownBeadAh? decodeHashFromBase64(prevKnownBeadAh) : undefined};
+        const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTypedBeadAt(beadInfo.beadType as BeadType, content, nextBead, beadInfo.creationTime, []);
+        beadAhMapping[beadAh] = newBeadAh;
+        console.log(`PubImp() Bead ${beadAh} -> ${newBeadAh}`);
+      }
+      /* Break loop if no progress made */
+      const totalEnd = Object.keys(ppAhMapping).length + Object.keys(beadAhMapping).length;
+      if (totalEnd == totalStart) {
+        console.warn("PubImp() Publish loop ended because no progress made: " + totalEnd + " / " + sortedPps.length + sortedBeads.length);
+        break;
+      }
+      loopCount += 1
+    }
+    console.log(`PubImp() looped ${loopCount} times. pps: ${Object.keys(ppAhMapping).length} ; beads: ${Object.keys(beadAhMapping).length}`);
+
     /** this._emojiReactions */
     for (const [beadAh, pairs] of Object.entries(perspMat.emojiReactions)) {
       for (const [author, emoji] of pairs) {
         if (!beadAhMapping[beadAh]) {
-          console.warn("Bead not found in mapping", beadAh);
+          console.warn("PubImp() Bead not found in mapping", beadAh);
           continue;
         }
         const bead_ah = decodeHashFromBase64(beadAhMapping[beadAh]);
         await this.zomeProxy.addReaction({bead_ah, from: decodeHashFromBase64(author), emoji});
         /*const succeeded =*/ await this.storeEmojiReaction(beadAh, author, emoji);
-
       }
     }
     /** other */
@@ -1507,11 +1514,11 @@ export class ThreadsZvm extends ZomeViewModel {
     //const timeYear = await this.publishThreadFromSemanticTopic(top4, "year");
 
 
-    await this.publishTextBead("m1", th01);
+    await this.publishTypedBead(ThreadsEntryType.TextBead, "m1", th01);
 
-    await this.publishTextBead("first", th1);
-    await this.publishTextBead("second", th1);
-    await this.publishTextBead("third", th1);
+    await this.publishTypedBead(ThreadsEntryType.TextBead, "first", th1);
+    await this.publishTypedBead(ThreadsEntryType.TextBead, "second", th1);
+    await this.publishTypedBead(ThreadsEntryType.TextBead, "third", th1);
 
     //await this.publishManyDebug(timeMin, 60 * 1000, 200);
     await this.publishManyDebug(timeDay, 24 * 3600 * 1000, 42);
@@ -1551,7 +1558,8 @@ export class ThreadsZvm extends ZomeViewModel {
       n = 40;
     }
     for (; n > 0; n -= 1) {
-      await this.publishTextBeadAt("" + interval / 1000 + "-message-" + n, ppAh, date_ms * 1000, [], true);
+      const nextBead = await this.createNextBead(ppAh);
+      await this.publishTypedBeadAt(ThreadsEntryType.TextBead, "" + interval / 1000 + "-message-" + n, nextBead, date_ms * 1000, [], true);
       date_ms -= interval;
     }
   }

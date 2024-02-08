@@ -1,26 +1,29 @@
-import {delay, Dictionary, DnaViewModel} from "@ddd-qc/lit-happ";
+import {delay, DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {
   ActionHashB64,
   AgentPubKeyB64,
-  AppSignal, AppSignalCb,
-  decodeHashFromBase64, encodeHashToBase64,
+  AppSignal,
+  AppSignalCb,
+  decodeHashFromBase64,
+  encodeHashToBase64,
   EntryHashB64
 } from "@holochain/client";
 import {
-  DirectGossip, DirectGossipType, NotifiableEventType,
+  DirectGossip,
+  DirectGossipType,
+  NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
-  THREADS_DEFAULT_ROLE_NAME, ThreadsEntryType, WeaveNotification, WeaveSignal
+  THREADS_DEFAULT_ROLE_NAME,
+  ThreadsEntryType,
+  WeaveNotification,
+  WeaveSignal
 } from "../bindings/threads.types";
-import {
-  AnyLinkableHashB64, ThreadsPerspectiveMat,
-  TypedBead,
-} from "./threads.perspective";
+import {AnyLinkableHashB64, BeadType, TypedBead,} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
-
 
 
 /** */
@@ -231,37 +234,17 @@ export class ThreadsDvm extends DnaViewModel {
     };
   }
 
+
   /** */
-  async publishEntryBead(eh: EntryHashB64, ppAh: ActionHashB64) {
-    let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishEntryBead(eh, ppAh);
+  async publishTypedBead(beadType: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
+    let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, ments);
     /** Send signal to peers */
     const data = encode(entryBead);
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.EntryBead, ppAh, data]}, ppAh);
+    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, beadType, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
 
-
-  /** */
-  async publishHrlBead(hrl: Hrl, ppAh: ActionHashB64): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creationTime, anyBead] = await this.threadsZvm.publishHrlBead(hrl, ppAh);
-    /** Send signal to peers */
-    const data = encode(anyBead);
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, ThreadsEntryType.AnyBead, ppAh, data]}, ppAh);
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
-    return ah;
-  }
-
-
-  /** */
-  async publishTextBead(msg: string, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creation_time, tm] = await this.threadsZvm.publishTextBead(msg, ppAh, ments);
-    /** Send signal to peers */
-    const data = encode(tm);
-    const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creation_time, ah, ThreadsEntryType.TextBead, ppAh, data]}, ppAh);
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
-    return ah;
-  }
 
 
   /** */
@@ -355,7 +338,7 @@ export class ThreadsDvm extends DnaViewModel {
     await delay(1000);
     const [_ts, ppAh, _pp] = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
     await delay(1000);
-    const msgAh = await this.publishTextBead("msg-1", ppAh, []);
+    const msgAh = await this.publishTypedBead(ThreadsEntryType.TextBead, "msg-1", ppAh, []);
     console.log("generateTestSignals() END", msgAh);
   }
 }

@@ -1,10 +1,11 @@
 use hdk::prelude::*;
 use time_indexing::convert_timepath_to_timestamp;
-use zome_utils::{decode_response, error, get_all_typed_local, get_author, get_typed_from_record, path2anchor};
+use zome_utils::*;
 use threads_integrity::{EntryBead, Bead, ThreadsEntry, ThreadsEntryTypes};
-use crate::beads::index_bead;
+use crate::beads::{get_typed_bead, index_bead};
 use crate::notify_peer::{NotifiableEvent, send_inbox_item, SendInboxItemInput, WeaveNotification};
 
+///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AddEntryAsBead {
@@ -18,7 +19,7 @@ pub struct AddEntryAsBead {
 ///     get_any_record(eh: EntryHash) -> ExternResult<Option<Record>>;
 /// Return bead type, Global Time Anchor, bucket time
 #[hdk_extern]
-pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, EntryBead, String, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
+pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, EntryBead, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
     debug!("add_any_as_bead() {:?}", input);
     let response = call(
         CallTargetCell::OtherRole(input.role_name.clone()),
@@ -48,12 +49,12 @@ pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, Ent
     let tp_pair = index_bead(entryBead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, ah_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     /// Reply
-    let mut maybe_notif = None;
+    let mut maybe_notif = Vec::new();
     if let Some(reply_ah) = input.bead.prev_known_bead_ah.clone() {
         let reply_author = get_author(&reply_ah.clone().into())?;
         let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
         if let Some((_link_ah, notif)) = maybe {
-            maybe_notif = Some((reply_author, notif));
+            maybe_notif.push((reply_author, notif));
         }
     }
     ///
@@ -64,26 +65,14 @@ pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, Ent
 /// WARN Will return actual action creation time and not devtest_timestamp
 #[hdk_extern]
 pub fn get_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EntryBead)> {
-    //let fn_start = sys_time()?;
-    let res = match get(bead_ah.clone(), GetOptions::content())? {
-        Some(record) => {
-            let action = record.action().clone();
-            let Ok(typed) = get_typed_from_record::<EntryBead>(record)
-                else { return error("get_entry_bead(): Entry not an EntryBead") };
-            Ok((action.timestamp(), action.author().to_owned(), typed))
-        }
-        None => error("get_entry_bead(): Entry not found"),
-    };
-    //let fn_end = sys_time()?;
-    //debug!("GET TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
-    res
+    return get_typed_bead::<EntryBead>(bead_ah);
 }
 
 
 ///
 #[hdk_extern]
 pub fn get_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EntryBead)>> {
-    return ahs.into_iter().map(|ah| get_entry_bead(ah)).collect();
+    return ahs.into_iter().map(|ah| get_typed_bead::<EntryBead>(ah)).collect();
 }
 
 

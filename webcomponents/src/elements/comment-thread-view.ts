@@ -1,5 +1,5 @@
-import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {html, PropertyValues} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -163,7 +163,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     const mentions = parseMentions(inputText);
     mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
 
-    const ah = await this._dvm.publishTextBead(inputText, this.threadHash, mentionedAgents);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, mentionedAgents);
     console.log("onCreateComment() ah:", ah);
   }
 

@@ -22,10 +22,10 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_all_beads",
 	"get_latest_beads",
 	"add_text_bead_at_with_mentions",
-	"query_text_beads",
+	"add_text_bead",
 	"get_text_bead",
 	"get_many_text_bead",
-	"add_text_bead",
+	"query_text_beads",
 	"add_text_bead_at",
 	"add_many_text_bead_at",
 

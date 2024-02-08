@@ -154,6 +154,7 @@ export interface AddReactionInput {
   from?: AgentPubKey
 }
 
+/**  */
 export interface AddEntryAsBead {
   eh: EntryHash
   bead: Bead

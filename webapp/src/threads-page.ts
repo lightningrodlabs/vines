@@ -264,7 +264,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       threadHash = await this.createCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
     }
-    let res = await this._dvm.publishTextBead(inputText, threadHash, mentionedAgents);
+    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, mentionedAgents);
     console.log("onCreateTextMessage() res:", res);
 
     // /** DEBUG */
@@ -274,6 +274,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // }
   }
 
+
   /** */
   async onCreateHrlMessage() {
     const maybeHrlc = await this.weServices.userSelectHrl();
@@ -281,8 +282,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage()", stringifyHrl(maybeHrlc.hrl), maybeHrlc);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.publishHrlBead(maybeHrlc.hrl, this._selectedThreadHash);
+    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeHrlc.hrl, this._selectedThreadHash);
   }
+
 
   /** */
   async onCreateSemanticTopic(topic: string) {
@@ -534,7 +536,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<threads-page> startPublishFile callback", eh);
-        /*let ah =*/ this._dvm.publishEntryBead(eh, this._selectedThreadHash);
+        /*let ah =*/ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, this._selectedThreadHash);
         this._splitObj = undefined;
       });
       console.log("uploadFile()", this._splitObj);
