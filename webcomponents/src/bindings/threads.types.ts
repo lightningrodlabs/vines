@@ -297,8 +297,8 @@ export interface EntryBead {
   bead: Bead
   sourceEh: EntryHash
   sourceType: string
-  sourceRole: string
   sourceZome: string
+  sourceRole: string
 }
 
 /**  */
