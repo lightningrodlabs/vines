@@ -1,7 +1,13 @@
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {OriginalsProxy} from "../bindings/originals.proxy";
 import {AnyLinkableHashB64} from "./threads.perspective";
-import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
+import {
+  AgentPubKey,
+  AgentPubKeyB64,
+  AnyLinkableHash,
+  decodeHashFromBase64,
+  encodeHashToBase64, EntryHashB64
+} from "@holochain/client";
 
 
 /** */
@@ -10,7 +16,7 @@ export interface OriginalsPerspective {
   /** typeName -> (hash -> original author)*/
   originalsByType: Dictionary<AnyLinkableHashB64[]>,
   /** hash -> original author */
-  allOriginals: Record<AnyLinkableHashB64, AgentPubKeyB64>,
+  allOriginals: Record<AnyLinkableHashB64, AgentPubKeyB64 | null>,
 }
 
 
@@ -52,7 +58,7 @@ export class OriginalsZvm extends ZomeViewModel {
 
   /** -- Get: Return a stored element -- */
 
-  getOriginalAuthor(hash: AnyLinkableHashB64): AgentPubKeyB64 | undefined {
+  getOriginalAuthor(hash: AnyLinkableHashB64): AgentPubKeyB64 | null | undefined {
     return this._allOriginals[hash];
   }
 
@@ -73,7 +79,7 @@ export class OriginalsZvm extends ZomeViewModel {
     await this.probeTypes();
     await this.probeAllOriginals();
   }
-  
+
   /** */
   probeAllInner() {
     /* await */ this.initializePerspectiveOnline();
@@ -97,10 +103,10 @@ export class OriginalsZvm extends ZomeViewModel {
   }
 
 
-  /** -- store -- */
+  /** -- Store -- */
 
   /** */
-  storeOriginal(typeName: string, target: AnyLinkableHashB64, author: AgentPubKeyB64) {
+  storeOriginal(typeName: string, target: AnyLinkableHashB64, author: AgentPubKeyB64 | null) {
     this._allOriginals[target] = author;
     /* */
     if (!this._originalsByType[typeName]) {
@@ -111,4 +117,25 @@ export class OriginalsZvm extends ZomeViewModel {
     }
   }
 
+  /** -- Create -- */
+
+
+  /** */
+  createOriginal(type: string, hash: AnyLinkableHashB64, author: AgentPubKeyB64 | null, preventZomeCall?: boolean) {
+    if (!preventZomeCall) {
+      /*await*/ this.zomeProxy.createOriginalLink({
+        target: decodeHashFromBase64(hash),
+        targetType: type,
+        maybeOriginalAuthor: author == null? undefined : decodeHashFromBase64(author),
+      });
+    }
+    this.storeOriginal(type, hash, author);
+  }
+
+
+  /** */
+  async createOriginalFromEntry(eh: EntryHashB64) {
+    const [type, author] = await this.zomeProxy.createOriginalLinkFromAppEntry(decodeHashFromBase64(eh));
+    this.storeOriginal(type, eh, encodeHashToBase64(author));
+  }
 }

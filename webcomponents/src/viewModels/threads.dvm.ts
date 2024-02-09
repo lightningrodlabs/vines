@@ -24,6 +24,7 @@ import {AnyLinkableHashB64, BeadType, TypedBead,} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
+import {OriginalsZvm} from "./originals.zvm";
 
 
 /** */
@@ -43,7 +44,7 @@ export interface ThreadsDnaPerspective {
 export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
-  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm/*, PathExplorerZvm*/ ]
+  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm, OriginalsZvm/*, PathExplorerZvm*/ ]
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
@@ -107,7 +108,7 @@ export class ThreadsDvm extends DnaViewModel {
       const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
       const ppAh = encodeHashToBase64(notif.content);
       console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
-      await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, true, true);
+      await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
 
     /** Store Notification */
@@ -154,7 +155,7 @@ export class ThreadsDvm extends DnaViewModel {
       case DirectGossipType.NewPp:
         const [tss, newPpAh, pp] = gossip.content
         ///*await */ this.threadsZvm.fetchPp(newPpAh);
-        this.threadsZvm.storePp(newPpAh, pp, tss, false, true);
+        this.threadsZvm.storePp(newPpAh, pp, tss, weaveSignal.from, false, true);
         break;
       case DirectGossipType.NewBead:
         const [ts, beadAh, beadType, ppAh, encBead] = gossip.content;

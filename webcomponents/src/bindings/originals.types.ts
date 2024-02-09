@@ -148,7 +148,7 @@ ValidationReceipt,
 export interface CreateOriginalLinkInput {
   target: AnyLinkableHash
   targetType: string
-  originalAuthor: AgentPubKey
+  maybeOriginalAuthor?: AgentPubKey
 }
 
 /**
@@ -164,7 +164,9 @@ export const ORIGINALS_DEFAULT_COORDINATOR_ZOME_NAME = "zOriginals";
 export const ORIGINALS_DEFAULT_INTEGRITY_ZOME_NAME = "originals_integrity";
 
 /** ANCHOR NAMES */
-export const ROOT_ANCHOR_ORIGNALS = "__originals";
+export const ROOT_ANCHOR_ORIGINALS = "__originals";
+
+export const ANCHOR_UNKNOWN_AUTHOR = "__unknown_author";
 
 /**
  * -------------------------------------------------------------------------------------------------

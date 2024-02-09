@@ -305,11 +305,11 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_pps_from_subject_anchor', anchor);
   }
 
-  async queryPps(): Promise<[Timestamp, ActionHash, ParticipationProtocol][]> {
+  async queryPps(): Promise<[Timestamp, AgentPubKey, ActionHash, ParticipationProtocol][]> {
     return this.call('query_pps', null);
   }
 
-  async getPp(ah: ActionHash): Promise<[ParticipationProtocol, Timestamp]> {
+  async getPp(ah: ActionHash): Promise<[ParticipationProtocol, Timestamp, AgentPubKey]> {
     return this.call('get_pp', ah);
   }
 

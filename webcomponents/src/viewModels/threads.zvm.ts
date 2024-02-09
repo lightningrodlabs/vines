@@ -52,6 +52,7 @@ import {prettyTimestamp} from "@ddd-qc/files";
 import {encode} from "@msgpack/msgpack";
 import {decodeHrl, encodeHrl} from "../utils";
 import {generateSearchTest, SearchParameters} from "../search";
+import {OriginalsZvm} from "./originals.zvm";
 
 
 generateSearchTest();
@@ -496,9 +497,9 @@ export class ThreadsZvm extends ZomeViewModel {
   async queryThreads(): Promise<void> {
     const tuples = await this.zomeProxy.queryPps();
     const hiddens = await this.probeHiddens();
-    for (const [ts, ah, pp] of tuples) {
+    for (const [ts, author, ah, pp] of tuples) {
       const ppAh = encodeHashToBase64(ah);
-      this.storePp(encodeHashToBase64(ah), pp, ts, hiddens.includes(ppAh), false, true);
+      this.storePp(encodeHashToBase64(ah), pp, ts, encodeHashToBase64(author), hiddens.includes(ppAh), false, true);
     }
     console.log("queryThreads()", this._threads.size);
     this.notifySubscribers();
@@ -575,8 +576,8 @@ export class ThreadsZvm extends ZomeViewModel {
     // FIXME resolve promise all at once
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = encodeHashToBase64(pp_ah);
-      const [pp, ts] = await this.zomeProxy.getPp(pp_ah);
-      this.storePp(ppAh, pp, ts, hiddens.includes(ppAh), false);
+      const [pp, ts, author] = await this.zomeProxy.getPp(pp_ah);
+      this.storePp(ppAh, pp, ts, encodeHashToBase64(author), hiddens.includes(ppAh), false);
       res[ppAh] = pp;
     }
     return res;
@@ -939,8 +940,8 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Store PP */
     const ppAh = encodeHashToBase64(pp_ah);
-    const [pp2, _ts2] = await this.zomeProxy.getPp(pp_ah);
-    const ppMat = this.storePp(ppAh, pp2, ts, false, false);
+    const [pp2, _ts2, author] = await this.zomeProxy.getPp(pp_ah);
+    const ppMat = this.storePp(ppAh, pp2, ts, encodeHashToBase64(author), false, false);
     /** */
     return [ppAh, ppMat];
   }
@@ -961,7 +962,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const [pp_ah, ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol(pp);
     const ppAh = encodeHashToBase64(pp_ah);
-    this.storePp(ppAh, pp, ts, false, false);
+    this.storePp(ppAh, pp, ts, this.cell.agentPubKey, false, false);
     /** */
     return [ts, ppAh, pp];
   }
@@ -972,12 +973,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async fetchPp(ppAh: ActionHashB64, preventNotify?: boolean): Promise<ParticipationProtocolMat> {
-    const [pp, ts] = await this.zomeProxy.getPp(decodeHashFromBase64(ppAh));
+    const [pp, ts, author] = await this.zomeProxy.getPp(decodeHashFromBase64(ppAh));
     if (pp === null) {
       Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
     const isHidden = await this.zomeProxy.getHideLink(decodeHashFromBase64(ppAh));
-    const ppMat = this.storePp(ppAh, pp, ts, isHidden != null, false, preventNotify);
+    const ppMat = this.storePp(ppAh, pp, ts, encodeHashToBase64(author), isHidden != null, false, preventNotify);
     return ppMat;
   }
 
@@ -1086,14 +1087,14 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp, isHidden: boolean, isNew: boolean, preventNotify?: boolean): ParticipationProtocolMat {
+  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentPubKeyB64, isHidden: boolean, isNew: boolean, preventNotify?: boolean): ParticipationProtocolMat {
     if (this._threads.has(ppAh)) {
       /** Return already stored PP */
       return this._threads.get(ppAh).pp;
     }
     let ppMat = materializeParticipationProtocol(pp);
     const threadName = this.threadName(ppMat);
-    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, threadName);
+    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, author, threadName);
     thread.setIsHidden(isHidden);
     console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden);
     this._threads.set(ppAh, thread);
@@ -1261,14 +1262,20 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Dump perspective as JSON */
-  exportPerspective(): string {
+  exportPerspective(/*originalsZvm: OriginalsZvm*/): string {
     /** allSubjects */
     const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
-    Array.from(this._allSubjects.entries()).map(([subjectAh, subject]) => allSubjects.set(subjectAh, subject));
+    Array.from(this._allSubjects.entries()).map(([subjectAh, subject]) => {
+      //originalsZvm.createOriginal("Subject", subjectAh, null, true);
+      return allSubjects.set(subjectAh, subject);
+    });
 
     /** pps */
     const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]> = new Array();
-    Array.from(this._threads.entries()).map(([ppAh, thread]) => pps.push([ppAh, thread.pp, thread.creationTime]));
+    Array.from(this._threads.entries()).map(([ppAh, thread]) => {
+      //originalsZvm.createOriginal(ThreadsEntryType.ParticipationProtocol, ppAh, thread.author, true);
+      return pps.push([ppAh, thread.pp, thread.creationTime]);
+    });
 
     /** beads */
     const beads: Dictionary<[BeadInfoMat, TypedBeadMat]> = {};
@@ -1320,7 +1327,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** this._threads */
     for (const [ppAh, ppMat, creationTime] of Object.values(external.pps)) {
-      this.storePp(ppAh, dematerializeParticipationProtocol(ppMat), creationTime, false, true, true);
+      this.storePp(ppAh, dematerializeParticipationProtocol(ppMat), creationTime, this.cell.agentPubKey, false, true, true);
     }
     /** this._beads */
     for (const [beadAh, [beadInfo, typedBead]] of Object.entries(external.beads)) {
@@ -1408,7 +1415,7 @@ export class ThreadsZvm extends ZomeViewModel {
         const newPpAh = encodeHashToBase64(pp_ah);
         ppAhMapping[ppAh] = newPpAh;
         /* store pp */
-        this.storePp(newPpAh, pp, creationTime, false, true, true);
+        this.storePp(newPpAh, pp, creationTime, this.cell.agentPubKey, false, true, true);
       }
       // FIXME: use Promise.AllSettled();
 

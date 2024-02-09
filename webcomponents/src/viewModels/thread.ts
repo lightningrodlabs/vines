@@ -1,4 +1,4 @@
-import {ActionHashB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, Timestamp} from "@holochain/client";
 import {TimeInterval} from "./timeInterval";
 
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
@@ -40,6 +40,8 @@ export class Thread {
   /* Flag if first node is the oldest node possible */
   private _hasSearchedOldestBead: boolean = false;
   /* CreationTime of the thread's PP entry */
+  private _author: AgentPubKeyB64;
+  /* CreationTime of the thread's PP entry */
   private _creationTime: Timestamp;
   /* Logged last known bead */
   private _latestProbeLogTime: Timestamp;
@@ -54,11 +56,12 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, public readonly name: string) {
+  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentPubKeyB64, public readonly name: string) {
     console.log("New Thread() dnaOriginTime", dnaOriginTime);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
     this._creationTime = creationTime;
+    this._author = author;
 
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
@@ -70,6 +73,8 @@ export class Thread {
   get pp(): ParticipationProtocolMat { return this._pp}
 
   get creationTime(): Timestamp { return this._creationTime}
+
+  get author(): AgentPubKeyB64 { return this._author}
 
   get isHidden(): boolean { return this._isHidden}
 

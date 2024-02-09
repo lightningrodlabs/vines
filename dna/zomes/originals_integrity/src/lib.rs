@@ -16,8 +16,9 @@ pub const ORIGINALS_DEFAULT_COORDINATOR_ZOME_NAME: &'static str = "zOriginals";
 pub const ORIGINALS_DEFAULT_INTEGRITY_ZOME_NAME: &'static str = "originals_integrity";
 
 /// ANCHOR NAMES
-pub const ROOT_ANCHOR_ORIGNALS: &'static str = "__originals";
+pub const ROOT_ANCHOR_ORIGINALS: &'static str = "__originals";
 
+pub const ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
 
 
 ///-------------------------------------------------------------------------------------------------

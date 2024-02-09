@@ -14,10 +14,10 @@ use threads_integrity::*;
 
 /// Get all ParticipationProtocol in local source-chain
 #[hdk_extern]
-pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, ParticipationProtocol)>> {
+pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, AgentPubKey, ActionHash, ParticipationProtocol)>> {
   let tuples = get_all_typed_local::<ParticipationProtocol>( EntryType::App(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap()))?;
   let res = tuples.into_iter().map(|(ah, create_action, typed)| {
-    (create_action.timestamp, ah, typed)
+    (create_action.timestamp, create_action.author, ah, typed)
   }).collect();
   Ok(res)
 }
@@ -25,9 +25,9 @@ pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, Participatio
 
 ///
 #[hdk_extern]
-pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp)> {
+pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
   let typed_pair = get_typed_and_record(&ah.into())?;
-  Ok((typed_pair.1, typed_pair.0.action().timestamp()))
+  Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
 }
 
 

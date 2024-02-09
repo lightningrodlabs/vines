@@ -2,7 +2,7 @@ use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_encode};
 use zome_utils::*;
-use originals_integrity::{OriginalsLinkType, ROOT_ANCHOR_ORIGNALS};
+use originals_integrity::*;
 
 
 ///
@@ -11,7 +11,7 @@ use originals_integrity::{OriginalsLinkType, ROOT_ANCHOR_ORIGNALS};
 pub struct CreateOriginalLinkInput {
     pub target: AnyLinkableHash,
     pub target_type: String,
-    pub original_author: AgentPubKey,
+    pub maybe_original_author: Option<AgentPubKey>,
 }
 
 
@@ -20,7 +20,7 @@ pub(crate) fn get_type_tp(target_type: String) -> ExternResult<TypedPath> {
     // conver to lowercase for path for ease of search
     let lower_title = target_type.to_lowercase();
     //
-    Path::from(format!("{}{}{}", ROOT_ANCHOR_ORIGNALS, DELIMITER, lower_title.chars().next().unwrap()))
+    Path::from(format!("{}{}{}", ROOT_ANCHOR_ORIGINALS, DELIMITER, lower_title.chars().next().unwrap()))
         .typed(OriginalsLinkType::OriginalPath)
 }
 
@@ -28,22 +28,27 @@ pub(crate) fn get_type_tp(target_type: String) -> ExternResult<TypedPath> {
 /// TODO VALIDATION: only author of entry should be allowed to create an original link.
 #[hdk_extern]
 pub fn create_original_link(input: CreateOriginalLinkInput) -> ExternResult<ActionHash> {
-    let me = agent_info()?.agent_latest_pubkey;
-    if input.original_author == me {
-        return error("Original author is already the author. No need to create a link");
-    }
+    //let me = agent_info()?.agent_latest_pubkey;
+    // if input.maybe_original_author == me {
+    //     return error("Original author is already the author. No need to create a link");
+    // }
+
     let tp = get_type_tp(input.target_type)?;
-    let tag = hash2tag(input.original_author);
+    let tag = if let Some(author) = input.maybe_original_author {
+        hash2tag(author)
+    } else {
+        LinkTag::from(())
+    };
     let ah = create_link(tp.path_entry_hash()?, input.target, OriginalsLinkType::Original, tag)?;
     Ok(ah)
 }
 
 
-///
+/// Return type and author
 #[hdk_extern]
-pub fn create_original_link_from_app_entry(eh: EntryHash) -> ExternResult<ActionHash> {
+pub fn create_original_link_from_app_entry(ah: ActionHash) -> ExternResult<(String, AgentPubKey)> {
     /// Grab Entry
-    let maybe_maybe_record = get(eh.clone(), GetOptions::content());
+    let maybe_maybe_record = get(ah.clone(), GetOptions::content());
     if let Err(err) = maybe_maybe_record {
         warn!("Failed getting Record: {}", err);
         return Err(err);
@@ -62,17 +67,19 @@ pub fn create_original_link_from_app_entry(eh: EntryHash) -> ExternResult<Action
     let target_type = get_entry_type_name(app_entry_def)?;
     /// Form input & create link
     let input = CreateOriginalLinkInput {
-        target: eh.into(),
+        target: ah.into(),
         target_type,
-        original_author: record.action().author().to_owned(),
+        maybe_original_author: Some(record.action().author().to_owned()),
     };
-    return create_original_link(input);
+    let _ah = create_original_link(input.clone());
+    Ok((input.target_type, input.maybe_original_author.unwrap()))
 }
+
 
 ///
 #[hdk_extern]
 pub fn get_types(_: ()) -> ExternResult<Vec<String>> {
-    let tp = Path::from(ROOT_ANCHOR_ORIGNALS)
+    let tp = Path::from(ROOT_ANCHOR_ORIGINALS)
         .typed(OriginalsLinkType::OriginalPath)?;
     let children_tps = tp_children_paths(&tp)?;
     let result = children_tps.into_iter().map(|tp| {
@@ -84,8 +91,9 @@ pub fn get_types(_: ()) -> ExternResult<Vec<String>> {
 }
 
 
+///
 #[hdk_extern]
-pub fn get_all_originals(_: ()) -> ExternResult<Vec<(String, AnyLinkableHash, AgentPubKey)>> {
+pub fn get_all_originals(_: ()) -> ExternResult<Vec<(String, AnyLinkableHash, Option<AgentPubKey>)>> {
     let child_types = get_types(())?;
     let mut result = Vec::new();
     for child_type in child_types {
@@ -100,12 +108,12 @@ pub fn get_all_originals(_: ()) -> ExternResult<Vec<(String, AnyLinkableHash, Ag
 
 ///
 #[hdk_extern]
-pub fn get_children_for_type(target_type: String) -> ExternResult<Vec<(AnyLinkableHash, AgentPubKey)>> {
+pub fn get_children_for_type(target_type: String) -> ExternResult<Vec<(AnyLinkableHash, Option<AgentPubKey>)>> {
     let tp = get_type_tp(target_type)?;
     let targets = get_links(tp.path_entry_hash()?, OriginalsLinkType::Original, None)?;
-    let result: Vec<(AnyLinkableHash, AgentPubKey)> = targets.into_iter().map(|link| {
-        let agent = tag2hash(&link.tag).unwrap();
-        (link.target, agent)
+    let result: Vec<(AnyLinkableHash, Option<AgentPubKey>)> = targets.into_iter().map(|link| {
+        let maybe_agent = tag2hash(&link.tag).ok();
+        (link.target, maybe_agent)
     }).collect();
     Ok(result)
 }
@@ -145,6 +153,9 @@ pub fn hash2tag<T: HashType>(hash: HoloHash<T>) -> LinkTag {
 ///
 pub fn tag2hash<T: HashType>(tag: &LinkTag) -> ExternResult<HoloHash<T>> {
     let hash_str = tag2str(&tag)?;
+    // if hash_str == "" {
+    //
+    // }
     let raw_hash = holo_hash_decode_unchecked(&hash_str)
         .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     let hash = HoloHash::<T>::from_raw_39(raw_hash)
