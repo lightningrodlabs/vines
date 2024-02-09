@@ -8,6 +8,7 @@ pub struct Bead {
     pub prev_known_bead_ah: Option<ActionHash>,
 }
 
+
 ///
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
@@ -16,9 +17,10 @@ pub struct EntryBead {
     pub bead: Bead,
     pub source_eh: EntryHash,
     pub source_type: String,
-    pub source_role: String,
     pub source_zome: String,
+    pub source_role: String,
 }
+
 
 ///
 #[hdk_entry_helper]
@@ -58,15 +60,13 @@ pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
     pub subject: Subject,
-    //pub subject_hash: AnyLinkableHash,
-    //pub subject_type: String,
 }
+
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subject {
     pub hash: AnyLinkableHash,
-    //hash_type: AppletSubjectType,
     pub type_name: String,
     pub dna_hash: DnaHash,
     pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)
@@ -91,42 +91,3 @@ pub struct ThreadLastProbeLog {
     pub maybe_last_known_bead_ah: Option<ActionHash>,
 }
 
-
-
-// ///
-// #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-// #[serde(rename_all = "camelCase")]
-// pub enum SubjectType {
-//     Dna,
-//     Agent,
-//     Bead,
-//     SemanticTopic,
-//     Applet(AppletSubjectType),
-// }
-//
-//
-// ///
-// #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-// #[serde(rename_all = "camelCase")]
-// pub enum AppletSubjectType {
-//     Entry,
-//     Action,
-//     External,
-// }
-//
-// impl AppletSubjectType {
-//     pub fn from(lh: AnyLinkableHash) -> Self {
-//         match lh.hash_type() {
-//             hash_type::AnyLinkable::Entry => {
-//                 AppletSubjectType::Entry
-//             }
-//             hash_type::AnyLinkable::Action => {
-//                 AppletSubjectType::Entry
-//             }
-//             hash_type::AnyLinkable::External => {
-//                 AppletSubjectType::External
-//             }
-//         }
-//     }
-// }
-//
