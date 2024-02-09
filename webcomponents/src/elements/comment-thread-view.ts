@@ -163,7 +163,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     const mentions = parseMentions(inputText);
     mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
 
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, mentionedAgents);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey, mentionedAgents);
     console.log("onCreateComment() ah:", ah);
   }
 

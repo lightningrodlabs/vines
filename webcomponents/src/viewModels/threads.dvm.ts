@@ -58,6 +58,9 @@ export class ThreadsDvm extends DnaViewModel {
     return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm;
   }
 
+  get originalsZvm(): OriginalsZvm {
+    return this.getZomeViewModel(OriginalsZvm.DEFAULT_ZOME_NAME) as OriginalsZvm;
+  }
 
   /** -- Perspective -- */
 
@@ -108,7 +111,7 @@ export class ThreadsDvm extends DnaViewModel {
       const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
       const ppAh = encodeHashToBase64(notif.content);
       console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
-      await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true);
+      await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true); // only real author should notify others
     }
 
     /** Store Notification */
@@ -237,8 +240,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, ments);
+  async publishTypedBead(beadType: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
+    let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments);
     /** Send signal to peers */
     const data = encode(entryBead);
     const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, beadType, ppAh, data]}, ppAh);
@@ -296,12 +299,15 @@ export class ThreadsDvm extends DnaViewModel {
     //console.log("Dvm.exportPerspective()", name)
     const dvmExport = {};
     //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
-    const tJson = this.threadsZvm.exportPerspective();
+    const tJson = this.threadsZvm.exportPerspective(this.originalsZvm);
     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
 
-    const pJson = this.profilesZvm.exportPerspective();
+    const pJson = this.profilesZvm.exportPerspective(/*this.originalsZvm*/);
     dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
     //}
+
+    const oJson = this.originalsZvm.exportPerspective();
+    dvmExport[OriginalsZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
 
     //const dvmJson = this.exportDvmPerspective();
     //dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
@@ -321,10 +327,15 @@ export class ThreadsDvm extends DnaViewModel {
     const external = JSON.parse(json) as any;
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
+    const originals = external[OriginalsZvm.DEFAULT_ZOME_NAME];
     //const dvmPersp = external[ThreadsDvm.DEFAULT_BASE_ROLE_NAME];
 
+
+    this.originalsZvm.importPerspective(JSON.stringify(originals));
     this.profilesZvm.importPerspective(JSON.stringify(profiles));
-    this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), true);
+    this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), true, this.originalsZvm);
+
+    console.log("import perspective", this.originalsZvm.perspective);
 
     this.notifySubscribers();
   }
@@ -339,7 +350,7 @@ export class ThreadsDvm extends DnaViewModel {
     await delay(1000);
     const [_ts, ppAh, _pp] = await this.publishThreadFromSemanticTopic(appletId, stEh, "testing");
     await delay(1000);
-    const msgAh = await this.publishTypedBead(ThreadsEntryType.TextBead, "msg-1", ppAh, []);
+    const msgAh = await this.publishTypedBead(ThreadsEntryType.TextBead, "msg-1", ppAh, this.cell.agentPubKey, []);
     console.log("generateTestSignals() END", msgAh);
   }
 }

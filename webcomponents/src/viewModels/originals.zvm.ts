@@ -2,9 +2,7 @@ import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {OriginalsProxy} from "../bindings/originals.proxy";
 import {AnyLinkableHashB64} from "./threads.perspective";
 import {
-  AgentPubKey,
   AgentPubKeyB64,
-  AnyLinkableHash,
   decodeHashFromBase64,
   encodeHashToBase64, EntryHashB64
 } from "@holochain/client";
@@ -18,6 +16,13 @@ export interface OriginalsPerspective {
   /** hash -> original author */
   allOriginals: Record<AnyLinkableHashB64, AgentPubKeyB64 | null>,
 }
+
+
+/** TODO: Use more compact format for import/exporting of the perspective */
+export interface OriginalsDb {
+  allOriginals: Record<AgentPubKeyB64 | null, [AnyLinkableHashB64, string][]>,
+}
+
 
 
 /**
@@ -107,15 +112,21 @@ export class OriginalsZvm extends ZomeViewModel {
 
   /** */
   storeOriginal(typeName: string, target: AnyLinkableHashB64, author: AgentPubKeyB64 | null) {
+    /* _allOriginals */
     this._allOriginals[target] = author;
-    /* */
+    /* _originalsByType */
     if (!this._originalsByType[typeName]) {
       this._originalsByType[typeName] = []
     }
     if (!this._originalsByType[typeName].includes(target)) {
       this._originalsByType[typeName].push(target);
     }
+    /* _types */
+    if (!this._types.includes(typeName)) {
+      this._types.push(typeName);
+    }
   }
+
 
   /** -- Create -- */
 
@@ -138,4 +149,28 @@ export class OriginalsZvm extends ZomeViewModel {
     const [type, author] = await this.zomeProxy.createOriginalLinkFromAppEntry(decodeHashFromBase64(eh));
     this.storeOriginal(type, eh, encodeHashToBase64(author));
   }
+
+
+  /** Import / Export */
+
+  /** */
+  exportPerspective(): string {
+    return JSON.stringify(this.perspective, null, 2);
+  }
+
+
+  /** */
+  importPerspective(json: string): void {
+    const external = JSON.parse(json) as OriginalsPerspective;
+
+    this._originalsByType = external.originalsByType;
+    this._types = external.types;
+    this._allOriginals = external.allOriginals;
+
+    // for (const appletId of Object.values(external.allAppletIds)) {
+    //   this._allAppletIds.push(appletId);
+    // }
+  }
+
+
 }

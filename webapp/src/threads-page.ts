@@ -264,7 +264,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       threadHash = await this.createCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
     }
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, mentionedAgents);
+    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, this.cell.agentPubKey, mentionedAgents);
     console.log("onCreateTextMessage() res:", res);
 
     // /** DEBUG */
@@ -479,6 +479,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
   }
+
 
   /** */
   async createCommentThread(request: CommentRequest) {
