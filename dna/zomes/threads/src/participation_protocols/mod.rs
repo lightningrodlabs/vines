@@ -23,13 +23,22 @@ pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, AgentPubKey, ActionHash,
 }
 
 
-///
+// ///
+// #[hdk_extern]
+// pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
+//   let typed_pair = get_typed_and_record(&ah.into())?;
+//   Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
+// }
+
+
+/// Return original author
 #[hdk_extern]
 pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
   let typed_pair = get_typed_and_record(&ah.into())?;
-  Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
-}
 
+  Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
+
+}
 
 ///
 fn get_subject_tp(applet_id: String, subject_type_name: &str, dna_hash: DnaHash, subject_hash: AnyLinkableHash) -> ExternResult<TypedPath> {

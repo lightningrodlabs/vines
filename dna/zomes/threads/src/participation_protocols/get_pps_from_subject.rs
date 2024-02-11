@@ -1,5 +1,6 @@
 use std::convert::TryInto;
 use hdk::prelude::*;
+use zome_utils::*;
 use threads_integrity::*;
 
 
@@ -29,12 +30,4 @@ pub fn get_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHa
     .map(|l| { (ActionHash::try_from(l.target).unwrap(), tag2Ts(l.tag)) })
     .collect();
   Ok(ahs)
-}
-
-
-/// Convert the i64 timestamp stored in the tag as Vec<u8>
-fn tag2Ts(tag: LinkTag) -> Timestamp {
-  let bytes: [u8;8] = tag.0.try_into().unwrap();
-  let ts = i64::from_le_bytes(bytes);
-  return Timestamp::from_micros(ts);
 }

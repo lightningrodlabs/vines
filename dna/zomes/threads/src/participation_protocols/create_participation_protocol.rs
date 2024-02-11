@@ -41,7 +41,7 @@ pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<
     pp.subject.hash.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Threads,
-    LinkTag::new(index_time.0.to_le_bytes().to_owned()), // Store index-time in Tag
+    ts2Tag(index_time), // Store index-time in Tag
     //str2tag(&ta.anchor), // Store Anchor in Tag
   )?;
 
