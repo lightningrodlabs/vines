@@ -5,7 +5,7 @@
 #![allow(unused_attributes)]
 #![allow(ill_formed_attribute_input)]
 
-mod original_paths;
+mod authorship;
 
 use hdk::prelude::*;
 

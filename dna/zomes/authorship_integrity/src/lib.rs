@@ -11,14 +11,14 @@ use hdi::prelude::*;
 ///-------------------------------------------------------------------------------------------------
 
 /// DNA/Zome names
-pub const ORIGINALS_DEFAULT_ROLE_NAME: &'static str = "rOriginals";
-pub const ORIGINALS_DEFAULT_COORDINATOR_ZOME_NAME: &'static str = "zOriginals";
-pub const ORIGINALS_DEFAULT_INTEGRITY_ZOME_NAME: &'static str = "originals_integrity";
+pub const AUTHORSHIP_DEFAULT_ROLE_NAME: &'static str = "rAuthorship";
+pub const AUTHORSHIP_DEFAULT_COORDINATOR_ZOME_NAME: &'static str = "zAuthorship";
+pub const AUTHORSHIP_DEFAULT_INTEGRITY_ZOME_NAME: &'static str = "authorship_integrity";
 
 /// ANCHOR NAMES
-pub const ROOT_ANCHOR_ORIGINALS: &'static str = "__originals";
+pub const ROOT_ANCHOR_AUTHORSHIP: &'static str = "__authorship";
 
-pub const ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
+pub const ROOT_ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
 
 
 ///-------------------------------------------------------------------------------------------------
@@ -26,8 +26,8 @@ pub const ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
 ///-------------------------------------------------------------------------------------------------
 
 #[hdk_entry_defs]
-#[unit_enum(OriginalsEntryTypes)]
-pub enum OriginalsEntry {
+#[unit_enum(AuthorshipEntryTypes)]
+pub enum AuthorshipEntry {
     #[entry_def(required_validations = 3, visibility = "private")]
     Bogus(Bogus),
 }
@@ -45,7 +45,8 @@ pub struct Bogus {
 
 #[hdk_link_types]
 #[derive(Serialize, Deserialize)]
-pub enum OriginalsLinkType {
-    OriginalPath,
-    Original,
+pub enum AuthorshipLinkType {
+    AuthorshipPath,
+    Target,
+    Author,
 }
