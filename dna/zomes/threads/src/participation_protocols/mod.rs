@@ -10,6 +10,7 @@ use hdk::prelude::*;
 use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_encode};
 use zome_utils::*;
 use threads_integrity::*;
+use crate::utils::get_original_author;
 
 
 /// Get all ParticipationProtocol in local source-chain
@@ -34,11 +35,14 @@ pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, AgentPubKey, ActionHash,
 /// Return original author
 #[hdk_extern]
 pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
-  let typed_pair = get_typed_and_record(&ah.into())?;
-
-  Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
-
+  let typed_pair = get_typed_and_record(&ah.clone().into())?;
+  let maybe_op = get_original_author(ah)?;
+  let Some(opPair) = maybe_op else {
+    return Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()));
+  };
+  Ok((typed_pair.1, opPair.1, opPair.0))
 }
+
 
 ///
 fn get_subject_tp(applet_id: String, subject_type_name: &str, dna_hash: DnaHash, subject_hash: AnyLinkableHash) -> ExternResult<TypedPath> {

@@ -1,7 +1,7 @@
 use hdk::hash_path::path::Component;
 use hdk::info::dna_info;
-use hdk::prelude::{EntryHash, ExternResult, wasm_error, WasmError, ZomeName, SerializedBytesError};
-
+use hdk::prelude::*;
+use zome_utils::*;
 
 ///
 pub(crate) fn get_Threads_zome_index() -> u8 {
@@ -32,3 +32,13 @@ pub fn comp2appletHash(comp: &Component) -> ExternResult<EntryHash> {
   Ok(eh)
 }
 
+
+///
+pub fn get_original_author(ah: ActionHash)  -> ExternResult<Option<(AgentPubKey, Timestamp)>> {
+  let maybe_response = call(CallTargetCell::Local, "authorship_zome", "get_author".into(), None, ah);
+  let Ok(response) = maybe_response else {
+    return Ok(None);
+  };
+  let result: (AgentPubKey, Timestamp) = decode_response(response)?;
+  Ok(Some(result))
+}

@@ -1,6 +1,5 @@
 use hdk::hash_path::path::DELIMITER;
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::*;
 use zome_utils::*;
 use authorship_integrity::*;
 
@@ -14,7 +13,7 @@ pub struct AscribeTargetInput {
     pub creation_time: Timestamp,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, SerializedBytes)]
 pub struct AuthorshipLog {
     pub original_author: AgentPubKey,
     pub creation_time: Timestamp,
@@ -33,7 +32,7 @@ pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
     // }
     let tp = get_type_tp(input.target_type)?;
     //let mut author_target: AnyLinkableHash = Path::from(ROOT_ANCHOR_UNKNOWN_AUTHOR).typed(AuthorshipLinkType::AuthorshipPath)?.path_entry_hash()?.into();
-    let mut original_author = input.maybe_original_author.unwrap_or(AgentPubKey::from_raw_36(vec![0; 36]));
+    let original_author = input.maybe_original_author.unwrap_or(AgentPubKey::from_raw_36(vec![0; 36]));
     let log = AuthorshipLog::new(original_author.clone(), input.creation_time);
     let tag = obj2Tag(log)?;
     let _ah = create_link(tp.path_entry_hash()?, input.target.clone(), AuthorshipLinkType::Target, tag)?;
@@ -74,30 +73,25 @@ pub fn get_all_ascribed_types(_: ()) -> ExternResult<Vec<String>> {
 }
 
 
-///
+/// Return empty agentPubKey if no author was provides when ascribing
 #[hdk_extern]
-pub fn get_author(target: AnyLinkableHash) -> ExternResult<(Option<AgentPubKey>, Timestamp)> {
+pub fn get_author(target: AnyLinkableHash) -> ExternResult<Option<(AgentPubKey, Timestamp)>> {
     //let tp = get_type_tp(target_type)?;
     let authors = get_links(target, AuthorshipLinkType::Author, None)?;
     if authors.len() == 0 {
-        return error("No author link found for target");
+        return Ok(None);
     }
-    let no_author: AnyLinkableHash = AgentPubKey::from_raw_36(vec![0; 36]).into();
     let link = authors.into_iter().next().unwrap();
     let ts = tag2Ts(link.tag);
-    let author =  if link.target == no_author {
-        None
-    } else {
-        Some(AgentPubKey::try_from(link.target).unwrap())
-    };
+    let op = link.target.into_agent_pub_key().unwrap();
     /// Done
-    Ok((author, ts))
+    Ok(Some((op, ts)))
 }
 
 
-///
+/// Return empty agentPubKey if no author was provides when ascribing
 #[hdk_extern]
-pub fn get_all_ascribed_entries(_: ()) -> ExternResult<Vec<(String, AnyLinkableHash, Option<AgentPubKey>, Timestamp)>> {
+pub fn get_all_ascribed_entries(_: ()) -> ExternResult<Vec<(String, AnyLinkableHash, AgentPubKey, Timestamp)>> {
     let child_types = get_all_ascribed_types(())?;
     let mut result = Vec::new();
     for child_type in child_types {
@@ -110,20 +104,14 @@ pub fn get_all_ascribed_entries(_: ()) -> ExternResult<Vec<(String, AnyLinkableH
 }
 
 
-///
+/// Return empty agentPubKey if no author was provides when ascribing
 #[hdk_extern]
-pub fn get_ascribed_type_children(target_type: String) -> ExternResult<Vec<(AnyLinkableHash, Option<AgentPubKey>, Timestamp)>> {
+pub fn get_ascribed_type_children(target_type: String) -> ExternResult<Vec<(AnyLinkableHash, AgentPubKey, Timestamp)>> {
     let tp = get_type_tp(target_type)?;
     let targets = get_links(tp.path_entry_hash()?, AuthorshipLinkType::Target, None)?;
-    let no_author = AgentPubKey::from_raw_36(vec![0; 36]);
-    let result: Vec<(AnyLinkableHash, Option<AgentPubKey>, Timestamp)> = targets.into_iter().map(|link| {
+    let result: Vec<(AnyLinkableHash, AgentPubKey, Timestamp)> = targets.into_iter().map(|link| {
         let log: AuthorshipLog = decode(&link.tag.into_inner()).unwrap();
-        let maybe_author = if log.original_author == no_author {
-            None
-        } else {
-            Some(log.original_author)
-        };
-        (link.target, maybe_author, log.creation_time)
+        (link.target, log.original_author, log.creation_time)
     }).collect();
     Ok(result)
 }
