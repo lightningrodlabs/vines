@@ -1,5 +1,5 @@
 [package]
-name = "authorship_integrity_zome"
+name = "authorship_integrity"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true

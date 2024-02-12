@@ -1,0 +1,17 @@
+[package]
+name = "authorship_zapi"
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = [ "cdylib", "rlib" ]
+
+[dependencies]
+bincode = "1.3"
+
+serde.workspace = true
+hdk.workspace = true
+zome_utils.workspace = true
+
+#zome_delivery_types = { path = "../delivery_types" }

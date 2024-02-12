@@ -15,5 +15,5 @@ holochain = { version = "=0.1.4"}
 holo_hash = { version = "=0.1.2", default-features = false }
 sweettest_utils = { git = "https://github.com/ddd-mtl/sweettest-utils", branch = "hc-0.1.4" }
 
-threads_zome = { path = "../dna/zomes/threads", default-features = false }
-threads_integrity_zome = { path = "../dna/zomes/threads_integrity", default-features = false }
+threads = { path = "../dna/zomes/threads", default-features = false }
+threads_integrity = { path = "../dna/zomes/threads_integrity", default-features = false }

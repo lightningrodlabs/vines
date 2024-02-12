@@ -17,7 +17,6 @@ pub const AUTHORSHIP_DEFAULT_INTEGRITY_ZOME_NAME: &'static str = "authorship_int
 
 /// ANCHOR NAMES
 pub const ROOT_ANCHOR_AUTHORSHIP: &'static str = "__authorship";
-
 pub const ROOT_ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
 
 

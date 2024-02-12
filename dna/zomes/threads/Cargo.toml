@@ -1,5 +1,5 @@
 [package]
-name = "threads_zome"
+name = "threads_coordinator"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
@@ -20,4 +20,5 @@ zome_utils.workspace = true
 time_indexing.workspace = true
 path_explorer_types.workspace = true
 
-threads_integrity = { package = "threads_integrity_zome", path = "../threads_integrity" }
+threads_integrity = { package = "threads_integrity", path = "../threads_integrity" }
+authorship_zapi = { package = "authorship_zapi", path = "../authorship_zapi" }

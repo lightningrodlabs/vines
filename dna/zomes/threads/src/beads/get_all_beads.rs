@@ -5,7 +5,7 @@ use time_indexing::*;
 use crate::beads::{BeadLink};
 
 /// Travers the thread-specific time-index tree and get all BeadLinks
-/// USE WITH CARE as this can easily timeout as it's a recursive loop of get_links()
+/// USE WITH CARE as this can easily timeout as it's a loop of get_links()
 #[hdk_extern]
 pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
   let link_tag = None;

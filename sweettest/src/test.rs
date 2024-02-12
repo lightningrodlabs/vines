@@ -6,9 +6,9 @@ use holochain::conductor::ConductorHandle;
 use holo_hash::*;
 use holochain::prelude::Timestamp;
 
-use threads_integrity_zome::*;
-use threads_zome::*;
-use threads_zome::beads::AddTextBeadAtInput;
+use threads_integrity::*;
+use threads::*;
+use threads::beads::AddTextBeadAtInput;
 
 use crate::DNA_FILEPATH;
 use sweettest_utils::*;

@@ -1,8 +1,9 @@
 [workspace]
 members = [
   "dna/zomes/path_explorer",
-  "dna/zomes/authorship",
   "dna/zomes/authorship_integrity",
+  "dna/zomes/authorship_coordinator",
+  "dna/zomes/authorship_zapi",
   "dna/zomes/profiles_integrity",
   "dna/zomes/profiles",
   "dna/zomes/threads_integrity",

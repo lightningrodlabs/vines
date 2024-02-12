@@ -24,7 +24,7 @@ import {AnyLinkableHashB64, BeadType, TypedBead,} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
-import {OriginalsZvm} from "./originals.zvm";
+import {AuthorshipZvm} from "./authorship.zvm";
 
 
 /** */
@@ -44,7 +44,7 @@ export interface ThreadsDnaPerspective {
 export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
-  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm, OriginalsZvm/*, PathExplorerZvm*/ ]
+  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
@@ -58,8 +58,8 @@ export class ThreadsDvm extends DnaViewModel {
     return this.getZomeViewModel(ThreadsZvm.DEFAULT_ZOME_NAME) as ThreadsZvm;
   }
 
-  get originalsZvm(): OriginalsZvm {
-    return this.getZomeViewModel(OriginalsZvm.DEFAULT_ZOME_NAME) as OriginalsZvm;
+  get originalsZvm(): AuthorshipZvm {
+    return this.getZomeViewModel(AuthorshipZvm.DEFAULT_ZOME_NAME) as AuthorshipZvm;
   }
 
   /** -- Perspective -- */
@@ -307,7 +307,7 @@ export class ThreadsDvm extends DnaViewModel {
     //}
 
     const oJson = this.originalsZvm.exportPerspective();
-    dvmExport[OriginalsZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
+    dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
 
     //const dvmJson = this.exportDvmPerspective();
     //dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
@@ -327,7 +327,7 @@ export class ThreadsDvm extends DnaViewModel {
     const external = JSON.parse(json) as any;
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
-    const originals = external[OriginalsZvm.DEFAULT_ZOME_NAME];
+    const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
     //const dvmPersp = external[ThreadsDvm.DEFAULT_BASE_ROLE_NAME];
 
 

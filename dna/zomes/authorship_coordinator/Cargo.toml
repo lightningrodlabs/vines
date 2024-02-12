@@ -1,5 +1,5 @@
 [package]
-name = "authorship_zome"
+name = "authorship_coordinator"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
@@ -20,4 +20,4 @@ zome_utils.workspace = true
 time_indexing.workspace = true
 path_explorer_types.workspace = true
 
-authorship_integrity = { package = "authorship_integrity_zome", path = "../authorship_integrity" }
+authorship_integrity = { package = "authorship_integrity", path = "../authorship_integrity" }

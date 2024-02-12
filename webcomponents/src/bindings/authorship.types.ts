@@ -145,10 +145,16 @@ ValidationReceipt,
    } from '@holochain-open-dev/core-types';
 
 /**  */
-export interface CreateOriginalLinkInput {
+export interface AscribeTargetInput {
   target: AnyLinkableHash
-  targetType: string
-  maybeOriginalAuthor?: AgentPubKey
+  target_type: string
+  creation_time: Timestamp
+  maybe_original_author?: AgentPubKey
+}
+
+export interface AuthorshipLog {
+  creation_time: Timestamp
+  original_author: AgentPubKey
 }
 
 /**
@@ -157,28 +163,28 @@ export interface CreateOriginalLinkInput {
  * -------------------------------------------------------------------------------------------------
  * DNA/Zome names
  */
-export const ORIGINALS_DEFAULT_ROLE_NAME = "rOriginals";
+export const AUTHORSHIP_DEFAULT_ROLE_NAME = "rAuthorship";
 
-export const ORIGINALS_DEFAULT_COORDINATOR_ZOME_NAME = "zOriginals";
+export const AUTHORSHIP_DEFAULT_COORDINATOR_ZOME_NAME = "zAuthorship";
 
-export const ORIGINALS_DEFAULT_INTEGRITY_ZOME_NAME = "originals_integrity";
+export const AUTHORSHIP_DEFAULT_INTEGRITY_ZOME_NAME = "authorship_integrity";
 
 /** ANCHOR NAMES */
-export const ROOT_ANCHOR_ORIGINALS = "__originals";
+export const ROOT_ANCHOR_AUTHORSHIP = "__authorship";
 
-export const ANCHOR_UNKNOWN_AUTHOR = "__unknown_author";
+export const ROOT_ANCHOR_UNKNOWN_AUTHOR = "__unknown_author";
 
 /**
  * -------------------------------------------------------------------------------------------------
  * Zome's entry types
  * -------------------------------------------------------------------------------------------------
  */
-export enum OriginalsEntryType {
+export enum AuthorshipEntryType {
 	Bogus = 'Bogus',
 }
-export type OriginalsEntryVariantBogus = {Bogus: Bogus}
-export type OriginalsEntry = 
- | OriginalsEntryVariantBogus;
+export type AuthorshipEntryVariantBogus = {Bogus: Bogus}
+export type AuthorshipEntry = 
+ | AuthorshipEntryVariantBogus;
 
 export interface Bogus {
   value: string
@@ -189,9 +195,10 @@ export interface Bogus {
  * Zome's link types
  * -------------------------------------------------------------------------------------------------
  */
-export type OriginalsLinkType =
-  | {OriginalPath: null} | {Original: null};
-export enum OriginalsLinkTypeType {
-	OriginalPath = 'OriginalPath',
-	Original = 'Original',
+export type AuthorshipLinkType =
+  | {AuthorshipPath: null} | {Target: null} | {Author: null};
+export enum AuthorshipLinkTypeType {
+	AuthorshipPath = 'AuthorshipPath',
+	Target = 'Target',
+	Author = 'Author',
 }
