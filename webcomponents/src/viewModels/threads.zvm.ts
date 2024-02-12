@@ -1167,7 +1167,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const beadInfo = {creationTime, author, beadType: this.determineBeadType(typedBead), bead: typedBead.bead};
     const ppAh = encodeHashToBase64(typedBead.bead.ppAh);
-    console.log("storeBead()", ppAh, typedBead);
+    console.log("storeBead()", ppAh, typedBead, author);
     await this.storeBeadInThread(beadAh, ppAh, creationTime, isNew, ThreadsEntryType.AnyBead);
     this._beads[beadAh] = [beadInfo, typedBead];
     if (canNotify) {
@@ -1308,11 +1308,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  importPerspective(json: string, canPublish: boolean, authorshipZvm: AuthorshipZvm) {
+  async importPerspective(json: string, canPublish: boolean, authorshipZvm: AuthorshipZvm) {
     const external = JSON.parse(json) as ThreadsPerspectiveMat;
 
     if (canPublish) {
-      /*await*/ this.publishAllFromPerspective(external, authorshipZvm);
+      await this.publishAllFromPerspective(external, authorshipZvm);
       return;
     }
     /** this._allAppletIds */
@@ -1436,6 +1436,10 @@ export class ThreadsZvm extends ZomeViewModel {
           : [creationTime, this.cell.agentPubKey];
         /* store pp */
         this.storePp(newPpAh, pp, authorshipLog[0], authorshipLog[1], false, true, true);
+        /** commit authorshipLog for new pp */
+        if (authorshipZvm.perspective.allLogs[ppAh] != undefined) {
+          await authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, newPpAh, authorshipLog[0], authorshipLog[1]);
+        }
       }
       // FIXME: use Promise.AllSettled();
 
@@ -1482,6 +1486,10 @@ export class ThreadsZvm extends ZomeViewModel {
           : [beadInfo.creationTime, this.cell.agentPubKey];
         const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTypedBeadAt(beadInfo.beadType as BeadType, content, nextBead, authorshipLog[0], authorshipLog[1]);
         beadAhMapping[beadAh] = newBeadAh;
+        /** commit authorshipLog for new beads */
+        if (authorshipZvm.perspective.allLogs[beadAh] != undefined) {
+          await authorshipZvm.ascribeTarget(beadInfo.beadType, newBeadAh, beadInfo.creationTime, beadInfo.author);
+        }
         console.log(`PubImp() Bead ${beadAh} -> ${newBeadAh}`);
       }
       /* Break loop if no progress made */

@@ -138,9 +138,9 @@ export class AuthorshipZvm extends ZomeViewModel {
 
 
   /** */
-  ascribeTarget(type: string, hash: AnyLinkableHashB64, creationTime: Timestamp, author: AgentPubKeyB64 | null, preventZomeCall?: boolean) {
+  async ascribeTarget(type: string, hash: AnyLinkableHashB64, creationTime: Timestamp, author: AgentPubKeyB64 | null, preventZomeCall?: boolean) {
     if (!preventZomeCall) {
-      /*await*/ this.zomeProxy.ascribeTarget({
+      await this.zomeProxy.ascribeTarget({
         target: decodeHashFromBase64(hash),
         target_type: type,
         creation_time: creationTime,

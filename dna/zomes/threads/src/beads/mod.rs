@@ -28,6 +28,7 @@ pub struct BeadLink {
 
 ///
 pub fn get_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, T)> {
+  debug!("get_typed_bead() {}", bead_ah);
   /// Get typed
   let Some(record) = get(bead_ah.clone(), GetOptions::content())? else {
     return error("get_typed_bead(): Entry not found");
@@ -38,8 +39,10 @@ pub fn get_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(T
   /// Get Original author
   let maybe = get_original_author(bead_ah)?;
   if let Some(pair) = maybe {
+    debug!("get_typed_bead() original author found: {}", pair.1);
     return Ok((pair.0, pair.1, typed))
   }
+  debug!("get_typed_bead() original author not found");
   ///
   Ok((record.action().timestamp(), record.action().author().to_owned(), typed))
 }
