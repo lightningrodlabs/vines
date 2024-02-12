@@ -1,4 +1,4 @@
-import {getInitials, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {html, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
@@ -19,7 +19,7 @@ import {WePerspective} from "./contexts";
 
 
 /** */
-export function renderAvatar(profilesZvm: ProfilesZvm, agentKey: AgentPubKeyB64, size: string): TemplateResult<1> {
+export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string): TemplateResult<1> {
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
     const maybeAgent = profilesZvm.perspective.profiles[agentKey];
     if (maybeAgent) {

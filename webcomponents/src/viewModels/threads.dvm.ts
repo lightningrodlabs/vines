@@ -22,7 +22,7 @@ import {
 } from "../bindings/threads.types";
 import {AnyLinkableHashB64, BeadType, TypedBead,} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
 
@@ -44,14 +44,14 @@ export interface ThreadsDnaPerspective {
 export class ThreadsDvm extends DnaViewModel {
 
   static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
-  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
+  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
 
   /** QoL Helpers */
-  get profilesZvm(): ProfilesZvm {
-    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesZvm;
+  get profilesZvm(): ProfilesAltZvm {
+    return this.getZomeViewModel(ProfilesZvm.DEFAULT_ZOME_NAME) as ProfilesAltZvm;
   }
 
   get threadsZvm(): ThreadsZvm {
