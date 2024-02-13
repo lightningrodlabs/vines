@@ -327,6 +327,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         console.log("<threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
         this.wePerspective.applets[appletId] = appletInfo;
       }
+      /** NotifyWe of some new content */
+      const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + this._dvm.threadsZvm.perspective.newThreads.length + Object.keys(this._dvm.threadsZvm.perspective.newSubjects).length;
+      if (allCount > 0) {
+        this.weServices.notifyWe([{
+          title: "New content",
+          body: "" + allCount + " items",
+          notification_type: "content",
+          icon_src: wrapPathInSvg(mdiInformationOutline),
+          urgency: 'medium',
+          timestamp: Date.now(),
+      }]);
+      }
     }
     this.requestUpdate();
     /** */
