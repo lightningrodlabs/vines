@@ -265,14 +265,14 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this.showInput) {
       maybeInput = html`
           <threads-input-bar .topic=${subjectName} .profilesZvm=${this._dvm.profilesZvm}
-                              style="border:none;width:100%;"
+                              style="border:none;width:100%;margin-bottom: 5px;"
                               @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></threads-input-bar>`
     }
 
     // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
-        <h4 style="margin-left: 5px;">
+        <h4 style="margin: 10px;">
           ${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span>
           <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
             if (this.weServices) {
@@ -282,7 +282,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             }
           }}></ui5-button>
         </h4>
-        <ui5-list id="textList" style="height: fit-content">
+        <ui5-list id="textList" style="overflow: auto;">
             ${textLi}
         </ui5-list>
         ${maybeInput}
@@ -297,6 +297,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         :host {
           padding-right: 5px;
           padding-left: 5px;
+          max-height: 100%;
+          display: flex;
+          flex-direction: column;
         }
       `,
     ];
