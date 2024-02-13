@@ -422,6 +422,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Get last elements since last time (global search log) */
     await this.probeAllLatest();
 
+
     await this.probeInbox();
 
     /** */
@@ -624,12 +625,16 @@ export class ThreadsZvm extends ZomeViewModel {
     let unreadThreads: Dictionary<ActionHashB64[]> = {};
     latest.newBeadsByThread.map(([pp_ah, bl]) => {
       const ppAh =  encodeHashToBase64(pp_ah);
+      const maybeThread = this._threads.get(ppAh);
+      if (maybeThread && bl.creationTime <= maybeThread.latestProbeLogTime) {
+        return;
+      }
       if (!unreadThreads[ppAh]) {
         unreadThreads[ppAh] = [];
       }
       unreadThreads[ppAh].push(encodeHashToBase64(bl.beadAh));
     });
-
+    //console.log("threadsZvm.probeAllLatest() unreadThreads done", unreadThreads);
 
     /** Mark subject as unread if it has an unread thread */
     for (const ppAh of Object.keys(unreadThreads)) {
@@ -674,6 +679,10 @@ export class ThreadsZvm extends ZomeViewModel {
         }
       }
     }
+
+    /* */
+    await this.commitGlobalProbeLog();
+
     // /** DEBUG */
     // console.log("probeAllLatest:    newSubjects", newSubjects);
     // console.log("probeAllLatest: unreadSubjects", unreadSubjects);
@@ -1075,8 +1084,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   storeInboxItem(notif: WeaveNotification): void {
+    /* Brutal way to make sure we have the content signaled in the notification */
     ///*await*/ this.probeInboxItem(notif);
-    /*await*/ this.probeAllLatest(); // Brutal way to make sure we have the content signaled in the notification
+    /*await*/ this.probeAllLatest(); // FIXME: find something less brutal
+    ///*await*/ this.zomeProxy.probeAllLatest(notif.timestamp - 1);
+    /* */
     this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
     this.notifySubscribers();
   }
@@ -1191,18 +1203,24 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async commitProbeLogs(): Promise<void> {
-    console.log("commitProbeLogs() start");
-    /** Commit Global Log */
-    const maybeLatest = this.getLatestThread();
-    console.log("commitProbeLogs() maybeLatest", maybeLatest);
-    let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
-    console.log("commitProbeLogs()", prettyTimestamp(latestGlobalLogTime));
-    this._globalProbeLog.ts = latestGlobalLogTime;
+  async commitAllProbeLogs(): Promise<void> {
+    console.log("commitAllProbeLogs() start");
+    await this.commitGlobalProbeLog();
     /** Commit each Thread Log */
     for (const ppAh of this._threads.keys()) {
       await this.commitThreadProbeLog(ppAh);
     }
+  }
+
+
+  /** Commit Global Log */
+  async commitGlobalProbeLog(): Promise<void> {
+    const maybeLatest = this.getLatestThread();
+    console.log("commitGlobalProbeLog() maybeLatest", maybeLatest);
+    let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
+    console.log("commitGlobalProbeLog()", prettyTimestamp(latestGlobalLogTime));
+    this._globalProbeLog.ts = latestGlobalLogTime;
+
   }
 
 

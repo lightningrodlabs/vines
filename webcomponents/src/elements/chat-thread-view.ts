@@ -140,6 +140,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       .then(async (beadLinks) => {
         this._loading = false;
         await this.loadTextBeadComments(beadLinks, dvm);
+        await dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
         this._commentsLoading = false; // This is for triggering a new requestUpdate
       });
     this._loading = true;
@@ -205,10 +206,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     this.style.background = this._loading? "#d4d5d7" : "#FBFCFD"
 
 
-    const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
-    if (!pp) {
-      return html `<div>Loading thread...</div>`;
-    }
+    // const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
+    // if (!pp) {
+    //   return html `<div>Loading thread...</div>`;
+    // }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
       return html `<div>Loading messages...</div>`;
@@ -235,12 +236,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     let textLi = Object.values(all).map(
       (blm) => {
         let hr = html``;
-        /** 'new' <hr> if bead is older than latest ProbeLogTime */
-        console.log("thread.latestProbeLogTime", thread.latestProbeLogTime, blm.creationTime);
-        if (!passedLog && blm.creationTime > thread.latestProbeLogTime) {
-          const beadDateStr = prettyTimestamp(blm.creationTime);
-          //const threadProbeDateStr = prettyTimestamp(threadInfo.latestProbeLogTime);
-          //  | ${threadProbeDateStr}
+        /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
+        console.log("thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime);
+        if (!passedLog && blm.creationTime > initialProbeLogTs) {
+          //const beadDateStr = prettyTimestamp(initialProbeLogTs);
+          const beadDateStr = "New"
           passedLog = true;
           hr = html`
               <div style="margin-left:10px; margin-right:10px; margin-bottom:-25px">

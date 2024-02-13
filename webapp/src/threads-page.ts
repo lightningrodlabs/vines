@@ -77,6 +77,7 @@ import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
+import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
 import "@ui5/webcomponents-icons/dist/process.js"
@@ -776,6 +777,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                           <ui5-menu-item id="exportItem" text=${msg("Export")} icon="save" starts-section></ui5-menu-item>
                           <ui5-menu-item id="importItem" text=${msg("Import")} icon="open-folder" ></ui5-menu-item>
+                          <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
+                          <ui5-menu-item id="dumpItem" text=${msg("Dump logs")}></ui5-menu-item>
+                          
                       </ui5-menu>
                         <!--
                     <ui5-button style="margin-top:10px;"
@@ -971,6 +975,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
           input.click();
           break;
+        case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
+        case "dumpItem": this._dvm.dumpLogs(); break;
       }
   }
 
@@ -1012,7 +1018,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCommitBtn(_e?: any) {
     toasty("All marked 'read'");
-    await this._dvm.threadsZvm.commitProbeLogs();
+    await this._dvm.threadsZvm.commitAllProbeLogs();
   }
 
 

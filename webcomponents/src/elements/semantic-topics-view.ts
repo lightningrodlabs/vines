@@ -154,6 +154,11 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       if (!topicThreads) {
         topicThreads = [];
       }
+      topicThreads = topicThreads.sort((a, b) => {
+        const nameA = this.perspective.threads.get(a).name;
+        const nameB = this.perspective.threads.get(b).name;
+        return nameA.localeCompare(nameB);
+      });
       //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
 
       let threads = [html``];

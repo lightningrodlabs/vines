@@ -31,7 +31,7 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
                          let bt: TimedItemTag = SerializedBytes::from(UnsafeBytes::from(ll.tag.0)).try_into().unwrap();
                          BeadLink {
                            //index_time: bucket_begin_time_us,
-                           creation_time: bt.devtest_timestamp,
+                           creation_time: bt.ts_us,
                            //creation_time: ll.timestamp,
                            bead_ah: ActionHash::try_from(ll.target).unwrap(),
                            bead_type: bt.item_type,

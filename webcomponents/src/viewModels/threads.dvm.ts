@@ -1,4 +1,4 @@
-import {delay, DnaViewModel} from "@ddd-qc/lit-happ";
+import {delay, Dictionary, DnaViewModel} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {
   ActionHashB64,
@@ -7,11 +7,11 @@ import {
   AppSignalCb,
   decodeHashFromBase64,
   encodeHashToBase64,
-  EntryHashB64
+  EntryHashB64, Timestamp
 } from "@holochain/client";
 import {
   DirectGossip,
-  DirectGossipType,
+  DirectGossipType, GlobalLastProbeLog,
   NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
@@ -30,6 +30,10 @@ import {AuthorshipZvm} from "./authorship.zvm";
 /** */
 export interface ThreadsDnaPerspective {
   agentPresences: Record<AgentPubKeyB64, number>,
+  /** ppAh -> Timestamp */
+  initialThreadProbeLogTss: Dictionary<Timestamp>,
+  /** */
+  initialGlobalProbeLogTs: Timestamp;
   /** */
   signaledNotifications: WeaveNotification[],
 }
@@ -72,6 +76,8 @@ export class ThreadsDvm extends DnaViewModel {
   get perspective(): ThreadsDnaPerspective {
     return {
       agentPresences: this._agentPresences,
+      initialThreadProbeLogTss: this._initialThreadProbeLogTss,
+      initialGlobalProbeLogTs: this._initialGlobalProbeLogTs,
       signaledNotifications: this._signaledNotifications,
     }
   }
@@ -79,10 +85,25 @@ export class ThreadsDvm extends DnaViewModel {
   /** agentPubKey -> timestamp */
   private _agentPresences: Record<string, number> = {};
 
+  private _initialThreadProbeLogTss = {};
+  private _initialGlobalProbeLogTs: Timestamp = 0;
+
   private _signaledNotifications: WeaveNotification[] = [];
 
 
   /** -- Methods -- */
+
+  /** Store probeLog timestamp upon first load of app */
+  async initializePerspectiveOffline(): Promise<void> {
+    console.log("dvm.initializePerspectiveOffline() override")
+    await super.initializePerspectiveOffline();
+    this._initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLog.ts;
+    for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
+        this._initialThreadProbeLogTss[ppAh] = thread.latestProbeLogTime;
+    }
+    console.log("dvm.initializePerspectiveOffline() override", this.perspective)
+  }
+
 
   /** */
   private updatePresence(from: AgentPubKeyB64) {

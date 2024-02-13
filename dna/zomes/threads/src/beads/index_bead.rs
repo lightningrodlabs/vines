@@ -5,7 +5,7 @@ use threads_integrity::*;
 
 
 /// Returns the Thread Time Anchor and the Global Time Anchor
-pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_us: Timestamp) -> ExternResult<(TypedPath, TypedPath)> {
+pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, ts_us: Timestamp) -> ExternResult<(TypedPath, TypedPath)> {
   /// Index in Thread time-Index
   let pp_anchor = hash2comp(bead.pp_ah.clone());
   let thread_tp = Path::from(vec![pp_anchor])
@@ -15,7 +15,7 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_u
     bead_ah.clone().into(),
     bead_type,
     ThreadsLinkType::TimeItem.try_into().unwrap(),
-    index_time_us,
+    ts_us,
     &vec![])?;
   //debug!("Bead indexed at thread:\n  - {} {}", path2anchor(&thread_leaf_tp.path).unwrap(), thread_leaf_tp.path_entry_hash()?);
 
@@ -27,7 +27,7 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, index_time_u
     bead_ah.clone().into(),
     bead_type,
     ThreadsLinkType::TimeItem.try_into().unwrap(),
-    index_time_us,
+    ts_us,
     bead.pp_ah.get_raw_39())?;
   //debug!("Bead indexed at global:\n  - {}", path2anchor(&leaf_tp.path).unwrap());
 

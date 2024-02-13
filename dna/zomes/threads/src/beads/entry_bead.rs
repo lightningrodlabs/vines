@@ -62,7 +62,7 @@ pub fn add_entry_as_bead(input: AddEntryAsBead) -> ExternResult<(ActionHash, Ent
 }
 
 
-/// WARN Will return actual action creation time and not devtest_timestamp
+///
 #[hdk_extern]
 pub fn get_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EntryBead)> {
     return get_typed_bead::<EntryBead>(bead_ah);
@@ -77,7 +77,7 @@ pub fn get_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp
 
 
 /// Get all EntryBeads in local source-chain
-/// WARN Will return actual action creation time and not devtest_timestamp
+/// WARN Will return actual action creation time and not stored ts_us
 #[hdk_extern]
 pub fn query_entry_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, EntryBead)>> {
     let entry_type = EntryType::App(ThreadsEntryTypes::EntryBead.try_into().unwrap());

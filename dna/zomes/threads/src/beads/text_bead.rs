@@ -16,7 +16,7 @@ pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Times
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
-/// WARN Will return actual action creation time and not devtest_timestamp
+///
 #[hdk_extern]
 pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
   return get_typed_bead::<TextBead>(ah);
@@ -32,7 +32,7 @@ pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, 
 
 
 /// Get all TextBead in local source-chain
-/// WARN Will return actual action creation time and not devtest_timestamp
+/// WARN Will return actual action creation time and not stored ts_us
 #[hdk_extern]
 pub fn query_text_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
   let entry_type = EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap());

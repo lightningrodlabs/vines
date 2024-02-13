@@ -46,15 +46,16 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
         let pp_ah: ActionHash = ActionHash::try_from(link.target).unwrap();
         let subject_hash: AnyLinkableHash = AnyLinkableHash::from_raw_39(item_tag.custom_data).unwrap();
         /// Add only if after begin_time since we may have older items from the same time bucket
-        if item_tag.devtest_timestamp > searched_interval.begin {
+        if item_tag.ts_us > searched_interval.begin {
           pps.push((subject_hash.clone(), pp_ah.clone()));
           //debug!("Thread found: {} (for subject: {:?})", pp_ah, topic_hash);
+          debug!("new Thread found: {} > {}", item_tag.ts_us, searched_interval.begin);
         }
       } else {
         let pp_ah: ActionHash = ActionHash::from_raw_39(item_tag.custom_data).unwrap();
         let bl = BeadLink {
           //index_time,
-          creation_time: item_tag.devtest_timestamp,
+          creation_time: item_tag.ts_us,
           //creation_time: link.timestamp,
           bead_ah: ActionHash::try_from(link.target).unwrap(),
           bead_type: item_tag.item_type,

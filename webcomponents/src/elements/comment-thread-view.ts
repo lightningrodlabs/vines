@@ -216,8 +216,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         const date_str = date.toLocaleString('en-US', {hour12: false});
 
-        const isNew = thread.latestProbeLogTime < beadInfo.creationTime;
-        console.log("Is msg new?", isNew, thread.latestProbeLogTime, beadInfo.creationTime);
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
+        const isNew = initialProbeLogTs < beadInfo.creationTime;
+        console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
 
 
         let content = "<unknown>";
