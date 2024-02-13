@@ -634,7 +634,7 @@ export class ThreadsZvm extends ZomeViewModel {
       }
       unreadThreads[ppAh].push(encodeHashToBase64(bl.beadAh));
     });
-    //console.log("threadsZvm.probeAllLatest() unreadThreads done", unreadThreads);
+    console.log("threadsZvm.probeAllLatest() unreadThreads done", unreadThreads);
 
     /** Mark subject as unread if it has an unread thread */
     for (const ppAh of Object.keys(unreadThreads)) {

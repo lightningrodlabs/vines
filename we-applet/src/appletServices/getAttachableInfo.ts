@@ -35,7 +35,7 @@ export async function getAttachableInfo(
                 devtestNames.provisionedRoleName,
             );
             const proxy: ThreadsProxy = new ThreadsProxy(cellProxy);
-            const tuple = await proxy.getTextMessage(hrlc.hrl[1]);
+            const tuple = await proxy.getTextBead(hrlc.hrl[1]);
             return {
                 icon_src: "",
                 name: tuple[2].value,
