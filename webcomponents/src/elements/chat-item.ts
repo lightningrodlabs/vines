@@ -165,6 +165,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+
     let isUnread = false;
     let commentThread = html``;
     let commentButton = html`
@@ -172,14 +173,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                       @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">                      
         </ui5-button>`;
 
-    if (maybeCommentThread) {
+    if (maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread)) {
       commentButton = html`              
           <ui5-button icon="discussion" tooltip="View Thread on the side" design="Transparent" style="border:none;"
                        @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">
           </ui5-button>`;
       isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const thread = this.threadsPerspective.threads.get(maybeCommentThread);
-      if (thread && thread.beadLinksTree.length > 0) {
+      const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");
+      if (thread.beadLinksTree.length > 0) {
         /** Grab all authors */
         let authors = {};
         for (const bead of thread.beadLinksTree.values) {
@@ -194,24 +196,40 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           authors[beadInfo.author] += 1;
         }
         /** Create avatar for each author */
-        //console.log("Authors' Avatar", Object.keys(authors).length);
+          //console.log("Authors' Avatar", Object.keys(authors).length);
         let avatars = Object.keys(authors).map((author) => {
-          return renderAvatar(this._dvm.profilesZvm, author, "XS");
-        });
-        const avatarGroup = avatars.length > 1? html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>` : html`${avatars}`;
+            return renderAvatar(this._dvm.profilesZvm, author, "XS");
+          });
+        const avatarGroup = avatars.length > 1 ? html`
+            <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>` : html`${avatars}`;
         commentThread = html`
-          <div style="display:flex; flex-direction:row;">
-              ${avatarGroup}
-              <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
-                    @click=${(_e) => {
-                        this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
-                    }}>
-                ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " replies" : "" + thread.beadLinksTree.length + " reply"} 
-              </span>
-          </div>
+            <div style="display:flex; flex-direction:row;">
+                ${avatarGroup}
+                <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
+                      @click=${(_e) => {
+                          this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
+                      }}>
+              ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " comments" : "" + thread.beadLinksTree.length + " comment"} 
+            </span>
+            </div>
+        `;
+      } else {
+        /** Display avatar of thread creator */
+        commentThread = html`
+            <div style="display:flex; flex-direction:row;">
+                ${threadAvatar}
+                <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
+                      @click=${(_e) => {
+                          this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
+                      }}>
+              view comments
+            </span>
+            </div>
         `;
       }
     }
+
+    console.log("<chat-item>.render() maybeCommentThread", maybeCommentThread, commentThread);
 
     const reactionButton = html`
               <ui5-button id="add-reaction-btn" icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"

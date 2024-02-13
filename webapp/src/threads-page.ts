@@ -1150,6 +1150,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           text-transform: uppercase;
           padding-top: 0px;
         }
+
+        threads-input-bar {
+          margin-left: 10px;
+          margin-right: 10px;
+        }
       `,
 
     ];

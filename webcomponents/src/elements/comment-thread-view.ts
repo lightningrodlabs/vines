@@ -1,4 +1,4 @@
-import {html, PropertyValues} from "lit";
+import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
@@ -68,7 +68,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- State variables -- */
 
-  @state() private _loading = false;
+  @state() private _loading = true;
 
 
   /** -- Getters -- */
@@ -111,13 +111,22 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected async willUpdate(changedProperties: PropertyValues<this>) {
+  protected willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<comment-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
+    console.log("<comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
-      console.log("<comment-thread-view>.willUpdate()", this.threadHash);
-      this._dvm.threadsZvm.probeAllBeads(this.threadHash);
+      this._loading = true;
+      /* await */ this.loadCommentThread();
     }
+  }
+
+
+  /** */
+  private async loadCommentThread() {
+    console.log("<comment-thread-view>.willUpdate() threadHash", this.threadHash);
+    await this._dvm.threadsZvm.probeAllBeads(this.threadHash);
+    await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
+    this._loading = false;
   }
 
 
@@ -179,17 +188,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html `<div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>`;
     }
 
-    const bg_color = this._loading? "#ededf0" : ""
+    const bg_color = this._loading? "#ededf0" : "#ffffff"
 
-    const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
-    if (!pp) {
-      //return html `<div>Loading thread...</div>`;
-      return html `
-        <ui5-busy-indicator size="Medium" active
-                            style="margin:auto; width:50%; height:50%;"
-        ></ui5-busy-indicator>
-      `;
-    }
+
     // if (pp.subjectType == SEMANTIC_TOPIC_TYPE_NAME) {
     //   const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
     //   if (!topic) {
@@ -200,13 +201,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //
     // }
 
-
     const infoPairs = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
 
     console.log("<comment-thread-view>.render() len =", infoPairs.length);
-
     console.log("Has thread some unreads?", thread.hasUnreads());
-
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(infoPairs).map(
@@ -238,7 +236,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         }
 
         return html`
-            <ui5-li additional-text="${date_str}" style="background: ${isNew? bg_color: '#e6e6e6'};" type="Inactive">
+            <ui5-li additional-text="${date_str}" style="background:${bg_color}; ${isNew? "border: 1px solid red" : ""};" type="Inactive">
                 ${content}
                 <div slot="imageContent">                
                   ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
@@ -259,8 +257,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //<!--style="height: 400px" growing="Scroll" -->
     //<!-- @load-more=${this.onLoadMore}-->
 
-    const subjectType = this.subjectType? this.subjectType : pp.subject.typeName;
-    const subjectName = this.subjectName? this.subjectName : pp.subject.hash;
+    const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
+    const subjectName = this.subjectName? this.subjectName : thread.pp.subject.hash;
     const title = `Thread about`;
 
     let maybeInput = html``;
@@ -284,11 +282,23 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             }
           }}></ui5-button>
         </h4>
-        <ui5-list id="textList" style="background: ${bg_color};height: fit-content">
+        <ui5-list id="textList" style="height: fit-content">
             ${textLi}
         </ui5-list>
         ${maybeInput}
     `;
   }
 
+
+  /** */
+  static get styles() {
+    return [
+      css`
+        :host {
+          padding-right: 5px;
+          padding-left: 5px;
+        }
+      `,
+    ];
+  }
 }

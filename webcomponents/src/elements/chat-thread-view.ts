@@ -274,14 +274,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           display: flex;
           flex-direction: column-reverse;
           gap:15px;
-          
           height: inherit;
           background: #FBFCFD;
-
           font-family: '72-Light';
         }
       `,
-
     ];
   }
 }

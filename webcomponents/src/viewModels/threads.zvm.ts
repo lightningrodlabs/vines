@@ -1200,18 +1200,26 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("commitProbeLogs()", prettyTimestamp(latestGlobalLogTime));
     this._globalProbeLog.ts = latestGlobalLogTime;
     /** Commit each Thread Log */
-    for (const [ppAh, thread] of this._threads.entries()) {
-      //console.log(`commitProbeLogs() Thread "${thread.pp.purpose}":`, thread.probedUnion, thread.beadLinksTree.end.key, thread.latestProbeLogTime);
-      if (thread.probedUnion && thread.probedUnion.end > thread.latestProbeLogTime) {
-        const threadLog: ThreadLastProbeLog = {
-          maybeLastKnownBeadAh: decodeHashFromBase64(thread.beadLinksTree.end.value.beadAh),
-          ts: thread.beadLinksTree.end.key,
-          ppAh: decodeHashFromBase64(ppAh),
-        }
-        const _ah = await this.zomeProxy.commitThreadLog(threadLog);
-        thread.setLatestProbeLogTime(threadLog.ts);
-      }
+    for (const ppAh of this._threads.keys()) {
+      await this.commitThreadProbeLog(ppAh);
     }
+  }
+
+
+  /** */
+  async commitThreadProbeLog(ppAh: ActionHashB64): Promise<void> {
+    const thread = this._threads.get(ppAh);
+    //console.log(`commitThreadProbeLog() Thread "${thread.pp.purpose}":`, thread.probedUnion, thread.beadLinksTree.end.key, thread.latestProbeLogTime);
+    if (!thread || !thread.probedUnion || thread.probedUnion.end <= thread.latestProbeLogTime) {
+      return;
+    }
+    const probeLog: ThreadLastProbeLog = {
+      maybeLastKnownBeadAh: decodeHashFromBase64(thread.beadLinksTree.end.value.beadAh),
+      ts: thread.beadLinksTree.end.key,
+      ppAh: decodeHashFromBase64(ppAh),
+    }
+    const _ah = await this.zomeProxy.commitThreadLog(probeLog);
+    thread.setLatestProbeLogTime(probeLog.ts);
   }
 
 
