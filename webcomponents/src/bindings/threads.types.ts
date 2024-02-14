@@ -193,6 +193,11 @@ export interface AddManyTextBeadAtInput {
   count: number
 }
 
+export interface CommitGlobalLogInput {
+  maybe_ts?: Timestamp
+  maybe_last_known_pp_ah?: ActionHash
+}
+
 export interface ProbeAllOutput {
   searchedInterval: SweepInterval
   newThreadsBySubject: [AnyLinkableHash, ActionHash][]

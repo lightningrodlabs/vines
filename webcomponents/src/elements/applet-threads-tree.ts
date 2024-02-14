@@ -10,7 +10,7 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 
 import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {CommentRequest} from "../utils";
 
@@ -157,7 +157,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
 
   /** */
-  async toggleTreeItem(event:any) {
+  async toggleTreeItem(event: any, unreadSubjects: AnyLinkableHashB64[]) {
     const busyIndicator = this.shadowRoot.getElementById("busy") as BusyIndicator;
     const toggledTreeItem = event.detail.item as TreeItem ; // get the node that is toggled
     //const isTyped = !!this.root && typeof this.root == 'object';
@@ -231,8 +231,9 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
         // Simple tree-item
         //const tmpl = html`<ui5-tree-item id=${ppAh} text=${pp.purpose} level=${toggledTreeItem.level + 1}></ui5-tree-item>`;
 
+
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppAh);
-        const hasUnreadComments = this._zvm.perspective.unreadSubjects.includes(ppAh);
+        const hasUnreadComments = unreadSubjects.includes(ppAh);
         const threadIsNew = this.perspective.newThreads[ppAh] != undefined;
         const hasNewBeads = Object.keys(this.perspective.unreadThreads).includes(ppAh);
 
@@ -280,11 +281,15 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
     // FIXME: Reset tree on update() or fix bug with subjects not under the correct update when adding new SubjectTypes live
 
+    /* */
+    const newSubjects = this._zvm.getNewSubjects();
+    const unreadSubjects = this._zvm.getUnreadSubjects();
+
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
       const isUnread = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
-      const topicIsNew = this.perspective.newSubjects[pathHash] != undefined;
+      const topicIsNew = newSubjects[pathHash] != undefined;
 
       let commentButton = html``;
       if (isUnread) {
@@ -321,8 +326,8 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     return html`
       <ui5-busy-indicator id="busy" style="width: 100%">
         <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text="No SubjectTypes found"
-                  @item-toggle="${this.toggleTreeItem}"
-                  @item-click="${this.clickTree}"
+                  @item-toggle=${(e) => this.toggleTreeItem(e, unreadSubjects)}
+                  @item-click=${this.clickTree}
                   @item-mouseover=${(e) => {this._isHovered[e.detail.item.id] = true; this.requestUpdate();}}
                   @item-mouseout=${(e) => {this._isHovered[e.detail.item.id] = false;}}
         >

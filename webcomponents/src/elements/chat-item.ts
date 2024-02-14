@@ -166,7 +166,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
 
-    let isUnread = false;
+    //let isUnread = false;
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
@@ -178,7 +178,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <ui5-button icon="discussion" tooltip="View Thread on the side" design="Transparent" style="border:none;"
                        @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">
           </ui5-button>`;
-      isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
+      const isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
+      const commentLinkColor = isUnread ? "red" : "blue";
       const thread = this.threadsPerspective.threads.get(maybeCommentThread);
       const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");
       if (thread.beadLinksTree.length > 0) {
@@ -205,7 +206,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         commentThread = html`
             <div style="display:flex; flex-direction:row;">
                 ${avatarGroup}
-                <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
+                <span class="thread-link" style="color: ${commentLinkColor}"
                       @click=${(_e) => {
                           this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
                       }}>
@@ -218,7 +219,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         commentThread = html`
             <div style="display:flex; flex-direction:row;">
                 ${threadAvatar}
-                <span class="thread-link" style="color: ${isUnread ? "red" : "blue"}"
+                <span class="thread-link" style="color: ${commentLinkColor}"
                       @click=${(_e) => {
                           this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
                       }}>

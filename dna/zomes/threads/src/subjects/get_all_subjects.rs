@@ -24,14 +24,14 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     //let applet_hash = comp2hash(&comps[1])?;
     let applet_id = String::try_from(&comps[1])
         .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-    let topic_type = comps[2].clone();
+    let subject_type_comp = comps[2].clone();
     //let subject_hash = comp2hash(&comps[3])?;
     let (dna_hash, subject_hash) = comp2subject(&comps[3])?;
 
     let subject = Subject {
       hash: subject_hash.clone(),
       //hash_type: AppletSubjectType::from(subject_hash),
-      type_name: std::str::from_utf8(topic_type.as_ref()).unwrap().to_string(), // FIXME
+      type_name: std::str::from_utf8(subject_type_comp.as_ref()).unwrap().to_string(), // FIXME
       dna_hash,
       applet_id,
     };

@@ -220,7 +220,7 @@ export class ThreadsApp extends HappElement {
   async perspectiveInitializedOnline(): Promise<void> {
     console.log("<threads-app>.perspectiveInitializedOnline()", this.appletView);
 
-    if (this.appletView && this.appletView.type == "main") {
+    if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
       await this.hvm.probeAll();
     }
     this._onlinePerspectiveloaded = true;

@@ -45,17 +45,28 @@ fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
 }
 
 
+#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+pub struct CommitGlobalLogInput {
+  maybe_ts: Option<Timestamp>,
+  maybe_last_known_pp_ah: Option<ActionHash>,
+}
+
 /// Update global log entry to current time.
 /// Return time of newly created global log entry.
 #[hdk_extern]
-pub fn commit_global_log(maybe_last_known_pp_ah: Option<ActionHash>) -> ExternResult<Timestamp> {
-  debug!("commit_global_log() {:?}", maybe_last_known_pp_ah);
+pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp> {
+  debug!("commit_global_log() {:?}", input);
   /// Get Previous one (this also makes sure that one has been created so we can do update)
-  let (ah, _) = search_global_log()?;
+  let (ah, prev) = search_global_log()?;
   /// Create latest log
+  let now = sys_time()?;
+  let ts = input.maybe_ts.unwrap_or(now);
+  if ts <= prev.ts {
+      return error("New GlobalLog Timestamp must be newer than previous one");
+  }
   let gql = GlobalLastProbeLog {
-    ts: sys_time()?,
-    maybe_last_known_pp_ah,
+    ts,
+    maybe_last_known_pp_ah: input.maybe_last_known_pp_ah,
   };
   /// Update the entry
   let _ah = update_entry(ah, ThreadsEntry::GlobalProbeLog(gql.clone()))?;

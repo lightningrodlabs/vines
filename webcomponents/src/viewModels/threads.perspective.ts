@@ -94,15 +94,16 @@ export interface ThreadsPerspective {
   /** -- New / unread -- */
   globalProbeLog?: GlobalLastProbeLog,
 
-  /** New == Found when doing probeAllLatest() */
+  /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /** subjectHash -> array of [ppAh, pp index-time] */
-  newSubjects: Dictionary<[ActionHash, Timestamp][]>,
-  newThreads: ActionHashB64[],
-  /** Unread subject == Has "new" beads on one if its threads OR has new threads */
-  unreadSubjects: AnyLinkableHashB64[],
-  /** ppAh -> beadAh[] */
-  unreadThreads: Dictionary<ActionHashB64[]>, // Unread thread == Has "new" beads
+  //newSubjects: Dictionary<[ActionHash, Timestamp][]>,
+  /* ppAh -> SubjectHash */
+  newThreads: Record<ActionHashB64, AnyLinkableHashB64>,
+  /** Unread subject == Has at least one unread thread */
+  //unreadSubjects: Dictionary<AnyLinkableHashB64[]>,
+  /** ppAh -> (subjectHash, beadAh[]) */
+  unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]>, // Unread thread == Has "new" beads
 
   /** -- Notification Inbox -- */
   /** linkAh -> [agent, beadAh] */

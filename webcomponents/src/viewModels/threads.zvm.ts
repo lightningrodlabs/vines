@@ -11,7 +11,7 @@ import {
 import {
   AnyBead,
   Bead,
-  BeadLink,
+  BeadLink, CommitGlobalLogInput,
   GlobalLastProbeLog,
   NotifiableEventType,
   ParticipationProtocol,
@@ -53,6 +53,7 @@ import {encode} from "@msgpack/msgpack";
 import {decodeHrl, encodeHrl} from "../utils";
 import {generateSearchTest, SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
+import pp = jasmine.pp;
 
 
 generateSearchTest();
@@ -107,8 +108,8 @@ export class ThreadsZvm extends ZomeViewModel {
       emojiReactions:  this._emojiReactions,
 
       globalProbeLog: this._globalProbeLog,
-      newSubjects: this._newSubjects,
-      unreadSubjects: this._unreadSubjects,
+      //newSubjects: this._newSubjects,
+      //unreadSubjects: this._unreadSubjects,
       newThreads: this._newThreads,
       unreadThreads: this._unreadThreads,
 
@@ -144,15 +145,14 @@ export class ThreadsZvm extends ZomeViewModel {
 
   private _emojiReactions: Dictionary<[AgentPubKeyB64, string][]> = {}
 
-  /** */
-  private _globalProbeLog?: GlobalLastProbeLog;
   /** New & Unreads */
-  private _newSubjects: Dictionary<[ActionHash, Timestamp][]> = {};
-  private _unreadSubjects: AnyLinkableHashB64[] = [];
-  private _newThreads: ActionHashB64[] = [];
-  private _unreadThreads: Dictionary<ActionHashB64[]> = {};
+  private _globalProbeLog?: GlobalLastProbeLog;
+  /* ppAh -> subjectHash */
+  private _newThreads: Record<ActionHashB64, AnyLinkableHashB64> = {};
+  /* ppAh -> (subjectHash, newBeadAh[]) */
+  private _unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]> = {};
 
-  /** */
+  /** Notification Inbox */
   private _inbox: Dictionary<WeaveNotification> = {};
 
 
@@ -409,25 +409,32 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async initializePerspectiveOnline(): Promise<void> {
+    console.log("threadsZvm.initializePerspectiveOnline()");
     /** Grab all semantic topics to see if there are new ones */
     await this.probeSemanticTopics();
+    /** */
+    await this.probeAllAppletIds();
+  }
+
+
+  /** */
+  probeAllInner() {
+    console.log("threadsZvm.probeAllInner()")
+    /* await */ this.initializePerspectiveOnline();
 
     /** Grab all threads of SemanticTopics to see if there are new ones */
     let probes = []
     for (const topicEh of Object.keys(this._allSemanticTopics)) {
       probes.push(this.probeSubjectThreads(topicEh));
     }
-    await Promise.all(probes);
+    //await Promise.all(probes);
 
     /** Get last elements since last time (global search log) */
-    await this.probeAllLatest();
+    /*await*/ this.probeAllLatest();
 
-
-    await this.probeInbox();
-
-    /** */
-    await this.probeAllAppletIds();
+    /*await*/ this.probeInbox();
   }
+
 
 
   /** */
@@ -525,11 +532,6 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** -- Probe: Query the DHT, and store the results (async) -- */
 
-  /** */
-  probeAllInner() {
-    /* await */ this.initializePerspectiveOnline();
-  }
-
 
   /** */
   async probeAllAppletIds(): Promise<string[]> {
@@ -618,82 +620,93 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async probeAllLatest(): Promise<void> {
     const latest = await this.zomeProxy.probeAllLatest(this._globalProbeLog.ts);
-    const newThreads = latest.newThreadsBySubject.map(([_topicHash, ppAh]) => encodeHashToBase64(ppAh));
-    let unreadSubjects = latest.newThreadsBySubject.map(([topicHash, _ppAh]) => encodeHashToBase64(topicHash));
+    await this.commitGlobalProbeLog(latest.searchedInterval.end);
 
-    /** Map new beads to their threads */
-    let unreadThreads: Dictionary<ActionHashB64[]> = {};
-    latest.newBeadsByThread.map(([pp_ah, bl]) => {
+    /* newThreads */
+    const newThreads: Dictionary<AnyLinkableHashB64> = {};
+    for (const [subjectHash, ppAh] of latest.newThreadsBySubject) {
+      newThreads[encodeHashToBase64(ppAh)] = encodeHashToBase64(subjectHash);
+    }
+    //console.log("probeAllLatest:     newThreads", newThreads);
+    this._newThreads = newThreads;
+
+    /* unreadThreads: Map new beads to their threads */
+    let unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]> = {};
+    latest.newBeadsByThread.map(async ([pp_ah, bl]) => {
       const ppAh =  encodeHashToBase64(pp_ah);
-      const maybeThread = this._threads.get(ppAh);
-      if (maybeThread && bl.creationTime <= maybeThread.latestProbeLogTime) {
+      let maybeThread = this._threads.get(ppAh);
+      if (!maybeThread) {
+        /* _ppMat = */ await this.fetchPp(ppAh);
+        maybeThread = this._threads.get(ppAh);
+        if (!maybeThread) {
+          console.warn("Thread not found", ppAh);
+          return;
+        }
+      }
+      if (bl.creationTime <= maybeThread.latestProbeLogTime) {
         return;
       }
+      //const subjectHash = newThreads[ppAh];
+      const subjectHash = maybeThread.pp.subject.hash
       if (!unreadThreads[ppAh]) {
-        unreadThreads[ppAh] = [];
+        unreadThreads[ppAh] = [subjectHash, []];
       }
-      unreadThreads[ppAh].push(encodeHashToBase64(bl.beadAh));
+      unreadThreads[ppAh][1].push(encodeHashToBase64(bl.beadAh));
     });
-    console.log("threadsZvm.probeAllLatest() unreadThreads done", unreadThreads);
+    console.log("threadsZvm.probeAllLatest() unreadThreads done", JSON.stringify(unreadThreads));
+    this._unreadThreads = unreadThreads;
 
-    /** Mark subject as unread if it has an unread thread */
-    for (const ppAh of Object.keys(unreadThreads)) {
-      const thread = this._threads.get(ppAh);
-      if (!thread) {
-        console.error("Unread thread is unknown");
-        continue;
-      }
-      const topicHash = thread.pp.subject.hash;
-      unreadSubjects.push(topicHash);
-    }
+    /** Done */
+    this.notifySubscribers();
+  }
+
+
+  /** unreadSubjects: subject has at least one unread thread */
+  getUnreadSubjects(): AnyLinkableHashB64[] {
+    let unreadSubjects = Object.values(this._unreadThreads).map(([subjectHash, _beads]) => subjectHash);
     /** Dedup */
-    unreadSubjects = [...new Set(unreadSubjects)];
+    return [...new Set(unreadSubjects)];
+  }
 
-    /** Store subject's oldest 'new' thread time for each new thread */
+
+  /** Returns SubjectHash -> OldestNewThreadTs, i.e. creationTime of Subject */
+  getNewSubjects(): Dictionary<Timestamp> {
+    /** newSubjects: Store subject's oldest 'new' thread time for each new thread */
     const oldestNewThreadBySubject: Dictionary<Timestamp> = {};
-    for (const ppAh of newThreads) {
+    for (const [ppAh, subjectHash] of Object.entries(this._newThreads)) {
       const thread = this._threads.get(ppAh);
       if (!thread) {
         console.error("Thread not found");
         continue;
       }
-      const topicHash = thread.pp.subject.hash;
-      if (!oldestNewThreadBySubject[topicHash] || thread.creationTime < oldestNewThreadBySubject[topicHash]) {
-        oldestNewThreadBySubject[topicHash] = thread.creationTime;
+      if (!oldestNewThreadBySubject[subjectHash] || thread.creationTime < oldestNewThreadBySubject[subjectHash]) {
+        oldestNewThreadBySubject[subjectHash] = thread.creationTime;
       }
     }
-    /** Figure out if subjects are new: no older "none-new" threads found for this subject */
     //console.log("oldestThreadTimeBySubject", oldestThreadTimeBySubject);
+
+    /* Figure out if subjects are new: no older "none-new" threads found for this subject */
     let newSubjects = {};
-    for (const [subjectHash, oldestNewThreadTime] of Object.entries(oldestNewThreadBySubject)) {
-      const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
-      //console.log(`Subject "${subjectHash}" oldestNewThreadBySubject: `, new Date(oldestNewThreadTime / 1000), oldestNewThreadTime)
-      newSubjects[subjectHash] = pps.map(([ppAh, ts]) => [encodeHashToBase64(ppAh), ts]);
-      for (const [_ppAh, ppCreationTime] of pps) {
-        //let diff = oldestNewThreadTime - ppCreationTime;
-        //console.log(`Subject "${subjectHash}" thread "${encodeHashToBase64(ppAh)}" creationTime: `, new Date(ppCreationTime / 1000), ppCreationTime)
-        //console.log(`Diff for ${subjectHash} thread ${encodeHashToBase64(ppAh)}`, diff)
-        if (ppCreationTime < oldestNewThreadTime) {
+    for (const [subjectHash, oldestNewThreadTs] of Object.entries(oldestNewThreadBySubject)) {
+      //const pairs = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
+      const pairs: [AnyLinkableHashB64, Timestamp][] = this._threadsPerSubject[subjectHash].map((ppAh) => {
+        const thread = this._threads.get(ppAh);
+        if (!thread) {
+          console.error("Thread not found");
+          return [ppAh, 0];
+        }
+        return [ppAh, thread.creationTime];
+      })
+      //newSubjects[subjectHash] = pairs.map(([ppAh, _ts]) => ppAh);
+      newSubjects[subjectHash] = oldestNewThreadTs;
+      for (const [_ppAh, ppCreationTime] of pairs) {
+        if (ppCreationTime < oldestNewThreadTs) {
           delete newSubjects[subjectHash];
           break;
         }
       }
     }
-
-    /* */
-    await this.commitGlobalProbeLog();
-
-    // /** DEBUG */
-    // console.log("probeAllLatest:    newSubjects", newSubjects);
-    // console.log("probeAllLatest: unreadSubjects", unreadSubjects);
-    // console.log("probeAllLatest:     newThreads", newThreads);
-    // console.log("probeAllLatest:  unreadThreads", unreadThreads);
-    /** Done */
-    this._newSubjects = newSubjects;
-    this._unreadSubjects = unreadSubjects;
-    this._newThreads = newThreads;
-    this._unreadThreads = unreadThreads;
-    this.notifySubscribers();
+    return newSubjects;
   }
 
 
@@ -1098,9 +1111,9 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   storeSemanticTopic(eh: EntryHashB64, title: string, isHidden: boolean, isNew: boolean): void {
     this._allSemanticTopics[eh] = [title, isHidden];
-    if (isNew && !this._newSubjects[eh]) {
-      this._newSubjects[eh] = [];
-    }
+    // if (isNew && !this._newSubjects[eh]) {
+    //   this._newSubjects[eh] = [];
+    // }
     this.notifySubscribers();
   }
 
@@ -1126,7 +1139,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     this._threadsPerSubject[ppMat.subject.hash].push(ppAh);
     if (isNew) {
-      this._newThreads.push(ppAh);
+      this._newThreads[ppAh] = ppMat.subject.hash;
     }
     /** All Subjects */
     if (!this._allSubjects.get(ppMat.subject.hash)) {
@@ -1148,13 +1161,13 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType};
-    this._threads.get(ppAh).addItem(blMat);
+    const thread = this._threads.get(ppAh);
+    thread.addItem(blMat);
     if (isNew) {
       if (!this._unreadThreads[ppAh]) {
-        this._unreadThreads[ppAh] = [];
+        this._unreadThreads[ppAh] = [thread.pp.subject.hash, []];
       }
-      this._unreadThreads[ppAh].push(beadAh);
-      // FIXME: grab subject and check if must me marked as unread too
+      this._unreadThreads[ppAh][1].push(beadAh);
     }
     this.notifySubscribers();
   }
@@ -1214,13 +1227,18 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Commit Global Log */
-  async commitGlobalProbeLog(): Promise<void> {
+  async commitGlobalProbeLog(maybe_ts?: Timestamp): Promise<void> {
     const maybeLatest = this.getLatestThread();
     console.log("commitGlobalProbeLog() maybeLatest", maybeLatest);
-    let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)); // FIXME
+    const input: CommitGlobalLogInput = {
+      maybe_ts,
+      maybe_last_known_pp_ah: decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)
+    }
+    let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(input);
     console.log("commitGlobalProbeLog()", prettyTimestamp(latestGlobalLogTime));
     this._globalProbeLog.ts = latestGlobalLogTime;
-
+    this._unreadThreads = {};
+    this._newThreads = {};
   }
 
 
@@ -1238,6 +1256,8 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const _ah = await this.zomeProxy.commitThreadLog(probeLog);
     thread.setLatestProbeLogTime(probeLog.ts);
+    /** update perspective */
+    delete this._unreadThreads[ppAh];
   }
 
 

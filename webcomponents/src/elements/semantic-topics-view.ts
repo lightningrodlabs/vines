@@ -168,11 +168,11 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           return html``;
         }
         //const hasNewBeads = thread && thread.hasUnreads();
-        const maybeNewBeads = this.perspective.unreadThreads[ppHash];
-        const hasNewBeads = maybeNewBeads && maybeNewBeads.length > 0;
+        const maybeUnreadThread = this.perspective.unreadThreads[ppHash];
+        const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
         //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
-        const threadIsNew = this.perspective.newThreads.includes(ppHash);
-        //console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, thread, this.perspective.globalSearchLog.time);
+        const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppHash);
+        console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, maybeUnreadThread);
         if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
           return html``;
         }
@@ -204,13 +204,18 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
           }
         }
 
-        /** 'new' badge to display */
-        let newBadge = html``;
+        /** 'new', 'notif' or 'unread' badge to display */
+        let badge = html``;
         if (threadIsNew) {
-          newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">New</ui5-badge>`;
+          badge = html`<ui5-badge class="notifBadge">New</ui5-badge>`;
         } else {
-          if (hasNewBeads) {
-            newBadge = html`<ui5-badge color-scheme="3" style="color:brown;">${maybeNewBeads.length}</ui5-badge>`;
+          let notifCount = 0; // FIXME
+          if (notifCount > 0) {
+            badge = html`<ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
+          } else {
+            if (hasNewBeads) {
+              badge = html`<ui5-badge class="unreadBadge">${maybeUnreadThread[1].length}</ui5-badge>`;
+            }
           }
         }
 
@@ -237,20 +242,23 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
             <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
                 <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
-                ${newBadge}
+                ${badge}
                 ${commentButton}                
                 ${hideShowBtn}
             </div>               
         </ui5-tree-item-custom>`
       })
 
+      /* */
+      const newSubjects = this._zvm.getNewSubjects();
+      const unreadSubjects = this._zvm.getUnreadSubjects();
 
       /** Render Topic */
       const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(topicHash);
-      const topicIsNew = this.perspective.newSubjects[topicHash] != undefined;
+      const topicIsNew = newSubjects[topicHash] != undefined;
       let topicHasUnreadComments = false;
       if (maybeCommentThread != null) {
-        topicHasUnreadComments = this._zvm.perspective.unreadSubjects.includes(topicHash);
+        topicHasUnreadComments = unreadSubjects.includes(topicHash);
       }
 
       let commentButton = html``;
@@ -271,20 +279,27 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                             @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
         }
       }
-      /** 'new' badge to display */
-      let newBadge = html``;
+
+
+      /** 'new', 'notif' and 'unread' badge to display */
+      let badge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">New</ui5-badge>`;
+        badge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
       } else {
-        /** Agregate count of unread beads on all topic's threads */
-        let count = 0;
-        for (const ppAh of topicThreads) {
-          if (this.perspective.unreadThreads[ppAh]) {
-            count += this.perspective.unreadThreads[ppAh].length;
+        let notifCount = 0; // FIXME
+        if (notifCount > 0) {
+          badge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
+        } else {
+          /** Agregate count of unread beads on all topic's threads */
+          let count = 0;
+          for (const ppAh of topicThreads) {
+            if (this.perspective.unreadThreads[ppAh]) {
+              count += this.perspective.unreadThreads[ppAh][1].length;
+            }
           }
-        }
-        if (count > 0) {
-          newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">${count}</ui5-badge>`;
+          if (count > 0) {
+            badge = html`<ui5-badge class="unreadBadge subjectBadge">${count}</ui5-badge>`;
+          }
         }
       }
 
@@ -307,7 +322,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         `
       }
 
-      const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
+      const topicHasUnreads = unreadSubjects.includes(topicHash);
       return html`
           <ui5-tree-item-custom id="${topicHash}" ?has-children="${!!topicThreads}"
                                 expanded="${!!topicThreads}" show-toggle-button level="1" style="background: ${topicIsNew? "#DBE3EF" : ""};overflow: hidden;">
@@ -322,7 +337,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
                       composed: true
                   }));
               }}></ui5-button>
-              ${newBadge}                 
+              ${badge}
               ${commentButton}
               ${hideShowBtn}              
           </span>
@@ -367,6 +382,20 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         .transBtn {
           border:none;
           background:none;
+        }
+
+        .subjectBadge {
+          margin-top: 10px;
+        }
+        
+        .unreadBadge {
+          background: aliceblue;
+          color: gray;
+          border-color: aliceblue;
+        }
+
+        .notifBadge {
+          color: brown;
         }
       `,
 

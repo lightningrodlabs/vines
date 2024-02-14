@@ -225,7 +225,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    newDvm.probeAll();
+    //newDvm.probeAll();
     this._selectedThreadHash = '';
     this._initialized = true;
   }
@@ -328,11 +328,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.wePerspective.applets[appletId] = appletInfo;
       }
       /** NotifyWe of some new content */
-      const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + this._dvm.threadsZvm.perspective.newThreads.length + Object.keys(this._dvm.threadsZvm.perspective.newSubjects).length;
+      const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
       if (allCount > 0) {
         this.weServices.notifyWe([{
           title: "New content",
-          body: "" + allCount + " items",
+          body: "",
           notification_type: "content",
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'medium',
