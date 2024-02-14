@@ -60,7 +60,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
     }
 
     let notifsLi = Object.entries(this.threadsPerspective.inbox).map(
-      ([linkAh, notif]) => {
+      ([linkAh, [_ppAh, notif]]) => {
 
         /** Content */
         const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.wePerspective);

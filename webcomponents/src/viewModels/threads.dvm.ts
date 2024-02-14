@@ -121,23 +121,25 @@ export class ThreadsDvm extends DnaViewModel {
     const notif = notifSignal.payload.content[0] as WeaveNotification;
     const extra: Uint8Array = notifSignal.payload.content[1];
 
+    let ppAh: ActionHashB64;
     /** Store received Entry */
     if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event) {
-      const bead = decode(extra) as TypedBead;
+      const typed = decode(extra) as TypedBead;
       const beadAh = encodeHashToBase64(notif.content);
-      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, bead);
-      await this.threadsZvm.storeBead(beadAh, notif.timestamp, encodeHashToBase64(notif.author), bead, true, true);
+      ppAh = encodeHashToBase64(typed.bead.ppAh);
+      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typed);
+      await this.threadsZvm.storeBead(beadAh, notif.timestamp, encodeHashToBase64(notif.author), typed, true, true);
     }
     if (NotifiableEventType.Fork in notif.event) {
       const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
-      const ppAh = encodeHashToBase64(notif.content);
+      ppAh = encodeHashToBase64(notif.content);
       console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
       await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true); // only real author should notify others
     }
 
     /** Store Notification */
     this._signaledNotifications.push(notif);
-    this.threadsZvm.storeInboxItem(notif);
+    await this.threadsZvm.storeInboxItem(notif, true, ppAh);
   }
 
 

@@ -153,7 +153,8 @@ export class ThreadsZvm extends ZomeViewModel {
   private _unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]> = {};
 
   /** Notification Inbox */
-  private _inbox: Dictionary<WeaveNotification> = {};
+  /* linkAh -> (ppAh, Notif) */
+  private _inbox: Dictionary<[ActionHashB64, WeaveNotification]> = {};
 
 
   /** -- Get: Return a stored element -- */
@@ -430,9 +431,11 @@ export class ThreadsZvm extends ZomeViewModel {
     //await Promise.all(probes);
 
     /** Get last elements since last time (global search log) */
-    /*await*/ this.probeAllLatest();
+    /*await*/ this.probeAllLatest().then(() => {
+      /*await*/ this.probeInbox();
+    })
 
-    /*await*/ this.probeInbox();
+
   }
 
 
@@ -448,9 +451,10 @@ export class ThreadsZvm extends ZomeViewModel {
   async probeInbox() {
     const items = await this.zomeProxy.probeInbox();
     this._inbox = {};
-    items.map((notif) => {
-      this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
-    });
+    for (const notif of items) {
+      await this.storeInboxItem(notif, false);
+    }
+    // FIXME: use Promise.allSettled();
     this.notifySubscribers();
   }
 
@@ -1018,6 +1022,29 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  async fetchUnknownBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<TypedBead> {
+    let creationTime, author, typed;
+    try {
+      [creationTime, author, typed] = await this.zomeProxy.getTextBead(beadAh);
+    } catch(e) {
+      try {
+        [creationTime, author, typed] = await this.zomeProxy.getEntryBead(beadAh);
+      } catch(e) {
+        try {
+          [creationTime, author, typed] = await this.zomeProxy.getAnyBead(beadAh);
+        } catch(e) {
+          console.error(e);
+          Promise.reject("Bead not found at " + encodeHashToBase64(beadAh));
+        }
+      }
+    }
+    const ts = alternateCreationTime? alternateCreationTime : creationTime;
+    await this.storeBead(encodeHashToBase64(beadAh), ts, encodeHashToBase64(author), typed, canNotify, false);
+    return typed;
+  }
+
+
+  /** */
   async fetchTypedBead(beadAh: ActionHash, beadType: BeadType, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<TypedBead> {
     let creationTime, author, typed;
     try {
@@ -1100,16 +1127,42 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
-  storeInboxItem(notif: WeaveNotification): void {
+  async storeInboxItem(notif: WeaveNotification, canProbeAll: boolean, ppAh?: ActionHashB64) {
     /* Brutal way to make sure we have the content signaled in the notification */
-    ///*await*/ this.probeInboxItem(notif);
-    /*await*/ this.probeAllLatest(); // FIXME: find something less brutal
-    ///*await*/ this.zomeProxy.probeAllLatest(notif.timestamp - 1);
+    if (canProbeAll) {
+      await this.probeAllLatest();
+    }
+    if (!ppAh) {
+      ppAh = await this.getNotifPp(notif);
+      await this.fetchPp(ppAh, true); // make sure we have the content signaled in the notification
+    }
     /* */
-    this._inbox[encodeHashToBase64(notif.link_ah)] = notif;
+    this._inbox[encodeHashToBase64(notif.link_ah)] = [ppAh, notif];
     this.notifySubscribers();
   }
 
+
+  /** get ppAh of Notif */
+  async getNotifPp(notif: WeaveNotification): Promise<ActionHashB64> {
+    if (NotifiableEventType.Fork in notif.event) {
+      return encodeHashToBase64(notif.content);
+    } else {
+      const typed = await this.fetchUnknownBead(notif.content, false);
+      return encodeHashToBase64(typed.bead.ppAh);
+    }
+  }
+
+
+  /** */
+  getPpNotifs(argPpAh:ActionHashB64): [ActionHashB64, WeaveNotification][] {
+    let result = [];
+    for (const [linkAh, [ppAh, notif]] of Object.entries(this._inbox)) {
+      if (argPpAh == ppAh) {
+        result.push([linkAh, notif]);
+      }
+    }
+    return result;
+  }
 
 
   /** */

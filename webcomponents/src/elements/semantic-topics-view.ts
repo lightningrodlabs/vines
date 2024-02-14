@@ -162,23 +162,23 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
       //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
 
       let threads = [html``];
-      threads = Object.values(topicThreads).map((ppHash)=> {
-        const thread = this.perspective.threads.get(ppHash);
+      threads = Object.values(topicThreads).map((ppAh)=> {
+        const thread = this.perspective.threads.get(ppAh);
         if (!thread) {
           return html``;
         }
         //const hasNewBeads = thread && thread.hasUnreads();
-        const maybeUnreadThread = this.perspective.unreadThreads[ppHash];
+        const maybeUnreadThread = this.perspective.unreadThreads[ppAh];
         const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
-        //console.log("hasUnreads() thread", ppHash, thread.latestSearchLogTime);
-        const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppHash);
+        //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
+        const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
         console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, maybeUnreadThread);
         if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
           return html``;
         }
 
         /** Determine badge & buttons */
-        const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(ppHash);
+        const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(ppAh);
         let hasUnreadComments = false;
         if (maybeCommentThread != null) {
           hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
@@ -188,19 +188,19 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         let commentButton = html``;
         if (hasUnreadComments) {
           commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
-                                           design="Negative" class=${this._isHovered[ppHash]? "" : "transBtn"}
-                                           @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
+                                           design="Negative" class=${this._isHovered[ppAh]? "" : "transBtn"}
+                                           @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
         } else {
-          if (this._isHovered[ppHash]) {
+          if (this._isHovered[ppAh]) {
             commentButton = maybeCommentThread != null
               ? html`
                         <ui5-button icon="comment" tooltip="View Thread" design="Transparent"
                                     style="border:none;"
-                                    @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`
+                                    @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`
               : html`
                         <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent"
                                     style="border:none;"
-                                    @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppHash, thread.pp.purpose)}"></ui5-button>`;
+                                    @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
           }
         }
 
@@ -209,7 +209,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         if (threadIsNew) {
           badge = html`<ui5-badge class="notifBadge">New</ui5-badge>`;
         } else {
-          let notifCount = 0; // FIXME
+          let notifCount = this._zvm.getPpNotifs(ppAh).length;
           if (notifCount > 0) {
             badge = html`<ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
           } else {
@@ -220,26 +220,26 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         }
 
         let hideShowBtn = html``;
-        if (this._isHovered[ppHash]) {
+        if (this._isHovered[ppAh]) {
         hideShowBtn = this.showArchivedTopics && thread.isHidden?
             html`
             <ui5-button icon="show" tooltip="Show" design="Transparent"
                         style="border:none; padding:0px" 
                         @click=${async (e) => {
-                          await this._zvm.unhideSubject(ppHash);
+                          await this._zvm.unhideSubject(ppAh);
                           toasty(`Unarchived Subject "${thread.pp.purpose}"`);
             }}></ui5-button>
                   ` : html`
             <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                         style="border:none; padding:0px" 
                         @click=${async (e) => {
-                          await this._zvm.hideSubject(ppHash);
+                          await this._zvm.hideSubject(ppAh);
                           toasty(`Archived Subject "${thread.pp.purpose}`);
           }}></ui5-button>`;
         }
 
         // @item-mouseover=${(e) => this._isHovered[ppHash] = true} @item-mouseout=${(e) => this._isHovered[ppHash] = false}
-        return html`<ui5-tree-item-custom id=${ppHash} level="2" icon="number-sign" style="overflow:hidden;">
+        return html`<ui5-tree-item-custom id=${ppAh} level="2" icon="number-sign" style="overflow:hidden;">
             <div slot="content" style="display:flex; overflow: hidden; align-items:center; font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"};">
                 <span style="height:18px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads? "bold": ""}">${thread.pp.purpose}</span>
                 ${badge}
@@ -292,9 +292,9 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         } else {
           /** Agregate count of unread beads on all topic's threads */
           let count = 0;
-          for (const ppAh of topicThreads) {
-            if (this.perspective.unreadThreads[ppAh]) {
-              count += this.perspective.unreadThreads[ppAh][1].length;
+          for (const topicPpAh of topicThreads) {
+            if (this.perspective.unreadThreads[topicPpAh]) {
+              count += this.perspective.unreadThreads[topicPpAh][1].length;
             }
           }
           if (count > 0) {

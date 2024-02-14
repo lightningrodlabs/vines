@@ -109,8 +109,8 @@ export interface ThreadsPerspective {
   /** linkAh -> [agent, beadAh] */
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
 
-  /** linkAh -> obj */
-  inbox: Dictionary<WeaveNotification>,
+  /** linkAh -> (ppAh, notif) */
+  inbox: Dictionary<[ActionHashB64, WeaveNotification]>,
 }
 
 
