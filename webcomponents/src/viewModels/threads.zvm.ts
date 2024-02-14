@@ -622,10 +622,15 @@ export class ThreadsZvm extends ZomeViewModel {
     const latest = await this.zomeProxy.probeAllLatest(this._globalProbeLog.ts);
     await this.commitGlobalProbeLog(latest.searchedInterval.end);
 
-    /* newThreads */
+    /* newThreads (filter out my threads) */
     const newThreads: Dictionary<AnyLinkableHashB64> = {};
-    for (const [subjectHash, ppAh] of latest.newThreadsBySubject) {
-      newThreads[encodeHashToBase64(ppAh)] = encodeHashToBase64(subjectHash);
+    for (const [subject_hash, pp_ah] of latest.newThreadsBySubject) {
+      const ppAh = encodeHashToBase64(pp_ah)
+      const _ppMat = await this.fetchPp(ppAh);
+      let maybeThread = this._threads.get(ppAh);
+      if (maybeThread.author != this.cell.agentPubKey) {
+        newThreads[ppAh] = encodeHashToBase64(subject_hash);
+      }
     }
     //console.log("probeAllLatest:     newThreads", newThreads);
     this._newThreads = newThreads;

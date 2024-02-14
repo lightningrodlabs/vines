@@ -94,7 +94,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   protected firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
 
-    this._dvm.threadsZvm.probeEmojiReactions(this.hash);
+    //this._dvm.threadsZvm.probeEmojiReactions(this.hash);
 
     this.emojiPickerElem.addEventListener('emoji-click', (event: any) => {
       const unicode = event?.detail?.unicode

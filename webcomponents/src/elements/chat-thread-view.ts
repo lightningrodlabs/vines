@@ -40,7 +40,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- State variables -- */
 
-  @state() private _loading = false;
+  @property({type: Boolean, attribute: false})
+  _loading = true;
+
   @state() private _busy = false;
   @state() private _commentsLoading = false;
 
@@ -64,10 +66,28 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** Don't update during loading of beads */
+  shouldUpdate(changedProperties: PropertyValues<this>) {
+    console.log("<chat-thread-view>.shouldUpdate()", changedProperties, this._loading);
+    const shouldnt = !super.shouldUpdate(changedProperties);
+    if (shouldnt) {
+      return false;
+    }
+    if (changedProperties.has("threadHash")) {
+      return true;
+    }
+    if (changedProperties.has("_loading")) {
+      return true;
+    }
+    return !this._loading;
+    //return true;
+  }
+
+
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<chat-thread-view>.loadMessages()", changedProperties, !!this._dvm, this.threadHash);
+    console.log("<chat-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (changedProperties.has("threadHash") && this._dvm) {
       this.loadlatestMessages();
     }
@@ -91,7 +111,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       /** i.e. element not present */
     }
 
-
     // /** Check for comments on each message */
     // const threadInfo = this._dvm.threadsZvm.perspective.threads[this.threadHash];
     // if (!threadInfo) {
@@ -101,7 +120,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     //       this._dvm.threadsZvm.probeThreads(blm.beadAh);
     //     })
     // }
-
   }
 
 
@@ -201,15 +219,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this.threadHash == "") {
       return html `<div>${msg("No thread selected")}</div>`;
     }
-
-    //const bg_color = this._loading? "#ededf0" : "white"
-    this.style.background = this._loading? "#d4d5d7" : "#FBFCFD"
-
-
-    // const pp = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
-    // if (!pp) {
-    //   return html `<div>Loading thread...</div>`;
-    // }
+    if (this._loading) {
+      return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+    }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
       return html `<div>Loading messages...</div>`;
@@ -224,12 +236,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** Should grab all probed and request probes if end is reached */
-    //const infos: TextMessageInfo[] = this._dvm.threadsZvm.getMostRecentTextMessages(this.threadHash);
 
     const all = thread.getAll();
-
-    //console.log("<chat-thread-view>.render() len =", threadInfo.beadLinksTree.length, threadInfo.latestSearchLogTime);
-
     let passedLog = false;
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
@@ -238,10 +246,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         let hr = html``;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
-        console.log("thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime);
+        //console.log("thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
-          //const beadDateStr = prettyTimestamp(initialProbeLogTs);
-          const beadDateStr = "New"
+          const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
           passedLog = true;
           hr = html`
               <div style="margin-left:10px; margin-right:10px; margin-bottom:-25px">
@@ -250,7 +257,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
               </div>
           `
         }
-        console.log("<chat-thread-view> blm.beadType ", blm.beadType);
+        //console.log("<chat-thread-view> blm.beadType ", blm.beadType);
         const chatItem = html`<chat-item .hash=${(blm.beadAh)}></chat-item>`;
         return html`${chatItem}${hr}`;
       }
