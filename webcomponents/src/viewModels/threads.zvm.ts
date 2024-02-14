@@ -646,7 +646,6 @@ export class ThreadsZvm extends ZomeViewModel {
       if (bl.creationTime <= maybeThread.latestProbeLogTime) {
         return;
       }
-      //const subjectHash = newThreads[ppAh];
       const subjectHash = maybeThread.pp.subject.hash
       if (!unreadThreads[ppAh]) {
         unreadThreads[ppAh] = [subjectHash, []];
@@ -1232,7 +1231,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("commitGlobalProbeLog() maybeLatest", maybeLatest);
     const input: CommitGlobalLogInput = {
       maybe_ts,
-      maybe_last_known_pp_ah: decodeHashFromBase64(maybeLatest? maybeLatest[0] : undefined)
+      maybe_last_known_pp_ah: maybeLatest? decodeHashFromBase64(maybeLatest[0]) : undefined,
     }
     let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(input);
     console.log("commitGlobalProbeLog()", prettyTimestamp(latestGlobalLogTime));
