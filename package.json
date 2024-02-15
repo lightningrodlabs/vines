@@ -102,7 +102,7 @@
     "@holochain/client": "=0.16.7",
     "@ddd-qc/cell-proxy": "=0.20.8",
     "@ddd-qc/lit-happ": "=0.20.8",
-    "@ddd-qc/we-utils": "=0.21.2",
+    "@ddd-qc/we-utils": "=0.21.3",
     "@lightningrodlabs/we-applet": "0.14.0",
     "@ddd-qc/profiles-dvm": "=0.22.5",
     "@ddd-qc/files": "=0.2.9",

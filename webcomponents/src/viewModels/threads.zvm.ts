@@ -873,9 +873,11 @@ export class ThreadsZvm extends ZomeViewModel {
   async publishTypedBeadAt(beadType: BeadType, content: string | Hrl | EntryHashB64, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
     : Promise<[ActionHashB64, string, TypedBead]>
   {
+    //console.log("publishTypedBeadAt()", beadType)
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
     /** Commit Entry */
-    let typed, global_time_anchor, bucket_ts, notifPairs;
+    let typed: TypedBead;
+    let global_time_anchor, bucket_ts, notifPairs;
     let bead_ah: ActionHash;
     switch (beadType) {
       case ThreadsEntryType.TextBead:
@@ -897,9 +899,10 @@ export class ThreadsZvm extends ZomeViewModel {
           bead: nextBead,
           value: encHrl,
           typeInfo: "hrl",
-        }
-        console.log("publishHrlBeadAt()", encHrl, anyBead);
+        } as AnyBead;
+        console.log("publishHrlBeadAt()", encHrl, typed);
         [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead(anyBead);
+        typed = anyBead;
         break;
       default: throw Error("Unknown beadType: " + beadType);
         break;
@@ -1213,6 +1216,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /* Store Bead in its Thread */
   private async storeBeadInThread(beadAh: ActionHashB64, ppAh: ActionHashB64, creationTime: Timestamp, isNew: boolean, beadType: string) {
+    //console.log("storeBeadInThread()", beadType);
     if (!this._threads.has(ppAh)) {
       await this.fetchPp(ppAh);
       return;
@@ -1232,7 +1236,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   determineBeadType(typedBead: TypedBead): string {
-    if ("fromZome" in typedBead) {
+    if ("sourceEh" in typedBead) {
       return ThreadsEntryType.EntryBead;
     }
     if ("typeInfo" in typedBead) {
@@ -1254,7 +1258,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const beadInfo = {creationTime, author, beadType: this.determineBeadType(typedBead), bead: typedBead.bead};
     const ppAh = encodeHashToBase64(typedBead.bead.ppAh);
     console.log("storeBead()", ppAh, typedBead, author);
-    await this.storeBeadInThread(beadAh, ppAh, creationTime, isNew, ThreadsEntryType.AnyBead);
+    await this.storeBeadInThread(beadAh, ppAh, creationTime, isNew, beadInfo.beadType);
     this._beads[beadAh] = [beadInfo, typedBead];
     if (canNotify) {
       this.notifySubscribers();

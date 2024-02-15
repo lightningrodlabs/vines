@@ -25,6 +25,9 @@ export class InputBar extends LitElement {
   @property()
   showHrlBtn?: string;
 
+  @property()
+  showFileBtn?: string;
+
   @property({type: Object})
   profilesZvm!: ProfilesZvm;
 
@@ -147,9 +150,10 @@ export class InputBar extends LitElement {
             <ui5-button design="Positive" icon="add" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));
             }}></ui5-button>` : html``}
+            ${this.showFileBtn? html`
             <ui5-button design="Positive" icon="attachment" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
-            }}></ui5-button>
+            }}></ui5-button>` : html``}
             <ui5-list id="agent-list" style="display: ${this._filteredAgents.length > 0? "block" : "none"}" autofocus=${this._filteredAgents.length > 0? "true" : "false"}>
                 ${agentItems}
             </ui5-list>            

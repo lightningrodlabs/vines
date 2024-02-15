@@ -19,7 +19,7 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, snake, pascal,
+  DnaViewModel, snake, pascal, delay,
 } from "@ddd-qc/lit-happ";
 import {
   ThreadsDvm,
@@ -188,16 +188,20 @@ export class ThreadsApp extends HappElement {
       }
     }
 
-    /** Probe EntryDefs */
-    const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-    console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
-    console.log(`${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
-    if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
-      console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-    } else {
-      this._hasHolochainFailed = false;
+    /** Attempt Probe EntryDefs */
+    let attempts = 5;
+    while(this._hasHolochainFailed && attempts > 0) {
+      attempts -= 1;
+      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
+      console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
+      console.log(`${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
+      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+        await delay(1000);
+      } else {
+        this._hasHolochainFailed = false;
+      }
     }
-
 
     /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();

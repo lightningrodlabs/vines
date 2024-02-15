@@ -264,9 +264,9 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishTypedBead(beadType: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creationTime, entryBead] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments);
+    let [ah, _time_anchor, creationTime, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments);
     /** Send signal to peers */
-    const data = encode(entryBead);
+    const data = encode(typed);
     const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, beadType, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;

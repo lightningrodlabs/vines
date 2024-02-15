@@ -9,6 +9,7 @@ import {AppletInfo, Hrl, WeServices} from "@lightningrodlabs/we-applet";
 import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {AnyBead} from "../bindings/threads.types";
+import {stringifyHrl} from "@ddd-qc/we-utils";
 
 
 /**
@@ -54,7 +55,7 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //console.log("<chat-hrl>.render() anyBead", anyBead.value);
     const obj: [string, string] = JSON.parse(anyBead.value);
     const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-    //console.log("<chat-hrl>.render()", stringifyHrl(hrl));
+    //console.log("<chat-hrl>.render()", stringifyHrl(hrl), obj);
     if (!this._attLocAndInfo) {
       this.weServices.attachableInfo({hrl}).then((attLocAndInfo) => {
         //console.log("<chat-hrl>.render() attachableInfo", attLocAndInfo);

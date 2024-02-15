@@ -114,6 +114,7 @@ import {
 } from "@threads/elements";
 
 import {
+  ActionHashB64,
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
@@ -543,7 +544,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  uploadFile() {
+  uploadFile(ppAh: ActionHashB64) {
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {
@@ -555,7 +556,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<threads-page> startPublishFile callback", eh);
-        /*let ah =*/ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, this._selectedThreadHash);
+        /*let ah =*/ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh);
         this._splitObj = undefined;
       });
       console.log("uploadFile()", this._splitObj);
@@ -644,10 +645,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           style="border:none; padding:0px"
                           @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
-            <threads-input-bar .profilesZvm=${this._dvm.profilesZvm} .topic=${topic}
+            <threads-input-bar .profilesZvm=${this._dvm.profilesZvm}
+                               .topic=${topic}
                                .showHrlBtn=${!!this.weServices}
+                               showFileBtn="true"
                                @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-                               @upload=${(e) => {e.preventDefault(); this.uploadFile()}}
+                               @upload=${(e) => {e.preventDefault(); this.uploadFile(this._selectedThreadHash)}}
                                @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
             ></threads-input-bar>`
             }
