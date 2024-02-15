@@ -200,6 +200,7 @@ export class ThreadsApp extends HappElement {
         await delay(1000);
       } else {
         this._hasHolochainFailed = false;
+        break;
       }
     }
 
@@ -231,13 +232,13 @@ export class ThreadsApp extends HappElement {
   }
 
 
-  /** */
-  shouldUpdate(): boolean {
-    const canUpdate = super.shouldUpdate();
-    console.log("<threads-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
-    /** Wait for offlinePerspective */
-    return canUpdate && this._offlinePerspectiveloaded;
-  }
+  // /** */
+  // shouldUpdate(): boolean {
+  //   const canUpdate = super.shouldUpdate();
+  //   console.log("<threads-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
+  //   /** Wait for offlinePerspective */
+  //   return canUpdate && this._offlinePerspectiveloaded;
+  // }
 
 
   /** */
