@@ -1247,6 +1247,10 @@ export class ThreadsZvm extends ZomeViewModel {
     if (this._beads[beadAh]) {
       return;
     }
+    if (!typedBead) {
+      console.error("storeBead() Trying to store a null Bead");
+      return;
+    }
     const beadInfo = {creationTime, author, beadType: this.determineBeadType(typedBead), bead: typedBead.bead};
     const ppAh = encodeHashToBase64(typedBead.bead.ppAh);
     console.log("storeBead()", ppAh, typedBead, author);

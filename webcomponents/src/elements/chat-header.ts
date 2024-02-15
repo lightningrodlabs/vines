@@ -52,21 +52,25 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       subText = `This is the start of thread ${thread.name}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
-      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
       let subjectName = "";
-      if (subjectBead.beadType == ThreadsEntryType.TextBead) {
-        subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBead).value, 60, true);
-      }
-      if (subjectBead.beadType == ThreadsEntryType.EntryBead) {
-        subjectName = "File";
-      }
-      if (subjectBead.beadType == ThreadsEntryType.AnyBead) {
-        subjectName = "HRL";
+      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
+      if (!subjectBead) {
+        subjectName = "Unknown"
+      } else {
+        if (subjectBead.beadType == ThreadsEntryType.TextBead) {
+          subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBead).value, 60, true);
+        }
+        if (subjectBead.beadType == ThreadsEntryType.EntryBead) {
+          subjectName = "File";
+        }
+        if (subjectBead.beadType == ThreadsEntryType.AnyBead) {
+          subjectName = "HRL";
+        }
       }
 
       const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
 
-          title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
+      title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
       subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" @click=${(e) => this.dispatchEvent(new CustomEvent('selected', {detail: encodeHashToBase64(subjectBead.bead.ppAh), bubbles: true, composed: true}))}>
                         ${subjectName}

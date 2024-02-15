@@ -110,7 +110,7 @@ import {
   globaFilesContext,
   NotifiableEventType,
   JumpEvent,
-  AnyBead, decodeHrl, wePerspectiveContext, WePerspective, ParticipationProtocol
+  AnyBead, decodeHrl, wePerspectiveContext, WePerspective, ParticipationProtocol, event2type
 } from "@threads/elements";
 
 import {
@@ -392,7 +392,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.wePerspective);
-      let message = `${notifBody} from @${author}.` ; // | ${date_str}`;
+      let message = `"${notifBody}" from @${author}.` ; // | ${date_str}`;
       /** in-app toast */
       if (canPopup) {
         toasty(notifTitle + " " + message);
@@ -402,7 +402,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const myNotif: WeNotification = {
           title: notifTitle,
           body: message,
-          notification_type: JSON.stringify(notif.event),
+          notification_type: event2type(notif.event),
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'high',
           timestamp: notif.timestamp / 1000,

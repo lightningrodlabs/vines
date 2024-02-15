@@ -214,6 +214,7 @@ export enum NotifiableEventType {
 	Dm = 'Dm',
 }
 
+
 /**  */
 export interface WeaveNotification {
   event: NotifiableEvent
@@ -237,15 +238,15 @@ export interface SendInboxItemInput {
 }
 
 /**
- * 
+ *
  * Data sent by UI ONLY. That's why we use B64 here.
- * 
+ *
  */
 export enum SignalPayloadType {
 	DirectGossip = 'DirectGossip',
 	Notification = 'Notification',
 }
-export type SignalPayload = 
+export type SignalPayload =
  | {type: "DirectGossip", content: DirectGossip}
  | {type: "Notification", content: [WeaveNotification, Uint8Array]}
 
@@ -258,9 +259,9 @@ export interface WeaveSignal {
 }
 
 /**
- * 
+ *
  * Data sent by UI ONLY. That's why we use B64 here.
- * 
+ *
  */
 export enum DirectGossipType {
 	Ping = 'Ping',
@@ -270,7 +271,7 @@ export enum DirectGossipType {
 	NewBead = 'NewBead',
 	EmojiReactionChange = 'EmojiReactionChange',
 }
-export type DirectGossip = 
+export type DirectGossip =
  | {type: "Ping", content: AgentPubKeyB64}
  | {type: "Pong", content: AgentPubKeyB64}
  | {type: "NewSemanticTopic", content: [EntryHashB64, string]}
@@ -393,7 +394,7 @@ export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: P
 export type ThreadsEntryVariantTextBead = {TextBead: TextBead}
 export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
 export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
-export type ThreadsEntry = 
+export type ThreadsEntry =
  | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextBead | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
 /**

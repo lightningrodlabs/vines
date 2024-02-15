@@ -12,7 +12,7 @@ import {Thread} from "./thread";
 import {
   AnyBead, Bead,
   EntryBead,
-  GlobalLastProbeLog,
+  GlobalLastProbeLog, NotifiableEvent, NotifiableEventType,
   ParticipationProtocol,
   Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
@@ -325,4 +325,14 @@ export interface ThreadsPerspectiveMat {
   /** bead_ah -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
 
+}
+
+
+/** */
+export function event2type(event: NotifiableEvent): string {
+  if (NotifiableEventType.Mention in event) { return NotifiableEventType.Mention }
+  if (NotifiableEventType.Reply in event) { return NotifiableEventType.Reply }
+  if (NotifiableEventType.Fork in event) { return NotifiableEventType.Fork }
+  if (NotifiableEventType.Dm in event) { return NotifiableEventType.Dm }
+  return "";
 }
