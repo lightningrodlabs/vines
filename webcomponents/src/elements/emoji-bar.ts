@@ -121,7 +121,8 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
           --show-delay: 500;
         }
         .reacted {
-          border: 1px solid blue;
+          border: 1px solid #525253;
+          border-radius: 5px;
         }
       `,];
   }

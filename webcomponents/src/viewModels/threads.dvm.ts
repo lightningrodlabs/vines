@@ -340,7 +340,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async importPerspective(json: string) {
+  async importPerspective(json: string, canPublish: boolean) {
     //console.log("Dvm.importPerspective()", json)
 
     // for (const [_name, zvm] of Object.entries(this._zomeViewModels)) {
@@ -355,8 +355,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
     this.originalsZvm.importPerspective(JSON.stringify(originals));
-    await this.profilesZvm.importPerspective(JSON.stringify(profiles), true);
-    await this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), true, this.originalsZvm);
+    await this.profilesZvm.importPerspective(JSON.stringify(profiles), canPublish);
+    await this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), canPublish, this.originalsZvm);
 
     console.log("import perspective", this.originalsZvm.perspective);
 

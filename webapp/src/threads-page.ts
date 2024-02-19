@@ -791,10 +791,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       <ui5-menu id="settingsMenu" header-text=${msg("Settings")} @item-click=${this.onSettingsMenu}>
                           <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                           <ui5-menu-item id="exportItem" text=${msg("Export")} icon="save" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="importItem" text=${msg("Import")} icon="open-folder" ></ui5-menu-item>
+                          <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
+                          <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
                           <ui5-menu-item id="dumpItem" text=${msg("Dump logs")}></ui5-menu-item>
-                          
                       </ui5-menu>
                         <!--
                     <ui5-button style="margin-top:10px;"
@@ -957,39 +957,43 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  private importDvm(canPublish: boolean) {
+    console.log("importDvm()");
+    //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = ".json";
+    input.onchange = async (e:any) => {
+      console.log("onImport() target download file", e);
+      const file = e.target.files[0];
+      if (!file) {
+        console.error("No file selected");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const contents = reader.result as string;
+        //console.log(contents);
+        this._dvm.importPerspective(contents, canPublish);
+      };
+      // Read the file as text
+      reader.readAsText(file);
+    }
+    input.click();
+  }
+
+
   /** */
   onSettingsMenu(e) {
-      //console.log("item-click", e)
+      console.log("item-click", e)
       switch (e.detail.item.id) {
         case "editProfileItem": this.profileDialogElem.show(); break;
         case "exportItem":
           const content = this._dvm.exportPerspective();
           this.downloadTextFile("dump.json", content);
           break;
-        case "importItem":
-          console.log("onImport()");
-          //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
-          var input = document.createElement('input');
-          input.type = 'file';
-          input.accept = ".json";
-          input.onchange = async (e:any) => {
-            console.log("onImport() target download file", e);
-            const file = e.target.files[0];
-            if (!file) {
-              console.error("No file selected");
-              return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const contents = reader.result as string;
-              //console.log(contents);
-              this._dvm.importPerspective(contents);
-            };
-            // Read the file as text
-            reader.readAsText(file);
-          }
-          input.click();
-          break;
+        case "importCommitItem": this.importDvm(true); break;
+        case "importOnlyItem": this.importDvm(false); break;
         case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
         case "dumpItem": this._dvm.dumpLogs(); break;
       }

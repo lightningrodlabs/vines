@@ -275,7 +275,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <!-- message column -->
             <div style="display:flex; flex-direction:column; gap:0px;">
                 <div>
-                    <span><b>${agentName}</b></span>
+                    <span id="agentName">${agentName}</span>
                     <span class="chatDate"> ${date_str}</span>
                 </div>
                 ${item}
@@ -296,6 +296,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
+        #agentName {
+          font-family: "72";
+          font-weight: bold;
+          color: #262626;
+        }
         .bordered {
           flex-grow: 1;
           border-left: 2px solid #939393;

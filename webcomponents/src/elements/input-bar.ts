@@ -158,7 +158,7 @@ export class InputBar extends LitElement {
                 ${agentItems}
             </ui5-list>            
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
-                          placeholder="Message #${this.topic}"
+                          placeholder="Message #${this.topic}, @ to mention"
                           growing
                           growing-max-lines="3"
                           rows="1"
@@ -183,7 +183,7 @@ export class InputBar extends LitElement {
             box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
           }
           #inputBar {
-            margin-top:10px;
+            margin-top:0px;
             width: auto;
             height: auto;
           }
@@ -193,10 +193,17 @@ export class InputBar extends LitElement {
           }
         
           #textMessageInput {
-          width: 100%;
-          border: none;
-          padding: 0px;
-        }
+            width: 100%;
+            border: none;
+            padding: 0px;
+          }
+
+          .ui5-textarea-wrapper
+          ui5-textarea div div {
+            /*background: red;*/
+            border: 0px;
+          }
+        
       `,
 
     ];

@@ -54,6 +54,7 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       css`
         p {
           margin: 0px;
+          white-space: pre;
         }
         .chatMsg {
           margin: 0px;
