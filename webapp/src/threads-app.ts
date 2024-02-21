@@ -280,7 +280,7 @@ export class ThreadsApp extends HappElement {
     let view = html`
         <threads-page .appletId=${this.appletId} style="height:100vh;" 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${this.onDumpNetworkLogs}
+                      @queryNetworkInfo=${(e) => this.networkInfoAll()}
     ></threads-page>`;
 
     if (this.appletView) {

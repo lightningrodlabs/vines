@@ -4,9 +4,10 @@ import {consume} from "@lit/context";
 
 import '@weblogin/trendchart-elements';
 import {appProxyContext} from "../contexts";
-import {AppProxy} from "@ddd-qc/cell-proxy";
+import {AppProxy, str2CellId} from "@ddd-qc/cell-proxy";
 import {NetworkInfo, Timestamp} from "@holochain/client";
 import {delay} from "@ddd-qc/lit-happ";
+import {THREADS_DEFAULT_ROLE_NAME} from "../bindings/threads.types";
 
 /**
  * @element
@@ -41,9 +42,21 @@ export class NetworkHealth extends LitElement {
       return html`no logs available ${queryBtn}`;
     }
 
+    // /* Grab role_threads cell */
+    // let cellLogs: [Timestamp, NetworkInfo][] = [];
+    // for (const [cellIdStr, infoPair] of Object.entries(allNetworkLogs)) {
+    //     const hcls  = this._appProxy.getLocations(str2CellId(cellIdStr));
+    //     const cellName = this._appProxy.getCellName(hcls[0]);
+    //     console.log("<network-health>.render() cellName", cellName);
+    //     if (cellName == THREADS_DEFAULT_ROLE_NAME) {
+    //       cellLogs = infoPair;
+    //       break;
+    //     }
+    // }
+
     let cellLogs: [Timestamp, NetworkInfo][] = Object.entries(allNetworkLogs)[0][1];
     if (cellLogs.length == 0) {
-      return html`no logs available<ui5-button ${queryBtn}`;
+      return html`no logs found ${queryBtn}`;
     }
     if (cellLogs.length > 20) {
       cellLogs = cellLogs.slice(-20);
