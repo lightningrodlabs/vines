@@ -124,7 +124,7 @@ export class NetworkHealth extends LitElement {
           flex-direction: column;
           gap: 12px;
           width: 220px;
-          overflow: clip;
+          /*overflow: clip;*/
         }
 
         .title {
@@ -187,7 +187,8 @@ export class NetworkHealth extends LitElement {
           width: 100%;
           padding-bottom: 7px;
           --area-color: #a4c1e6;
-          --area-opacity: 0.5;          
+          --area-opacity: 0.5;
+          box-sizing: border-box;
         }
       `,
 
