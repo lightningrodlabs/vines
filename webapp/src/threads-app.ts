@@ -29,7 +29,7 @@ import {
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-   cardStyleTemplate,
+  cardStyleTemplate, appProxyContext,
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -252,6 +252,7 @@ export class ThreadsApp extends HappElement {
 
 
   async onDumpNetworkLogs(e) {
+    console.log("onDumpNetworkLogs()")
     await this.networkInfoAll();
     this.dumpNetworkInfoLogs();
   }
@@ -276,12 +277,17 @@ export class ThreadsApp extends HappElement {
 
 
     //let view = html`<slot></slot>`;
-    let view = html`<threads-page .appletId=${this.appletId} style="height:100vh;" @dumpNetworkLogs=${this.onDumpNetworkLogs}></semantic-threads-page>`;
+    let view = html`
+        <threads-page .appletId=${this.appletId} style="height:100vh;" 
+                      @dumpNetworkLogs=${this.onDumpNetworkLogs}
+                      @queryNetworkInfo=${this.onDumpNetworkLogs}
+    ></threads-page>`;
 
     if (this.appletView) {
       console.log("appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
+          let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
           break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
@@ -313,6 +319,8 @@ export class ThreadsApp extends HappElement {
           console.error("Unknown We applet-view type", this.appletView);
           throw new Error(`Unknown We applet-view type`);
       }
+    } else {
+      let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
     }
 
 

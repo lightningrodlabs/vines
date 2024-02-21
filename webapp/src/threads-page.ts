@@ -813,7 +813,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-popover id="networkPopover" header-text=${msg("Network Health")}>
                         <div  style="flex-direction: column; display: flex">
                         <network-health></network-health>
-                                <!--<button @click=${() => {
+                        <!--<button @click=${() => {
                             const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
                             if (popover.isOpen()) {
                                 popover.close();
