@@ -60,7 +60,9 @@ import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/close-command-field.js"
+import "@ui5/webcomponents-icons/dist/cloud.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
+import "@ui5/webcomponents-icons/dist/customer.js"
 import "@ui5/webcomponents-icons/dist/document.js"
 import "@ui5/webcomponents-icons/dist/document-text.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
@@ -80,7 +82,9 @@ import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
+import "@ui5/webcomponents-icons/dist/person-placeholder.js"
 import "@ui5/webcomponents-icons/dist/process.js"
+import "@ui5/webcomponents-icons/dist/product.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
@@ -794,13 +798,29 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="dumpItem" text=${msg("Dump logs")}></ui5-menu-item>
+                          <ui5-menu-item id="dumpItem" text=${msg("Dump app logs")}></ui5-menu-item>
+                          <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
                       </ui5-menu>
-                        <!--
-                    <ui5-button style="margin-top:10px;"
-                                design="Transparent" icon="documents" tooltip="Refresh"
-                                @click=${() => {this._hideFiles = !this._hideFiles;}}></ui5-button>
-                    -->
+                       
+                    <ui5-button id="networkBtn" style="margin-top:10px;"
+                                design="Transparent" icon="cloud"
+                                @click=${() => {
+                                    const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                                    const btn = this.shadowRoot.getElementById("networkBtn") as HTMLElement;
+                                    popover.showAt(btn);
+                                }}></ui5-button>
+                    <!-- Network Health Panel -->
+                    <ui5-popover id="networkPopover" header-text=${msg("Network Health")}>
+                        <div  style="flex-direction: column; display: flex">
+                        <network-health></network-health>
+                                <!--<button @click=${() => {
+                            const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                            if (popover.isOpen()) {
+                                popover.close();
+                            }
+                        }}>Close</button>-->
+                        </div>
+                    </ui5-popover>
                   <!-- <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="synchronize" tooltip="Refresh"
                                 @click=${this.refresh}></ui5-button>  -->
@@ -996,6 +1016,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         case "importOnlyItem": this.importDvm(false); break;
         case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
         case "dumpItem": this._dvm.dumpLogs(); break;
+        case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
       }
   }
 

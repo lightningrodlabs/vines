@@ -251,6 +251,11 @@ export class ThreadsApp extends HappElement {
   }
 
 
+  async onDumpNetworkLogs(e) {
+    await this.networkInfoAll();
+    this.dumpNetworkInfoLogs();
+  }
+
   /** */
   render() {
     console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
@@ -271,7 +276,7 @@ export class ThreadsApp extends HappElement {
 
 
     //let view = html`<slot></slot>`;
-    let view = html`<threads-page style="height:100vh;" .appletId=${this.appletId}></semantic-threads-page>`;
+    let view = html`<threads-page .appletId=${this.appletId} style="height:100vh;" @dumpNetworkLogs=${this.onDumpNetworkLogs}></semantic-threads-page>`;
 
     if (this.appletView) {
       console.log("appletView", this.appletView);
