@@ -26,7 +26,7 @@ export class NetworkHealth extends LitElement {
 
   /** */
   render() {
-    console.log("<network-health>.render()", this._appProxy);
+    console.log("<network-health>.render()");
 
     if (!this._appProxy) {
       return html`no app proxy found via context`;
@@ -52,14 +52,15 @@ export class NetworkHealth extends LitElement {
     const latestInfo = cellLogs[cellLogs.length - 1][1];
 
     const arcPct = (latestInfo.arc_size * 100).toFixed(0);
-    const fetchKB = latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024;
+    const fetchKB = (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
 
     const allFetchKBs = cellLogs.map(([ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
 
     const startingZero = allFetchKBs.length > 1? "" : "0,"
 
-    let lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
-    console.log("<network-health>.render()", lineValues);
+    //const lineValues = "[0,1,2,50,10,85,20,5,48]"; // testing values
+    const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
+    //console.log("<network-health>.render()", lineValues);
 
 
     /** */
@@ -96,7 +97,7 @@ export class NetworkHealth extends LitElement {
               </div>
               <ui5-icon name="product" style="height: 1.5rem; width: 1.5rem;"></ui5-icon>
           </div>
-          <tc-line values=${lineValues} min="0">
+          <tc-line values=${lineValues} tooltip="@V KB" min="0">
           </tc-line>
         </div>
         ${queryBtn}
@@ -123,6 +124,7 @@ export class NetworkHealth extends LitElement {
           flex-direction: column;
           gap: 12px;
           width: 220px;
+          overflow: clip;
         }
 
         .title {
@@ -184,6 +186,8 @@ export class NetworkHealth extends LitElement {
         tc-line {
           width: 100%;
           padding-bottom: 7px;
+          --area-color: #a4c1e6;
+          --area-opacity: 0.5;          
         }
       `,
 
