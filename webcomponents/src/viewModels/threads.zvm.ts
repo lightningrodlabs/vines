@@ -1,7 +1,8 @@
 import {
   ActionHash,
   ActionHashB64,
-  AgentPubKeyB64,
+  AgentPubKey,
+  AgentPubKeyB64, AnyLinkableHash,
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
@@ -13,12 +14,12 @@ import {
   Bead,
   BeadLink,
   CommitGlobalLogInput,
-  GlobalLastProbeLog,
+  GlobalLastProbeLog, NotifiableEvent,
   NotifiableEventType,
   NotifySetting,
   NotifySettingType,
   ParticipationProtocol,
-  SEMANTIC_TOPIC_TYPE_NAME,
+  SEMANTIC_TOPIC_TYPE_NAME, SendInboxItemInput,
   SetNotifySettingInput,
   SignalPayloadType,
   TextBead,
@@ -745,7 +746,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /**  */
-  async probeNotifSettings(ppAh: ActionHashB64) {
+  async probeNotifSettings(ppAh: ActionHashB64): Promise<[AgentPubKey, NotifySetting, ActionHash][]> {
     const notifSettings = await this.zomeProxy.getPpNotifySettings(decodeHashFromBase64(ppAh));
     delete this._notifSettings[ppAh];
     for (const [agent_key, setting, _link_ah] of notifSettings) {
@@ -759,9 +760,10 @@ export class ThreadsZvm extends ZomeViewModel {
       this.storeNotifSetting(ppAh, encodeHashToBase64(agent_key), value, true);
     }
     this.notifySubscribers();
+    return notifSettings;
   }
 
-  
+
   /**  */
   async probeMyFavorites() {
     const favorites = await this.zomeProxy.getMyFavorites();
@@ -932,7 +934,8 @@ export class ThreadsZvm extends ZomeViewModel {
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
     /** Commit Entry */
     let typed: TypedBead;
-    let global_time_anchor, bucket_ts, notifPairs;
+    let global_time_anchor, bucket_ts;
+    let notifPairs: [AgentPubKey, WeaveNotification][];
     let bead_ah: ActionHash;
     switch (beadType) {
       case ThreadsEntryType.TextBead:
@@ -971,14 +974,42 @@ export class ThreadsZvm extends ZomeViewModel {
 
     }
     /** Notify Mentions/reply asychronously */
+    const extra = encode(typed);
     if (author == this.cell.agentPubKey) { // only real author should notify
+      const ppAh = encodeHashToBase64(typed.bead.ppAh);
+      await this.probeNotifSettings(ppAh);
+      const notifiedPeers = [];
       for (const [recip, notif] of notifPairs) {
         const recipient = encodeHashToBase64(recip);
-        const extra = encode(typed);
+        /* Check if can notify */
+        const notifSetting = this.getNotifSetting(ppAh, recipient);
+        if (notifSetting == NotifySettingType.Never) {
+          continue;
+        }
+        /* Notify */
         const signal = this.createNotificationSignal(notif, extra);
         console.log("publishTypedBeadAt() signaling notification to peer", recipient, (signal.payload.content[0] as WeaveNotification).event)
-        /*await*/
-        this.notifyPeer(recipient, signal);
+        /*await*/ this.notifyPeer(recipient, signal);
+        notifiedPeers.push(recipient);
+      }
+      /* Do Peers with "AllMessages" */
+      const notifAlls = Object.entries(this.getPpNotifSettings(ppAh)).filter(([agent, n]) => !notifiedPeers.includes(agent) && n == NotifySettingType.AllMessages)
+      if (notifAlls.length > 0) {
+        /* Notif "AllMessages" */
+        for (const [recipient, _n] of notifAlls) {
+          /* Create signal */
+          const maybe = await this.zomeProxy.sendInboxItem({
+            content: bead_ah,
+            who: decodeHashFromBase64(recipient),
+            event: {NewBead: null}
+          } as SendInboxItemInput);
+          if (!maybe) {
+            continue;
+          }
+          const signal = this.createNotificationSignal(maybe[1], extra);
+          /*await*/ this.notifyPeer(recipient, signal);
+          notifiedPeers.push(recipient); // just useful for debugging
+        }
       }
     }
     /** Done */
@@ -1458,7 +1489,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): WeaveSignal {
     let maybePpHash;
-    if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification) {
+    if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification || NotifiableEventType.NewBead in notification) {
       const beadAh = encodeHashToBase64(notification.content);
       const beadInfo = this.getBeadInfo(beadAh);
       maybePpHash = encodeHashToBase64(beadInfo.bead.ppAh);

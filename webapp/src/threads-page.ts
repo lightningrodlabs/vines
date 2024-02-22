@@ -575,7 +575,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (NotifiableEventType.Fork in e.detail.type) {
       this._selectedThreadHash = e.detail.hash;
     }
-    if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type) {
+    if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type || NotifiableEventType.NewBead in e.detail.type) {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);

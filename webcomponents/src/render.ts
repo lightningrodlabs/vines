@@ -61,6 +61,20 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             content = determineBeadName(beadInfo, typedBead, filesDvm, wePerspective);
         }
     }
+    if (NotifiableEventType.NewBead in notif.event) {
+      const beadPair = threadsZvm.perspective.beads[ah];
+      if (!beadPair) {
+        title = "New message in channel";
+      } else {
+        const beadInfo = beadPair[0];
+        const typedBead = beadPair[1];
+        const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.ppAh));
+        if (maybeThread) {
+          title = "New message in channel " + maybeThread.name;
+        }
+        content = determineBeadName(beadInfo, typedBead, filesDvm, wePerspective);
+      }
+    }
     if (NotifiableEventType.Reply in notif.event) {
         const beadPair = threadsZvm.perspective.beads[ah];
         if (!beadPair) {

@@ -206,8 +206,9 @@ export interface ProbeAllOutput {
 
 /**  */
 export type NotifiableEvent =
-  | {Mention: null} | {Reply: null} | {Fork: null} | {Dm: null};
+  | {NewBead: null} | {Mention: null} | {Reply: null} | {Fork: null} | {Dm: null};
 export enum NotifiableEventType {
+	NewBead = 'NewBead',
 	Mention = 'Mention',
 	Reply = 'Reply',
 	Fork = 'Fork',

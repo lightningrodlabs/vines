@@ -123,7 +123,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     let ppAh: ActionHashB64;
     /** Store received Entry */
-    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event) {
+    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event) {
       const typed = decode(extra) as TypedBead;
       const beadAh = encodeHashToBase64(notif.content);
       ppAh = encodeHashToBase64(typed.bead.ppAh);
