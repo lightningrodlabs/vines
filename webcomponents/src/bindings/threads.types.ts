@@ -237,6 +237,25 @@ export interface SendInboxItemInput {
 }
 
 /**
+ * Notification settings are per ParticipationProtocol.
+ * Default setting is receive notification only for mentions.
+ * An agent has to declare if it wants notifications for all messages or none, since it deviates from the default setting
+ * 
+ */
+export type NotifySetting =
+  | {Never: null} | {AllMessages: null} | {MentionsOnly: null};
+export enum NotifySettingType {
+	Never = 'Never',
+	AllMessages = 'AllMessages',
+	MentionsOnly = 'MentionsOnly',
+}
+
+export interface SetNotifySettingInput {
+  pp_ah: ActionHash
+  setting: NotifySetting
+}
+
+/**
  * 
  * Data sent by UI ONLY. That's why we use B64 here.
  * 
@@ -402,7 +421,7 @@ export type ThreadsEntry =
  * -------------------------------------------------------------------------------------------------
  */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Inbox: null} | {Hide: null} | {EmojiReaction: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Inbox: null} | {Hide: null} | {EmojiReaction: null} | {NotifySetting: null} | {Favorite: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
@@ -418,4 +437,6 @@ export enum ThreadsLinkTypeType {
 	Inbox = 'Inbox',
 	Hide = 'Hide',
 	EmojiReaction = 'EmojiReaction',
+	NotifySetting = 'NotifySetting',
+	Favorite = 'Favorite',
 }

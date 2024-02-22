@@ -12,7 +12,7 @@ import {Thread} from "./thread";
 import {
   AnyBead, Bead,
   EntryBead,
-  GlobalLastProbeLog, NotifiableEvent, NotifiableEventType,
+  GlobalLastProbeLog, NotifiableEvent, NotifiableEventType, NotifySettingType,
   ParticipationProtocol,
   Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
@@ -108,9 +108,14 @@ export interface ThreadsPerspective {
   /** -- Notification Inbox -- */
   /** linkAh -> [agent, beadAh] */
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
-
   /** linkAh -> (ppAh, notif) */
   inbox: Dictionary<[ActionHashB64, WeaveNotification]>,
+  /* ppAh -> (agent -> value) */
+  notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySettingType>>,
+
+  /** -- Favorites -- */
+  favorites: ActionHashB64[],
+
 }
 
 

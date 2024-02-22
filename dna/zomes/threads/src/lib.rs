@@ -15,6 +15,8 @@ mod last_probe_log;
 mod get_latest_items;
 mod callbacks;
 mod notify_peer;
+mod notify_setting;
+mod favorite;
 
 use hdk::prelude::*;
 

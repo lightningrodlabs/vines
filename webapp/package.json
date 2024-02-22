@@ -9,6 +9,7 @@
     "build:watch": "tsc -w --incremental --preserveWatchOutput",
     "dist": "npm run build && rollup -c rollup.config.js",
     "start:ui": "concurrently --names tsc,dev-server \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
+    "start:ui-only": "web-dev-server --config ./web-dev-server.config.mjs",
     "localize:extract": "lit-localize extract",
     "localize:build": "lit-localize build"
   },

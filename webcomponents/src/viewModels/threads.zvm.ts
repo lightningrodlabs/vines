@@ -11,11 +11,15 @@ import {
 import {
   AnyBead,
   Bead,
-  BeadLink, CommitGlobalLogInput,
+  BeadLink,
+  CommitGlobalLogInput,
   GlobalLastProbeLog,
   NotifiableEventType,
+  NotifySetting,
+  NotifySettingType,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
+  SetNotifySettingInput,
   SignalPayloadType,
   TextBead,
   ThreadLastProbeLog,
@@ -53,7 +57,6 @@ import {encode} from "@msgpack/msgpack";
 import {decodeHrl, encodeHrl} from "../utils";
 import {generateSearchTest, SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
-import pp = jasmine.pp;
 
 
 generateSearchTest();
@@ -116,7 +119,8 @@ export class ThreadsZvm extends ZomeViewModel {
       allAppletIds: this._allAppletIds,
 
       inbox: this._inbox,
-
+      notifSettings: this._notifSettings,
+      favorites: this._favorites,
     };
   }
 
@@ -155,9 +159,31 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Notification Inbox */
   /* linkAh -> (ppAh, Notif) */
   private _inbox: Dictionary<[ActionHashB64, WeaveNotification]> = {};
+  /* ppAh -> (agent -> value) */
+  private _notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySettingType>> = {};
+
+  /** -- Favorites -- */
+  private _favorites: ActionHashB64[] = [];
 
 
   /** -- Get: Return a stored element -- */
+
+  getPpNotifSettings(ppAh: ActionHashB64): Record<AgentPubKeyB64, NotifySettingType> | undefined {return this._notifSettings[ppAh]}
+
+  getNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64): NotifySettingType {
+    const settings = this.getPpNotifSettings(ppAh);
+    if (!settings) {
+      // Return default
+      return NotifySettingType.MentionsOnly;
+    }
+    const maybeAgentSetting = settings[agent];
+    if (!maybeAgentSetting) {
+      // Return default
+      return NotifySettingType.MentionsOnly;
+    }
+    return maybeAgentSetting;
+  }
+
 
   getSubject(subjectHash: AnyLinkableHashB64): SubjectMat | undefined {
     return this._allSubjects.get(subjectHash);
@@ -718,6 +744,35 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  /**  */
+  async probeNotifSettings(ppAh: ActionHashB64) {
+    const notifSettings = await this.zomeProxy.getPpNotifySettings(decodeHashFromBase64(ppAh));
+    delete this._notifSettings[ppAh];
+    for (const [agent_key, setting, _link_ah] of notifSettings) {
+      let value = NotifySettingType.MentionsOnly;
+      if (NotifySettingType.Never in setting) {
+        value = NotifySettingType.Never;
+      }
+      if (NotifySettingType.AllMessages in setting) {
+        value = NotifySettingType.AllMessages;
+      }
+      this.storeNotifSetting(ppAh, encodeHashToBase64(agent_key), value, true);
+    }
+    this.notifySubscribers();
+  }
+
+  
+  /**  */
+  async probeMyFavorites() {
+    const favorites = await this.zomeProxy.getMyFavorites();
+    this._favorites = [];
+    for (const fav_ah of favorites) {
+      this._favorites.push(encodeHashToBase64(fav_ah))
+    }
+    this.notifySubscribers();
+  }
+
+
   /** Probe all emojis on this bead */
   async probeEmojiReactions(beadAh: ActionHashB64) {
     console.log("probeEmojiReactions()", beadAh);
@@ -951,6 +1006,22 @@ export class ThreadsZvm extends ZomeViewModel {
   // }
 
 
+  /** */
+  async publishNotifSetting(ppAh: ActionHashB64, value: NotifySettingType) : Promise<void> {
+    let setting: NotifySetting = {MentionsOnly: null};
+    if (value == NotifySettingType.AllMessages) {
+      setting = {AllMessages: null}
+    }
+    if (value == NotifySettingType.Never) {
+      setting = {Never: null}
+    }
+    const maybe_link_ah = await this.zomeProxy.setNotifySetting({
+      pp_ah: decodeHashFromBase64(ppAh),
+      setting,
+    } as SetNotifySettingInput);
+    this.storeNotifSetting(ppAh, this.cell.agentPubKey, value);
+  }
+
 
   /** */
   async publishSemanticTopic(title: string, preventStoring?: boolean) : Promise<EntryHashB64> {
@@ -1127,6 +1198,21 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  /** */
+  async addFavorite(beadAh: ActionHashB64): Promise<void> {
+    await this.zomeProxy.setFavorite(decodeHashFromBase64(beadAh));
+    this.storeFavorite(beadAh);
+  }
+
+
+  /** */
+  async removeFavorite(beadAh: ActionHashB64): Promise<void> {
+    await this.zomeProxy.unsetFavorite(decodeHashFromBase64(beadAh));
+    this._favorites = this._favorites.filter(item => item !== beadAh);
+    this.notifySubscribers();
+  }
+
+
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
@@ -1177,6 +1263,27 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
   }
 
+
+  /** */
+  storeNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64, setting: NotifySettingType, preventNotify?: boolean): void {
+    if (!this._notifSettings[ppAh]) {
+      this._notifSettings[ppAh] = {}
+    }
+    this._notifSettings[ppAh][agent] = setting;
+    if (!preventNotify) {
+      this.notifySubscribers();
+    }
+  }
+
+
+  /** */
+  storeFavorite(beadAh: ActionHashB64): void {
+    if (this._favorites.includes(beadAh)) {
+      return;
+    }
+    this._favorites.push(beadAh);
+    this.notifySubscribers();
+  }
 
 
   /** */

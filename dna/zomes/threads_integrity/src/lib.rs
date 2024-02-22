@@ -73,4 +73,6 @@ pub enum ThreadsLinkType {
     Inbox,
     Hide,
     EmojiReaction,
+    NotifySetting,
+    Favorite,
 }
