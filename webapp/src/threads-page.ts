@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
-import {delay, DnaElement, HAPP_ENV, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {customElement, property, state} from "lit/decorators.js";
+import {delay, DnaElement, HappBuildModeType} from "@ddd-qc/lit-happ";
 
 import "@ddd-qc/path-explorer";
 
@@ -33,25 +33,25 @@ import "@ui5/webcomponents/dist/ProgressIndicator.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
+import "@ui5/webcomponents/dist/Switch.js";
 import "@ui5/webcomponents/dist/SuggestionItem.js";
 import "@ui5/webcomponents/dist/Toast.js";
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
-
-import Toast from "@ui5/webcomponents/dist/Toast";
 import Dialog from "@ui5/webcomponents/dist/Dialog";
 import Popover from "@ui5/webcomponents/dist/Popover";
 import Input from "@ui5/webcomponents/dist/Input";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
-
+import RadioButton from "@ui5/webcomponents/dist/RadioButton";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/accept.js"
 import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/attachment-text-file.js"
 import "@ui5/webcomponents-icons/dist/attachment-photo.js"
@@ -77,9 +77,10 @@ import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/information.js"
-import "@ui5/webcomponents-icons/dist/number-sign.js"
+import "@ui5/webcomponents-icons/dist/less.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
+import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
 import "@ui5/webcomponents-icons/dist/person-placeholder.js"
@@ -95,45 +96,40 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-
 import {Dictionary} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
 import {
+  AnyBead,
+  AnyLinkableHashB64,
+  ChatThreadView,
+  CommentRequest,
+  decodeHrl,
+  event2type,
+  globaFilesContext,
+  JumpEvent,
+  NotifiableEventType,
+  NotifySettingType,
+  parseMentions,
+  ParticipationProtocol,
+  shellBarStyleTemplate,
+  ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
   ThreadsPerspective,
-  CommentRequest,
-  parseMentions,
-  ChatThreadView,
   weClientContext,
-  AnyLinkableHashB64,
-  ThreadsDnaPerspective,
-  globaFilesContext,
-  NotifiableEventType,
-  JumpEvent,
-  AnyBead, decodeHrl, wePerspectiveContext, WePerspective, ParticipationProtocol, event2type
+  WePerspective,
+  wePerspectiveContext
 } from "@threads/elements";
 
-import {
-  ActionHashB64,
-  decodeHashFromBase64,
-  DnaHashB64,
-  encodeHashToBase64,
-} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, DnaHashB64, encodeHashToBase64,} from "@holochain/client";
 
-import {
-  AppletId,
-  AppletInfo, Hrl, WeNotification,
-  WeServices,
-} from "@lightningrodlabs/we-applet";
-import {consume, ContextProvider, createContext} from "@lit/context";
-import {shellBarStyleTemplate} from "@threads/elements";
+import {AppletId, WeNotification, WeServices,} from "@lightningrodlabs/we-applet";
+import {consume, ContextProvider} from "@lit/context";
 
 //import "./input-bar";
-
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
@@ -144,7 +140,7 @@ import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@threads/elements/dist/render";
 import {toasty} from "@threads/elements/dist/toast";
 import {stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
-import {mdiAlertOctagonOutline, mdiAlertOutline, mdiCheckCircleOutline, mdiInformationOutline, mdiCog} from "@mdi/js";
+import {mdiInformationOutline} from "@mdi/js";
 import {parseSearchInput} from "@threads/elements/dist/search";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -374,6 +370,25 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
     }
 
+    //   /** Toggle notif settings switch if necessary */
+    //   const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
+    //   const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
+    //   const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
+    //
+    //   if (allRadio.checked) {
+    //     this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.AllMessages);
+    //     return;
+    //   }
+    //   if (mentionRadio.checked) {
+    //     this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.MentionsOnly);
+    //     return;
+    //   }
+    //   if (neverRadio.checked) {
+    //     this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.Never);
+    //     return;
+    //   }
+    // }
+
     /** Grab AttachableInfo for all AnyBeads */
     for (const [beadInfo, beadPair] of Object.entries(this.threadsPerspective.beads)) {
       if (beadInfo != ThreadsEntryType.AnyBead) {
@@ -387,7 +402,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.requestUpdate();
       }
     }
-
 
     /** Create popups from signaled Notifications */
     const weNotifs = [];
@@ -592,6 +606,28 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  onNotifSettingsChange() {
+    const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
+    const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
+    const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
+
+    if (allRadio.checked) {
+      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.AllMessages);
+      //console.log("notifSetting checked", NotifySettingType.AllMessages);
+      return;
+    }
+    if (mentionRadio.checked) {
+      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.MentionsOnly);
+      //console.log("notifSetting checked", NotifySettingType.MentionsOnly);
+      return;
+    }
+    if (neverRadio.checked) {
+      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.Never);
+      //console.log("notifSetting checked", NotifySettingType.Never);
+      return;
+    }
+  }
+
   /** */
   downloadTextFile(filename: string, content: string): void {
     const blob = new Blob([content], { type: 'text/plain' });
@@ -716,6 +752,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
     const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
+    let notifSetting = NotifySettingType.MentionsOnly; // default
+    if (this._selectedThreadHash) {
+      notifSetting = this._dvm.threadsZvm.getNotifSetting(this._selectedThreadHash, this.cell.agentPubKey);
+    }
+    console.log("notifSetting", notifSetting)
+
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
@@ -839,6 +881,16 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               const shellbar = this.shadowRoot.getElementById("topicBar");
                               popover.showAt(shellbar);
               }}>
+                  <ui5-shellbar-item id="notifSettingsBtn" icon="action-settings" tooltip=${msg('Notifications Settings')} @click=${() => {
+                      const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
+                      if (popover.isOpen()) {
+                          popover.close();
+                          return;
+                      }
+                      const shellbar = this.shadowRoot.getElementById("topicBar");
+                      popover.showAt(shellbar);
+                  }}></ui5-shellbar-item>
+
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
                              @focusin=${(e) => {
                                  //console.log("<search-field>@focusin", e);
@@ -896,7 +948,15 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-popover id="notifPopover" placement-type="Bottom" horizontal-align="Right" style="max-width: 500px">
                     <notification-list @jump=${this.onJump}></notification-list>
                 </ui5-popover>
-
+                
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom">
+                    <div  style="flex-direction: column; display: flex">
+                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} .checked=${notifSetting == NotifySettingType.AllMessages}><</ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} .checked=${notifSetting == NotifySettingType.MentionsOnly}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} .checked=${notifSetting == NotifySettingType.MentionsOnly}></ui5-radio-button>
+                    </div>
+                </ui5-popover>
+                
               <div id="lowerSide">
                 <div id="centerSide">
                     ${centerSide}

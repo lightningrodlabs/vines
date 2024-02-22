@@ -45,6 +45,10 @@ pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<A
     if let Some(link_ah) = maybe_link_ah {
         let _ = delete_link(link_ah)?;
     }
+    /// No need for link if its for MentionsOnly
+    if let NotifySetting::MentionsOnly = input.setting {
+        return Ok(None);
+    }
     /// Set new setting
     let repr: u8 = input.setting.into();
     let new_link_ah = create_link(input.pp_ah, agent_info()?.agent_latest_pubkey, ThreadsLinkType::NotifySetting, LinkTag::from(vec![repr]))?;

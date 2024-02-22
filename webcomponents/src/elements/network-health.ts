@@ -4,10 +4,13 @@ import {consume} from "@lit/context";
 
 import '@weblogin/trendchart-elements';
 import {appProxyContext} from "../contexts";
-import {AppProxy, str2CellId} from "@ddd-qc/cell-proxy";
+import {AppProxy} from "@ddd-qc/cell-proxy";
 import {NetworkInfo, Timestamp} from "@holochain/client";
 import {delay} from "@ddd-qc/lit-happ";
-import {THREADS_DEFAULT_ROLE_NAME} from "../bindings/threads.types";
+
+
+import Switch from "@ui5/webcomponents/dist/Switch";
+import {FetchPoolInfo} from "@holochain/client/lib/types";
 
 /**
  * @element
@@ -20,9 +23,13 @@ export class NetworkHealth extends LitElement {
   _appProxy: AppProxy;
 
 
+
   /* Auto update */
   updated() {
-    this.onQueryNetworkInfo(undefined);
+    const enableSwitch = this.shadowRoot.getElementById("enableSwitch") as Switch;
+    if (enableSwitch.checked) {
+      this.onQueryNetworkInfo(undefined);
+    }
   }
 
   /** */
@@ -38,9 +45,11 @@ export class NetworkHealth extends LitElement {
     //const queryBtn = html`<ui5-button @click=${this.onQueryNetworkInfo}>Query</ui5-button>`
     const queryBtn = html``;
 
-    if (Object.keys(allNetworkLogs).length == 0) {
-      return html`no logs available ${queryBtn}`;
-    }
+    const enableSwitch = html`<ui5-switch id="enableSwitch" @change=${this.onQueryNetworkInfo}></ui5-switch>`;
+
+    // if (Object.keys(allNetworkLogs).length == 0) {
+    //   return html`no logs available ${enableSwitch}`;
+    // }
 
     // /* Grab role_threads cell */
     // let cellLogs: [Timestamp, NetworkInfo][] = [];
@@ -54,15 +63,31 @@ export class NetworkHealth extends LitElement {
     //     }
     // }
 
-    let cellLogs: [Timestamp, NetworkInfo][] = Object.entries(allNetworkLogs)[0][1];
-    if (cellLogs.length == 0) {
-      return html`no logs found ${queryBtn}`;
+    let latestInfo = {
+      fetch_pool_info: {
+        op_bytes_to_fetch: 0,
+        num_ops_to_fetch: 0,
+      },
+      current_number_of_peers: 0,
+      arc_size: 0,
+      total_network_peers: 0,
+      bytes_since_last_time_queried: 0,
+      completed_rounds_since_last_time_queried: 0,
     }
-    if (cellLogs.length > 20) {
-      cellLogs = cellLogs.slice(-20);
-    }
+    let cellLogs: [Timestamp, NetworkInfo][] = [[0, latestInfo]];
 
-    const latestInfo = cellLogs[cellLogs.length - 1][1];
+    if (Object.keys(allNetworkLogs).length != 0) {
+      cellLogs = Object.entries(allNetworkLogs)[0][1];
+
+      if (cellLogs.length > 20) {
+        cellLogs = cellLogs.slice(-20);
+      }
+      if (cellLogs.length != 0) {
+        //return html`no logs found ${enableSwitch}`;
+        latestInfo = cellLogs[cellLogs.length - 1][1];
+      }
+    }
+    //const latestInfo = cellLogs[cellLogs.length - 1][1];
 
     const arcPct = (latestInfo.arc_size * 100).toFixed(0);
     const fetchKB = (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
@@ -101,6 +126,7 @@ export class NetworkHealth extends LitElement {
                 <span>Arc</span>
               </div>
           </div>
+          ${enableSwitch}
         </div>
         <div id="fetch">
           <div class="title">
@@ -136,7 +162,8 @@ export class NetworkHealth extends LitElement {
           display: flex;
           flex-direction: column;
           gap: 12px;
-          width: 220px;
+          width: 280px;
+          padding-right: 5px;
           /*overflow: clip;*/
         }
 
