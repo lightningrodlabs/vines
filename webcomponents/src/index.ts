@@ -27,3 +27,4 @@ export * from './bindings/threads.proxy';
 export * from './bindings/threads.types';
 
 
+export * from './doodles';

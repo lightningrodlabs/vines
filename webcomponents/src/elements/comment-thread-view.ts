@@ -21,6 +21,7 @@ import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
+import {doodle_weave} from "../doodles";
 
 
 /**
@@ -180,12 +181,25 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
+
+    const doodle_bg =  html `
+          <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
+          ${doodle_weave}
+          </div>
+    `;
+
     if (this.threadHash == "") {
-      return html `<div style="color:#c10a0a; margin:auto; width:50%; height:50%;">No comment thread selected</div>`;
+      return html `
+          ${doodle_bg}
+          <div style="color:#c10a0a; position: relative; z-index:1; margin:auto; margin-top:20px; font-weight: bold">No comment thread selected</div>
+      `;
     }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
-      return html `<div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>`;
+      return html `
+          ${doodle_bg}
+          <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>
+      `;
     }
 
     const bg_color = this._loading? "#ededf0" : "#ffffff"
@@ -272,6 +286,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
+        ${doodle_bg}
         <h4 style="margin: 10px;">
           ${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span>
           <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
@@ -300,6 +315,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           max-height: 100%;
           display: flex;
           flex-direction: column;
+          flex-grow: 1;
+          position: relative;
+          z-index: 0;
         }
         
         threads-input-bar {

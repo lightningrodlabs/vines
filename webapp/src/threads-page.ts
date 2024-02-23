@@ -101,12 +101,14 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
+import 'css-doodle';
+
 import {
   AnyBead,
   AnyLinkableHashB64,
   ChatThreadView,
   CommentRequest,
-  decodeHrl,
+  decodeHrl, doodle_flowers,
   event2type,
   globaFilesContext,
   JumpEvent,
@@ -646,8 +648,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   render() {
     console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
-    let centerSide = html`<h1 style="margin:auto;">${msg("No thread selected")}</h1>`
-    let threadTitle = "Threads";
+    let centerSide = html`
+        <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
+        ${doodle_flowers}
+    `;
+    let threadTitle = "No thread selected";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
       if (!thread) {

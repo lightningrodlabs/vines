@@ -221,7 +221,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<chat-thread-view>.render()", this._firstLoad, this._loading, this.threadHash);
     if (this.threadHash == "") {
-      return html `<div>${msg("No thread selected")}</div>`;
+      return html `
+          <div>${msg("No thread selected")}</div>
+      `;
     }
     if (this._loading) {
       return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
