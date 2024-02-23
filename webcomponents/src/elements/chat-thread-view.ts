@@ -6,8 +6,6 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {prettyTimestamp} from "@ddd-qc/files";
-
 
 /**
  * @element
@@ -88,8 +86,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     console.log("<chat-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
-    if (changedProperties.has("threadHash") && this._dvm) {
-      this.loadlatestMessages();
+    if (this._dvm) {
+      if (!this._dvm.threadsZvm.perspective.notifSettings[this.threadHash]) {
+        await this._dvm.threadsZvm.probeNotifSettings(this.threadHash);
+        //this.requestUpdate();
+      }
+      if (changedProperties.has("threadHash")) {
+        this.loadlatestMessages();
+      }
     }
   }
 

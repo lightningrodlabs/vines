@@ -2,7 +2,7 @@ import {
   ActionHash,
   ActionHashB64,
   AgentPubKey,
-  AgentPubKeyB64, AnyLinkableHash,
+  AgentPubKeyB64,
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
@@ -14,12 +14,13 @@ import {
   Bead,
   BeadLink,
   CommitGlobalLogInput,
-  GlobalLastProbeLog, NotifiableEvent,
+  GlobalLastProbeLog,
   NotifiableEventType,
   NotifySetting,
   NotifySettingType,
   ParticipationProtocol,
-  SEMANTIC_TOPIC_TYPE_NAME, SendInboxItemInput,
+  SEMANTIC_TOPIC_TYPE_NAME,
+  SendInboxItemInput,
   SetNotifySettingInput,
   SignalPayloadType,
   TextBead,
@@ -749,6 +750,7 @@ export class ThreadsZvm extends ZomeViewModel {
   async probeNotifSettings(ppAh: ActionHashB64): Promise<[AgentPubKey, NotifySetting, ActionHash][]> {
     const notifSettings = await this.zomeProxy.getPpNotifySettings(decodeHashFromBase64(ppAh));
     delete this._notifSettings[ppAh];
+    this.storeNotifSetting(ppAh, this.cell.agentPubKey, NotifySettingType.MentionsOnly, true); // add default for self to prove that we did a probe
     for (const [agent_key, setting, _link_ah] of notifSettings) {
       let value = NotifySettingType.MentionsOnly;
       if (NotifySettingType.Never in setting) {
@@ -1039,6 +1041,9 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async publishNotifSetting(ppAh: ActionHashB64, value: NotifySettingType) : Promise<void> {
+    if (!ppAh) {
+      return;
+    }
     let setting: NotifySetting = {MentionsOnly: null};
     if (value == NotifySettingType.AllMessages) {
       setting = {AllMessages: null}

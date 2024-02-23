@@ -606,7 +606,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** */
   onNotifSettingsChange() {
+    console.log("onNotifSettingsChange()")
     const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
     const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
     const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
@@ -642,7 +644,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, this._dvm.profilesZvm);
+    console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     let centerSide = html`<h1 style="margin:auto;">${msg("No thread selected")}</h1>`
     let threadTitle = "Threads";
@@ -756,7 +758,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._selectedThreadHash) {
       notifSetting = this._dvm.threadsZvm.getNotifSetting(this._selectedThreadHash, this.cell.agentPubKey);
     }
-    console.log("notifSetting", notifSetting)
 
     /** Render all */
     return html`
@@ -881,16 +882,17 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               const shellbar = this.shadowRoot.getElementById("topicBar");
                               popover.showAt(shellbar);
               }}>
-                  <ui5-shellbar-item id="notifSettingsBtn" icon="action-settings" tooltip=${msg('Notifications Settings')} @click=${() => {
-                      const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
-                      if (popover.isOpen()) {
-                          popover.close();
-                          return;
-                      }
-                      const shellbar = this.shadowRoot.getElementById("topicBar");
-                      popover.showAt(shellbar);
-                  }}></ui5-shellbar-item>
-
+                  ${this._selectedThreadHash == "" ? html`` : 
+                          html`<ui5-shellbar-item id="notifSettingsBtn" icon="action-settings" tooltip=${msg('Notifications Settings')} @click=${() => {
+                          const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
+                          if (popover.isOpen()) {
+                              popover.close();
+                              return;
+                          }
+                          const shellbar = this.shadowRoot.getElementById("topicBar");
+                          popover.showAt(shellbar);
+                    }}></ui5-shellbar-item>`
+                  }
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
                              @focusin=${(e) => {
                                  //console.log("<search-field>@focusin", e);
@@ -951,9 +953,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 
                 <ui5-popover id="notifSettingsPopover" placement-type="Bottom">
                     <div  style="flex-direction: column; display: flex">
-                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} .checked=${notifSetting == NotifySettingType.AllMessages}><</ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} .checked=${notifSetting == NotifySettingType.MentionsOnly}></ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} .checked=${notifSetting == NotifySettingType.MentionsOnly}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.Never) as Boolean}></ui5-radio-button>
                     </div>
                 </ui5-popover>
                 
