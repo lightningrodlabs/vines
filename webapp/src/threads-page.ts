@@ -888,15 +888,16 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               popover.showAt(shellbar);
               }}>
                   ${this._selectedThreadHash == "" ? html`` : 
-                          html`<ui5-shellbar-item id="notifSettingsBtn" icon="action-settings" tooltip=${msg('Notifications Settings')} @click=${() => {
+                          html`<ui5-button id="notifSettingsBtn" slot="startButton" icon="bell" tooltip=${msg('Notifications Settings')} 
+                                           @click=${() => {
                           const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
                           if (popover.isOpen()) {
                               popover.close();
                               return;
                           }
-                          const shellbar = this.shadowRoot.getElementById("topicBar");
+                          const shellbar = this.shadowRoot.getElementById("notifSettingsBtn");
                           popover.showAt(shellbar);
-                    }}></ui5-shellbar-item>`
+                    }}></ui5-button>`
                   }
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
                              @focusin=${(e) => {
@@ -1201,6 +1202,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #topicBar::part(root) {
           /*background: #DBE3EF;*/
           /*border: 1px solid dimgray;*/
+          padding-left: 2px;
         }
 
 
