@@ -260,17 +260,25 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <!-- main horizontal div -->
+        <!-- Vine row -->
+        <div id="topVine">
+            <div style="flex-grow:1;"></div>
+            <div class="vine"></div>
+        </div>        
+        <!-- main horizontal div (row) -->
         <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
             <!-- avatar column -->
-            <div style="display: flex; flex-direction: column">
-            ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
+            <div style="display: flex; flex-direction: column; width:48px;">
+              ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
               <!-- split in middle horizontal -->
-              <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:5px;">
+              <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
                 <div style="flex-grow:1;"></div>
-                <div class="${maybeCommentThread? "bordered" : ""}"></div>
+                <div class="vine ${maybeCommentThread? "bordered" : ""}"></div>
               </div>
-              <div style="min-height: 15px;"></div>
+              <div style="display: flex; flex-direction: row; flex-grow: 1; min-height:15px;">
+                  <div style="flex-grow:1;"></div>
+                  <div class="vine"></div>
+              </div>
             </div>
             <!-- message column -->
             <div style="display:flex; flex-direction:column; gap:0px;">
@@ -301,10 +309,21 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           font-weight: bold;
           color: #262626;
         }
-        .bordered {
+        #topVine {
+          display: flex;
+          flex-direction: row;
+          min-height: 15px;
+          width: 58px;
+          margin-bottom: 1px;
+        }
+        .vine {
           flex-grow: 1;
-          border-left: 2px solid #939393;
-          border-bottom: 2px solid #939393;
+          border-left: 2px solid rgb(108, 176, 70); /*#939393;*/       
+        }
+        .bordered {
+          /*flex-grow: 1;*/
+          /*border-left: 2px solid #939393;*/
+          border-bottom: 2px solid rgb(108, 176, 70); /*#939393;*/
           border-bottom-left-radius: 4px;
         }
         emoji-bar {
@@ -317,10 +336,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           flex-direction: row;
           gap:8px;
           min-height: 55px;
-          margin: 5px 5px 10px 5px;
+          margin: 0px 5px 0px 5px;
         }
         .chatAvatar {
           margin-right: 5px;
+          box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;
+          outline: #4a7b57 solid 2px;
         }
         .chatDate {
           margin: 0px 0px 0px 5px;

@@ -237,7 +237,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** */
     let maybeHeader = html``
     if (this._dvm.threadsZvm.hasReachedBeginning(this.threadHash)) {
-      maybeHeader = html`<chat-header .threadHash="${this.threadHash}" style="margin:10px;"></chat-header>`;
+      maybeHeader = html`<chat-header .threadHash="${this.threadHash}"></chat-header>`;
     }
 
 
@@ -287,7 +287,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           overflow-y: scroll;
           display: flex;
           flex-direction: column-reverse;
-          gap:15px;
+          /*gap:15px;*/
           height: inherit;
           background: #FBFCFD;
           font-family: '72-Light';

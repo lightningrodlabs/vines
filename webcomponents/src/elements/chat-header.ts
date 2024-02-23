@@ -86,7 +86,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <div class="subtext">${subText}</div>
           <!--<div class="subtext">Participation rules: ${thread.pp.rules}</div>-->
         </div>
-        <hr/>
+        <hr style="margin-bottom:0px"/>
     `;
   }
 
