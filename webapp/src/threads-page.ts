@@ -180,6 +180,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Fields -- */
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
+  @state() private _selectedBeadAh: ActionHashB64 = '';
   @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
   private _selectedThreadSubjectName: string = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
@@ -237,6 +238,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
     //newDvm.probeAll();
     this._selectedThreadHash = '';
+    this._selectedBeadAh = '';
     this._initialized = true;
   }
 
@@ -260,6 +262,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("onCreateList() res:", res)
     input.value = "";
     this._selectedThreadHash = ah;
+    this._selectedBeadAh = '';
     this.createThreadDialogElem.close(false)
   }
 
@@ -564,6 +567,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onDnaThreadSelected()", e);
     if (e.detail.type == ThreadsEntryType.ParticipationProtocol) {
         this._selectedThreadHash = e.detail.target;
+        this._selectedBeadAh = '';
     }
   }
 
@@ -597,12 +601,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("requesting jump to bead", e.detail);
     if (NotifiableEventType.Fork in e.detail.type) {
       this._selectedThreadHash = e.detail.hash;
+      this._selectedBeadAh = '';
     }
     if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type || NotifiableEventType.NewBead in e.detail.type) {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
       this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.ppAh);
+      this._selectedBeadAh = e.detail.hash;
     }
     if (NotifiableEventType.Dm in e.detail.type) {
       // TODO
@@ -684,7 +690,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         centerSide = html`
-            <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}
+            <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}
                               @selected=${(e) => this.onThreadSelected(e.detail)}
             ></chat-thread-view>
             ${this._splitObj? html`
@@ -1137,6 +1143,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(threadHash), targetCount: 20})
     // console.log("onThreadSelected() beads found: ", beadLinks.length);
     this._selectedThreadHash = threadHash;
+    this._selectedBeadAh = '';
   }
 
 

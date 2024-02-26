@@ -139,7 +139,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
         }
 
         return html`
-            <ui5-li additional-text="${date_str}" style="background:${bg_color};" type="Inactive" @click=${(_e) => {
+            <ui5-li additional-text="${date_str}" style="background:${bg_color};cursor: pointer;" type="Inactive" @click=${(_e) => {
                 this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
                         hash: beadAh,
                         type: {Reply: null}, // TODO: better API. Using Reply just to tell it to display the bead.

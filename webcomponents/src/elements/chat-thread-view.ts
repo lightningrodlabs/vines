@@ -23,6 +23,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of Thread to display */
   @property() threadHash: string = ''
+  /** Hash of bead to focus */
+  @property() beadAh: string = ''
   /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
   @property()
   startFromBeginning: boolean = false;
@@ -263,8 +265,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
               </div>
           `
         }
-        //console.log("<chat-thread-view> blm.beadType ", blm.beadType);
-        const chatItem = html`<chat-item .hash=${(blm.beadAh)}></chat-item>`;
+        console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
+        const chatItem = html`<chat-item .hash=${(blm.beadAh)} style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}"></chat-item>`;
         return html`${chatItem}${hr}`;
       }
     );
