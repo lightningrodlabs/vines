@@ -93,6 +93,7 @@ import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/user-edit.js"
+import "@ui5/webcomponents-icons/dist/upload-to-cloud.js"
 import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
@@ -135,7 +136,7 @@ import {consume, ContextProvider} from "@lit/context";
 //import "./input-bar";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
-import {FilesDvm, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
 import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
@@ -844,6 +845,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       <ui5-menu id="settingsMenu" header-text=${msg("Settings")} @item-click=${this.onSettingsMenu}>
                           <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                           <ui5-menu-item id="exportItem" text=${msg("Export")} icon="save" starts-section></ui5-menu-item>
+                          <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
                           <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
@@ -1074,13 +1076,41 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onSettingsMenu(e) {
+  private openFile() {
+    console.log("<threads-page>.openFile()");
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async (e:any) => {
+      console.log("<threads-page> target download file", e);
+      const file = e.target.files[0];
+      if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
+        toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
+        return;
+      }
+      const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
+      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, (_manifestEh) => {
+        toasty(msg("File successfully shared") +": " + splitObj.dataHash);
+        this.requestUpdate();
+      });
+      if (!maybeSplitObj) {
+        toasty(msg("Error: File already shared to group or stored locally"));
+      }
+    }
+    input.click();
+  }
+
+
+  /** */
+  async onSettingsMenu(e): Promise<void> {
       console.log("item-click", e)
       switch (e.detail.item.id) {
+        case "uploadFileItem": this.openFile(); break;
         case "editProfileItem": this.profileDialogElem.show(); break;
         case "exportItem":
+          const files_json = await this._filesDvm.exportPerspective();
+          this.downloadTextFile("dump_files.json", files_json);
           const content = this._dvm.exportPerspective();
-          this.downloadTextFile("dump.json", content);
+          this.downloadTextFile("dump_threads.json", content);
           break;
         case "importCommitItem": this.importDvm(true); break;
         case "importOnlyItem": this.importDvm(false); break;
