@@ -257,7 +257,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
           passedLog = true;
           hr = html`
-              <div style="margin-left:10px; margin-right:10px; margin-bottom:-25px">
+              <div style="margin-left:10px; margin-right:10px; margin-bottom:-25px;margin-top: 28px;">
                   <div style="width: fit-content;background: red;color:white;font-size:small;padding:2px; margin-top:-25px;margin-bottom:-30px;margin-left:auto">${beadDateStr}</div>
                 <hr style="border: 1px solid red;"/>
               </div>

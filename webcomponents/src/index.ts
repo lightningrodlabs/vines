@@ -12,6 +12,7 @@ export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';
 export * from './elements/edit-profile';
 export * from './elements/emoji-bar';
+export * from './elements/favorites-view';
 export * from './elements/input-bar';
 export * from './elements/network-health';
 export * from './elements/notification-list';

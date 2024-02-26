@@ -52,6 +52,7 @@ import RadioButton from "@ui5/webcomponents/dist/RadioButton";
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/add-favorite.js"
 import "@ui5/webcomponents-icons/dist/accept.js"
 import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/attachment-text-file.js"
@@ -74,6 +75,8 @@ import "@ui5/webcomponents-icons/dist/download.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
+import "@ui5/webcomponents-icons/dist/favorite.js"
+import "@ui5/webcomponents-icons/dist/favorite-list.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
@@ -94,6 +97,7 @@ import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/user-edit.js"
 import "@ui5/webcomponents-icons/dist/upload-to-cloud.js"
+import "@ui5/webcomponents-icons/dist/unfavorite.js"
 import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
@@ -181,6 +185,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
+  @state() private _canShowFavorites = false;
   @state() private _canShowSearchResults = false;
   @state() private _canShowDebug = false;
   @state() private _appletToShow: DnaHashB64 | null = null;
@@ -924,6 +929,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              }}                             
                   ></ui5-input>
                       <!--<ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item> -->
+                  <ui5-shellbar-item id="favButton" icon="unfavorite" tooltip="Toggle Favorites" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="inboxButton" icon="inbox"
                                      .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
@@ -979,6 +985,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
                 </div>
+                  <div id="favoritesSide"
+                       style="display:${this._canShowFavorites ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
+                      <favorites-view @jump=${this.onJump}></favorites-view>
+                  </div>                  
                   <!-- <peer-list></peer-list> -->
                   <div id="rightSide" style="display: ${this._canShowSearchResults? "block" : "none"}">
                       <search-result-panel .parameters=${searchParameters} @jump=${this.onJump}></search-result-panel>                 

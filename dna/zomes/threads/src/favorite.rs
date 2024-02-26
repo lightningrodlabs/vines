@@ -19,7 +19,7 @@ pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
     //     let _ = delete_link(link_ah)?;
     // }
     /// Set new setting
-    let new_link_ah = create_link(bead_ah, agent_info()?.agent_latest_pubkey, ThreadsLinkType::Favorite, LinkTag::from(()))?;
+    let new_link_ah = create_link(agent_info()?.agent_latest_pubkey, bead_ah, ThreadsLinkType::Favorite, LinkTag::from(()))?;
     /// Done
     Ok(new_link_ah)
 }

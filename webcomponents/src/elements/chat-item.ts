@@ -23,7 +23,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  /** Hash of TextBead to display */
+  /** Hash of bead to display */
   @property() hash: ActionHashB64 = ''
 
 
@@ -236,8 +236,21 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button id="add-reaction-btn" icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"
                           @click="${(_e) => this.onClickAddEmoji()}"></ui5-button>`;
 
+    const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
+    const starButton = isFavorite? html`
+        <ui5-button id="star-btn" icon="favorite" tooltip="Remove from favorites" design="Transparent" style="border:none;"
+                    @click="${(_e) => this._dvm.threadsZvm.removeFavorite(this.hash)}"></ui5-button>
+        ` : html`
+        <ui5-button id="star-btn" icon="add-favorite" tooltip="Add to favorite" design="Transparent" style="border:none;"
+                    @click="${async (_e) => {
+                      await this._dvm.threadsZvm.addFavorite(this.hash);
+                      console.log("Favorites", this._dvm.threadsZvm.perspective.favorites.length);
+    }}"></ui5-button>
+    `;
+
     let sideButtons = [];
     if (this._isHovered) {
+      sideButtons.push(starButton);
       sideButtons.push(reactionButton);
       sideButtons.push(commentButton);
     }

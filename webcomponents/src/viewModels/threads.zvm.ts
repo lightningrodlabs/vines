@@ -464,6 +464,11 @@ export class ThreadsZvm extends ZomeViewModel {
     })
 
 
+    this.probeMyFavorites()/*.then(() => {
+      console.log("Favorites probed", this._favorites.length);
+      this.notifySubscribers();
+    })*/
+
   }
 
 
@@ -765,6 +770,14 @@ export class ThreadsZvm extends ZomeViewModel {
     return notifSettings;
   }
 
+
+  /** */
+  async fetchAllFavorites() {
+    for (const beadAh of this._favorites) {
+      await this.fetchUnknownBead(decodeHashFromBase64(beadAh), false);
+    }
+    this.notifySubscribers();
+  }
 
   /**  */
   async probeMyFavorites() {
