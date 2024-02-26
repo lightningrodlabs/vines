@@ -56,7 +56,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<notification-list>.render()", Object.entries(this.threadsPerspective.inbox).length);
     if (Object.entries(this.threadsPerspective.inbox).length == 0) {
-      return html `<div style="color:#c10a0a">${msg('No notifications found')}</div>`;
+      return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }
 
     let notifsLi = Object.entries(this.threadsPerspective.inbox).map(

@@ -38,18 +38,44 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   render() {
     console.log("<chat-hrl>.render()", this.hash);
     if (!this.weServices) {
-      return html`<div style="color: red">WeServices not available</div>`;
+      return html`        
+          <ui5-list id="fileList">
+          <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash}>
+              Failed to retrieve HRL. WeServices not available
+          </ui5-li>
+      </ui5-list>
+      `;
+
     }
     if (this.hash == "") {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const anyBeadInfoPair = this.perspective.beads[this.hash];
     if (!anyBeadInfoPair) {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`
+        <ui5-list id="fileList">
+            <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
+                    @click=${async (e) => {
+                        await this._zvm.probeAllInner();
+                        const anyBeadInfoPair = this.perspective.beads[this.hash];
+                        if (anyBeadInfoPair) {
+                            this.requestUpdate();
+                        }
+                    }}>
+                HRL not found
+            </ui5-li>
+        </ui5-list>
+      `;
     }
     const anyBead = anyBeadInfoPair[1] as AnyBead;
     if (anyBead.typeInfo != "hrl") {
-      return html`<div style="color: red">Bead not an HRL</div>`;
+      return html`          
+          <ui5-list id="fileList">
+          <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash}>
+              Error: Bead not a HRL
+          </ui5-li>
+      </ui5-list>
+      `;
     }
 
     //console.log("<chat-hrl>.render() anyBead", anyBead.value);
@@ -97,6 +123,10 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
         #fileLi {
           border-radius: 10px;
+        }
+          
+        .fail {
+            background: #fdd;
         }
       `,];
   }

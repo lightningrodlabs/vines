@@ -147,6 +147,12 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
+export interface AddAnyBeadInput {
+  anyBead: AnyBead
+  creationTime: Timestamp
+  originalAuthor?: AgentPubKey
+}
+
 /**  */
 export interface AddReactionInput {
   bead_ah: ActionHash
@@ -155,11 +161,20 @@ export interface AddReactionInput {
 }
 
 /**  */
-export interface AddEntryAsBead {
+export interface AddEntryBeadInput {
+  entryBead: EntryBead
+  creationTime: Timestamp
+  originalAuthor?: AgentPubKey
+}
+
+/**  */
+export interface AddEntryAsBeadInput {
   eh: EntryHash
   bead: Bead
   roleName: string
   zomeName: string
+  originalCreationTime?: Timestamp
+  originalAuthor?: AgentPubKey
 }
 
 export interface GetLatestBeadsInput {

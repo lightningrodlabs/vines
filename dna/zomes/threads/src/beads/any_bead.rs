@@ -6,17 +6,25 @@ use crate::beads::{get_typed_bead, index_bead};
 use crate::notify_peer::{NotifiableEvent, send_inbox_item, SendInboxItemInput, WeaveNotification};
 
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddAnyBeadInput {
+    pub anyBead: AnyBead,
+    pub creation_time: Timestamp,
+    pub original_author: Option<AgentPubKey>,
+}
+
 /// Return bead ah, type, Global Time Anchor, bucket time
 #[hdk_extern]
-pub fn add_any_bead(anyBead: AnyBead) -> ExternResult<(ActionHash, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
-    debug!("add_any_bead() {:?}", anyBead);
-    let ah = create_entry(ThreadsEntry::AnyBead(anyBead.clone()))?;
+pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
+    debug!("add_any_bead() {:?}", input);
+    let ah = create_entry(ThreadsEntry::AnyBead(input.anyBead.clone()))?;
     //let bead_type = format!("__any::{}", input.type_info);
-    let tp_pair = index_bead(anyBead.bead.clone(), ah.clone(), "AnyBead"/*&bead_type*/, sys_time()?)?;
+    let tp_pair = index_bead(input.anyBead.bead.clone(), ah.clone(), "AnyBead"/*&bead_type*/, input.creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     /// Reply
     let mut maybe_notif = Vec::new();
-    if let Some(reply_ah) = anyBead.bead.prev_known_bead_ah.clone() {
+    if let Some(reply_ah) = input.anyBead.bead.prev_known_bead_ah.clone() {
         let reply_author = get_author(&reply_ah.clone().into())?;
         let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
         if let Some((_link_ah, notif)) = maybe {

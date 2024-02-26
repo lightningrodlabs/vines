@@ -251,11 +251,13 @@ export class ThreadsApp extends HappElement {
   }
 
 
+  /** */
   async onDumpNetworkLogs(e) {
     console.log("onDumpNetworkLogs()")
     await this.networkInfoAll();
     this.dumpNetworkInfoLogs();
   }
+
 
   /** */
   render() {

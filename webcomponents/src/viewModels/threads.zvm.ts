@@ -13,7 +13,7 @@ import {
   AnyBead,
   Bead,
   BeadLink,
-  CommitGlobalLogInput,
+  CommitGlobalLogInput, EntryBead,
   GlobalLastProbeLog,
   NotifiableEventType,
   NotifySetting,
@@ -37,7 +37,7 @@ import {
   BeadInfoMat,
   BeadLinkMaterialized,
   BeadType,
-  dematerializedTypedBead,
+  dematerializedTypedBead, dematerializeEntryBead,
   dematerializeParticipationProtocol,
   EntryBeadMat,
   materializedTypedBead,
@@ -929,7 +929,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishTypedBeadAt(beadType: BeadType, content: string | Hrl | EntryHashB64, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
+  async publishTypedBeadAt(beadType: BeadType | "EntryBeadImport", content: string | Hrl | EntryHashB64 | EntryBeadMat, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
     : Promise<[ActionHashB64, string, TypedBead]>
   {
     //console.log("publishTypedBeadAt()", beadType)
@@ -937,7 +937,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Commit Entry */
     let typed: TypedBead;
     let global_time_anchor, bucket_ts;
-    let notifPairs: [AgentPubKey, WeaveNotification][];
+    let notifPairs: [AgentPubKey, WeaveNotification][] = [];
     let bead_ah: ActionHash;
     switch (beadType) {
       case ThreadsEntryType.TextBead:
@@ -950,8 +950,15 @@ export class ThreadsZvm extends ZomeViewModel {
           bead: nextBead,
           zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
           roleName: "rFiles", // FILES_CELL_NAME
+          creationTime,
+          author,
         };
         [bead_ah, typed, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addEntryAsBead(entryInfo);
+        break;
+      case "EntryBeadImport":
+        const entryBead: EntryBead = dematerializeEntryBead(content as EntryBeadMat);
+        entryBead.bead = nextBead;
+        [bead_ah, typed, global_time_anchor, bucket_ts] = await this.zomeProxy.addEntryBead({entryBead, creationTime});
         break;
       case ThreadsEntryType.AnyBead:
         const encHrl = encodeHrl(content as Hrl);
@@ -960,8 +967,8 @@ export class ThreadsZvm extends ZomeViewModel {
           value: encHrl,
           typeInfo: "hrl",
         } as AnyBead;
-        console.log("publishHrlBeadAt()", encHrl, typed);
-        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead(anyBead);
+        console.log("publishHrlBeadAt()", encHrl, anyBead);
+        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime});
         typed = anyBead;
         break;
       default: throw Error("Unknown beadType: " + beadType);
@@ -1540,9 +1547,10 @@ export class ThreadsZvm extends ZomeViewModel {
     });
 
     /** beads */
+    console.log("exportPerspective() beads", this._beads);
     const beads: Dictionary<[BeadInfoMat, TypedBeadMat]> = {};
     Object.entries(this._beads).map(([beadAh, [beadInfo, typed]]) => {
-      beads[beadAh] = materializedTypedBead(beadInfo, typed);
+      beads[beadAh] = materializedTypedBead(beadInfo, typed); // TODO: Optimize to not store twice core bead info.
       originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
     });
 
@@ -1604,6 +1612,8 @@ export class ThreadsZvm extends ZomeViewModel {
         : [beadInfo.creationTime, beadInfo.author];
       this.storeBead(beadAh, authorshipLog[0], authorshipLog[1], dematerializedTypedBead(beadInfo, typedBead)[1], false, true);
     }
+    console.log("importPerspective() beads", this._beads);
+
     /** this._emojiReactions */
     for (const [beadAh, pairs] of Object.entries(external.emojiReactions)) {
       if (!this._emojiReactions[beadAh]) {
@@ -1718,10 +1728,11 @@ export class ThreadsZvm extends ZomeViewModel {
           }
         }
         /* Determine typed bead content */
-        let content: string | Hrl | EntryHashB64;
+        let content: string | Hrl | EntryHashB64 | EntryBeadMat;
         switch(beadInfo.beadType) {
           case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
-          case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat).sourceEh; break;
+          //case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat).sourceEh; break;
+          case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat); break;
           case ThreadsEntryType.AnyBead:
             const typedAny = typedBead as TextBeadMat;
             content = decodeHrl(typedAny.value);
@@ -1738,13 +1749,14 @@ export class ThreadsZvm extends ZomeViewModel {
         const authorshipLog: [Timestamp, AgentPubKeyB64 | null] = authorshipZvm.perspective.allLogs[beadAh] != undefined
           ? authorshipZvm.perspective.allLogs[beadAh]
           : [beadInfo.creationTime, this.cell.agentPubKey];
-        const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTypedBeadAt(beadInfo.beadType as BeadType, content, nextBead, authorshipLog[0], authorshipLog[1]);
+        const beadType = beadInfo.beadType == ThreadsEntryType.EntryBead ? "EntryBeadImport" : beadInfo.beadType as BeadType; // copy entry bead verbatim
+        const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTypedBeadAt(beadType, content, nextBead, authorshipLog[0], authorshipLog[1]);
         beadAhMapping[beadAh] = newBeadAh;
         /** commit authorshipLog for new beads */
         if (authorshipZvm.perspective.allLogs[beadAh] != undefined) {
           await authorshipZvm.ascribeTarget(beadInfo.beadType, newBeadAh, beadInfo.creationTime, beadInfo.author);
         }
-        console.log(`PubImp() Bead ${beadAh} -> ${newBeadAh}`);
+        console.log(`PubImp() Bead ${beadAh} -> ${newBeadAh}`, authorshipLog[0]);
       }
       /* Break loop if no progress made */
       const totalEnd = Object.keys(ppAhMapping).length + Object.keys(beadAhMapping).length;
@@ -1755,6 +1767,7 @@ export class ThreadsZvm extends ZomeViewModel {
       loopCount += 1
     }
     console.log(`PubImp() looped ${loopCount} times. pps: ${Object.keys(ppAhMapping).length} ; beads: ${Object.keys(beadAhMapping).length}`);
+    console.log("PubImp() beads", this.perspective.beads);
 
     /** this._emojiReactions */
     for (const [beadAh, pairs] of Object.entries(perspMat.emojiReactions)) {

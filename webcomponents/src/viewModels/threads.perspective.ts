@@ -297,6 +297,7 @@ export function materializedTypedBead(beadInfo: BeadInfo, typed: TypedBead): [Be
   beadInfoMat.bead = materializeBead(beadInfo.bead);
   return [beadInfoMat, typedMat];
 }
+
 export function dematerializedTypedBead(beadInfoMat: BeadInfoMat, typedMat: TypedBeadMat): [BeadInfo, TypedBead] {
   let typed: TypedBead;
   switch(beadInfoMat.beadType) {

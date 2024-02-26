@@ -46,10 +46,20 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const manifestEh = encodeHashToBase64(entryBead.sourceEh);
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
     if (!fileTuple) {
-      /** auto refresh since we can't observe filesDvm */
-      this._filesDvm.deliveryZvm.probeDht()//.then(() => {this.requestUpdate()});
-      delay(1000).then(() => {this.requestUpdate()});
-      return html `<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      //return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`
+        <ui5-list id="fileList">
+          <ui5-li id="fileLi" icon="synchronize" description=${manifestEh}
+                  @click=${async (e) => {
+                      await this._filesDvm.deliveryZvm.probeDht();
+                      const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+                      if (fileTuple) {
+                          this.requestUpdate();
+                      }
+                  }}>
+            Missing File
+          </ui5-li>
+        </ui5-list>`;
     }
     const fileDesc = fileTuple[0];
 
