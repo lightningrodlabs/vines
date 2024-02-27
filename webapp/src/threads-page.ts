@@ -175,12 +175,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     new ContextProvider(this, wePerspectiveContext, this.wePerspective);
   }
 
-
+  /** Handle 'jump' event */
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('jump', this.onJump);
   }
-
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('jump', this.onJump);
@@ -188,11 +187,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** -- Fields -- */
+
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
   @state() private _selectedBeadAh: ActionHashB64 = '';
   @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
-  private _selectedThreadSubjectName: string = '';
+           private _selectedCommentThreadSubjectName: string = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
 
   @state() private _canShowComments = false;
@@ -528,7 +528,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
       this._canShowComments = true;
       this._selectedCommentThreadHash = threadHash;
-      this._selectedThreadSubjectName = request.subjectName;
+      this._selectedCommentThreadSubjectName = request.subjectName;
       return;
     }
 
@@ -989,7 +989,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div id="commentSide"
                      style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
                     <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
-                                         .subjectName="${this._selectedThreadSubjectName}"></comment-thread-view>
+                                         .subjectName="${this._selectedCommentThreadSubjectName}"></comment-thread-view>
                 </div>
                   <div id="favoritesSide"
                        style="display:${this._canShowFavorites ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
