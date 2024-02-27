@@ -176,6 +176,17 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('jump', this.onJump);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('jump', this.onJump);
+  }
+
+
   /** -- Fields -- */
   @state() private _initialized = false;
   @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
@@ -683,9 +694,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         centerSide = html`
-            <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}
-                              @jump=${this.onJump}
-            ></chat-thread-view>
+            <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>
             ${this._splitObj? html`
               <div id="uploadCard">
                 <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
@@ -781,8 +790,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
                 </ui5-select>
                 ${this._appletToShow ? html`
-                    <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}
-                                         @jump=${this.onJump}></applet-threads-tree>
+                    <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}></applet-threads-tree>
                 ` : html`
                     <semantic-topics-view
                             .showArchivedTopics=${this._canViewArchivedTopics} 
@@ -790,7 +798,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
                             }}
-                            @jump=${this.onJump}
                     ></semantic-topics-view>
 
                     <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
@@ -963,7 +970,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </ui5-popover>
                 
                 <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
-                    <notification-list @jump=${this.onJump}></notification-list>
+                    <notification-list></notification-list>
                 </ui5-popover>
                 
                 <ui5-popover id="notifSettingsPopover" placement-type="Bottom" header-text="Notification settings">
@@ -986,11 +993,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
                   <div id="favoritesSide"
                        style="display:${this._canShowFavorites ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
-                      <favorites-view @jump=${this.onJump}></favorites-view>
+                      <favorites-view></favorites-view>
                   </div>                  
                   <!-- <peer-list></peer-list> -->
                   <div id="rightSide" style="display: ${this._canShowSearchResults? "block" : "none"}">
-                      <search-result-panel .parameters=${searchParameters} @jump=${this.onJump}></search-result-panel>                 
+                      <search-result-panel .parameters=${searchParameters}></search-result-panel>                 
                   </div>
                   <anchor-tree id="debugSide"
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
