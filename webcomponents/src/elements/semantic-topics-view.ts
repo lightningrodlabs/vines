@@ -10,6 +10,7 @@ import {msg} from "@lit/localize";
 import {toasty} from "../toast";
 import {threadJumpEvent} from "../jump";
 
+import Tree from "@ui5/webcomponents/dist/Tree";
 
 /**
  *
@@ -115,6 +116,14 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
   /** */
   async clickTree(event) {
     //console.log("<semantic-topics-view> click event:", event.detail.item)
+
+    // clear selection?
+    const tree = this.shadowRoot.getElementById("semTree") as Tree;
+    const items = tree.getItems();
+    for (const item of items) {
+      item.selected = false;
+    }
+
     if (event.detail.item.level == 2) {
       await this.updateComplete;
       this.dispatchEvent(threadJumpEvent(event.detail.item.id));
@@ -349,7 +358,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     return html`
       <ui5-busy-indicator id="busy" style="width: 100%">
         <ui5-tree id="semTree" mode="SingleSelect" no-data-text=${msg("No topics found")}
-                  @item-toggle="${this.toggleTreeItem}"
+                  @item-toggle=${this.toggleTreeItem}
                   @item-click="${this.clickTree}"
                   @item-mouseover=${(e) => {this._isHovered[e.detail.item.id] = true; this.requestUpdate();}}
                   @item-mouseout=${(e) => {this._isHovered[e.detail.item.id] = false;}}

@@ -273,8 +273,7 @@ export class ThreadsApp extends HappElement {
     if(this._hasHolochainFailed) {
       return html`<div style="width: auto; height: auto; font-size: 4rem;">
         ${msg("Failed to connect to Holochain Conductor and/or \"Threads\" cell.")};
-      </div>
-      `;
+      </div>`;
     }
 
 
