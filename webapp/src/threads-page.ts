@@ -116,13 +116,12 @@ import {
   CommentRequest,
   decodeHrl, doodle_flowers,
   event2type,
-  globaFilesContext,
+  globaFilesContext, JumpDestinationType,
   JumpEvent,
-  NotifiableEventType,
   NotifySettingType,
   parseMentions,
   ParticipationProtocol,
-  shellBarStyleTemplate,
+  shellBarStyleTemplate, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
@@ -261,9 +260,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const ah = await this._dvm.publishThreadFromSemanticTopic(this.appletId, this._createTopicHash, input.value)[1];
     //console.log("onCreateList() res:", res)
     input.value = "";
-    this._selectedThreadHash = ah;
-    this._selectedBeadAh = '';
-    this.createThreadDialogElem.close(false)
+
+    this.onJump(threadJumpEvent(ah))
+    this.createThreadDialogElem.close(false);
   }
 
 
@@ -562,15 +561,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  /** */
-  onDnaThreadSelected(e) {
-    console.log("onDnaThreadSelected()", e);
-    if (e.detail.type == ThreadsEntryType.ParticipationProtocol) {
-        this._selectedThreadHash = e.detail.target;
-        this._selectedBeadAh = '';
-    }
-  }
-
   @state() private _hideFiles = true;
 
 
@@ -599,18 +589,21 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     //console.log("requesting jump to bead", e.detail);
-    if (NotifiableEventType.Fork in e.detail.type) {
+    if (e.detail.type == JumpDestinationType.Applet) {
+      // TODO
+    }
+    if (e.detail.type == JumpDestinationType.Thread) {
       this._selectedThreadHash = e.detail.hash;
       this._selectedBeadAh = '';
     }
-    if (NotifiableEventType.Reply in e.detail.type || NotifiableEventType.Mention in e.detail.type || NotifiableEventType.NewBead in e.detail.type) {
+    if (e.detail.type == JumpDestinationType.Bead) {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
       this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.ppAh);
       this._selectedBeadAh = e.detail.hash;
     }
-    if (NotifiableEventType.Dm in e.detail.type) {
+    if (e.detail.type == JumpDestinationType.Dm) {
       // TODO
     }
     const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
@@ -691,7 +684,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         centerSide = html`
             <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}
-                              @selected=${(e) => this.onThreadSelected(e.detail)}
+                              @jump=${this.onJump}
             ></chat-thread-view>
             ${this._splitObj? html`
               <div id="uploadCard">
@@ -789,7 +782,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </ui5-select>
                 ${this._appletToShow ? html`
                     <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}
-                                         @selected="${this.onDnaThreadSelected}"></applet-threads-tree>
+                                         @jump=${this.onJump}></applet-threads-tree>
                 ` : html`
                     <semantic-topics-view
                             .showArchivedTopics=${this._canViewArchivedTopics} 
@@ -797,7 +790,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
                             }}
-                            @selected=${(e) => this.onThreadSelected(e.detail)}
+                            @jump=${this.onJump}
                     ></semantic-topics-view>
 
                     <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
@@ -935,7 +928,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              }}                             
                   ></ui5-input>
                       <!--<ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item> -->
-                  <ui5-shellbar-item id="favButton" icon="unfavorite" tooltip="Toggle Favorites" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
+                  <ui5-shellbar-item id="favButton" icon="favorite-list" tooltip="Toggle Favorites" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="inboxButton" icon="inbox"
                                      .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
@@ -1136,16 +1129,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
   }
 
-  /** */
-  async onThreadSelected(threadHash: AnyLinkableHashB64) {
-    console.log("onThreadSelected()", threadHash)
-    //this._dvm.threadsZvm.probeLatestBeads(threadHash)
-    // const beadLinks = await this._dvm.threadsZvm.probeLatestBeads({ppAh: decodeHashFromBase64(threadHash), targetCount: 20})
-    // console.log("onThreadSelected() beads found: ", beadLinks.length);
-    this._selectedThreadHash = threadHash;
-    this._selectedBeadAh = '';
-  }
-
 
   /** */
   async refresh(_e?: any) {
@@ -1316,8 +1299,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         threads-input-bar {
-          margin-left: 10px;
-          margin-right: 10px;
+            margin: 3px 10px 5px 10px;
+            box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+            border-radius: 20px;
         }
       `,
 

@@ -1,5 +1,5 @@
 import {css, html, PropertyValues, render} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {customElement, property, state} from "lit/decorators.js";
 import {consume} from "@lit/context";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
@@ -24,6 +24,7 @@ import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {weClientContext} from "../contexts";
+import {threadJumpEvent} from "../jump";
 
 
 /**
@@ -138,10 +139,10 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     /** DEBUG Attachment View */
     //await this.openCommentThread(event.detail.item.id, type, event.detail.item.text);
 
-    //if (event.detail.item.level == 2) {
+    if (type == ThreadsEntryType.ParticipationProtocol) {
       await this.updateComplete;
-      this.dispatchEvent(new CustomEvent('selected', {detail: {target: event.detail.item.id, type}, bubbles: true, composed: true}));
-    //}
+      this.dispatchEvent(threadJumpEvent(event.detail.item.id));
+    }
 
   }
 

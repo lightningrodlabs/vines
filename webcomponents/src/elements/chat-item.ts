@@ -1,5 +1,5 @@
-import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {html, css, PropertyValues} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
@@ -10,6 +10,8 @@ import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
 import {renderAvatar} from "../render";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
+import {threadJumpEvent} from "../jump";
+
 
 /**
  * @element
@@ -207,9 +209,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <div style="display:flex; flex-direction:row;">
                 ${avatarGroup}
                 <span class="thread-link" style="color: ${commentLinkColor}"
-                      @click=${(_e) => {
-                          this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
-                      }}>
+                      @click=${(_e) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " comments" : "" + thread.beadLinksTree.length + " comment"} 
             </span>
             </div>
@@ -220,9 +220,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <div style="display:flex; flex-direction:row;">
                 ${threadAvatar}
                 <span class="thread-link" style="color: ${commentLinkColor}"
-                      @click=${(_e) => {
-                          this.dispatchEvent(new CustomEvent('selected', {detail: maybeCommentThread, bubbles: true, composed: true}));
-                      }}>
+                      @click=${(_e) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               view comments
             </span>
             </div>

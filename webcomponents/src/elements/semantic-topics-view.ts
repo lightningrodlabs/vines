@@ -8,8 +8,7 @@ import {Dictionary} from "@ddd-qc/cell-proxy";
 import {CommentRequest} from "../utils";
 import {msg} from "@lit/localize";
 import {toasty} from "../toast";
-
-
+import {threadJumpEvent} from "../jump";
 
 
 /**
@@ -118,7 +117,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
     //console.log("<semantic-topics-view> click event:", event.detail.item)
     if (event.detail.item.level == 2) {
       await this.updateComplete;
-      this.dispatchEvent(new CustomEvent('selected', {detail: event.detail.item.id, bubbles: true, composed: true}));
+      this.dispatchEvent(threadJumpEvent(event.detail.item.id));
     }
 
   }

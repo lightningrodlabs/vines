@@ -1,11 +1,12 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {css, html} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64} from "@holochain/client";
 import {truncate} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar} from "../render";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
+import {beadJumpEvent} from "../jump";
 
 
 /**
@@ -72,7 +73,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
       title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
       subText = html`This is the start of thread about chat message 
-                      <span style="color:blue; cursor:pointer" @click=${(e) => this.dispatchEvent(new CustomEvent('selected', {detail: encodeHashToBase64(subjectBead.bead.ppAh), bubbles: true, composed: true}))}>
+                      <span style="color:blue; cursor:pointer" 
+                            @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}>
                         ${subjectName}
                       </span>`;
     }

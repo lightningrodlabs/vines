@@ -22,6 +22,7 @@ import {weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
+import {threadJumpEvent} from "../jump";
 
 
 /**
@@ -288,7 +289,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     return html`
         ${doodle_bg}
         <h4 style="margin: 10px;">
-          ${title} <span style="font-style: italic; background: #fbfbfb9c; padding:4px;">${subjectName}</span>
+          ${title} 
+          <span id="subjectName" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectName}</span>
           <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
             if (this.weServices) {
               // TODO: Grab HrlWithContext somehow
@@ -325,6 +327,12 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           width:100%;
           margin-top: 8px;
           margin-bottom: 5px;
+        }
+        #subjectName {
+            font-style: italic; 
+            background: #fbfbfb9c; 
+            padding: 4px;
+            cursor: pointer;
         }
       `,
     ];

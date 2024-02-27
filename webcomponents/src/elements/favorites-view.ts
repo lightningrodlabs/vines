@@ -1,4 +1,4 @@
-import {html, PropertyValues, css} from "lit";
+import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
@@ -18,8 +18,8 @@ import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
-import {JumpEvent} from "./notification-list";
 import {ActionHashB64} from "@holochain/client";
+import {beadJumpEvent} from "../jump";
 
 
 /**
@@ -139,12 +139,8 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
         }
 
         return html`
-            <ui5-li additional-text="${date_str}" style="background:${bg_color};cursor: pointer;" type="Inactive" @click=${(_e) => {
-                this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
-                        hash: beadAh,
-                        type: {Reply: null}, // TODO: better API. Using Reply just to tell it to display the bead.
-                    }, bubbles: true, composed: true}));
-            }}>
+            <ui5-li additional-text="${date_str}" style="background:${bg_color};cursor: pointer;" type="Inactive" 
+                    @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}>
                 ${content}
                 <div slot="imageContent">                
                   ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
@@ -192,13 +188,6 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
           flex-grow: 1;
           position: relative;
           z-index: 0;
-        }
-        
-        threads-input-bar {
-          border:none;
-          width:100%;
-          margin-top: 8px;
-          margin-bottom: 5px;
         }
       `,
     ];

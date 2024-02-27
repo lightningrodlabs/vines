@@ -57,6 +57,10 @@ export class InputBar extends LitElement {
     const inputBar = this.shadowRoot.getElementById('inputBar') as HTMLElement;
     if (inputBar) {
       inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
+
+      const input = inputBar.querySelector("#textMessageInput")  as HTMLElement;
+      console.log("textMessageInput", input);
+      input.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
     }
 
     // if (this._filteredAgents.length > 0) {
@@ -147,11 +151,11 @@ export class InputBar extends LitElement {
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
             ${this.showHrlBtn? html`
-            <ui5-button design="Positive" icon="add" @click=${(e) => {
+            <ui5-button design="Transparent" icon="add" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));
             }}></ui5-button>` : html``}
             ${this.showFileBtn? html`
-            <ui5-button design="Positive" icon="attachment" @click=${(e) => {
+            <ui5-button design="Transparent" icon="attachment" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
             }}></ui5-button>` : html``}
             <ui5-list id="agent-list" style="display: ${this._filteredAgents.length > 0? "block" : "none"}" autofocus=${this._filteredAgents.length > 0? "true" : "false"}>
@@ -183,9 +187,11 @@ export class InputBar extends LitElement {
             box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
           }
           #inputBar {
-            margin-top:0px;
             width: auto;
             height: auto;
+            box-shadow: none;
+            padding: 3px;
+            border-radius: 10px;
           }
   
           #inputBar::part(bar) {
@@ -203,7 +209,6 @@ export class InputBar extends LitElement {
             /*background: red;*/
             border: 0px;
           }
-        
       `,
 
     ];
