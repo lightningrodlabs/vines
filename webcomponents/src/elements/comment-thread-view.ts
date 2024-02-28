@@ -1,11 +1,11 @@
 import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {EntryBeadMat, TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyBeadMat, EntryBeadMat, TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {parseMentions} from "../utils";
 
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -19,7 +19,7 @@ import "./input-bar";
 import {renderAvatar} from "../render";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
-import {WeServices} from "@lightningrodlabs/we-applet";
+import {Hrl, WeServices} from "@lightningrodlabs/we-applet";
 import {EntryBead, TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
 import {threadJumpEvent} from "../jump";
@@ -27,6 +27,7 @@ import markdownit from "markdown-it";
 import {unsafeHTML} from "lit/directives/unsafe-html.js";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {toasty} from "../toast";
+import {stringifyHrl} from "@ddd-qc/we-utils";
 
 
 /**
@@ -258,7 +259,26 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             content = html`<div>${parsed}</div>`;
             break;
           case ThreadsEntryType.AnyBead:
-            content = html`<div>__HRL__</div>`; // FIXME
+            content = html`<div>__HRL__</div>`;
+            const anyBead = typedBead as any as AnyBeadMat;
+            if (anyBead.typeInfo === "hrl") {
+              const obj: [string, string] = JSON.parse(anyBead.value);
+              const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
+              const hrlStr = stringifyHrl(hrl);
+              const id = "hrl-item" //+ "-" + hrlStr;
+              this.weServices.attachableInfo({hrl}).then(async (attLocAndInfo) => {
+                await delay(100); // or maybe do a a requestUpdate()
+                const item = this.shadowRoot.getElementById(id) as HTMLElement;
+                if (item) {
+                  item.innerText = attLocAndInfo.attachableInfo.name;
+                }
+              });
+              content = html`
+                  <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;" @click=${(e) => this.weServices.openHrl({hrl})}>
+                      HRL: ${hrlStr}
+                  </div>                
+              `;
+            }
             break;
           case ThreadsEntryType.EntryBead:
             content = html`<div>__File__</div>`;
@@ -268,7 +288,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             const maybeTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
             if (maybeTuple) {
               const desc = maybeTuple[0];
-              content = html`<div style="color:#1067d7; cursor:pointer" 
+              content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
                                   @click=${(e) => {
                                   this._filesDvm.downloadFile(manifestEh);
                                   toasty("File downloaded: " + desc.name);
