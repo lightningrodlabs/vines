@@ -11,7 +11,7 @@ import {
 } from "@holochain/client";
 import {
   DirectGossip,
-  DirectGossipType, GlobalLastProbeLog,
+  DirectGossipType,
   NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
@@ -20,7 +20,12 @@ import {
   WeaveNotification,
   WeaveSignal
 } from "../bindings/threads.types";
-import {AnyLinkableHashB64, BeadType, TypedBead,} from "./threads.perspective";
+import {
+  AnyLinkableHashB64,
+  BeadType,
+  materializeTypedBead,
+  TypedBead,
+} from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
@@ -124,11 +129,12 @@ export class ThreadsDvm extends DnaViewModel {
     let ppAh: ActionHashB64;
     /** Store received Entry */
     if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event) {
-      const typed = decode(extra) as TypedBead;
+      const {typed, beadType} = decode(extra) as {typed: TypedBead, beadType: BeadType};
+      const typedMat = materializeTypedBead(typed, beadType);
       const beadAh = encodeHashToBase64(notif.content);
-      ppAh = encodeHashToBase64(typed.bead.ppAh);
-      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typed);
-      await this.threadsZvm.storeBead(beadAh, notif.timestamp, encodeHashToBase64(notif.author), typed, true, true);
+      ppAh = typedMat.bead.ppAh;
+      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typedMat);
+      await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
     if (NotifiableEventType.Fork in notif.event) {
       const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
@@ -184,11 +190,12 @@ export class ThreadsDvm extends DnaViewModel {
         this.threadsZvm.storePp(newPpAh, pp, tss, weaveSignal.from, false, true);
         break;
       case DirectGossipType.NewBead:
-        const [ts, beadAh, beadType, ppAh, encBead] = gossip.content;
-        console.log("Signal is NewBead of type", beadType);
-        const typedBead: TypedBead = decode(encBead) as TypedBead;
-        console.log("NewBead", typedBead);
-        /* await*/ this.threadsZvm.storeBead(beadAh, ts, weaveSignal.from, typedBead, true, true);
+        const [ts, beadAh, beadTypeStr, ppAh, encBead] = gossip.content;
+        console.log("Signal is NewBead of type", beadTypeStr);
+        const {typed, beadType} = decode(encBead) as {typed: TypedBead, beadType: BeadType};
+        console.log("NewBead", typed, beadType, beadTypeStr);
+        //const beadType = beadTypeStr as BeadType;
+        /* await*/ this.threadsZvm.storeTypedBead(beadAh, materializeTypedBead(typed, beadType), beadType, ts, weaveSignal.from, true, true);
         break;
       case DirectGossipType.EmojiReactionChange:
         const [beadAh2, author, emoji, isAdded] = gossip.content
@@ -266,7 +273,7 @@ export class ThreadsDvm extends DnaViewModel {
   async publishTypedBead(beadType: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
     let [ah, _time_anchor, creationTime, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments);
     /** Send signal to peers */
-    const data = encode(typed);
+    const data = encode({typed, beadType});
     const signal: WeaveSignal = this.createGossipSignal({type: DirectGossipType.NewBead, content: [creationTime, ah, beadType, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;

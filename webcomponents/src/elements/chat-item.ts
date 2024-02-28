@@ -4,7 +4,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {truncate} from "../utils";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
@@ -153,7 +153,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let subjectName = "";
     let item = html``;
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-      subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextBead).value, 60, true);
+      subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextBeadMat).value, 60, true);
       item = html`<chat-message .hash=${this.hash}></chat-message>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {

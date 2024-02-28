@@ -1,7 +1,6 @@
 import {
-  ActionHash,
   ActionHashB64,
-  AgentPubKeyB64, AnyLinkableHash, decodeHashFromBase64, DnaHash, DnaHashB64,
+  AgentPubKeyB64, decodeHashFromBase64, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
   HoloHashB64,
@@ -27,23 +26,15 @@ export type TypedBead = EntryBead | AnyBead | TextBead;
 
 export type BeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead;
 
+
 /** */
 export interface BeadInfo {
   creationTime: Timestamp,
   author: AgentPubKeyB64,
-  beadType: string, // ThreadsEntryType
-  bead: Bead,
-  //name: string,
-}
-
-export interface BeadInfoMat {
-  creationTime: Timestamp,
-  author: AgentPubKeyB64,
-  beadType: string, // ThreadsEntryType
+  beadType: BeadType,
   bead: BeadMat,
   //name: string,
 }
-
 
 export interface BeadLinkMaterialized {
   creationTime: Timestamp,
@@ -63,6 +54,32 @@ export interface BeadLinkMaterialized {
 
 
 
+
+/** */
+export interface ThreadsExportablePerspective {
+  /** */
+  allAppletIds: EntryHashB64[],
+  /** Store of all Subjects: hash -> Subject */
+  allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>, //Map<AnyLinkableHashB64, SubjectMat>,
+  /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
+  allSemanticTopics: Dictionary<[string, boolean]>,
+
+  /** ppAh -> ppMat */
+  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>, // Map
+  /** beadAh -> [BeadInfoMat, TypedBeadMat] */
+  beads: Dictionary<[BeadInfo, TypedBeadMat]>,
+
+  /** bead_ah -> [agent, emoji] */
+  emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
+
+
+  /** AppletId -> (PathEntryHash -> subjectType) */
+  appletSubjectTypes: Dictionary<Dictionary<string>>,
+
+  favorites: ActionHashB64[],
+}
+
+
 /** */
 export interface ThreadsPerspective {
   /** */
@@ -80,18 +97,26 @@ export interface ThreadsPerspective {
   /** Name  -> ppAh */
   threadsByName: Dictionary<ActionHashB64>,
   /** beadAh -> [BeadInfo, TypedBead] */
-  beads: Dictionary<[BeadInfo, TypedBead]>,
+  beads: Dictionary<[BeadInfo, TypedBeadMat]>,
   /** bead_ah -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
 
 
   /**  -- Applet threads  -- */
+
   /** AppletId -> PathEntryHash -> subjectType */
   appletSubjectTypes: Dictionary<Dictionary<string>>,
   /** PathEntryHash -> subjectHash[] */
   subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
 
+
+  /** -- Favorites -- */
+
+  favorites: ActionHashB64[],
+
+
   /** -- New / unread -- */
+
   globalProbeLog?: GlobalLastProbeLog,
 
   /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
@@ -105,20 +130,19 @@ export interface ThreadsPerspective {
   /** ppAh -> (subjectHash, beadAh[]) */
   unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]>, // Unread thread == Has "new" beads
 
+
   /** -- Notification Inbox -- */
+
   /** linkAh -> [agent, beadAh] */
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
   /** linkAh -> (ppAh, notif) */
   inbox: Dictionary<[ActionHashB64, WeaveNotification]>,
   /* ppAh -> (agent -> value) */
   notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySettingType>>,
-
-  /** -- Favorites -- */
-  favorites: ActionHashB64[],
-
 }
 
 
+/** -- PpMat -- */
 
 /**  */
 export interface ParticipationProtocolMat {
@@ -126,9 +150,6 @@ export interface ParticipationProtocolMat {
   rules: string,
   subject: SubjectMat,
 }
-
-
-/** */
 export function materializeParticipationProtocol(pp: ParticipationProtocol): ParticipationProtocolMat {
   return {
     purpose: pp.purpose,
@@ -143,27 +164,6 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
     subject: dematerializeSubject(pp.subject),
   } as ParticipationProtocol;
 }
-
-
-// /** */
-// function convertSubjectType(subjectType: SubjectType): SubjectTypeType {
-//   for (const value in SubjectTypeType) {
-//     const variant = value.charAt(0).toLowerCase() + value.slice(1); // un-capitalize
-//     if (variant in subjectType) {
-//       return (SubjectTypeType as any)[value]
-//     }
-//   }
-//   console.error("convertTopicType() failed", subjectType)
-//   throw Error("Unknown variant for TopicType object")
-// }
-
-//
-// /** */
-// function convertSubjectTypeType(tt: SubjectTypeType): SubjectType {
-//   const obj = {};
-//   obj[tt] = null;
-//   return obj as SubjectType;
-// }
 
 
 /** -- Subject -- */
@@ -193,6 +193,7 @@ export function dematerializeSubject(subject: SubjectMat): Subject {
 
 
 /** -- Bead -- */
+
 export interface BeadMat {
   ppAh: ActionHashB64,
   prevKnownBeadAh?: ActionHashB64,
@@ -211,7 +212,8 @@ export function dematerializeBead(bead: BeadMat): Bead {
 }
 
 
-/**  */
+/** -- EntryBead -- */
+
 export interface EntryBeadMat {
   bead: BeadMat,
   sourceEh: EntryHashB64,
@@ -239,7 +241,8 @@ export function dematerializeEntryBead(bead: EntryBeadMat): EntryBead {
 }
 
 
-/**  */
+/** -- TextBead -- */
+
 export interface TextBeadMat {
   bead: BeadMat,
   value: string,
@@ -258,7 +261,8 @@ export function dematerializeTextBead(bead: TextBeadMat): TextBead {
 }
 
 
-/**  */
+/** -- AnyBead -- */
+
 export interface AnyBeadMat {
   bead: BeadMat,
   value: string,
@@ -280,59 +284,48 @@ export function dematerializeAnyBead(bead: AnyBeadMat): AnyBead {
 }
 
 
+/** -- TypedBeadMat -- */
+
 export type TypedBeadMat = EntryBeadMat | AnyBeadMat | TextBeadMat;
 
 
+// /** */
+// export function determineBeadType(typedBead: TypedBeadMat | TypedBead): BeadType {
+//   if ("sourceEh" in typedBead) {
+//     return ThreadsEntryType.EntryBead;
+//   }
+//   if ("typeInfo" in typedBead) {
+//     return ThreadsEntryType.AnyBead;
+//   }
+//   return ThreadsEntryType.TextBead;
+// }
+
+
 /** */
-export function materializedTypedBead(beadInfo: BeadInfo, typed: TypedBead): [BeadInfoMat, TypedBeadMat] {
+export function materializeTypedBead(typed: TypedBead, beadType: BeadType): TypedBeadMat {
   let typedMat: TypedBeadMat;
-  switch(beadInfo.beadType) {
+  switch(beadType) {
     case ThreadsEntryType.TextBead: typedMat = materializeTextBead(typed as TextBead); break;
     case ThreadsEntryType.AnyBead: typedMat = materializeAnyBead(typed as AnyBead); break;
     case ThreadsEntryType.EntryBead: typedMat = materializeEntryBead(typed as EntryBead); break;
-    default: throw Error("Unknown bead type: " + beadInfo.beadType); break;
+    default: throw Error("Unknown bead type: " + beadType); break;
   }
-  let beadInfoMat: BeadInfoMat = beadInfo as unknown as BeadInfoMat; // HACK
-  //console.log("materializedTypedBead()", beadInfoMat);
-  beadInfoMat.bead = materializeBead(beadInfo.bead);
-  return [beadInfoMat, typedMat];
+  return typedMat;
 }
-
-export function dematerializedTypedBead(beadInfoMat: BeadInfoMat, typedMat: TypedBeadMat): [BeadInfo, TypedBead] {
+/* */
+export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadType): TypedBead {
   let typed: TypedBead;
-  switch(beadInfoMat.beadType) {
+  switch(beadType) {
     case ThreadsEntryType.TextBead: typed = dematerializeTextBead(typedMat as TextBeadMat); break;
     case ThreadsEntryType.AnyBead: typed = dematerializeAnyBead(typedMat as AnyBeadMat); break;
     case ThreadsEntryType.EntryBead: typed = dematerializeEntryBead(typedMat as EntryBeadMat); break;
-    default: throw Error("Unknown bead type: " + beadInfoMat.beadType); break;
+    default: throw Error("Unknown bead type: " + beadType); break;
   }
-  let beadInfo: BeadInfo = beadInfoMat as unknown as BeadInfo; // HACK
-  beadInfo.bead = dematerializeBead(beadInfoMat.bead);
-  return [beadInfo, typed];
+  return typed;
 }
 
 
-/** */
-export interface ThreadsPerspectiveMat {
-  /** */
-  allAppletIds: EntryHashB64[],
-  /** Store of all Subjects: hash -> Subject */
-  allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>, //Map<AnyLinkableHashB64, SubjectMat>,
-  /** AppletId -> PathEntryHash -> subjectType */
-  appletSubjectTypes: Dictionary<Dictionary<string>>,
-  /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
-  allSemanticTopics: Dictionary<[string, boolean]>,
-
-  /** ppAh -> ppMat */
-  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>, // Map
-  /** beadAh -> [BeadInfoMat, TypedBeadMat] */
-  beads: Dictionary<[BeadInfoMat, TypedBeadMat]>,
-
-  /** bead_ah -> [agent, emoji] */
-  emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
-
-}
-
+/** -- NotifiableEvent -- */
 
 /** */
 export function event2type(event: NotifiableEvent): string {

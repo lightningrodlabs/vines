@@ -2,7 +2,7 @@ import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64} from "@holochain/client";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 //import {ChatThreadView} from "./chat-thread-view";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import markdownit from 'markdown-it'
@@ -37,7 +37,7 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (!beadPair) {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    const tm = beadPair[1] as TextBead;
+    const tm = beadPair[1] as TextBeadMat;
     const md = markdownit();
     //const md = markdownit().use(emoji/* , options */);
     const result = md.render(tm.value);

@@ -110,7 +110,7 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import 'css-doodle';
 
 import {
-  AnyBead,
+  AnyBead, AnyBeadMat,
   AnyLinkableHashB64,
   ChatThreadView,
   CommentRequest,
@@ -120,7 +120,7 @@ import {
   JumpEvent,
   NotifySettingType,
   parseMentions,
-  ParticipationProtocol,
+  ParticipationProtocol, SemanticTopic, SemanticTopicsView,
   shellBarStyleTemplate, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
@@ -416,7 +416,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (beadInfo != ThreadsEntryType.AnyBead) {
         continue;
       }
-      const anyBead = beadPair[1] as AnyBead;
+      const anyBead = beadPair[1] as AnyBeadMat;
       const hrl = decodeHrl(anyBead.value);
       const sHrl = stringifyHrl(hrl);
       if (!this.wePerspective.attachables[sHrl]) {
@@ -611,7 +611,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
-      this._selectedThreadHash = encodeHashToBase64(beadInfo.bead.ppAh);
+      this._selectedThreadHash = beadInfo.bead.ppAh;
       this._selectedBeadAh = e.detail.hash;
     }
     if (e.detail.type == JumpDestinationType.Dm) {
@@ -792,7 +792,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${this._appletToShow ? html`
                     <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}></applet-threads-tree>
                 ` : html`
-                    <semantic-topics-view
+                    <semantic-topics-view id="TopicsView"
                             .showArchivedTopics=${this._canViewArchivedTopics} 
                             @createThreadClicked=${(e) => {
                                 this._createTopicHash = e.detail;
@@ -1166,6 +1166,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCommitBtn(_e?: any) {
     toasty("All marked 'read'");
     await this._dvm.threadsZvm.commitAllProbeLogs();
+    //const semTopic = this.shadowRoot.getElementById("topicusView") as SemanticTopicsView;
+    //semTopic.requestUpdate();
   }
 
 

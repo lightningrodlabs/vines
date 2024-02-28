@@ -11,7 +11,14 @@ import {
     WeaveNotification
 } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
-import {BeadInfo, TypedBead} from "./viewModels/threads.perspective";
+import {
+  AnyBeadMat,
+  BeadInfo,
+  EntryBeadMat,
+  TextBeadMat,
+  TypedBead,
+  TypedBeadMat
+} from "./viewModels/threads.perspective";
 import {stringifyHrl} from "@ddd-qc/we-utils";
 import {decodeHrl} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
@@ -54,7 +61,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
-            const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.ppAh));
+            const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
             if (maybeThread) {
                 title = "Mention in channel " + maybeThread.name;
             }
@@ -68,7 +75,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
       } else {
         const beadInfo = beadPair[0];
         const typedBead = beadPair[1];
-        const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.ppAh));
+        const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
         if (maybeThread) {
           title = "New message in channel " + maybeThread.name;
         }
@@ -82,7 +89,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
-            const maybeThread = threadsZvm.getThread(encodeHashToBase64(beadInfo.bead.ppAh));
+            const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
             if (maybeThread) {
                 title = "Reply in channel " + maybeThread.name;
             }
@@ -110,14 +117,14 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
 
 
 /** */
-export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBead, filesDvm: FilesDvm, wePerspective: WePerspective): string {
+export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBeadMat, filesDvm: FilesDvm, wePerspective: WePerspective): string {
     switch (beadInfo.beadType) {
       /** TextBead: text content */
-      case ThreadsEntryType.TextBead: return (typedBead as TextBead).value; break;
+      case ThreadsEntryType.TextBead: return (typedBead as TextBeadMat).value; break;
       /** EntryBead: Filename */
       case ThreadsEntryType.EntryBead:
-            const fileBead = typedBead as EntryBead;
-            const tuple = filesDvm.deliveryZvm.perspective.publicParcels[encodeHashToBase64(fileBead.sourceEh)];
+            const fileBead = typedBead as EntryBeadMat;
+            const tuple = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
             if (!tuple) {
                 return "<file>";
             }
@@ -125,7 +132,7 @@ export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBead, file
         break;
       /** AnyBead: AttachableInfo.name */
       case ThreadsEntryType.AnyBead:
-            const hrlBead = typedBead as AnyBead;
+            const hrlBead = typedBead as AnyBeadMat;
             const hrl = decodeHrl(hrlBead.value);
             const attLocInfo = wePerspective.attachables[stringifyHrl(hrl)];
             if (!attLocInfo) {

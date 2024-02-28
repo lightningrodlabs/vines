@@ -7,6 +7,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar} from "../render";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent} from "../jump";
+import {TextBeadMat} from "../viewModels/threads.perspective";
 
 
 /**
@@ -59,7 +60,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         subjectName = "Unknown"
       } else {
         if (subjectBead.beadType == ThreadsEntryType.TextBead) {
-          subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBead).value, 60, true);
+          subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBeadMat).value, 60, true);
         }
         if (subjectBead.beadType == ThreadsEntryType.EntryBead) {
           subjectName = "File";

@@ -2,7 +2,7 @@ import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {BeadInfo, ThreadsPerspective, TypedBead} from "../viewModels/threads.perspective";
+import {BeadInfo, TextBeadMat, ThreadsPerspective, TypedBead, TypedBeadMat} from "../viewModels/threads.perspective";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -103,7 +103,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
     const bg_color = this._loading? "#ededf0" : "#ffffff"
 
-    let infoPairs: Record<ActionHashB64, [BeadInfo, TypedBead]> = {};
+    let infoPairs: Record<ActionHashB64, [BeadInfo, TypedBeadMat]> = {};
     for (const ah of this._dvm.threadsZvm.perspective.favorites) {
       if (this._dvm.threadsZvm.perspective.beads[ah]) {
         infoPairs[ah] = this._dvm.threadsZvm.perspective.beads[ah];
@@ -126,7 +126,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
         let content = "<unknown>";
         switch(beadInfo.beadType) {
           case ThreadsEntryType.TextBead:
-            content = (typedBead as TextBead).value;
+            content = (typedBead as TextBeadMat).value;
             break;
           case ThreadsEntryType.AnyBead:
             content = "<HRL>"; // FIXME

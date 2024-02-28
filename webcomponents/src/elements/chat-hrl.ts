@@ -2,7 +2,7 @@ import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {delay, ZomeElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {AppletInfo, Hrl, WeServices} from "@lightningrodlabs/we-applet";
@@ -67,7 +67,7 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         </ui5-list>
       `;
     }
-    const anyBead = anyBeadInfoPair[1] as AnyBead;
+    const anyBead = anyBeadInfoPair[1] as AnyBeadMat;
     if (anyBead.typeInfo != "hrl") {
       return html`          
           <ui5-list id="fileList">
