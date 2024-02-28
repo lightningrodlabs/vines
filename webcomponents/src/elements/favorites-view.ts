@@ -111,12 +111,12 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     }
     //FIXME infoPairs.sort((a, b) => {return 1})
 
-    console.log("<favorites-view>.render() len =", infoPairs.length);
+    //console.log("<favorites-view>.render() len =", infoPairs.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.entries(infoPairs).map(
       ([beadAh, [beadInfo, typedBead]]) => {
-        console.log("<favorites-view> beadInfo", beadInfo);
+        //console.log("<favorites-view> beadInfo", beadInfo);
         if (beadInfo == undefined) {
           return html``;
         }
