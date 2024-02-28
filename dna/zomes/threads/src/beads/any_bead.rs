@@ -17,6 +17,7 @@ pub struct AddAnyBeadInput {
 /// Return bead ah, type, Global Time Anchor, bucket time
 #[hdk_extern]
 pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_bead() {:?}", input);
     let ah = create_entry(ThreadsEntry::AnyBead(input.anyBead.clone()))?;
     //let bead_type = format!("__any::{}", input.type_info);
@@ -39,6 +40,7 @@ pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String,
 ///
 #[hdk_extern]
 pub fn get_any_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, AnyBead)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     return get_typed_bead::<AnyBead>(bead_ah);
 }
 
@@ -46,6 +48,7 @@ pub fn get_any_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey
 ///
 #[hdk_extern]
 pub fn get_many_any_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, AnyBead)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     return ahs.into_iter().map(|ah| get_typed_bead::<AnyBead>(ah)).collect();
 }
 
@@ -54,6 +57,7 @@ pub fn get_many_any_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, 
 /// WARN Will return actual action creation time and not stored ts_us
 #[hdk_extern]
 pub fn query_any_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, AnyBead)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let entry_type = EntryType::App(ThreadsEntryTypes::AnyBead.try_into().unwrap());
     let tuples = get_all_typed_local::<AnyBead>(entry_type)?;
     let res = tuples.into_iter().map(|(ah, create_action, typed)| {

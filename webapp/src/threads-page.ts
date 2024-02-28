@@ -1127,6 +1127,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           this.downloadTextFile("dump_files.json", files_json);
           const content = this._dvm.exportPerspective();
           this.downloadTextFile("dump_threads.json", content);
+          toasty(`Exported data to json in Downloads folder`);
           break;
         case "importCommitItem": this.importDvm(true); break;
         case "importOnlyItem": this.importDvm(false); break;

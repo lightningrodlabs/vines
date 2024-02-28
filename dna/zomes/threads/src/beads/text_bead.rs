@@ -8,6 +8,7 @@ use crate::beads::*;
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
 pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Timestamp)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let ah = create_entry(ThreadsEntry::TextBead(texto.clone()))?;
   //let ah_time = sys_time()?; // FIXME: use Action's timestamp
   let ah_time = get(ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
@@ -19,6 +20,7 @@ pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Times
 ///
 #[hdk_extern]
 pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   return get_typed_bead::<TextBead>(ah);
 
 }
@@ -27,6 +29,7 @@ pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, Te
 ///
 #[hdk_extern]
 pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   return ahs.into_iter().map(|ah| get_typed_bead::<TextBead>(ah)).collect();
 }
 
@@ -35,6 +38,7 @@ pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, 
 /// WARN Will return actual action creation time and not stored ts_us
 #[hdk_extern]
 pub fn query_text_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let entry_type = EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap());
   let tuples = get_all_typed_local::<TextBead>(entry_type)?;
   let res = tuples.into_iter().map(|(ah, create_action, typed)| {
@@ -56,6 +60,7 @@ pub struct AddTextBeadAtInput {
 
 #[hdk_extern]
 pub fn add_text_bead_at(input: AddTextBeadAtInput) -> ExternResult<(ActionHash, String)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead, ah.clone(), "TextBead", input.creation_time)?;
@@ -76,6 +81,7 @@ pub struct AddManyTextBeadAtInput {
 
 #[hdk_extern]
 pub fn add_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let mut start = sys_time()?.0;
   let mut res = Vec::new();
   for i in 0..input.count {

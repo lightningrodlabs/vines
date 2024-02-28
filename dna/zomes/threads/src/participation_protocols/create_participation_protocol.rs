@@ -10,6 +10,7 @@ use crate::participation_protocols::*;
 /// Create a Pp off of anything
 #[hdk_extern]
 pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let maybe_index_time: Option<Timestamp> = None; // FIXME
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;

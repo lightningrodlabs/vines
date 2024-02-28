@@ -6,6 +6,7 @@ use crate::semantic_topic::determine_topic_anchor;
 /// Creates the SemanticTopic
 #[hdk_extern]
 pub fn create_semantic_topic(semanticTopic: SemanticTopic) -> ExternResult<EntryHash> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   /// TODO: Make sure Topic does not already exists
   let eh = hash_entry(semanticTopic.clone())?;
   let _ah = create_entry(ThreadsEntry::SemanticTopic(semanticTopic.clone()))?;

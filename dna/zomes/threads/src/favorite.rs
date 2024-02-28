@@ -1,11 +1,12 @@
 use hdk::prelude::*;
-//use zome_utils::get_typed_from_ah;
+use zome_utils::*;
 use threads_integrity::*;
 
 
 ///
 #[hdk_extern]
 pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sure pp_ah is a PP
     //let (_pp_eh, _pp): (EntryHash, Bead)  = get_typed_from_ah(bead_ah.clone())?;
     /// Get current setting if any
@@ -28,6 +29,7 @@ pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
 ///
 #[hdk_extern]
 pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
     let links = get_links(me, ThreadsLinkType::Favorite, None)?;
     let ah = AnyLinkableHash::from(bead_ah);
@@ -44,6 +46,7 @@ pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
 ///
 #[hdk_extern]
 pub fn get_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
     let links = get_links(me, ThreadsLinkType::Favorite, None)?;
     let mut res = Vec::new();

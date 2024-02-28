@@ -7,6 +7,7 @@ use threads_integrity::*;
 /// Return ppAhs and timestamp of its index-time
 #[hdk_extern]
 pub fn get_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(lh, ThreadsLinkType::Threads, None)?;
   let ahs = links
     .into_iter()
@@ -23,6 +24,10 @@ pub fn get_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(Actio
 /// Return ppAhs and timestamp of its index-time
 #[hdk_extern]
 pub fn get_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
+  if anchor.is_empty() {
+    return error("Empty anchor input");
+  }
   let tp = Path::from(anchor).typed(ThreadsLinkType::SubjectPath)?;
   let links = get_links(tp.path_entry_hash()?, ThreadsLinkType::Protocols, None)?;
   let ahs = links

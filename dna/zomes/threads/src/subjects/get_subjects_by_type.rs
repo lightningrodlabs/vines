@@ -2,7 +2,7 @@ use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 //use hdk::prelude::holo_hash::{holo_hash_decode_unchecked};
 use crate::participation_protocols::*;
-use zome_utils::tp_children_paths;
+use zome_utils::{tp_children_paths, zome_panic_hook};
 
 
 ///
@@ -17,6 +17,7 @@ pub struct GetProtocolsInput {
 ///
 #[hdk_extern]
 pub fn get_subjects_by_type(input: GetProtocolsInput) -> ExternResult<Vec<(DnaHash, AnyLinkableHash)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let tp = get_subject_type_tp(input.applet_id, &input.subject_type)?;
   let children = tp_children_paths(&tp)?;
   debug!("found {} children", children.len());

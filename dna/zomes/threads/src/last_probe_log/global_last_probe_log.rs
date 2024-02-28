@@ -5,6 +5,7 @@ use threads_integrity::*;
 ///
 #[hdk_extern]
 fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let (_ah, gql) = search_global_log()?;
   Ok(gql)
 }
@@ -55,6 +56,7 @@ pub struct CommitGlobalLogInput {
 /// Return time of newly created global log entry.
 #[hdk_extern]
 pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("commit_global_log() {:?}", input);
   /// Get Previous one (this also makes sure that one has been created so we can do update)
   let (ah, prev) = search_global_log()?;
@@ -80,6 +82,7 @@ pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp>
 /// Get all GlobalQueryLog in local source-chain
 #[hdk_extern]
 pub fn query_global_log(_: ()) -> ExternResult<Vec<(Timestamp, GlobalLastProbeLog)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let tuples = get_all_typed_local::<GlobalLastProbeLog>( EntryType::App(ThreadsEntryTypes::GlobalProbeLog.try_into().unwrap()))?;
   let res = tuples.into_iter().map(|(_ah, create_action, typed)| {
     (create_action.timestamp, typed)

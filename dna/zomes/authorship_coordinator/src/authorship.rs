@@ -27,6 +27,7 @@ impl AuthorshipLog {
 /// TODO VALIDATION: only author of target should be allowed to ascribe entry to self
 #[hdk_extern]
 pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     //let me = agent_info()?.agent_latest_pubkey;
     // if input.maybe_original_author == me {
     //     return error("Original author is already the author. No need to create a link");
@@ -46,6 +47,7 @@ pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
 /// Return creation_time, author and type
 #[hdk_extern]
 pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let (target_type, record) = get_app_entry_name(ah.clone().into())?;
     /// Form input & create link
     let input = AscribeTargetInput {
@@ -62,6 +64,7 @@ pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey
 ///
 #[hdk_extern]
 pub fn get_all_ascribed_types(_: ()) -> ExternResult<Vec<String>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let tp = Path::from(ROOT_ANCHOR_AUTHORSHIP)
         .typed(AuthorshipLinkType::AuthorshipPath)?;
     let children_tps = tp_children_paths(&tp)?;
@@ -77,6 +80,7 @@ pub fn get_all_ascribed_types(_: ()) -> ExternResult<Vec<String>> {
 /// Return empty agentPubKey if no author was provides when ascribing
 #[hdk_extern]
 pub fn get_author(target: AnyLinkableHash) -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     //let tp = get_type_tp(target_type)?;
     let authors = get_links(target, AuthorshipLinkType::Author, None)?;
     if authors.len() == 0 {
@@ -93,6 +97,7 @@ pub fn get_author(target: AnyLinkableHash) -> ExternResult<Option<(Timestamp, Ag
 /// Return empty agentPubKey if no author was provides when ascribing
 #[hdk_extern]
 pub fn get_all_ascribed_entries(_: ()) -> ExternResult<Vec<(String, AnyLinkableHash, Timestamp, AgentPubKey)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let child_types = get_all_ascribed_types(())?;
     let mut result = Vec::new();
     for child_type in child_types {
@@ -108,6 +113,7 @@ pub fn get_all_ascribed_entries(_: ()) -> ExternResult<Vec<(String, AnyLinkableH
 /// Return empty agentPubKey if no author was provides when ascribing
 #[hdk_extern]
 pub fn get_ascribed_type_children(target_type: String) -> ExternResult<Vec<(AnyLinkableHash, Timestamp, AgentPubKey)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let tp = get_type_tp(target_type)?;
     let targets = get_links(tp.path_entry_hash()?, AuthorshipLinkType::Target, None)?;
     let result: Vec<(AnyLinkableHash, Timestamp, AgentPubKey)> = targets.into_iter().map(|link| {

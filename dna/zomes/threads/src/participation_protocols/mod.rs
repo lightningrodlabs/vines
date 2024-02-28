@@ -16,6 +16,7 @@ use authorship_zapi::*;
 /// Get all ParticipationProtocol in local source-chain
 #[hdk_extern]
 pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, AgentPubKey, ActionHash, ParticipationProtocol)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let tuples = get_all_typed_local::<ParticipationProtocol>( EntryType::App(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap()))?;
   let res = tuples.into_iter().map(|(ah, create_action, typed)| {
     (create_action.timestamp, create_action.author, ah, typed)
@@ -35,6 +36,7 @@ pub fn query_pps(_: ()) -> ExternResult<Vec<(Timestamp, AgentPubKey, ActionHash,
 /// Return original author
 #[hdk_extern]
 pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let typed_pair = get_typed_and_record(&ah.clone().into())?;
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {

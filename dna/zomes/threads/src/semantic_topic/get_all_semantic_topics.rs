@@ -8,6 +8,7 @@ use crate::semantic_topic::determine_topic_anchor;
 /// Return EntryHash and title of every known SemanticTopic entry.
 #[hdk_extern]
 pub fn get_all_semantic_topics(_: ()) -> ExternResult<Vec<(EntryHash, String)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticTopicPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
   debug!("get_all_semantic_topics() {:?}", root_anchor);
@@ -50,6 +51,7 @@ fn get_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(EntryHash, Stri
 /// Ignores case, will return ActionHash, EntryHash and title of SemanticTopic entry.
 #[hdk_extern]
 pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(EntryHash, String)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   if title_filter.len() < 3 {
     return zome_error!("Cannot search with a prefix less than 3 characters");
   }

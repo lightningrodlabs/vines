@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
+use zome_utils::zome_panic_hook;
 use threads_integrity::{ParticipationProtocol};
 use crate::notify_peer::WeaveNotification;
 
@@ -60,6 +61,7 @@ pub enum DirectGossip {
 ///
 #[hdk_extern]
 fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let sig: WeaveSignal = signal.decode().unwrap();
     debug!("Received signal {:?}", sig);
     Ok(emit_signal(&sig)?)
@@ -77,6 +79,7 @@ pub struct SignalPeersInput {
 ///
 #[hdk_extern]
 fn signal_peers(input: SignalPeersInput) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     // let mut peers: Vec<AgentPubKey> = vec![];
     // for a in input.peers.clone() {
     //     peers.push(a.into())

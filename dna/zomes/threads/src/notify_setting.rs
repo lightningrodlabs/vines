@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use zome_utils::get_typed_from_ah;
+use zome_utils::{get_typed_from_ah, zome_panic_hook};
 use threads_integrity::*;
 use strum_macros::FromRepr;
 
@@ -33,6 +33,7 @@ pub struct SetNotifySettingInput {
 ///
 #[hdk_extern]
 pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sure pp_ah is a PP
     let (_pp_eh, _pp): (EntryHash, ParticipationProtocol)  = get_typed_from_ah(input.pp_ah.clone())?;
     /// Get current setting if any
@@ -60,6 +61,7 @@ pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<A
 ///
 #[hdk_extern]
 pub fn get_my_notify_settings(pp_ah: ActionHash) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(pp_ah, ThreadsLinkType::NotifySetting, None)?;
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
     for link in links {
@@ -77,6 +79,7 @@ pub fn get_my_notify_settings(pp_ah: ActionHash) -> ExternResult<(NotifySetting,
 ///
 #[hdk_extern]
 pub fn get_pp_notify_settings(pp_ah: ActionHash) -> ExternResult<Vec<(AgentPubKey, NotifySetting, ActionHash)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(pp_ah, ThreadsLinkType::NotifySetting, None)?;
     let mut res = Vec::new();
     for link in links {

@@ -18,6 +18,7 @@ pub struct AddTextAndMentionsAtInput {
 ///
 #[hdk_extern]
 pub fn add_text_bead_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<(AgentPubKey, WeaveNotification)>)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.texto.clone()))?;
   let tp_pair = index_bead(input.texto.bead.clone(), ah.clone(), "TextBead", input.creation_time)?;

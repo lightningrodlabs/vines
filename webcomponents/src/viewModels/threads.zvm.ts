@@ -148,7 +148,7 @@ export class ThreadsZvm extends ZomeViewModel {
   private _appletSubjectTypes: Record<AppletId, Record<EntryHashB64, string>> = {}
   /** SubjectType PathEntryHash -> subjectHash[] */
   private _subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]> = {}
-
+  /** beadAh -> [agent, emoji] */
   private _emojiReactions: Dictionary<[AgentPubKeyB64, string][]> = {}
 
   /** New & Unreads */
@@ -1557,9 +1557,9 @@ export class ThreadsZvm extends ZomeViewModel {
 
     /** beads */
     //console.log("exportPerspective() beads", this._beads);
-    const beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
+    //const beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
     Object.entries(this._beads).map(([beadAh, [beadInfo, typed]]) => {
-      //beads[beadAh] = materializedTypedBead(typed, beadInfo.beadType); // TODO: Optimize to not store twice core bead info.
+      //beads[beadAh] = (typed, beadInfo.beadType); // TODO: Optimize to not store twice core bead info.
       originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
     });
 
@@ -1572,7 +1572,7 @@ export class ThreadsZvm extends ZomeViewModel {
       allSemanticTopics: this._allSemanticTopics,
       appletSubjectTypes: this._appletSubjectTypes,
       pps,
-      beads,
+      beads: this._beads,
       favorites: this._favorites,
     };
     //console.log("exportPerspective()", perspMat);
@@ -1583,6 +1583,8 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async importPerspective(json: string, canPublish: boolean, authorshipZvm: AuthorshipZvm) {
     const external = JSON.parse(json) as ThreadsExportablePerspective;
+
+    console.log("Importing perspective", external);
 
     if (canPublish) {
       await this.publishAllFromPerspective(external, authorshipZvm);
@@ -1632,26 +1634,31 @@ export class ThreadsZvm extends ZomeViewModel {
       }
       this._emojiReactions[beadAh] = this._emojiReactions[beadAh].concat(pairs);
     }
+
+    /** this._favorites */
+    this._favorites = this._favorites.concat(external.favorites);
+
+
     /** Done */
     this.notifySubscribers();
   }
 
 
   /** */
-  async publishAllFromPerspective(perspMat: ThreadsExportablePerspective, authorshipZvm: AuthorshipZvm) {
+  async publishAllFromPerspective(impPersp: ThreadsExportablePerspective, authorshipZvm: AuthorshipZvm) {
     /** this._allSemanticTopics */
-    for (const [_topicEh, [title, _isHidden]] of Object.entries(perspMat.allSemanticTopics)) {
+    for (const [_topicEh, [title, _isHidden]] of Object.entries(impPersp.allSemanticTopics)) {
       /* const newTopicEh = */ await this.publishSemanticTopic(title);
     }
     /** this._allSubjects */
-    const ppAhs = perspMat.pps.map((tuple) => tuple[0]);
+    const ppAhs = impPersp.pps.map((tuple) => tuple[0]);
     const entryAsSubjects: Dictionary<ThreadsEntryType> = {};
-    for (const [subjectHash, _subject] of Object.values(perspMat.allSubjects)) {
+    for (const [subjectHash, _subject] of Object.values(impPersp.allSubjects)) {
       if (ppAhs.includes(subjectHash)) {
         entryAsSubjects[subjectHash] = ThreadsEntryType.ParticipationProtocol;
         continue;
       }
-      const maybeBeadPair = perspMat.beads[subjectHash];
+      const maybeBeadPair = impPersp.beads[subjectHash];
       if (maybeBeadPair) {
         entryAsSubjects[subjectHash] = maybeBeadPair[0].beadType as ThreadsEntryType;
         continue;
@@ -1664,13 +1671,13 @@ export class ThreadsZvm extends ZomeViewModel {
     /** -- Threads & Beads -- */
     const ppAhMapping: Record<ActionHashB64, ActionHashB64> = {}
     /* Sort by creation time */
-    const sortedPps: [ActionHashB64, ParticipationProtocolMat, Timestamp][] = Object.values(perspMat.pps).sort(
+    const sortedPps: [ActionHashB64, ParticipationProtocolMat, Timestamp][] = Object.values(impPersp.pps).sort(
       ([ppAhA, ppMatA, creationTimeA], [ppAhB, ppMatB, creationTimeB]) => {
         return creationTimeA - creationTimeB
       })
     const beadAhMapping: Record<ActionHashB64, ActionHashB64> = {}
     /* Sort beads so they can get their prev bead equivalent ah */
-    const sortedBeads: [string, [BeadInfo, TypedBeadMat]][] = Object.entries(perspMat.beads).sort(
+    const sortedBeads: [string, [BeadInfo, TypedBeadMat]][] = Object.entries(impPersp.beads).sort(
       ([beadAhA, [beadInfoA, typedBeadA]], [beadAhB, [beadInfoB, typedBeadB]]) => {
         return beadInfoA.creationTime - beadInfoB.creationTime
       })
@@ -1781,7 +1788,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("PubImp() beads", this.perspective.beads);
 
     /** this._emojiReactions */
-    for (const [beadAh, pairs] of Object.entries(perspMat.emojiReactions)) {
+    for (const [beadAh, pairs] of Object.entries(impPersp.emojiReactions)) {
       for (const [author, emoji] of pairs) {
         if (!beadAhMapping[beadAh]) {
           console.warn("PubImp() Bead not found in mapping", beadAh);
@@ -1792,6 +1799,17 @@ export class ThreadsZvm extends ZomeViewModel {
         /*const succeeded =*/ await this.storeEmojiReaction(beadAh, author, emoji);
       }
     }
+
+    /** favorites */
+    for (const oldBeadAh of impPersp.favorites) {
+      const newBeadAh = beadAhMapping[oldBeadAh];
+      if (!newBeadAh) {
+        console.log("Favorite bead not found:", oldBeadAh, beadAhMapping);
+        continue;
+      }
+      await this.addFavorite(newBeadAh);
+    }
+
     /** other */
     await this.probeAllSubjects();
   }

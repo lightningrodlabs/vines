@@ -17,6 +17,7 @@ pub struct AddEntryBeadInput {
 
 #[hdk_extern]
 pub fn add_entry_bead(input: AddEntryBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let ah = create_entry(ThreadsEntry::EntryBead(input.entry_bead.clone()))?;
     let tp_pair = index_bead(input.entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, input.creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
@@ -43,6 +44,7 @@ pub struct AddEntryAsBeadInput {
 /// Return bead type, Global Time Anchor, bucket time
 #[hdk_extern]
 pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_as_bead() {:?}", input);
     let response = call(
         CallTargetCell::OtherRole(input.role_name.clone()),
@@ -88,6 +90,7 @@ pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash
 ///
 #[hdk_extern]
 pub fn get_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EntryBead)> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     return get_typed_bead::<EntryBead>(bead_ah);
 }
 
@@ -95,6 +98,7 @@ pub fn get_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubK
 ///
 #[hdk_extern]
 pub fn get_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EntryBead)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     return ahs.into_iter().map(|ah| get_typed_bead::<EntryBead>(ah)).collect();
 }
 
@@ -103,6 +107,7 @@ pub fn get_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp
 /// WARN Will return actual action creation time and not stored ts_us
 #[hdk_extern]
 pub fn query_entry_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, EntryBead)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let entry_type = EntryType::App(ThreadsEntryTypes::EntryBead.try_into().unwrap());
     let tuples = get_all_typed_local::<EntryBead>(entry_type)?;
     let res = tuples.into_iter().map(|(ah, create_action, typed)| {

@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use time_indexing::*;
+use zome_utils::zome_panic_hook;
 use crate::beads::{BeadLink};
 
 
@@ -16,6 +17,7 @@ pub struct ProbeAllOutput {
 /// Get latest links from the global time index
 #[hdk_extern]
 pub fn probe_all_latest(begin: Timestamp) -> ExternResult<ProbeAllOutput> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   /// From beginning of time to now (begin_time is expected to be last global search log time)
   return probe_all_between(SweepInterval {begin, end: sys_time()?});
 }
@@ -28,6 +30,7 @@ pub fn probe_all_latest(begin: Timestamp) -> ExternResult<ProbeAllOutput> {
 ///  - all new beads (as bead links && pp_ah)
 #[hdk_extern]
 pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<ProbeAllOutput> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   /// Query DHT
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
   let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None, ThreadsLinkType::TimeItem)?.1;

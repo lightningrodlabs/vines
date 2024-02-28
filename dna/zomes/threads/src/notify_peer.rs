@@ -2,6 +2,7 @@ use hdk::prelude::*;
 use threads_integrity::{THREADS_DEFAULT_COORDINATOR_ZOME_NAME, ThreadsLinkType};
 use crate::signals::WeaveSignal;
 use strum_macros::FromRepr;
+use zome_utils::zome_panic_hook;
 
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, FromRepr)]
@@ -54,6 +55,7 @@ pub struct NotifyPeerInput {
 ///
 #[hdk_extern]
 fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("Notifying {:?} to {}", input.payload, input.peer);
     call_remote(
         input.peer,
@@ -70,6 +72,7 @@ fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
 #[ignore(zits)]
 #[hdk_extern]
 fn recv_notification(signal: ExternIO) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let sig: WeaveSignal = signal.decode().unwrap();
     debug!("Received notification {:?}", sig);
     let _ = emit_signal(&sig)?;
@@ -89,6 +92,7 @@ pub struct SendInboxItemInput {
 ///
 #[hdk_extern]
 pub fn send_inbox_item(input: SendInboxItemInput) -> ExternResult<Option<(ActionHash, WeaveNotification)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     // Don't notify self
     if input.who == agent_info()?.agent_latest_pubkey {
         return Ok(None);
@@ -109,6 +113,7 @@ pub fn send_inbox_item(input: SendInboxItemInput) -> ExternResult<Option<(Action
 /// Returns vec of: LinkCreateActionHash, AuthorPubKey, TextMessageActionHash
 #[hdk_extern]
 pub fn probe_inbox(_ : ()) -> ExternResult<Vec<WeaveNotification>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_latest_pubkey;
     let links = get_links(me, ThreadsLinkType::Inbox, None)?;
     let notifs = links.into_iter().map(|link| { WeaveNotification::from(&link)}).collect();
@@ -119,6 +124,7 @@ pub fn probe_inbox(_ : ()) -> ExternResult<Vec<WeaveNotification>> {
 /// FIXME: Make sure its a mention link
 #[hdk_extern]
 pub fn delete_inbox_item(link_ah : ActionHash) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     let _ = delete_link(link_ah)?;
     Ok(())
 }

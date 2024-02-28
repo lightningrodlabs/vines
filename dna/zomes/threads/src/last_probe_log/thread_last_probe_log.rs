@@ -7,6 +7,7 @@ use threads_integrity::*;
 ///
 #[hdk_extern]
 pub fn get_thread_log(eh: EntryHash) -> ExternResult<ThreadLastProbeLog> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("get_thread_query_log() {:?}", eh);
   let typed = get_typed_from_eh(eh)?;
   Ok(typed)
@@ -17,6 +18,7 @@ pub fn get_thread_log(eh: EntryHash) -> ExternResult<ThreadLastProbeLog> {
 /// Return ActionHash
 #[hdk_extern]
 pub fn commit_thread_log(tql: ThreadLastProbeLog) -> ExternResult<ActionHash> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let ah = create_entry(ThreadsEntry::ThreadProbeLog(tql.clone()))?;
   Ok(ah)
 }
@@ -28,6 +30,7 @@ pub fn commit_thread_log(tql: ThreadLastProbeLog) -> ExternResult<ActionHash> {
 /// Return last searched time of each known Thread
 #[hdk_extern]
 pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   let entry_type = EntryType::App(ThreadsEntryTypes::ThreadProbeLog.try_into().unwrap());
 
   /// Get Create actions
