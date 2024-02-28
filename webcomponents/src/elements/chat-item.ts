@@ -267,7 +267,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
              @mouseleave=${(e) => {
                this._isHovered = false;
                const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
-               //popover.close();  
+               popover.close();  
              }}>
             <!-- avatar column -->
             <div style="display: flex; flex-direction: column; width:48px;">
