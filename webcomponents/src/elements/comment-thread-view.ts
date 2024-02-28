@@ -2,10 +2,10 @@ import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {EntryBeadMat, TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {parseMentions} from "../utils";
 
-import {ActionHashB64} from "@holochain/client";
+import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -18,11 +18,15 @@ import "@ui5/webcomponents/dist/List.js"
 import "./input-bar";
 import {renderAvatar} from "../render";
 import {consume} from "@lit/context";
-import {weClientContext} from "../contexts";
+import {globaFilesContext, weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
-import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
+import {EntryBead, TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
 import {threadJumpEvent} from "../jump";
+import markdownit from "markdown-it";
+import {unsafeHTML} from "lit/directives/unsafe-html.js";
+import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
+import {toasty} from "../toast";
 
 
 /**
@@ -67,6 +71,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+  @consume({ context: globaFilesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
 
   /** -- State variables -- */
 
@@ -235,29 +242,59 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         const isNew = initialProbeLogTs < beadInfo.creationTime;
         console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
 
+        const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
 
-        let content = "<unknown>";
+
+        let content = html`<div>__unknown__</div>`;
         switch(beadInfo.beadType) {
           case ThreadsEntryType.TextBead:
-            content = (typedBead as TextBead).value;
+            const tm = typedBead as TextBead;
+            //content = tm.value;
+            const md = markdownit();
+            //const md = markdownit().use(emoji/* , options */);
+            const result = md.render(tm.value);
+            const parsed = unsafeHTML(result);
+            /** render all */
+            content = html`<div>${parsed}</div>`;
             break;
           case ThreadsEntryType.AnyBead:
-            content = "<HRL>"; // FIXME
+            content = html`<div>__HRL__</div>`; // FIXME
             break;
           case ThreadsEntryType.EntryBead:
-            content = "<File>"; // FIXME
+            content = html`<div>__File__</div>`;
+            const entryBead = typedBead as any as EntryBeadMat;
+            console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
+            const manifestEh = entryBead.sourceEh;
+            const maybeTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+            if (maybeTuple) {
+              const desc = maybeTuple[0];
+              content = html`<div style="color:#1067d7; cursor:pointer" 
+                                  @click=${(e) => {
+                                  this._filesDvm.downloadFile(manifestEh);
+                                  toasty("File downloaded: " + desc.name);
+                                }}>
+                              File: ${desc.name} (${prettyFileSize(desc.size)})
+                          </div>`;
+            }
             break;
           default:
             break;
         }
 
+        /* render item */
         return html`
-            <ui5-li additional-text="${date_str}" style="background:${bg_color}; ${isNew? "border: 1px solid red" : ""};" type="Inactive">
-                ${content}
-                <div slot="imageContent">                
-                  ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
-                </div>                    
-            </ui5-li>`
+            <div id="commentItem" additional-text="${date_str}" style="background:${bg_color}; ${isNew? "border: 1px solid red" : ""};">
+                <div id="avatarRow">
+                    ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "XS")}
+                    <div id="nameColumn" style="display:flex; flex-direction:column;">
+                        <span id="agentName">${agentName}</span>
+                        <span class="chatDate"> ${date_str}</span>
+                    </div>
+                </div>
+                <div id="contentRow">
+                  ${content}
+                </div>
+            </div>`
       }
     );
 
@@ -299,9 +336,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             }
           }}></ui5-button>
         </h4>
-        <ui5-list id="textList" style="overflow: auto;">
+        <div id="list">
             ${textLi}
-        </ui5-list>
+        </div>
         ${maybeInput}
     `;
   }
@@ -321,18 +358,65 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           position: relative;
           z-index: 0;
         }
+
         
-        threads-input-bar {
-          border:none;
-          width:100%;
-          margin-top: 8px;
-          margin-bottom: 5px;
+        p {
+          margin: 0px; /* NEEDED because markdownit() generates <p> */
         }
+        
+        #agentName {
+          font-family: "72";
+          color: rgb(64, 64, 64);
+          font-weight: bold;
+        }
+
+        .chatDate {
+          font-size: smaller;
+          color: #6c6c6c;
+        }
+
+        #list {
+          overflow: auto;
+          display: flex;
+          flex-direction: column;
+        }
+
+        #avatarRow {
+            display:flex; 
+            flex-direction:row;
+            gap:10px;
+            padding-top:6px;
+        }
+        #nameColumn {
+          /*padding-top:5px; */ 
+        }
+        
+        #contentRow {
+          padding-left: 3px;
+          padding-bottom: 5px;
+          padding-top: 10px;
+          color: #2f2f2f;
+        }
+
+        #commentItem {
+          display: flex;
+          flex-direction: column;
+          padding: 5px;
+          border-bottom: 1px solid #dbdada;
+        }
+
+        threads-input-bar {
+          border: none;
+          width: 100%;
+          margin-top: 8px;
+          margin-bottom: 10px;
+        }
+
         #subjectName {
-            font-style: italic; 
-            background: #fbfbfb9c; 
-            padding: 4px;
-            cursor: pointer;
+          font-style: italic;
+          background: #fbfbfb9c;
+          padding: 4px;
+          cursor: pointer;
         }
       `,
     ];

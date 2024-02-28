@@ -10,6 +10,7 @@ import {type2ui5Icon} from "../utils";
 import {EntryBeadMat} from "../viewModels/threads.perspective";
 import {ParcelManifest} from "@ddd-qc/delivery";
 import {msg} from "@lit/localize";
+import {toasty} from "../toast";
 
 
 /**
@@ -129,7 +130,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(e) => this._filesDvm.downloadFile(entryBead.sourceEh)}>
+                  @click=${(e) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty("File downloaded: " + fileDesc.name);}}>
             ${fileDesc.name}
           </ui5-li>
         </ui5-list>`;
