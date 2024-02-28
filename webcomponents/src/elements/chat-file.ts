@@ -206,7 +206,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** render all */
-    return html`${item}`;
+    return html`
+        <sl-tooltip content=${fileDesc.name} style="--show-delay:1000">
+            ${item}
+        </sl-tooltip>
+    `;
   }
 
 
@@ -219,22 +223,22 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           max-width: 600px;
           border-radius: 10px;
           /*margin: 10px 5px 10px 5px;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;        
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
         }
 
         #fileLi {
           border-radius: 10px;
-        }        
-        
+        }
+
         .thumb {
           max-width: 50%;
           cursor: pointer;
-          margin: 10px; 
+          margin: 10px;
         }
 
 
         #preview {
-          background: #dadada;
+          background: #ffffff;
           min-height: 40px;
           min-width: 40px;
           max-height: 400px;
@@ -251,6 +255,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           max-height: 50px !important;
           max-width: 350px !important;
         }
+
         .Image,
         .Video {
           /*height: 300px;*/
@@ -264,11 +269,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           max-width: 600px !important;
           min-height: 250px !important;
-          max-height: 100vh !important;          
+          max-height: 100vh !important;
           white-space: pre;
           box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
-        }        
-        
+        }
+
       `,];
   }
 }
