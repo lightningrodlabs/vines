@@ -154,15 +154,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let item = html``;
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
       subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextBeadMat).value, 60, true);
-      item = html`<chat-message .hash=${this.hash}></chat-message>`;
+      item = html`<chat-message class="innerItem" .hash=${this.hash}></chat-message>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
       subjectName = "File";
-      item = html`<chat-file .hash=${this.hash}></chat-file>`;
+      item = html`<chat-file class="innerItem" .hash=${this.hash}></chat-file>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
       subjectName = "HRL";
-      item = html`<chat-hrl .hash=${this.hash}></chat-hrl>`;
+      item = html`<chat-hrl class="innerItem" .hash=${this.hash}></chat-hrl>`;
     }
 
 
@@ -292,7 +292,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
               </div>
             </div>
             <!-- message column -->
-            <div style="display:flex; flex-direction:column; gap:0px;">
+            <div style="display:flex; flex-direction:column; gap:0px;flex-grow: 1;">
                 <div>
                     <span id="agentName">${agentName}</span>
                     <span class="chatDate"> ${date_str}</span>
@@ -339,7 +339,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
         emoji-bar {
           margin-bottom: 5px;
-          margin-top:5px;
+          /*margin-top:5px;*/
+        }
+
+        .innerItem {
+          /*margin: 10px 5px 10px 5px;*/
+          margin-top: 5px;
+          margin-bottom: 10px;
         }
         
         .chatItem {

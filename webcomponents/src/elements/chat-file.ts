@@ -1,14 +1,15 @@
-import {css, html} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {consume} from "@lit/context";
 import {globaFilesContext} from "../contexts";
-import {FileHashB64, FilesDvm, FileType, kind2Type, prettyFileSize} from "@ddd-qc/files";
+import {FileHashB64, FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
-import {EntryBead} from "../bindings/threads.types";
 import {EntryBeadMat} from "../viewModels/threads.perspective";
+import {ParcelManifest} from "@ddd-qc/delivery";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -31,16 +32,74 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   _filesDvm!: FilesDvm;
 
 
+  @state() private _loading = true;
+  @state() private _manifest?: ParcelManifest;
+           private _maybeFile?: File;
+           private _maybeBlobUrl?: string;
+
+
+
+  /** */
+  protected async willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    console.log("<chat-file>.willUpdate()", changedProperties, !!this._dvm, this.hash, this._filesDvm);
+    if (!this._filesDvm || !changedProperties.has("hash") && (this._manifest || !this.hash)) {
+      return;
+    }
+    console.log("<chat-file>.willUpdate()", this.hash, this._filesDvm.perspective);
+    const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
+    if (!beadInfoPair) {
+      return;
+    }
+    this._loading = true;
+    const entryBead = beadInfoPair[1] as EntryBeadMat;
+    const manifestEh = entryBead.sourceEh;
+    console.log("<chat-file>.willUpdate() manifestEh", manifestEh);
+    //const beadInfoPair = this._filesDvm.filesZvm.perspective.loca[this.hash];
+    this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(manifestEh));
+    console.log(`<chat-file>.willUpdate() ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest);
+    if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
+      const mime = kind2mime(this._manifest.description.kind_info);
+      //const fileType = kind2Type(this._manifest.description.kind_info);
+      const data = await this._filesDvm.deliveryZvm.getParcelData(manifestEh);
+      this._maybeFile = this._filesDvm.data2File(this._manifest, data);
+
+      const reader = new FileReader();
+      if (this._maybeBlobUrl) {
+        URL.revokeObjectURL(this._maybeBlobUrl);
+        this._maybeBlobUrl = undefined;
+      }
+      //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
+      reader.onload = (event) => {
+        console.log("FileReader onload", event, mime)
+        //this._maybeDataUrl = event.target.result;
+        const blob = new Blob([event.target.result], { type: mime });
+        this._maybeBlobUrl = URL.createObjectURL(blob);
+        console.log("FileReader blob", blob, this._maybeBlobUrl)
+        //this.requestUpdate();
+        this._loading = false;
+      };
+      //reader.readAsDataURL(this._maybeFile);
+      reader.readAsArrayBuffer(this._maybeFile);
+    } else {
+      this._loading = false;
+    }
+
+  }
+
+
+
   /** */
   render() {
     console.log("<chat-file>.render()", this.hash, this._dataHash);
     if (this.hash == "") {
-      return html`
-          <div>No file found</div>`;
+      return html`<div style="color:#c10a0a">${msg("No file selected")}</div>`;
     }
-
+    if (!this._manifest) {
+      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+    }
     const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
-    if (!beadInfoPair) {
+    if (this._loading || !beadInfoPair) {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const entryBead = beadInfoPair[1] as EntryBeadMat;
@@ -65,10 +124,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const fileDesc = fileTuple[0];
 
 
-    /** Make sure it's an image file from Files */
-    // FIXME
-
-
     const fileType = kind2Type(fileDesc.kind_info);
 
     let item = html`
@@ -78,30 +133,77 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
             ${fileDesc.name}
           </ui5-li>
         </ui5-list>`;
-    let maybeCachedData = undefined;
-    if (fileType == FileType.Image) {
-      maybeCachedData = null;
-      if (!this._dataHash) {
-        console.log("File is image, dataHash not known");
-        this._filesDvm.getFile(manifestEh).then(([manifest, data]) => {
-          console.log("File is image, manifest", manifest.description.name, manifest.data_hash);
-          const file = this._filesDvm.data2File(manifest, data);
-          this._filesDvm.cacheFile(file);
-          this._dataHash = manifest.data_hash;
-          //this.requestUpdate();
-        });
-      } else {
-        maybeCachedData = this._filesDvm.getFileFromCache(this._dataHash);
-        if (!maybeCachedData) {
-          console.warn("File cache not found", this._dataHash);
-        }
-      }
-      if (maybeCachedData) {
-        item = html`<img class="thumb" src=${"data:image/png;base64," + maybeCachedData}
-                         @click=${(e) => this._filesDvm.downloadFile(entryBead.sourceEh)}>
-        `;
+
+    // if (fileType == FileType.Image) {
+    // let maybeCachedData = undefined;
+    //   maybeCachedData = null;
+    //   if (!this._dataHash) {
+    //     console.log("File is image, dataHash not known");
+    //     this._filesDvm.getFile(manifestEh).then(([manifest, data]) => {
+    //       console.log("File is image, manifest", manifest.description.name, manifest.data_hash);
+    //       const file = this._filesDvm.data2File(manifest, data);
+    //       this._filesDvm.cacheFile(file);
+    //       this._dataHash = manifest.data_hash;
+    //       //this.requestUpdate();
+    //     });
+    //   } else {
+    //     maybeCachedData = this._filesDvm.getFileFromCache(this._dataHash);
+    //     if (!maybeCachedData) {
+    //       console.warn("File cache not found", this._dataHash);
+    //     }
+    //   }
+    //   if (maybeCachedData) {
+    //     item = html`<img class="thumb" src=${"data:image/png;base64," + maybeCachedData}
+    //                      @click=${(e) => this._filesDvm.downloadFile(entryBead.sourceEh)}>
+    //     `;
+    //   }
+    // }
+
+
+    const mime = kind2mime(this._manifest.description.kind_info);
+    //const fileType = kind2Type(this._manifest.description.kind_info);
+
+    //item = html`<div id="preview">File too big for preview</div>`;
+    if (this._maybeFile) {
+      switch (fileType) {
+        // case FileType.Text:
+        //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
+        //     // //const text = decodeURIComponent(escape(tt)));
+        //     // console.log("FileType.Text", this._maybeDataUrl)
+        //     // preview = html`<div id="preview" class="text">${tt}</div>`;
+        //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
+        //     break;
+        // case FileType.Pdf:
+        //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
+        //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
+        //     break;
+        // case FileType.Image:
+        //     preview = html`<img id="preview" src=${this._maybeBlobUrl} alt="Preview Image" />`;
+        //     break;
+        case FileType.Audio:
+          item = html`
+                        <audio id="preview" class="Audio" controls>
+                            <source src=${this._maybeBlobUrl} type=${mime}>
+                            Your browser does not support the audio element.
+                        </audio>
+                    `;
+          break;
+        case FileType.Video:
+          //  width="440" height="320"
+          item = html`
+                        <video id="preview" class="Video" controls>
+                            <source src=${this._maybeBlobUrl} type=${mime}>
+                            Your browser does not support the video element.
+                        </video>
+                    `;
+          break;
+        default:
+          //preview = html`<div id="preview">Preview not available for this type</div>`;
+          item = html`<embed id="preview" class="${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
+          break;
       }
     }
+
 
     /** render all */
     return html`${item}`;
@@ -114,8 +216,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       css`
         #fileList {
           min-width: 350px;
+          max-width: 600px;
           border-radius: 10px;
-          margin: 10px 5px 10px 5px;
+          /*margin: 10px 5px 10px 5px;*/
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;        
         }
 
@@ -128,6 +231,44 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           cursor: pointer;
           margin: 10px; 
         }
+
+
+        #preview {
+          background: #dadada;
+          min-height: 40px;
+          min-width: 40px;
+          max-height: 400px;
+          max-width: 100%;
+          /*width:100%;*/
+          /*max-width: 440px;*/
+          /*overflow: auto;*/
+          /*outline: rgb(172, 172, 172) solid 1px;*/
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+
+        }
+
+        .Audio {
+          max-height: 50px !important;
+          max-width: 350px !important;
+        }
+        .Image,
+        .Video {
+          /*height: 300px;*/
+          /*width: 440px;*/
+          min-height: 120px !important;
+        }
+
+        .PDF,
+        .Document,
+        .Text {
+          width: 100%;
+          max-width: 600px !important;
+          min-height: 250px !important;
+          max-height: 100vh !important;          
+          white-space: pre;
+          box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
+        }        
+        
       `,];
   }
 }
