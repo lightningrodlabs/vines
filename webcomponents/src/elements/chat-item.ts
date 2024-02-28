@@ -289,7 +289,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->            
-            <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap>${sideButtons}</ui5-popover>
+            <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" >${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text="Add Reaction">
                 <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
             </ui5-popover>            

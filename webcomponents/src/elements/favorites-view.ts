@@ -180,6 +180,9 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     return [
       css`
         :host {
+          background: linear-gradient(90deg, #E3EBFE 5%, #D8E4F4 5%, #D8E4F4 45%, #E3EBFE 45%, #E3EBFE 55%, #D8E4F4 55%, #D8E4F4 95%, #E3EBFE 95%);
+          background-size: 20px 20px;
+          background-position: 50px 50px;
           padding-right: 5px;
           padding-left: 5px;
           max-height: 100%;
