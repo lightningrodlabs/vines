@@ -28,9 +28,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of bead to display */
   @property() hash: ActionHashB64 = ''
 
-
-  @property() jump?: string;
-
   @state() private _isHovered = false;
 
 
@@ -137,7 +134,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-item>.render()", this.jump);
+    console.log("<chat-item>.render()");
     if (this.hash == "") {
       return html`
           <div>No bead found</div>`;
@@ -206,24 +203,20 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         const avatarGroup = avatars.length > 1 ? html`
             <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>` : html`${avatars}`;
         commentThread = html`
-            <div style="display:flex; flex-direction:row;">
                 ${avatarGroup}
                 <span class="thread-link" style="color: ${commentLinkColor}"
                       @click=${(_e) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " comments" : "" + thread.beadLinksTree.length + " comment"} 
             </span>
-            </div>
         `;
       } else {
         /** Display avatar of thread creator */
         commentThread = html`
-            <div style="display:flex; flex-direction:row;">
                 ${threadAvatar}
                 <span class="thread-link" style="color: ${commentLinkColor}"
                       @click=${(_e) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               view comments
             </span>
-            </div>
         `;
       }
     }
@@ -246,21 +239,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }}"></ui5-button>
     `;
 
-    let sideButtons = [];
-    if (this._isHovered) {
-      sideButtons.push(starButton);
-      sideButtons.push(reactionButton);
-      sideButtons.push(commentButton);
-    }
-
-    // /** Determine the unread badge to display depending on current comments for this message */
-    // let unreadBadge = html``;
-    // if (isUnread) {
-    //   unreadBadge = html`
-    //           <ui5-badge color-scheme="3" style="margin-left:5px; margin-top:2px;">
-    //               <ui5-icon name="email" slot="icon" style="color:brown;"></ui5-icon>
-    //           </ui5-badge>`;
-    // }
+    const sideButtons = [starButton, reactionButton, commentButton];
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -275,38 +254,65 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         <div id="topVine">
             <div style="flex-grow:1;"></div>
             <div class="vine"></div>
-        </div>        
+        </div>      
+        
         <!-- main horizontal div (row) -->
-        <div id=${id} class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
+        <div id=${id} class="chatItem ${this._isHovered? "hovered": ""}" 
+             @mouseenter=${(e) => {
+                 const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
+                 const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
+                 popover.showAt(anchor);
+                 this._isHovered = true;
+              }} 
+             @mouseleave=${(e) => {
+               this._isHovered = false;
+               const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
+               //popover.close();  
+             }}>
             <!-- avatar column -->
             <div style="display: flex; flex-direction: column; width:48px;">
               ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
-              <!-- split in middle horizontal -->
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
-                <div style="flex-grow:1;"></div>
-                <div class="vine ${maybeCommentThread? "bordered" : ""}"></div>
-              </div>
-              <div style="display: flex; flex-direction: row; flex-grow: 1; min-height:15px;">
                   <div style="flex-grow:1;"></div>
                   <div class="vine"></div>
               </div>
             </div>
             <!-- message column -->
-            <div style="display:flex; flex-direction:column; gap:0px;flex-grow: 1;">
-                <div>
+            <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;">
+                <div id="nameRow" style="display:flex; flex-direction:row;">
                     <span id="agentName">${agentName}</span>
                     <span class="chatDate"> ${date_str}</span>
+                    <span style="flex-grow: 1"></span>
+                    <span id="nameEnd" style="width:10px"></span>
                 </div>
                 ${item}
                 <emoji-bar .hash=${this.hash}></emoji-bar>
+            </div>
+            <!-- Popovers -->            
+            <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap>${sideButtons}</ui5-popover>
+            <ui5-popover id="emojiPopover" header-text="Add Reaction">
+                <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
+            </ui5-popover>            
+        </div>
+        
+        <!-- Reply row -->
+        <div id="replyRow" style="display:flex; flex-direction:row;">
+            <div id="bottomLeft" style="display: flex; flex-direction: column;;">
+                <div style="display: flex; flex-direction: row; flex-grow:1;">
+                  <!-- split in middle horizontal -->
+                  <div style="flex-grow:1;"></div>
+                  <div class="vine  ${maybeCommentThread? "bordered" : ""}"></div>
+                </div>
+                <div style="display: flex; flex-direction: row; flex-grow:1;">
+                    <!-- split in middle horizontal -->
+                    <div style="flex-grow:1;"></div>
+                    <div class="vine"></div>
+                </div>                
+            </div>
+            <div style="display:flex; flex-direction:row;">
                 ${commentThread}
             </div>
-            ${this.jump == "true"? "" : sideButtons}
         </div>
-        <!-- Emoji Picker -->
-        <ui5-popover id="emojiPopover" header-text="Add Reaction">
-            <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
-        </ui5-popover>
     `;
 
   }
@@ -315,11 +321,24 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
+        
+        #buttonsPop::part(content) {
+          padding: 0px;
+        }
+        .hovered {
+          background: #d8e2f6;
+        }
+
         #agentName {
           font-family: "72";
           font-weight: bold;
           color: #262626;
         }
+
+        #bottomLeft {
+          width: 58px;
+        }
+
         #topVine {
           display: flex;
           flex-direction: row;
@@ -327,16 +346,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 58px;
           margin-bottom: 1px;
         }
+
         .vine {
           flex-grow: 1;
-          border-left: 2px solid rgb(108, 176, 70); /*#939393;*/       
+          border-left: 2px solid rgb(108, 176, 70); /*#939393;*/
         }
+
         .bordered {
           /*flex-grow: 1;*/
           /*border-left: 2px solid #939393;*/
           border-bottom: 2px solid rgb(108, 176, 70); /*#939393;*/
-          border-bottom-left-radius: 4px;
+          border-bottom-left-radius: 10px;
         }
+
         emoji-bar {
           margin-bottom: 5px;
           /*margin-top:5px;*/
@@ -347,27 +369,30 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           margin-top: 5px;
           margin-bottom: 10px;
         }
-        
+
         .chatItem {
           display: flex;
           flex-direction: row;
-          gap:8px;
+          gap: 18px;
           min-height: 55px;
           margin: 0px 5px 0px 5px;
         }
+
         .chatAvatar {
           margin-right: 5px;
           box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;
           outline: #4a7b57 solid 2px;
         }
+
         .chatDate {
           margin: 0px 0px 0px 5px;
           font-size: smaller;
           color: gray;
         }
+
         .thread-link {
           cursor: pointer;
-          padding-top: 7px; 
+          padding-top: 7px;
           margin-left: 5px;
         }
       `,];
