@@ -130,11 +130,11 @@ export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBea
         <div class="avatarRow">
             ${renderAvatar(threadsDvm.profilesZvm, beadInfo.author, "XS")}
             <div class="nameColumn" style="display:flex; flex-direction:column;">
-                <span class="agentName">${agentName}</span>
-                <span class="chatDate"> ${date_str}</span>
+                <span class="sideAgentName">${agentName}</span>
+                <span class="sideChatDate"> ${date_str}</span>
             </div>
         </div>
-        <div class="contentRow">
+        <div class="sideContentRow">
           ${content}
         </div>
     </div>`;

@@ -21,6 +21,7 @@ import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {ActionHashB64} from "@holochain/client";
 import {beadJumpEvent} from "../jump";
 import {WeServicesEx} from "../weServicesEx";
+import {sharedStyles} from "../styles";
 
 
 /**
@@ -179,6 +180,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           background: linear-gradient(90deg, #E3EBFE 5%, #D8E4F4 5%, #D8E4F4 45%, #E3EBFE 45%, #E3EBFE 55%, #D8E4F4 55%, #D8E4F4 95%, #E3EBFE 95%);

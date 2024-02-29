@@ -1,34 +1,27 @@
 import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {delay, DnaElement} from "@ddd-qc/lit-happ";
+import { DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {AnyBeadMat, EntryBeadMat, TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {parseMentions} from "../utils";
 
-import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
-import List from "@ui5/webcomponents/dist/List"
-import "@ui5/webcomponents/dist/List.js"
-
 
 import "./input-bar";
-import {renderAvatar} from "../render";
+import {renderSideBead} from "../render";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
-import {Hrl, WeServices} from "@lightningrodlabs/we-applet";
-import {EntryBead, TextBead, ThreadsEntryType} from "../bindings/threads.types";
+import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
 import {threadJumpEvent} from "../jump";
-import markdownit from "markdown-it";
-import {unsafeHTML} from "lit/directives/unsafe-html.js";
-import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
-import {toasty} from "../toast";
-import {stringifyHrl} from "@ddd-qc/we-utils";
+import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "../weServicesEx";
+import {sharedStyles} from "../styles";
 
 
 /**
@@ -84,8 +77,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Getters -- */
 
-  get listElem() : List {
-    return this.shadowRoot.getElementById("list") as List;
+  get listElem() : HTMLElement {
+    return this.shadowRoot.getElementById("list-broken") as HTMLElement;
   }
 
 
@@ -164,9 +157,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   onLoadMore() {
     console.log("<comment-thread-view>.onLoadMore()");
 
-    this.listElem.busy = true;
+    //this.listElem.busy = true;
     // FIXME: Probe DHT
-    this.listElem.busy = false;
+    //this.listElem.busy = false;
   }
 
 
@@ -231,93 +224,12 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("Has thread some unreads?", thread.hasUnreads());
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.values(infoPairs).map(
-      ([beadInfo, typedBead]) => {
-        console.log("<comment-thread-view> beadInfo", beadInfo);
-        if (beadInfo == undefined) {
-          return html``;
-        }
-        const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-        const date_str = date.toLocaleString('en-US', {hour12: false});
-
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
-        const isNew = initialProbeLogTs < beadInfo.creationTime;
-        console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
-
-        const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
-
-
-        let content = html`<div>__unknown__</div>`;
-        switch(beadInfo.beadType) {
-          case ThreadsEntryType.TextBead:
-            const tm = typedBead as TextBead;
-            //content = tm.value;
-            const md = markdownit();
-            //const md = markdownit().use(emoji/* , options */);
-            const result = md.render(tm.value);
-            const parsed = unsafeHTML(result);
-            /** render all */
-            content = html`<div>${parsed}</div>`;
-            break;
-          case ThreadsEntryType.AnyBead:
-            content = html`<div>__HRL__</div>`;
-            const anyBead = typedBead as any as AnyBeadMat;
-            if (anyBead.typeInfo === "hrl") {
-              const obj: [string, string] = JSON.parse(anyBead.value);
-              const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-              const hrlStr = stringifyHrl(hrl);
-              const id = "hrl-item" //+ "-" + hrlStr;
-              this.weServices.attachableInfo({hrl}).then(async (attLocAndInfo) => {
-                await delay(100); // or maybe do a a requestUpdate()
-                const item = this.shadowRoot.getElementById(id) as HTMLElement;
-                if (item) {
-                  item.innerText = attLocAndInfo.attachableInfo.name;
-                }
-              });
-              content = html`
-                  <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;" @click=${(e) => this.weServices.openHrl({hrl})}>
-                      HRL: ${hrlStr}
-                  </div>                
-              `;
-            }
-            break;
-          case ThreadsEntryType.EntryBead:
-            content = html`<div>__File__</div>`;
-            const entryBead = typedBead as any as EntryBeadMat;
-            console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
-            const manifestEh = entryBead.sourceEh;
-            const maybeTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
-            if (maybeTuple) {
-              const desc = maybeTuple[0];
-              content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                                  @click=${(e) => {
-                                  this._filesDvm.downloadFile(manifestEh);
-                                  toasty("File downloaded: " + desc.name);
-                                }}>
-                              File: ${desc.name} (${prettyFileSize(desc.size)})
-                          </div>`;
-            }
-            break;
-          default:
-            break;
-        }
-
-        /* render item */
-        return html`
-            <div id="commentItem" additional-text="${date_str}" style="background:${bg_color}; ${isNew? "border: 1px solid red" : ""};">
-                <div id="avatarRow">
-                    ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "XS")}
-                    <div id="nameColumn" style="display:flex; flex-direction:column;">
-                        <span id="agentName">${agentName}</span>
-                        <span class="chatDate"> ${date_str}</span>
-                    </div>
-                </div>
-                <div id="contentRow">
-                  ${content}
-                </div>
-            </div>`
-      }
-    );
+    let textLi = Object.values(infoPairs).map((infoPair) => {
+      const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
+      const isNew = initialProbeLogTs < infoPair[0].creationTime;
+      console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, infoPair[0].creationTime);
+      return renderSideBead(this, infoPair, this._dvm, this._filesDvm, isNew, this.weServices);
+    });
 
     /** Different UI if no message found for thread */
     if (infoPairs.length == 0) {
@@ -368,6 +280,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           padding-right: 5px;
@@ -385,46 +298,13 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           margin: 0px; /* NEEDED because markdownit() generates <p> */
         }
         
-        #agentName {
-          font-family: "72";
-          color: rgb(64, 64, 64);
-          font-weight: bold;
-        }
-
-        .chatDate {
-          font-size: smaller;
-          color: #6c6c6c;
-        }
-
         #list {
           overflow: auto;
           display: flex;
           flex-direction: column;
         }
-
-        #avatarRow {
-            display:flex; 
-            flex-direction:row;
-            gap:10px;
-            padding-top:6px;
-        }
-        #nameColumn {
-          /*padding-top:5px; */ 
-        }
         
-        #contentRow {
-          padding-left: 3px;
-          padding-bottom: 5px;
-          padding-top: 10px;
-          color: #2f2f2f;
-        }
-
-        #commentItem {
-          display: flex;
-          flex-direction: column;
-          padding: 5px;
-          border-bottom: 1px solid #dbdada;
-        }
+        
 
         threads-input-bar {
           border: none;
