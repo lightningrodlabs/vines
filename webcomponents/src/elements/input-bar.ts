@@ -1,6 +1,8 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 
+import Popover from "@ui5/webcomponents/dist/Popover";
+
 import {inputBarStyleTemplate} from "../styles";
 
 import "@ui5/webcomponents/dist/TextArea.js";
@@ -48,6 +50,9 @@ export class InputBar extends LitElement {
     return this.shadowRoot.getElementById("agent-list") as unknown as List;
   }
 
+  get popoverElem(): Popover {
+    return this.shadowRoot.getElementById("pop") as unknown as Popover;
+  }
 
   /** -- Methods -- */
 
@@ -64,22 +69,47 @@ export class InputBar extends LitElement {
     }
 
     // if (this._filteredAgents.length > 0) {
-    //   console.log("Focuisng on SUGGESTION LIST")
+    //   console.log("Focusing on SUGGESTION LIST")
     //   this.suggestionListElem.focus();
     // }
   }
 
 
   /** */
-  handlekeydown(e) {
+  private suggestionSelected(nickname: string) {
+    this._filteredAgents = [];
+    this.inputElem.value = this._cacheInputValue + nickname + " "
+    this.inputElem.focus();
+    if (this.popoverElem.isOpen()) {
+      this.popoverElem.close();
+    }
+  }
+
+
+  /** */
+  private handleListKeydown(e) {
+    //console.log("List keydown", e.target.innerText);
+    //console.log("List keydown keyCode", e.keyCode);
+
+    /** Enter: select focused item */
+    if (e.keyCode === 13) {
+      console.log("List keydown keyCode ENTER", e.target);
+      this.suggestionSelected(e.target.innerText);
+    }
+  }
+
+
+  /** */
+  handleKeydown(e) {
     //console.log("keydown", e);
-    //console.log("keydown keyCode", e.keyCode);
+    console.log("Input keydown keyCode", e.keyCode);
 
     /** Enter: commit message */
     if (e.keyCode === 13) {
       if (e.shiftKey) {
           /* FIXME add newline to input.value */
       } else {
+        console.log("keydown keyCode ENTER", this.inputElem.value);
         if (this.inputElem.value && this.inputElem.value.length != 0) {
           e.preventDefault();
           console.log(`Inputting value "${this.inputElem.value}"`);
@@ -107,15 +137,20 @@ export class InputBar extends LitElement {
     if (canMention && e.keyCode != 8) {
       //e.preventDefault();
       this._cacheInputValue = this.inputElem.value;
-      //let suggestionItems = ["toto", "titi", "bob", "joe"];
       let suggestionItems = this.profilesZvm ? Object.entries(this.profilesZvm.perspective.profiles) : [];
       /** Filter */
-      const filtered = suggestionItems.filter(([_agentKey, profile]) => {
-          return profile.nickname.toUpperCase().indexOf(e.key.toUpperCase()) === 0;
-      });
+      const filtered = suggestionItems
+        .filter(([_agentKey, profile]) => profile.nickname.toUpperCase().indexOf(e.key.toUpperCase()) === 0)
+        .map(([agentKey, profile]) => agentKey);
+      //filtered = ["toto", "titi", "bob", "joe"];
       if (filtered.length != 0) {
-          this._filteredAgents = filtered.map(([key, _nick]) => key);
-          this.suggestionListElem.focus();
+          this._filteredAgents = filtered;
+          this.popoverElem.showAt(this.inputElem as any as HTMLElement);
+          //this.suggestionListElem.focus();
+      } else {
+        if (this.popoverElem.isOpen()) {
+          this.popoverElem.close();
+        }
       }
     }
   }
@@ -130,18 +165,14 @@ export class InputBar extends LitElement {
       .map((key) => {
         const profile = this.profilesZvm.perspective.profiles[key];
         if (!profile) return html``;
-        //return html`<div>${profile.nickname}</div>`;
         return html`             
-          <ui5-li 
+          <ui5-li
                 .image=${profile && profile.fields.avatar? profile.fields.avatar : ""}
                 @click=${(e) => {
                   e.preventDefault();
-                    this._filteredAgents = [];
-                    // this.inputElem.value += profile.nickname
-                    this.inputElem.value = this._cacheInputValue + profile.nickname + " "
-                    this.inputElem.focus();
+                  this.suggestionSelected(profile.nickname);
                 }}>
-          ${profile.nickname}
+              ${profile.nickname}
           </ui5-li>`;
       });
 
@@ -158,33 +189,45 @@ export class InputBar extends LitElement {
             <ui5-button design="Transparent" icon="attachment" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
             }}></ui5-button>` : html``}
-            <ui5-list id="agent-list" style="display: ${this._filteredAgents.length > 0? "block" : "none"}" autofocus=${this._filteredAgents.length > 0? "true" : "false"}>
-                ${agentItems}
-            </ui5-list>            
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
                           placeholder="Message #${this.topic}, @ to mention"
                           growing
                           growing-max-lines="3"
                           rows="1"
                           maxlength="1000"
-                          @keydown=${this.handlekeydown} 
+                          @keydown=${this.handleKeydown} 
             ></ui5-textarea>
             <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
         </ui5-bar>
+        <ui5-popover id="pop" hide-arrow allow-target-overlap placement-type="Top" horizontal-align="Stretch">
+          <ui5-list id="agent-list" @keydown=${this.handleListKeydown} >
+              ${agentItems}
+          </ui5-list>
+        </ui5-popover>
     `;
   }
 
+  // header-text="Members"
+  // style="display: ${this._filteredAgents.length > 0? "block" : "none"}" autofocus=${this._filteredAgents.length > 0? "true" : "false"}
 
   /** */
   static get styles() {
     return [
       css`
+        
+          #pop {
+            background: #d1deea;
+          }
           #agent-list {
-            position: absolute;
-            z-index: 1;
-            bottom: 55px;
-            width: 400px;
-            box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+            /*opacity: 0.5;*/
+            /*position: absolute;*/
+            /*z-index: 1;*/
+            /*bottom: 55px;*/
+            /*width: 400px;*/
+            /*box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;*/
+          }
+          ui5-li {
+            background: #d1deea;
           }
           #inputBar {
             width: auto;

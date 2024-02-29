@@ -1,14 +1,14 @@
 import { css } from 'lit';
 
 
+/* p NEEDED because markdownit() generates <p> */
 export const sharedStyles = css`
 
   p {
-    margin: 0px; /* NEEDED because markdownit() generates <p> */
+    margin: 0px;
     white-space: pre;
   }
-        
-        
+
   .sideAgentName {
     font-family: "72";
     color: rgb(64, 64, 64);
@@ -21,11 +21,12 @@ export const sharedStyles = css`
   }
 
   .avatarRow {
-    display:flex;
-    flex-direction:row;
-    gap:10px;
-    padding-top:6px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding-top: 6px;
   }
+
   .nameColumn {
     /*padding-top:5px; */
   }
@@ -43,7 +44,11 @@ export const sharedStyles = css`
     flex-direction: column;
     padding: 5px;
     border-bottom: 1px solid #dbdada;
-  }  
+  }
+
+  .sideItem:hover {
+    background: rgba(255, 255, 255, 0.80);
+  }
 `;
 
 
