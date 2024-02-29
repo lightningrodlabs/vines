@@ -267,7 +267,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  getAllBeadsOnThread(ppAh: ActionHashB64): [BeadInfo, TypedBead][] {
+  getAllBeadsOnThread(ppAh: ActionHashB64): [BeadInfo, TypedBeadMat][] {
     const thread = this._threads.get(ppAh);
     if (!thread) {
       return [];

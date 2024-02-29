@@ -8,6 +8,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import markdownit from 'markdown-it'
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {TextBead} from "../bindings/threads.types";
+import {sharedStyles} from "../styles";
 
 
 /**
@@ -51,11 +52,8 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   static get styles() {
     return [
+      sharedStyles,
       css`
-        p {
-          margin: 0px;
-          white-space: pre;
-        }
         .chatMsg {
           margin: 0px;
         }        

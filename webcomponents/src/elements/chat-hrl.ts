@@ -115,6 +115,10 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   static get styles() {
     return [
       css`
+        
+        :host {
+          max-width: 600px;
+        }
         #fileList {
           min-width: 350px;
           border-radius: 10px;

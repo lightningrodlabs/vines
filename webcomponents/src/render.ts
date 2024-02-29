@@ -26,6 +26,7 @@ import {Hrl} from "@lightningrodlabs/we-applet";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "./weServicesEx";
+import {delay} from "@ddd-qc/lit-happ";
 
 
 /** */
@@ -54,7 +55,7 @@ export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB
 
 
 /** */
-export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBead], threadsDvm: ThreadsDvm, filesDvm: FilesDvm, isNew: boolean, weServices?: WeServicesEx) {
+export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBeadMat], threadsDvm: ThreadsDvm, filesDvm: FilesDvm, isNew: boolean, weServices?: WeServicesEx) {
   console.log("renderSideBead() infoPair", infoPair);
   if (infoPair == undefined) {
     return html``;
@@ -68,7 +69,7 @@ export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBea
   let content = html`<div>__unknown__</div>`;
   switch(beadInfo.beadType) {
     case ThreadsEntryType.TextBead:
-      const tm = typedBead as TextBead;
+      const tm = typedBead as TextBeadMat;
       //content = tm.value;
       const md = markdownit();
       //const md = markdownit().use(emoji/* , options */);
@@ -79,33 +80,32 @@ export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBea
       break;
     case ThreadsEntryType.AnyBead:
       content = html`<div>__HRL__</div>`;
-      const anyBead = typedBead as any as AnyBeadMat;
+      const anyBead = typedBead as AnyBeadMat;
       if (anyBead.typeInfo === "hrl" && weServices) {
         const obj: [string, string] = JSON.parse(anyBead.value);
         const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
         const hrlStr = stringifyHrl(hrl);
-        const id = "hrl-item" + "-" + obj[0];
-        if (weServices.getAttachableInfo(hrlStr)) {
-          content = html`
-              <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e) => weServices.openHrl({hrl})}>
-                  HRL: ${hrlStr}
-              </div>
-          `;
+        const id = "hrl-item" + "-" + obj[1];
+        const maybeInfo = weServices.getAttachableInfo(hrlStr);
+        let innerText = hrlStr;
+        if (maybeInfo) {
+          innerText = maybeInfo.attachableInfo.name;
         } else {
-            weServices.attachableInfo({hrl}).then(async (attLocAndInfo) => {
-            //await delay(100); // or maybe do a a requestUpdate()
-            const item = parent.shadowRoot.getElementById(id) as HTMLElement;
-            if (item) {
-              item.innerText = attLocAndInfo.attachableInfo.name;
-            }
+            weServices.attachableInfo({hrl}).then(async (_attLocAndInfo) => {
+              parent.requestUpdate();
           });
         }
+        content = html`
+              <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
+                   @click=${(_e) => weServices.openHrl({hrl})}>
+                  ${innerText}
+              </div>
+          `;
       }
       break;
     case ThreadsEntryType.EntryBead:
       content = html`<div>__File__</div>`;
-      const entryBead = typedBead as any as EntryBeadMat;
+      const entryBead = typedBead as EntryBeadMat;
       console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
       const manifestEh = entryBead.sourceEh;
       const maybeTuple = filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
@@ -113,10 +113,10 @@ export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBea
         const desc = maybeTuple[0];
         content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
                               @click=${(e) => {
-          filesDvm.downloadFile(manifestEh);
-          toasty("File downloaded: " + desc.name);
-        }}>
-                          File: ${desc.name} (${prettyFileSize(desc.size)})
+                                filesDvm.downloadFile(manifestEh);
+                                toasty("File downloaded: " + desc.name);
+                              }}>
+                         File: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;
       }
       break;

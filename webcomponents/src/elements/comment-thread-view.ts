@@ -224,7 +224,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("Has thread some unreads?", thread.hasUnreads());
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.values(infoPairs).map((infoPair) => {
+    let sideItems = Object.values(infoPairs).map((infoPair) => {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
       const isNew = initialProbeLogTs < infoPair[0].creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, infoPair[0].creationTime);
@@ -233,7 +233,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** Different UI if no message found for thread */
     if (infoPairs.length == 0) {
-      textLi = [html`
+      sideItems = [html`
             <div style="background: ${bg_color};">
                 ${this.showInput? "Add first message:" : "No messages found"}                       
             </div>`]
@@ -270,7 +270,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           }}></ui5-button>
         </h4>
         <div id="list">
-            ${textLi}
+            ${sideItems}
         </div>
         ${maybeInput}
     `;
@@ -292,11 +292,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           position: relative;
           z-index: 0;
         }
-
         
-        p {
-          margin: 0px; /* NEEDED because markdownit() generates <p> */
-        }
         
         #list {
           overflow: auto;

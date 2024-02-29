@@ -3,6 +3,12 @@ import { css } from 'lit';
 
 export const sharedStyles = css`
 
+  p {
+    margin: 0px; /* NEEDED because markdownit() generates <p> */
+    white-space: pre;
+  }
+        
+        
   .sideAgentName {
     font-family: "72";
     color: rgb(64, 64, 64);

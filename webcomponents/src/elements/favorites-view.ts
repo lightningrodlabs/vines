@@ -13,15 +13,16 @@ import "@ui5/webcomponents/dist/List.js"
 
 
 import "./input-bar";
-import {renderAvatar} from "../render";
+import {renderAvatar, renderSideBead} from "../render";
 import {consume} from "@lit/context";
-import {weClientContext} from "../contexts";
+import {globaFilesContext, weClientContext} from "../contexts";
 import {WeServices} from "@lightningrodlabs/we-applet";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {ActionHashB64} from "@holochain/client";
 import {beadJumpEvent} from "../jump";
 import {WeServicesEx} from "../weServicesEx";
 import {sharedStyles} from "../styles";
+import {FilesDvm} from "@ddd-qc/files";
 
 
 /**
@@ -38,13 +39,15 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Properties -- */
 
-
   @consume({ context: weClientContext, subscribe: true })
   weServices: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+  @consume({ context: globaFilesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
 
   /** -- State variables -- */
 
@@ -116,63 +119,34 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<favorites-view>.render() len =", infoPairs.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.entries(infoPairs).map(
-      ([beadAh, [beadInfo, typedBead]]) => {
+    let textLi = Object.values(infoPairs).map(
+      (infoPair) => {
         //console.log("<favorites-view> beadInfo", beadInfo);
-        if (beadInfo == undefined) {
+        if (infoPair == undefined) {
           return html``;
         }
-        const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-        const date_str = date.toLocaleString('en-US', {hour12: false});
-
-        let content = "<unknown>";
-        switch(beadInfo.beadType) {
-          case ThreadsEntryType.TextBead:
-            content = (typedBead as TextBeadMat).value;
-            break;
-          case ThreadsEntryType.AnyBead:
-            content = "<HRL>"; // FIXME
-            break;
-          case ThreadsEntryType.EntryBead:
-            content = "<File>"; // FIXME
-            break;
-          default:
-            break;
-        }
-
-        return html`
-            <ui5-li additional-text="${date_str}" style="background:${bg_color};cursor: pointer;" type="Inactive" 
-                    @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}>
-                ${content}
-                <div slot="imageContent">                
-                  ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
-                </div>                    
-            </ui5-li>`
-      }
-    );
+        return renderSideBead(this, infoPair, this._dvm, this._filesDvm, false, this.weServices);
+      });
 
     /** Different UI if no message found for thread */
     if (Object.keys(infoPairs).length == 0) {
       textLi = [html`
             <ui5-li style="background: ${bg_color};">
-                "No favs found"                     
+                "No favorites found"                     
             </ui5-li>`]
     }
 
 
-    //<!--style="height: 400px" growing="Scroll" -->
-    //<!-- @load-more=${this.onLoadMore}-->
 
     const title = `Favorites`;
 
-    // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
     /** render all */
     return html`
         ${doodle_bg}
         <h4 style="margin: 10px;">${title}</h4>
-        <ui5-list id="textList" style="overflow: auto;">
+        <div id="textList" style="overflow: auto;">
             ${textLi}
-        </ui5-list>
+        </div>
     `;
   }
 
