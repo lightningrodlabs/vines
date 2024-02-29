@@ -29,7 +29,7 @@ import {
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-  cardStyleTemplate, appProxyContext,
+  cardStyleTemplate, appProxyContext, WeServicesEx,
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -110,8 +110,9 @@ export class ThreadsApp extends HappElement {
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
+    const weServicesEx = new WeServicesEx(weServices);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
-    app._weProvider = new ContextProvider(app, weClientContext, weServices);
+    app._weProvider = new ContextProvider(app, weClientContext, weServicesEx);
     app.appletId = thisAppletId;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);

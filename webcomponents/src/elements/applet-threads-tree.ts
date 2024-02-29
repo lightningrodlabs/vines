@@ -25,6 +25,7 @@ import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {weClientContext} from "../contexts";
 import {threadJumpEvent} from "../jump";
+import {WeServicesEx} from "../weServicesEx";
 
 
 /**
@@ -42,7 +43,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices!: WeServices;
+  weServices!: WeServicesEx;
 
   /** -- State variables -- */
 

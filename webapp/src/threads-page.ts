@@ -120,15 +120,14 @@ import {
   JumpEvent,
   NotifySettingType,
   parseMentions,
-  ParticipationProtocol, SemanticTopic, SemanticTopicsView,
+  ParticipationProtocol,
   shellBarStyleTemplate, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
   ThreadsPerspective,
   weClientContext,
-  WePerspective,
-  wePerspectiveContext
+  WeServicesEx
 } from "@threads/elements";
 
 import {ActionHashB64, decodeHashFromBase64, DnaHashB64, encodeHashToBase64,} from "@holochain/client";
@@ -172,7 +171,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
 
-    new ContextProvider(this, wePerspectiveContext, this.wePerspective);
+    //new ContextProvider(this, wePerspectiveContext, this.wePerspective);
   }
 
   /** Handle 'jump' event */
@@ -215,9 +214,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices!: WeServices;
+  weServices!: WeServicesEx;
 
-  private wePerspective: WePerspective = { applets: {}, attachables: {}};
+  //private wePerspective: WePerspective = { applets: {}, attachables: {}};
 
 
   /** -- Getters -- */
@@ -348,7 +347,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       for (const appletId of appletIds) {
         const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
         console.log("<threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
-        this.wePerspective.applets[appletId] = appletInfo;
+        //this.wePerspective.applets[appletId] = appletInfo;
       }
       /** NotifyWe of some new content */
       const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
@@ -419,8 +418,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const anyBead = beadPair[1] as AnyBeadMat;
       const hrl = decodeHrl(anyBead.value);
       const sHrl = stringifyHrl(hrl);
-      if (!this.wePerspective.attachables[sHrl]) {
-        this.wePerspective.attachables[sHrl] = await this.weServices.attachableInfo({hrl});
+      if (!this.weServices.getAttachableInfo(sHrl)) {
+        //this.wePerspective.attachables[sHrl] =
+        await this.weServices.attachableInfo({hrl});
         this.requestUpdate();
       }
     }
@@ -432,7 +432,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
-      const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.wePerspective);
+      const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
       let message = `"${notifBody}" from @${author}.` ; // | ${date_str}`;
       /** in-app toast */
       if (canPopup) {
@@ -735,15 +735,20 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "S");
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
-    console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
-    let appletOptions = Object.entries(this.wePerspective.applets).map(([appletId, appletInfo]) => {
-      console.log("appletInfo", appletInfo);
-      if (!appletInfo) {
-        return html``;
-      }
-      return html`<ui5-option id=${appletId} icon="discussion">${appletInfo.appletName}</ui5-option>`;
+    //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
+    let appletOptions = [];
+    if (this.weServices) {
+      appletOptions = this.weServices.getAppletIds().map((appletId) => {
+          const appletInfo = this.weServices.getAppletInfo(appletId);
+          console.log("appletInfo", appletInfo);
+          if (!appletInfo) {
+            return html``;
+          }
+          return html`
+              <ui5-option id=${appletId} icon="discussion">${appletInfo.appletName}</ui5-option>`;
+        }
+      );
     }
-    );
     console.log("appletOptions", appletOptions);
 
 

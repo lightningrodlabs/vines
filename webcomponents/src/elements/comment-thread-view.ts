@@ -28,6 +28,7 @@ import {unsafeHTML} from "lit/directives/unsafe-html.js";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {toasty} from "../toast";
 import {stringifyHrl} from "@ddd-qc/we-utils";
+import {WeServicesEx} from "../weServicesEx";
 
 
 /**
@@ -67,7 +68,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices: WeServices;
+  weServices: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -84,7 +85,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Getters -- */
 
   get listElem() : List {
-    return this.shadowRoot.getElementById("textList") as List;
+    return this.shadowRoot.getElementById("list") as List;
   }
 
 
@@ -321,9 +322,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Different UI if no message found for thread */
     if (infoPairs.length == 0) {
       textLi = [html`
-            <ui5-li style="background: ${bg_color};">
+            <div style="background: ${bg_color};">
                 ${this.showInput? "Add first message:" : "No messages found"}                       
-            </ui5-li>`]
+            </div>`]
     }
 
 

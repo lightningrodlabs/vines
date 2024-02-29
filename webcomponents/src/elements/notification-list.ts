@@ -9,9 +9,10 @@ import {encodeHashToBase64} from "@holochain/client";
 import {composeNotificationTitle, renderAvatar} from "../render";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {globaFilesContext, WePerspective, wePerspectiveContext} from "../contexts";
+import {globaFilesContext, weClientContext} from "../contexts";
 import {FilesDvm} from "@ddd-qc/files";
 import {JumpEvent, notification2JumpEvent} from "../jump";
+import {WeServicesEx} from "../weServicesEx";
 
 
 /**
@@ -34,8 +35,11 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globaFilesContext, subscribe: true })
   filesDvm!: FilesDvm;
 
-  @consume({ context: wePerspectiveContext, subscribe: true })
-  wePerspective!: WePerspective;
+  // @consume({ context: wePerspectiveContext, subscribe: true })
+  // wePerspective!: WePerspective;
+
+  @consume({ context: weClientContext, subscribe: true })
+  weServices!: WeServicesEx;
 
 
   /** -- Methods -- */
@@ -63,7 +67,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
       ([linkAh, [_ppAh, notif]]) => {
 
         /** Content */
-        const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.wePerspective);
+        const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.weServices);
 
         /** Author */
         const author = encodeHashToBase64(notif.author);

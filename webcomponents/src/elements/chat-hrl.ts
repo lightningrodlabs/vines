@@ -10,6 +10,7 @@ import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types"
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {AnyBead} from "../bindings/threads.types";
 import {stringifyHrl} from "@ddd-qc/we-utils";
+import {WeServicesEx} from "../weServicesEx";
 
 
 /**
@@ -28,7 +29,7 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @property() hash: ActionHashB64 = '' // BeadAh
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices!: WeServices;
+  weServices!: WeServicesEx;
 
   @state() private _attLocAndInfo?: AttachableLocationAndInfo;
   @state() private _appletInfo?: AppletInfo;

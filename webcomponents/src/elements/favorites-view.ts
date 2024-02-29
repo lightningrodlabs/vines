@@ -20,6 +20,7 @@ import {WeServices} from "@lightningrodlabs/we-applet";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {ActionHashB64} from "@holochain/client";
 import {beadJumpEvent} from "../jump";
+import {WeServicesEx} from "../weServicesEx";
 
 
 /**
@@ -38,7 +39,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices: WeServices;
+  weServices: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
