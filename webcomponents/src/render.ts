@@ -79,7 +79,7 @@ export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBea
       content = html`<div>${parsed}</div>`;
       break;
     case ThreadsEntryType.AnyBead:
-      content = html`<div>__HRL__</div>`;
+      content = html`<div style="color: red;">HRL: WeServices not available</div>`;
       const anyBead = typedBead as AnyBeadMat;
       if (anyBead.typeInfo === "hrl" && weServices) {
         const obj: [string, string] = JSON.parse(anyBead.value);
