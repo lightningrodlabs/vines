@@ -52,7 +52,9 @@ export const sharedStyles = css`
 `;
 
 
-/** Styles for ui5 */
+/** -- Styles for ui5  -- *
+ *
+ */
 export const inputBarStyleTemplate = document.createElement('template');
 inputBarStyleTemplate.innerHTML = `
 <style>
@@ -61,14 +63,20 @@ inputBarStyleTemplate.innerHTML = `
     width: 100%;
   }
   
-  
   .ui5-textarea-wrapper {
     border: none !important;
   }
 </style>
 `;
 
-
+export const suggestionListTemplate = document.createElement('template');
+suggestionListTemplate.innerHTML = `
+<style>
+  .ui5-list-scroll-container {
+    overflow: hidden !important;
+  }
+</style>
+`;
 
 export const shellBarStyleTemplate = document.createElement('template');
 shellBarStyleTemplate.innerHTML = `

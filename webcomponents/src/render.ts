@@ -26,11 +26,10 @@ import {Hrl} from "@lightningrodlabs/we-applet";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "./weServicesEx";
-import {delay} from "@ddd-qc/lit-happ";
 
 
 /** */
-export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string): TemplateResult<1> {
+export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string, slotArg?:string): TemplateResult<1> {
     let agent = {nickname: "unknown", fields: {}} as ProfileMat;
     const maybeAgent = profilesZvm.perspective.profiles[agentKey];
     if (maybeAgent) {
@@ -42,13 +41,14 @@ export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB
     }
     const initials = getInitials(agent.nickname);
     const avatarUrl = agent.fields['avatar'];
+    const slot = slotArg? slotArg : "avatar";
     //console.log("renderAvatar()", initials, avatarUrl);
     return avatarUrl? html`
-              <ui5-avatar size=${size} class="chatAvatar" slot="avatar">
+              <ui5-avatar size=${size} class="chatAvatar" slot=${slot}>
                   <img src=${avatarUrl}>
               </ui5-avatar>
             `: html`
-              <ui5-avatar size=${size} class="chatAvatar" slot="avatar" shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
+              <ui5-avatar size=${size} class="chatAvatar" slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
     `;
 }
 

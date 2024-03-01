@@ -3,7 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 
 import Popover from "@ui5/webcomponents/dist/Popover";
 
-import {inputBarStyleTemplate} from "../styles";
+import {inputBarStyleTemplate, suggestionListTemplate} from "../styles";
 
 import "@ui5/webcomponents/dist/TextArea.js";
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
@@ -11,6 +11,8 @@ import List from "@ui5/webcomponents/dist/List.js";
 import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {AgentPubKeyB64} from "@holochain/client";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {renderAvatar} from "../render";
+import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 
 
 /**
@@ -31,7 +33,7 @@ export class InputBar extends LitElement {
   showFileBtn?: string;
 
   @property({type: Object})
-  profilesZvm!: ProfilesZvm;
+  profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
 
@@ -62,12 +64,12 @@ export class InputBar extends LitElement {
       const input = inputBar.querySelector("#textMessageInput")  as HTMLElement;
       //console.log("textMessageInput", input);
       input.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
-    }
 
-    // if (this._filteredAgents.length > 0) {
-    //   console.log("Focusing on SUGGESTION LIST")
-    //   this.suggestionListElem.focus();
-    // }
+      const pop = this.shadowRoot.getElementById('pop') as HTMLElement;
+      const list = pop.querySelector("#agent-list") as HTMLElement;
+      console.log("#agent-list", pop, list);
+      list.shadowRoot.appendChild(suggestionListTemplate.content.cloneNode(true));
+    }
   }
 
 
@@ -80,7 +82,6 @@ export class InputBar extends LitElement {
     if (this.popoverElem.isOpen()) {
       this.popoverElem.close();
     }
-
     this._cacheInputValue = "";
   }
 
@@ -99,32 +100,27 @@ export class InputBar extends LitElement {
 
   /** */
   private handleListKeydown(e) {
-    //console.log("List keydown", e.target.innerText);
-    //console.log("List keydown keyCode", e.keyCode);
-
-    /** Enter: select focused item */
-    if (e.keyCode === 13) {
-      console.log("List keydown keyCode ENTER", e.target);
-      this.suggestionSelected(e.target.innerText);
-      if (this.suggestionListElem.items.length > 0) this.suggestionListElem.focusItem(this.suggestionListElem.items[0])
-    }
+    // /** Enter/Tab: select focused item */
+    // if (e.keyCode === 13 || e.keyCode === 9) {
+    //   console.log("List keydown keyCode ENTER/Tab", e.target);
+    //   this.suggestionSelected(e.target.innerText);
+    //   // if (this.suggestionListElem.items.length > 0) {
+    //   //   this.suggestionListElem.focusItem(this.suggestionListElem.items[0]);
+    //   // }
+    // }
   }
 
 
   /** */
   handleSuggestingKeydown(e) {
-
+    //console.log("Keydown keyCode", e.keyCode);
     /** Undo suggesting if '@' has been erased */
     if (e.keyCode == 8 && this.inputElem.value.substr(this.inputElem.value.length - 1) === "@") {
       this.suggestionSelected();
     }
 
-    const list = this.suggestionListElem;
-
-    /** get current selected index */
-    const items = list.getItems();
-    //const selected = list.getSelectedItems();
-
+    /** get currently selected item index */
+    const items = this.suggestionListElem.getItems();
     let i = 0;
     for (const item of items) {
       if (item.selected) {
@@ -132,29 +128,14 @@ export class InputBar extends LitElement {
       }
       i += 1;
     }
-    if (i == items.length) {
-      i = 0;
-      //items[i].selected = true;
-    }
-
-    // if (selected.length == 0 && items.length > 0) {
+    // console.log("selected first item?", i, items.length);
+    // /** select first if none */
+    // if (i == items.length) {
+    //   i = 0;
     //   items[0].selected = true;
-    //   // list.onSelectionRequested(new CustomEvent('', {
-    //   //   detail: {
-    //   //     item: items[0],
-    //   //     selectionComponentPressed: true,
-    //   //     //selected?: boolean;
-    //   //     //key?: string;
-    //   //   },
-    //   //   bubbles: true, composed: true
-    //   // }))
-    //
     // }
 
-    //getEnabledItems();
-    //getItems();
-
-    /* UP */
+    /* UP: select previous */
     if (e.keyCode == 38) {
       if (i > 0) {
         items[i].selected = false;
@@ -162,7 +143,7 @@ export class InputBar extends LitElement {
       }
       e.preventDefault();
     }
-    /* Down */
+    /* Down: select next */
     if (e.keyCode == 40) {
       if (i < items.length - 1) {
         items[i].selected = false;
@@ -170,25 +151,24 @@ export class InputBar extends LitElement {
       }
       e.preventDefault();
     }
-
-    /* Tab */
-    if (e.keyCode === 9) {
-      //e.preventDefault();
-    }
-
-    if (e.keyCode === 13) {
-      console.log("selected item", items[i], items[i].outerText);
-      this.suggestionSelected(items[i].outerText);
-      //items[i].outerText
+    /* Home: select fist */
+    if (e.keyCode == 33) {
+      items[i].selected = false;
+      items[0].selected = true;
       e.preventDefault();
     }
-  }
-
-
-  /** */
-  handleInput(e) {
-    console.log("handle Input", this.inputElem.value, e);
-    this.requestUpdate();
+    /* End: select fist */
+    if (e.keyCode == 34) {
+      items[i].selected = false;
+      items[items.length - 1].selected = true;
+      e.preventDefault();
+    }
+    /* Enter or Tab: select current */
+    if (e.keyCode === 9 || e.keyCode === 13) {
+      console.log("selected item", items[i], items[i].outerText);
+      this.suggestionSelected(items[i].outerText);
+      e.preventDefault();
+    }
   }
 
 
@@ -196,14 +176,11 @@ export class InputBar extends LitElement {
   handleKeydown(e) {
     //console.log("keydown", e);
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
-    const isTextKey = e.key.length == 1;
-    console.log("Input keydown keyCode", e.keyCode, isSuggesting, isTextKey, this.inputElem.value);
-
+    console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     if (isSuggesting) {
       this.handleSuggestingKeydown(e);
       return;
     }
-
     /** Enter: commit message */
     if (e.keyCode === 13) {
       if (e.shiftKey) {
@@ -214,19 +191,6 @@ export class InputBar extends LitElement {
         this.commitInput();
       }
     }
-
-
-    // /** Mentionning if " @" has been typed at the end of the input string */
-    // const canMention = (this.inputElem.value === "@" || this.inputElem.value.substr(this.inputElem.value.length - 2) === " @");
-    // //console.log("keydown canMention", previousIsEmpty);
-    //
-    // /** typed after @ except backspace: Enter suggesting mode */
-    // if (canMention && e.keyCode != 8) {
-    //   //e.preventDefault();
-    //   this._cacheInputValue = this.inputElem.value;
-    //   this.popoverElem.showAt(this.inputElem as any as HTMLElement);
-    //   //this.suggestionListElem.focus();
-    // }
   }
 
 
@@ -237,6 +201,7 @@ export class InputBar extends LitElement {
     "Camille": {nickname: "Camille", fields: {}},
     "Dom": {nickname: "Dom", fields: {}},
     "E": {nickname: "E", fields: {}},
+    "F": {nickname: "F", fields: {}},
   };
 
 
@@ -260,6 +225,7 @@ export class InputBar extends LitElement {
     const lastWordIsMention = lastWord.length > 0 && lastWord[0] == '@' && !endsWithWhitespace;
     console.log("input words", words, lastWordIsMention);
 
+    /** enable suggestion popover */
     let agentItems = [];
     if (lastWordIsMention) {
       const filter = lastWord.slice(1);
@@ -275,26 +241,36 @@ export class InputBar extends LitElement {
           return index !== -1;
         })
         .map(([agentKey, _profile]) => agentKey);
-
       //console.log("<threads-input-bar>.render() filtered", filtered);
-
       if (filtered.length != 0) {
         suggestionKeys = filtered;
       }
 
+      /** Detect previous selected has been filtered out */
+      let lostSelected = false;
+      let selectedId = "";
+      if (this.suggestionListElem && this.suggestionListElem.getSelectedItems().length > 0) {
+        selectedId = this.suggestionListElem.getSelectedItems()[0].id;
+        lostSelected = !suggestionKeys.includes(selectedId);
+      }
+      const canSelectFirst = this.popoverElem && (!isSuggesting || lostSelected || this.suggestionListElem && this.suggestionListElem.getSelectedItems().length == 0);
+      //console.log("canSelectFirst", canSelectFirst, this.suggestionListElem.getSelectedItems().length);
       /** Render agent lists for mentions */
+      let i = 0;
       agentItems = suggestionKeys
         .map((key) => {
+          i += 1;
+          const canSelect = i == 1 && canSelectFirst || key == selectedId;
           //const profile = this.profilesZvm.perspective.profiles[key];
           const profile = this._dummyProfiles[key];
           if (!profile) return html``;
           return html`             
-          <ui5-li
-                .image=${profile && profile.fields.avatar? profile.fields.avatar : ""}
+          <ui5-li id=${key} style="height: 3rem; border: none;" ?selected=${canSelect}
                 @click=${(e) => {
-            e.preventDefault();
-            this.suggestionSelected(profile.nickname);
-          }}>
+                  e.preventDefault();
+                  this.suggestionSelected(profile.nickname);
+                  }}>
+              ${renderAvatar(this.profilesZvm, key, "XS", "imageContent")}
               ${profile.nickname}
           </ui5-li>`;
         });
@@ -302,8 +278,15 @@ export class InputBar extends LitElement {
       if (this.popoverElem && !isSuggesting) {
         this.popoverElem.showAt(this.inputElem as any as HTMLElement);
         this._cacheInputValue = this.inputElem.value;
-        //this.suggestionListElem.focus();
-        //if (agentItems.length > 0) agentItems[0].selected = true;
+        if (lastWordIsMention && lastWord.length > 2) {
+          //console.log("_cacheInputValue inputElem", this.inputElem.value, lastWord, lastWord.length - 1)
+          this._cacheInputValue = this.inputElem.value.slice(0, -(lastWord.length - 1));
+          //console.log("_cacheInputValue after", this._cacheInputValue)
+        }
+        // if (agentItems.length > 0) {
+        //   console.log("Selected first", agentItems[0]);
+        //   agentItems[0].selected = true;
+        // }
       }
     }
 
@@ -332,7 +315,7 @@ export class InputBar extends LitElement {
                           rows="1"
                           maxlength="1000"
                           @keydown=${this.handleKeydown}
-                          @input=${this.handleInput}
+                          @input=${(_e) => this.requestUpdate()}
             ></ui5-textarea>
             <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
         </ui5-bar>
@@ -344,51 +327,38 @@ export class InputBar extends LitElement {
     `;
   }
 
-  // header-text="Members"
-  // style="display: ${this._filteredAgents.length > 0? "block" : "none"}" autofocus=${this._filteredAgents.length > 0? "true" : "false"}
-
   /** */
   static get styles() {
     return [
       css`
-        
-          #pop {
-            background: #d1deea;
-          }
-          #agent-list {
-            /*opacity: 0.5;*/
-            /*position: absolute;*/
-            /*z-index: 1;*/
-            /*bottom: 55px;*/
-            /*width: 400px;*/
-            /*box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;*/
-          }
-          ui5-li {
-            /*background: #d1deea;*/
-          }
-          #inputBar {
-            width: auto;
-            height: auto;
-            box-shadow: none;
-            padding: 3px;
-            border-radius: 10px;
-          }
-  
-          #inputBar::part(bar) {
-            /*background: #81A2D4;*/
-          }
-        
-          #textMessageInput {
-            width: 100%;
-            border: none;
-            padding: 0px;
-          }
+        ui5-avatar {
+          margin-top: 9px;
+          margin-left: 15px;
+        }
 
-          .ui5-textarea-wrapper
-          ui5-textarea div div {
-            /*background: red;*/
-            border: 0px;
-          }
+        #pop {
+          /*background: #e3e3e3;*/
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;        }
+        
+        #inputBar {
+          width: auto;
+          height: auto;
+          box-shadow: none;
+          padding: 3px;
+          border-radius: 10px;
+        }
+
+        #textMessageInput {
+          width: 100%;
+          border: none;
+          padding: 0px;
+        }
+
+        .ui5-textarea-wrapper
+        ui5-textarea div div {
+          /*background: red;*/
+          border: 0px;
+        }
       `,
 
     ];
