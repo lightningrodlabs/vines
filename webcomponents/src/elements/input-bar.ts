@@ -230,8 +230,8 @@ export class InputBar extends LitElement {
     if (lastWordIsMention) {
       const filter = lastWord.slice(1);
       /** Filter suggestions */
-      let suggestionItems = Object.entries(this._dummyProfiles);
-      //let suggestionItems = this.profilesZvm ? Object.entries(this.profilesZvm.perspective.profiles) : [];
+      //let suggestionItems = Object.entries(this._dummyProfiles);
+      let suggestionItems = this.profilesZvm ? Object.entries(this.profilesZvm.perspective.profiles) : [];
       let suggestionKeys = suggestionItems.map(([agentKey, _profile]) => agentKey);
 
       /** Filter */
@@ -261,8 +261,8 @@ export class InputBar extends LitElement {
         .map((key) => {
           i += 1;
           const canSelect = i == 1 && canSelectFirst || key == selectedId;
-          //const profile = this.profilesZvm.perspective.profiles[key];
-          const profile = this._dummyProfiles[key];
+          const profile = this.profilesZvm.perspective.profiles[key];
+          //const profile = this._dummyProfiles[key];
           if (!profile) return html``;
           return html`             
           <ui5-li id=${key} style="height: 3rem; border: none;" ?selected=${canSelect}
@@ -283,10 +283,6 @@ export class InputBar extends LitElement {
           this._cacheInputValue = this.inputElem.value.slice(0, -(lastWord.length - 1));
           //console.log("_cacheInputValue after", this._cacheInputValue)
         }
-        // if (agentItems.length > 0) {
-        //   console.log("Selected first", agentItems[0]);
-        //   agentItems[0].selected = true;
-        // }
       }
     }
 
@@ -338,7 +334,8 @@ export class InputBar extends LitElement {
 
         #pop {
           /*background: #e3e3e3;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;        }
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;       
+        }
         
         #inputBar {
           width: auto;

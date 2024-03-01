@@ -1,15 +1,13 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {delay, ZomeElement} from "@ddd-qc/lit-happ";
+import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
-import {AppletInfo, Hrl, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletInfo, Hrl} from "@lightningrodlabs/we-applet";
 import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {AnyBead} from "../bindings/threads.types";
-import {stringifyHrl} from "@ddd-qc/we-utils";
 import {WeServicesEx} from "../weServicesEx";
 
 
