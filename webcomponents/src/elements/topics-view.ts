@@ -4,7 +4,6 @@ import {ActionHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {Dictionary} from "@ddd-qc/cell-proxy";
 import {CommentRequest} from "../utils";
 import {msg} from "@lit/localize";
 import {toasty} from "../toast";
@@ -23,6 +22,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   @property() showArchivedTopics?: string;
 
+  @property() selectedThreadHash?: string;
 
   /** */
   onClickCommentPp(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64, subjectName: string) {
@@ -63,6 +63,9 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           if (!thread) {
             return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
           }
+          console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
+          const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
+
           //const hasNewBeads = thread && thread.hasUnreads();
           const maybeUnreadThread = this.perspective.unreadThreads[ppAh];
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
@@ -135,10 +138,15 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                                   }}></ui5-button>`;
 
           return html`
-              <div id=${ppAh} class="threadItem" style="font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; ${threadIsNew || notifCount? "color: #359C07" : ""}"
+              <div id=${ppAh} class="threadItem" 
+                   style="
+                   font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
+                   ${threadIsNew || notifCount? "color: #359C07;" : ""}
+                   ${isSelected? "background:#DBDBDB" : ""}
+                   "
                    @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                   ${badge}
-                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads ? "bold" : ""}">${thread.pp.purpose}</span>
+                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
                   ${hideShowBtn}                  
                   ${commentButton}
               </div>
@@ -301,9 +309,11 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           align-items: center;
           height: 36px;
           padding-left: 10px;
+          margin-right: 7px;
           cursor: pointer;
           color: #484848;
           background: #FBFCFD;
+          border-radius: 5px;
         }
 
         .threadItem:hover {
@@ -326,7 +336,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
         ui5-badge {
           min-width: 1.7rem;
-          margin-top: 3px;          
+          margin-top: 3px;
           background: rgb(183, 183, 183);
           color: rgb(232, 232, 232);
         }
@@ -339,7 +349,25 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         .notifBadge {
           color: #ffffff;
           background: #359C07;
-        }        
+        }
+
+        /* -- scrollbar -- */
+
+        ::-webkit-scrollbar {
+          width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: #dc1616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: #888;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
 
       `,
 

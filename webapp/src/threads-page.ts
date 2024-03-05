@@ -841,6 +841,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ` : html`
                     <topics-view id="TopicsView"
                             .showArchivedTopics=${this._canViewArchivedTopics} 
+                            .selectedThreadHash=${this._selectedThreadHash}
                             @createThreadClicked=${(e) => {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
