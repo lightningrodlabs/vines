@@ -102,11 +102,11 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
           /** 'new', 'notif' or 'unread' badge to display */
           let badge = html`<ui5-badge>0</ui5-badge>`;
+          let notifCount = this._zvm.getPpNotifs(ppAh).length;
           if (threadIsNew) {
             badge = html`
                 <ui5-badge class="notifBadge">New</ui5-badge>`;
           } else {
-            let notifCount = this._zvm.getPpNotifs(ppAh).length;
             if (notifCount > 0) {
               badge = html`
                   <ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
@@ -135,7 +135,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                                   }}></ui5-button>`;
 
           return html`
-              <div id=${ppAh} class="threadItem" style="font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"};"
+              <div id=${ppAh} class="threadItem" style="font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; ${threadIsNew || notifCount? "color: #359C07" : ""}"
                    @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                   ${badge}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads ? "bold" : ""}">${thread.pp.purpose}</span>
@@ -230,14 +230,18 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
                 <div style="flex-grow:1; color:#588AD7; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
-                ${topicBadge}
+                <!-- ${topicBadge} -->
                 ${topicHideBtn}                
                 ${topicCommentButton}
-                <ui5-button icon="add" tooltip="Create a new channel for this Topic" design="Transparent" @click=${async (e) => {
-                    e.stopPropagation(); //console.log("topic clicked:", title);
-                    await this.updateComplete;
-                    this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: topicHash, bubbles: true, composed: true}));
-                }}></ui5-button>
+                <ui5-button icon="add" tooltip="Create a new channel for this Topic" 
+                            design="Transparent" 
+                            style="color:grey"
+                            @click=${async (e) => {
+                              e.stopPropagation(); //console.log("topic clicked:", title);
+                              await this.updateComplete;
+                              this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: topicHash, bubbles: true, composed: true}));
+                            }}>
+                </ui5-button>
             </div>
             <!-- threads -->              
             ${threads}
@@ -267,13 +271,16 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           border: none;
           margin-bottom: 20px;
         }
+
         ui5-panel::part(content) {
           padding: 0;
           padding-left: 7px;
-        }        
+        }
+
         ui5-panel::part(header) {
           border: none;
         }
+
         ui5-panel::part(header):hover {
           /*background: rgb(198, 214, 250);*/
           font-weight: bold;
@@ -287,7 +294,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         ui5-panel::part(header):hover > ui5-button {
           display: block !important;
         }
-        
+
         .threadItem {
           display: flex;
           overflow: hidden;
@@ -296,6 +303,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           padding-left: 10px;
           cursor: pointer;
           color: #484848;
+          background: #FBFCFD;
         }
 
         .threadItem:hover {
@@ -312,32 +320,27 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           display: none;
         }
 
-        #semTree {
-          display: flex;
-          flex-direction: column;
-          /*width: 100%;*/
-        }
-
-        .transBtn {
-          border: none;
-          background: none;
-        }
-
         .subjectBadge {
           margin-top: 10px !important;
         }
 
+        ui5-badge {
+          min-width: 1.7rem;
+          margin-top: 3px;          
+          background: rgb(183, 183, 183);
+          color: rgb(232, 232, 232);
+        }
+
         .unreadBadge {
-          background: aliceblue;
-          color: gray;
-          border-color: aliceblue;
-          margin-top: 3px;
+          background: #342D1F;
+          color: white;
         }
 
         .notifBadge {
-          color: #82a52a;
-          margin-top: 3px;
-        }
+          color: #ffffff;
+          background: #359C07;
+        }        
+
       `,
 
     ];

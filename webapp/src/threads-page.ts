@@ -1208,6 +1208,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           height: inherit;
         }
 
+        abbr {
+          text-decoration: none;
+        }
+        
         #profile-div:hover {
           background: rgba(214, 226, 245, 0.8);
           outline: 1px solid darkblue;
