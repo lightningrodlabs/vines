@@ -850,11 +850,13 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
                                 @click=${this.onCommitBtn}></ui5-button>
                 </div> -->
-                <div id="profile-div" style="display: flex; flex-direction: row">
-                    ${avatar}
-                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
-                            <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
+                <div id="profile-row" style="display: flex; flex-direction: row">
+                    <div id="profile-div" style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;" @click=${(e) => this.profileDialogElem.show()}>
+                      ${avatar}
+                      <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
+                          <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
+                              <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
+                      </div>
                     </div>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
@@ -1197,12 +1199,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           height: inherit;
         }
 
+        #profile-div:hover {
+          background: rgba(214, 226, 245, 0.8);
+          outline:1px solid darkblue;
+        }
+
         .reply-info {
           background: #b4c4be;
           margin: 0px 10px -9px 10px;
           padding: 5px;
           border: 1px solid black;
         }
+
         .ui5-select-label-root {
           font-size: larger;
           font-weight: bold;
@@ -1279,14 +1287,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #uploadCard {
-          margin:auto;
+          margin: auto;
           /*margin-left:10px;*/
           min-width: 350px;
           width: 90%;
           padding: 5px;
           display: flex;
           flex-direction: column;
-          border:1px solid black;
+          border: 1px solid black;
           background: beige;
         }
 
@@ -1317,9 +1325,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         threads-input-bar {
-            margin: 3px 10px 5px 10px;
-            box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-            border-radius: 20px;
+          margin: 3px 10px 5px 10px;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          border-radius: 20px;
         }
       `,
 
