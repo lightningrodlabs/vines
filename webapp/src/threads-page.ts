@@ -84,6 +84,7 @@ import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/less.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
+import "@ui5/webcomponents-icons/dist/navigation-down-arrow.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
@@ -132,7 +133,7 @@ import {
 
 import {ActionHashB64, decodeHashFromBase64, DnaHashB64, encodeHashToBase64,} from "@holochain/client";
 
-import {AppletId, WeNotification, WeServices,} from "@lightningrodlabs/we-applet";
+import {AppletId, GroupProfile, WeNotification, WeServices,} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
 
 //import "./input-bar";
@@ -784,10 +785,42 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       notifSetting = this._dvm.threadsZvm.getNotifSetting(this._selectedThreadHash, this.cell.agentPubKey);
     }
 
+    const groupProfile = this.weServices ? this.weServices.getGroupProfile(this._dvm.cell.dnaHash) : {
+      name: "Vines",
+      logo_src: "icon.png",
+    } as GroupProfile;
+
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide">
+                <div id="group-div" style="display: flex; flex-direction: row;">
+                    <ui5-avatar size="S" class="chatAvatar">
+                        <img src=${groupProfile.logo_src}>
+                    </ui5-avatar>
+                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow: 1;min-width: 0;">
+                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.dnaHash}>${groupProfile.name}</abbr></div>
+                            <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
+                    </div>
+                    <ui5-button id="groupBtn" style="margin-top:10px;"
+                                design="Transparent" icon="navigation-down-arrow"
+                                @click=${(e) => {
+                                  //console.log("onSettingsMenu()", e);
+                                  const settingsMenu = this.shadowRoot.getElementById("groupMenu") as Menu;
+                                  const settingsBtn = this.shadowRoot.getElementById("groupBtn") as Button;
+                                  settingsMenu.showAt(settingsBtn);
+                                }}>
+                    </ui5-button>
+                      <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
+                          <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
+                          ${this._canViewArchivedTopics
+                            ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
+                            : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>
+                          `}
+                          <ui5-menu-item id="MarkAllRead" text=${msg("Mark all as read")} icon="save"></ui5-menu-item>
+                      </ui5-menu>
+                </div>
+                
                 <ui5-select id="dna-select" class="select" style="background:#B9CCE7; width:auto; margin:0px;"
                             @change=${this.onAppletSelected}>
                     ${appletOptions}
@@ -804,33 +837,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this.createThreadDialogElem.show()
                             }}
                     ></semantic-topics-view>
-
-                    <ui5-button icon="add" style="margin:10px 30px 0px 30px;"
-                                @click=${() => {
-                                    console.log("createTopicDialogElem", this.createTopicDialogElem);
-                                    this.createTopicDialogElem.show()
-                                }}>
-                        ${msg("Add New Topic")}
-                    </ui5-button>
-                    ${this._canViewArchivedTopics? html`
-                      <ui5-button icon="hide" design="Attention"
-                                  style="margin:10px 30px 10px 30px;"
-                                  @click=${this.onShowArchiveTopicsBtn}>
-                        ${msg("Hide Archived Topics")}
-                      </ui5-button>
-                    ` : html`
-                    <ui5-button icon="show"
-                                style="margin:10px 30px 10px 30px;"
-                                @click=${this.onShowArchiveTopicsBtn}>
-                      ${msg("View Archived Topics")}
-                    </ui5-button>
-                    `}                    
-                    <ui5-button icon="save" design="Positive"
-                                style="margin:10px 30px 10px 30px;"
-                                @click=${this.onCommitBtn}>
-                       ${msg("Mark all as read")}
-                    </ui5-button>
-                    <hr style="width:100%;margin:0px;color:aliceblue;"/>
                 `}
 
                     <!--
@@ -846,8 +852,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div> -->
                 <div id="profile-div" style="display: flex; flex-direction: row">
                     ${avatar}
-                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;">
-                        <div><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
+                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
+                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
                             <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
                     </div>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
@@ -857,7 +863,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                   const settingsMenu = this.shadowRoot.getElementById("settingsMenu") as Menu;
                                   const settingsBtn = this.shadowRoot.getElementById("settingsBtn") as Button;
                                   settingsMenu.showAt(settingsBtn);
-                                }}></ui5-button>
+                                }}>
+                    </ui5-button>
                       <ui5-menu id="settingsMenu" header-text=${msg("Settings")} @item-click=${this.onSettingsMenu}>
                           <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                           <ui5-menu-item id="exportItem" text=${msg("Export")} icon="save" starts-section></ui5-menu-item>
@@ -1122,6 +1129,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  async onGroupMenu(e): Promise<void> {
+    console.log("onGroupMenu item-click", e)
+    switch (e.detail.item.id) {
+      case "createTopic": this.createTopicDialogElem.show(); break;
+      case "viewArchived": this.onShowArchiveTopicsBtn(e); break;
+      case "markAllRead": this.onCommitBtn(e); break;
+    }
+  }
+
+
+
+  /** */
   async onSettingsMenu(e): Promise<void> {
       console.log("item-click", e)
       switch (e.detail.item.id) {
@@ -1150,22 +1169,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }
-
-
-  // /** */
-  // async refresh(_e?: any) {
-  //   await this._dvm.probeAll();
-  //   await this.pingAllOthers();
-  //   await this._dvm.threadsZvm.probeSubjectTypes(this.cell.dnaHash);
-  //
-  //   console.log("mentions:", this._dvm.threadsZvm.perspective.mentions.length);
-  //
-  //   /** DEBUGGING */
-  //   //await this._dvm.generateTestSignals();
-  //   let latestLogDate = new Date(this.threadsPerspective.globalProbeLog.time / 1000);
-  //   console.debug("refresh()", latestLogDate)
-  //   await this._dvm.threadsZvm.probeAllLatest();
-  // }
 
 
   /** */
