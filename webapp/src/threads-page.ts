@@ -28,6 +28,7 @@ import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/MenuItem.js";
 import "@ui5/webcomponents/dist/MultiInput.js";
 import "@ui5/webcomponents/dist/Option.js";
+import "@ui5/webcomponents/dist/Panel.js";
 import "@ui5/webcomponents/dist/Popover.js";
 import "@ui5/webcomponents/dist/ProgressIndicator.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
@@ -793,8 +794,16 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
-            <div id="leftSide">
-                <div id="group-div" style="display: flex; flex-direction: row;">
+            <div id="leftSide" @contextmenu=${(e) => {
+              console.log("LeftSide contextmenu", e);
+                e.preventDefault();
+                const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
+                const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                menu.showAt(btn);
+                //menu.style.top = e.clientY + "px";
+                //menu.style.left = e.clientX + "px";                
+            }}>
+                <div id="group-div" style="display: flex; flex-direction: row;background: white;">
                     <ui5-avatar size="S" class="chatAvatar">
                         <img src=${groupProfile.logo_src}>
                     </ui5-avatar>
@@ -806,9 +815,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 design="Transparent" icon="navigation-down-arrow"
                                 @click=${(e) => {
                                   //console.log("onSettingsMenu()", e);
-                                  const settingsMenu = this.shadowRoot.getElementById("groupMenu") as Menu;
-                                  const settingsBtn = this.shadowRoot.getElementById("groupBtn") as Button;
-                                  settingsMenu.showAt(settingsBtn);
+                                  const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
+                                  const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                                  menu.showAt(btn);
                                 }}>
                     </ui5-button>
                       <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
@@ -817,11 +826,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
                             : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>
                           `}
-                          <ui5-menu-item id="MarkAllRead" text=${msg("Mark all as read")} icon="save"></ui5-menu-item>
+                          <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
                       </ui5-menu>
                 </div>
                 
-                <ui5-select id="dna-select" class="select" style="background:#B9CCE7; width:auto; margin:0px;"
+                <ui5-select id="dna-select" class="select" style="width:auto; margin:0px;"
                             @change=${this.onAppletSelected}>
                     ${appletOptions}
                         <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
@@ -830,13 +839,13 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${this._appletToShow ? html`
                     <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}></applet-threads-tree>
                 ` : html`
-                    <semantic-topics-view id="TopicsView"
+                    <topics-view id="TopicsView"
                             .showArchivedTopics=${this._canViewArchivedTopics} 
                             @createThreadClicked=${(e) => {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
                             }}
-                    ></semantic-topics-view>
+                    ></topics-view>
                 `}
 
                     <!--
@@ -850,7 +859,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
                                 @click=${this.onCommitBtn}></ui5-button>
                 </div> -->
-                <div id="profile-row" style="display: flex; flex-direction: row">
+                <div id="profile-row">
                     <div id="profile-div" style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;" @click=${(e) => this.profileDialogElem.show()}>
                       ${avatar}
                       <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
@@ -1201,7 +1210,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #profile-div:hover {
           background: rgba(214, 226, 245, 0.8);
-          outline:1px solid darkblue;
+          outline: 1px solid darkblue;
         }
 
         .reply-info {
@@ -1228,13 +1237,21 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           min-width: 275px;
           display: flex;
           flex-direction: column;
-          border: 0.01em solid #A3ACB9;
+          /*border: 0.01em solid #A3ACB9;*/
+        }
+
+        #profile-row {
+          display: flex;
+          flex-direction: row;
+          background: white;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
 
         #mainSide {
           width: 100%;
           display: flex;
           flex-direction: column;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
 
         #lowerSide {
@@ -1249,18 +1266,15 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: #FBFCFD;
           display: flex;
           flex-direction: column;
-          margin-bottom: 5px;
+          /*margin-bottom: 5px;*/
         }
 
-        #topicBar {
-          background: #DBE3EF;
-          /*border: 1px solid dimgray;*/
-        }
 
         #topicBar::part(root) {
-          /*background: #DBE3EF;*/
+          background: rgb(94, 120, 200);
           /*border: 1px solid dimgray;*/
           padding-left: 2px;
+          box-shadow: rgba(30, 30, 30, 0.17) 2px 10px 10px;
         }
 
 

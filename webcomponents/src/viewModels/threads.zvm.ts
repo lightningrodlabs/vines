@@ -616,6 +616,9 @@ export class ThreadsZvm extends ZomeViewModel {
     let res = {};
     const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
     const hiddens = await this.probeHiddens();
+    if (this._threadsPerSubject[subjectHash] == undefined) {
+      this._threadsPerSubject[subjectHash] = [];
+    }
     // FIXME resolve promise all at once
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = encodeHashToBase64(pp_ah);

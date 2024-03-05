@@ -19,6 +19,7 @@ export * from './elements/notification-list';
 export * from './elements/peer-list';
 export * from './elements/semantic-topics-view';
 export * from './elements/search-result';
+export * from './elements/topics-view';
 
 export * from './viewModels/threads.perspective';
 export * from './viewModels/threads.zvm';

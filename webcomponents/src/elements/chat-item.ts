@@ -11,6 +11,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 import {renderAvatar} from "../render";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {threadJumpEvent} from "../jump";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -168,13 +169,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //let isUnread = false;
     let commentThread = html``;
     let commentButton = html`
-        <ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" style="border:none;"
+        <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread for this message")} design="Transparent" style="border:none;"
                       @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">                      
         </ui5-button>`;
 
     if (maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread)) {
       commentButton = html`              
-          <ui5-button icon="discussion" tooltip="View Thread on the side" design="Transparent" style="border:none;"
+          <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
                        @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">
           </ui5-button>`;
       const isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);

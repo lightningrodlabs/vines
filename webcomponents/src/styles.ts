@@ -83,6 +83,8 @@ shellBarStyleTemplate.innerHTML = `
 <style>
   .ui5-shellbar-title {
     font-size:larger !important;
+    /*color: #282828 !important;*/
+    padding-left:5px !important;
   }
 </style>
 `;
