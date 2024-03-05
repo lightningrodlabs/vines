@@ -350,25 +350,6 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           color: #ffffff;
           background: #359C07;
         }
-
-        /* -- scrollbar -- */
-
-        ::-webkit-scrollbar {
-          width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: #dc1616;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #888;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: #555;
-        }
-
       `,
 
     ];
