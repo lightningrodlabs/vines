@@ -878,8 +878,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
                       </ui5-menu>
                        
-                    <ui5-button id="networkBtn" style="margin-top:10px;"
-                                design="Transparent" icon="cloud"
+                    <ui5-button id="networkBtn" icon="cloud" tooltip=${msg("Network Health")}
+                                style="margin-top:10px;"
+                                design="Transparent" 
                                 @click=${() => {
                                     const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
                                     const btn = this.shadowRoot.getElementById("networkBtn") as HTMLElement;
@@ -948,7 +949,6 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                }
                              }}                             
                   ></ui5-input>
-                      <!--<ui5-shellbar-item icon="chain-link" tooltip="Toggle Debug" @click=${() => {this._dvm.dumpLogs(); this._canShowDebug = !this._canShowDebug;}}></ui5-shellbar-item> -->
                   <ui5-shellbar-item id="favButton" icon="favorite-list" tooltip="Toggle Favorites" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="inboxButton" icon="inbox"
