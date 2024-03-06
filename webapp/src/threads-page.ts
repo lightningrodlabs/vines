@@ -856,12 +856,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
             <div id="leftSide" @contextmenu=${(e) => {
               console.log("LeftSide contextmenu", e);
-                e.preventDefault();
-                const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
-                const btn = this.shadowRoot.getElementById("groupBtn") as Button;
-                menu.showAt(btn);
-                //menu.style.top = e.clientY + "px";
-                //menu.style.left = e.clientX + "px";                
+                // e.preventDefault();
+                // const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
+                // const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                // menu.showAt(btn);
+                // //menu.style.top = e.clientY + "px";
+                // //menu.style.left = e.clientX + "px";                
             }}>
                 <div id="group-div">
                     <ui5-avatar size="S" class="chatAvatar" 
@@ -912,6 +912,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <topics-view id="TopicsView"
                             .showArchivedTopics=${this._canViewArchivedTopics} 
                             .selectedThreadHash=${this._selectedThreadHash}
+                            @createNewTopic=${(e) => this.createTopicDialogElem.show()}
                             @createThreadClicked=${(e) => {
                                 this._createTopicHash = e.detail;
                                 this.createThreadDialogElem.show()
@@ -1421,7 +1422,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           z-index:0;
           /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
           background: rgba(214, 226, 245, 0.8);
-          outline: 1px solid darkblue;
+          /*outline: 1px solid darkblue;*/
         }
         .popover-content {
           display: flex;

@@ -221,6 +221,14 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
 
       const topicHasUnreads = unreadSubjects.includes(topicHash);
+
+      if (threads.length == 0) {
+        threads = [html`<div class="threadItem" style="">
+                   <span style="margin-left:28px;margin-right:10px;color:gray">${msg('No threads found')}</span>
+              </div>`];
+      }
+
+      /** render topic item */
       return html`
           <ui5-panel id=${topicHash}
                      @mouseover=${(e) => {
@@ -255,6 +263,19 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             ${threads}
           </ui5-panel>`
     });
+
+    /** Handle empty tree case */
+    if (treeItems.length == 0) {
+      return html`
+          <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
+            <div style="color: gray; margin: auto;">${msg('No topics found')}</div>
+            <ui5-button design="Emphasized"
+                        @click=${(e) => this.dispatchEvent(new CustomEvent('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
+                ${msg('Create new topic')}
+            </ui5-button>
+          </div>
+      `;
+    }
 
     /** render all */
     return html`${treeItems}`
