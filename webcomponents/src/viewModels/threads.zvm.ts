@@ -267,7 +267,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  getAllBeadsOnThread(ppAh: ActionHashB64): [BeadInfo, TypedBeadMat][] {
+  getAllBeadsOnThread(ppAh: ActionHashB64): [ActionHashB64, BeadInfo, TypedBeadMat][] {
     const thread = this._threads.get(ppAh);
     if (!thread) {
       return [];
@@ -276,7 +276,7 @@ export class ThreadsZvm extends ZomeViewModel {
     let infos = [];
     for (const ah of beadAhs) {
       if (this._beads[ah]) {
-        infos.push(this._beads[ah])
+        infos.push([ah, this._beads[ah][0], this._beads[ah][1]])
       }
     }
     //FIXME tuples.sort((a, b) => {return 1})

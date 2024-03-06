@@ -221,21 +221,21 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //
     // }
 
-    const infoPairs = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
+    const beads = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
 
-    console.log("<comment-thread-view>.render() len =", infoPairs.length);
+    console.log("<comment-thread-view>.render() len =", beads.length);
     console.log("Has thread some unreads?", thread.hasUnreads());
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let sideItems = Object.values(infoPairs).map((infoPair) => {
+    let sideItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
-      const isNew = initialProbeLogTs < infoPair[0].creationTime;
-      console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, infoPair[0].creationTime);
-      return renderSideBead(this, infoPair, this._dvm, this._filesDvm, isNew, this.weServices);
+      const isNew = initialProbeLogTs < beadInfo.creationTime;
+      console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
+      return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
     });
 
     /** Different UI if no message found for thread */
-    if (infoPairs.length == 0) {
+    if (beads.length == 0) {
       sideItems = [html`
             <div style="background: ${bg_color};">
                 ${this.showInput? "Add first message:" : "No messages found"}                       

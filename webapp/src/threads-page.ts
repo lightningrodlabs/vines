@@ -835,7 +835,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      groupProfile = this.weServices.getGroupProfile(this._dvm.cell.dnaHash);
+      const weGroup = this.weServices.getGroupProfile(this._dvm.cell.dnaHash);
+      if (weGroup) {
+        groupProfile = weGroup;
+      }
     } else {
       if (this._dvm.dnaProperties.groupName) {
         groupProfile.name = this._dvm.dnaProperties.groupName;
@@ -851,12 +854,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         groupProfile.logo_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
       }
     }
-    const groupLogo = html`<img src=${groupProfile.logo_src}>`
 
+    /** Get network info for this cell */
     const sId = CellIdStr(this.cell.id);
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
-
 
     /** Render all */
     return html`

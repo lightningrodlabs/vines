@@ -1,5 +1,5 @@
 import {getInitials, ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {
@@ -26,6 +26,7 @@ import {Hrl} from "@lightningrodlabs/we-applet";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "./weServicesEx";
+import {beadJumpEvent} from "./jump";
 
 
 /** */
@@ -55,12 +56,11 @@ export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB
 
 
 /** */
-export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBeadMat], threadsDvm: ThreadsDvm, filesDvm: FilesDvm, isNew: boolean, weServices?: WeServicesEx) {
-  console.log("renderSideBead() infoPair", infoPair);
-  if (infoPair == undefined) {
+export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadInfo: BeadInfo, typedBead: TypedBeadMat, threadsDvm: ThreadsDvm, filesDvm: FilesDvm, isNew: boolean, weServices?: WeServicesEx) {
+  console.log("renderSideBead() infoPair", beadAh);
+  if (beadAh == undefined) {
     return html``;
   }
-  const [beadInfo, typedBead] = infoPair;
 
   const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
   const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -126,7 +126,9 @@ export function renderSideBead(parent: LitElement, infoPair: [BeadInfo, TypedBea
 
   /* render item */
   return html`
-    <div class="sideItem" style="${isNew? "border: 1px solid #F64F4F" : ""};">
+    <div class="sideItem" style="${isNew? "border: 1px solid #F64F4F;" : ""}"
+         @click=${(_e) => {console.log("sideItem clicked", beadAh); parent.dispatchEvent(beadJumpEvent(beadAh))}}
+    >
         <div class="avatarRow">
             ${renderAvatar(threadsDvm.profilesZvm, beadInfo.author, "XS")}
             <div class="nameColumn" style="display:flex; flex-direction:column;">

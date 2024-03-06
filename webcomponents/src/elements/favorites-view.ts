@@ -116,13 +116,9 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<favorites-view>.render() len =", infoPairs.length);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.values(infoPairs).map(
-      (infoPair) => {
-        //console.log("<favorites-view> beadInfo", beadInfo);
-        if (infoPair == undefined) {
-          return html``;
-        }
-        return renderSideBead(this, infoPair, this._dvm, this._filesDvm, false, this.weServices);
+    let textLi = Object.entries(infoPairs).map(
+      ([beadAh, [beadInfo, typedBead]]) => {
+        return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, false, this.weServices);
       });
 
     /** Different UI if no message found for thread */
