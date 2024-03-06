@@ -47,6 +47,7 @@ import Input from "@ui5/webcomponents/dist/Input";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import RadioButton from "@ui5/webcomponents/dist/RadioButton";
+import ShellBar from "@ui5/webcomponents-fiori/dist/ShellBar";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -118,12 +119,12 @@ import {
   CommentRequest,
   decodeHrl, doodle_flowers,
   event2type,
-  globaFilesContext, JumpDestinationType,
+  globaFilesContext, inputBarStyleTemplate, JumpDestinationType,
   JumpEvent,
   NotifySettingType,
   parseMentions,
-  ParticipationProtocol,
-  shellBarStyleTemplate, threadJumpEvent,
+  ParticipationProtocol, searchFieldStyleTemplate,
+  shellBarStyleTemplate, suggestionListTemplate, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
@@ -336,10 +337,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     //await this._dvm.threadsZvm.generateTestData(this.appletId);
 
-    /** */
-    const leftSide = this.shadowRoot.getElementById("leftSide");
-    leftSide.style.background = "#B9CCE7";
-
+    /** Fiddle with shadow parts CSS */
+    const searchField = this.shadowRoot.getElementById('search-field') as Input;
+    console.log("search-field", searchField,searchField.shadowRoot);
+    if (searchField) {
+      searchField.shadowRoot.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
+      this.requestUpdate();
+    }
+    const shellBar = this.shadowRoot.getElementById('topicBar') as ShellBar;
+    if (shellBar) {
+      shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
+      shellBar.showSearchField = false;
+    }
 
     /** Grab all AppletIds */
     if (this.weServices) {
@@ -387,11 +396,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** i.e. element not present */
     }
 
-    /** Fiddle with shadow parts CSS */
-    const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
-    if (shellBar) {
-      shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
-    }
+    // /** Fiddle with shadow parts CSS */
+    // const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
+    // if (shellBar) {
+    //   shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
+    // }
 
     //   /** Toggle notif settings switch if necessary */
     //   const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;

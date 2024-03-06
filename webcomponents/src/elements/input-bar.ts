@@ -55,7 +55,7 @@ export class InputBar extends LitElement {
   /** -- Methods -- */
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected async firstUpdated(_changedProperties: PropertyValues) {
     /** Fiddle with shadow parts CSS */
     const inputBar = this.shadowRoot.getElementById('inputBar') as HTMLElement;
     if (inputBar) {

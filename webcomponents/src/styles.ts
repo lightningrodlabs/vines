@@ -100,3 +100,14 @@ cardStyleTemplate.innerHTML = `
 `;
 
 
+export const searchFieldStyleTemplate = document.createElement('template');
+searchFieldStyleTemplate.innerHTML = `
+<style>
+  .ui5-input-root {
+    background: #03327b !important;
+  }
+  .ui5-input-clear-icon {
+    color:white !important;
+  }
+</style>
+`;

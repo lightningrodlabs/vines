@@ -237,7 +237,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
-                <div style="flex-grow:1; color:#588AD7; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
+                <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
                 ${topicHideBtn}                
                 ${topicCommentButton}
@@ -287,11 +287,13 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
         ui5-panel::part(header) {
           border: none;
+          color: #588AD7;
         }
 
         ui5-panel::part(header):hover {
           /*background: rgb(198, 214, 250);*/
-          font-weight: bold;
+          /*font-weight: bold;*/
+          color: #0087ff !important;
         }
 
         ui5-panel::part(header) > ui5-button {
