@@ -16,7 +16,7 @@ import {
   ParticipationProtocol,
   SignalPayloadType,
   THREADS_DEFAULT_ROLE_NAME,
-  ThreadsEntryType,
+  ThreadsEntryType, ThreadsProperties,
   WeaveNotification,
   WeaveSignal
 } from "../bindings/threads.types";
@@ -94,6 +94,15 @@ export class ThreadsDvm extends DnaViewModel {
   private _initialGlobalProbeLogTs: Timestamp = 0;
 
   private _signaledNotifications: WeaveNotification[] = [];
+
+
+  /** */
+  get dnaProperties(): ThreadsProperties {
+    //console.log('dnaProperties() dnaModifiers', this.cell.dnaModifiers);
+    const properties = decode(this.cell.dnaModifiers.properties as Uint8Array) as ThreadsProperties;
+    //console.log('dnaProperties() properties', properties);
+    return properties;
+  }
 
 
   /** -- Methods -- */

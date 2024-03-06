@@ -456,3 +456,11 @@ export enum ThreadsLinkTypeType {
 	NotifySetting = 'NotifySetting',
 	Favorite = 'Favorite',
 }
+
+/** Dna properties */
+export interface ThreadsProperties {
+  minTopicNameLength: number
+  maxTopicNameLength: number
+  groupName: string
+  groupSvgIcon: string
+}

@@ -820,11 +820,31 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       notifSetting = this._dvm.threadsZvm.getNotifSetting(this._selectedThreadHash, this.cell.agentPubKey);
     }
 
-    const groupProfile = this.weServices ? this.weServices.getGroupProfile(this._dvm.cell.dnaHash) : {
+    /** Group Info */
+    let groupProfile: GroupProfile = {
       name: "Vines",
       logo_src: "icon.png",
-    } as GroupProfile;
+    };
 
+    /* Use weServices, otherise try from dna properties */
+    if(this.weServices) {
+      groupProfile = this.weServices.getGroupProfile(this._dvm.cell.dnaHash);
+    } else {
+      if (this._dvm.dnaProperties.groupName) {
+        groupProfile.name = this._dvm.dnaProperties.groupName;
+      }
+      if (this._dvm.dnaProperties.groupSvgIcon) {
+        // const svg = atob(this._dvm.dnaProperties.groupSvgIcon);
+        // console.log("dnaProperties svg", svg);
+        // const tagRegex = /^[a-zA-Z][^\s>\/]*(?:\s(?:[^=]+=(?:"[^"]*"|'[^']*'))?)*\s*\/?$/;
+        // const isValid = tagRegex.test("svg");
+        // if (isValid) {
+        //   groupProfile.logo_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
+        // }
+        groupProfile.logo_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
+      }
+    }
+    const groupLogo = html`<img src=${groupProfile.logo_src}>`
 
     const sId = CellIdStr(this.cell.id);
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
@@ -850,7 +870,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
                         popover.showAt(btn);
                     }}>
-                        <img src=${groupProfile.logo_src}>
+                        <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
                     </ui5-avatar>
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;" 
                          @click=${() => {

@@ -5,7 +5,10 @@
 #![allow(unused_attributes)]
 
 mod entries;
+mod properties;
+
 pub use entries::*;
+pub use properties::*;
 
 use hdi::prelude::*;
 
