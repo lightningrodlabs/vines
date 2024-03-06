@@ -1324,12 +1324,22 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*margin-bottom: 5px;*/
         }
 
-
+        #notifSettingsBtn {
+          color: #464646;
+        }
+        #notifSettingsBtn:hover {
+          background: #e6e6e6;
+        }
+        
         #topicBar::part(root) {
-          background: rgb(94, 120, 200);
           /*border: 1px solid dimgray;*/
+          /*color:black;*/          
+          /*background: rgb(94, 120, 200);*/
+          background: white;
           padding-left: 2px;
-          box-shadow: rgba(30, 30, 30, 0.17) 2px 10px 10px;
+          border-radius:5px;
+          /*box-shadow: rgba(30, 30, 30, 0.17) 2px 10px 10px;*/
+          box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
         }
 
 
@@ -1420,10 +1430,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         threads-input-bar {
-          margin: 3px 10px 5px 10px;
+          margin: 3px 10px 10px 10px;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
           border-radius: 20px;
         }
+        
       `,
 
     ];

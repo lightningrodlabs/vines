@@ -83,8 +83,37 @@ shellBarStyleTemplate.innerHTML = `
 <style>
   .ui5-shellbar-title {
     font-size:larger !important;
-    /*color: #282828 !important;*/
+    color: #464646 !important;
     padding-left:5px !important;
+  }
+  
+  ui5-button {
+    color: #464646 !important;
+  }
+  
+  ui5-button:hover {
+    background: #e6e6e6  !important;
+  }
+  
+</style>
+`;
+
+export const searchFieldStyleTemplate = document.createElement('template');
+searchFieldStyleTemplate.innerHTML = `
+<style>
+  .ui5-input-root {
+    background: #e7f2f9 !important;
+    /*color: #003DB0 !important;*/
+    color: #656565 !important;
+  }
+  
+  input::placeholder {
+    color: black !important;
+  } 
+  
+  .ui5-input-clear-icon {
+    /*color:white !important;*/
+    color: #656565 !important;
   }
 </style>
 `;
@@ -95,19 +124,6 @@ cardStyleTemplate.innerHTML = `
 <style>
   .ui5-card-root {
     padding:10px;
-  }
-</style>
-`;
-
-
-export const searchFieldStyleTemplate = document.createElement('template');
-searchFieldStyleTemplate.innerHTML = `
-<style>
-  .ui5-input-root {
-    background: #03327b !important;
-  }
-  .ui5-input-clear-icon {
-    color:white !important;
   }
 </style>
 `;

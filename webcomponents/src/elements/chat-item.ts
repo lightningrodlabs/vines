@@ -251,6 +251,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
+        <div class="${this._isHovered? "hovered": ""}">
         <!-- Vine row -->
         <div id="topVine">
             <div style="flex-grow:1;"></div>
@@ -258,7 +259,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         </div>      
         
         <!-- main horizontal div (row) -->
-        <div id=${id} class="chatItem ${this._isHovered? "hovered": ""}" 
+        <div id=${id} class="chatItem" 
              @mouseenter=${(e) => {
                  const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
                  const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
@@ -314,6 +315,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 ${commentThread}
             </div>
         </div>
+      </div>
     `;
 
   }
