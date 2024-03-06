@@ -93,6 +93,9 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
           overflow: auto;
           height: 100%;
         }
+        ui5-panel {
+          margin-top: 5px;
+        }
         .header {
           display: flex;
           align-items: center;

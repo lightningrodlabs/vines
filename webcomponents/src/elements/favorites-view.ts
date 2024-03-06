@@ -2,7 +2,7 @@ import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {BeadInfo, TextBeadMat, ThreadsPerspective, TypedBead, TypedBeadMat} from "../viewModels/threads.perspective";
+import {BeadInfo, ThreadsPerspective, TypedBeadMat} from "../viewModels/threads.perspective";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -13,13 +13,10 @@ import "@ui5/webcomponents/dist/List.js"
 
 
 import "./input-bar";
-import {renderAvatar, renderSideBead} from "../render";
+import {renderSideBead} from "../render";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
-import {WeServices} from "@lightningrodlabs/we-applet";
-import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {ActionHashB64} from "@holochain/client";
-import {beadJumpEvent} from "../jump";
 import {WeServicesEx} from "../weServicesEx";
 import {sharedStyles} from "../styles";
 import {FilesDvm} from "@ddd-qc/files";
@@ -143,7 +140,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         ${doodle_bg}
-        <h4 style="margin: 10px;">${title}</h4>
+        <h3 style="margin: 10px;font-size: 25px; color: #021133;">${title}</h3>
         <div id="textList" style="overflow: auto;">
             ${textLi}
         </div>

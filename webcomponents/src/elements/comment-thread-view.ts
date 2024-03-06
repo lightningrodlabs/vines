@@ -22,6 +22,7 @@ import {threadJumpEvent} from "../jump";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "../weServicesEx";
 import {sharedStyles} from "../styles";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -194,7 +195,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this.threadHash == "") {
       return html `
           ${doodle_bg}
-          <div style="color:#c10a0a; position: relative; z-index:1; margin:auto; margin-top:20px; font-weight: bold">No comment thread selected</div>
+          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
+              ${msg('No comment thread selected')}
+          </div>
       `;
     }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
@@ -258,7 +261,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         ${doodle_bg}
-        <h4 style="margin: 10px;">
+        <h3 style="margin: 10px;color: #021133;">
           ${title} 
           <span id="subjectName" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectName}</span>
           <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
@@ -268,7 +271,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
               return;
             }
           }}></ui5-button>
-        </h4>
+        </h3>
         <div id="list">
             ${sideItems}
         </div>

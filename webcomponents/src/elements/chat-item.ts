@@ -335,7 +335,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #agentName {
           font-family: "72";
           font-weight: bold;
-          color: #262626;
+          color: rgba(38, 38, 38, 0.89);
         }
 
         #bottomLeft {

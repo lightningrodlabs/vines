@@ -1090,12 +1090,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${fileTable}
                 </div>
                 <div id="commentSide"
-                     style="display:${this._canShowComments ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
+                     style="display:${this._canShowComments ? 'flex' : 'none'};">
                     <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedCommentThreadSubjectName}"></comment-thread-view>
                 </div>
                   <div id="favoritesSide"
-                       style="display:${this._canShowFavorites ? 'flex' : 'none'}; flex-direction:column; background:#d8e4f4;min-width: 350px;">
+                       style="display:${this._canShowFavorites ? 'flex' : 'none'};">
                       <favorites-view></favorites-view>
                   </div>                  
                   <!-- <peer-list></peer-list> -->
@@ -1375,15 +1375,24 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
 
+        #favoritesSide {
+          flex-direction:column;
+          min-width: 350px;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+        }
         #rightSide {
           width: 500px;
-          /*height: 100vh;*/
           background: #eaeaea;
-          /*display: flex;*/
-          /*flex-direction: column;*/
-          background: #B9CCE7;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
 
+        #commentSide {
+          flex-direction: column;
+          min-width: 350px;          
+          background: #d8e4f4;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+
+        }
         .chatAvatar {
           margin-top: 5px;
           margin-left: 5px;
