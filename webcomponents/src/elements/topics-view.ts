@@ -138,18 +138,20 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                                   }}></ui5-button>`;
 
           return html`
-              <div id=${ppAh} class="threadItem" 
-                   style="
-                   font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
-                   ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                   ${isSelected? "background:#DBDBDB" : ""}
-                   "
-                   @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
-                  ${badge}
-                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
-                  ${hideShowBtn}                  
-                  ${commentButton}
-              </div>
+              <sl-tooltip content=${thread.pp.purpose} style="--show-delay:1000">
+                <div id=${ppAh} class="threadItem" 
+                     style="
+                     font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
+                     ${threadIsNew || notifCount? "color: #359C07;" : ""}
+                     ${isSelected? "background:#DBDBDB" : ""}
+                     "
+                     @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                    ${badge}
+                    <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
+                    ${hideShowBtn}                  
+                    ${commentButton}
+                </div>
+              </sl-tooltip>
           `})
       }
       /* */
@@ -223,7 +225,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const topicHasUnreads = unreadSubjects.includes(topicHash);
 
       if (threads.length == 0) {
-        threads = [html`<div class="threadItem" style="">
+        threads = [html`<div class="threadItem">
                    <span style="margin-left:28px;margin-right:10px;color:gray">${msg('No threads found')}</span>
               </div>`];
       }

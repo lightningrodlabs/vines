@@ -71,16 +71,10 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <ui5-panel sticky-header fixed>
             <div slot="header" class="header">
-                <ui5-title>${beadAhs.length} Results</ui5-title>
-                <div>
-                    <!-- <ui5-button design="Emphasized">Add</ui5-button>
-                    <ui5-button design="Negative">Remove</ui5-button>
-                    <ui5-button>Edit</ui5-button>
-                    -->
-                </div>
+                <ui5-title>${beadAhs.length} Results for "${this.parameters.keywords}"</ui5-title>
             </div>
             <ui5-list>
-                ${matches}
+              ${matches}
             </ui5-list>
         </ui5-panel>
     `;

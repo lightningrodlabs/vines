@@ -644,7 +644,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (popover.isOpen()) {
       popover.close();
     }
-    this._canShowSearchResults = false;
+    // const searchField = this.shadowRoot.getElementById("search-field") as Input;
+    //console.log("onJump()", searchField);
+    // searchField.value = "";
+    let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+    if (searchPopElem.isOpen()) {
+      searchPopElem.close();
+    }
+    //this._canShowSearchResults = false;
   }
 
 
@@ -996,34 +1003,38 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     }}></ui5-button>`
                   }
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
-                             @focusin=${(e) => {
-                                 //console.log("<search-field>@focusin", e);
-                                 let searchElem = this.shadowRoot.getElementById("search-field") as Input;
-                                 let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
-                                 searchPopElem.showAt(searchElem, true);
-                                 //searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
-                             }}
                              @input=${(e) => {
-                                 //console.log("<search-field>@input", e.keyCode, e);
+                                 console.log("<search-field> @input", e.keyCode, e);
                                  let searchElem = this.shadowRoot.getElementById("search-field") as Input;
                                  let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
                                  if (searchElem.value == "") {
                                    searchPopElem.close();
                                    this._canShowSearchResults = false;
+                                   this.requestUpdate(); // important                                   
                                    return;
                                  }
                                  searchPopElem.showAt(searchElem, true);
                                  searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                              }}
                              @keypress=${(e) => {
-                               //console.log("<search-field>@change", e.keyCode, e);
-                               //let searchElem = this.shadowRoot.getElementById("search-field") as Input;
+                               console.log("<search-field> @keypress", e.keyCode, e);
+                               let searchElem = this.shadowRoot.getElementById("search-field") as Input;
                                let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
-                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;      
-                               if (e.keyCode === 13) {
-                                 searchPopElem.close();
-                                 this._canShowSearchResults = true;
-                                 this.requestUpdate(); // !important
+                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;  
+                               if (searchElem.value != "") {
+                                 if (e.keyCode === 13) {
+                                   searchPopElem.close();
+                                   this._canShowSearchResults = true;
+                                   this.requestUpdate(); // important
+                                 } else {
+                                   if (!searchPopElem.isOpen()) {
+                                     searchPopElem.showAt(searchElem, true);
+                                   }
+                                 }
+                               } else {
+                                 // TODO: check if this code branch is actually useful
+                                 this._canShowSearchResults = false;
+                                 this.requestUpdate(); // important
                                }
                              }}                             
                   ></ui5-input>
@@ -1310,7 +1321,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           min-width: 275px;
           display: flex;
           flex-direction: column;
-          gap:15px;
+          /*gap:15px;*/
         }
 
         #profile-row {
@@ -1413,6 +1424,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: none;
           padding-left: 5px;
           padding-right: 7px;
+          margin-top:15px;
+          margin-bottom:15px;
         }
 
         #group-div:hover,
