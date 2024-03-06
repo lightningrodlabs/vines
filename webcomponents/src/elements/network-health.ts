@@ -106,7 +106,7 @@ export class NetworkHealth extends LitElement {
         <div id="pies">
           <div class="item">
             <div class="chart">
-                <tc-pie id="peer-pie" tooltip="Peers" values="[${latestInfo.current_number_of_peers}]" shape-size="6" .max=${latestInfo.total_network_peers} static=""></tc-pie>
+                <tc-pie id="peer-pie" values="[${latestInfo.current_number_of_peers}]" shape-size="6" .max=${latestInfo.total_network_peers} static=""></tc-pie>
                 <ui5-icon class="pie-icon" name="person-placeholder"></ui5-icon>
             </div>
             <div>

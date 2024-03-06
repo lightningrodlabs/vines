@@ -79,6 +79,7 @@ import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
 import "@ui5/webcomponents-icons/dist/favorite.js"
 import "@ui5/webcomponents-icons/dist/favorite-list.js"
+import "@ui5/webcomponents-icons/dist/group.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
@@ -133,7 +134,14 @@ import {
   WeServicesEx
 } from "@threads/elements";
 
-import {ActionHashB64, decodeHashFromBase64, DnaHashB64, encodeHashToBase64,} from "@holochain/client";
+import {
+  ActionHashB64,
+  decodeHashFromBase64,
+  DnaHashB64,
+  encodeHashToBase64,
+  NetworkInfo,
+  Timestamp,
+} from "@holochain/client";
 
 import {AppletId, GroupProfile, WeNotification, WeServices,} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
@@ -151,6 +159,7 @@ import {toasty} from "@threads/elements/dist/toast";
 import {stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
 import {parseSearchInput} from "@threads/elements/dist/search";
+import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -207,6 +216,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _currentCommentRequest?: CommentRequest;
 
   @state() private _splitObj?: SplitObject;
+
+
+  @property({type: Object}) networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
 
   @property() appletId: AppletId;
 
@@ -813,6 +825,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       logo_src: "icon.png",
     } as GroupProfile;
 
+
+    const sId = CellIdStr(this.cell.id);
+    const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
+    const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
+
+
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
@@ -825,35 +843,45 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 //menu.style.top = e.clientY + "px";
                 //menu.style.left = e.clientX + "px";                
             }}>
-                <div id="group-div" style="display: flex; flex-direction: row;background: white;">
-                    <ui5-avatar size="S" class="chatAvatar">
+                <div id="group-div">
+                    <ui5-avatar size="S" class="chatAvatar" 
+                                @click=${() => {
+                        const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                        const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                        popover.showAt(btn);
+                    }}>
                         <img src=${groupProfile.logo_src}>
                     </ui5-avatar>
-                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow: 1;min-width: 0;">
-                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.dnaHash}>${groupProfile.name}</abbr></div>
-                            <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
+                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;" 
+                         @click=${() => {
+                        const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                        const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                        popover.showAt(btn);
+                    }}>
+                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${groupProfile.name}</div>
+                        <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>${networkInfo? networkInfo.total_network_peers : 1} Members</div>
                     </div>
-                    <ui5-button id="groupBtn" style="margin-top:10px;"
+                    <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
                                 design="Transparent" icon="navigation-down-arrow"
                                 @click=${(e) => {
+                                  e.preventDefault();
                                   //console.log("onSettingsMenu()", e);
                                   const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
                                   const btn = this.shadowRoot.getElementById("groupBtn") as Button;
                                   menu.showAt(btn);
                                 }}>
                     </ui5-button>
-                      <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
-                          <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
-                          ${this._canViewArchivedTopics
-                            ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
-                            : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>
-                          `}
-                          <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
-                      </ui5-menu>
+                    <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
+                        <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
+                        ${this._canViewArchivedTopics
+                          ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
+                          : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>
+                        `}
+                        <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
+                    </ui5-menu>
                 </div>
                 
-                <ui5-select id="dna-select" class="select" style="width:auto; margin:0px;"
-                            @change=${this.onAppletSelected}>
+                <ui5-select id="dna-select" @change=${this.onAppletSelected}>
                     ${appletOptions}
                         <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
                     <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
@@ -909,25 +937,22 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           <ui5-menu-item id="dumpItem" text=${msg("Dump app logs")}></ui5-menu-item>
                           <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
                       </ui5-menu>
-                       
-                    <ui5-button id="networkBtn" icon="cloud" tooltip=${msg("Network Health")}
-                                style="margin-top:10px;"
-                                design="Transparent" 
-                                @click=${() => {
-                                    const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                                    const btn = this.shadowRoot.getElementById("networkBtn") as HTMLElement;
-                                    popover.showAt(btn);
-                                }}></ui5-button>
                     <!-- Network Health Panel -->
-                    <ui5-popover id="networkPopover" header-text=${msg("Network Health")}>
-                        <div  style="flex-direction: column; display: flex">
+                    <ui5-popover id="networkPopover">
+                        <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
+                            <abbr title=${this.cell.dnaHash}>${msg("Network Health")}</abbr>
+                            <div style="flex-grow: 1;"></div>
+                        </div>
                         <network-health></network-health>
-                        <!--<button @click=${() => {
-                            const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                            if (popover.isOpen()) {
-                                popover.close();
-                            }
-                        }}>Close</button>-->
+                        <div slot="footer" style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
+                          <div style="flex-grow: 1;"></div>
+                          <ui5-button slot="footer" design="Emphasized" @click=${() => {
+                                      const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                                      if (popover.isOpen()) {
+                                          popover.close();
+                                      }
+                                  }}
+                          >Close</ui5-button>
                         </div>
                     </ui5-popover>
                   <!-- <ui5-button style="margin-top:10px;"
@@ -1259,26 +1284,28 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #leftSide {
-          background: #B9CCE7;
+          /*background: #B9CCE7;*/
           width: 275px;
           min-width: 275px;
           display: flex;
           flex-direction: column;
-          /*border: 0.01em solid #A3ACB9;*/
+          gap:15px;
         }
 
         #profile-row {
           display: flex;
           flex-direction: row;
-          padding-right: 5px;          
-          background: white;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+          padding-right: 5px;
+          background: #e8e8e8;
+          /*background: white;*/
+          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
         }
 
         #mainSide {
           width: 100%;
           display: flex;
           flex-direction: column;
+          z-index: 1;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
 
@@ -1340,6 +1367,32 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: beige;
         }
 
+        #group-div {
+          display: flex; 
+          flex-direction: row;
+          cursor:pointer;
+          background: none;
+          padding-right: 7px;
+        }
+                
+        #dna-select {
+          width:auto; 
+          border:none;
+          margin:0px 1px 0px 1px;
+          background: none;
+          padding-left: 5px;
+          padding-right: 7px;
+        }
+
+        #group-div:hover,
+        #dna-select:hover {
+          /*background:red;*/
+          /*font-weight: bold;*/
+          z-index:0;
+          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
+          background: rgba(214, 226, 245, 0.8);
+          outline: 1px solid darkblue;
+        }
         .popover-content {
           display: flex;
           flex-direction: column;

@@ -229,6 +229,7 @@ export class ThreadsApp extends HappElement {
     if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
       await this.hvm.probeAll();
     }
+    await this.networkInfoAll(); // FIXME: should propable store result in class field
     this._onlinePerspectiveloaded = true;
   }
 
@@ -260,6 +261,7 @@ export class ThreadsApp extends HappElement {
   }
 
 
+
   /** */
   render() {
     console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
@@ -277,10 +279,11 @@ export class ThreadsApp extends HappElement {
       </div>`;
     }
 
-
     //let view = html`<slot></slot>`;
+    // FIXME: should propable store networkInfoLogs in class field
     let view = html`
         <threads-page .appletId=${this.appletId} style="height:100vh;" 
+                      .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}
     ></threads-page>`;
