@@ -651,6 +651,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
   }
 
+
   /** */
   downloadTextFile(filename: string, content: string): void {
     const blob = new Blob([content], { type: 'text/plain' });
@@ -660,6 +661,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
+  }
+
+
+  /** */
+  private addSearch(str: string) {
+    const field = this.shadowRoot.getElementById("search-field") as Input;
+    let ws = "";
+    if (field.value.length > 0 && field.value[field.value.length - 1] != " ") {
+      ws = " "
+    }
+    field.value += ws + str;
+    field.focus();
   }
 
 
@@ -977,18 +990,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                 <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
                     <div class="popover-content">
-                        <ui5-list mode="SingleSelect" separators="None">
+                        <ui5-list mode="None" separators="None">
                             <!-- <ui5-li-groupheader class="search-group-header">${msg("message contains")}</ui5-li-groupheader>
                             <ui5-li>Channels</ui5-li>
                             <ui5-li>FIXME</ui5-li>
                             <ui5-li>FIXME</ui5-li>
                             <hr style="color:#f4f4f4"/> -->
                             <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <ui5-li><b>in:</b> <i>thread name</i></ui5-li>
-                            <ui5-li><b>from:</b> <i>user</i></ui5-li>
-                            <ui5-li><b>mentions:</b> <i>user</i></ui5-li>
-                            <ui5-li><b>before:</b> <i>date</i></ui5-li>
-                            <ui5-li><b>after:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
+                            <ui5-li @click=${(e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>
@@ -1248,6 +1261,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #profile-row {
           display: flex;
           flex-direction: row;
+          padding-right: 5px;          
           background: white;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
