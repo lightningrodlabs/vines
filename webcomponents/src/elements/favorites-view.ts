@@ -98,7 +98,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
       return html `
           ${doodle_bg}
-          <div style="color:#c10a0a; position: relative; z-index:1; margin:auto; margin-top:20px; font-weight: bold">No favorites</div>
+          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">No favorites</div>
       `;
     }
 

@@ -237,7 +237,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Different UI if no message found for thread */
     if (beads.length == 0) {
       sideItems = [html`
-            <div style="background: ${bg_color};">
+            <div style="font-weight: bold; color: #1e1e1ecc;">
                 ${this.showInput? "Add first message:" : "No messages found"}                       
             </div>`]
     }
