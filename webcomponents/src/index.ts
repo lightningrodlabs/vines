@@ -2,7 +2,6 @@ export * from './contexts';
 export * from './utils';
 export * from './styles';
 
-export * from './elements/applet-threads-tree';
 export * from './elements/chat-file';
 export * from './elements/chat-header';
 export * from './elements/chat-hrl';
@@ -17,9 +16,12 @@ export * from './elements/input-bar';
 export * from './elements/network-health';
 export * from './elements/notification-list';
 export * from './elements/peer-list';
-export * from './elements/semantic-topics-view';
 export * from './elements/search-result';
-export * from './elements/topics-view';
+
+export * from './elements/listers/semantic-topics-lister';
+export * from './elements/listers/applet-lister';
+export * from './elements/listers/topics-lister';
+export * from './elements/listers/my-threads-lister';
 
 export * from './viewModels/threads.perspective';
 export * from './viewModels/threads.zvm';

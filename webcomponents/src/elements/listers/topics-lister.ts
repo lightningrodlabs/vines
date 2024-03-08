@@ -2,19 +2,19 @@ import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {CommentRequest} from "../utils";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {CommentRequest} from "../../utils";
 import {msg} from "@lit/localize";
-import {toasty} from "../toast";
-import {threadJumpEvent} from "../jump";
+import {toasty} from "../../toast";
+import {threadJumpEvent} from "../../jump";
 
 
 /**
  *
  */
-@customElement("topics-view")
-export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("topics-lister")
+export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -38,7 +38,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<topics-view>.render()");
+    console.log("<topics-lister>.render()");
 
 
     let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, [title, isHidden]]) => {
@@ -71,7 +71,7 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
           //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
           const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
-          console.log("<topics-view>.render() thread:", thread.pp.purpose, maybeUnreadThread);
+          console.log("<topics-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
           if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return html``;
           }
@@ -80,9 +80,9 @@ export class TopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(ppAh);
           let hasUnreadComments = false;
           if (maybeCommentThread != null) {
-            hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
+            hasUnreadComments = Object.keys(this.perspective.unreadThreads).includes(maybeCommentThread);
           }
-          //console.log("<topics-view> maybeCommentThread", maybeCommentThread, hasUnreadComments);
+          //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
           let commentButton = html``;
           if (hasUnreadComments) {

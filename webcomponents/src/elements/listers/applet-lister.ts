@@ -4,15 +4,17 @@ import {consume} from "@lit/context";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
-import {AppletId, AttachmentType, Hrl, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 
-import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {AnyLinkableHashB64, ThreadsPerspective} from "../viewModels/threads.perspective";
-import {ThreadsEntryType} from "../bindings/threads.types";
-import {CommentRequest} from "../utils";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {ThreadsEntryType} from "../../bindings/threads.types";
+import {CommentRequest} from "../../utils";
+import {threadJumpEvent} from "../../jump";
+import {WeServicesEx} from "../../weServicesEx";
 
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Tree.js"
@@ -23,16 +25,14 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {weClientContext} from "../contexts";
-import {threadJumpEvent} from "../jump";
-import {WeServicesEx} from "../weServicesEx";
+import {weClientContext} from "../../contexts";
 
 
 /**
  * @element
  */
-@customElement("applet-threads-tree")
-export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("applet-lister")
+export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -56,7 +56,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
    * Subscribe to ThreadsZvm
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    console.log("<applet-threads-tree>.zvmUpdated()");
+    console.log("<applet-lister>.zvmUpdated()");
     this._loading = true;
     await newZvm.probeSubjectTypes(this.appletId);
     this._loading = false;
@@ -65,7 +65,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<applet-threads-tree>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
+    //console.log("<applet-lister>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
     if (changedProperties.has("appletId") && this._zvm) {
       this._loading = true;
       await this._zvm.probeSubjectTypes(this.appletId);
@@ -126,7 +126,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
   /** */
   async clickTree(event) {
-    console.log("<applet-threads-tree> click event:", event.detail.item);
+    console.log("<applet-lister> click event:", event.detail.item);
     let type;
     switch (event.detail.item.level) {
       case 3: type = ThreadsEntryType.ParticipationProtocol; break;
@@ -165,7 +165,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
     //const isTyped = !!this.root && typeof this.root == 'object';
     //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
 
-    console.log("<applet-threads-tree>.toggleTreeItem()", toggledTreeItem);
+    console.log("<applet-lister>.toggleTreeItem()", toggledTreeItem);
 
     event.preventDefault(); // do not let the toggle button switch yet
     busyIndicator.active = true; // block the tree from the user
@@ -183,7 +183,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
       let subjects = await this._zvm.probeSubjects(this.appletId, toggledTreeItem.id);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
-        console.warn("weServices not found in <applet-threads-tree>")
+        console.warn("weServices not found in <applet-lister>")
       }
       /** Convert to TreeItem and append to Tree */
       for (const [dnaHash, subjectHash] of subjects) {
@@ -268,7 +268,7 @@ export class AppletThreadsTree extends ZomeElement<ThreadsPerspective, ThreadsZv
 
   /** */
   render() {
-    console.log("<applet-threads-tree>.render()", this.appletId);
+    console.log("<applet-lister>.render()", this.appletId);
     if (this.appletId == "") {
       return html `<div>No Applet selected</div>`;
     }

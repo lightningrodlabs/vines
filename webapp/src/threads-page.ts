@@ -210,7 +210,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowFavorites = false;
   @state() private _canShowSearchResults = false;
   @state() private _canShowDebug = false;
-  @state() private _appletToShow: DnaHashB64 | null = null;
+  @state() private _listerToShow: DnaHashB64 | null = null;
 
   @state() private _canViewArchivedTopics = false;
   @state() private _currentCommentRequest?: CommentRequest;
@@ -263,6 +263,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //newDvm.probeAll();
     this._selectedThreadHash = '';
     this._selectedBeadAh = '';
+    this._listerToShow = newDvm.cell.dnaHash;
     this._initialized = true;
   }
 
@@ -586,10 +587,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onAppletSelected()", e);
     const selectedOption = e.detail.selectedOption;
     console.log("onAppletSelected() selectedOption", e.detail.selectedOption);
+    if (selectedOption.id == "mine-option") {
+      this._listerToShow = null;
+      return;
+    }
     if (selectedOption.id == "topics-option") {
-      this._appletToShow = null;
+      this._listerToShow = this.cell.dnaHash;
     } else {
-      this._appletToShow = selectedOption.id;
+      this._listerToShow = selectedOption.id;
     }
     this.requestUpdate();
   }
@@ -860,6 +865,35 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
 
+    let lister= html`<applet-lister .appletId=${this._listerToShow ? this._listerToShow : this.appletId}></applet-lister>`
+    if (this._listerToShow == this.cell.dnaHash) {
+      lister = html`
+          <topics-lister 
+                         .showArchivedTopics=${this._canViewArchivedTopics}
+                         .selectedThreadHash=${this._selectedThreadHash}
+                         @createNewTopic=${(e) => this.createTopicDialogElem.show()}
+                         @createThreadClicked=${(e) => {
+                             this._createTopicHash = e.detail;
+                             this.createThreadDialogElem.show()
+                         }}
+          ></topics-lister>
+      `;
+    }
+    if (this._listerToShow == null) {
+      lister = html`
+          <my-threads-lister .appletId=${this.appletId}
+                         .showArchivedTopics=${this._canViewArchivedTopics}
+                         .selectedThreadHash=${this._selectedThreadHash}
+                         @createNewTopic=${(e) => this.createTopicDialogElem.show()}
+                         @createThreadClicked=${(e) => {
+        this._createTopicHash = e.detail;
+        this.createThreadDialogElem.show()
+      }}
+          ></my-threads-lister>
+      `;
+    }
+
+
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
@@ -870,10 +904,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 // const btn = this.shadowRoot.getElementById("groupBtn") as Button;
                 // menu.showAt(btn);
                 // //menu.style.top = e.clientY + "px";
-                // //menu.style.left = e.clientX + "px";                
+                // //menu.style.left = e.clientX + "px";
             }}>
                 <div id="group-div">
-                    <ui5-avatar size="S" class="chatAvatar" 
+                    <ui5-avatar size="S" class="chatAvatar"
                                 @click=${() => {
                         const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
                         const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
@@ -881,7 +915,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     }}>
                         <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
                     </ui5-avatar>
-                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;" 
+                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;"
                          @click=${() => {
                         const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
                         const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
@@ -909,25 +943,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
                     </ui5-menu>
                 </div>
-                
+
                 <ui5-select id="dna-select" @change=${this.onAppletSelected}>
                     ${appletOptions}
                         <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
+                    <ui5-option id="mine-option" icon="save" selected>My Threads</ui5-option>
                     <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
                 </ui5-select>
-                ${this._appletToShow ? html`
-                    <applet-threads-tree .appletId=${this._appletToShow ? this._appletToShow : this.appletId}></applet-threads-tree>
-                ` : html`
-                    <topics-view id="TopicsView"
-                            .showArchivedTopics=${this._canViewArchivedTopics} 
-                            .selectedThreadHash=${this._selectedThreadHash}
-                            @createNewTopic=${(e) => this.createTopicDialogElem.show()}
-                            @createThreadClicked=${(e) => {
-                                this._createTopicHash = e.detail;
-                                this.createThreadDialogElem.show()
-                            }}
-                    ></topics-view>
-                `}
+                ${lister}
 
                     <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
@@ -992,7 +1015,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             <div id="mainSide">
               <ui5-shellbar id="topicBar" primary-title=${threadTitle} show-search-field>
-                  ${this._selectedThreadHash == "" ? html`` : 
+                  ${this._selectedThreadHash == "" ? html`` :
                           html`<ui5-button id="notifSettingsBtn" slot="startButton" icon="bell" tooltip=${msg('Notifications Settings')} 
                                            @click=${() => {
                           const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
@@ -1012,7 +1035,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  if (searchElem.value == "") {
                                    searchPopElem.close();
                                    this._canShowSearchResults = false;
-                                   this.requestUpdate(); // important                                   
+                                   this.requestUpdate(); // important
                                    return;
                                  }
                                  searchPopElem.showAt(searchElem, true);
@@ -1022,7 +1045,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                console.log("<search-field> @keypress", e.keyCode, e);
                                let searchElem = this.shadowRoot.getElementById("search-field") as Input;
                                let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
-                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;  
+                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;
                                if (searchElem.value != "") {
                                  if (e.keyCode === 13) {
                                    searchPopElem.close();
@@ -1038,7 +1061,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  this._canShowSearchResults = false;
                                  this.requestUpdate(); // important
                                }
-                             }}                             
+                             }}
                   ></ui5-input>
                   <ui5-shellbar-item id="favButton" icon="favorite-list" tooltip="Toggle Favorites" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
@@ -1073,11 +1096,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </ui5-list>
                     </div>
                 </ui5-popover>
-                
+
                 <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
                     <notification-list></notification-list>
                 </ui5-popover>
-                
+
                 <ui5-popover id="notifSettingsPopover" placement-type="Bottom" header-text="Notification settings">
                     <div  style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
@@ -1085,7 +1108,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.Never) as Boolean}></ui5-radio-button>
                     </div>
                 </ui5-popover>
-                
+
               <div id="lowerSide">
                 <div id="centerSide">
                     ${centerSide}
@@ -1099,10 +1122,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   <div id="favoritesSide"
                        style="display:${this._canShowFavorites ? 'flex' : 'none'};">
                       <favorites-view></favorites-view>
-                  </div>                  
+                  </div>
                   <!-- <peer-list></peer-list> -->
                   <div id="rightSide" style="display: ${this._canShowSearchResults? "block" : "none"}">
-                      <search-result-panel .parameters=${searchParameters}></search-result-panel>                 
+                      <search-result-panel .parameters=${searchParameters}></search-result-panel>
                   </div>
                   <anchor-tree id="debugSide"
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
@@ -1293,7 +1316,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         abbr {
           text-decoration: none;
         }
-        
+
         #profile-div:hover {
           background: rgba(214, 226, 245, 0.8);
           outline: 1px solid darkblue;
@@ -1364,10 +1387,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #notifSettingsBtn:hover {
           background: #e6e6e6;
         }
-        
+
         #topicBar::part(root) {
           /*border: 1px solid dimgray;*/
-          /*color:black;*/          
+          /*color:black;*/
           /*background: rgb(94, 120, 200);*/
           background: white;
           padding-left: 2px;
@@ -1390,7 +1413,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #commentSide {
           flex-direction: column;
-          min-width: 350px;          
+          min-width: 350px;
           background: #d8e4f4;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 
@@ -1421,15 +1444,15 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #group-div {
-          display: flex; 
+          display: flex;
           flex-direction: row;
           cursor:pointer;
           background: none;
           padding-right: 7px;
         }
-                
+
         #dna-select {
-          width:auto; 
+          width:auto;
           border:none;
           margin:0px 1px 0px 1px;
           background: none;
@@ -1479,7 +1502,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
           border-radius: 20px;
         }
-        
+
       `,
 
     ];

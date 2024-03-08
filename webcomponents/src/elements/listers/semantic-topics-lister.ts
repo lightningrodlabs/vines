@@ -2,21 +2,22 @@ import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {Dictionary} from "@ddd-qc/cell-proxy";
-import {CommentRequest} from "../utils";
+import {CommentRequest} from "../../utils";
 import {msg} from "@lit/localize";
-import {toasty} from "../toast";
-import {threadJumpEvent} from "../jump";
+import {toasty} from "../../toast";
+import {threadJumpEvent} from "../../jump";
 
 import Tree from "@ui5/webcomponents/dist/Tree";
+
 
 /**
  *
  */
-@customElement("semantic-topics-view")
-export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("semantic-topics-lister")
+export class SemanticTopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -33,7 +34,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
   //
   // /** */
   // async scanRoot() {
-  //   console.log("<semantic-topics-view>.scanRoot()");
+  //   console.log("<semantic-topics-lister>.scanRoot()");
   //   this._itemLinks = await this._zvm.zomeProxy.getLeafAnchors(ROOT_ANCHOR_SEMANTIC_TOPICS);
   // }
 
@@ -115,7 +116,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
   /** */
   async clickTree(event) {
-    //console.log("<semantic-topics-view> click event:", event.detail.item)
+    //console.log("<semantic-topics-lister> click event:", event.detail.item)
 
     // clear selection?
     const tree = this.shadowRoot.getElementById("semTree") as Tree;
@@ -146,7 +147,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
 
   /** */
   render() {
-    console.log("<semantic-topics-view>.render()");
+    console.log("<semantic-topics-lister>.render()");
 
     // if (!this._leafLinks) {
     //   return html`Loading...`;
@@ -167,7 +168,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         const nameB = this.perspective.threads.get(b).name;
         return nameA.localeCompare(nameB);
       });
-      //console.log("<semantic-topics-view>.render() topic:", title, topicThreads);
+      //console.log("<semantic-topics-lister>.render() topic:", title, topicThreads);
 
       let threads = [html``];
       threads = Object.values(topicThreads).map((ppAh)=> {
@@ -180,7 +181,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
         //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
         const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
-        console.log("<semantic-topics-view>.render() thread:", thread.pp.purpose, maybeUnreadThread);
+        console.log("<semantic-topics-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
         if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
           return html``;
         }
@@ -191,7 +192,7 @@ export class SemanticTopicsView extends ZomeElement<ThreadsPerspective, ThreadsZ
         if (maybeCommentThread != null) {
           hasUnreadComments = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
         }
-        //console.log("<semantic-topics-view> maybeCommentThread", maybeCommentThread, hasUnreadComments);
+        //console.log("<semantic-topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
         let commentButton = html``;
         if (hasUnreadComments) {

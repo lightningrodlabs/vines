@@ -538,33 +538,40 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  // /** Get all Threads from a subject */
-  // async queryThreads(): Promise<void> {
-  //   const tuples = await this.zomeProxy.queryPps();
-  //   const hiddens = await this.probeHiddens();
-  //   for (const [ts, author, ah, pp] of tuples) {
-  //     const ppAh = encodeHashToBase64(ah);
-  //     const ppAuthor = encodeHashToBase64(author);
-  //     // FIXME get REAL author from OriginalsZvm
-  //     this.storePp(encodeHashToBase64(ah), pp, ts, ppAuthor, hiddens.includes(ppAh), false, true);
-  //   }
-  //   console.log("queryThreads()", this._threads.size);
-  //   this.notifySubscribers();
-  // }
-  //
-  //
-  // /** Get all local beads */
-  // async queryBeads(): Promise<void> {
-  //   const tmTuples = await this.zomeProxy.queryTextBeads() as unknown as [Timestamp, ActionHash, TypedBead][];
-  //   const anyTuples = await this.zomeProxy.queryAnyBeads() as unknown as [Timestamp, ActionHash, TypedBead][];
-  //   const entryTuples = await this.zomeProxy.queryEntryBeads() as unknown as [Timestamp, ActionHash, TypedBead][];
-  //   const all: [Timestamp, ActionHash, TypedBead][] = tmTuples.concat(anyTuples).concat(entryTuples);
-  //   for (const [ts, ah, typed] of all) {
-  //     // FIXME get REAL author from OriginalsZvm
-  //     await this.storeBead(encodeHashToBase64(ah), ts, this.cell.agentPubKey, typed, false, false);
-  //   }
-  //   console.log("queryBeads()", this._threads.size);
-  // }
+  /** Get all Threads from a subject */
+  async queryThreads(): Promise<void> {
+    const tuples = await this.zomeProxy.queryPps();
+    const hiddens = await this.probeHiddens();
+    for (const [ts, author, ah, pp] of tuples) {
+      const ppAh = encodeHashToBase64(ah);
+      const ppAuthor = encodeHashToBase64(author);
+      // FIXME get REAL author from OriginalsZvm
+      this.storePp(encodeHashToBase64(ah), pp, ts, ppAuthor, hiddens.includes(ppAh), false, true);
+    }
+    console.log("queryThreads()", this._threads.size);
+    this.notifySubscribers();
+  }
+
+
+  /** Get all local beads */
+  async queryBeads(): Promise<void> {
+    const tmTuples = await this.zomeProxy.queryTextBeads() as unknown as [Timestamp, ActionHash, TypedBead][];
+    for (const [ts, ah, typed] of tmTuples) {
+      // FIXME get REAL author from OriginalsZvm
+      await this.storeTypedBead(encodeHashToBase64(ah), materializeTypedBead(typed, ThreadsEntryType.TextBead), ThreadsEntryType.TextBead, ts, this.cell.agentPubKey, false, false);
+    }
+    const anyTuples = await this.zomeProxy.queryAnyBeads() as unknown as [Timestamp, ActionHash, TypedBead][];
+    for (const [ts, ah, typed] of anyTuples) {
+      // FIXME get REAL author from OriginalsZvm
+      await this.storeTypedBead(encodeHashToBase64(ah), materializeTypedBead(typed, ThreadsEntryType.AnyBead), ThreadsEntryType.AnyBead, ts, this.cell.agentPubKey, false, false);
+    }
+    const entryTuples = await this.zomeProxy.queryEntryBeads() as unknown as [Timestamp, ActionHash, TypedBead][];
+    for (const [ts, ah, typed] of entryTuples) {
+      // FIXME get REAL author from OriginalsZvm
+      await this.storeTypedBead(encodeHashToBase64(ah), materializeTypedBead(typed, ThreadsEntryType.EntryBead), ThreadsEntryType.EntryBead, ts, this.cell.agentPubKey, false, false);
+    }
+    console.log("queryBeads()", this._threads.size);
+  }
 
 
   /** -- Probe: Query the DHT, and store the results (async) -- */
