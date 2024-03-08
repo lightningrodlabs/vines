@@ -262,6 +262,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
     //newDvm.probeAll();
+    // if (this.weServices) {
+    //   const appletInfo = await this.weServices.appletInfo(a)
+    //   const groupProfile = await this.weServices.groupProfile(decodeHashFromBase64(newDvm.cell.dnaHash));
+    //   console.log("dvmUpdated() groupProfile", groupProfile);
+    // }
     this._selectedThreadHash = '';
     this._selectedBeadAh = '';
     this._listerToShow = newDvm.cell.dnaHash;
@@ -364,15 +369,22 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       shellBar.showSearchField = false;
     }
 
-    /** Grab all AppletIds */
+    /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
       console.log("<threads-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
       const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
-      console.log("<threads-page> appletIds", appletIds);
+      console.log("<threads-page> firstUpdated() appletIds", appletIds);
       for (const appletId of appletIds) {
-        const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(appletId));
-        console.log("<threads-page> firstUpdated() appletInfo for", appletId, appletInfo);
+        /*const appletInfo =*/ await this.weServices.appletInfo(decodeHashFromBase64(appletId));
         //this.wePerspective.applets[appletId] = appletInfo;
+      }
+      /* Grab my appletInfo and groupProfile */
+      console.log("<threads-page> firstUpdated() appletInfo for", this.appletId);
+      const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(this.appletId));
+      for (const groupId of appletInfo.groupsIds) {
+        console.log("<threads-page> firstUpdated() groupId", encodeHashToBase64(groupId));
+        const gp = await this.weServices.groupProfile(groupId);
+        console.log("<threads-page> firstUpdated() gp", gp);
       }
       /** NotifyWe of some new content */
       const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
@@ -841,9 +853,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const weGroup = this.weServices.getGroupProfile(this._dvm.cell.dnaHash);
-      if (weGroup) {
-        groupProfile = weGroup;
+      const appletInfo = this.weServices.getAppletInfo(this.appletId);
+      console.log("get appletInfo", appletInfo);
+      if (appletInfo) {
+        console.log("get groupProfile", appletInfo.groupsIds[0]);
+        const weGroup = this.weServices.getGroupProfile(appletInfo.groupsIds[0]);
+        if (weGroup) {
+          groupProfile = weGroup;
+        }
       }
     } else {
       if (this._dvm.dnaProperties.groupName) {

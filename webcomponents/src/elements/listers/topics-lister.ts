@@ -38,8 +38,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<topics-lister>.render()");
-
+    console.log("<topics-lister>.render()", this.perspective.allSemanticTopics);
 
     let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, [title, isHidden]]) => {
       /** Skip if hidden */
@@ -61,7 +60,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         threads = Object.values(topicThreads).map((ppAh) => {
           const thread = this.perspective.threads.get(ppAh);
           if (!thread) {
-            return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+            return html`<ui5-busy-indicator size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
           }
           console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
@@ -73,7 +72,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
           console.log("<topics-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
           if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
-            return html``;
+            return;
           }
 
           /** Determine badge & buttons */
@@ -265,6 +264,9 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             ${threads}
           </ui5-panel>`
     });
+
+    treeItems = treeItems.filter((value) => value !== undefined);
+    console.log("<topics-lister>.render() treeItems", treeItems);
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {

@@ -613,7 +613,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const topicEh = encodeHashToBase64(tuple[0]);
       this.storeSemanticTopic(topicEh, tuple[1], hiddens.includes(topicEh), false);
     }
-    console.log("probeSemanticTopics()", Object.keys(this._allSemanticTopics).length);
+    console.log("probeSemanticTopics()", Object.keys(this._allSemanticTopics).length, hiddens);
     return this._allSemanticTopics;
   }
 

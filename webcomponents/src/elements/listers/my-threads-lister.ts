@@ -337,6 +337,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                   <!-- ${topicBadge} -->
                   ${topicHideBtn}                
                   ${topicCommentButton}
+                      <!--
                   <ui5-button icon="add" tooltip="Create a new channel for this Topic" 
                               design="Transparent" 
                               style="color:grey"
@@ -345,7 +346,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                                 await this.updateComplete;
                                 this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: topicHash, bubbles: true, composed: true}));
                               }}>
-                  </ui5-button>
+                  </ui5-button>-->
               </div>
               <!-- threads -->              
               ${threads}

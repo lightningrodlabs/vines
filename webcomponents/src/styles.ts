@@ -6,7 +6,7 @@ export const sharedStyles = css`
 
   p {
     margin: 0px;
-    white-space: pre;
+    white-space: pre-wrap;
   }
 
   .sideAgentName {
