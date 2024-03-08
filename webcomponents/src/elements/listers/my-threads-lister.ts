@@ -5,7 +5,7 @@ import {ActionHashB64, DnaHashB64} from "@holochain/client";
 import {Dictionary, ZomeElement} from "@ddd-qc/lit-happ";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
-import {SubjectMat, ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {AnyLinkableHashB64, SubjectMat, ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {CommentRequest} from "../../utils";
 import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../jump";
@@ -73,7 +73,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     const myThreads: [ActionHashB64, Thread][] = Object.entries(this.perspective.threads).filter(([h, thread]) => thread.author == this.cell.agentPubKey);
 
-    console.log("<my-threads-lister> count", Object.entries(this.perspective.beads).length, myBeads.length, myBeadThreads.length, myThreads.length);
+    console.log("<my-threads-lister>   count beads", Object.entries(this.perspective.beads).length, myBeads.length, myBeadThreads.length);
+    console.log("<my-threads-lister> count threads", Object.entries(this.perspective.threads).length, myThreads.length);
+
 
     /** concat and dedup */
     let allThreads = myThreads.concat(myBeadThreads);
@@ -85,7 +87,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** appletId -> (subjectHash -> ppAh[]) */
     let allThreadsByApplet: Record<DnaHashB64, Dictionary<ActionHashB64[]>> = {};
-    /*const allSubjects: [string, SubjectMat][] =*/ allThreads.map(([ppAh, thread]) => {
+    const allSubjects: Record<AnyLinkableHashB64, SubjectMat> = {}
+      allThreads.map(([ppAh, thread]) => {
       if (!allThreadsByApplet[thread.pp.subject.appletId]) {
         allThreadsByApplet[thread.pp.subject.appletId] = {}
       }
@@ -93,7 +96,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         allThreadsByApplet[thread.pp.subject.appletId][thread.pp.subject.hash] = [];
       }
       allThreadsByApplet[thread.pp.subject.appletId][thread.pp.subject.hash].push(ppAh);
-      //return [thread.pp.subject.hash, thread.pp.subject];
+      allSubjects[thread.pp.subject.hash] = thread.pp.subject;
     });
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
 
@@ -121,8 +124,24 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
 
       /** Render semantic topic threads */
-      // FIXME
-      let subjectItems = Object.entries(appletThreads).map(([topicHash, ppAhs]) => {
+      let subjectItems = Object.entries(appletThreads).map(([subjectHash, ppAhs]) => {
+
+        /** Render threads about entries in Threads DNA (other than semantic topics) */
+        const subject = allSubjects[subjectHash];
+        console.log("<my-threads-lister> subject", subject, subjectHash);
+        if (!this.perspective.allSemanticTopics[subjectHash] /* subject.typeName != "SemanticTopic" */ ) {
+          // FIXME
+          return html`
+            <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
+                <div style="background: orange">${subject.typeName}: FIXME</div>
+            </div>
+        `;
+        }
+
+        const topicHash = subjectHash;
+        const [title, isHidden] = this.perspective.allSemanticTopics[subjectHash];
+
+
         let threads = ppAhs.map((ppAh) => {
           /** Render threads for Topic */
           const thread = this.perspective.threads.get(ppAh);
@@ -138,7 +157,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
           //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
           const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
           console.log("<my-threads-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
-          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
+          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) /*|| thread.pp.purpose == "comment"*/) {
             return html``;
           }
 
@@ -221,8 +240,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
               </sl-tooltip>
           `;
         })
-
-        const [title, isHidden] = this.perspective.allSemanticTopics[topicHash];
 
         /* */
         const newSubjects = this._zvm.getNewSubjects();

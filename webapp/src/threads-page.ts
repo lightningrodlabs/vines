@@ -62,6 +62,7 @@ import "@ui5/webcomponents-icons/dist/attachment-photo.js"
 import "@ui5/webcomponents-icons/dist/attachment-video.js"
 import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
+import "@ui5/webcomponents-icons/dist/bookmark.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/close-command-field.js"
 import "@ui5/webcomponents-icons/dist/cloud.js"
@@ -947,7 +948,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-select id="dna-select" @change=${this.onAppletSelected}>
                     ${appletOptions}
                         <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
-                    <ui5-option id="mine-option" icon="save" selected>My Threads</ui5-option>
+                    <ui5-option id="mine-option" icon="bookmark" selected>My Threads</ui5-option>
                     <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
                 </ui5-select>
                 ${lister}
