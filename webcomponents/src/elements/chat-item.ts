@@ -20,6 +20,8 @@ import {FilesDvm} from "@ddd-qc/files";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {toasty} from "../toast";
+import {stringifyHrl} from "@ddd-qc/we-utils";
+import {cardStyleTemplate, popoverStyleTemplate} from "../styles";
 
 /**
  * @element
@@ -38,6 +40,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _isHovered = false;
 
+  @property({type: Boolean}) shortmenu: boolean = false;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -124,6 +127,16 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  protected async updated(_changedProperties: PropertyValues) {
+    /** Fiddle with shadow CSS */
+    const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
+    if (popover) {
+      popover.shadowRoot.appendChild(popoverStyleTemplate.content.cloneNode(true));
+    }
+  }
+
+
+  /** */
   onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, subjectType?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
       detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
@@ -137,7 +150,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   onClickAddEmoji() {
     //this.emojiPickerElem.style.display = 'block';
     const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
-    const btn = this.shadowRoot.getElementById("add-reaction-btn") as HTMLElement;
+    const btn = this.shadowRoot.getElementById("buttonsPop") as HTMLElement;
     popover.showAt(btn);
   }
 
@@ -159,8 +172,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
       case "intoHrl":
+        const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+        const sHrl = stringifyHrl(hrl);
+        navigator.clipboard.writeText(sHrl);
         if (this.weServices) {
-          const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
           this.weServices.hrlToClipboard({hrl});
         }
       break;
@@ -296,7 +311,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }}"></ui5-button>
     `;
 
-    const sideButtons = [starButton, reactionButton, commentButton, menuButton];
+    let sideButtons = [menuButton];
+    console.log("<chat-item> shortmenu", this.shortmenu)
+    if (!this.shortmenu) {
+      sideButtons = [starButton, reactionButton, commentButton, menuButton];
+    }
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -347,7 +366,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->            
-            <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" >${sideButtons}</ui5-popover>
+            <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text="Add Reaction">
                 <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
             </ui5-popover>
@@ -361,7 +380,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
                         : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
                 }
-                <ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link" ?disabled=${!this.weServices}></ui5-menu-item>
+                <ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link"></ui5-menu-item>
                 <ui5-menu-item id="copyText" disabled text=${msg("Copy Text")} icon="copy"></ui5-menu-item>
                 <ui5-menu-item id="flagMessage" disabled text=${msg("Report Message")} icon="flag"></ui5-menu-item>
 

@@ -63,6 +63,7 @@ import "@ui5/webcomponents-icons/dist/attachment-video.js"
 import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
 import "@ui5/webcomponents-icons/dist/bookmark.js"
+import "@ui5/webcomponents-icons/dist/copy.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/close-command-field.js"
 import "@ui5/webcomponents-icons/dist/cloud.js"
@@ -80,6 +81,7 @@ import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
 import "@ui5/webcomponents-icons/dist/favorite.js"
 import "@ui5/webcomponents-icons/dist/favorite-list.js"
+import "@ui5/webcomponents-icons/dist/flag.js"
 import "@ui5/webcomponents-icons/dist/group.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
@@ -145,7 +147,7 @@ import {
   Timestamp,
 } from "@holochain/client";
 
-import {AppletId, GroupProfile, WeNotification, WeServices,} from "@lightningrodlabs/we-applet";
+import {AppletId, GroupProfile, WeNotification} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
 
 //import "./input-bar";

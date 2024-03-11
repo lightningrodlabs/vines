@@ -128,3 +128,13 @@ cardStyleTemplate.innerHTML = `
   }
 </style>
 `;
+
+
+export const popoverStyleTemplate = document.createElement('template');
+popoverStyleTemplate.innerHTML = `
+<style>
+  .ui5-popover-root {
+    min-width: 10px !important;
+  }
+</style>
+`;

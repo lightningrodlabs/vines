@@ -59,7 +59,7 @@ export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
       //const beadPair = this.threadsPerspective.beads[beadAh];
       //return html`<ui5-li key=${beadAh}>${tmInfo.textMessage.value}</ui5-li>`
       return html`<ui5-li key=${beadAh} style="height:auto">
-          <chat-item .hash=${beadAh}
+          <chat-item .hash=${beadAh} shortmenu
                      @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}>
           </chat-item>
       </ui5-li>`
