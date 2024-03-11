@@ -219,6 +219,9 @@ export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBeadMat, f
       break;
       /** EntryBead: Filename */
       case ThreadsEntryType.EntryBead:
+            if (!filesDvm) {
+              return "<unknown file>";
+            }
             const fileBead = typedBead as EntryBeadMat;
             const tuple = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
             if (!tuple) {
@@ -228,6 +231,9 @@ export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBeadMat, f
         break;
       /** AnyBead: AttachableInfo.name */
       case ThreadsEntryType.AnyBead:
+            if (!weServices) {
+              return "<unknown attachable>";
+            }
             const hrlBead = typedBead as AnyBeadMat;
             const hrl = decodeHrl(hrlBead.value);
             const attLocInfo = weServices.getAttachableInfo(stringifyHrl(hrl));
