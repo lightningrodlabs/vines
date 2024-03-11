@@ -8,6 +8,7 @@ import {renderAvatar} from "../render";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent} from "../jump";
 import {TextBeadMat} from "../viewModels/threads.perspective";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -47,10 +48,15 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
     const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];
     let subText;
+    const copyBtn = html`
+        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
+            e.stopPropagation(); this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+        }}></ui5-button>      
+    `;
     let title;
     if (maybeSemanticTopicThread) {
       const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-      title = html`<h3>Welcome to #${semTopic} !</h3>`;
+      title = html`<h3>Welcome to #${semTopic} ! ${copyBtn}</h3>`;
       subText = `This is the start of thread ${thread.name}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
@@ -72,7 +78,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
       const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
 
-      title = html`<h3>Thread about "${subjectName}" from ${avatarElem}</h3>`;
+      title = html`<h3>Thread about "${subjectName}" from ${avatarElem} ${copyBtn}</h3>`;
       subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" 
                             @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}>
@@ -98,6 +104,17 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
+        
+        h3 {
+          line-height: 40px;
+        }
+        h3 > ui5-button {
+          display: none;
+        }
+        h3:hover > ui5-button {
+          display: inline-block;
+        }
+        
         #chat-header {
           display: flex; 
           flex-direction: column;

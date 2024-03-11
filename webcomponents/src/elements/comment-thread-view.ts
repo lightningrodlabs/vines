@@ -264,6 +264,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         <h3 style="margin: 10px;color: #021133;">
           ${title} 
           <span id="subjectName" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectName}</span>
+          <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
+              e.stopPropagation();
+              this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+          }}></ui5-button>
           <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
             if (this.weServices) {
               // TODO: Grab HrlWithContext somehow
