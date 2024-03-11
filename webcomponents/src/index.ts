@@ -5,7 +5,7 @@ export * from './styles';
 export * from './elements/chat-file';
 export * from './elements/chat-header';
 export * from './elements/chat-hrl';
-export * from './elements/chat-message';
+export * from './elements/chat-text';
 export * from './elements/chat-item';
 export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';

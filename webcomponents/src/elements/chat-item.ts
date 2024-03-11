@@ -2,17 +2,24 @@ import {html, css, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64} from "@holochain/client";
-import {truncate} from "../utils";
-import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
-import {renderAvatar} from "../render";
-import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
+import {determineBeadName, renderAvatar} from "../render";
+import {ThreadsEntryType} from "../bindings/threads.types";
 import {threadJumpEvent} from "../jump";
 import {msg} from "@lit/localize";
+import {consume} from "@lit/context";
+import {globaFilesContext, weClientContext} from "../contexts";
+import {WeServicesEx} from "../weServicesEx";
+import {Hrl} from "@lightningrodlabs/we-applet";
+import {FilesDvm} from "@ddd-qc/files";
 
+import Menu from "@ui5/webcomponents/dist/Menu";
+import Button from "@ui5/webcomponents/dist/Button";
+import {toasty} from "../toast";
 
 /**
  * @element
@@ -36,6 +43,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
+  @consume({ context: weClientContext, subscribe: true })
+  weServices: WeServicesEx;
+
+  @consume({ context: globaFilesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
 
   get emojiPickerElem() : Picker {
     return this.shadowRoot!.getElementById("emoji-picker") as Picker;
@@ -47,7 +59,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    //console.log("<chat-message-item>.dvmUpdated()");
+    //console.log("<chat-item>.dvmUpdated()");
     if (oldDvm) {
       //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -112,9 +124,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, viewType?: string) {
+  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, subjectType?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
-      detail: {maybeCommentThread, subjectHash: this.hash, subjectType: "TextBead", subjectName, viewType: viewType? viewType : "side"},
+      detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
       bubbles: true,
       composed: true,
     }));
@@ -131,35 +143,69 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
 
+  /** */
+  onMoreMenu(e) {
+    console.log("onMoreMenu item-click", e)
+    switch (e.detail.item.id) {
+      case "addReaction": this.onClickAddEmoji(); break;
+      case "addFavorite": this.updateFavorite(this.hash, true); break;
+      case "removeFavorite": this.updateFavorite(this.hash, false); break;
+      case "viewComments":
+      case "createCommentThread":
+        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+        const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+        const typed = this._dvm.threadsZvm.getBead(this.hash);
+        const beadName = determineBeadName(beadInfo, typed, this._filesDvm, this.weServices);
+        this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
+      break;
+      case "intoHrl":
+        if (this.weServices) {
+          const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+          this.weServices.hrlToClipboard({hrl});
+        }
+      break;
+      case "copyText": /* TODO */break;
+      case "flagMessage": /* TODO */  break;
+    }
+  }
+
+
+
+  async updateFavorite(beadAh: ActionHashB64, canAdd: boolean) {
+    if (canAdd) {
+      await this._dvm.threadsZvm.addFavorite(beadAh);
+      toasty("Message added to favorites");
+    } else {
+      await this._dvm.threadsZvm.removeFavorite(beadAh);
+      toasty("Message removed to favorites");
+    }
+  }
+
 
 
   /** */
   render() {
-    console.log("<chat-item>.render()");
+    //console.log("<chat-item>.render()");
     if (this.hash == "") {
       return html`
           <div>No bead found</div>`;
     }
 
-    let beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
-    if (!beadInfo) {
-      return html`
-          <div>Loading...</div>`;
+    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    const typed = this._dvm.threadsZvm.getBead(this.hash);
+    if (!beadInfo || !typed) {
+      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
-
     /** Determine the comment button to display depending on current comments for this message */
-    let subjectName = "";
+    let subjectName = determineBeadName(beadInfo, typed, this._filesDvm, this.weServices);
     let item = html``;
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-      subjectName = truncate((this.threadsPerspective.beads[this.hash][1] as TextBeadMat).value, 60, true);
-      item = html`<chat-message class="innerItem" .hash=${this.hash}></chat-message>`;
+      item = html`<chat-text class="innerItem" .hash=${this.hash}></chat-text>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
-      subjectName = "File";
       item = html`<chat-file class="innerItem" .hash=${this.hash}></chat-file>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
-      subjectName = "HRL";
       item = html`<chat-hrl class="innerItem" .hash=${this.hash}></chat-hrl>`;
     }
 
@@ -170,13 +216,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread for this message")} design="Transparent" style="border:none;"
-                      @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">                      
+                      @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, beadInfo.beadType, "side")}">                      
         </ui5-button>`;
-
-    if (maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread)) {
+    const hasComments = maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread);
+    if (hasComments) {
       commentButton = html`              
           <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
-                       @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, "side")}">
+                       @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, beadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const commentLinkColor = isUnread ? "red" : "blue";
@@ -224,23 +270,33 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     console.log("<chat-item>.render() maybeCommentThread", maybeCommentThread, commentThread);
 
+    const menuButton = html`
+        <ui5-button id="menu-btn" icon="overflow" tooltip=${msg('More')} design="Transparent" style="border:none;"
+                    @click=${(e) => {
+                        e.preventDefault();
+                        //console.log("onSettingsMenu()", e);
+                        const menu = this.shadowRoot.getElementById("moreMenu") as Menu;
+                        const btn = this.shadowRoot.getElementById("menu-btn") as Button;
+                        menu.showAt(btn);
+                    }}></ui5-button>`;
+
     const reactionButton = html`
-              <ui5-button id="add-reaction-btn" icon="feedback" tooltip="Add Reaction" design="Transparent" style="border:none;"
-                          @click="${(_e) => this.onClickAddEmoji()}"></ui5-button>`;
+              <ui5-button id="add-reaction-btn" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
+                          @click=${(_e) => this.onClickAddEmoji()}></ui5-button>`;
 
     const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
     const starButton = isFavorite? html`
-        <ui5-button id="star-btn" icon="favorite" tooltip="Remove from favorites" design="Transparent" style="border:none;"
-                    @click="${(_e) => this._dvm.threadsZvm.removeFavorite(this.hash)}"></ui5-button>
+        <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent" style="border:none;"
+                    @click=${(_e) => this.updateFavorite(this.hash, false)}></ui5-button>
         ` : html`
-        <ui5-button id="star-btn" icon="add-favorite" tooltip="Add to favorite" design="Transparent" style="border:none;"
+        <ui5-button id="star-btn" icon="add-favorite" tooltip=${msg("Add to favorite")} design="Transparent" style="border:none;"
                     @click="${async (_e) => {
-                      await this._dvm.threadsZvm.addFavorite(this.hash);
+                      await this.updateFavorite(this.hash, true);
                       console.log("Favorites", this._dvm.threadsZvm.perspective.favorites.length);
     }}"></ui5-button>
     `;
 
-    const sideButtons = [starButton, reactionButton, commentButton];
+    const sideButtons = [starButton, reactionButton, commentButton, menuButton];
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -294,9 +350,24 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" >${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text="Add Reaction">
                 <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
-            </ui5-popover>            
+            </ui5-popover>
+            <ui5-menu id="moreMenu" @item-click=${this.onMoreMenu}>
+                <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item>
+                ${isFavorite
+                        ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>` 
+                        : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
+                }
+                ${hasComments
+                        ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
+                        : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
+                }
+                <ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link" ?disabled=${!this.weServices}></ui5-menu-item>
+                <ui5-menu-item id="copyText" disabled text=${msg("Copy Text")} icon="copy"></ui5-menu-item>
+                <ui5-menu-item id="flagMessage" disabled text=${msg("Report Message")} icon="flag"></ui5-menu-item>
+
+            </ui5-menu>
         </div>
-        
+            
         <!-- Reply row -->
         <div id="replyRow" style="display:flex; flex-direction:row;">
             <div id="bottomLeft" style="display: flex; flex-direction: column;;">

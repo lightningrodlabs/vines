@@ -7,15 +7,14 @@ import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import markdownit from 'markdown-it'
 import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {TextBead} from "../bindings/threads.types";
 import {sharedStyles} from "../styles";
 
 
 /**
  * @element
  */
-@customElement("chat-message")
-export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("chat-text")
+export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -28,7 +27,7 @@ export class ChatMessage extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    //console.log("<chat-message-item>.render()", this.hash);
+    //console.log("<chat-text>.render()", this.hash);
     if (this.hash == "") {
       return html`
           <div style="color:red">No message found</div>`;

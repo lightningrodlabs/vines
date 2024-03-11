@@ -18,7 +18,7 @@ import {
   TypedBeadMat
 } from "./viewModels/threads.perspective";
 import {stringifyHrl} from "@ddd-qc/we-utils";
-import {decodeHrl} from "./utils";
+import {decodeHrl, truncate} from "./utils";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import markdownit from "markdown-it";
 import {unsafeHTML} from "lit/directives/unsafe-html.js";
@@ -214,7 +214,9 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
 export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx): string {
     switch (beadInfo.beadType) {
       /** TextBead: text content */
-      case ThreadsEntryType.TextBead: return (typedBead as TextBeadMat).value; break;
+      case ThreadsEntryType.TextBead:
+        return truncate((typedBead as TextBeadMat).value, 60, true);
+      break;
       /** EntryBead: Filename */
       case ThreadsEntryType.EntryBead:
             const fileBead = typedBead as EntryBeadMat;

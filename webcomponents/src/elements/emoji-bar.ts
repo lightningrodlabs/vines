@@ -34,7 +34,6 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    //console.log("<chat-message-item>.dvmUpdated()");
     if (oldDvm) {
       //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);

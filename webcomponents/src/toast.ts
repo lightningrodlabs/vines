@@ -27,7 +27,7 @@ export function toasty(title: string, icon = 'message-success', placement = "Top
         placement,
         duration,
         innerHTML: `
-        <div style="display:flex;flex-direction: row; gap:10px;margin:0px; padding:0px;">
+        <div style="display:flex;flex-direction: row; gap:10px;margin:0px; padding:0px;white-space: pre-wrap;">
             <ui5-icon name="${icon}"></ui5-icon>
             <strong>${escapeHtml(title)}</strong>
         </div>   
