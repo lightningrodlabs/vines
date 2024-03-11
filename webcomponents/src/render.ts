@@ -242,3 +242,27 @@ export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBeadMat, f
     }
     return "<unknown>";
 }
+
+
+/** Change a timestamp to date of type "March 11, 2024" */
+export function ts2day(ts: number): string {
+  if (ts <= 0) {
+    return "N/A";
+  }
+  const date = new Date(ts / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+
+  /** Array of month names ; TODO: localize */
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  /* Get the month, day, and year components */
+  const month = monthNames[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  /* Format the date string */
+  const formattedDate = `${month} ${day}, ${year}`;
+
+  return formattedDate;
+}

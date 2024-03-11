@@ -6,6 +6,8 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
+import {prettyTimestamp} from "@ddd-qc/files";
+import {ts2day} from "../render";
 
 /**
  * @element
@@ -248,6 +250,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     const all = thread.getAll();
     let passedLog = false;
 
+    let currentDay = "";
+
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let textLi = Object.values(all).map(
       (blm) => {
@@ -265,9 +269,25 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
               </div>
           `
         }
+
+        let timeHr = html``;
+        const day = ts2day(blm.creationTime);
+        if (day != currentDay) {
+          currentDay = day;
+          timeHr = html`
+            <div style="display: flex; flex-direction: row">
+                <hr style="border: 1px solid #dadada; flex-grow: 1; height: 0px"/>
+                <div style="font-size:small; color: #3e3d3dcc;padding-left: 3px; padding-right: 3px;">
+                    ${day}
+                </div>
+                <hr style="border: 1px solid #dadada; flex-grow: 1; height: 0px"/>
+            </div>
+        `;
+        }
+
         console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
         const chatItem = html`<chat-item .hash=${(blm.beadAh)} style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}"></chat-item>`;
-        return html`${chatItem}${hr}`;
+        return html`${chatItem}${hr}${timeHr}`;
       }
     );
 

@@ -1332,6 +1332,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: #FBFCFD;
           display: block;
           height: inherit;
+          width: inherit;
         }
 
         abbr {
@@ -1358,6 +1359,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #mainDiv {
           display: flex;
           flex-direction: row;
+          flex-grow: 1;
           height: inherit;
         }
 
@@ -1365,6 +1367,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*background: #B9CCE7;*/
           width: 275px;
           min-width: 275px;
+          max-width: 275px;
           display: flex;
           flex-direction: column;
           /*gap:15px;*/
@@ -1424,6 +1427,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #favoritesSide {
           flex-direction:column;
           min-width: 350px;
+          max-width: 350px;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
         #rightSide {
@@ -1435,6 +1439,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #commentSide {
           flex-direction: column;
           min-width: 350px;
+          max-width: 350px;
           background: #d8e4f4;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 
