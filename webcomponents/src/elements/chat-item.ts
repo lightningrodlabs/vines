@@ -178,6 +178,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         if (this.weServices) {
           this.weServices.hrlToClipboard({hrl});
         }
+        toasty(("Copied Message's WAL to clipboard"));
       break;
       case "copyText": /* TODO */break;
       case "flagMessage": /* TODO */  break;
@@ -288,7 +289,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const menuButton = html`
         <ui5-button id="menu-btn" icon="overflow" tooltip=${msg('More')} design="Transparent" style="border:none;"
                     @click=${(e) => {
-                        e.preventDefault();
+                        e.preventDefault(); e.stopPropagation();
                         //console.log("onSettingsMenu()", e);
                         const menu = this.shadowRoot.getElementById("moreMenu") as Menu;
                         const btn = this.shadowRoot.getElementById("menu-btn") as Button;
@@ -388,7 +389,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         </div>
             
         <!-- Reply row -->
-        <div id="replyRow" style="display:flex; flex-direction:row;">
+        <div id="replyRow" style="display:flex; flex-direction:row; min-height: ${hasComments? "36px" : "0px"};">
             <div id="bottomLeft" style="display: flex; flex-direction: column;;">
                 <div style="display: flex; flex-direction: row; flex-grow:1;">
                   <!-- split in middle horizontal -->

@@ -147,7 +147,7 @@ import {
   Timestamp,
 } from "@holochain/client";
 
-import {AppletId, GroupProfile, WeNotification} from "@lightningrodlabs/we-applet";
+import {AppletId, GroupProfile, Hrl, WeNotification} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
 
 //import "./input-bar";
@@ -194,10 +194,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('jump', this.onJump);
+    this.addEventListener('copy-thread', this.onCopyThread);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('jump', this.onJump);
+    this.removeEventListener('copy-thread', this.onCopyThread);
   }
 
 
@@ -640,6 +642,19 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     input.click();
   }
 
+  async onCopyThread(e: CustomEvent) {
+    if (!e.detail) {
+      console.warn("Invalid copy-thread event");
+      return;
+    }
+    const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(e.detail)];
+    const sHrl = stringifyHrl(hrl);
+    navigator.clipboard.writeText(sHrl);
+    if (this.weServices) {
+      this.weServices.hrlToClipboard({hrl});
+    }
+    toasty(("Copied thread's WAL to clipboard"));
+  }
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {

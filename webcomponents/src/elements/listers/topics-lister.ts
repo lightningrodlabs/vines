@@ -95,11 +95,11 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
               ? html`
                   <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
                               style="border:none; display:none;"
-                              @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`
+                              @click=${(e) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`
               : html`
                   <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread")} design="Transparent"
                               style="border:none; display:none;"
-                              @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
+                              @click=${(e) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`;
           }
 
           /** 'new', 'notif' or 'unread' badge to display */
@@ -125,6 +125,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                 <ui5-button icon="show" tooltip="Show" design="Transparent"
                             class="showBtn"
                             @click=${async (e) => {
+                                e.stopPropagation();
                                 await this._zvm.unhideSubject(ppAh);
                                 toasty(`Unarchived Subject "${thread.pp.purpose}"`);
                             }}></ui5-button>
@@ -132,6 +133,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                       <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                   class="showBtn"
                                   @click=${async (e) => {
+                                      e.stopPropagation();
                                       await this._zvm.hideSubject(ppAh);
                                       toasty(`Archived Subject "${thread.pp.purpose}`);
                                   }}></ui5-button>`;
@@ -147,6 +149,9 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
+                    <ui5-button icon="copy" tooltip=${msg("Copy Channel Link")} design="Transparent"
+                                style="border:none; display:none;"
+                                @click=${(e) => {e.stopPropagation(); this.dispatchEvent(new CustomEvent('copy-thread', {detail: ppAh, bubbles: true, composed: true}))}}></ui5-button>
                     ${hideShowBtn}                  
                     ${commentButton}
                 </div>
