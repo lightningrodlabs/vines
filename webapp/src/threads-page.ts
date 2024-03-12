@@ -604,7 +604,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     if (selectedOption.id == "this-app-option") {
-      this._listerToShow = "this";
+      this._listerToShow = THIS_APPLET_ID;
       return;
     }
     /* it's an appletId so display the applet lister */
