@@ -171,7 +171,7 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
 export interface SubjectMat {
   hash: AnyLinkableHashB64,
   typeName: string,
-  dnaHash: DnaHashB64
+  dnaHash: DnaHashB64,
   appletId: string,
 }
 export function materializeSubject(subject: Subject): SubjectMat {

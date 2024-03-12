@@ -311,7 +311,8 @@ export class ThreadsApp extends HappElement {
               console.log("pp entry:", encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]));
               const viewContext = attachableViewInfo.hrlWithContext.context as AttachableThreadContext;
               view = html`
-                  <comment-thread-view .threadHash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])} showInput="true"
+                  <comment-thread-view showInput="true"
+                                       .threadHash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])} 
                                        .subjectName=${viewContext.subjectName}
                                        .subjectType=${viewContext.subjectType}></comment-thread-view>
               `;

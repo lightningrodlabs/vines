@@ -239,8 +239,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** */
-    let maybeHeader = html``
-    if (this._dvm.threadsZvm.hasReachedBeginning(this.threadHash)) {
+    let maybeHeader = html``;
+    const hasReachedBeginning = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
+    console.log("<chat-header> begin reached", hasReachedBeginning);
+    if (hasReachedBeginning) {
       maybeHeader = html`<chat-header .threadHash="${this.threadHash}"></chat-header>`;
     }
 

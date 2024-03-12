@@ -887,6 +887,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Cache them */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval));
     /** Check if beginning of time reached */
+    console.log("probeLatestBeads() begin", searchedInterval.begin, thread.creationTime);
     if (searchedInterval.begin <= thread.creationTime) {
       thread.setSearchedOldestBead();
     }

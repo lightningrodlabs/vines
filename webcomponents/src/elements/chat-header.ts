@@ -36,7 +36,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    //console.log("<chat-header>.render():", this.hash);
+    console.log("<chat-header>.render():", this.threadHash);
     if (this.threadHash == "") {
       return html`
           <div>Thread hash missing</div>`;
@@ -60,11 +60,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       subText = `This is the start of thread ${thread.name}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
-      let subjectName = "";
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
-      if (!subjectBead) {
-        subjectName = "Unknown"
-      } else {
+      if (subjectBead) {
+        let subjectName = "";
         if (subjectBead.beadType == ThreadsEntryType.TextBead) {
           subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBeadMat).value, 60, true);
         }
@@ -74,16 +72,21 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         if (subjectBead.beadType == ThreadsEntryType.AnyBead) {
           subjectName = "HRL";
         }
-      }
 
-      const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
+        const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
 
-      title = html`<h3>Thread about "${subjectName}" from ${avatarElem} ${copyBtn}</h3>`;
-      subText = html`This is the start of thread about chat message 
+        title = html`<h3>Thread about "${subjectName}" from ${avatarElem} ${copyBtn}</h3>`;
+        subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" 
                             @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}>
                         ${subjectName}
                       </span>`;
+      } else {
+        // FIXME: Grab the actual subject type
+        title = html`<h3>Thread about something of type "${thread.pp.subject.typeName}"</h3>`;
+        subText = `This is the start of a thread about a (subject) type`;
+      }
+
     }
 
     // FIXME: Generate Top icon according to topic type or bead type
