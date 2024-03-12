@@ -20,7 +20,7 @@ import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
 import {threadJumpEvent} from "../jump";
 import {FilesDvm} from "@ddd-qc/files";
-import {WeServicesEx} from "../weServicesEx";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
 

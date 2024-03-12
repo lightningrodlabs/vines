@@ -29,12 +29,13 @@ import {
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-  cardStyleTemplate, appProxyContext, WeServicesEx,
+  cardStyleTemplate, appProxyContext,
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
+import {WeServicesEx} from "@ddd-qc/we-utils";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {AttachableViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";

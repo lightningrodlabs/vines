@@ -13,7 +13,7 @@ import {threadJumpEvent} from "../jump";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
-import {WeServicesEx} from "../weServicesEx";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
 

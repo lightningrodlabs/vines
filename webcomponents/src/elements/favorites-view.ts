@@ -17,7 +17,7 @@ import {renderSideBead} from "../render";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ActionHashB64} from "@holochain/client";
-import {WeServicesEx} from "../weServicesEx";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {FilesDvm} from "@ddd-qc/files";
 

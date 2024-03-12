@@ -3,6 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {ActionHashB64, DnaHashB64} from "@holochain/client";
 import {Dictionary, ZomeElement} from "@ddd-qc/lit-happ";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {AnyLinkableHashB64, SubjectMat, ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -12,7 +13,7 @@ import {threadJumpEvent} from "../../jump";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
 import {THIS_APPLET_ID, weClientContext} from "../../contexts";
-import {WeServicesEx} from "../../weServicesEx";
+
 
 /**
  *

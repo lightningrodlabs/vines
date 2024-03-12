@@ -12,7 +12,7 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {FilesDvm} from "@ddd-qc/files";
 import {JumpEvent, notification2JumpEvent} from "../jump";
-import {WeServicesEx} from "../weServicesEx";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 /**

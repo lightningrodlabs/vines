@@ -8,7 +8,7 @@ import {weClientContext} from "../contexts";
 import {AppletInfo, Hrl} from "@lightningrodlabs/we-applet";
 import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {WeServicesEx} from "../weServicesEx";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 /**

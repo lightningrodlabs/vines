@@ -135,8 +135,10 @@ import {
   ThreadsEntryType,
   ThreadsPerspective,
   weClientContext,
-  WeServicesEx
 } from "@threads/elements";
+
+import {WeServicesEx} from "@ddd-qc/we-utils";
+
 
 import {
   ActionHashB64,

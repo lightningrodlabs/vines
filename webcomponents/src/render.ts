@@ -25,7 +25,7 @@ import {unsafeHTML} from "lit/directives/unsafe-html.js";
 import {Hrl} from "@lightningrodlabs/we-applet";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
-import {WeServicesEx} from "./weServicesEx";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 import {beadJumpEvent} from "./jump";
 
 

@@ -103,7 +103,7 @@
     "@ddd-qc/cell-proxy": "=0.21.0",
     "@ddd-qc/lit-happ": "=0.21.0",
     "@ddd-qc/profiles-dvm": "=0.22.5",
-    "@ddd-qc/we-utils": "=0.22.0",
+    "@ddd-qc/we-utils": "=0.22.1",
     "@lightningrodlabs/we-applet": "0.15.0",
     "@ddd-qc/files": "=0.2.11",
     "@ddd-qc/delivery": "=0.9.2",

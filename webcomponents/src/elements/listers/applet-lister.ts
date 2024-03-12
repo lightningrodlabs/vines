@@ -1,6 +1,7 @@
 import {css, html, PropertyValues, render} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {consume} from "@lit/context";
+import {msg} from "@lit/localize";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
@@ -8,13 +9,13 @@ import {AppletId, CreatableType, Hrl} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {CommentRequest} from "../../utils";
 import {threadJumpEvent} from "../../jump";
-import {WeServicesEx} from "../../weServicesEx";
 
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Tree.js"
@@ -26,7 +27,6 @@ import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {THIS_APPLET_ID, weClientContext} from "../../contexts";
-import {msg} from "@lit/localize";
 
 
 /**
