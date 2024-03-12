@@ -129,7 +129,7 @@ import {
   NotifySettingType,
   parseMentions,
   ParticipationProtocol, searchFieldStyleTemplate,
-  shellBarStyleTemplate, suggestionListTemplate, threadJumpEvent,
+  shellBarStyleTemplate, suggestionListTemplate, THIS_APPLET_ID, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
@@ -179,14 +179,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    /** Create a fake appletId for testing without We */
-    //fakeEntryHash().then((eh) => this.appletId = encodeHashToBase64(eh));
-
     this.addEventListener('beforeunload', (e) => {
       console.log("<threads-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
-
     //new ContextProvider(this, wePerspectiveContext, this.wePerspective);
   }
 
@@ -216,7 +212,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowFavorites = false;
   @state() private _canShowSearchResults = false;
   @state() private _canShowDebug = false;
-  @state() private _listerToShow: DnaHashB64 | null = null;
+  @state() private _listerToShow: string | null = null;
 
   @state() private _canViewArchivedTopics = false;
   @state() private _currentCommentRequest?: CommentRequest;
@@ -226,7 +222,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @property({type: Object}) networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
 
-  @property() appletId: AppletId;
+  //@property() appletId: AppletId;
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -294,7 +290,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    const ah = await this._dvm.publishThreadFromSemanticTopic(this.appletId, this._createTopicHash, input.value)[1];
+    const ah = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, input.value)[1];
     //console.log("onCreateList() res:", res)
     input.value = "";
 
@@ -351,15 +347,10 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
-    console.log("<threads-page> firstUpdated() appletId", this.appletId);
+    console.log("<threads-page> firstUpdated()");
 
     /** Generate test data */
-    if (!this.appletId) {
-      this.appletId = "FakeAppletId";
-      //this.appletId = encodeHashToBase64(await emptyAppletId());
-      console.warn("no appletId provided. A fake one has been generated", this.appletId);
-    }
-    //await this._dvm.threadsZvm.generateTestData(this.appletId);
+    //await this._dvm.threadsZvm.generateTestData("");
 
     /** Fiddle with shadow parts CSS */
     const searchField = this.shadowRoot.getElementById('search-field') as Input;
@@ -384,8 +375,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         //this.wePerspective.applets[appletId] = appletInfo;
       }
       /* Grab my appletInfo and groupProfile */
-      console.log("<threads-page> firstUpdated() appletInfo for", this.appletId);
-      const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(this.appletId));
+      console.log("<threads-page> firstUpdated() appletInfo for", this.weServices.appletId);
+      const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(this.weServices.appletId));
       for (const groupId of appletInfo.groupsIds) {
         console.log("<threads-page> firstUpdated() groupId", encodeHashToBase64(groupId));
         const gp = await this.weServices.groupProfile(groupId);
@@ -563,7 +554,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCommentingClicked(e: CustomEvent<CommentRequest>) {
-    console.log("onCommentingClicked()", e);
+    console.log("onCommentingClicked()", e.detail);
     const request = e.detail;
 
     if (request.viewType == "side") {
@@ -590,8 +581,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         subject: {
           hash: decodeHashFromBase64(request.subjectHash),
           typeName: request.subjectType,
-          //appletHash: decodeHashFromBase64(this.appletId),
-          appletId: this.appletId,
+          appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
           dnaHash: decodeHashFromBase64(this.cell.dnaHash),
         }
     };
@@ -611,9 +601,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     if (selectedOption.id == "topics-option") {
       this._listerToShow = this.cell.dnaHash;
-    } else {
-      this._listerToShow = selectedOption.id;
+      return;
     }
+    if (selectedOption.id == "this-app-option") {
+      this._listerToShow = "this";
+      return;
+    }
+    /* it's an appletId so display the applet lister */
+    this._listerToShow = selectedOption.id;
     this.requestUpdate();
   }
 
@@ -871,7 +866,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const appletInfo = this.weServices.getAppletInfo(this.appletId);
+      const appletInfo = this.weServices.getAppletInfo(this.weServices.appletId);
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsIds[0]);
@@ -901,7 +896,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
 
-    let lister= html`<applet-lister .appletId=${this._listerToShow ? this._listerToShow : this.appletId}></applet-lister>`
+    let lister= html`<applet-lister .appletId=${this._listerToShow}></applet-lister>`
     if (this._listerToShow == this.cell.dnaHash) {
       lister = html`
           <topics-lister 
@@ -910,14 +905,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          @createNewTopic=${(e) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e) => {
                              this._createTopicHash = e.detail;
-                             this.createThreadDialogElem.show()
+                             this.createThreadDialogElem.show();
                          }}
           ></topics-lister>
       `;
     }
     if (this._listerToShow == null) {
       lister = html`
-          <my-threads-lister .appletId=${this.appletId}
+          <my-threads-lister 
                          .showArchivedTopics=${this._canViewArchivedTopics}
                          .selectedThreadHash=${this._selectedThreadHash}
                          @createNewTopic=${(e) => this.createTopicDialogElem.show()}
@@ -982,8 +977,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                 <ui5-select id="dna-select" @change=${this.onAppletSelected}>
                     ${appletOptions}
-                        <!--<ui5-option id=${this.appletId}>Threads</ui5-option>-->
-                    <ui5-option id="mine-option" icon="bookmark" selected>My Threads</ui5-option>
+                    <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>
+                    <ui5-option id="mine-option" icon="bookmark">My Threads</ui5-option>
                     <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
                 </ui5-select>
                 ${lister}

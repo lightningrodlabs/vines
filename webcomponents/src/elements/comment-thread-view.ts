@@ -5,7 +5,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {parseMentions} from "../utils";
 
-import {ActionHashB64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -208,8 +208,12 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
       `;
     }
 
-    const bg_color = this._loading? "#ededf0" : "#ffffff"
-
+    if (this._loading) {
+      return html `
+          ${doodle_bg}
+          <ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
+      `;
+    }
 
     // if (pp.subjectType == SEMANTIC_TOPIC_TYPE_NAME) {
     //   const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
@@ -261,15 +265,17 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         ${doodle_bg}
-        <h3 style="margin: 10px;color: #021133;">
+        <h3 style="margin:10px; color:#021133;">
           ${title} 
           <span id="subjectName" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectName}</span>
           <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
               e.stopPropagation();
               this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
           }}></ui5-button>
-          <ui5-button icon="information" design="Transparent" tooltip=${subjectType} @click=${(e) => {
+          <ui5-button icon="information" design="Transparent" tooltip=${subjectType} 
+                      @click=${(e) => {
             if (this.weServices) {
+                if (this.weServices.appletId != thread.pp.subject.appletId) this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
               // TODO: Grab HrlWithContext somehow
               //this.weServices.openHrl();
               return;

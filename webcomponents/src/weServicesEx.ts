@@ -1,4 +1,4 @@
-import {AppletInfo, HrlWithContext, WeNotification, WeServices} from "@lightningrodlabs/we-applet";
+import {AppletId, AppletInfo, HrlWithContext, WeNotification, WeServices} from "@lightningrodlabs/we-applet";
 import {
   AppletHash,
   AttachableLocationAndInfo,
@@ -14,7 +14,7 @@ export class WeServicesEx implements WeServices {
 
   attachmentTypes: ReadonlyMap<AppletHash, Record<AttachmentName, AttachmentType>>;
 
-  constructor(private _inner: WeServices) {
+  constructor(private _inner: WeServices, private _thisAppletId: AppletId) {
     this.attachmentTypes = _inner.attachmentTypes;
   }
 
@@ -23,10 +23,14 @@ export class WeServicesEx implements WeServices {
   /** DnaHashB64 -> groupProfile */
   private _groupProfileCache: Record<string, any | undefined> = {};
   /** appletId -> AppletInfo */
-  private _appletInfoCache: Record<string, AppletInfo | undefined> = {};
+  private _appletInfoCache: Record<AppletId, AppletInfo | undefined> = {};
+
+  //private _thisAppletId: EntryHashB64 = ''
 
 
   /** -- Getters -- */
+
+  get appletId(): AppletId {return this._thisAppletId}
 
 
   getAttachableInfo(hrlc_or_str: HrlWithContext | string): AttachableLocationAndInfo | undefined {

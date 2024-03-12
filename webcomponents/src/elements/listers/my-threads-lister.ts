@@ -11,10 +11,8 @@ import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../jump";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
-import {weClientContext} from "../../contexts";
+import {THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "../../weServicesEx";
-import {AppletId} from "@lightningrodlabs/we-applet";
-
 
 /**
  *
@@ -29,9 +27,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   @property() showArchivedTopics?: string;
 
   @property() selectedThreadHash?: string;
-
-  /** ID of the applet to display threads of */
-  @property() appletId: AppletId = ''
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -107,8 +102,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       //   return;
       // }
 
-      console.log("<my-threads-lister> appletId", appletId, this.appletId);
-      if (appletId != this.appletId) {
+      console.log("<my-threads-lister> appletId:", appletId);
+      if (appletId != THIS_APPLET_ID) {
         if (!this.weServices || !this.weServices.getAppletInfo(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
           return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown appletId')}</div>`;
@@ -332,7 +327,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                          if (cmt) cmt.style.display = "none";
                        }}>
               <!-- header -->
-              <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
+              <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
                   <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                   <!-- ${topicBadge} -->
                   ${topicHideBtn}                

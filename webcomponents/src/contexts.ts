@@ -4,6 +4,9 @@ import {AppletInfo, AttachableLocationAndInfo} from "@lightningrodlabs/we-applet
 import {AppProxy, Dictionary} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "./weServicesEx";
 
+export const THIS_APPLET_ID = "__this"
+
+
 export const weClientContext = createContext<WeServicesEx>('we_client');
 //export const wePerspectiveContext = createContext<WePerspective>('we_perspective');
 export const globaFilesContext = createContext<FilesDvm>('global/files');

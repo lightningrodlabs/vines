@@ -25,7 +25,8 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {weClientContext} from "../../contexts";
+import {THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -39,7 +40,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
   /** ID of the applet to display threads of */
-  @property() appletId: AppletId = ''
+  @property() appletId: AppletId = THIS_APPLET_ID;
 
 
   @consume({ context: weClientContext, subscribe: true })
@@ -323,6 +324,21 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       </ui5-tree-item-custom>`
     });
     //console.log({treeItems})
+
+    /** Handle empty tree case */
+    if (treeItems.length == 0) {
+      return html`
+          <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
+            <div style="color: gray; margin: auto;">${msg('No threads found')}</div>
+            <ui5-button design="Emphasized"  ?disabled=${!this.weServices}
+                        @click=${(e) => {
+                          if (this.weServices && this.appletId != THIS_APPLET_ID) this.weServices.openAppletMain(decodeHashFromBase64(this.appletId))
+                        }}>
+                ${msg('Go to applet')}
+            </ui5-button>
+          </div>
+      `;
+    }
 
     /** render all */
     return html`

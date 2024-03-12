@@ -78,7 +78,7 @@ export class ThreadsApp extends HappElement {
   protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   private _weProfilesDvm?: ProfilesDvm;
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-  public appletId?: EntryHashB64;
+  //public appletId?: EntryHashB64;
 
 
   /** -- Ctor -- */
@@ -110,10 +110,10 @@ export class ThreadsApp extends HappElement {
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
-    const weServicesEx = new WeServicesEx(weServices);
+    const weServicesEx = new WeServicesEx(weServices, thisAppletId);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     app._weProvider = new ContextProvider(app, weClientContext, weServicesEx);
-    app.appletId = thisAppletId;
+    //app.appletId = thisAppletId;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
     await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
@@ -282,7 +282,7 @@ export class ThreadsApp extends HappElement {
     //let view = html`<slot></slot>`;
     // FIXME: should propable store networkInfoLogs in class field
     let view = html`
-        <threads-page .appletId=${this.appletId} style="height:100vh;" 
+        <threads-page style="height:100vh;" 
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}

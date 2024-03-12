@@ -4,6 +4,11 @@ import { css } from 'lit';
 /* p NEEDED because markdownit() generates <p> */
 export const sharedStyles = css`
 
+  code {
+    background: #8080801a;
+    padding: 5px;
+  }
+  
   p {
     margin: 0px;
     white-space: pre-wrap;
