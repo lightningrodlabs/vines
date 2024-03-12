@@ -4,7 +4,7 @@ import {consume} from "@lit/context";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
-import {AppletId, AttachmentType, Hrl} from "@lightningrodlabs/we-applet";
+import {AppletId, CreatableType, Hrl} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
@@ -75,34 +75,35 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
 
-  private _threadAttachmentType?: AttachmentType;
+  private _threadCreatableType?: CreatableType;
 
   /** Search for Threads attachmentType in based on _appInfoMap */
-  getThreadAttachmentType(): AttachmentType | undefined {
-    if (this._threadAttachmentType) {
-      return this._threadAttachmentType;
+  getThreadAttachmentType(): CreatableType | undefined {
+    // FIXME
+    if (this._threadCreatableType) {
+      return this._threadCreatableType;
     }
-    // let threadsAppletId = undefined;
-    // for (const [appletId, appInfo] of Object.entries(this._appInfoMap)) {
-    //   if (appInfo.appletName == "Threads") {
-    //     threadsAppletId = appletId;
-    //     break;
+    // // let threadsAppletId = undefined;
+    // // for (const [appletId, appInfo] of Object.entries(this._appInfoMap)) {
+    // //   if (appInfo.appletName == "Threads") {
+    // //     threadsAppletId = appletId;
+    // //     break;
+    // //   }
+    // // }
+    // // if (!threadsAppletId) {
+    // //   console.warn("Did not find Threads applet");
+    // //   return undefined;
+    // // }
+    // for (const [_appletHash, atts] of this.weServices.creatables.entries()) {
+    //   //if (encodeHashToBase64(appletId) == threadsAppletId) {
+    //   for (const [attName, att] of Object.entries(atts)) {
+    //     if (attName == "thread") {
+    //       this._threadCreatableType = att;
+    //       return att;
+    //     }
     //   }
     // }
-    // if (!threadsAppletId) {
-    //   console.warn("Did not find Threads applet");
-    //   return undefined;
-    // }
-    for (const [_appletHash, atts] of this.weServices.attachmentTypes.entries()) {
-      //if (encodeHashToBase64(appletId) == threadsAppletId) {
-      for (const [attName, att] of Object.entries(atts)) {
-        if (attName == "thread") {
-          this._threadAttachmentType = att;
-          return att;
-        }
-      }
-    }
-    console.warn("Did not find 'thread' attachmentType in WeServices");
+    // console.warn("Did not find 'thread' attachmentType in WeServices");
     return undefined;
   }
 
@@ -117,11 +118,12 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     const spaceHrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(hash)];
     const hrlc = {hrl: spaceHrl, context: {subjectType, subjectName}}
-    const res = await attType.create(hrlc);
-    console.log("Create/Open Thread result:", res);
-    res.context.subjectType = subjectType;
-    res.context.subjectName = subjectName;
-    this.weServices.openHrl({hrl: res.hrl, context: res.context});
+    // FIXME: since create has been removed, try to grab existing entry instead.
+    // const res = await attType.create(hrlc);
+    // console.log("Create/Open Thread result:", res);
+    // res.context.subjectType = subjectType;
+    // res.context.subjectName = subjectName;
+    // this.weServices.openHrl({hrl: res.hrl, context: res.context});
   }
 
 
@@ -330,7 +332,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
             <div style="color: gray; margin: auto;">${msg('No threads found')}</div>
-            <ui5-button design="Emphasized"  ?disabled=${!this.weServices}
+            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId || this.appletId == THIS_APPLET_ID}
                         @click=${(e) => {
                           if (this.weServices && this.appletId != THIS_APPLET_ID) this.weServices.openAppletMain(decodeHashFromBase64(this.appletId))
                         }}>

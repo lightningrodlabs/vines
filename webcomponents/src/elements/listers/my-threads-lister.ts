@@ -98,12 +98,13 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** Main loop */
     let appletItems = Object.entries(allThreadsByApplet).map(([appletId, appletThreads]) => {
       // /** Skip if hidden */
+      // FIXME: Figure out how to know if its hidden or not
       // if (isHidden && !this.showArchivedTopics) {
       //   return;
       // }
 
       console.log("<my-threads-lister> appletId:", appletId);
-      if (appletId != THIS_APPLET_ID) {
+      if (appletId != THIS_APPLET_ID && appletId != this.weServices.appletId) {
         if (!this.weServices || !this.weServices.getAppletInfo(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
           return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown appletId')}</div>`;
@@ -229,7 +230,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                        @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
-                    ${hideShowBtn}
+                    <!-- ${hideShowBtn} -->
                     ${commentButton}
                   </div>
               </sl-tooltip>
@@ -330,7 +331,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
               <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
                   <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                   <!-- ${topicBadge} -->
-                  ${topicHideBtn}                
+                  <!-- ${topicHideBtn} -->                
                   ${topicCommentButton}
                       <!--
                   <ui5-button icon="add" tooltip="Create a new channel for this Topic" 

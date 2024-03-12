@@ -2,8 +2,6 @@ import {AppletId, AppletInfo, HrlWithContext, WeNotification, WeServices} from "
 import {
   AppletHash,
   AttachableLocationAndInfo,
-  AttachmentName,
-  AttachmentType
 } from "@lightningrodlabs/we-applet/dist/types";
 import {stringifyHrl} from "@ddd-qc/we-utils";
 import {ActionHash, DnaHash, DnaHashB64, encodeHashToBase64, EntryHash, EntryHashB64} from "@holochain/client";
@@ -12,10 +10,10 @@ import {ActionHash, DnaHash, DnaHashB64, encodeHashToBase64, EntryHash, EntryHas
 /** WeServices wrapper that caches requested infos */
 export class WeServicesEx implements WeServices {
 
-  attachmentTypes: ReadonlyMap<AppletHash, Record<AttachmentName, AttachmentType>>;
+  //attachmentTypes: ReadonlyMap<AppletHash, Record<AttachmentName, AttachmentType>>;
 
   constructor(private _inner: WeServices, private _thisAppletId: AppletId) {
-    this.attachmentTypes = _inner.attachmentTypes;
+    //this.attachmentTypes = _inner.attachmentTypes;
   }
 
   /** hrlStr -> AttachableLocationAndInfo */
@@ -111,12 +109,9 @@ export class WeServicesEx implements WeServices {
   async openCrossAppletBlock(appletHash: EntryHash, block: string, context: any): Promise<void>  {return this._inner.openCrossAppletBlock(appletHash, block, context)}
   async openHrl(hrlc: HrlWithContext): Promise<void>  {return this._inner.openHrl(hrlc)}
   async hrlToClipboard(hrlc: HrlWithContext): Promise<void>  {return this._inner.hrlToClipboard(hrlc)}
-  async search(searchFilter: string): Promise<any>  {return this._inner.search(searchFilter)}
+  //async search(searchFilter: string): Promise<any>  {return this._inner.search(searchFilter)}
   async userSelectHrl(): Promise<HrlWithContext | undefined>  {return this._inner.userSelectHrl()}
   async notifyWe(notifications: Array<WeNotification>): Promise<any>  {return this._inner.notifyWe(notifications)}
   async userSelectScreen(): Promise<string>  {return this._inner.userSelectScreen()}
-
-
-
-
+  async requestBind(srcWal: HrlWithContext, dstWal: HrlWithContext) {return this._inner.requestBind(srcWal, dstWal)}
 }

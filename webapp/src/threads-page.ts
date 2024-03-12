@@ -603,7 +603,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this._listerToShow = this.cell.dnaHash;
       return;
     }
-    if (selectedOption.id == "this-app-option") {
+    if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
       this._listerToShow = THIS_APPLET_ID;
       return;
     }
@@ -815,7 +815,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       appletOptions = this.weServices.getAppletIds().map((appletId) => {
           const appletInfo = this.weServices.getAppletInfo(appletId);
           console.log("appletInfo", appletInfo);
-          if (!appletInfo) {
+          /** exclude this applet as it's handled specifically elsewhere */
+          if (!appletInfo || this.weServices.appletId == appletId) {
             return html``;
           }
           return html`
