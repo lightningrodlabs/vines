@@ -80,7 +80,7 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //console.log("<chat-hrl>.render() anyBead", anyBead.value);
     const obj: [string, string] = JSON.parse(anyBead.value);
     const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-    //console.log("<chat-hrl>.render()", stringifyHrl(hrl), obj);
+    //console.log("<chat-hrl>.render()", weaveUrlFromWal(hrl), obj);
     if (!this._attLocAndInfo) {
       this.weServices.attachableInfo({hrl}).then((attLocAndInfo) => {
         //console.log("<chat-hrl>.render() attachableInfo", attLocAndInfo);

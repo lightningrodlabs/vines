@@ -3,10 +3,9 @@ import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64}
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {
-    NotifiableEventType,
-  TextBead,
-    ThreadsEntryType,
-    WeaveNotification
+  NotifiableEventType,
+  ThreadsEntryType,
+  WeaveNotification
 } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {
@@ -14,15 +13,13 @@ import {
   BeadInfo,
   EntryBeadMat,
   TextBeadMat,
-  TypedBead,
   TypedBeadMat
 } from "./viewModels/threads.perspective";
-import {stringifyHrl} from "@ddd-qc/we-utils";
-import {decodeHrl, truncate} from "./utils";
+import {determineBeadName} from "./utils";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import markdownit from "markdown-it";
 import {unsafeHTML} from "lit/directives/unsafe-html.js";
-import {Hrl} from "@lightningrodlabs/we-applet";
+import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -84,7 +81,7 @@ export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadIn
       if (anyBead.typeInfo === "hrl" && weServices) {
         const obj: [string, string] = JSON.parse(anyBead.value);
         const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-        const hrlStr = stringifyHrl(hrl);
+        const hrlStr = weaveUrlFromWal({hrl}, false);
         const id = "hrl-item" + "-" + obj[1];
         const maybeInfo = weServices.getAttachableInfo(hrlStr);
         let innerText = hrlStr;
@@ -151,43 +148,43 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
     if (NotifiableEventType.Mention in notif.event) {
         const beadPair = threadsZvm.perspective.beads[ah];
         if (!beadPair) {
-            title = "Mention in channel";
+            title = "Mention in thread";
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
             const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title = "Mention in channel " + maybeThread.name;
+                title = "Mention in thread " + maybeThread.name;
             }
-            content = determineBeadName(beadInfo, typedBead, filesDvm, weServices);
+            content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
         }
     }
     if (NotifiableEventType.NewBead in notif.event) {
       const beadPair = threadsZvm.perspective.beads[ah];
       if (!beadPair) {
-        title = "New message in channel";
+        title = "New message in thread";
       } else {
         const beadInfo = beadPair[0];
         const typedBead = beadPair[1];
         const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
         if (maybeThread) {
-          title = "New message in channel " + maybeThread.name;
+          title = "New message in thread " + maybeThread.name;
         }
-        content = determineBeadName(beadInfo, typedBead, filesDvm, weServices);
+        content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
       }
     }
     if (NotifiableEventType.Reply in notif.event) {
         const beadPair = threadsZvm.perspective.beads[ah];
         if (!beadPair) {
-            title = "Reply in channel";
+            title = "Reply in thread";
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
             const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title = "Reply in channel " + maybeThread.name;
+                title = "Reply in thread " + maybeThread.name;
             }
-            content = determineBeadName(beadInfo, typedBead, filesDvm, weServices);
+            content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
         }
     }
     if (NotifiableEventType.Fork in notif.event) {
@@ -206,47 +203,6 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         // TODO
     }
     return [title, content];
-}
-
-
-
-/** */
-export function determineBeadName(beadInfo: BeadInfo, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx): string {
-    switch (beadInfo.beadType) {
-      /** TextBead: text content */
-      case ThreadsEntryType.TextBead:
-        return truncate((typedBead as TextBeadMat).value, 60, true);
-      break;
-      /** EntryBead: Filename */
-      case ThreadsEntryType.EntryBead:
-            if (!filesDvm) {
-              return "<unknown file>";
-            }
-            const fileBead = typedBead as EntryBeadMat;
-            const tuple = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
-            if (!tuple) {
-                return "<file>";
-            }
-            return tuple[0].name;
-        break;
-      /** AnyBead: AttachableInfo.name */
-      case ThreadsEntryType.AnyBead:
-            if (!weServices) {
-              return "<unknown attachable>";
-            }
-            const hrlBead = typedBead as AnyBeadMat;
-            const hrl = decodeHrl(hrlBead.value);
-            const attLocInfo = weServices.getAttachableInfo(stringifyHrl(hrl));
-            if (!attLocInfo) {
-                return "<unknown attachable>";
-            }
-            return attLocInfo.attachableInfo.name;
-        break;
-      /** */
-      default:
-        break;
-    }
-    return "<unknown>";
 }
 
 

@@ -15,6 +15,12 @@ export const sharedStyles = css`
     overflow: auto;
   }
 
+  .subjectName {
+    font-style: italic;
+    background: #fbfbfb9c;
+    padding: 4px;
+  }
+  
   .sideAgentName {
     font-family: "72";
     color: rgb(64, 64, 64);

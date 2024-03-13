@@ -45,6 +45,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 
 import "./threads-page"
 
+import Button from "@ui5/webcomponents/dist/Button";
 
 /** */
 export interface AttachableThreadContext {
@@ -275,9 +276,24 @@ export class ThreadsApp extends HappElement {
       `;
     }
     if(this._hasHolochainFailed) {
-      return html`<div style="width: auto; height: auto; font-size: 4rem;">
-        ${msg("Failed to connect to Holochain Conductor and/or \"Threads\" cell.")};
-      </div>`;
+      return html`
+      <div style="display: flex; flex-direction: column">
+        <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};</div>
+        <ui5-button id="retryBtn" @click=${async (e) => {
+          const btn = this.shadowRoot.getElementById("retryBtn") as Button;
+          btn.disabled = true;
+          const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
+          if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+              console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+              btn.disabled = false;
+          } else {
+              this._hasHolochainFailed = false;
+          }
+        }}>
+          ${msg('Retry')}
+        </ui5-button>
+      </div>
+      `;
     }
 
     //let view = html`<slot></slot>`;
@@ -318,13 +334,21 @@ export class ThreadsApp extends HappElement {
                                        .subjectType=${viewContext.subjectType}></comment-thread-view>
               `;
               break;
+            case ThreadsEntryType.TextBead:
+            case ThreadsEntryType.AnyBead:
+            case ThreadsEntryType.EntryBead:
+                view = html`<div>FIXME</div>`;
+              break
             default:
               throw new Error(`Unhandled entry type ${attachableViewInfo.entryType}.`);
           }
           break;
+        case "creatable":
+          throw new Error(`Unhandled creatable type ${this.appletView.name}.`)
+          break;
         default:
-          console.error("Unknown We applet-view type", this.appletView);
-          throw new Error(`Unknown We applet-view type`);
+          console.error("Unknown applet-view type", this.appletView);
+          throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
     } else {
       let _provider = new ContextProvider(this, appProxyContext, this.appProxy);

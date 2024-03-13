@@ -48,7 +48,7 @@ pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
 #[hdk_extern]
 pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let (target_type, record) = get_app_entry_name(ah.clone().into())?;
+    let (target_type, record) = get_app_entry_name(ah.clone().into(), CallTargetCell::Local)?;
     /// Form input & create link
     let input = AscribeTargetInput {
         target: ah.into(),
@@ -131,53 +131,4 @@ pub(crate) fn get_type_tp(target_type: String) -> ExternResult<TypedPath> {
     //
     Path::from(format!("{}{}{}", ROOT_ANCHOR_AUTHORSHIP, DELIMITER, lower_title.chars().next().unwrap()))
         .typed(AuthorshipLinkType::AuthorshipPath)
-}
-
-
-//--------------------------------------------------------------------------------------------------
-
-///
-pub fn get_app_entry_name(dh: AnyDhtHash) -> ExternResult<(AppEntryName, Record)> {
-    /// Grab Entry
-    let maybe_maybe_record = get(dh.clone(), GetOptions::content());
-    if let Err(err) = maybe_maybe_record {
-        warn!("Failed getting Record: {}", err);
-        return Err(err);
-    }
-    let Some(record) = maybe_maybe_record.unwrap() else {
-        return error("no Record found at address");
-    };
-    let RecordEntry::Present(entry) = record.entry() else {
-        return error("no Entry found at address");
-    };
-    /// Grab Type
-    let entry_type = get_entry_type(entry)?;
-    let EntryType::App(app_entry_def) = entry_type else {
-        return error("no AppEntry found at address");
-    };
-    let aen = get_app_entry_name_from_def(app_entry_def)?;
-
-    Ok((aen, record))
-}
-
-
-///
-pub fn get_app_entry_name_from_def(app_entry_def: AppEntryDef) -> ExternResult<AppEntryName> {
-    /// Grab zome
-    let dna = dna_info()?;
-    let this_zome_info = zome_info()?;
-    let mut entry_defs: EntryDefs = this_zome_info.entry_defs;
-    /// Grab entry_def from different zome
-    if this_zome_info.id != app_entry_def.zome_index {
-        let zome_name = dna.zome_names[app_entry_def.zome_index.0 as usize].clone();
-        let response = call(CallTargetCell::Local, zome_name, "entry_defs".into(), None, ())?;
-        entry_defs  = decode_response(response)?;
-    }
-    /// Grab entry_def
-    let entry_def: EntryDef = entry_defs.0[app_entry_def.entry_index.0 as usize].clone();
-    let EntryDefId::App(name) = entry_def.id else {
-        return error("Not an AppEntry");
-    };
-    /// Done
-    Ok(name)
 }

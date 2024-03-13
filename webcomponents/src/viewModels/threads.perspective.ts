@@ -94,8 +94,6 @@ export interface ThreadsPerspective {
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** ppAh -> Thread */
   threads: Map<ActionHashB64, Thread>,
-  /** Name  -> ppAh */
-  threadsByName: Dictionary<ActionHashB64>,
   /** beadAh -> [BeadInfo, TypedBead] */
   beads: Dictionary<[BeadInfo, TypedBeadMat]>,
   /** bead_ah -> [agent, emoji] */
@@ -149,12 +147,14 @@ export interface ParticipationProtocolMat {
   purpose: string,
   rules: string,
   subject: SubjectMat,
+  subject_name: string,
 }
 export function materializeParticipationProtocol(pp: ParticipationProtocol): ParticipationProtocolMat {
   return {
     purpose: pp.purpose,
     rules: pp.rules,
     subject: materializeSubject(pp.subject),
+    subject_name: pp.subject_name,
   } as ParticipationProtocolMat;
 }
 export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat): ParticipationProtocol {
@@ -162,6 +162,7 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
     purpose: pp.purpose,
     rules: pp.rules,
     subject: dematerializeSubject(pp.subject),
+    subject_name: pp.subject_name,
   } as ParticipationProtocol;
 }
 

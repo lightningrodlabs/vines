@@ -44,6 +44,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_thread_logs",
 
 
+	"get_data_type",
 	"notify_peer",
 	"send_inbox_item",
 	"probe_inbox",

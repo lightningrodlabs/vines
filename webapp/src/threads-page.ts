@@ -122,14 +122,14 @@ import {
   AnyLinkableHashB64,
   ChatThreadView,
   CommentRequest,
-  decodeHrl, doodle_flowers,
+  decodeHrl, determineSubjectName, doodle_flowers,
   event2type,
   globaFilesContext, inputBarStyleTemplate, JumpDestinationType,
-  JumpEvent,
+  JumpEvent, materializeSubject,
   NotifySettingType,
   parseMentions,
   ParticipationProtocol, searchFieldStyleTemplate,
-  shellBarStyleTemplate, suggestionListTemplate, THIS_APPLET_ID, threadJumpEvent,
+  shellBarStyleTemplate, Subject, SubjectMat, suggestionListTemplate, THIS_APPLET_ID, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
@@ -149,7 +149,7 @@ import {
   Timestamp,
 } from "@holochain/client";
 
-import {AppletId, GroupProfile, Hrl, WeNotification} from "@lightningrodlabs/we-applet";
+import {AppletId, GroupProfile, Hrl, weaveUrlFromWal, WeNotification} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
 
 //import "./input-bar";
@@ -162,7 +162,7 @@ import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@threads/elements/dist/render";
 import {toasty} from "@threads/elements/dist/toast";
-import {stringifyHrl, wrapPathInSvg} from "@ddd-qc/we-utils";
+import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
 import {parseSearchInput} from "@threads/elements/dist/search";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
@@ -235,7 +235,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-  //private wePerspective: WePerspective = { applets: {}, attachables: {}};
+  private _threadNames: Record<ActionHashB64, string> = {};
 
 
   /** -- Getters -- */
@@ -332,7 +332,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCreateHrlMessage() {
     const maybeHrlc = await this.weServices.userSelectHrl();
     if (!maybeHrlc) return;
-    console.log("onCreateHrlMessage()", stringifyHrl(maybeHrlc.hrl), maybeHrlc);
+    console.log("onCreateHrlMessage()", weaveUrlFromWal({hrl: maybeHrlc.hrl}, false), maybeHrlc);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
     /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeHrlc.hrl, this._selectedThreadHash);
@@ -452,8 +452,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       const anyBead = beadPair[1] as AnyBeadMat;
       const hrl = decodeHrl(anyBead.value);
-      const sHrl = stringifyHrl(hrl);
-      if (!this.weServices.getAttachableInfo(sHrl)) {
+      //const sHrl = weaveUrlFromWal(hrl);
+      if (!this.weServices.getAttachableInfo({hrl})) {
         //this.wePerspective.attachables[sHrl] =
         await this.weServices.attachableInfo({hrl});
         this.requestUpdate();
@@ -577,15 +577,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async createCommentThread(request: CommentRequest) {
+    const subject: Subject = {
+        hash: decodeHashFromBase64(request.subjectHash),
+        typeName: request.subjectType,
+        appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
+        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+    };
     const pp: ParticipationProtocol = {
         purpose: "comment",
         rules: "N/A",
-        subject: {
-          hash: decodeHashFromBase64(request.subjectHash),
-          typeName: request.subjectType,
-          appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
-          dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-        }
+        subject,
+        subject_name: request.subjectName,
+        //subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
     };
     const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
@@ -645,7 +648,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(e.detail)];
-    const sHrl = stringifyHrl(hrl);
+    const sHrl = weaveUrlFromWal({hrl}, false);
     navigator.clipboard.writeText(sHrl);
     if (this.weServices) {
       this.weServices.hrlToClipboard({hrl});
@@ -745,20 +748,20 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
         ${doodle_flowers}
     `;
-    let threadTitle = "No thread selected";
+    let primaryTitle = "No thread selected";
     if (this._selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
       if (!thread) {
         this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
+        primaryTitle = thread.name;
         const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
-        let topic = "Reply";
+        let topic;
          if (maybeSemanticTopicThread) {
            const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-           threadTitle = thread.name;
            topic = semTopic;
          } else {
-           threadTitle = `Thread about Message `;
+           topic = "Reply";
          }
 
         /** Check uploading state */
@@ -1048,7 +1051,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </div>
             <div id="mainSide">
-              <ui5-shellbar id="topicBar" primary-title=${threadTitle} show-search-field>
+              <ui5-shellbar id="topicBar" primary-title=${primaryTitle} show-search-field>
                   ${this._selectedThreadHash == "" ? html`` :
                           html`<ui5-button id="notifSettingsBtn" slot="startButton" icon="bell" tooltip=${msg('Notifications Settings')} 
                                            @click=${() => {

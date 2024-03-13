@@ -6,6 +6,8 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 export const THIS_APPLET_ID = "__this"
 
+export const SUBJECT_TYPE_TYPE_NAME = "SubjectType";
+export const PP_TYPE_NAME = "ParticipationProtocol";
 
 export const weClientContext = createContext<WeServicesEx>('we_client');
 //export const wePerspectiveContext = createContext<WePerspective>('we_perspective');

@@ -5,6 +5,7 @@ import {TimeInterval} from "./timeInterval";
 import createRBTree, {Tree} from "functional-red-black-tree";
 import {Base64} from "js-base64";
 import {BeadLinkMaterialized, ParticipationProtocolMat} from "./threads.perspective";
+import {determineSubjectPrefix} from "../utils";
 
 /** Importing this from holochain will cause jest to fail */
 function encodeHashToBase64(hash: Uint8Array) {
@@ -56,7 +57,7 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentPubKeyB64, public readonly name: string) {
+  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentPubKeyB64) {
     console.log("New Thread() dnaOriginTime", dnaOriginTime);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
@@ -69,6 +70,8 @@ export class Thread {
 
 
   /** -- Getters -- */
+
+  get name(): string { return `${determineSubjectPrefix(this._pp.subject.typeName)} ${this._pp.subject_name}: ${this._pp.purpose}`}
 
   get pp(): ParticipationProtocolMat { return this._pp}
 

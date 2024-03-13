@@ -23,7 +23,7 @@ import {
 import {
   AnyLinkableHashB64,
   BeadType,
-  materializeTypedBead,
+  materializeTypedBead, ParticipationProtocolMat,
   TypedBead,
 } from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
@@ -146,10 +146,10 @@ export class ThreadsDvm extends DnaViewModel {
       await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
     if (NotifiableEventType.Fork in notif.event) {
-      const pp: ParticipationProtocol = decode(extra) as ParticipationProtocol;
+      const pp = decode(extra) as ParticipationProtocol;
       ppAh = encodeHashToBase64(notif.content);
       console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
-      await this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true); // only real author should notify others
+      this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true); // only real author should notify others
     }
 
     /** Store Notification */

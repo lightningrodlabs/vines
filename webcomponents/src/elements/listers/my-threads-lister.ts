@@ -12,7 +12,9 @@ import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../jump";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
-import {THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {SEMANTIC_TOPIC_TYPE_NAME} from "../../bindings/threads.types";
+import {FilesDvm} from "@ddd-qc/files";
 
 
 /**
@@ -28,6 +30,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   @property() showArchivedTopics?: string;
 
   @property() selectedThreadHash?: string;
+
+  @consume({ context: globaFilesContext, subscribe: true })
+  filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -51,7 +56,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic", subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: SEMANTIC_TOPIC_TYPE_NAME, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
 
 

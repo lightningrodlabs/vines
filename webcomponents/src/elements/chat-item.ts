@@ -7,21 +7,21 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 import {Picker} from "emoji-picker-element";
 import Popover from "@ui5/webcomponents/dist/Popover";
-import {determineBeadName, renderAvatar} from "../render";
+import {renderAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {threadJumpEvent} from "../jump";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {Hrl} from "@lightningrodlabs/we-applet";
+import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {toasty} from "../toast";
-import {stringifyHrl} from "@ddd-qc/we-utils";
-import {cardStyleTemplate, popoverStyleTemplate} from "../styles";
+import {popoverStyleTemplate} from "../styles";
+import {determineBeadName} from "../utils";
 
 /**
  * @element
@@ -168,12 +168,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
         const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
         const typed = this._dvm.threadsZvm.getBead(this.hash);
-        const beadName = determineBeadName(beadInfo, typed, this._filesDvm, this.weServices);
+        const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
       case "intoHrl":
         const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
-        const sHrl = stringifyHrl(hrl);
+        const sHrl = weaveUrlFromWal({hrl}, false);
         navigator.clipboard.writeText(sHrl);
         if (this.weServices) {
           this.weServices.hrlToClipboard({hrl});
@@ -213,7 +213,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
     /** Determine the comment button to display depending on current comments for this message */
-    let subjectName = determineBeadName(beadInfo, typed, this._filesDvm, this.weServices);
+    let subjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
       item = html`<chat-text class="innerItem" .hash=${this.hash}></chat-text>`;

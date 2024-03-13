@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import { DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {parseMentions} from "../utils";
+import {determineSubjectPrefix, parseMentions} from "../utils";
 
 import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 
@@ -251,7 +251,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     //<!-- @load-more=${this.onLoadMore}-->
 
     const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
-    const subjectName = this.subjectName? this.subjectName : thread.pp.subject.hash;
+    const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
+    const subjectPrefix = determineSubjectPrefix(subjectType);
+
     const title = `Thread about`;
 
     let maybeInput = html``;
@@ -267,7 +269,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         ${doodle_bg}
         <h3 style="margin:10px; color:#021133;">
           ${title} 
-          <span id="subjectName" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectName}</span>
+          <span class="subjectName" style="cursor: pointer;" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectPrefix} ${subjectName}</span>
           <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
               e.stopPropagation();
               this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
@@ -306,27 +308,17 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           z-index: 0;
         }
         
-        
         #list {
           overflow: auto;
           display: flex;
           flex-direction: column;
         }
         
-        
-
         threads-input-bar {
           border: none;
           width: 100%;
           margin-top: 8px;
           margin-bottom: 10px;
-        }
-
-        #subjectName {
-          font-style: italic;
-          background: #fbfbfb9c;
-          padding: 4px;
-          cursor: pointer;
         }
       `,
     ];

@@ -1,10 +1,10 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {timeSince} from "../utils";
+import {timeSince, truncate} from "../utils";
 import {encodeHashToBase64} from "@holochain/client";
 import {composeNotificationTitle, renderAvatar} from "../render";
 import {msg} from "@lit/localize";
@@ -78,11 +78,13 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
         //const date_str = date.toLocaleString('en-US', {hour12: false});
         const date_str = timeSince(date) + " ago";
 
+        const title = truncate(notifTitle, 120, true);
+
         /** */
         return html`
           <ui5-li-notification 
               show-close
-              title-text=${notifTitle} 
+              title-text=${title} 
               @close=${async (_e) => {await this._dvm.threadsZvm.deleteInboxItem(linkAh);}}>
               ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>

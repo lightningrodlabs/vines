@@ -219,6 +219,12 @@ export interface ProbeAllOutput {
   newBeadsByThread: [ActionHash, BeadLink][]
 }
 
+export interface GetDataTypeInput {
+  hash: AnyLinkableHash
+  role?: string
+  dna?: DnaHash
+}
+
 /**  */
 export type NotifiableEvent =
   | {NewBead: null} | {Mention: null} | {Reply: null} | {Fork: null} | {Dm: null};
@@ -364,6 +370,7 @@ export interface ParticipationProtocol {
   purpose: string
   rules: string
   subject: Subject
+  subject_name: string
 }
 
 export interface Subject {

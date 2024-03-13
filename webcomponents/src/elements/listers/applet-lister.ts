@@ -26,7 +26,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID, weClientContext} from "../../contexts";
 
 
 /**
@@ -300,13 +300,13 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (isUnread) {
         commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" class=${this._isHovered[pathHash]? "" : "transBtn"}
-                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`;
+                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`;
       } else {
         if (this._isHovered[pathHash]) {
           commentButton = html`
               <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Thread" : "Create new Thread"}"
                           design="Transparent"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, "SubjectType", subjectType)}"></ui5-button>`
+                          @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`
         }
       }
 

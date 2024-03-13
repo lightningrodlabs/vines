@@ -1,7 +1,20 @@
 import {ActionHashB64, decodeHashFromBase64, dhtLocationFrom32, encodeHashToBase64} from "@holochain/client";
-import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
-import {FileType} from "@ddd-qc/files";
+import {
+  AnyBeadMat,
+  AnyLinkableHashB64,
+  BeadInfo, BeadType, EntryBeadMat, materializeTypedBead,
+  SubjectMat, TextBeadMat,
+  TypedBeadMat
+} from "./viewModels/threads.perspective";
+import {FilesDvm, FileType} from "@ddd-qc/files";
 import {Hrl} from "@lightningrodlabs/we-applet";
+import {ThreadsZvm} from "./viewModels/threads.zvm";
+import {WeServicesEx} from "@ddd-qc/we-utils";
+import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
+import {
+  SEMANTIC_TOPIC_TYPE_NAME,
+  ThreadsEntryType
+} from "./bindings/threads.types";
 
 
 /** */
@@ -114,4 +127,132 @@ function emptyValidHash(prefix) {
 
 export function emptyAgentPubKey() {
   return emptyValidHash([0x84, 0x20, 0x24]);
+}
+
+
+
+/** We  */
+export function determineSubjectPrefix(subjectTypeName: string) {
+    switch (subjectTypeName) {
+      /** -- special types -- */
+      case SEMANTIC_TOPIC_TYPE_NAME: return `#`; break;
+      case PP_TYPE_NAME: return `🧵`; break;
+      case SUBJECT_TYPE_TYPE_NAME: return `🧶`; break;
+      /** -- bead types -- */
+      case ThreadsEntryType.TextBead: return "💬"; break;
+      case ThreadsEntryType.EntryBead: return "📎"; break;
+      case ThreadsEntryType.AnyBead:return "🔗"; break;
+      /** other */
+      default: return ""; break;
+    }
+}
+
+
+/** We are determining the subject name and formatting it into a thread name */
+export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx) {
+  /** Threads Applet */
+  if (subject.appletId == THIS_APPLET_ID || (weServices && subject.appletId == weServices.appletId)) {
+    switch (subject.typeName) {
+      /** -- special types -- */
+      case SEMANTIC_TOPIC_TYPE_NAME:
+        let semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
+        if (!semTopic) {
+          await threadsZvm.probeSemanticTopics();
+          semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
+        }
+        return semTopic[0];
+        break;
+      case PP_TYPE_NAME:
+        let thread = threadsZvm.perspective.threads[subject.hash];
+        if (!thread) {
+          thread = await threadsZvm.fetchPp(subject.hash);
+        }
+        return thread.name;
+        break;
+      case SUBJECT_TYPE_TYPE_NAME:
+        if (weServices) {
+          let appletInfo = weServices.getAppletInfo(weServices.appletId);
+          if (!appletInfo) {
+            appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
+          }
+          return `/${appletInfo.appletName}/{${subject.typeName}}`;
+        } else {
+          return `{${subject.typeName}}`;
+        }
+        break;
+      /** -- bead types -- */
+      case ThreadsEntryType.TextBead:
+      case ThreadsEntryType.EntryBead:
+      case ThreadsEntryType.AnyBead:
+        let beadPair = threadsZvm.perspective.beads[subject.hash];
+        let typedMat;
+        if (!beadPair) {
+          const typed = await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName, false);
+          typedMat = materializeTypedBead(typed, subject.typeName);
+        } else {
+          typedMat = beadPair[1];
+        }
+        const beadName = determineBeadName(subject.typeName, typedMat, filesDvm, weServices);
+        return beadName;
+        break;
+      /** unknown */
+      default:
+        return `{unknown '${subject.typeName}'}`;
+        break;
+    }
+  } else {
+    /** Unknown Applet */
+    if (weServices) {
+      const appletInfo = weServices.getAppletInfo(subject.appletId);
+      const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
+      const maybeInfo = weServices.getAttachableInfo({hrl});
+      if (maybeInfo) {
+        return `/${appletInfo.appletName}/${maybeInfo.attachableInfo.name}`;
+      } else {
+        return `/${appletInfo.appletName}/{${subject.typeName}}`;
+      }
+    } else {
+      return `{UnknownApplet}`;
+    }
+  }
+}
+
+
+/** */
+export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx): string {
+  switch (beadType) {
+    /** TextBead: text content */
+    case ThreadsEntryType.TextBead:
+      return truncate((typedBead as TextBeadMat).value, 60, true);
+      break;
+    /** EntryBead: Filename */
+    case ThreadsEntryType.EntryBead:
+      if (!filesDvm) {
+        return "<unknown file>";
+      }
+      const fileBead = typedBead as EntryBeadMat;
+      const tuple = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
+      if (!tuple) {
+        return "<file>";
+      }
+      return tuple[0].name;
+      break;
+    /** AnyBead: AttachableInfo.name */
+    case ThreadsEntryType.AnyBead:
+      if (!weServices) {
+        return "<unknown attachable>";
+      }
+      const hrlBead = typedBead as AnyBeadMat;
+      const hrl = decodeHrl(hrlBead.value);
+      const attLocInfo = weServices.getAttachableInfo({hrl});
+      if (!attLocInfo) {
+        return "<unknown attachable>";
+      }
+      return attLocInfo.attachableInfo.name;
+      break;
+    /** */
+    default:
+      break;
+  }
+  return "<unknown>";
 }

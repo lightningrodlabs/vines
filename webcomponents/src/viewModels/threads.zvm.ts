@@ -23,7 +23,7 @@ import {
   SEMANTIC_TOPIC_TYPE_NAME,
   SendInboxItemInput,
   SetNotifySettingInput,
-  SignalPayloadType,
+  SignalPayloadType, Subject,
   TextBead,
   ThreadLastProbeLog,
   ThreadsEntryType,
@@ -61,7 +61,7 @@ import {generateSearchTest, SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
 
-generateSearchTest();
+//generateSearchTest();
 
 
 /**
@@ -105,7 +105,6 @@ export class ThreadsZvm extends ZomeViewModel {
       allSemanticTopics: this._allSemanticTopics,
       //allParticipationProtocols: this._allParticipationProtocols,
       threadsPerSubject: this._threadsPerSubject,
-      threadsByName: this._threadsByName,
       threads: this._threads,
       beads: this._beads,
       appletSubjectTypes: this._appletSubjectTypes,
@@ -626,7 +625,6 @@ export class ThreadsZvm extends ZomeViewModel {
     if (this._threadsPerSubject[subjectHash] == undefined) {
       this._threadsPerSubject[subjectHash] = [];
     }
-    // FIXME resolve promise all at once
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = encodeHashToBase64(pp_ah);
       const [pp, ts, author] = await this.zomeProxy.getPp(pp_ah);
@@ -1130,15 +1128,18 @@ export class ThreadsZvm extends ZomeViewModel {
     /** */
   async publishThreadFromSemanticTopic(appletId: AppletId, dnaHashB64: DnaHashB64, subjectHash: AnyLinkableHashB64, purpose: string): Promise<[number, ActionHashB64, ParticipationProtocol]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
+    const subject: Subject = {
+      hash: decodeHashFromBase64(subjectHash),
+      typeName: SEMANTIC_TOPIC_TYPE_NAME,
+      appletId,
+      dnaHash: decodeHashFromBase64(dnaHashB64),
+    };
+    const semTopic = this.perspective.allSemanticTopics[subjectHash];
     const pp: ParticipationProtocol = {
       purpose,
-      rules: "FFA",
-      subject: {
-        hash: decodeHashFromBase64(subjectHash),
-        typeName: SEMANTIC_TOPIC_TYPE_NAME,
-        appletId,
-        dnaHash: decodeHashFromBase64(dnaHashB64),
-      },
+      rules: "N/A",
+      subject,
+      subject_name: `${semTopic[0]}`
     }
     const [pp_ah, ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol(pp);
     const ppAh = encodeHashToBase64(pp_ah);
@@ -1369,13 +1370,10 @@ export class ThreadsZvm extends ZomeViewModel {
       return this._threads.get(ppAh).pp;
     }
     let ppMat = materializeParticipationProtocol(pp);
-    const threadName = this.threadName(ppMat);
-    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, author, threadName);
+    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, author);
     thread.setIsHidden(isHidden);
     console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden);
     this._threads.set(ppAh, thread);
-    /** threadsByName */
-    this._threadsByName[threadName] = ppAh;
     /** threadsPerSubject */
     if (!this._threadsPerSubject[ppMat.subject.hash]) {
       this._threadsPerSubject[ppMat.subject.hash] = [];
@@ -1536,18 +1534,6 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** -- Misc. -- */
-
-  /** */
-  private threadName(pp: ParticipationProtocolMat): string {
-    let threadTitle;
-    if (pp.subject.typeName == "SemanticTopic") {
-      const semTopic = this._allSemanticTopics[pp.subject.hash];
-      threadTitle = `#${semTopic[0]}: ${pp.purpose}`;
-    } else {
-      threadTitle = `${pp.subject.hash}: ${pp.purpose}`;
-    }
-    return threadTitle;
-  }
 
 
   /** Dump perspective as JSON */

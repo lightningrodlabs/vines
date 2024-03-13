@@ -18,7 +18,6 @@ export * from './elements/notification-list';
 export * from './elements/peer-list';
 export * from './elements/search-result';
 
-export * from './elements/listers/semantic-topics-lister';
 export * from './elements/listers/applet-lister';
 export * from './elements/listers/topics-lister';
 export * from './elements/listers/my-threads-lister';

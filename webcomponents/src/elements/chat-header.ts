@@ -2,13 +2,14 @@ import {css, html} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64} from "@holochain/client";
-import {truncate} from "../utils";
+import {determineSubjectPrefix, truncate} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar} from "../render";
 import {TextBead, ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent} from "../jump";
 import {TextBeadMat} from "../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
+import {sharedStyles} from "../styles";
 
 
 /**
@@ -47,56 +48,45 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];
+    let title;
     let subText;
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
             e.stopPropagation(); this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
         }}></ui5-button>      
     `;
-    let title;
+    const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName);
+    const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
     if (maybeSemanticTopicThread) {
       const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-      title = html`<h3>Welcome to #${semTopic} ! ${copyBtn}</h3>`;
+      title = html`Welcome to ${subjectName} !`;
       subText = `This is the start of thread ${thread.name}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
       if (subjectBead) {
-        let subjectName = "";
-        if (subjectBead.beadType == ThreadsEntryType.TextBead) {
-          subjectName = truncate((this._dvm.threadsZvm.perspective.beads[thread.pp.subject.hash][1] as TextBeadMat).value, 60, true);
-        }
-        if (subjectBead.beadType == ThreadsEntryType.EntryBead) {
-          subjectName = "File";
-        }
-        if (subjectBead.beadType == ThreadsEntryType.AnyBead) {
-          subjectName = "HRL";
-        }
-
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
-
-        title = html`<h3>Thread about "${subjectName}" from ${avatarElem} ${copyBtn}</h3>`;
+        title = html`Thread about <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
         subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" 
                             @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}>
                         ${subjectName}
                       </span>`;
       } else {
-        // FIXME: Grab the actual subject type
-        title = html`<h3>Thread about something of type "${thread.pp.subject.typeName}"</h3>`;
-        subText = `This is the start of a thread about a (subject) type`;
+        title = html`Thread about <span class="subjectName">${subjectName}</span>`;
+        subText = `This is the start of a thread about a "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
       }
 
     }
 
-    // FIXME: Generate Top icon according to topic type or bead type
-
     /** render all */
     return html`
         <div id="chat-header">
-          ${title}
+          <div id="round">${subjectPrefix}</div>
+          <h2>${title} ${copyBtn}</h2>
           <div class="subtext">${subText}</div>
-          <!--<div class="subtext">Participation rules: ${thread.pp.rules}</div>-->
+          <!-- <div class="subtext">Purpose: ${thread.pp.purpose}</div> -->
+          <div class="subtext">Rules: ${thread.pp.rules}</div>
         </div>
         <!-- <hr style="margin-bottom:0px"/> -->
     `;
@@ -106,15 +96,26 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static get styles() {
     return [
+      sharedStyles,
       css`
-        
-        h3 {
-          line-height: 40px;
+        #round {
+          font-size: 3rem;
+          border-radius: 50%;
+          background: #9f9d9dbf;
+          width: fit-content;
+          padding-left: 0.9rem;
+          padding-right: 0.9rem;
+          /*font-weight: bold;*/
         }
-        h3 > ui5-button {
+        
+        h2 {
+          line-height: 44px;
+          margin: 3px 0px 3px 0px;
+        }
+        h2 > ui5-button {
           display: none;
         }
-        h3:hover > ui5-button {
+        h2:hover > ui5-button {
           display: inline-block;
         }
         
@@ -126,7 +127,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         }
         .subtext {
           color: #505459;
-          margin-left:10px;
+          /*margin-left:10px;*/
           margin-bottom:5px;
         }        
       `,];

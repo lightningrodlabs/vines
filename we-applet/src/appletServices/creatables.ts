@@ -23,7 +23,7 @@ export const creatables: Record<CreatableName, CreatableType> = {
 
       // /** */
       // async create(hrlc: HrlWithContext) {
-      //   console.log("Threads/attachmentTypes/Thread: CREATE", stringifyHrl(hrlc.hrl), hrlc.context);
+      //   console.log("Threads/attachmentTypes/Thread: CREATE", weaveUrlFromWal(hrlc.hrl), hrlc.context);
       //   let context: AttachableThreadContext = {subjectName: "", subjectType: "", detail: ""};
       //   if (hrlc.context) {
       //     context = hrlc.context as AttachableThreadContext;

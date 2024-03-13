@@ -8,6 +8,7 @@ import {CommentRequest} from "../../utils";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../jump";
+import {SEMANTIC_TOPIC_TYPE_NAME} from "../../bindings/threads.types";
 
 
 /**
@@ -31,7 +32,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: "SemanticTopic", subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: SEMANTIC_TOPIC_TYPE_NAME, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
 
 
@@ -174,7 +175,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (topicHasUnreadComments) {
         topicCommentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" style="border:none;background: transparent"
-                                             @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+                                             @click=${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}></ui5-button>`;
       } else {
           topicCommentButton = maybeCommentThread != null
             ? html`

@@ -55,11 +55,11 @@ pub struct SemanticTopic {
 ///
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
 pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
     pub subject: Subject,
+    pub subject_name: String,
 }
 
 
