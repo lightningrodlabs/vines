@@ -5,7 +5,7 @@
     "hc_version": "0.2.6",
     "zits_version": "1.12.0",
     "bin": "bin",
-    "we_test_folder": "../we-electron",
+    "we_test_folder": "../we",
     "files_repo": "../files"
   },
   "private": true,

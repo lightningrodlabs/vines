@@ -192,20 +192,16 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('jump', this.onJump);
-    this.addEventListener('copy-thread', this.onCopyThread);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('jump', this.onJump);
-    this.removeEventListener('copy-thread', this.onCopyThread);
   }
 
 
   /** -- Fields -- */
 
   @state() private _initialized = false;
-  @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
-  @state() private _selectedBeadAh: ActionHashB64 = '';
   @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
            private _selectedCommentThreadSubjectName: string = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
@@ -222,7 +218,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _splitObj?: SplitObject;
 
 
-  @property({type: Object}) networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
+  @property() selectedThreadHash: AnyLinkableHashB64 = '';
+  @property() selectedBeadAh: ActionHashB64 = '';
+
+  @property({type: Object})
+  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
 
   //@property() appletId: AppletId;
 
@@ -270,8 +270,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   const groupProfile = await this.weServices.groupProfile(decodeHashFromBase64(newDvm.cell.dnaHash));
     //   console.log("dvmUpdated() groupProfile", groupProfile);
     // }
-    this._selectedThreadHash = '';
-    this._selectedBeadAh = '';
+    this.selectedThreadHash = '';
+    this.selectedBeadAh = '';
     this._listerToShow = newDvm.cell.dnaHash;
     this._initialized = true;
   }
@@ -311,7 +311,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
     console.log("parseMentions mentionedAgents", mentionedAgents);
 
-    let threadHash = this._selectedThreadHash;
+    let threadHash = this.selectedThreadHash;
 
     if (this._currentCommentRequest) {
       threadHash = await this.createCommentThread(this._currentCommentRequest);
@@ -335,7 +335,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage()", weaveUrlFromWal({hrl: maybeHrlc.hrl}, false), maybeHrlc);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeHrlc.hrl, this._selectedThreadHash);
+    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeHrlc.hrl, this.selectedThreadHash);
   }
 
 
@@ -642,40 +642,31 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     input.click();
   }
 
-  async onCopyThread(e: CustomEvent) {
-    if (!e.detail) {
-      console.warn("Invalid copy-thread event");
-      return;
-    }
-    const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(e.detail)];
-    const sHrl = weaveUrlFromWal({hrl}, false);
-    navigator.clipboard.writeText(sHrl);
-    if (this.weServices) {
-      this.weServices.hrlToClipboard({hrl});
-    }
-    toasty(("Copied thread's WAL to clipboard"));
-  }
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
-    //console.log("requesting jump to bead", e.detail);
-    if (e.detail.type == JumpDestinationType.Applet) {
-      // TODO
-    }
-    if (e.detail.type == JumpDestinationType.Thread) {
-      this._selectedThreadHash = e.detail.hash;
-      this._selectedBeadAh = '';
-    }
-    if (e.detail.type == JumpDestinationType.Bead) {
-      //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
-      //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
-      const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
-      this._selectedThreadHash = beadInfo.bead.ppAh;
-      this._selectedBeadAh = e.detail.hash;
-    }
-    if (e.detail.type == JumpDestinationType.Dm) {
-      // TODO
-    }
+    console.log("<threads-page>.onJump()", e.detail);
+    // e.stopPropagation();
+    // if (e.detail.type == JumpDestinationType.Applet) {
+    //   if (this.weServices) {
+    //     this.weServices.openAppletMain(e.detail.hash);
+    //   }
+    // }
+    // if (e.detail.type == JumpDestinationType.Thread) {
+    //   this.selectedThreadHash = e.detail.hash;
+    //   this.selectedBeadAh = '';
+    // }
+    // if (e.detail.type == JumpDestinationType.Bead) {
+    //   //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
+    //   //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+    //   const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
+    //   this.selectedThreadHash = beadInfo.bead.ppAh;
+    //   this.selectedBeadAh = e.detail.hash;
+    // }
+    // if (e.detail.type == JumpDestinationType.Dm) {
+    //   // TODO
+    // }
+
     const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();
@@ -699,17 +690,17 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
 
     if (allRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.AllMessages);
+      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.AllMessages);
       //console.log("notifSetting checked", NotifySettingType.AllMessages);
       return;
     }
     if (mentionRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.MentionsOnly);
+      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.MentionsOnly);
       //console.log("notifSetting checked", NotifySettingType.MentionsOnly);
       return;
     }
     if (neverRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.Never);
+      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.Never);
       //console.log("notifSetting checked", NotifySettingType.Never);
       return;
     }
@@ -742,17 +733,17 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<threads-page>.render()", this._initialized, this._selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<threads-page>.render()", this._initialized, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     let centerSide = html`
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
         ${doodle_flowers}
     `;
     let primaryTitle = "No thread selected";
-    if (this._selectedThreadHash) {
-      const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
+    if (this.selectedThreadHash) {
+      const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (!thread) {
-        this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
+        this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
       } else {
         primaryTitle = thread.name;
         const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
@@ -773,7 +764,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         centerSide = html`
-            <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>
+            <chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>
             ${this._splitObj? html`
               <div id="uploadCard">
                 <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
@@ -791,7 +782,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                .showHrlBtn=${!!this.weServices}
                                showFileBtn="true"
                                @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-                               @upload=${(e) => {e.preventDefault(); this.uploadFile(this._selectedThreadHash)}}
+                               @upload=${(e) => {e.preventDefault(); this.uploadFile(this.selectedThreadHash)}}
                                @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
             ></threads-input-bar>`
             }
@@ -860,8 +851,8 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
     let notifSetting = NotifySettingType.MentionsOnly; // default
-    if (this._selectedThreadHash) {
-      notifSetting = this._dvm.threadsZvm.getNotifSetting(this._selectedThreadHash, this.cell.agentPubKey);
+    if (this.selectedThreadHash) {
+      notifSetting = this._dvm.threadsZvm.getNotifSetting(this.selectedThreadHash, this.cell.agentPubKey);
     }
 
     /** Group Info */
@@ -907,7 +898,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       lister = html`
           <topics-lister 
                          .showArchivedTopics=${this._canViewArchivedTopics}
-                         .selectedThreadHash=${this._selectedThreadHash}
+                         .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(e) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e) => {
                              this._createTopicHash = e.detail;
@@ -920,7 +911,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       lister = html`
           <my-threads-lister 
                          .showArchivedTopics=${this._canViewArchivedTopics}
-                         .selectedThreadHash=${this._selectedThreadHash}
+                         .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(e) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e) => {
         this._createTopicHash = e.detail;
@@ -1052,7 +1043,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             <div id="mainSide">
               <ui5-shellbar id="topicBar" primary-title=${primaryTitle} show-search-field>
-                  ${this._selectedThreadHash == "" ? html`` :
+                  ${this.selectedThreadHash == "" ? html`` :
                           html`<ui5-button id="notifSettingsBtn" slot="startButton" icon="bell" tooltip=${msg('Notifications Settings')} 
                                            @click=${() => {
                           const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;

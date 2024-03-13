@@ -82,7 +82,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <div id="chat-header">
-          <div id="round">${subjectPrefix}</div>
+          <div class="rounded-emoji">${subjectPrefix}</div>
           <h2>${title} ${copyBtn}</h2>
           <div class="subtext">${subText}</div>
           <!-- <div class="subtext">Purpose: ${thread.pp.purpose}</div> -->
@@ -98,14 +98,16 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     return [
       sharedStyles,
       css`
-        #round {
-          font-size: 3rem;
-          border-radius: 50%;
+        .rounded-emoji {
+          width: 80px;
+          height: 80px;
+          font-size: 36px;
           background: #9f9d9dbf;
-          width: fit-content;
-          padding-left: 0.9rem;
-          padding-right: 0.9rem;
-          /*font-weight: bold;*/
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-weight: bold;
         }
         
         h2 {

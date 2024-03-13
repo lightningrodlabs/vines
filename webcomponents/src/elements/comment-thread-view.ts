@@ -126,12 +126,9 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
-  private async loadCommentThread() {
-    console.log("<comment-thread-view>.willUpdate() threadHash", this.threadHash);
-    await this._dvm.threadsZvm.probeAllBeads(this.threadHash);
-    await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
-    this._loading = false;
+  protected firstUpdated(_changedProperties: PropertyValues) {
+    super.firstUpdated(_changedProperties);
+    this.loadCommentThread();
   }
 
 
@@ -155,9 +152,17 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  private async loadCommentThread() {
+    console.log("<comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
+    await this._dvm.threadsZvm.probeAllBeads(this.threadHash);
+    await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
+    this._loading = false;
+  }
+
+
+  /** */
   onLoadMore() {
     console.log("<comment-thread-view>.onLoadMore()");
-
     //this.listElem.busy = true;
     // FIXME: Probe DHT
     //this.listElem.busy = false;

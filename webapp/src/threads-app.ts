@@ -3,15 +3,16 @@ import { state, customElement } from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
 import {PropertyValues} from "lit/development";
 import {
+  ActionHashB64,
   AdminWebsocket, AgentPubKeyB64,
   AppSignal,
-  AppWebsocket, encodeHashToBase64,
+  AppWebsocket, decodeHashFromBase64, encodeHashToBase64,
   EntryHashB64,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
 import {
-  AppletId, AppletView,
+  AppletId, AppletView, Hrl, weaveUrlFromWal,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {
@@ -29,7 +30,7 @@ import {
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-  cardStyleTemplate, appProxyContext,
+  cardStyleTemplate, appProxyContext, beadJumpEvent, JumpEvent, JumpDestinationType, AnyLinkableHashB64,
 } from "@threads/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -46,6 +47,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import "./threads-page"
 
 import Button from "@ui5/webcomponents/dist/Button";
+import {toasty} from "@threads/elements/dist/toast";
 
 /** */
 export interface AttachableThreadContext {
@@ -75,12 +77,16 @@ export class ThreadsApp extends HappElement {
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
+  @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
+  @state() private _selectedBeadAh: ActionHashB64 = '';
+
+
   /** -- We-applet specifics -- */
 
   protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   private _weProfilesDvm?: ProfilesDvm;
   protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
-  //public appletId?: EntryHashB64;
+  protected _weServices?: WeServicesEx;
 
 
   /** -- Ctor -- */
@@ -112,9 +118,9 @@ export class ThreadsApp extends HappElement {
   ) : Promise<ThreadsApp> {
     const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
-    const weServicesEx = new WeServicesEx(weServices, thisAppletId);
+    app._weServices = new WeServicesEx(weServices, thisAppletId);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
-    app._weProvider = new ContextProvider(app, weClientContext, weServicesEx);
+    app._weProvider = new ContextProvider(app, weClientContext, app._weServices);
     //app.appletId = thisAppletId;
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.ctor()", profilesProxy);
@@ -152,6 +158,19 @@ export class ThreadsApp extends HappElement {
       }
       this._hasWeProfile = true;
     }
+  }
+
+
+  /** Handle global events */
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('jump', this.onJump);
+    this.addEventListener('copy-thread', this.onCopyThread);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('jump', this.onJump);
+    this.removeEventListener('copy-thread', this.onCopyThread);
   }
 
 
@@ -263,6 +282,57 @@ export class ThreadsApp extends HappElement {
   }
 
 
+  /** */
+  async onJump(e: CustomEvent<JumpEvent>) {
+    console.log("<threads-app>.onJump()", e.detail);
+    if (e.detail.type == JumpDestinationType.Applet) {
+      if (this._weServices) {
+        this._weServices.openAppletMain(decodeHashFromBase64(e.detail.hash));
+      }
+    }
+    if (e.detail.type == JumpDestinationType.Thread) {
+      if (this.appletView.type != "main") {
+        if (this._weServices) {
+          this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
+          //this._weServices.openHrl();
+        }
+      } else {
+        this._selectedThreadHash = e.detail.hash;
+        this._selectedBeadAh = '';
+      }
+    }
+    if (e.detail.type == JumpDestinationType.Bead) {
+      //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
+      //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);
+      if (beadInfo) {
+        this._selectedThreadHash = beadInfo.bead.ppAh;
+        this._selectedBeadAh = e.detail.hash;
+      } else {
+        console.warn("JumpEvent failed. Bead not found", e.detail.hash);
+      }
+    }
+    if (e.detail.type == JumpDestinationType.Dm) {
+      // TODO
+    }
+  }
+
+
+  /** */
+  private async onCopyThread(e: CustomEvent) {
+    if (!e.detail) {
+      console.warn("Invalid copy-thread event");
+      return;
+    }
+    const hrl: Hrl = [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(e.detail)];
+    const sHrl = weaveUrlFromWal({hrl}, false);
+    navigator.clipboard.writeText(sHrl);
+    if (this._weServices) {
+      this._weServices.hrlToClipboard({hrl});
+    }
+    toasty(("Copied thread's WAL to clipboard"));
+  }
+
 
   /** */
   render() {
@@ -299,12 +369,13 @@ export class ThreadsApp extends HappElement {
     //let view = html`<slot></slot>`;
     // FIXME: should propable store networkInfoLogs in class field
     let view = html`
-        <threads-page style="height:100vh;" 
+            <threads-page style="height:100vh;" 
+                      .selectedThreadHash=${this._selectedThreadHash}
+                      .selectedBeadAh=${this._selectedBeadAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}
-    ></threads-page>`;
-
+            ></threads-page>`;
     if (this.appletView) {
       console.log("appletView", this.appletView);
       switch (this.appletView.type) {
@@ -325,19 +396,19 @@ export class ThreadsApp extends HappElement {
           console.log("pascal entryType", attachableViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              console.log("pp entry:", encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]));
-              const viewContext = attachableViewInfo.hrlWithContext.context as AttachableThreadContext;
-              view = html`
-                  <comment-thread-view showInput="true"
-                                       .threadHash=${encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1])} 
-                                       .subjectName=${viewContext.subjectName}
-                                       .subjectType=${viewContext.subjectType}></comment-thread-view>
-              `;
+              const ppAh = encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]);
+              console.log("attachable ppAh:", ppAh);
+              //   const viewContext = attachableViewInfo.hrlWithContext.context as AttachableThreadContext;
+              view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
               break;
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                view = html`<div>FIXME</div>`;
+                const beadAh = encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]);
+                // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
+                view = html`
+                    <chat-item .hash=${beadAh} shortmenu></chat-item>
+                `;
               break
             default:
               throw new Error(`Unhandled entry type ${attachableViewInfo.entryType}.`);

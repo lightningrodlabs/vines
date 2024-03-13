@@ -38,8 +38,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of bead to display */
   @property() hash: ActionHashB64 = ''
 
-  @state() private _isHovered = false;
-
   @property({type: Boolean}) shortmenu: boolean = false;
 
   /** Observed perspective from zvm */
@@ -52,9 +50,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
-  get emojiPickerElem() : Picker {
-    return this.shadowRoot!.getElementById("emoji-picker") as Picker;
-  }
+
+  @state() private _isHovered = false;
+  @state() private _loading = true;
 
 
   /**
@@ -105,24 +103,32 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   // }
 
 
-  /** Probe reactions of first render */
+  /** Probe bead and its reactions */
   protected firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
+    this.loadBead();
+  }
 
-    this._dvm.threadsZvm.probeEmojiReactions(this.hash);
 
-    this.emojiPickerElem.addEventListener('emoji-click', (event: any) => {
-      const unicode = event?.detail?.unicode
-      console.log("emoji-click: " + unicode)
-      if (unicode) {
-        this._dvm.publishEmoji(this.hash, unicode);
-        //this.emojiPickerElem.style.display = 'none';
-      }
-      const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
-      if (popover.isOpen()) {
-        popover.close();
-      }
-    });
+  /** */
+  private async loadBead() {
+    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    if (!beadInfo) {
+      await this._dvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+    }
+    await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
+    this._loading = false;
+  }
+
+
+  /** */
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
+    if (this._dvm && (changedProperties.has("hash"))) {
+      this._loading = true;
+      this.loadBead();
+    }
   }
 
 
@@ -148,7 +154,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickAddEmoji() {
-    //this.emojiPickerElem.style.display = 'block';
     const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
     const btn = this.shadowRoot.getElementById("buttonsPop") as HTMLElement;
     popover.showAt(btn);
@@ -201,17 +206,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    //console.log("<chat-item>.render()");
+    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
     if (this.hash == "") {
       return html`
           <div>No bead found</div>`;
     }
+    if (this._loading) {
+      return html `
+          <ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
+      `;
+    }
 
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     const typed = this._dvm.threadsZvm.getBead(this.hash);
-    if (!beadInfo || !typed) {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
-    }
     /** Determine the comment button to display depending on current comments for this message */
     let subjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
@@ -369,7 +376,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <!-- Popovers -->            
             <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text="Add Reaction">
-                <emoji-picker id="emoji-picker" class="light" style="display: block"></emoji-picker>
+                <emoji-picker id="emoji-picker" class="light" 
+                              style="display: block" 
+                              @emoji-click=${(event) => {
+                                  const unicode = event?.detail?.unicode
+                                  console.log("emoji-click: " + unicode)
+                                  if (unicode) {
+                                      this._dvm.publishEmoji(this.hash, unicode);
+                                  }
+                                  const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
+                                  if (popover.isOpen()) {
+                                      popover.close();
+                                  }
+                              }}></emoji-picker>
             </ui5-popover>
             <ui5-menu id="moreMenu" @item-click=${this.onMoreMenu}>
                 <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item>
