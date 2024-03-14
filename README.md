@@ -1,6 +1,6 @@
-# Threads
+# Vines
 
-Tooling for conversation in group spaces on holochain
+A conversation capacity for groups in The Weave
 
 ##  Background
 
