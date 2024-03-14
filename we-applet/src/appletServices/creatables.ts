@@ -2,7 +2,7 @@ import {
   CreatableName, CreatableType,
 } from "@lightningrodlabs/we-applet";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
-import {mdiComment, mdiCommentTextMultiple} from "@mdi/js";
+import {mdiCommentTextMultiple} from "@mdi/js";
 
 
 /** */
@@ -11,10 +11,10 @@ import {mdiComment, mdiCommentTextMultiple} from "@mdi/js";
 //   return {
 
 export const creatables: Record<CreatableName, CreatableType> = {
-    message: {
-      label: "Message",
-      icon_src: wrapPathInSvg(mdiComment),
-    },
+    // message: {
+    //   label: "Message",
+    //   icon_src: wrapPathInSvg(mdiComment),
+    // },
 
     thread: {
       label: "Thread",
