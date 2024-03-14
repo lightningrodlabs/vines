@@ -3,6 +3,7 @@ import { property, query, state, customElement } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 
 import Input from "@ui5/webcomponents/dist/Input";
+import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Button.js";
 
@@ -87,8 +88,29 @@ export class EditProfile extends LitElement {
 
   /** -- Methods -- */
 
+  /** Handle global events */
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('keyup', this.onKeyUp);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('keyup', this.onKeyUp);
+  }
 
+  /** */
+  async onKeyUp(e) {
+    console.log("<edit-profile>.onKeyUp()", e.keyCode);
+    if (e.keyCode === 13 && this.shouldSaveButtonBeEnabled()) {
+      e.stopPropagation();
+      this.fireSaveProfile();
+    }
+  }
+
+
+  /** */
   firstUpdated() {
+    //console.log("<edit-profile>.firstUpdated()");
     this._avatar = this.profile.fields["avatar"];
   }
 
@@ -151,7 +173,8 @@ export class EditProfile extends LitElement {
 
   /** */
   shouldSaveButtonBeEnabled() {
-    if (!this._nicknameField) return false;
+    console.log("shouldSaveButtonBeEnabled() this._nicknameField", this._nicknameField);
+    if (!this._nicknameField || !this._nicknameField.value) return false;
     //if (!this._nicknameField.validity.valid) return false;
     if (this.avatarMode === 'avatar-required' && !this._avatar)
       return false;
@@ -198,6 +221,10 @@ export class EditProfile extends LitElement {
 
   /** */
   fireSaveProfile() {
+    if (!this._nicknameField.value) {
+      this._nicknameField.valueState = ValueState.Error;
+      return;
+    }
     const nickname = this._nicknameField.value;
     const fields: Record<string, string> = this.getAdditionalFieldsValues();
 
@@ -268,19 +295,26 @@ export class EditProfile extends LitElement {
 
         <div class="column">
 
-          <div class="row" style="justify-content: center; margin-bottom: 12px; align-self: start;" >
-
+          <!-- Use row-reverse so input field is focused first -->  
+          <div class="row" style="justify-content: center; margin-bottom: 12px; align-self: start;flex-direction: row-reverse;" >
+              <ui5-input
+                      id="nickname-field"
+                      outlined required
+                      .label=${msg('Nickname')}
+                      .value=${this.profile?.nickname || ''}
+                      style="margin-left: 8px;"
+                      @input=${(e) => {
+                        //console.log("nickname input wtf", e)
+                        if (this._nicknameField.value.length > 0) {
+                            this._nicknameField.valueState = ValueState.None;
+                        } else {
+                            this._nicknameField.valueState = ValueState.Error;
+                        }
+                      }}
+              >
+                  <div slot="valueStateMessage">Minimum 1 character</div>                  
+              </ui5-input>
             ${this.renderAvatar()}
-
-            <ui5-input
-              id="nickname-field"
-              outlined
-              .label=${msg('Nickname')}
-              .value=${this.profile?.nickname || ''}
-              .helper=${msg(`Min. 3 characters`)}
-              style="margin-left: 8px;"
-            ></ui5-input>
-
           </div>
 
           <div class="row" style="justify-content: center; margin-bottom: 18px; align-self: start;" >

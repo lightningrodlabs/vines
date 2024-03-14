@@ -291,7 +291,7 @@ export class ThreadsApp extends HappElement {
       }
     }
     if (e.detail.type == JumpDestinationType.Thread) {
-      if (this.appletView.type != "main") {
+      if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
           this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
           //this._weServices.openHrl();

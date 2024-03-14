@@ -442,32 +442,40 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.probeSemanticTopics();
     /** */
     await this.probeAllAppletIds();
+
+    await this.probeAllSubjects();
   }
 
 
   /** */
   probeAllInner() {
-    console.log("threadsZvm.probeAllInner()")
-    /* await */ this.initializePerspectiveOnline();
+    this.probeAllInnerAsync();
+  }
 
-    /** Grab all threads of SemanticTopics to see if there are new ones */
+
+  /** */
+  async probeAllInnerAsync() {
+    console.log("threadsZvm.probeAllInner()")
+    await this.initializePerspectiveOnline();
+
+    // /** Grab all threads of SemanticTopics to see if there are new ones */
+    // let probes = []
+    // for (const topicEh of Object.keys(this._allSemanticTopics)) {
+    //   probes.push(this.probeSubjectThreads(topicEh));
+    // }
+    // await Promise.all(probes);
+    /** Grab all threads of other subjects to see if there are new ones */
     let probes = []
-    for (const topicEh of Object.keys(this._allSemanticTopics)) {
-      probes.push(this.probeSubjectThreads(topicEh));
+    for (const hash of Object.keys(this._allSubjects)) {
+      probes.push(this.probeSubjectThreads(hash));
     }
-    //await Promise.all(probes);
+    await Promise.all(probes);
 
     /** Get last elements since last time (global search log) */
-    /*await*/ this.probeAllLatest().then(() => {
-      /*await*/ this.probeInbox();
-    })
+    await this.probeAllLatest();
+    await this.probeInbox();
 
-
-    this.probeMyFavorites()/*.then(() => {
-      console.log("Favorites probed", this._favorites.length);
-      this.notifySubscribers();
-    })*/
-
+    await this.probeMyFavorites();
   }
 
 

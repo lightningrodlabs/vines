@@ -333,6 +333,20 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** -- Import & Export -- */
 
+  /** Probe all threads before exporting */
+  async exportAllPerspective(): Promise<string> {
+    await this.threadsZvm.probeAllInnerAsync();
+    /* Probe all threads */
+    let probes = []
+    for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
+      probes.push(this.threadsZvm.probeAllBeads(ppAh));
+    }
+    await Promise.all(probes);
+    /* Done */
+    return this.exportPerspective();
+  }
+
+
   /** Dump perspective as JSON */
   exportPerspective(): string {
     //console.log("Dvm.exportPerspective()", name)

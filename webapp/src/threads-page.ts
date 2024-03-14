@@ -252,6 +252,9 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
   }
 
+  get waitDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
+  }
 
   /** -- Update -- */
 
@@ -1008,9 +1011,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                   settingsMenu.showAt(settingsBtn);
                                 }}>
                     </ui5-button>
-                      <ui5-menu id="settingsMenu" header-text=${msg("Settings")} @item-click=${this.onSettingsMenu}>
+                      <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
+                                @item-click=${(e) => this.onSettingsMenu(e)}>
                           <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
-                          <ui5-menu-item id="exportItem" text=${msg("Export")} icon="save" starts-section></ui5-menu-item>
+                          <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
+                          <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
                           <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
                           <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
@@ -1159,18 +1164,18 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
               </div>
             </div>
-         <!-- DIALOGS -->
+        <!-- DIALOGS -->
+        <ui5-dialog id="wait-dialog">
+            <ui5-busy-indicator size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+        </ui5-dialog>
         <!-- ProfileDialog -->
-        <ui5-dialog id="profile-dialog" header-text="Edit Profile">
+        <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
             <threads-edit-profile
                     allowCancel
-                    .profile="${myProfile}"
+                    .profile=${myProfile}
                     .saveProfileLabel= ${msg('Edit Profile')}
                     @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
-                    @lang-selected=${(e: CustomEvent) => {
-                      console.log("set locale", e.detail);
-                      setLocale(e.detail)
-                    }}
+                    @lang-selected=${(e: CustomEvent) => setLocale(e.detail)}
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
             ></threads-edit-profile>
         </ui5-dialog>
@@ -1286,23 +1291,28 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onSettingsMenu(e): Promise<void> {
-      console.log("item-click", e)
-      switch (e.detail.item.id) {
-        case "uploadFileItem": this.openFile(); break;
-        case "editProfileItem": this.profileDialogElem.show(); break;
-        case "exportItem":
-          const files_json = await this._filesDvm.exportPerspective();
-          this.downloadTextFile("dump_files.json", files_json);
-          const content = this._dvm.exportPerspective();
-          this.downloadTextFile("dump_threads.json", content);
-          toasty(`Exported data to json in Downloads folder`);
-          break;
-        case "importCommitItem": this.importDvm(true); break;
-        case "importOnlyItem": this.importDvm(false); break;
-        case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
-        case "dumpItem": this._dvm.dumpLogs(); break;
-        case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
-      }
+    console.log("item-click", e);
+    this.waitDialogElem.show();
+    let content = "";
+    switch (e.detail.item.id) {
+      case "uploadFileItem": this.openFile(); break;
+      case "editProfileItem": this.profileDialogElem.show(); break;
+      case "exportAllItem":
+        if (content == "") content = await this._dvm.exportAllPerspective();
+      case "exportItem":
+        const files_json = await this._filesDvm.exportPerspective();
+        this.downloadTextFile("dump_files.json", files_json);
+        if (content == "") content = this._dvm.exportPerspective();
+        this.downloadTextFile("dump_threads.json", content);
+        toasty(`Exported data to json in Downloads folder`);
+        break;
+      case "importCommitItem": this.importDvm(true); break;
+      case "importOnlyItem": this.importDvm(false); break;
+      case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
+      case "dumpItem": this._dvm.dumpLogs(); break;
+      case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
+    }
+    this.waitDialogElem.close();
   }
 
 
