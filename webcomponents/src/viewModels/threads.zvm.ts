@@ -795,6 +795,7 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
   }
 
+
   /**  */
   async probeMyFavorites() {
     const favorites = await this.zomeProxy.getMyFavorites();
@@ -809,12 +810,16 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Probe all emojis on this bead */
   async probeEmojiReactions(beadAh: ActionHashB64) {
     console.log("probeEmojiReactions()", beadAh);
-    const reactions = await this.zomeProxy.getReactions(decodeHashFromBase64(beadAh));
-    console.log("probeEmojiReactions() count", reactions.length);
-    if (reactions.length > 0) {
-      this._emojiReactions[beadAh] = reactions.map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
+    let prevReactions = this._emojiReactions[beadAh];
+    if (!prevReactions) prevReactions = [];
+    const reactions: [AgentPubKeyB64, string][] = (await this.zomeProxy.getReactions(decodeHashFromBase64(beadAh)))
+      .map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
+    const notEqual = JSON.stringify(prevReactions) !== JSON.stringify(reactions);
+    console.log("probeEmojiReactions() count", reactions.length, notEqual);
+    if (notEqual) {
+      this._emojiReactions[beadAh] = reactions;
+      this.notifySubscribers();
     }
-    this.notifySubscribers();
   }
 
 

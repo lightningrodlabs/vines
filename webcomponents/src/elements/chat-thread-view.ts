@@ -6,7 +6,6 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {prettyTimestamp} from "@ddd-qc/files";
 import {ts2day} from "../render";
 
 /**
@@ -36,6 +35,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Number of beads to retrieve per 'get' */
   @property()
   batchSize: number = 20
+
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -45,10 +45,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Boolean, attribute: false})
   _loading = true;
 
-  @state() private _busy = false;
+  //@state() private _busy = false;
+
+  /** for triggering an update */
   @state() private _commentsLoading = false;
 
-
+  /** Scroll to bottom only on first load */
+  _firstLoad = true;
 
   /** -- Methods -- */
 
@@ -101,9 +104,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
-
-  /** Scroll to bottom only on first load */
-  _firstLoad = true;
 
   /** */
   protected async updated(_changedProperties: PropertyValues) {
@@ -230,7 +230,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       `;
     }
     if (this._loading) {
-      return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator size="Large" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
     }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
@@ -287,7 +287,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         `;
         }
 
-        console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
+        //console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
         const chatItem = html`<chat-item .hash=${(blm.beadAh)} style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}"></chat-item>`;
         return html`${chatItem}${hr}${timeHr}`;
       }
