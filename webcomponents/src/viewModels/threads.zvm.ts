@@ -33,6 +33,7 @@ import {
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
+  AnyBeadMat,
   AnyLinkableHashB64,
   BeadInfo,
   BeadLinkMaterialized,
@@ -49,14 +50,14 @@ import {
   ThreadsExportablePerspective,
   ThreadsPerspective,
   TypedBead,
-  TypedBeadMat,
+  TypedBeadMat, TypedContent,
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
-import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
+import {AppletId, HrlWithContext, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {encode} from "@msgpack/msgpack";
-import {decodeHrl, encodeHrl} from "../utils";
+import {weaveUrlToWal} from "../utils";
 import {generateSearchTest, SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
@@ -953,7 +954,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
 
   /** */
-  async publishTypedBead(type: BeadType, content: string | Hrl | EntryHashB64, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TypedBead]> {
+  async publishTypedBead(type: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TypedBead]> {
     const creation_time = Date.now() * 1000;
     const nextBead = await this.createNextBead(ppAh);
     const beadAuthor = author? author : this.cell.agentPubKey;
@@ -964,7 +965,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishTypedBeadAt(beadTypeEx: BeadType | "EntryBeadImport", content: string | Hrl | EntryHashB64 | EntryBeadMat, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
+  async publishTypedBeadAt(beadTypeEx: BeadType | "EntryBeadImport", content: TypedContent | EntryBeadMat, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
     : Promise<[ActionHashB64, string, TypedBead]>
   {
     //console.log("publishTypedBeadAt()", beadType)
@@ -997,13 +998,14 @@ export class ThreadsZvm extends ZomeViewModel {
         [bead_ah, typed, global_time_anchor, bucket_ts] = await this.zomeProxy.addEntryBead({entryBead, creationTime});
         break;
       case ThreadsEntryType.AnyBead:
-        const encHrl = encodeHrl(content as Hrl);
+        //const encHrl = encodeHrl(content as Hrl);
+        const sWal = weaveUrlFromWal(content as HrlWithContext, false);
         const anyBead: AnyBead = {
           bead: nextBead,
-          value: encHrl,
-          typeInfo: "hrl",
+          value: sWal,
+          typeInfo: "wal",
         } as AnyBead;
-        console.log("publishHrlBeadAt()", encHrl, anyBead);
+        console.log("publishHrlBeadAt()", sWal, anyBead);
         [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime});
         typed = anyBead;
         break;
@@ -1756,14 +1758,14 @@ export class ThreadsZvm extends ZomeViewModel {
           }
         }
         /* Determine typed bead content */
-        let content: string | Hrl | EntryHashB64 | EntryBeadMat;
+        let content: TypedContent | EntryBeadMat;
         switch(beadInfo.beadType) {
           case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
           //case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat).sourceEh; break;
           case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat); break;
           case ThreadsEntryType.AnyBead:
-            const typedAny = typedBead as TextBeadMat;
-            content = decodeHrl(typedAny.value);
+            const typedAny = typedBead as AnyBeadMat;
+            content = weaveUrlToWal(typedAny.value);
             break;
           default:
             console.warn("PubImp() Unknown bead type: " + beadInfo.beadType);

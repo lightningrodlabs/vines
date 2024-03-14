@@ -7,7 +7,7 @@ import {
   TypedBeadMat
 } from "./viewModels/threads.perspective";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {Hrl} from "@lightningrodlabs/we-applet";
+import {Hrl, HrlWithContext, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
@@ -103,17 +103,13 @@ export function parseMentions(str: string): string[]  {
 };
 
 
-
-/** Find better solution */
-export function encodeHrl(hrl: Hrl): string {
-  const obj = [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])];
-  return JSON.stringify(obj);
-}
-
-export function decodeHrl(encHrl: string): Hrl {
-  const hrlPair: [string, string] = JSON.parse(encHrl);
-  const hrl: Hrl = [decodeHashFromBase64(hrlPair[0]), decodeHashFromBase64(hrlPair[1])];
-  return hrl;
+/** TODO: remove once its implemented in we-applet */
+export function weaveUrlToWal(url: string): HrlWithContext {
+  const weaveLocation = weaveUrlToLocation(url);
+  if (weaveLocation.type !== 'asset') {
+    throw new Error('Passed URL is not a valid asset locator.');
+  }
+  return weaveLocation.hrlWithContext;
 }
 
 
@@ -243,8 +239,8 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<unknown attachable>";
       }
       const hrlBead = typedBead as AnyBeadMat;
-      const hrl = decodeHrl(hrlBead.value);
-      const attLocInfo = weServices.getAttachableInfo({hrl});
+      const wal = weaveUrlToWal(hrlBead.value);
+      const attLocInfo = weServices.getAttachableInfo(wal);
       if (!attLocInfo) {
         return "<unknown attachable>";
       }

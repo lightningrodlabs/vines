@@ -15,6 +15,7 @@ import {
   ParticipationProtocol,
   Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
+import {HrlWithContext} from "@lightningrodlabs/we-applet";
 
 
 /** -- Should be defined in @holochain/client */
@@ -23,6 +24,8 @@ export declare type AnyLinkableHashB64 = HoloHashB64;
 //export const HOLOCHAIN_EPOCH = 1640995200000000;
 
 export type TypedBead = EntryBead | AnyBead | TextBead;
+
+export type TypedContent = string | HrlWithContext | EntryHashB64;
 
 export type BeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead;
 

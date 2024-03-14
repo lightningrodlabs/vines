@@ -15,7 +15,7 @@ import {
   TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.perspective";
-import {determineBeadName} from "./utils";
+import {determineBeadName, weaveUrlToWal} from "./utils";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import markdownit from "markdown-it";
 import {unsafeHTML} from "lit/directives/unsafe-html.js";
@@ -24,6 +24,7 @@ import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {beadJumpEvent} from "./jump";
+import {delay} from "@ddd-qc/lit-happ";
 
 
 /** */
@@ -78,23 +79,25 @@ export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadIn
     case ThreadsEntryType.AnyBead:
       content = html`<div style="color: red;">HRL: WeServices not available</div>`;
       const anyBead = typedBead as AnyBeadMat;
-      if (anyBead.typeInfo === "hrl" && weServices) {
-        const obj: [string, string] = JSON.parse(anyBead.value);
-        const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-        const hrlStr = weaveUrlFromWal({hrl}, false);
-        const id = "hrl-item" + "-" + obj[1];
-        const maybeInfo = weServices.getAttachableInfo(hrlStr);
-        let innerText = hrlStr;
+      if (anyBead.typeInfo === "wal" && weServices) {
+        const wal = weaveUrlToWal(anyBead.value);
+        const id = "wal-item" + "-" + wal.hrl[1];
+        const maybeInfo = weServices.getAttachableInfo(wal);
+        let innerText = anyBead.value;
         if (maybeInfo) {
           innerText = maybeInfo.attachableInfo.name;
         } else {
-            weServices.attachableInfo({hrl}).then(async (_attLocAndInfo) => {
-              parent.requestUpdate();
+            weServices.attachableInfo(wal).then(async (attLocAndInfo) => {
+              //console.log("renderSideBead() attLocAndInfo", attLocAndInfo);
+              if (attLocAndInfo) {
+                await delay(100); /* Infinite loop counter */
+                parent.requestUpdate();
+              }
           });
         }
         content = html`
               <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e) => weServices.openHrl({hrl})}>
+                   @click=${(_e) => weServices.openHrl(wal)}>
                   ${innerText}
               </div>
           `;

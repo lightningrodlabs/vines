@@ -5,17 +5,18 @@ import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
-import {AppletInfo, Hrl} from "@lightningrodlabs/we-applet";
+import {AppletInfo, Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {weaveUrlToWal} from "../utils";
 
 
 /**
  * @element
  */
-@customElement("chat-hrl")
-export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("chat-wal")
+export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME)
@@ -35,7 +36,7 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<chat-hrl>.render()", this.hash);
+    console.log("<chat-wal>.render()", this.hash);
     if (!this.weServices) {
       return html`        
           <ui5-list id="fileList">
@@ -67,30 +68,29 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
     }
     const anyBead = anyBeadInfoPair[1] as AnyBeadMat;
-    if (anyBead.typeInfo != "hrl") {
+    if (anyBead.typeInfo != "wal") {
       return html`          
           <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash}>
-              Error: Bead not a HRL
+              Error: AnyBead not of type WAL
           </ui5-li>
       </ui5-list>
       `;
     }
 
-    //console.log("<chat-hrl>.render() anyBead", anyBead.value);
-    const obj: [string, string] = JSON.parse(anyBead.value);
-    const hrl: Hrl = [decodeHashFromBase64(obj[0]), decodeHashFromBase64(obj[1])];
-    //console.log("<chat-hrl>.render()", weaveUrlFromWal(hrl), obj);
+    //console.log("<chat-wal>.render() anyBead", anyBead.value);
+    const wal = weaveUrlToWal(anyBead.value);
+    //console.log("<chat-wal>.render()", weaveUrlFromWal(hrl), obj);
     if (!this._attLocAndInfo) {
-      this.weServices.attachableInfo({hrl}).then((attLocAndInfo) => {
-        //console.log("<chat-hrl>.render() attachableInfo", attLocAndInfo);
+      this.weServices.attachableInfo(wal).then((attLocAndInfo) => {
+        //console.log("<chat-wal>.render() attachableInfo", attLocAndInfo);
         this._attLocAndInfo = attLocAndInfo;
       });
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     if (!this._appletInfo) {
       this.weServices.appletInfo(this._attLocAndInfo.appletHash).then((appletInfo) => {
-        //console.log("<chat-hrl>.render() appletInfo:", appletInfo);
+        //console.log("<chat-wal>.render() appletInfo:", appletInfo);
         this._appletInfo = appletInfo;
       });
       return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
@@ -101,7 +101,7 @@ export class ChatHrl extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-                  @click=${(e) => this.weServices.openHrl({hrl})}>
+                  @click=${(e) => this.weServices.openHrl(wal)}>
             ${this._attLocAndInfo.attachableInfo.name}
           </ui5-li>
         </ui5-list>

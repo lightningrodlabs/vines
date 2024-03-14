@@ -116,8 +116,8 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       console.error("Thread attachmentType not found");
       return;
     }
-    const spaceHrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(hash)];
-    const hrlc = {hrl: spaceHrl, context: {subjectType, subjectName}}
+    //const spaceHrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(hash)];
+    //const hrlc = {hrl: spaceHrl, context: {subjectType, subjectName}}
     // FIXME: since create has been removed, try to grab existing entry instead.
     // const res = await attType.create(hrlc);
     // console.log("Create/Open Thread result:", res);

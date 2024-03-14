@@ -192,31 +192,31 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
 
     const doodle_bg =  html `
-          <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
-          ${doodle_weave}
-          </div>
+      <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
+        ${doodle_weave}
+      </div>
     `;
 
     if (this.threadHash == "") {
       return html `
-          ${doodle_bg}
-          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
-              ${msg('No comment thread selected')}
-          </div>
+        ${doodle_bg}
+        <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
+            ${msg('No comment thread selected')}
+        </div>
       `;
     }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
       return html `
-          ${doodle_bg}
-          <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>
+        ${doodle_bg}
+        <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>
       `;
     }
 
     if (this._loading) {
       return html `
-          ${doodle_bg}
-          <ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
+        ${doodle_bg}
+        <ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
       `;
     }
 

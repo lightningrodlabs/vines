@@ -1,12 +1,8 @@
 import {encodeHashToBase64, ZomeName, RoleName, AppAgentClient} from "@holochain/client";
 import {
-    AnyBeadMat,
-    decodeHrl, EntryBeadMat,
-    materializeAnyBead, materializeEntryBead,
-    TextBead,
-    TextBeadMat,
+    materializeAnyBead,
     ThreadsEntryType,
-    ThreadsProxy, truncate
+    ThreadsProxy, truncate, weaveUrlToWal
 } from "@threads/elements";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {pascal} from "@ddd-qc/cell-proxy";
@@ -56,13 +52,13 @@ export async function getAttachableInfo(
             console.log("Threads/we-applet: AnyBead", hrlc);
             const anyTuple = await threadsProxy.getAnyBead(hrlc.hrl[1]);
             const hrlBead = materializeAnyBead(anyTuple[2]);
-            const hrl = decodeHrl(hrlBead.value);
-            const hash = encodeHashToBase64(hrl[1])
+            const wal = weaveUrlToWal(hrlBead.value);
+            const hash = encodeHashToBase64(wal.hrl[1])
             const h = truncate(hash, 10, false);
-            //const attLocInfo = weServices.getAttachableInfo({hrl});
+            //const attLocInfo = weServices.getAttachableInfo(wal);
             return {
                 icon_src: wrapPathInSvg(mdiCommentBookmark),
-                name: `HRL: ${h}`
+                name: `WAL: ${h}`
             };
         break;
         case ThreadsEntryType.EntryBead:

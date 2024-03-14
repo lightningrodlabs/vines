@@ -229,7 +229,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       item = html`<chat-file class="innerItem" .hash=${this.hash}></chat-file>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
-      item = html`<chat-hrl class="innerItem" .hash=${this.hash}></chat-hrl>`;
+      item = html`<chat-wal class="innerItem" .hash=${this.hash}></chat-wal>`;
     }
 
 
@@ -489,6 +489,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           gap: 18px;
           min-height: 55px;
           margin: 0px 5px 0px 5px;
+          overflow: auto;
         }
 
         .chatAvatar {

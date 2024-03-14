@@ -381,7 +381,7 @@ export class ThreadsApp extends HappElement {
       switch (this.appletView.type) {
         case "main":
           let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
-          break;
+        break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
         case "attachable":
@@ -400,23 +400,21 @@ export class ThreadsApp extends HappElement {
               console.log("attachable ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.hrlWithContext.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
-              break;
+            break;
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
                 const beadAh = encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]);
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
-                view = html`
-                    <chat-item .hash=${beadAh} shortmenu></chat-item>
-                `;
+                view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
             default:
               throw new Error(`Unhandled entry type ${attachableViewInfo.entryType}.`);
           }
-          break;
+        break;
         case "creatable":
           throw new Error(`Unhandled creatable type ${this.appletView.name}.`)
-          break;
+        break;
         default:
           console.error("Unknown applet-view type", this.appletView);
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);

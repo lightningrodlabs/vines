@@ -118,22 +118,22 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import 'css-doodle';
 
 import {
-  AnyBead, AnyBeadMat,
+  AnyBeadMat,
   AnyLinkableHashB64,
   ChatThreadView,
   CommentRequest,
-  decodeHrl, determineSubjectName, doodle_flowers,
+  doodle_flowers,
   event2type,
-  globaFilesContext, inputBarStyleTemplate, JumpDestinationType,
-  JumpEvent, materializeSubject,
+  globaFilesContext,
+  JumpEvent,
   NotifySettingType,
   parseMentions,
   ParticipationProtocol, searchFieldStyleTemplate,
-  shellBarStyleTemplate, Subject, SubjectMat, suggestionListTemplate, THIS_APPLET_ID, threadJumpEvent,
+  shellBarStyleTemplate, Subject, THIS_APPLET_ID, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
-  ThreadsPerspective,
+  ThreadsPerspective, weaveUrlToWal,
   weClientContext,
 } from "@threads/elements";
 
@@ -333,12 +333,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateHrlMessage() {
-    const maybeHrlc = await this.weServices.userSelectHrl();
-    if (!maybeHrlc) return;
-    console.log("onCreateHrlMessage()", weaveUrlFromWal({hrl: maybeHrlc.hrl}, false), maybeHrlc);
+    const maybeWal = await this.weServices.userSelectHrl();
+    if (!maybeWal) {
+      return;
+    }
+    console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal, false), maybeWal);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeHrlc.hrl, this.selectedThreadHash);
+    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash);
   }
 
 
@@ -454,12 +456,12 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         continue;
       }
       const anyBead = beadPair[1] as AnyBeadMat;
-      const hrl = decodeHrl(anyBead.value);
-      //const sHrl = weaveUrlFromWal(hrl);
-      if (!this.weServices.getAttachableInfo({hrl})) {
-        //this.wePerspective.attachables[sHrl] =
-        await this.weServices.attachableInfo({hrl});
-        this.requestUpdate();
+      const wal = weaveUrlToWal(anyBead.value);
+      if (!this.weServices.getAttachableInfo(wal)) {
+        const maybe = await this.weServices.attachableInfo(wal);
+        if (maybe) {
+          this.requestUpdate();
+        }
       }
     }
 
