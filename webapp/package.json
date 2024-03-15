@@ -1,5 +1,5 @@
 {
-  "name": "@threads/app",
+  "name": "@vines/app",
   "version": "0.1.0",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -35,6 +35,6 @@
     "run-singleton-cli": "^0.0.5"
   },
   "dependencies": {
-    "@threads/elements": "file:../webcomponents"
+    "@vines/elements": "file:../webcomponents"
   }
 }

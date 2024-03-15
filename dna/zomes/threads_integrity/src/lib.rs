@@ -17,7 +17,7 @@ use hdi::prelude::*;
 ///-------------------------------------------------------------------------------------------------
 
 /// DNA/Zome names
-pub const THREADS_DEFAULT_ROLE_NAME: &'static str = "role_threads";
+pub const VINES_DEFAULT_ROLE_NAME: &'static str = "rVines";
 pub const THREADS_DEFAULT_COORDINATOR_ZOME_NAME: &'static str = "zThreads";
 pub const THREADS_DEFAULT_INTEGRITY_ZOME_NAME: &'static str = "threads_integrity";
 

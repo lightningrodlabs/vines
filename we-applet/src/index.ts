@@ -1,4 +1,4 @@
-import {setupThreadsApplet} from "./setup";
+import {setupVinesApplet} from "./setup";
 
 
-export default setupThreadsApplet;
+export default setupVinesApplet;

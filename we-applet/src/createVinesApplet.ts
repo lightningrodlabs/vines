@@ -13,24 +13,24 @@ import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
 import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
-import {ThreadsApp} from "@threads/app";
+import {VinesApp} from "@vines/app";
 
 
 /** */
-export async function createThreadsApplet(
+export async function createVinesApplet(
   renderInfo: RenderInfo,
   weServices: WeServices,
-): Promise<ThreadsApp> {
+): Promise<VinesApp> {
 
   if (renderInfo.type =="cross-applet-view") {
-    throw Error("cross-applet-view not implemented by Threads");
+    throw Error("cross-applet-view not implemented by Vines");
   }
 
   const appletViewInfo = renderInfo as unknown as AppletViewInfo;
 
-  console.log("createThreadsApplet()         client", appletViewInfo.appletClient);
-  console.log("createThreadsApplet() thisAppletHash", appletViewInfo.appletHash);
-  console.log("createThreadsApplet()   thisAppletId", encodeHashToBase64(appletViewInfo.appletHash));
+  console.log("createVinesApplet()         client", appletViewInfo.appletClient);
+  console.log("createVinesApplet() thisAppletHash", appletViewInfo.appletHash);
+  console.log("createVinesApplet()   thisAppletId", encodeHashToBase64(appletViewInfo.appletHash));
 
   const profilesClient = appletViewInfo.profilesClient;
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
@@ -39,8 +39,8 @@ export async function createThreadsApplet(
   const mainAppAgentWs = appletViewInfo.appletClient as AppAgentWebsocket;
   const mainAppWs = mainAppAgentWs.appWebsocket;
   let profilesAppInfo = await profilesClient.client.appInfo();
-  console.log("createThreadsApplet() mainAppInfo", mainAppInfo);
-  console.log("createThreadsApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+  console.log("createVinesApplet() mainAppInfo", mainAppInfo);
+  console.log("createVinesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
 
   /** Check if roleName is actually a cloneId */
   let maybeCloneId = undefined;
@@ -57,10 +57,10 @@ export async function createThreadsApplet(
   const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
   await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
   const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
-  console.log("createThreadsApplet() profilesCellProxy", profilesCellProxy);
+  console.log("createVinesApplet() profilesCellProxy", profilesCellProxy);
 
   /** Create ThreadsApp */
-  const app = await ThreadsApp.fromWe(
+  const app = await VinesApp.fromWe(
       mainAppWs, undefined, false, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
       weServices,

@@ -397,7 +397,7 @@ export interface ThreadLastProbeLog {
  * -------------------------------------------------------------------------------------------------
  * DNA/Zome names
  */
-export const THREADS_DEFAULT_ROLE_NAME = "role_threads";
+export const VINES_DEFAULT_ROLE_NAME = "rVines";
 
 export const THREADS_DEFAULT_COORDINATOR_ZOME_NAME = "zThreads";
 

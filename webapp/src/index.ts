@@ -1,2 +1,2 @@
-export * from './threads-app';
+export * from './vines-app';
 export * from './globals';

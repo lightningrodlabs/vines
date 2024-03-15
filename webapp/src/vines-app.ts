@@ -23,15 +23,13 @@ import {
   DnaViewModel, snake, pascal, delay,
 } from "@ddd-qc/lit-happ";
 import {
-  ThreadsDvm,
-  THREADS_DEFAULT_ROLE_NAME,
-  ThreadsEntryType,
+  ThreadsDvm, ThreadsEntryType,
   THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-  cardStyleTemplate, appProxyContext, beadJumpEvent, JumpEvent, JumpDestinationType, AnyLinkableHashB64,
-} from "@threads/elements";
+  cardStyleTemplate, appProxyContext, JumpEvent, JumpDestinationType, AnyLinkableHashB64, VINES_DEFAULT_ROLE_NAME,
+} from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
@@ -44,13 +42,13 @@ import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
-import "./threads-page"
+import "./vines-page"
 
 import Button from "@ui5/webcomponents/dist/Button";
-import {toasty} from "@threads/elements/dist/toast";
+import {toasty} from "@vines/elements/dist/toast";
 
 /** */
-export interface AttachableThreadContext {
+export interface VinesAttachableQuery {
   detail: string,
   subjectType: string,
   subjectName: string,
@@ -60,8 +58,8 @@ export interface AttachableThreadContext {
 
 /** */
 @localized()
-@customElement("threads-app")
-export class ThreadsApp extends HappElement {
+@customElement("vines-app")
+export class VinesApp extends HappElement {
 
   @state() private _offlinePerspectiveloaded = false;
   @state() private _onlinePerspectiveloaded = false;
@@ -115,8 +113,8 @@ export class ThreadsApp extends HappElement {
     thisAppletId: AppletId,
     //showCommentThreadOnly?: boolean,
     appletView: AppletView,
-  ) : Promise<ThreadsApp> {
-    const app = new ThreadsApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
+  ) : Promise<VinesApp> {
+    const app = new VinesApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
     app._weServices = new WeServicesEx(weServices, thisAppletId);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
@@ -185,7 +183,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   handleSignal(sig: AppSignal) {
-    console.log("<threads-app>.handleSignal()")
+    console.log("<vines-app>.handleSignal()")
     this.appProxy.onSignal(sig);
   }
 
@@ -235,7 +233,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
-    console.log("<threads-app>.perspectiveInitializedOffline()");
+    console.log("<vines-app>.perspectiveInitializedOffline()");
     const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
     console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
     /** Done */
@@ -245,7 +243,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<threads-app>.perspectiveInitializedOnline()", this.appletView);
+    console.log("<vines-app>.perspectiveInitializedOnline()", this.appletView);
 
     if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
       await this.hvm.probeAll();
@@ -258,7 +256,7 @@ export class ThreadsApp extends HappElement {
   // /** */
   // shouldUpdate(): boolean {
   //   const canUpdate = super.shouldUpdate();
-  //   console.log("<threads-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
+  //   console.log("<vines-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
   //   /** Wait for offlinePerspective */
   //   return canUpdate && this._offlinePerspectiveloaded;
   // }
@@ -284,7 +282,7 @@ export class ThreadsApp extends HappElement {
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
-    console.log("<threads-app>.onJump()", e.detail);
+    console.log("<vines-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
         this._weServices.openAppletMain(decodeHashFromBase64(e.detail.hash));
@@ -369,13 +367,13 @@ export class ThreadsApp extends HappElement {
     //let view = html`<slot></slot>`;
     // FIXME: should propable store networkInfoLogs in class field
     let view = html`
-            <threads-page style="height:100vh;" 
+            <vines-page style="height:100vh;" 
                       .selectedThreadHash=${this._selectedThreadHash}
                       .selectedBeadAh=${this._selectedBeadAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}
-            ></threads-page>`;
+            ></vines-page>`;
     if (this.appletView) {
       console.log("appletView", this.appletView);
       switch (this.appletView.type) {
@@ -386,7 +384,7 @@ export class ThreadsApp extends HappElement {
           throw new Error("Threads/we-applet: Block view is not implemented.");
         case "attachable":
           const attachableViewInfo = this.appletView as AttachableViewInfo;
-          if (attachableViewInfo.roleName != THREADS_DEFAULT_ROLE_NAME) {
+          if (attachableViewInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
             throw new Error(`Threads/we-applet: Unknown role name '${this.appletView.roleName}'.`);
           }
           if (attachableViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
@@ -436,7 +434,7 @@ export class ThreadsApp extends HappElement {
           <div style="align-items: center;">
             <ui5-card id="profileCard">
               <ui5-card-header title-text=${msg('Import Profile into Threads applet')}></ui5-card-header>
-              <threads-edit-profile
+              <vines-edit-profile
                   .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
                     console.log("createMyProfile()", e.detail);
@@ -451,7 +449,7 @@ export class ThreadsApp extends HappElement {
                     console.log("set locale", e.detail);
                     setLocale(e.detail)
                   }}
-              ></threads-edit-profile>
+              ></vines-edit-profile>
             </ui5-card>
           </div>
         </div>`;

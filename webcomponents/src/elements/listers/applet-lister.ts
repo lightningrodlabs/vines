@@ -77,7 +77,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   private _threadCreatableType?: CreatableType;
 
-  /** Search for Threads attachmentType in based on _appInfoMap */
+  /** Search for Vines attachmentType in based on _appInfoMap */
   getThreadAttachmentType(): CreatableType | undefined {
     // FIXME
     if (this._threadCreatableType) {
@@ -85,13 +85,13 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     // // let threadsAppletId = undefined;
     // // for (const [appletId, appInfo] of Object.entries(this._appInfoMap)) {
-    // //   if (appInfo.appletName == "Threads") {
+    // //   if (appInfo.appletName == "Vines") {
     // //     threadsAppletId = appletId;
     // //     break;
     // //   }
     // // }
     // // if (!threadsAppletId) {
-    // //   console.warn("Did not find Threads applet");
+    // //   console.warn("Did not find Vines applet");
     // //   return undefined;
     // // }
     // for (const [_appletHash, atts] of this.weServices.creatables.entries()) {

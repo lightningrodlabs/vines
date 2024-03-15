@@ -18,7 +18,7 @@ import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 /**
  * @element
  */
-@customElement("threads-input-bar")
+@customElement("vines-input-bar")
 export class InputBar extends LitElement {
 
   /** Properties */
@@ -215,7 +215,7 @@ export class InputBar extends LitElement {
 
   /** */
   render() {
-    console.log("<threads-input-bar>.render()", this.showHrlBtn);
+    console.log("<vines-input-bar>.render()", this.showHrlBtn);
 
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     const input = this.inputElem? this.inputElem.value : "";
@@ -241,7 +241,7 @@ export class InputBar extends LitElement {
           return index !== -1;
         })
         .map(([agentKey, _profile]) => agentKey);
-      //console.log("<threads-input-bar>.render() filtered", filtered);
+      //console.log("<vines-input-bar>.render() filtered", filtered);
       if (filtered.length != 0) {
         suggestionKeys = filtered;
       }

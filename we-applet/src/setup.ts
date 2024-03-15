@@ -1,16 +1,16 @@
 import {createDefaultWeServicesMock, setup} from "@ddd-qc/we-utils";
-import {createThreadsApplet} from "./createThreadsApplet";
-import {ThreadsEntryType} from "@threads/elements";
+import {createVinesApplet} from "./createVinesApplet";
+import {ThreadsEntryType} from "@vines/elements";
 import {AppletServices} from "@lightningrodlabs/we-applet";
 import {creatables} from "./appletServices/creatables";
 import {getAttachableInfo} from "./appletServices/getAttachableInfo";
-import {setupThreadsEntryView, devtestNames} from "./devtest";
+import {setupVinesEntryView, devtestNames} from "./devtest";
 import {search} from "./appletServices/search";
 import {bindAsset} from "./appletServices/bindAsset";
 
 
 /** */
-export async function setupThreadsApplet() {
+export async function setupVinesApplet() {
   /** Determine appletView */
   let APPLET_VIEW = "main";
   try {
@@ -18,18 +18,18 @@ export async function setupThreadsApplet() {
     //console.log(`HAPP_ENV defined by process.ENV: "${happEnv}"`);
   } catch (e) {
   }
-  console.log("Threads we-applet setup() APPLET_VIEW", APPLET_VIEW);
+  console.log("Vines we-applet setup() APPLET_VIEW", APPLET_VIEW);
   switch(APPLET_VIEW) {
-    case ThreadsEntryType.ParticipationProtocol: return setupThreadsEntryView();
+    case ThreadsEntryType.ParticipationProtocol: return setupVinesEntryView();
     //case ThreadsEntryType.ParticipationProtocol: return setupThreadsBlockView();
     case "main":
-    default: return setupThreadsMainView();
+    default: return setupVinesMainView();
   }
 }
 
 
 /** */
-async function setupThreadsMainView() {
+async function setupVinesMainView() {
   const appletServices: AppletServices = {
     creatables,
     getAttachableInfo,
@@ -37,5 +37,5 @@ async function setupThreadsMainView() {
     blockTypes: {},
     search,
   };
-  return setup(appletServices, createThreadsApplet, devtestNames, createDefaultWeServicesMock);
+  return setup(appletServices, createVinesApplet, devtestNames, createDefaultWeServicesMock);
 }

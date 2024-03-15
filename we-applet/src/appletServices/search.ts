@@ -1,20 +1,17 @@
 import {
-    AgentPubKey, AgentPubKeyB64,
+    AgentPubKeyB64,
     AppAgentClient,
     decodeHashFromBase64,
-    encodeHashToBase64,
-    EntryHash,
-    Timestamp
 } from "@holochain/client";
 import {AppletHash, HrlWithContext} from "@lightningrodlabs/we-applet/dist/types";
 import {WeServices} from "@lightningrodlabs/we-applet/dist/api";
 import {asCellProxy} from "@ddd-qc/we-utils";
-import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
-import {ParcelDescription, ParcelManifest, ParcelReference} from "@ddd-qc/delivery";
-import {THREADS_DEFAULT_ROLE_NAME} from "@threads/elements";
+import {FilesProxy} from "@ddd-qc/files";
+import {ParcelDescription} from "@ddd-qc/delivery";
+import {VINES_DEFAULT_ROLE_NAME} from "@vines/elements";
 
 /** */
-export interface ThreadsSearchContext {
+export interface VinesSearchContext {
     isPrivate: boolean
     author: AgentPubKeyB64,
     description: ParcelDescription,
@@ -23,7 +20,7 @@ export interface ThreadsSearchContext {
 
 /** Return EntryHashs of Manifests whose name match the search filter */
 export async function search(appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices, searchFilter: string): Promise<Array<HrlWithContext>> {
-    console.log("Threads/we-applet/search():", searchFilter);
+    console.log("Vines/we-applet/search():", searchFilter);
     const searchLC = searchFilter.toLowerCase();
 
     /** Get Cell proxy */
@@ -32,8 +29,8 @@ export async function search(appletClient: AppAgentClient, appletHash: AppletHas
         appletClient,
         undefined,
         mainAppInfo.installed_app_id,
-        THREADS_DEFAULT_ROLE_NAME);
-    console.log("Threads/we-applet/search(): cellProxy", cellProxy);
+        VINES_DEFAULT_ROLE_NAME);
+    console.log("Vines/we-applet/search(): cellProxy", cellProxy);
     const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
     const dnaHash = decodeHashFromBase64(proxy.cell.dnaHash);
 

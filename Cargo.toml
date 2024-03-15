@@ -8,7 +8,6 @@ members = [
   "dna/zomes/profiles",
   "dna/zomes/threads_integrity",
   "dna/zomes/threads",
-  #"sweettest" // Don't add this since cargo sucks at target specific compiliation in workspaces
   ]
 
 [workspace.package]

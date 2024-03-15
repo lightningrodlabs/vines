@@ -135,7 +135,7 @@ import {
   ThreadsEntryType,
   ThreadsPerspective, weaveUrlToWal,
   weClientContext,
-} from "@threads/elements";
+} from "@vines/elements";
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
@@ -160,11 +160,11 @@ import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
-import {composeNotificationTitle, renderAvatar} from "@threads/elements/dist/render";
-import {toasty} from "@threads/elements/dist/toast";
+import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
+import {toasty} from "@vines/elements/dist/toast";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
-import {parseSearchInput} from "@threads/elements/dist/search";
+import {parseSearchInput} from "@vines/elements/dist/search";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -176,13 +176,13 @@ console.log("FILES_CELL_NAME", FILES_CELL_NAME);
 /**
  * @element
  */
-@customElement("threads-page")
-export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
+@customElement("vines-page")
+export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     this.addEventListener('beforeunload', (e) => {
-      console.log("<threads-page> beforeunload", e);
+      console.log("<vines-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
     //new ContextProvider(this, wePerspectiveContext, this.wePerspective);
@@ -260,7 +260,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<threads-page>.dvmUpdated()");
+    console.log("<vines-page>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -354,7 +354,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** After first render only */
   async firstUpdated() {
     // this._initialized = true;
-    console.log("<threads-page> firstUpdated()");
+    console.log("<vines-page> firstUpdated()");
 
     /** Generate test data */
     //await this._dvm.threadsZvm.generateTestData("");
@@ -374,20 +374,20 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
-      console.log("<threads-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
+      console.log("<vines-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
       const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
-      console.log("<threads-page> firstUpdated() appletIds", appletIds);
+      console.log("<vines-page> firstUpdated() appletIds", appletIds);
       for (const appletId of appletIds) {
         /*const appletInfo =*/ await this.weServices.appletInfo(decodeHashFromBase64(appletId));
         //this.wePerspective.applets[appletId] = appletInfo;
       }
       /* Grab my appletInfo and groupProfile */
-      console.log("<threads-page> firstUpdated() appletInfo for", this.weServices.appletId);
+      console.log("<vines-page> firstUpdated() appletInfo for", this.weServices.appletId);
       const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(this.weServices.appletId));
       for (const groupId of appletInfo.groupsIds) {
-        console.log("<threads-page> firstUpdated() groupId", encodeHashToBase64(groupId));
+        console.log("<vines-page> firstUpdated() groupId", encodeHashToBase64(groupId));
         const gp = await this.weServices.groupProfile(groupId);
-        console.log("<threads-page> firstUpdated() gp", gp);
+        console.log("<vines-page> firstUpdated() gp", gp);
       }
       /** NotifyWe of some new content */
       const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
@@ -638,7 +638,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //   return;
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
-        console.log("<threads-page> startPublishFile callback", eh);
+        console.log("<vines-page> startPublishFile callback", eh);
         /*let ah =*/ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh);
         this._splitObj = undefined;
       });
@@ -650,7 +650,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
-    console.log("<threads-page>.onJump()", e.detail);
+    console.log("<vines-page>.onJump()", e.detail);
     // e.stopPropagation();
     // if (e.detail.type == JumpDestinationType.Applet) {
     //   if (this.weServices) {
@@ -738,7 +738,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<threads-page>.render()", this._initialized, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this._initialized, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     let centerSide = html`
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
@@ -782,14 +782,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           style="border:none; padding:0px"
                           @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
-            <threads-input-bar .profilesZvm=${this._dvm.profilesZvm}
+            <vines-input-bar .profilesZvm=${this._dvm.profilesZvm}
                                .topic=${topic}
                                .showHrlBtn=${!!this.weServices}
                                showFileBtn="true"
                                @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
                                @upload=${(e) => {e.preventDefault(); this.uploadFile(this.selectedThreadHash)}}
                                @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
-            ></threads-input-bar>`
+            ></vines-input-bar>`
             }
         `;
       }
@@ -1172,14 +1172,14 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </ui5-dialog>
         <!-- ProfileDialog -->
         <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
-            <threads-edit-profile
+            <vines-edit-profile
                     allowCancel
                     .profile=${myProfile}
                     .saveProfileLabel= ${msg('Edit Profile')}
                     @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
                     @lang-selected=${(e: CustomEvent) => setLocale(e.detail)}
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
-            ></threads-edit-profile>
+            ></vines-edit-profile>
         </ui5-dialog>
         <!-- CreateTopicDialog -->
         <ui5-dialog id="create-topic-dialog" header-text="Create Topic">
@@ -1256,11 +1256,11 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   private openFile() {
-    console.log("<threads-page>.openFile()");
+    console.log("<vines-page>.openFile()");
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {
-      console.log("<threads-page> target download file", e);
+      console.log("<vines-page> target download file", e);
       const file = e.target.files[0];
       if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
         toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
@@ -1542,7 +1542,7 @@ export class ThreadsPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding-top: 0px;
         }
 
-        threads-input-bar {
+        vines-input-bar {
           margin: 3px 10px 10px 10px;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
           border-radius: 20px;

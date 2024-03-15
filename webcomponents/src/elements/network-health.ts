@@ -51,13 +51,13 @@ export class NetworkHealth extends LitElement {
     //   return html`no logs available ${enableSwitch}`;
     // }
 
-    // /* Grab role_threads cell */
+    // /* Grab rVines cell */
     // let cellLogs: [Timestamp, NetworkInfo][] = [];
     // for (const [cellIdStr, infoPair] of Object.entries(allNetworkLogs)) {
     //     const hcls  = this._appProxy.getLocations(str2CellId(cellIdStr));
     //     const cellName = this._appProxy.getCellName(hcls[0]);
     //     console.log("<network-health>.render() cellName", cellName);
-    //     if (cellName == THREADS_DEFAULT_ROLE_NAME) {
+    //     if (cellName == VINES_DEFAULT_ROLE_NAME) {
     //       cellLogs = infoPair;
     //       break;
     //     }

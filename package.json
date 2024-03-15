@@ -1,5 +1,5 @@
 {
-  "name": "threads-dev",
+  "name": "vines-dev",
   "version": "0.1.0",
   "config": {
     "hc_version": "0.2.6",
@@ -28,7 +28,7 @@
 
     "build:zome"         : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:dna"          : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir && cp $npm_package_config_files_repo/artifacts/files.dna ./artifacts",
-    "build:happ"         : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/threads.happ dna/workdir",
+    "build:happ"         : "npm run build:dna && $npm_package_config_bin/hc app pack -o artifacts/vines.happ dna/workdir",
 
     "build:webapp"       : "npm run build -w webcomponents && npm run dist -w webapp",
     "build:devtest"      : "npm run clean:hc & npm run build:happ && bash scripts/ts-bindings.sh && npm run build -w webcomponents && npm run build -w webapp",
@@ -52,8 +52,8 @@
     "start:mem"          : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp\"",
     "start:local"        : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run _save-ports\" \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
 
-    "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network mem",
-    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/threads.happ --run=$HC_APP_PORT -a threads network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
+    "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/vines.happ --run=$HC_APP_PORT -a vines network mem",
+    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/vines.happ --run=$HC_APP_PORT -a vines network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
 
     "serve"              : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) npm run serve:run",
     "serve:run"          : "hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
@@ -67,17 +67,17 @@
     "local1"             : "cross-env INDEX=1 npm run _local",
     "local2"             : "cross-env INDEX=2 npm run _local",
 
-    "launch"             : "echo pass | hc-launch --piped -n 1 artifacts/threads.webhapp network mem",
-    "launch:we"          : "echo pass | hc-launch --piped -n 1 artifacts/threads-we_applet.webhapp network mem",
+    "launch"             : "echo pass | hc-launch --piped -n 1 artifacts/vines.webhapp network mem",
+    "launch:we"          : "echo pass | hc-launch --piped -n 1 artifacts/vines-we_applet.webhapp network mem",
 
-    "test"               : "npm run build:happ && npm run build -w @threads/elements && npm t -w @threads/tests",
-    "package:webapp"     : "rm -rf artifacts/threads-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/threads-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/threads.webhapp",
-    "package:we"         : "rm -rf artifacts/threads-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/threads-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/threads-we_applet.webhapp && npm run cp:we",
+    "test"               : "npm run build:happ && npm run build -w @vines/elements && npm t -w @vines/tests",
+    "package:webapp"     : "rm -rf artifacts/vines-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/vines-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/vines.webhapp",
+    "package:we"         : "rm -rf artifacts/vines-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/vines-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp && npm run cp:we",
     "dist:we"            : "npm run dist -w we-applet && npm run package:we",
-    "cp:we"              : "cp artifacts/threads-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
+    "cp:we"              : "cp artifacts/vines-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
 
     "update-version"     : "bash scripts/update-version-number.sh $npm_package_version",
-    "dl-test-release"    : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/threads",
+    "dl-test-release"    : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/vines",
 
     "clean"              : "bash scripts/clean.sh",
     "clean:npm"          : "bash scripts/clean-npm.sh",

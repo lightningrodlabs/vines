@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
-name: Threads Official We-applet
+name: Vines Official Applet
 ui:
-  bundled: "../../artifacts/threads-we_applet-ui.zip"
+  bundled: "../../artifacts/vines-we_applet-ui.zip"
 happ_manifest:
-  bundled: "../../artifacts/threads.happ"
+  bundled: "../../artifacts/vines.happ"

@@ -22,6 +22,9 @@ pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
   for tp in leaf_anchors {
     let path = Path::from(tp.anchor.clone());
     let comps: Vec<Component> = path.into();
+    if comps.len() == 1 {
+      continue;
+    }
     debug!("Parsing leaf_anchor: '{}' | {:?}", tp.anchor, comps);
     //let applet_hash = comp2hash(&comps[1])?;
     let applet_id = String::try_from(&comps[1])

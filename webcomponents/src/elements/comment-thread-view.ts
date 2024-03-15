@@ -264,8 +264,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     let maybeInput = html``;
     if (this.showInput) {
       maybeInput = html`
-          <threads-input-bar topic="thread" .profilesZvm=${this._dvm.profilesZvm}
-                              @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></threads-input-bar>`
+          <vines-input-bar topic="thread" .profilesZvm=${this._dvm.profilesZvm}
+                              @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
     }
 
     // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
@@ -318,8 +318,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           display: flex;
           flex-direction: column;
         }
-        
-        threads-input-bar {
+
+        vines-input-bar {
           border: none;
           width: 100%;
           margin-top: 8px;

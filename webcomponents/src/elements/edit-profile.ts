@@ -50,7 +50,7 @@ export function resizeAndExport(img: HTMLImageElement) {
  * @fires save-profile - Fired when the save profile button is clicked
  */
 @localized()
-@customElement("threads-edit-profile")
+@customElement("vines-edit-profile")
 export class EditProfile extends LitElement {
 
   /**

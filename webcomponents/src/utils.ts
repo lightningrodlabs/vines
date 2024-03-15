@@ -1,8 +1,8 @@
-import {ActionHashB64, decodeHashFromBase64, dhtLocationFrom32, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, dhtLocationFrom32} from "@holochain/client";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
-  BeadInfo, BeadType, EntryBeadMat, materializeTypedBead,
+  BeadType, EntryBeadMat, materializeTypedBead,
   SubjectMat, TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.perspective";

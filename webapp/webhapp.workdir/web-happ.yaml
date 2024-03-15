@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
-name: Threads Official
+name: Vines Official
 ui:
-  bundled: "../../artifacts/threads-webapp-ui.zip"
+  bundled: "../../artifacts/vines-webapp-ui.zip"
 happ_manifest:
-  bundled: "../../artifacts/threads.happ"
+  bundled: "../../artifacts/vines.happ"

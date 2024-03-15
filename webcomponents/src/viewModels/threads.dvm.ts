@@ -15,8 +15,7 @@ import {
   NotifiableEventType,
   ParticipationProtocol,
   SignalPayloadType,
-  THREADS_DEFAULT_ROLE_NAME,
-  ThreadsEntryType, ThreadsProperties,
+  ThreadsEntryType, ThreadsProperties, VINES_DEFAULT_ROLE_NAME,
   WeaveNotification,
   WeaveSignal
 } from "../bindings/threads.types";
@@ -52,7 +51,7 @@ export interface ThreadsDnaPerspective {
  */
 export class ThreadsDvm extends DnaViewModel {
 
-  static readonly DEFAULT_BASE_ROLE_NAME = THREADS_DEFAULT_ROLE_NAME;
+  static readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
   static readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
