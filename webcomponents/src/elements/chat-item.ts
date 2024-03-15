@@ -493,7 +493,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .chatAvatar {
-          margin-right: 5px;
+          margin: 2px 0px 0px 2px;
           box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;
           outline: #4a7b57 solid 2px;
         }

@@ -456,7 +456,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async probeAllInnerAsync() {
-    console.log("threadsZvm.probeAllInner()")
+    console.log("threadsZvm.probeAllInner()", this._allSubjects.size)
     await this.initializePerspectiveOnline();
 
     // /** Grab all threads of SemanticTopics to see if there are new ones */
@@ -467,7 +467,7 @@ export class ThreadsZvm extends ZomeViewModel {
     // await Promise.all(probes);
     /** Grab all threads of other subjects to see if there are new ones */
     let probes = []
-    for (const hash of Object.keys(this._allSubjects)) {
+    for (const hash of this._allSubjects.keys()) {
       probes.push(this.probeSubjectThreads(hash));
     }
     await Promise.all(probes);
@@ -587,11 +587,11 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async probeAllAppletIds(): Promise<string[]> {
-    console.log("probeAllAppletIds()")
+    console.log("threadsZvm.probeAllAppletIds()")
     // const appletIds = await this.zomeProxy.getApplets();
     // this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
     this._allAppletIds = await this.zomeProxy.getApplets();
-    console.log("probeAllAppletIds() res", this._allAppletIds);
+    console.log("threadsZvm.probeAllAppletIds() res", this._allAppletIds);
     this.notifySubscribers();
     return this._allAppletIds;
   }
@@ -604,7 +604,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const subjectMat = materializeSubject(subject);
       this._allSubjects.set(subjectMat.hash, subjectMat);
     }
-    console.log("probeAllSubjects()", this._allSubjects.size);
+    console.log("threadsZvm.probeAllSubjects()", this._allSubjects.size);
     this.notifySubscribers();
     return this._allSubjects;
   }
@@ -628,6 +628,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Get all Threads from a subject */
   async probeSubjectThreads(subjectHash: AnyLinkableHashB64): Promise<Dictionary<ParticipationProtocol>> {
+    console.log("threadsZvm.probeSubjectThreads()", subjectHash);
     let res = {};
     const pps = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
     const hiddens = await this.probeHiddens();

@@ -48,7 +48,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** -- State variables -- */
 
-  @state() private _loading = false;
+  @state() private _loading = true;
   @state() private _isHovered: Dictionary<boolean> = {};
 
 
@@ -58,9 +58,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<applet-lister>.zvmUpdated()");
-    this._loading = true;
-    await newZvm.probeSubjectTypes(this.appletId);
-    this._loading = false;
+    await this.loadSubjectTypes();
   }
 
   /** */
@@ -68,10 +66,15 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     super.willUpdate(changedProperties);
     //console.log("<applet-lister>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
     if (changedProperties.has("appletId") && this._zvm) {
-      this._loading = true;
-      await this._zvm.probeSubjectTypes(this.appletId);
-      this._loading = false;
+      /*await */ this.loadSubjectTypes();
     }
+  }
+
+  private async loadSubjectTypes() {
+    console.log("<applet-lister>.loadSubjectTypes()");
+    this._loading = true;
+    await this._zvm.probeSubjectTypes(this.appletId);
+    this._loading = false;
   }
 
 
@@ -276,7 +279,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html `<div>No Applet selected</div>`;
     }
     if (this._loading) {
-      return html `<div>Loading subject types</div>`;
+      return html `<ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
     let subjectTypes = this.perspective.appletSubjectTypes[this.appletId];

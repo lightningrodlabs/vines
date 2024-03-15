@@ -68,8 +68,8 @@ export interface VinesAttachableQuery {
 @customElement("vines-app")
 export class VinesApp extends HappElement {
 
-  @state() private _offlinePerspectiveloaded = false;
-  @state() private _onlinePerspectiveloaded = false;
+  @state() private _offlineLoaded = false;
+  @state() private _onlineLoaded = false;
   @state() private _hasHolochainFailed = true;
 
   @state() private _hasWeProfile = false;
@@ -244,19 +244,20 @@ export class VinesApp extends HappElement {
     const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
     console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
     /** Done */
-    this._offlinePerspectiveloaded = true;
+    this._offlineLoaded = true;
   }
 
 
   /** */
   async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<vines-app>.perspectiveInitializedOnline()", this.appletView);
+    console.log("<vines-app>.perspectiveInitializedOnline() START", this.appletView);
 
     if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
       await this.hvm.probeAll();
     }
     await this.networkInfoAll(); // FIXME: should propable store result in class field
-    this._onlinePerspectiveloaded = true;
+    console.log("<vines-app>.perspectiveInitializedOnline() DONE");
+    this._onlineLoaded = true;
   }
 
 
@@ -341,20 +342,16 @@ export class VinesApp extends HappElement {
 
   /** */
   render() {
-    console.log("*** <threads-app> render()", this._hasWeProfile, this.threadsDvm.cell.print());
+    console.log("<vines-app> render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
 
-    if (!this._offlinePerspectiveloaded) {
-      return html `
-        <ui5-busy-indicator size="Medium" active
-                            style="margin:auto; width:50%; height:50%;"
-        ></ui5-busy-indicator>
-      `;
-    }
+    /** Check init has been done */
     if(this._hasHolochainFailed) {
       return html`
       <div style="display: flex; flex-direction: column">
         <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};</div>
-        <ui5-button id="retryBtn" @click=${async (e) => {
+        <ui5-button id="retryBtn" 
+                    style="max-width:300px"
+                    @click=${async (e) => {
           const btn = this.shadowRoot.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
@@ -368,6 +365,20 @@ export class VinesApp extends HappElement {
           ${msg('Retry')}
         </ui5-button>
       </div>
+      `;
+    }
+    if (!this._offlineLoaded) {
+      return html `
+        <ui5-busy-indicator size="Medium" active
+                            style="margin:auto; width:100%; height:50%; color:#ff4343"
+        ></ui5-busy-indicator>
+      `;
+    }
+    if (!this._onlineLoaded) {
+      return html `
+        <ui5-busy-indicator size="Medium" active
+                            style="margin:auto; width:100%; height:50%;"
+        ></ui5-busy-indicator>
       `;
     }
 
@@ -438,7 +449,7 @@ export class VinesApp extends HappElement {
     /** Import profile from We */
     let guardedView = view;
     const maybeMyProfile = this.threadsDvm.profilesZvm.getMyProfile();
-    console.log("<threads-app> Profile", this._hasWeProfile, maybeMyProfile);
+    console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = html`
           ${doodle_bg}          

@@ -654,7 +654,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** set lastProbeTime for current thread */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
-      /*await*/ this._dvm.threadsZvm.commitThreadProbeLog(this.selectedThreadHash);
+      await this._dvm.threadsZvm.commitThreadProbeLog(this.selectedThreadHash);
     }
 
     /** Close any opened popover */

@@ -2,7 +2,7 @@ import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {consume} from "@lit/context";
 import {globaFilesContext} from "../contexts";
 import {FileHashB64, FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
@@ -32,13 +32,13 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
-
   @state() private _loading = true;
   @state() private _manifest?: ParcelManifest;
            private _maybeFile?: File;
            private _maybeBlobUrl?: string;
 
 
+  /** -- Methods -- */
 
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
@@ -48,17 +48,25 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     console.log("<chat-file>.willUpdate()", this.hash, this._filesDvm.perspective);
+    /* await */ this.loadFile();
+  }
+
+
+  /** */
+  private async loadFile() {
+    console.log("<chat-file>.loadFile()", this.hash, this._filesDvm);
+    this._loading = true;
     const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
     if (!beadInfoPair) {
+      console.warn("<chat-file> Bead not found", this.hash);
       return;
     }
-    this._loading = true;
     const entryBead = beadInfoPair[1] as EntryBeadMat;
     const manifestEh = entryBead.sourceEh;
-    console.log("<chat-file>.willUpdate() manifestEh", manifestEh);
+    console.log("<chat-file>.loadFile() manifestEh", manifestEh);
     //const beadInfoPair = this._filesDvm.filesZvm.perspective.loca[this.hash];
     this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(manifestEh));
-    console.log(`<chat-file>.willUpdate() ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest);
+    console.log(`<chat-file>.loadFile() ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest);
     if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
       const mime = kind2mime(this._manifest.description.kind_info);
       //const fileType = kind2Type(this._manifest.description.kind_info);
@@ -85,9 +93,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     } else {
       this._loading = false;
     }
-
   }
 
+
+  /** */
+  protected firstUpdated(_changedProperties: PropertyValues) {
+    super.firstUpdated(_changedProperties);
+    /*await*/ this.loadFile();
+  }
 
 
   /** */
@@ -97,7 +110,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`<div style="color:#c10a0a">${msg("No file selected")}</div>`;
     }
     if (!this._manifest) {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator size="Medium" active></ui5-busy-indicator>`;
     }
     const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
     if (this._loading || !beadInfoPair) {
