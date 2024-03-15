@@ -23,12 +23,19 @@ import {
   DnaViewModel, snake, pascal, delay,
 } from "@ddd-qc/lit-happ";
 import {
-  ThreadsDvm, ThreadsEntryType,
+  ThreadsDvm,
+  ThreadsEntryType,
   THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   globaFilesContext,
   weClientContext,
-  cardStyleTemplate, appProxyContext, JumpEvent, JumpDestinationType, AnyLinkableHashB64, VINES_DEFAULT_ROLE_NAME,
+  cardStyleTemplate,
+  appProxyContext,
+  JumpEvent,
+  JumpDestinationType,
+  AnyLinkableHashB64,
+  VINES_DEFAULT_ROLE_NAME,
+  doodle_flowers, doodle_weave,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -422,18 +429,25 @@ export class VinesApp extends HappElement {
     }
 
 
+    const doodle_bg =  html `
+      <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
+        ${doodle_flowers}
+      </div>
+    `;
+
     /** Import profile from We */
     let guardedView = view;
     const maybeMyProfile = this.threadsDvm.profilesZvm.getMyProfile();
     console.log("<threads-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = html`
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom: 10px;margin:auto: min-width:400px;">
-          <h1 style="font-family: arial;color: #5804A8;"><img src="icon.png" width="32" height="32"
+          ${doodle_bg}          
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:400px;">
+          <h1 style="font-family:arial; color:#5804A8; z-index:1;"><img src="icon.png" width="32" height="32"
                                                               style="padding-left: 5px;padding-top: 5px;"/> Vines</h1>
-          <div style="align-items: center;">
+          <div style="align-items: center; z-index:1;">
             <ui5-card id="profileCard">
-              <ui5-card-header title-text=${msg('Import Profile into Threads applet')}></ui5-card-header>
+              <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
               <vines-edit-profile
                   .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
