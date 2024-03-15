@@ -36,7 +36,7 @@ pub fn get_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> Exter
                            //creation_time: ll.timestamp,
                            bead_ah: ActionHash::try_from(ll.target).unwrap(),
                            bead_type: bt.item_type,
-                           //bead_type: tag2str(&LinkTag::from(ll.tag)).unwrap(),
+                           author: ll.author,
                          }
                        })
                        .collect();

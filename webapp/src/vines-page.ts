@@ -124,7 +124,7 @@ import {
   CommentRequest,
   doodle_flowers,
   event2type,
-  globaFilesContext,
+  globaFilesContext, JumpDestinationType,
   JumpEvent,
   NotifySettingType,
   parseMentions,
@@ -651,27 +651,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail);
-    // e.stopPropagation();
-    // if (e.detail.type == JumpDestinationType.Applet) {
-    //   if (this.weServices) {
-    //     this.weServices.openAppletMain(e.detail.hash);
-    //   }
-    // }
-    // if (e.detail.type == JumpDestinationType.Thread) {
-    //   this.selectedThreadHash = e.detail.hash;
-    //   this.selectedBeadAh = '';
-    // }
-    // if (e.detail.type == JumpDestinationType.Bead) {
-    //   //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
-    //   //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
-    //   const beadInfo = await this._dvm.threadsZvm.getBeadInfo(e.detail.hash);
-    //   this.selectedThreadHash = beadInfo.bead.ppAh;
-    //   this.selectedBeadAh = e.detail.hash;
-    // }
-    // if (e.detail.type == JumpDestinationType.Dm) {
-    //   // TODO
-    // }
 
+    /** set lastProbeTime for current thread */
+    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
+      /*await*/ this._dvm.threadsZvm.commitThreadProbeLog(this.selectedThreadHash);
+    }
+
+    /** Close any opened popover */
     const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();

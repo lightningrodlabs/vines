@@ -194,6 +194,7 @@ export interface BeadLink {
   creationTime: Timestamp
   beadAh: ActionHash
   beadType: string
+  author: AgentPubKey
 }
 
 /** DEBUG ONLY */

@@ -702,7 +702,8 @@ export class ThreadsZvm extends ZomeViewModel {
           return;
         }
       }
-      if (bl.creationTime <= maybeThread.latestProbeLogTime) {
+      if (bl.creationTime <= maybeThread.latestProbeLogTime ||
+          encodeHashToBase64(bl.author) == this.cell.agentPubKey) {
         return;
       }
       const subjectHash = maybeThread.pp.subject.hash
@@ -1016,9 +1017,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("publishTypedBeadAt() added bead", encodeHashToBase64(bead_ah), creationTime);
     //const beadLink: BeadLink = {creationTime, beadAh: bead_ah, beadType}
     if (!dontStore) {
-      //await this.fetchTypedBead(bead_ah, beadType, true, creationTime);
       await this.storeTypedBead(encodeHashToBase64(bead_ah), materializeTypedBead(typed, beadTypeEx), beadTypeEx, creationTime, author, true, false);
-
     }
     /** Notify Mentions/reply asychronously */
     const extra = encode({typed, beadType: beadTypeEx});

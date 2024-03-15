@@ -62,7 +62,7 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
           //creation_time: link.timestamp,
           bead_ah: ActionHash::try_from(link.target).unwrap(),
           bead_type: item_tag.item_type,
-          //bead_type: tag2str(&link.tag).unwrap(),
+          author: link.author,
         };
         /// Add only if after begin_time since we may have older items from the same time bucket
         if bl.creation_time > searched_interval.begin {

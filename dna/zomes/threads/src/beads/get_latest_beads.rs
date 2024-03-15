@@ -45,7 +45,7 @@ pub fn get_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInterv
         //creation_time: link.timestamp,
         bead_ah: ActionHash::try_from(link.target).unwrap(),
         bead_type: bt.item_type,
-        //bead_type: tag2str(&link.tag).unwrap(),
+        author: link.author,
       }
     })
     .collect();

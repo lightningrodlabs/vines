@@ -23,6 +23,7 @@ pub struct BeadLink {
   pub creation_time: Timestamp,
   pub bead_ah: ActionHash,
   pub bead_type: String,
+  pub author: AgentPubKey,
 }
 
 
