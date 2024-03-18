@@ -70,7 +70,7 @@ export class VinesApp extends HappElement {
 
   @state() private _offlineLoaded = false;
   @state() private _onlineLoaded = false;
-  @state() private _hasHolochainFailed = true;
+  @state() private _hasHolochainFailed = undefined;
 
   @state() private _hasWeProfile = false;
   @state() private _lang?: string
@@ -197,7 +197,7 @@ export class VinesApp extends HappElement {
 
   /** */
   async hvmConstructed() {
-    console.log("hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
+    console.log("<vines-app>.hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
 
     /** Authorize all zome calls */
     if (!this._adminWs && this._canAuthorizeZfns) {
@@ -217,7 +217,7 @@ export class VinesApp extends HappElement {
 
     /** Attempt Probe EntryDefs */
     let attempts = 5;
-    while(this._hasHolochainFailed && attempts > 0) {
+    while(this._hasHolochainFailed == undefined || this._hasHolochainFailed && attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
       console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
@@ -230,7 +230,9 @@ export class VinesApp extends HappElement {
         break;
       }
     }
-
+    if (attempts == 0 && this._hasHolochainFailed == undefined) {
+      this._hasHolochainFailed = true;
+    }
     /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();
     console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
@@ -264,9 +266,9 @@ export class VinesApp extends HappElement {
   // /** */
   // shouldUpdate(): boolean {
   //   const canUpdate = super.shouldUpdate();
-  //   console.log("<vines-app>.shouldUpdate()", canUpdate, this._offlinePerspectiveloaded);
+  //   console.log("<vines-app>.shouldUpdate()", canUpdate, this._offlineLoaded);
   //   /** Wait for offlinePerspective */
-  //   return canUpdate && this._offlinePerspectiveloaded;
+  //   return canUpdate /*&& this._offlinePerspectiveloaded*/;
   // }
 
 
@@ -345,11 +347,18 @@ export class VinesApp extends HappElement {
     console.log("<vines-app> render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
 
     /** Check init has been done */
+    if (this._hasHolochainFailed == undefined) {
+      return html `
+        <ui5-busy-indicator size="Medium" active
+                            style="margin:auto; width:100%; height:50%; color:#ff4343"
+        ></ui5-busy-indicator>
+      `;
+    }
     if(this._hasHolochainFailed) {
       return html`
       <div style="display: flex; flex-direction: column">
         <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};</div>
-        <ui5-button id="retryBtn" 
+        <ui5-button id="retryBtn" design="Emphasized"
                     style="max-width:300px"
                     @click=${async (e) => {
           const btn = this.shadowRoot.getElementById("retryBtn") as Button;
@@ -369,9 +378,9 @@ export class VinesApp extends HappElement {
     }
     if (!this._offlineLoaded) {
       return html `
-        <ui5-busy-indicator size="Medium" active
-                            style="margin:auto; width:100%; height:50%; color:#ff4343"
-        ></ui5-busy-indicator>
+          <ui5-busy-indicator size="Medium" active
+                              style="margin:auto; width:100%; height:50%; color:#f3bb2c"
+          ></ui5-busy-indicator>
       `;
     }
     if (!this._onlineLoaded) {

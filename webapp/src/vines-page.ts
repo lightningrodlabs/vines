@@ -179,6 +179,7 @@ console.log("FILES_CELL_NAME", FILES_CELL_NAME);
 @customElement("vines-page")
 export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
+  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     this.addEventListener('beforeunload', (e) => {
@@ -187,6 +188,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     });
     //new ContextProvider(this, wePerspectiveContext, this.wePerspective);
   }
+
 
   /** Handle 'jump' event */
   connectedCallback() {
@@ -201,7 +203,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Fields -- */
 
-  @state() private _initialized = false;
   @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
            private _selectedCommentThreadSubjectName: string = '';
   @state() private _createTopicHash: AnyLinkableHashB64 = '';
@@ -276,7 +277,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.selectedThreadHash = '';
     this.selectedBeadAh = '';
     this._listerToShow = newDvm.cell.dnaHash;
-    this._initialized = true;
   }
 
 
@@ -299,7 +299,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("onCreateList() res:", res)
     input.value = "";
 
-    this.onJump(threadJumpEvent(ah))
+    await this.onJump(threadJumpEvent(ah));
     this.createThreadDialogElem.close(false);
   }
 
@@ -350,10 +350,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  ///** */
+  //shouldUpdate(changedProperties: PropertyValues<this>): boolean {
+  //  const canUpdate = super.shouldUpdate(changedProperties);
+  //  console.log("<vines-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
+  //  return canUpdate;
+  //}
+
 
   /** After first render only */
   async firstUpdated() {
-    // this._initialized = true;
     console.log("<vines-page> firstUpdated()");
 
     /** Generate test data */
@@ -724,7 +730,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<vines-page>.render()", this._initialized, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     let centerSide = html`
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
@@ -1193,10 +1199,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <section>
                 <div>
                     <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
-                    <ui5-input id="threadPurposeInput" @keydown=${(e) => {
+                    <ui5-input id="threadPurposeInput" @keydown=${async (e) => {
                         if (e.keyCode === 13) {
                             e.preventDefault();
-                            this.onCreateThread(e);
+                            await this.onCreateThread(e);
                         }
                     }}></ui5-input>
                 </div>
@@ -1204,7 +1210,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <div slot="footer" style:
             "display:flex;">
             <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                        @click=${this.onCreateThread} >Create
+                        @click=${async (e) => await this.onCreateThread(e)} >Create
             </ui5-button>
             <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel
             </ui5-button>

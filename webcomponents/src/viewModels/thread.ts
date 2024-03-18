@@ -106,7 +106,7 @@ export class Thread {
   }
 
 
-  /** -- Methods -- */
+  /** -- Setters -- */
 
   /** */
   setIsHidden(isHidden: boolean): void {
@@ -127,6 +127,9 @@ export class Thread {
   setSearchedOldestBead(): void {
     this._hasSearchedOldestBead = true;
   }
+
+
+  /** -- Methods -- */
 
 
   /** */

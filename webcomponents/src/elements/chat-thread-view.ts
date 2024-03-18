@@ -7,6 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {ts2day} from "../render";
+import {deepDiffMapper} from "../utils";
 
 /**
  * @element
@@ -39,6 +40,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+  private _prevThread: string = ""
 
   /** -- State variables -- */
 
@@ -84,6 +87,17 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (changedProperties.has("_loading")) {
       return true;
     }
+    if (changedProperties.has("threadsPerspective")) {
+      const tp = changedProperties.get("threadsPerspective");
+      const newThread = JSON.stringify(tp.threads.get(this.threadHash));
+      //const oldThread = this._prevThreadsPerspective? this._prevThreadsPerspective.threads.get(this.threadHash) : undefined;
+      //const diff = oldThread == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
+      //const isEqual = this._prevThreadsPerspective == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
+      const isEqual = this._prevThread == newThread;
+      //console.log("<chat-thread-view>.shouldUpdate() tp", isEqual, this._prevThread, newThread);
+      this._prevThread = newThread;
+      return !isEqual;
+    }
     return !this._loading;
     //return true;
   }
@@ -92,7 +106,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<chat-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
+    console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
     if (this._dvm) {
       if (!this._dvm.threadsZvm.perspective.notifSettings[this.threadHash]) {
         await this._dvm.threadsZvm.probeNotifSettings(this.threadHash);

@@ -17,24 +17,25 @@ import {SEMANTIC_TOPIC_TYPE_NAME} from "../../bindings/threads.types";
 @customElement("topics-lister")
 export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
+  /** */
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
+
 
   @property() showArchivedTopics?: string;
 
   @property() selectedThreadHash?: string;
 
+
   /** */
   onClickCommentPp(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64, subjectName: string) {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: "ParticipationProtocol", subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
-
   /** */
   onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string) {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: SEMANTIC_TOPIC_TYPE_NAME, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
-
 
 
   /** */
