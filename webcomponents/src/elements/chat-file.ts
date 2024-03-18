@@ -110,11 +110,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`<div style="color:#c10a0a">${msg("No file selected")}</div>`;
     }
     if (!this._manifest) {
-      return html`<ui5-busy-indicator size="Medium" active></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active></ui5-busy-indicator>`;
     }
     const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
     if (this._loading || !beadInfoPair) {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const entryBead = beadInfoPair[1] as EntryBeadMat;
     const manifestEh = entryBead.sourceEh;

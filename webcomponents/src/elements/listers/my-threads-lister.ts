@@ -66,7 +66,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads);
 
     if (this._loading) {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
     const myBeads= Object.entries(this.perspective.beads).filter(([ah, pair]) => pair[0].author == this.cell.agentPubKey);
@@ -148,7 +148,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
           /** Render threads for Topic */
           const thread = this.perspective.threads.get(ppAh);
           if (!thread) {
-            return html`<ui5-busy-indicator size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+            return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
           }
           console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;

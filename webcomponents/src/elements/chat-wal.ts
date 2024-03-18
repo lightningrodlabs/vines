@@ -48,7 +48,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     }
     if (this.hash == "") {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const anyBeadInfoPair = this.perspective.beads[this.hash];
     if (!anyBeadInfoPair) {
@@ -86,14 +86,14 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         //console.log("<chat-wal>.render() attachableInfo", attLocAndInfo);
         this._attLocAndInfo = attLocAndInfo;
       });
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     if (!this._appletInfo) {
       this.weServices.appletInfo(this._attLocAndInfo.appletHash).then((appletInfo) => {
         //console.log("<chat-wal>.render() appletInfo:", appletInfo);
         this._appletInfo = appletInfo;
       });
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
 
 

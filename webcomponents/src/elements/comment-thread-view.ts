@@ -216,7 +216,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this._loading) {
       return html `
         ${doodle_bg}
-        <ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
+        <ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
       `;
     }
 

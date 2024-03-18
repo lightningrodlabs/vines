@@ -48,7 +48,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         return;
       }
       /** Render threads for Topic */
-      let threads = [html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
+      let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
       let topicThreads = this.perspective.threadsPerSubject[topicHash];
       if (topicThreads == undefined) {
         topicThreads = [];
@@ -62,7 +62,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         threads = Object.values(topicThreads).map((ppAh) => {
           const thread = this.perspective.threads.get(ppAh);
           if (!thread) {
-            return html`<ui5-busy-indicator size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+            return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
           }
           console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;

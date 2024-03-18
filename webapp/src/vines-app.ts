@@ -349,7 +349,7 @@ export class VinesApp extends HappElement {
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
       return html `
-        <ui5-busy-indicator size="Medium" active
+        <ui5-busy-indicator delay="0" size="Medium" active
                             style="margin:auto; width:100%; height:50%; color:#ff4343"
         ></ui5-busy-indicator>
       `;
@@ -378,14 +378,14 @@ export class VinesApp extends HappElement {
     }
     if (!this._offlineLoaded) {
       return html `
-          <ui5-busy-indicator size="Medium" active
+          <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:50%; color:#f3bb2c"
           ></ui5-busy-indicator>
       `;
     }
     if (!this._onlineLoaded) {
       return html `
-        <ui5-busy-indicator size="Medium" active
+        <ui5-busy-indicator delay="0" size="Medium" active
                             style="margin:auto; width:100%; height:50%;"
         ></ui5-busy-indicator>
       `;

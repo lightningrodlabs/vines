@@ -279,7 +279,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html `<div>No Applet selected</div>`;
     }
     if (this._loading) {
-      return html `<ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+      return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
     let subjectTypes = this.perspective.appletSubjectTypes[this.appletId];
@@ -347,7 +347,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** render all */
     return html`
-      <ui5-busy-indicator id="busy" style="width: 100%">
+      <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
         <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text="No SubjectTypes found"
                   @item-toggle=${(e) => this.toggleTreeItem(e, unreadSubjects)}
                   @item-click=${this.clickTree}

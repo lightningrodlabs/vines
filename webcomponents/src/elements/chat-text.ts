@@ -35,7 +35,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     const beadPair = this.perspective.beads[this.hash];
     if (!beadPair) {
-      return html`<ui5-busy-indicator size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const tm = beadPair[1] as TextBeadMat;
     const md = markdownit();

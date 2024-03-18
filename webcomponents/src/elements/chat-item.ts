@@ -209,13 +209,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
     if (this.hash == "") {
       return html`
-          <div>No bead found</div>`;
+          <div>No bead selected</div>`;
     }
-    if (this._loading) {
-      return html `
-          <ui5-busy-indicator size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
-      `;
-    }
+    // if (this._loading) {
+    //   return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+    // }
 
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     const typed = this._dvm.threadsZvm.getBead(this.hash);

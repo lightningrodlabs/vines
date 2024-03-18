@@ -1160,7 +1160,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
         <!-- DIALOGS -->
         <ui5-dialog id="wait-dialog">
-            <ui5-busy-indicator size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+            <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
         </ui5-dialog>
         <!-- ProfileDialog -->
         <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
