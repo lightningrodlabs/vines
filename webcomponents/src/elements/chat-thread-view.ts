@@ -86,7 +86,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return true;
     }
     if (changedProperties.has("_loading")) {
-      return !this._loading;
+      //return !this._loading;
+      return true;
     }
     if (changedProperties.has("threadsPerspective")) {
       const tp = changedProperties.get("threadsPerspective");
@@ -149,16 +150,16 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
-  async getUpdateComplete(): Promise<boolean> {
-    //console.log("ChatView.getUpdateComplete()")
-    let superCompleted = await super.getUpdateComplete();
-    /** Make sure mainChat has finished updating (i.e. loaded child chat-items) */
-    const mainChat = this.shadowRoot.getElementById('mainChat') as LitElement;
-    const childUpdated = await mainChat.updateComplete;
-    /** Done */
-    return superCompleted && childUpdated;
-  }
+  // /** */
+  // async getUpdateComplete(): Promise<boolean> {
+  //   //console.log("ChatView.getUpdateComplete()")
+  //   let superCompleted = await super.getUpdateComplete();
+  //   /** Make sure mainChat has finished updating (i.e. loaded child chat-items) */
+  //   const mainChat = this.shadowRoot.getElementById('mainChat') as LitElement;
+  //   const childUpdated = await mainChat.updateComplete;
+  //   /** Done */
+  //   return superCompleted && childUpdated;
+  // }
 
 
   /** Check if beads have comments */
@@ -224,7 +225,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   async onWheel(event) {
     console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
     //if (this.scrollTop == 0) {
-    if (this.clientHeight -  this.scrollHeight == this.scrollTop) {
+    if (this.clientHeight - this.scrollHeight == this.scrollTop) {
       //this.style.background = 'grey';
       await this.loadPreviousMessages();
     } else {
@@ -273,7 +274,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     let currentDay = "";
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.values(all).map(
+    let chatItems = Object.values(all).map(
       (blm) => {
         let hr = html``;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
@@ -314,7 +315,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-            ${textLi.reverse()}
+            ${chatItems.reverse()}
+            ${this._loading? html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
             ${maybeHeader}
     `;
   }
