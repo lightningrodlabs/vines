@@ -289,8 +289,8 @@ export enum SignalPayloadType {
 	Notification = 'Notification',
 }
 export type SignalPayload = 
- | {type: "DirectGossip", content: DirectGossip}
- | {type: "Notification", content: [WeaveNotification, Uint8Array]}
+ | {type: {DirectGossip: null}, content: DirectGossip}
+ | {type: {Notification: null}, content: [WeaveNotification, Uint8Array]}
 
 
 /**  */
@@ -314,12 +314,12 @@ export enum DirectGossipType {
 	EmojiReactionChange = 'EmojiReactionChange',
 }
 export type DirectGossip = 
- | {type: "Ping", content: AgentPubKeyB64}
- | {type: "Pong", content: AgentPubKeyB64}
- | {type: "NewSemanticTopic", content: [EntryHashB64, string]}
- | {type: "NewPp", content: [Timestamp, ActionHashB64, ParticipationProtocol]}
- | {type: "NewBead", content: [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array]}
- | {type: "EmojiReactionChange", content: [ActionHashB64, AgentPubKeyB64, string, boolean]}
+ | {type: {Ping: null}, content: AgentPubKeyB64}
+ | {type: {Pong: null}, content: AgentPubKeyB64}
+ | {type: {NewSemanticTopic: null}, content: [EntryHashB64, string]}
+ | {type: {NewPp: null}, content: [Timestamp, ActionHashB64, ParticipationProtocol]}
+ | {type: {NewBead: null}, content: [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array]}
+ | {type: {EmojiReactionChange: null}, content: [ActionHashB64, AgentPubKeyB64, string, boolean]}
 
 
 /** Input to the notify call */

@@ -1542,7 +1542,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const signal: WeaveSignal = {
       maybePpHash,
       from: this.cell.agentPubKey,
-      payload: { type: SignalPayloadType.Notification, content: [notification, extra]}
+      payload: { type: {Notification: null}, content: [notification, extra]}
     }
     return signal;
   }
