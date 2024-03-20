@@ -85,7 +85,7 @@ fn signal_peers(input: SignalPeersInput) -> ExternResult<()> {
     //     peers.push(a.into())
     // }
     debug!("Sending signal {:?} to {:?}", input.signal, input.peers);
-    remote_signal(ExternIO::encode(input.signal).unwrap(), input.peers)?;
+    send_remote_signal(ExternIO::encode(input.signal).unwrap(), input.peers)?;
     Ok(())
 }
 

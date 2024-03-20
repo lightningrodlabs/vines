@@ -1,4 +1,4 @@
-use hdk::hash_path::path::Component;
+use hdi::hash_path::path::Component;
 use hdk::prelude::*;
 use threads_integrity::*;
 //use zome_utils::*;

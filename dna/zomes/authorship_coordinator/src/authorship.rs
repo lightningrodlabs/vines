@@ -1,4 +1,4 @@
-use hdk::hash_path::path::DELIMITER;
+use hdi::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use zome_utils::*;
 use authorship_integrity::*;
@@ -82,7 +82,7 @@ pub fn get_all_ascribed_types(_: ()) -> ExternResult<Vec<String>> {
 pub fn get_author(target: AnyLinkableHash) -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     //let tp = get_type_tp(target_type)?;
-    let authors = get_links(target, AuthorshipLinkType::Author, None)?;
+    let authors = get_links(link_input(target, AuthorshipLinkType::Author, None))?;
     if authors.len() == 0 {
         return Ok(None);
     }
@@ -115,7 +115,7 @@ pub fn get_all_ascribed_entries(_: ()) -> ExternResult<Vec<(String, AnyLinkableH
 pub fn get_ascribed_type_children(target_type: String) -> ExternResult<Vec<(AnyLinkableHash, Timestamp, AgentPubKey)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let tp = get_type_tp(target_type)?;
-    let targets = get_links(tp.path_entry_hash()?, AuthorshipLinkType::Target, None)?;
+    let targets = get_links(link_input(tp.path_entry_hash()?, AuthorshipLinkType::Target, None))?;
     let result: Vec<(AnyLinkableHash, Timestamp, AgentPubKey)> = targets.into_iter().map(|link| {
         let log: AuthorshipLog = decode(&link.tag.into_inner()).unwrap();
         (link.target, log.creation_time, log.original_author)

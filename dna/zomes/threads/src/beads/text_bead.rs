@@ -11,7 +11,7 @@ pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Times
   std::panic::set_hook(Box::new(zome_panic_hook));
   let ah = create_entry(ThreadsEntry::TextBead(texto.clone()))?;
   //let ah_time = sys_time()?; // FIXME: use Action's timestamp
-  let ah_time = get(ah.clone(), GetOptions::content())?.unwrap().action().timestamp();
+  let ah_time = get(ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
   let tp_pair = index_bead(texto.bead, ah.clone(), "TextBead", ah_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))

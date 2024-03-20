@@ -2,6 +2,7 @@
 
 import {GLOBAL_TIME_INDEX, PP_ITEM_TYPE, ROOT_ANCHOR_SEMANTIC_TOPICS, ROOT_ANCHOR_SUBJECTS, SEMANTIC_TOPIC_TYPE_NAME, THREADS_DEFAULT_COORDINATOR_ZOME_NAME, THREADS_DEFAULT_INTEGRITY_ZOME_NAME, VINES_DEFAULT_ROLE_NAME, DirectGossip, NotifiableEvent, NotifySetting, SignalPayload, ThreadsEntry, ThreadsLinkType, AddAnyBeadInput, AddEntryAsBeadInput, AddEntryBeadInput, AddManyTextBeadAtInput, AddReactionInput, AddTextAndMentionsAtInput, AddTextBeadAtInput, AnyBead, Bead, BeadLink, CommitGlobalLogInput, EntryBead, GetDataTypeInput, GetLatestBeadsInput, GetProtocolsInput, GlobalLastProbeLog, NotifyPeerInput, ParticipationProtocol, ProbeAllOutput, SemanticTopic, SendInboxItemInput, SetNotifySettingInput, SignalPeersInput, Subject, TextBead, ThreadLastProbeLog, ThreadsProperties, WeaveNotification, WeaveSignal, } from './threads.types';
 import {
+WebsocketConnectionOptions,
 /** types.ts */
 HoloHash,
 AgentPubKey,

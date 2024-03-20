@@ -24,10 +24,10 @@ pub const ROOT_ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
 /// Zome's entry types
 ///-------------------------------------------------------------------------------------------------
 
-#[hdk_entry_defs]
+#[hdk_entry_types]
 #[unit_enum(AuthorshipEntryTypes)]
 pub enum AuthorshipEntry {
-    #[entry_def(required_validations = 3, visibility = "private")]
+    #[entry_type(required_validations = 3, visibility = "private")]
     Bogus(Bogus),
 }
 

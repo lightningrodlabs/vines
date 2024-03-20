@@ -1,8 +1,8 @@
 use hdk::prelude::*;
+use strum_macros::FromRepr;
 use threads_integrity::{THREADS_DEFAULT_COORDINATOR_ZOME_NAME, ThreadsLinkType};
 use crate::signals::WeaveSignal;
-use strum_macros::FromRepr;
-use zome_utils::zome_panic_hook;
+use zome_utils::*;
 
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone, PartialEq, FromRepr)]
@@ -115,7 +115,7 @@ pub fn send_inbox_item(input: SendInboxItemInput) -> ExternResult<Option<(Action
 pub fn probe_inbox(_ : ()) -> ExternResult<Vec<WeaveNotification>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_latest_pubkey;
-    let links = get_links(me, ThreadsLinkType::Inbox, None)?;
+    let links = get_links(link_input(me, ThreadsLinkType::Inbox, None))?;
     let notifs = links.into_iter().map(|link| { WeaveNotification::from(&link)}).collect();
     Ok(notifs)
 }

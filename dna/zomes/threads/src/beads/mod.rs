@@ -31,7 +31,7 @@ pub struct BeadLink {
 pub fn get_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, T)> {
   debug!("get_typed_bead() {}", bead_ah);
   /// Get typed
-  let Some(record) = get(bead_ah.clone(), GetOptions::content())? else {
+  let Some(record) = get(bead_ah.clone(), GetOptions::network())? else {
     return error("get_typed_bead(): Entry not found");
   };
   let Ok(typed) = get_typed_from_record::<T>(record.clone()) else {

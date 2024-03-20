@@ -3,8 +3,7 @@ mod create_semantic_topic;
 mod get_all_semantic_topics;
 
 
-
-use hdk::hash_path::path::DELIMITER;
+use hdi::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;

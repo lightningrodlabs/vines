@@ -4,7 +4,7 @@ mod create_participation_protocol;
 
 pub use create_participation_protocol::*;
 
-use hdk::hash_path::path::{Component};
+use hdi::hash_path::path::{Component};
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_encode};

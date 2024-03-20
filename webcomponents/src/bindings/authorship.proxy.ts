@@ -2,6 +2,7 @@
 
 import {AUTHORSHIP_DEFAULT_COORDINATOR_ZOME_NAME, AUTHORSHIP_DEFAULT_INTEGRITY_ZOME_NAME, AUTHORSHIP_DEFAULT_ROLE_NAME, ROOT_ANCHOR_AUTHORSHIP, ROOT_ANCHOR_UNKNOWN_AUTHOR, AuthorshipEntry, AuthorshipLinkType, AscribeTargetInput, AuthorshipLog, Bogus, } from './authorship.types';
 import {
+WebsocketConnectionOptions,
 /** types.ts */
 HoloHash,
 AgentPubKey,

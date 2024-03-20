@@ -201,7 +201,7 @@ export class VinesApp extends HappElement {
 
     /** Authorize all zome calls */
     if (!this._adminWs && this._canAuthorizeZfns) {
-      this._adminWs = await AdminWebsocket.connect(new URL(`ws://localhost:${HC_ADMIN_PORT}`));
+      this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
       console.log("hvmConstructed() connect() called", this._adminWs);
     }
     if (this._adminWs && this._canAuthorizeZfns) {
@@ -333,7 +333,7 @@ export class VinesApp extends HappElement {
       return;
     }
     const hrl: Hrl = [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(e.detail)];
-    const sHrl = weaveUrlFromWal({hrl}, false);
+    const sHrl = weaveUrlFromWal({hrl}/*, false*/);
     navigator.clipboard.writeText(sHrl);
     if (this._weServices) {
       this._weServices.hrlToClipboard({hrl});

@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use zome_utils::zome_panic_hook;
+use zome_utils::*;
 use threads_integrity::ThreadsLinkType;
 
 
@@ -7,7 +7,7 @@ use threads_integrity::ThreadsLinkType;
 #[hdk_extern]
 fn get_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHash>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let links = get_links(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None)?;
+  let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   for link in links.iter() {
     if link.target.clone() == subjectHash {
       return Ok(Some(link.create_link_hash.to_owned()));
@@ -40,7 +40,7 @@ fn unhide_subject(subjectHash: AnyLinkableHash) -> ExternResult<()> {
 #[hdk_extern]
 fn get_hidden_subjects(_: ()) -> ExternResult<Vec<AnyLinkableHash>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let links = get_links(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None)?;
+  let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   let hashs = links.iter().map(|link| link.target.clone()).collect();
   Ok(hashs)
 }

@@ -31,7 +31,7 @@ pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
 pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
-    let links = get_links(me, ThreadsLinkType::Favorite, None)?;
+    let links = get_links(link_input(me, ThreadsLinkType::Favorite, None))?;
     let ah = AnyLinkableHash::from(bead_ah);
     for link in links {
         if link.target == ah {
@@ -48,7 +48,7 @@ pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
 pub fn get_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
-    let links = get_links(me, ThreadsLinkType::Favorite, None)?;
+    let links = get_links(link_input(me, ThreadsLinkType::Favorite, None))?;
     let mut res = Vec::new();
     for link in links {
         let bead_ah: ActionHash = link.target.into_action_hash().unwrap();

@@ -35,22 +35,22 @@ pub const PP_ITEM_TYPE: &'static str = "__protocol";
 /// Threads zome's entry types
 ///-------------------------------------------------------------------------------------------------
 
-#[hdk_entry_defs]
+#[hdk_entry_types]
 #[unit_enum(ThreadsEntryTypes)]
 pub enum ThreadsEntry {
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_type(required_validations = 3, visibility = "public")]
     AnyBead(AnyBead),
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_type(required_validations = 3, visibility = "public")]
     EntryBead(EntryBead),
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_type(required_validations = 3, visibility = "public")]
     SemanticTopic(SemanticTopic),
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_type(required_validations = 3, visibility = "public")]
     ParticipationProtocol(ParticipationProtocol),
-    #[entry_def(required_validations = 3, visibility = "public")]
+    #[entry_type(required_validations = 3, visibility = "public")]
     TextBead(TextBead),
-    #[entry_def(required_validations = 1, visibility = "private")]
+    #[entry_type(required_validations = 1, visibility = "private")]
     GlobalProbeLog(GlobalLastProbeLog),
-    #[entry_def(required_validations = 1, visibility = "private")]
+    #[entry_type(required_validations = 1, visibility = "private")]
     ThreadProbeLog(ThreadLastProbeLog),
 }
 
