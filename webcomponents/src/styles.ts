@@ -62,6 +62,10 @@ export const sharedStyles = css`
     background: rgba(255, 255, 255, 0.80);
     cursor:pointer;
   }
+
+  .fail {
+    background: #fdd;
+  }
 `;
 
 

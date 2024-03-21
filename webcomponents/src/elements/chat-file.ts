@@ -11,6 +11,7 @@ import {EntryBeadMat} from "../viewModels/threads.perspective";
 import {ParcelManifest} from "@ddd-qc/delivery";
 import {msg} from "@lit/localize";
 import {toasty} from "../toast";
+import {sharedStyles} from "../styles";
 
 
 /**
@@ -40,7 +41,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** -- Methods -- */
-
 
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
@@ -128,7 +128,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     if (!this._loading && !this._manifest) {
       return html`
           <ui5-list id="fileList">
-              <ui5-li id="fileLi" style="background: #ff060636" icon="synchronize" description=${this.hash}
+              <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
                       @click=${async (e) => this.loadFile()}>
                   Missing File
               </ui5-li>
@@ -146,7 +146,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       //return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
       return html`
         <ui5-list id="fileList">
-          <ui5-li id="fileLi" icon="synchronize" description=${manifestEh}
+          <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh}
                   @click=${async (e) => {
                       await this._filesDvm.deliveryZvm.probeDht();
                       const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
@@ -254,6 +254,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static get styles() {
     return [
+      sharedStyles,
       css`
         #fileList {
           min-width: 350px;

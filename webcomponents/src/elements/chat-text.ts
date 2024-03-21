@@ -29,8 +29,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   render() {
     //console.log("<chat-text>.render()", this.hash);
     if (this.hash == "") {
-      return html`
-          <div style="color:red">No message found</div>`;
+      return html`<div style="color:red">No message found</div>`;
     }
 
     const beadPair = this.perspective.beads[this.hash];
