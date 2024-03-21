@@ -12,7 +12,7 @@ import {
   ZomeName,
 } from "@holochain/client";
 import {
-  AppletId, AppletView, Hrl, weaveUrlFromWal,
+  AppletId, AppletView, CreatableName, Hrl, HrlWithContext, weaveUrlFromWal,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {
@@ -35,7 +35,13 @@ import {
   JumpDestinationType,
   AnyLinkableHashB64,
   VINES_DEFAULT_ROLE_NAME,
-  doodle_flowers, doodle_weave, onlineLoadedContext,
+  doodle_flowers,
+  doodle_weave,
+  onlineLoadedContext,
+  THIS_APPLET_ID,
+  ParticipationProtocol,
+  determineSubjectName,
+  materializeSubject, ThreadsZvm, weaveUrlToWal, Subject,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -53,6 +59,7 @@ import "./vines-page"
 
 import Button from "@ui5/webcomponents/dist/Button";
 import {toasty} from "@vines/elements/dist/toast";
+import {CreateThreadRequest} from "@vines/elements/dist/elements/create-thread-panel";
 
 /** */
 export interface VinesAttachableQuery {
@@ -440,7 +447,46 @@ export class VinesApp extends HappElement {
           }
         break;
         case "creatable":
-          throw new Error(`Unhandled creatable type ${this.appletView.name}.`)
+          const creatableViewInfo = this.appletView as {
+            type: "creatable";
+            name: CreatableName;
+            resolve: (hrlWithContext: HrlWithContext) => Promise<void>;
+            reject: (reason: any) => Promise<void>;
+            cancel: () => Promise<void>;
+          };
+          if (creatableViewInfo.name == "Thread") {
+            view = html`<create-thread-panel 
+                    @create=${async (e: CustomEvent<CreateThreadRequest>) => {
+                      try {
+                        console.log("@create event", e.detail);
+                        const hrlc = weaveUrlToWal(e.detail.wurl);
+                        const attLocInfo = await this._weServices.attachableInfo(hrlc);
+                        const subject: Subject = {
+                            hash: hrlc.hrl[1],
+                            typeName: attLocInfo.attachableInfo.icon_src,
+                            dnaHash: hrlc.hrl[0],
+                            appletId: encodeHashToBase64(attLocInfo.appletHash),
+                        }
+                        const subject_name = await determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
+                        console.log("@create event subject_name", subject_name);                        
+                        const pp: ParticipationProtocol = {
+                            purpose: e.detail.purpose,
+                            rules: e.detail.rules,
+                            subject,
+                            subject_name,
+                        };
+                        const [ppAh, ppMat] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
+                        const wal: HrlWithContext = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: ppMat.subject.hash}
+                        await creatableViewInfo.resolve(wal);
+                      } catch(e) {
+                          creatableViewInfo.reject(e)
+                    }}}
+                    @cancel=${(_e) => creatableViewInfo.cancel()}
+                    @reject=${(e) => creatableViewInfo.reject(e.detail)}
+            ></create-thread-panel>`;
+          } else {
+            throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)
+          }
         break;
         default:
           console.error("Unknown applet-view type", this.appletView);
