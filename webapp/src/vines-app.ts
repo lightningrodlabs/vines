@@ -35,7 +35,7 @@ import {
   JumpDestinationType,
   AnyLinkableHashB64,
   VINES_DEFAULT_ROLE_NAME,
-  doodle_flowers, doodle_weave,
+  doodle_flowers, doodle_weave, onlineLoadedContext,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -70,6 +70,7 @@ export class VinesApp extends HappElement {
 
   @state() private _offlineLoaded = false;
   @state() private _onlineLoaded = false;
+           private _onlineLoadedProvider?: any;
   @state() private _hasHolochainFailed = undefined;
 
   @state() private _hasWeProfile = false;
@@ -88,10 +89,9 @@ export class VinesApp extends HappElement {
 
   /** -- We-applet specifics -- */
 
-  protected _filesProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   private _weProfilesDvm?: ProfilesDvm;
-  protected _weProvider?: unknown; // FIXME type: ContextProvider<this.getContext()> ?
   protected _weServices?: WeServicesEx;
+
 
 
   /** -- Ctor -- */
@@ -102,6 +102,7 @@ export class VinesApp extends HappElement {
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
+    this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
   }
 
 
@@ -125,10 +126,9 @@ export class VinesApp extends HappElement {
     /** Provide it as context */
     app._weServices = new WeServicesEx(weServices, thisAppletId);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
-    app._weProvider = new ContextProvider(app, weClientContext, app._weServices);
-    //app.appletId = thisAppletId;
+    let _weProvider = new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
-    console.log("<thread-app>.ctor()", profilesProxy);
+    console.log("<thread-app>.fromWe()", profilesProxy);
     await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
     return app;
   }
@@ -236,7 +236,7 @@ export class VinesApp extends HappElement {
     /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();
     console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
-    this._filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
+    let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
 
 
@@ -260,9 +260,11 @@ export class VinesApp extends HappElement {
     await this.networkInfoAll(); // FIXME: should propable store result in class field
     console.log("<vines-app>.perspectiveInitializedOnline() DONE");
     this._onlineLoaded = true;
+    this._onlineLoadedProvider.setValue(true);
   }
 
 
+  /** USE FOR DEBUGGING */
   // /** */
   // shouldUpdate(): boolean {
   //   const canUpdate = super.shouldUpdate();
@@ -383,13 +385,13 @@ export class VinesApp extends HappElement {
           ></ui5-busy-indicator>
       `;
     }
-    if (!this._onlineLoaded) {
-      return html `
-        <ui5-busy-indicator delay="0" size="Medium" active
-                            style="margin:auto; width:100%; height:50%;"
-        ></ui5-busy-indicator>
-      `;
-    }
+    // if (!this._onlineLoaded) {
+    //   return html `
+    //     <ui5-busy-indicator delay="0" size="Medium" active
+    //                         style="margin:auto; width:100%; height:50%;"
+    //     ></ui5-busy-indicator>
+    //   `;
+    // }
 
     //let view = html`<slot></slot>`;
     // FIXME: should propable store networkInfoLogs in class field

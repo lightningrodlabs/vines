@@ -126,7 +126,7 @@ import {
   event2type,
   globaFilesContext, JumpDestinationType,
   JumpEvent,
-  NotifySettingType,
+  NotifySettingType, onlineLoadedContext,
   parseMentions,
   ParticipationProtocol, searchFieldStyleTemplate,
   shellBarStyleTemplate, Subject, THIS_APPLET_ID, threadJumpEvent,
@@ -218,6 +218,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @state() private _splitObj?: SplitObject;
 
+  private _threadNames: Record<ActionHashB64, string> = {};
 
   @property() selectedThreadHash: AnyLinkableHashB64 = '';
   @property() selectedBeadAh: ActionHashB64 = '';
@@ -236,7 +237,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-  private _threadNames: Record<ActionHashB64, string> = {};
+  @consume({ context: onlineLoadedContext, subscribe: true })
+  onlineLoaded!: boolean;
 
 
   /** -- Getters -- */
@@ -256,6 +258,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   get waitDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
   }
+
 
   /** -- Update -- */
 
@@ -730,7 +733,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<vines-page>.render()", this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     let centerSide = html`
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
