@@ -1,13 +1,15 @@
 import {css, html, LitElement, PropertyValues} from "lit";
+import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {Dictionary, DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, encodeHashToBase64, Timestamp} from "@holochain/client";
+import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {ts2day} from "../render";
-import {deepDiffMapper} from "../utils";
+import {onlineLoadedContext} from "../contexts";
+
 
 /**
  * @element
@@ -40,6 +42,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+  @consume({ context: onlineLoadedContext, subscribe: true })
+  onlineLoaded!: boolean;
+
 
   private _prevThread: string = ""
 
@@ -90,6 +96,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return true;
     }
     if (changedProperties.has("threadsPerspective")) {
+
+      const isFirstPerspective = this._prevThread == "";
+      /** Don't update during loading */
+      if (!isFirstPerspective && !this.onlineLoaded) {
+        return false;
+      }
+
       const tp = changedProperties.get("threadsPerspective");
       const newThread = JSON.stringify(tp.threads.get(this.threadHash));
       //const oldThread = this._prevThreadsPerspective? this._prevThreadsPerspective.threads.get(this.threadHash) : undefined;
@@ -99,7 +112,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       //console.log("<chat-thread-view>.shouldUpdate() tp", isEqual, this._prevThread, newThread);
       this._prevThread = newThread;
       /** update only if something changed and we are not currently loading all the beads */
-      return !this._loading && !isEqual;
+      return isFirstPerspective || !this._loading && !isEqual;
     }
     return !this._loading;
     //return true;
@@ -247,10 +260,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this.threadHash == "") {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
     }
-    if (this._loading && !this._threadUiInfo[this.threadHash]) {
-      console.log("<chat-thread-view>.render() SPINNER");
-      return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
-    }
+    // if (this._loading && !this._threadUiInfo[this.threadHash]) {
+    //   console.log("<chat-thread-view>.render() SPINNER");
+    //   return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+    // }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
       return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;

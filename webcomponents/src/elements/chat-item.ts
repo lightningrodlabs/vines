@@ -1,27 +1,29 @@
 import {html, css, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
+import {msg} from "@lit/localize";
+import {consume} from "@lit/context";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import 'emoji-picker-element';
-import {Picker} from "emoji-picker-element";
-import Popover from "@ui5/webcomponents/dist/Popover";
+//import 'emoji-picker-element';
+
 import {renderAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {threadJumpEvent} from "../jump";
-import {msg} from "@lit/localize";
-import {consume} from "@lit/context";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
+import Popover from "@ui5/webcomponents/dist/Popover";
+
 import {toasty} from "../toast";
 import {popoverStyleTemplate} from "../styles";
 import {determineBeadName} from "../utils";
+
 
 /**
  * @element
@@ -50,6 +52,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
+
+  @consume({ context: onlineLoadedContext, subscribe: true })
+  onlineLoaded!: boolean;
 
   @state() private _isHovered = false;
   @state() private _loading = true;

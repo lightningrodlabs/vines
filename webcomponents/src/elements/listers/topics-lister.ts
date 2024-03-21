@@ -1,4 +1,5 @@
-import {css, html} from "lit";
+import {css, html, PropertyValues} from "lit";
+import {consume} from "@lit/context";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
@@ -9,6 +10,7 @@ import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../jump";
 import {SEMANTIC_TOPIC_TYPE_NAME} from "../../bindings/threads.types";
+import {onlineLoadedContext} from "../../contexts";
 
 
 /**
@@ -26,6 +28,24 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @property() showArchivedTopics?: string;
 
   @property() selectedThreadHash?: string;
+
+  @consume({ context: onlineLoadedContext, subscribe: true })
+  onlineLoaded!: boolean;
+
+
+  /** Don't update during online loading */
+  shouldUpdate(changedProperties: PropertyValues<this>) {
+    console.log("<topics-lister>.shouldUpdate()", changedProperties, this.onlineLoaded);
+    const shouldnt = !super.shouldUpdate(changedProperties);
+    if (shouldnt) {
+      return false;
+    }
+    /** Don't update during loading */
+    if (changedProperties.has("perspective") && !this.onlineLoaded) {
+      return false;
+    }
+    return true;
+  }
 
 
   /** */
