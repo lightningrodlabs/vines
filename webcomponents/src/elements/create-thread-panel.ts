@@ -6,11 +6,13 @@ import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";
 
 
+/** */
 export interface CreateThreadRequest {
   purpose: string,
   rules: string,
   wurl: string,
 }
+
 
 /**
  * @element
@@ -30,6 +32,7 @@ export class CreateThreadPanel extends LitElement {
     this.dispatchEvent(new CustomEvent<CreateThreadRequest>('create', {detail: input, bubbles: true, composed: true}))
   }
 
+
   /** */
   render() {
     return html`
@@ -39,13 +42,12 @@ export class CreateThreadPanel extends LitElement {
             <ui5-input id="purposeInput" value=${msg('comment')}></ui5-input>
           </div>
           <div>
-              <ui5-label for="hrlInput" required>weaveURL:</ui5-label>
-              <ui5-input id="hrlInput"></ui5-input>
+              <ui5-label for="wurlInput" required>Subject weaveURL:</ui5-label>
+              <ui5-input id="wurlInput"></ui5-input>
           </div>          
       </section>
       <div slot="footer" style:"display:flex;">
-        <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                    @click=${(e) => this.onCreate()}>
+        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(e) => this.onCreate()}>
             Create
         </ui5-button>
         <ui5-button style="margin-top:5px" @click=${(e) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}>
