@@ -5,6 +5,7 @@ use threads_integrity::*;
 
 ///
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sure pp_ah is a PP
@@ -28,6 +29,7 @@ pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
 
 ///
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);

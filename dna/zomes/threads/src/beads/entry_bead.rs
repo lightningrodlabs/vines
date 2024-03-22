@@ -16,6 +16,7 @@ pub struct AddEntryBeadInput {
 }
 
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_entry_bead(input: AddEntryBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let ah = create_entry(ThreadsEntry::EntryBead(input.entry_bead.clone()))?;
@@ -43,6 +44,7 @@ pub struct AddEntryAsBeadInput {
 ///     get_any_record(eh: EntryHash) -> ExternResult<Option<Record>>;
 /// Return bead type, Global Time Anchor, bucket time
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_as_bead() {:?}", input);

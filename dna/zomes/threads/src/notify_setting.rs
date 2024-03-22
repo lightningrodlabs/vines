@@ -32,6 +32,7 @@ pub struct SetNotifySettingInput {
 
 ///
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sure pp_ah is a PP

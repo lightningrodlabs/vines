@@ -16,6 +16,7 @@ pub struct AddAnyBeadInput {
 
 /// Return bead ah, type, Global Time Anchor, bucket time
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_bead() {:?}", input);

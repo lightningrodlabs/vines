@@ -17,6 +17,7 @@ pub fn get_thread_log(eh: EntryHash) -> ExternResult<ThreadLastProbeLog> {
 
 /// Return ActionHash
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn commit_thread_log(tql: ThreadLastProbeLog) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let ah = create_entry(ThreadsEntry::ThreadProbeLog(tql.clone()))?;

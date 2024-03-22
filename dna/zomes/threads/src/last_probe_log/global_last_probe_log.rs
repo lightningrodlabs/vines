@@ -55,6 +55,7 @@ pub struct CommitGlobalLogInput {
 /// Update global log entry to current time.
 /// Return time of newly created global log entry.
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("commit_global_log() {:?}", input);

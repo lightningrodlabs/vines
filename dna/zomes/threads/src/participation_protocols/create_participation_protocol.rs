@@ -9,6 +9,7 @@ use crate::participation_protocols::*;
 
 /// Create a Pp off of anything
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp, Option<(AgentPubKey, WeaveNotification)>)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let maybe_index_time: Option<Timestamp> = None; // FIXME

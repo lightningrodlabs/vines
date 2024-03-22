@@ -6,7 +6,7 @@ import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-//import 'emoji-picker-element';
+import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";

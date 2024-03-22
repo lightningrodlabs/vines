@@ -157,11 +157,11 @@ export class AuthorshipProxy extends ZomeProxy {
   static readonly FN_NAMES = authorshipFunctionNames
  
   async ascribeTarget(input: AscribeTargetInput): Promise<void> {
-    return this.call('ascribe_target', input);
+    return this.callBlocking('ascribe_target', input);
   }
 
   async ascribeAppEntry(ah: ActionHash): Promise<[Timestamp, AgentPubKey, string]> {
-    return this.call('ascribe_app_entry', ah);
+    return this.callBlocking('ascribe_app_entry', ah);
   }
 
   async getAllAscribedTypes(): Promise<string[]> {

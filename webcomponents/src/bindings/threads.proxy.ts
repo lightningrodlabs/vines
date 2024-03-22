@@ -160,7 +160,7 @@ export class ThreadsProxy extends ZomeProxy {
   static readonly FN_NAMES = threadsFunctionNames
  
   async addAnyBead(input: AddAnyBeadInput): Promise<[ActionHash, string, Timestamp, [AgentPubKey, WeaveNotification][]]> {
-    return this.call('add_any_bead', input);
+    return this.callBlocking('add_any_bead', input);
   }
 
   async getAnyBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, AnyBead]> {
@@ -176,11 +176,11 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async addReaction(input: AddReactionInput): Promise<void> {
-    return this.call('add_reaction', input);
+    return this.callBlocking('add_reaction', input);
   }
 
   async removeReaction(beadAh: ActionHash): Promise<void> {
-    return this.call('remove_reaction', beadAh);
+    return this.callBlocking('remove_reaction', beadAh);
   }
 
   async getReactions(beadAh: ActionHash): Promise<[AgentPubKey, string][]> {
@@ -188,11 +188,11 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async addEntryBead(input: AddEntryBeadInput): Promise<[ActionHash, EntryBead, string, Timestamp]> {
-    return this.call('add_entry_bead', input);
+    return this.callBlocking('add_entry_bead', input);
   }
 
   async addEntryAsBead(input: AddEntryAsBeadInput): Promise<[ActionHash, EntryBead, string, Timestamp, [AgentPubKey, WeaveNotification][]]> {
-    return this.call('add_entry_as_bead', input);
+    return this.callBlocking('add_entry_as_bead', input);
   }
 
   async getEntryBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EntryBead]> {
@@ -216,11 +216,11 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async addTextBeadAtWithMentions(input: AddTextAndMentionsAtInput): Promise<[ActionHash, string, [AgentPubKey, WeaveNotification][]]> {
-    return this.call('add_text_bead_at_with_mentions', input);
+    return this.callBlocking('add_text_bead_at_with_mentions', input);
   }
 
   async addTextBead(texto: TextBead): Promise<[ActionHash, string, Timestamp]> {
-    return this.call('add_text_bead', texto);
+    return this.callBlocking('add_text_bead', texto);
   }
 
   async getTextBead(ah: ActionHash): Promise<[Timestamp, AgentPubKey, TextBead]> {
@@ -236,20 +236,20 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async addTextBeadAt(input: AddTextBeadAtInput): Promise<[ActionHash, string]> {
-    return this.call('add_text_bead_at', input);
+    return this.callBlocking('add_text_bead_at', input);
   }
 
   async addManyTextBeadAt(input: AddManyTextBeadAtInput): Promise<[ActionHash, string, Timestamp][]> {
-    return this.call('add_many_text_bead_at', input);
+    return this.callBlocking('add_many_text_bead_at', input);
   }
 
 
   async setFavorite(beadAh: ActionHash): Promise<ActionHash> {
-    return this.call('set_favorite', beadAh);
+    return this.callBlocking('set_favorite', beadAh);
   }
 
   async unsetFavorite(beadAh: ActionHash): Promise<void> {
-    return this.call('unset_favorite', beadAh);
+    return this.callBlocking('unset_favorite', beadAh);
   }
 
   async getMyFavorites(): Promise<ActionHash[]> {
@@ -265,7 +265,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async commitGlobalLog(input: CommitGlobalLogInput): Promise<Timestamp> {
-    return this.call('commit_global_log', input);
+    return this.callBlocking('commit_global_log', input);
   }
 
   async queryGlobalLog(): Promise<[Timestamp, GlobalLastProbeLog][]> {
@@ -285,7 +285,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async commitThreadLog(tql: ThreadLastProbeLog): Promise<ActionHash> {
-    return this.call('commit_thread_log', tql);
+    return this.callBlocking('commit_thread_log', tql);
   }
 
   async queryThreadLogs(): Promise<ThreadLastProbeLog[]> {
@@ -303,7 +303,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async sendInboxItem(input: SendInboxItemInput): Promise<[ActionHash, WeaveNotification] | null> {
-    return this.call('send_inbox_item', input);
+    return this.callBlocking('send_inbox_item', input);
   }
 
   async probeInbox(): Promise<WeaveNotification[]> {
@@ -311,11 +311,11 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async deleteInboxItem(linkAh: ActionHash): Promise<void> {
-    return this.call('delete_inbox_item', linkAh);
+    return this.callBlocking('delete_inbox_item', linkAh);
   }
 
   async setNotifySetting(input: SetNotifySettingInput): Promise<ActionHash | null> {
-    return this.call('set_notify_setting', input);
+    return this.callBlocking('set_notify_setting', input);
   }
 
   async getMyNotifySettings(ppAh: ActionHash): Promise<[NotifySetting, ActionHash | null]> {
@@ -327,7 +327,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async createParticipationProtocol(pp: ParticipationProtocol): Promise<[ActionHash, Timestamp, [AgentPubKey, WeaveNotification] | null]> {
-    return this.call('create_participation_protocol', pp);
+    return this.callBlocking('create_participation_protocol', pp);
   }
 
   async getPpsFromSubjectHash(lh: AnyLinkableHash): Promise<[ActionHash, Timestamp][]> {
@@ -347,7 +347,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async createSemanticTopic(semanticTopic: SemanticTopic): Promise<EntryHash> {
-    return this.call('create_semantic_topic', semanticTopic);
+    return this.callBlocking('create_semantic_topic', semanticTopic);
   }
 
   async getAllSemanticTopics(): Promise<[EntryHash, string][]> {
@@ -396,11 +396,11 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async hideSubject(subjectHash: AnyLinkableHash): Promise<ActionHash> {
-    return this.call('hide_subject', subjectHash);
+    return this.callBlocking('hide_subject', subjectHash);
   }
 
   async unhideSubject(subjectHash: AnyLinkableHash): Promise<void> {
-    return this.call('unhide_subject', subjectHash);
+    return this.callBlocking('unhide_subject', subjectHash);
   }
 
   async getHiddenSubjects(): Promise<AnyLinkableHash[]> {

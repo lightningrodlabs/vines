@@ -17,6 +17,7 @@ pub struct AddTextAndMentionsAtInput {
 
 ///
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_text_bead_at_with_mentions(input: AddTextAndMentionsAtInput) -> ExternResult<(ActionHash, String, Vec<(AgentPubKey, WeaveNotification)>)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;

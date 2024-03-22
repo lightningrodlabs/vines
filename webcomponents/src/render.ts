@@ -19,7 +19,6 @@ import {determineBeadName, weaveUrlToWal} from "./utils";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import markdownit from "markdown-it";
 import {unsafeHTML} from "lit/directives/unsafe-html.js";
-import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";

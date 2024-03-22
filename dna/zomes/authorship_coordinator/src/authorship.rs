@@ -26,6 +26,7 @@ impl AuthorshipLog {
 
 /// TODO VALIDATION: only author of target should be allowed to ascribe entry to self
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     //let me = agent_info()?.agent_latest_pubkey;
@@ -46,6 +47,7 @@ pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
 /// TODO VALIDATION: only author of entry should be allowed to ascribe entry to self
 /// Return creation_time, author and type
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let (target_type, record) = get_app_entry_name(ah.clone().into(), CallTargetCell::Local)?;

@@ -7,6 +7,7 @@ use crate::beads::*;
 
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Timestamp)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let ah = create_entry(ThreadsEntry::TextBead(texto.clone()))?;
@@ -59,6 +60,7 @@ pub struct AddTextBeadAtInput {
 }
 
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_text_bead_at(input: AddTextBeadAtInput) -> ExternResult<(ActionHash, String)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;
@@ -80,6 +82,7 @@ pub struct AddManyTextBeadAtInput {
 }
 
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let mut start = sys_time()?.0;

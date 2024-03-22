@@ -91,6 +91,7 @@ pub struct SendInboxItemInput {
 
 ///
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn send_inbox_item(input: SendInboxItemInput) -> ExternResult<Option<(ActionHash, WeaveNotification)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     // Don't notify self
@@ -123,6 +124,7 @@ pub fn probe_inbox(_ : ()) -> ExternResult<Vec<WeaveNotification>> {
 
 /// FIXME: Make sure its a mention link
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn delete_inbox_item(link_ah : ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let _ = delete_link(link_ah)?;

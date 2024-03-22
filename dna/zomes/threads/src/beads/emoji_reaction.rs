@@ -12,6 +12,7 @@ pub struct AddReactionInput {
 }
 
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn add_reaction(input: AddReactionInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     // TODO: Check input string is a proper emoji. (todo also in validation)
@@ -25,6 +26,7 @@ pub fn add_reaction(input: AddReactionInput) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
+#[feature(zits_blocking)]
 pub fn remove_reaction(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_latest_pubkey;
