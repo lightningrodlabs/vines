@@ -6,7 +6,7 @@ import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective"
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {AppletInfo, Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {AttachableLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
+import {AssetLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {weaveUrlToWal} from "../utils";
@@ -33,7 +33,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-  @state() private _attLocAndInfo?: AttachableLocationAndInfo;
+           private _assetLocAndInfo?: AssetLocationAndInfo;
   @state() private _appletInfo?: AppletInfo;
 
 
@@ -51,6 +51,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async loadHrl() {
+    console.log("<chat-wal>.loadHrl()", this.hash);
     if (!this.hash) {
       return;
     }
@@ -59,8 +60,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const anyBead = anyBeadInfoPair[1] as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
 
-      this._attLocAndInfo = await this.weServices.attachableInfo(wal);
-      this._appletInfo = await this.weServices.appletInfo(this._attLocAndInfo.appletHash);
+      this._assetLocAndInfo = await this.weServices.assetInfo(wal);
+      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash);
     } catch(e) {
       console.warn("Failed to load HRL", this.hash, e);
     }
@@ -75,7 +76,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`        
           <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash}>
-              Failed to retrieve HRL. WeServices not available.
+              Failed to retrieve Asset. WeServices not available.
           </ui5-li>
       </ui5-list>
       `;
@@ -84,12 +85,12 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (this.hash == "") {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    if (!this._appletInfo || !this._attLocAndInfo) {
+    if (!this._appletInfo || !this._assetLocAndInfo) {
       return html`        
           <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
                   @click=${(e) => this.loadHrl()}>
-              Failed to retrieve HRL.
+              Failed to retrieve Asset.
           </ui5-li>
       </ui5-list>
       `;
@@ -107,7 +108,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                           this.requestUpdate();
                         }
                       }}>
-               HRL not found
+                Asset not found
             </ui5-li>
         </ui5-list>
       `;
@@ -127,8 +128,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-                  @click=${(e) => this.weServices.openHrl(weaveUrlToWal(anyBead.value))}>
-            ${this._attLocAndInfo.attachableInfo.name}
+                  @click=${(e) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
+            ${this._assetLocAndInfo.assetInfo.name}
           </ui5-li>
         </ui5-list>
     `;

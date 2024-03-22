@@ -12,7 +12,7 @@ import {
   ZomeName,
 } from "@holochain/client";
 import {
-  AppletId, AppletView, CreatableName, Hrl, HrlWithContext, weaveUrlFromWal,
+  AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import {
@@ -49,7 +49,7 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
-import {AttachableViewInfo} from "@ddd-qc/we-utils";
+import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
@@ -62,7 +62,7 @@ import {toasty} from "@vines/elements/dist/toast";
 import {CreateThreadRequest} from "@vines/elements/dist/elements/create-thread-panel";
 
 /** */
-export interface VinesAttachableQuery {
+export interface VinesAssetQuery {
   detail: string,
   subjectType: string,
   subjectName: string,
@@ -342,10 +342,10 @@ export class VinesApp extends HappElement {
       return;
     }
     const hrl: Hrl = [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(e.detail)];
-    const sHrl = weaveUrlFromWal({hrl}/*, false*/);
-    navigator.clipboard.writeText(sHrl);
+    const wurl = weaveUrlFromWal({hrl}, true);
+    navigator.clipboard.writeText(wurl);
     if (this._weServices) {
-      this._weServices.hrlToClipboard({hrl});
+      this._weServices.walToPocket({hrl});
     }
     toasty(("Copied thread's WAL to clipboard"));
   }
@@ -418,39 +418,39 @@ export class VinesApp extends HappElement {
         break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
-        case "attachable":
-          const attachableViewInfo = this.appletView as AttachableViewInfo;
-          if (attachableViewInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
+        case "asset":
+          const assetViewInfo = this.appletView as AssetViewInfo;
+          if (assetViewInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
             throw new Error(`Threads/we-applet: Unknown role name '${this.appletView.roleName}'.`);
           }
-          if (attachableViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
+          if (assetViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
             throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
           }
-          const entryType = pascal(attachableViewInfo.entryType);
-          console.log("pascal entryType", attachableViewInfo.entryType, entryType);
+          const entryType = pascal(assetViewInfo.entryType);
+          console.log("pascal entryType", assetViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]);
-              console.log("attachable ppAh:", ppAh);
-              //   const viewContext = attachableViewInfo.hrlWithContext.context as AttachableThreadContext;
+              const ppAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
+              console.log("asset ppAh:", ppAh);
+              //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
             break;
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = encodeHashToBase64(attachableViewInfo.hrlWithContext.hrl[1]);
+                const beadAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
             default:
-              throw new Error(`Unhandled entry type ${attachableViewInfo.entryType}.`);
+              throw new Error(`Unhandled entry type ${assetViewInfo.entryType}.`);
           }
         break;
         case "creatable":
           const creatableViewInfo = this.appletView as {
             type: "creatable";
             name: CreatableName;
-            resolve: (hrlWithContext: HrlWithContext) => Promise<void>;
+            resolve: (wal: WAL) => Promise<void>;
             reject: (reason: any) => Promise<void>;
             cancel: () => Promise<void>;
           };
@@ -460,10 +460,10 @@ export class VinesApp extends HappElement {
                       try {
                         console.log("@create event", e.detail);
                         const hrlc = weaveUrlToWal(e.detail.wurl);
-                        const attLocInfo = await this._weServices.attachableInfo(hrlc);
+                        const attLocInfo = await this._weServices.assetInfo(hrlc);
                         const subject: Subject = {
                             hash: hrlc.hrl[1],
-                            typeName: attLocInfo.attachableInfo.icon_src,
+                            typeName: attLocInfo.assetInfo.icon_src,
                             dnaHash: hrlc.hrl[0],
                             appletId: encodeHashToBase64(attLocInfo.appletHash),
                         }
@@ -476,7 +476,7 @@ export class VinesApp extends HappElement {
                             subject_name,
                         };
                         const [ppAh, ppMat] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
-                        const wal: HrlWithContext = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: ppMat.subject.hash}
+                        const wal: WAL = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: ppMat.subject.hash}
                         await creatableViewInfo.resolve(wal);
                       } catch(e) {
                           creatableViewInfo.reject(e)
@@ -558,6 +558,10 @@ export class VinesApp extends HappElement {
           font-family: '72';
         }
 
+        #profileCard {
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+        }
+        
         .column {
           display: flex;
           flex-direction: column;

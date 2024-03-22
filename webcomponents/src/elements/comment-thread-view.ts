@@ -283,8 +283,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
                       @click=${(e) => {
             if (this.weServices) {
                 if (this.weServices.appletId != thread.pp.subject.appletId) this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
-              // TODO: Grab HrlWithContext somehow
-              //this.weServices.openHrl();
+              // TODO: Grab WAL somehow
+              //this.weServices.openWal();
               return;
             }
           }}></ui5-button>

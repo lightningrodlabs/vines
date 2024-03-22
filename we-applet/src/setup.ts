@@ -3,7 +3,7 @@ import {createVinesApplet} from "./createVinesApplet";
 import {ThreadsEntryType} from "@vines/elements";
 import {AppletServices} from "@lightningrodlabs/we-applet";
 import {creatables} from "./appletServices/creatables";
-import {getAttachableInfo} from "./appletServices/getAttachableInfo";
+import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {setupVinesEntryView, devtestNames} from "./devtest";
 import {search} from "./appletServices/search";
 import {bindAsset} from "./appletServices/bindAsset";
@@ -32,7 +32,7 @@ export async function setupVinesApplet() {
 async function setupVinesMainView() {
   const appletServices: AppletServices = {
     creatables,
-    getAttachableInfo,
+    getAssetInfo,
     bindAsset,
     blockTypes: {},
     search,

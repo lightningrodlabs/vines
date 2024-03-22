@@ -81,12 +81,12 @@ export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadIn
       if (anyBead.typeInfo === "wal" && weServices) {
         const wal = weaveUrlToWal(anyBead.value);
         const id = "wal-item" + "-" + wal.hrl[1];
-        const maybeInfo = weServices.getAttachableInfo(wal);
+        const maybeInfo = weServices.getAssetInfo(wal);
         let innerText = anyBead.value;
         if (maybeInfo) {
-          innerText = maybeInfo.attachableInfo.name;
+          innerText = maybeInfo.assetInfo.name;
         } else {
-            weServices.attachableInfo(wal).then(async (attLocAndInfo) => {
+            weServices.assetInfo(wal).then(async (attLocAndInfo) => {
               //console.log("renderSideBead() attLocAndInfo", attLocAndInfo);
               if (attLocAndInfo) {
                 await delay(100); /* Infinite loop counter */
@@ -96,7 +96,7 @@ export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadIn
         }
         content = html`
               <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e) => weServices.openHrl(wal)}>
+                   @click=${(_e) => weServices.openWal(wal)}>
                   ${innerText}
               </div>
           `;

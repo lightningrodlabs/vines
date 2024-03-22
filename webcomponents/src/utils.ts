@@ -7,7 +7,7 @@ import {
   TypedBeadMat
 } from "./viewModels/threads.perspective";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {Hrl, HrlWithContext, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
+import {Hrl, WAL, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
@@ -104,12 +104,12 @@ export function parseMentions(str: string): string[]  {
 
 
 /** TODO: remove once its implemented in we-applet */
-export function weaveUrlToWal(url: string): HrlWithContext {
+export function weaveUrlToWal(url: string): WAL {
   const weaveLocation = weaveUrlToLocation(url);
   if (weaveLocation.type !== 'asset') {
     throw new Error('Passed URL is not a valid asset locator.');
   }
-  return weaveLocation.hrlWithContext;
+  return weaveLocation.wal;
 }
 
 
@@ -201,9 +201,9 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
     if (weServices) {
       const appletInfo = weServices.getAppletInfo(subject.appletId);
       const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
-      const maybeInfo = weServices.getAttachableInfo({hrl});
+      const maybeInfo = weServices.getAssetInfo({hrl});
       if (maybeInfo) {
-        return `/${appletInfo.appletName}/${maybeInfo.attachableInfo.name}`;
+        return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
       } else {
         return `/${appletInfo.appletName}/{${subject.typeName}}`;
       }
@@ -233,18 +233,18 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
       }
       return tuple[0].name;
       break;
-    /** AnyBead: AttachableInfo.name */
+    /** AnyBead: assetInfo.name */
     case ThreadsEntryType.AnyBead:
       if (!weServices) {
-        return "<unknown attachable>";
+        return "<unknown asset>";
       }
       const hrlBead = typedBead as AnyBeadMat;
       const wal = weaveUrlToWal(hrlBead.value);
-      const attLocInfo = weServices.getAttachableInfo(wal);
+      const attLocInfo = weServices.getAssetInfo(wal);
       if (!attLocInfo) {
-        return "<unknown attachable>";
+        return "<unknown asset>";
       }
-      return attLocInfo.attachableInfo.name;
+      return attLocInfo.assetInfo.name;
       break;
     /** */
     default:

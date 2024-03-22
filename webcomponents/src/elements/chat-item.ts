@@ -183,10 +183,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       break;
       case "intoHrl":
         const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
-        const sHrl = weaveUrlFromWal({hrl}, false);
-        navigator.clipboard.writeText(sHrl);
+        const wurl = weaveUrlFromWal({hrl});
+        navigator.clipboard.writeText(wurl);
         if (this.weServices) {
-          this.weServices.hrlToClipboard({hrl});
+          this.weServices.walToPocket({hrl});
         }
         toasty(("Copied Message's WAL to clipboard"));
       break;

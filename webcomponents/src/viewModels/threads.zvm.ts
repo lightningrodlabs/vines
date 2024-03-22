@@ -54,7 +54,7 @@ import {
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
-import {AppletId, HrlWithContext, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {encode} from "@msgpack/msgpack";
 import {weaveUrlToWal} from "../utils";
@@ -1001,13 +1001,13 @@ export class ThreadsZvm extends ZomeViewModel {
         break;
       case ThreadsEntryType.AnyBead:
         //const encHrl = encodeHrl(content as Hrl);
-        const sWal = weaveUrlFromWal(content as HrlWithContext, false);
+        const wurl = weaveUrlFromWal(content as WAL);
         const anyBead: AnyBead = {
           bead: nextBead,
-          value: sWal,
+          value: wurl,
           typeInfo: "wal",
         } as AnyBead;
-        console.log("publishHrlBeadAt()", sWal, anyBead);
+        console.log("publishHrlBeadAt()", wurl, anyBead);
         [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime});
         typed = anyBead;
         break;

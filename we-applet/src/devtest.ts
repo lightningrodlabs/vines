@@ -1,6 +1,6 @@
-import {VinesAttachableQuery} from "@vines/app";
+import {VinesAssetQuery} from "@vines/app";
 import {ActionHash, fakeActionHash} from "@holochain/client";
-import {createDefaultWeServicesMock, DevTestNames, AttachableViewInfo, setupDevtest} from "@ddd-qc/we-utils";
+import {createDefaultWeServicesMock, DevTestNames, AssetViewInfo, setupDevtest} from "@ddd-qc/we-utils";
 import {createVinesApplet} from "./createVinesApplet";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
 import {THREADS_DEFAULT_INTEGRITY_ZOME_NAME, VINES_DEFAULT_ROLE_NAME, ThreadsEntryType} from "@vines/elements";
@@ -19,7 +19,7 @@ export function setupVinessBlockView() {
 /** */
 export async function setupVinesEntryView() {
     console.log("setupVinesEntryView()");
-    const context: VinesAttachableQuery = {
+    const context: VinesAssetQuery = {
         detail: "none",
         subjectName: "DevTest subject",
         subjectType: "unknown",
@@ -30,13 +30,13 @@ export async function setupVinesEntryView() {
 
 
 /** */
-function createPpEntryRenderInfo(pp_ah: ActionHash, context: VinesAttachableQuery): AttachableViewInfo {
-    const attachableInfo = emptyEntryAppletView as AttachableViewInfo;
-    attachableInfo.roleName = VINES_DEFAULT_ROLE_NAME;
-    attachableInfo.integrityZomeName = THREADS_DEFAULT_INTEGRITY_ZOME_NAME;
-    attachableInfo.entryType = snake(ThreadsEntryType.ParticipationProtocol);
-    attachableInfo.hrlWithContext.hrl[1] = pp_ah;
-    attachableInfo.hrlWithContext.context = context;
+function createPpEntryRenderInfo(pp_ah: ActionHash, context: VinesAssetQuery): AssetViewInfo {
+    const assetViewInfo = emptyEntryAppletView as AssetViewInfo;
+    assetViewInfo.roleName = VINES_DEFAULT_ROLE_NAME;
+    assetViewInfo.integrityZomeName = THREADS_DEFAULT_INTEGRITY_ZOME_NAME;
+    assetViewInfo.entryType = snake(ThreadsEntryType.ParticipationProtocol);
+    assetViewInfo.wal.hrl[1] = pp_ah;
+    assetViewInfo.wal.context = context;
 
-    return attachableInfo;
+    return assetViewInfo;
 }

@@ -201,15 +201,15 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         newItem.text = subjectHash;
         if (this.weServices) {
           //const dnaHash = toggledTreeItem['dnaHash'];
-          console.log("calling weServices.attachableInfo()", dnaHash, subjectHash);
+          console.log("calling weServices.assetInfo()", dnaHash, subjectHash);
           try {
-            const attachableInfo = await this.weServices.attachableInfo({hrl: [decodeHashFromBase64(dnaHash), decodeHashFromBase64(subjectHash)], context: null});
-            console.log("attachableInfo", attachableInfo);
-            if (attachableInfo) {
-              newItem.text = attachableInfo.attachableInfo.name;
+            const assetLocInfo = await this.weServices.assetInfo({hrl: [decodeHashFromBase64(dnaHash), decodeHashFromBase64(subjectHash)], context: null});
+            console.log("assetLocInfo", assetLocInfo);
+            if (assetLocInfo) {
+              newItem.text = assetLocInfo.assetInfo.name;
             }
           } catch(e) {
-            console.error("Couldn't find attachableInfo:", e);
+            console.error("Couldn't find assetInfo:", e);
           }
         }
         //newItem.additionalText = "[" + ta.anchor + "]";

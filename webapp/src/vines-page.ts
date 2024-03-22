@@ -149,7 +149,7 @@ import {
   Timestamp,
 } from "@holochain/client";
 
-import {AppletId, GroupProfile, Hrl, weaveUrlFromWal, WeNotification} from "@lightningrodlabs/we-applet";
+import {FrameNotification, GroupProfile, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
 
 //import "./input-bar";
@@ -336,11 +336,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateHrlMessage() {
-    const maybeWal = await this.weServices.userSelectHrl();
+    const maybeWal = await this.weServices.userSelectWal();
     if (!maybeWal) {
       return;
     }
-    console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal, false), maybeWal);
+    console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
     /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash);
@@ -398,10 +398,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const gp = await this.weServices.groupProfile(groupId);
         console.log("<vines-page> firstUpdated() gp", gp);
       }
-      /** NotifyWe of some new content */
+      /** notifyFrame of some new content */
       const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
       if (allCount > 0) {
-        this.weServices.notifyWe([{
+        this.weServices.notifyFrame([{
           title: "New content",
           body: "",
           notification_type: "content",
@@ -459,15 +459,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   }
     // }
 
-    /** Grab AttachableInfo for all AnyBeads */
+    /** Grab AssetInfo for all AnyBeads */
     for (const [beadInfo, beadPair] of Object.entries(this.threadsPerspective.beads)) {
       if (beadInfo != ThreadsEntryType.AnyBead) {
         continue;
       }
       const anyBead = beadPair[1] as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
-      if (!this.weServices.getAttachableInfo(wal)) {
-        const maybe = await this.weServices.attachableInfo(wal);
+      if (!this.weServices.getAssetInfo(wal)) {
+        const maybe = await this.weServices.assetInfo(wal);
         if (maybe) {
           this.requestUpdate();
         }
@@ -489,7 +489,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       /** We Notification */
       if (this.weServices) {
-        const myNotif: WeNotification = {
+        const myNotif: FrameNotification = {
           title: notifTitle,
           body: message,
           notification_type: event2type(notif.event),
@@ -502,7 +502,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this._lastKnownNotificationIndex += 1;
     }
     if (this.weServices && weNotifs.length > 0) {
-      this.weServices.notifyWe(weNotifs);
+      this.weServices.notifyFrame(weNotifs);
     }
   }
 
