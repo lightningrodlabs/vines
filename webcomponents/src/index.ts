@@ -32,3 +32,4 @@ export * from './bindings/threads.types';
 
 export * from './doodles';
 export * from './jump';
+export * from './markdown/md';

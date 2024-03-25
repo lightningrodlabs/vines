@@ -1,5 +1,5 @@
-import {getInitials, ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {
@@ -24,7 +24,7 @@ import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {beadJumpEvent} from "./jump";
 import {delay} from "@ddd-qc/lit-happ";
-import {md} from "./contexts";
+import {md} from "./markdown/md";
 
 
 /** */

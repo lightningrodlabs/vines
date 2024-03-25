@@ -6,7 +6,7 @@ import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {sharedStyles} from "../styles";
-import {md} from "../contexts";
+import {md} from "../markdown/md";
 
 
 /**
