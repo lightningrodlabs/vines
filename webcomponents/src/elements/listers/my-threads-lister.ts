@@ -40,6 +40,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   @state() private _loading = false;
 
 
+  /** */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     super.zvmUpdated(newZvm, oldZvm)
     this._loading = true;
@@ -62,28 +63,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   /** */
   onClickCommentAppletId(maybeCommentThread: ActionHashB64 | null, appletId: ActionHashB64, appletName: string) {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: appletId, subjectType: "AppletId", subjectName: appletName, viewType: "side"}, bubbles: true, composed: true }));
-  }
-
-
-  /** */
-  renderVinesSubLister(subjectHash: AnyLinkableHashB64, subject: SubjectMat, myThreads: ActionHashB64[]) {
-    console.log("<my-threads-lister> subject", subjectHash);
-    // /** Skip if subject is hidden */
-    // FIXME: Figure out how to know if its hidden or not
-    // if (isHidden && !this.showArchivedSubjects) {
-    //   return;
-    // }
-
-    // let title = "";
-    // let isHidden = false;
-    // /** Render threads about subjects in Threads DNA (other than semantic topics) */
-    // if (!this.perspective.allSemanticTopics[subjectHash] /* subject.typeName != "SemanticTopic" */) {
-    //   title = `${subject.typeName}: FIXME`
-    // } else {
-    //   [title, isHidden] = this.perspective.allSemanticTopics[subjectHash];
-    // }
-
-    return this.renderSubjectSubLister(subjectHash, subject, myThreads, /*title, isHidden*/);
   }
 
 
@@ -296,9 +275,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   render() {
     console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads, this.cell.agentPubKey);
 
-    if (this._loading) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
-    }
+    // if (this._loading) {
+    //   return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+    // }
 
     /** Grab my threads */
     const myBeads= Object.entries(this.perspective.beads).filter(([ah, pair]) => pair[0].author == this.cell.agentPubKey);
@@ -424,6 +403,12 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
             <div style="color: grey; margin: auto;">${msg('No threads found')}</div>
           </div>
       `;
+    }
+
+    if (this._loading)  {
+      this.style.background = "#ececec";
+    } else {
+      this.style.background = "#FBFCFD";
     }
 
     /** render all */
