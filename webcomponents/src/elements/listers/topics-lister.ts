@@ -108,7 +108,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           let commentButton = html``;
           if (hasUnreadComments) {
             commentButton = html`
-                <ui5-button icon="comment" tooltip="View Thread"
+                <ui5-button icon="comment" tooltip=${msg("View comments")}
                             style="border:none; display:none;"
                             design="Negative"
                             @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
@@ -194,7 +194,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       let topicCommentButton = html``;
       if (topicHasUnreadComments) {
-        topicCommentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
+        topicCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" style="border:none;background: transparent"
                                              @click=${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}></ui5-button>`;
       } else {

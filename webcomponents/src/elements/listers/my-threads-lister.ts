@@ -59,6 +59,11 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
 
+  /** */
+  onClickCommentAppletId(maybeCommentThread: ActionHashB64 | null, appletId: ActionHashB64, appletName: string) {
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: appletId, subjectType: "AppletId", subjectName: appletName, viewType: "side"}, bubbles: true, composed: true }));
+  }
+
 
   /** */
   renderVinesSubLister(subjectHash: AnyLinkableHashB64, subject: SubjectMat, myThreads: ActionHashB64[]) {
@@ -115,7 +120,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       let commentButton = html``;
       if (hasUnreadComments) {
         commentButton = html`
-              <ui5-button icon="comment" tooltip="View Thread"
+              <ui5-button icon="comment" tooltip=${msg("View comments")}
                           style="border:none; display:none;"
                           design="Negative"
                           @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
@@ -191,14 +196,14 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** Render Subject */
     const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(subjectHash);
     const subjectIsNew = newSubjects[subjectHash] != undefined;
-    let sujbectHasUnreadComments = false;
+    let subjectHasUnreadComments = false;
     if (maybeCommentThread != null) {
-      sujbectHasUnreadComments = unreadSubjects.includes(subjectHash);
+      subjectHasUnreadComments = unreadSubjects.includes(subjectHash);
     }
 
     let subjectCommentButton = html``;
-    if (sujbectHasUnreadComments) {
-      subjectCommentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
+    if (subjectHasUnreadComments) {
+      subjectCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" style="border:none;background: transparent"
                                              @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`;
     } else {
@@ -332,6 +337,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
 
     /** Render each appletId */
+    const unreadSubjects = this._zvm.getUnreadSubjects();
     let appletSubListers = Object.entries(allThreadsByApplet).map(([appletId, appletThreads]) => {
       console.log("<my-threads-lister> appletId:", appletId);
       let appletSubLister = html``;
@@ -362,11 +368,49 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
       appletSubLister = html`${subjectItems}`;
 
+      /** Render Applet */
+      const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(appletId);
+      let appletHasUnreadComments = false;
+      if (maybeCommentThread != null) {
+        appletHasUnreadComments = unreadSubjects.includes(appletId);
+      }
+      let appletCommentBtn = html``;
+      if (appletHasUnreadComments) {
+        appletCommentBtn = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
+                                             design="Negative" style="border:none; background:transparent"
+                                             @click="${(e) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`;
+      } else {
+        appletCommentBtn = maybeCommentThread != null
+          ? html`
+                <ui5-button id=${"cmt-"+appletId} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
+                            style="border:none; display:none"
+                            @click="${(e) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`
+          : html`
+                <ui5-button id=${"cmt-"+appletId} icon="sys-add" tooltip=${msg("Create comment thread for this Applet")} design="Transparent"
+                            style="border:none; padding:0px; display:none" 
+                            @click="${(e) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`;
+      }
+
 
       /** render appletSubLister */
       return html`
-          <ui5-panel>
-              <div slot="header" style="font-weight: bold; color:grey;">${appletName}</div>
+          <ui5-panel id=${appletId}
+                     @mouseover=${(e) => {
+                         const hide = this.shadowRoot.getElementById("hide-"+appletId);
+                         const cmt = this.shadowRoot.getElementById("cmt-"+appletId);
+                         if (hide) hide.style.display = "block";
+                         if (cmt) cmt.style.display = "block";
+                     }}
+                     @mouseout=${(e) => {
+                         const hide = this.shadowRoot.getElementById("hide-"+appletId);
+                         const cmt = this.shadowRoot.getElementById("cmt-"+appletId);
+                         if (hide) hide.style.display = "none";
+                         if (cmt) cmt.style.display = "none";
+                     }}>
+              <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%; height:36px; font-size:18px; color:#663ef7">
+                  <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${appletHasUnreadComments? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${appletName}</div>
+                  ${appletCommentBtn}
+              </div>
               ${appletSubLister}
           </ui5-panel>    
       `;

@@ -301,7 +301,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       let commentButton = html``;
       if (isUnread) {
-        commentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
+        commentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" class=${this._isHovered[pathHash]? "" : "transBtn"}
                                              @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`;
       } else {
