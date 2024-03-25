@@ -17,13 +17,14 @@ import {
 } from "./viewModels/threads.perspective";
 import {determineBeadName, weaveUrlToWal} from "./utils";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
-import markdownit from "markdown-it";
+//import markdownit from "markdown-it";
 import {unsafeHTML} from "lit/directives/unsafe-html.js";
 import {toasty} from "./toast";
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {beadJumpEvent} from "./jump";
 import {delay} from "@ddd-qc/lit-happ";
+import {md} from "./contexts";
 
 
 /** */
@@ -68,7 +69,7 @@ export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadIn
     case ThreadsEntryType.TextBead:
       const tm = typedBead as TextBeadMat;
       //content = tm.value;
-      const md = markdownit();
+      //const md = markdownit();
       //const md = markdownit().use(emoji/* , options */);
       const result = md.render(tm.value);
       const parsed = unsafeHTML(result);

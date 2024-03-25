@@ -4,17 +4,33 @@ import { css } from 'lit';
 /* p NEEDED because markdownit() generates <p> */
 export const sharedStyles = css`
 
+  mark {
+    padding: 0px 2px 0px 2px;
+  }
+  
   code {
     background: #8080801a;
     padding: 5px;
+    /*display: block;*/
+  }
+
+  pre > code {
+    display: block;
   }
   
   p {
     margin: 0px;
     white-space: pre-wrap;
     overflow: auto;
+    /*line-height: 18px;*/
   }
 
+  .mention {
+    background: #c6ddf594;
+    padding: 0px 3px 0px 2px;
+    text-decoration: none;
+  }
+  
   .subjectName {
     font-style: italic;
     background: #fbfbfb9c;

@@ -3,11 +3,10 @@ import {property, state, customElement} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64} from "@holochain/client";
 import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
-//import {ChatThreadView} from "./chat-thread-view";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import markdownit from 'markdown-it'
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {sharedStyles} from "../styles";
+import {md} from "../contexts";
 
 
 /**
@@ -26,6 +25,25 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
+  updated() {
+    /** Add target="_blank" to all links */
+    const parentElement = this.shadowRoot.getElementById('chat-text');
+    //console.log("<chat-text>.updated()", parentElement);
+    const anchorTags = parentElement.querySelectorAll('a');
+    //console.log("<chat-text>.updated() anchorTags ", anchorTags);
+    anchorTags.forEach(function(anchorTag) {
+      const url = new URL(anchorTag.href);
+      const scheme = url.protocol;
+      if (scheme == "agent:") {
+        anchorTag.classList.add("mention")
+      }
+      console.log("anchorTag", anchorTag, scheme);
+      anchorTag.setAttribute('target', '_blank');
+    });
+  }
+
+
+  /** */
   render() {
     //console.log("<chat-text>.render()", this.hash);
     if (this.hash == "") {
@@ -37,13 +55,13 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const tm = beadPair[1] as TextBeadMat;
-    const md = markdownit();
-    //const md = markdownit().use(emoji/* , options */);
+
+    //md.use(emoji/* , options */);
     const result = md.render(tm.value);
     const parsed = unsafeHTML(result);
 
     /** render all */
-    return html`<div class="chatMsg">${parsed}</div>`;
+    return html`<div id="chat-text" class="chatMsg">${parsed}</div>`;
   }
 
 
