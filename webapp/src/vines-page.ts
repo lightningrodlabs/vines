@@ -213,7 +213,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowDebug = false;
   @state() private _listerToShow: string | null = null;
 
-  @state() private _canViewArchivedTopics = false;
+  @state() private _canViewArchivedSubjects = false;
   @state() private _currentCommentRequest?: CommentRequest;
 
   @state() private _splitObj?: SplitObject;
@@ -897,7 +897,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._listerToShow == this.cell.dnaHash) {
       lister = html`
           <topics-lister 
-                         .showArchivedTopics=${this._canViewArchivedTopics}
+                         .showArchivedTopics=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(e) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e) => {
@@ -910,7 +910,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._listerToShow == null) {
       lister = html`
           <my-threads-lister 
-                         .showArchivedTopics=${this._canViewArchivedTopics}
+                         .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(e) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e) => {
@@ -964,7 +964,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                     <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
                         <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
-                        ${this._canViewArchivedTopics
+                        ${this._canViewArchivedSubjects
                           ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
                           : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>
                         `}
@@ -1333,7 +1333,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   onShowArchiveTopicsBtn(_e?: any) {
-    this._canViewArchivedTopics = !this._canViewArchivedTopics;
+    this._canViewArchivedSubjects = !this._canViewArchivedSubjects;
   }
 
 

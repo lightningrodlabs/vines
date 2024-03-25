@@ -13,7 +13,7 @@ import {threadJumpEvent} from "../../jump";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
-import {SEMANTIC_TOPIC_TYPE_NAME} from "../../bindings/threads.types";
+import {ThreadsEntryType} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 
 
@@ -27,7 +27,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
-  @property() showArchivedTopics?: string;
+  @property() showArchivedSubjects?: string;
 
   @property() selectedThreadHash?: string;
 
@@ -51,64 +51,56 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   onClickCommentPp(maybeCommentThread: ActionHashB64 | null, ppAh: ActionHashB64, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: "ParticipationProtocol", subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: ThreadsEntryType.ParticipationProtocol, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
 
   /** */
-  onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: SEMANTIC_TOPIC_TYPE_NAME, subjectName, viewType: "side"}, bubbles: true, composed: true }));
-  }
-
-
-
-  /** Render threads about entries in Threads DNA (other than semantic topics) */
-  renderSubjectSubLister(subjectHash: AnyLinkableHashB64, subject: SubjectMat, myThreads: ActionHashB64[]) {
-    const subjectThreads = this.perspective.threadsPerSubject[subjectHash];
-    // FIXME
-    return html`
-            <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-                <div style="background: orange">${subject.typeName}: FIXME</div>
-            </div>
-        `;
+  onClickCommentSubject(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string, subjectType: string) {
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
 
 
   /** */
   renderVinesSubLister(subjectHash: AnyLinkableHashB64, subject: SubjectMat, myThreads: ActionHashB64[]) {
     console.log("<my-threads-lister> subject", subjectHash);
-    // /** Skip if hidden */
+    // /** Skip if subject is hidden */
     // FIXME: Figure out how to know if its hidden or not
-    // if (isHidden && !this.showArchivedTopics) {
+    // if (isHidden && !this.showArchivedSubjects) {
     //   return;
     // }
-    /** Render threads about entries in Threads DNA (other than semantic topics) */
-    if (!this.perspective.allSemanticTopics[subjectHash] /* subject.typeName != "SemanticTopic" */) {
-      return this.renderSubjectSubLister(subjectHash, subject, myThreads);
-    }
-    /** */
-    return this.renderSemTopicSubLister(subjectHash, myThreads);
+
+    // let title = "";
+    // let isHidden = false;
+    // /** Render threads about subjects in Threads DNA (other than semantic topics) */
+    // if (!this.perspective.allSemanticTopics[subjectHash] /* subject.typeName != "SemanticTopic" */) {
+    //   title = `${subject.typeName}: FIXME`
+    // } else {
+    //   [title, isHidden] = this.perspective.allSemanticTopics[subjectHash];
+    // }
+
+    return this.renderSubjectSubLister(subjectHash, subject, myThreads, /*title, isHidden*/);
   }
 
 
   /** */
-  renderSemTopicSubLister(topicHash: AnyLinkableHashB64, myThreads: ActionHashB64[]) {
-    const [title, isHidden] = this.perspective.allSemanticTopics[topicHash];
+  renderSubjectSubLister(subjectHash: AnyLinkableHashB64, subject: SubjectMat, myThreads: ActionHashB64[], /*title: string, isHidden: boolean*/) {
+    const isHidden = false;
+    let title = "";
     let threads = myThreads.map((ppAh) => {
-      /** Render threads for Topic */
       const thread = this.perspective.threads.get(ppAh);
       if (!thread) {
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
       console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
-
+      title = thread.name;
       //const hasNewBeads = thread && thread.hasUnreads();
       const maybeUnreadThread = this.perspective.unreadThreads[ppAh];
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
       console.log("<my-threads-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
-      if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) /*|| thread.pp.purpose == "comment"*/) {
+      if (!thread.pp || (thread.isHidden && !this.showArchivedSubjects) /*|| thread.pp.purpose == "comment"*/) {
         return html``;
       }
 
@@ -158,7 +150,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         }
       }
 
-      const hideShowBtn = this.showArchivedTopics && thread.isHidden ?
+      const hideShowBtn = this.showArchivedSubjects && thread.isHidden ?
         html`
               <ui5-button icon="show" tooltip="Show" design="Transparent"
                           class="showBtn"
@@ -196,70 +188,70 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const newSubjects = this._zvm.getNewSubjects();
     const unreadSubjects = this._zvm.getUnreadSubjects();
 
-    /** Render Topic */
-    const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(topicHash);
-    const topicIsNew = newSubjects[topicHash] != undefined;
-    let topicHasUnreadComments = false;
+    /** Render Subject */
+    const maybeCommentThread: ActionHashB64 | null = this._zvm.getCommentThreadForSubject(subjectHash);
+    const subjectIsNew = newSubjects[subjectHash] != undefined;
+    let sujbectHasUnreadComments = false;
     if (maybeCommentThread != null) {
-      topicHasUnreadComments = unreadSubjects.includes(topicHash);
+      sujbectHasUnreadComments = unreadSubjects.includes(subjectHash);
     }
 
-    let topicCommentButton = html``;
-    if (topicHasUnreadComments) {
-      topicCommentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
+    let subjectCommentButton = html``;
+    if (sujbectHasUnreadComments) {
+      subjectCommentButton = html`<ui5-button icon="comment" tooltip="View Thread" 
                                              design="Negative" style="border:none;background: transparent"
-                                             @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+                                             @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`;
     } else {
-      topicCommentButton = maybeCommentThread != null
+      subjectCommentButton = maybeCommentThread != null
         ? html`
-                <ui5-button id=${"cmt-"+topicHash} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
+                <ui5-button id=${"cmt-"+subjectHash} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
                             style="border:none;display: none"
-                            @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`
+                            @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`
         : html`
-                <ui5-button id=${"cmt-"+topicHash} icon="sys-add" tooltip=${msg("Create comment thread for this Topic")} design="Transparent"
+                <ui5-button id=${"cmt-"+subjectHash} icon="sys-add" tooltip=${msg("Create comment thread for this Subject")} design="Transparent"
                             style="border:none; padding:0px;display: none" 
-                            @click="${(e) => this.onClickCommentTopic(maybeCommentThread, topicHash, title)}"></ui5-button>`;
+                            @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`;
     }
 
     /** 'new', 'notif' and 'unread' badge to display */
-    let topicBadge = html``;
-    if (topicIsNew) {
-      topicBadge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
+    let subjectBadge = html``;
+    if (subjectIsNew) {
+      subjectBadge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
     } else {
       let notifCount = 0; // FIXME
       if (notifCount > 0) {
-        topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
+        subjectBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
       } else {
-        /** Agregate count of unread beads on all topic's threads */
+        /** Agregate count of unread beads on all subject's threads */
         let count = 0;
-        for (const topicPpAh of myThreads) {
-          if (this.perspective.unreadThreads[topicPpAh]) {
-            count += this.perspective.unreadThreads[topicPpAh][1].length;
+        for (const myThreadAh of myThreads) {
+          if (this.perspective.unreadThreads[myThreadAh]) {
+            count += this.perspective.unreadThreads[myThreadAh][1].length;
           }
         }
         if (count > 0) {
-          topicBadge = html`<ui5-badge class="unreadBadge subjectBadge">${count}</ui5-badge>`;
+          subjectBadge = html`<ui5-badge class="unreadBadge subjectBadge">${count}</ui5-badge>`;
         }
       }
     }
 
-    const topicHideBtn = this.showArchivedTopics && isHidden ? html`
-          <ui5-button id=${"hide-"+topicHash} icon="show" tooltip="Show" design="Transparent"
+    const subjectHideBtn = this.showArchivedSubjects && isHidden ? html`
+          <ui5-button id=${"hide-"+subjectHash} icon="show" tooltip="Show" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
-      await this._zvm.unhideSubject(topicHash);
-      toasty(`Unarchived Topic "${title}"`)
+      await this._zvm.unhideSubject(subjectHash);
+      toasty(`Unarchived Subject "${title}"`)
     }}"></ui5-button>
       ` : html`
-          <ui5-button id=${"hide-"+topicHash} icon="hide" tooltip="Hide" design="Transparent"
+          <ui5-button id=${"hide-"+subjectHash} icon="hide" tooltip="Hide" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
-      await this._zvm.hideSubject(topicHash);
-      toasty(`Archived Topic "${title}"`)
+      await this._zvm.hideSubject(subjectHash);
+      toasty(`Archived Subject "${title}"`)
     }}"></ui5-button>
       `;
 
-    const topicHasUnreads = unreadSubjects.includes(topicHash);
+    const subjectHasUnreads = unreadSubjects.includes(subjectHash);
 
     if (threads.length == 0) {
       threads = [html`<div class="threadItem">
@@ -267,37 +259,27 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
               </div>`];
     }
 
-    /** render topic item */
+    /** render subject sub-lister */
     return html`
-          <ui5-panel id=${topicHash}
+          <ui5-panel id=${subjectHash}
                      @mouseover=${(e) => {
-      const hide = this.shadowRoot.getElementById("hide-"+topicHash);
-      const cmt = this.shadowRoot.getElementById("cmt-"+topicHash);
-      if (hide) hide.style.display = "block";
-      if (cmt) cmt.style.display = "block";
-    }}
+                        const hide = this.shadowRoot.getElementById("hide-"+subjectHash);
+                        const cmt = this.shadowRoot.getElementById("cmt-"+subjectHash);
+                        if (hide) hide.style.display = "block";
+                        if (cmt) cmt.style.display = "block";
+                     }}
                      @mouseout=${(e) => {
-      const hide = this.shadowRoot.getElementById("hide-"+topicHash);
-      const cmt = this.shadowRoot.getElementById("cmt-"+topicHash);
-      if (hide) hide.style.display = "none";
-      if (cmt) cmt.style.display = "none";
-    }}>
+                        const hide = this.shadowRoot.getElementById("hide-"+subjectHash);
+                        const cmt = this.shadowRoot.getElementById("cmt-"+subjectHash);
+                        if (hide) hide.style.display = "none";
+                        if (cmt) cmt.style.display = "none";
+                     }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
-                <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
-                <!-- ${topicBadge} -->
-                <!-- ${topicHideBtn} -->                
-                ${topicCommentButton}
-                    <!--
-                <ui5-button icon="add" tooltip="Create a new channel for this Topic" 
-                            design="Transparent" 
-                            style="color:grey"
-                            @click=${async (e) => {
-      e.stopPropagation(); //console.log("topic clicked:", title);
-      await this.updateComplete;
-      this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: topicHash, bubbles: true, composed: true}));
-    }}>
-        </ui5-button>-->
+                <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
+                <!-- ${subjectBadge} -->
+                <!-- ${subjectHideBtn} -->                
+                ${subjectCommentButton}
     </div>
       <!-- threads -->              
       ${threads}
@@ -362,23 +344,24 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         /** render other appletId threads */
         const appletInfo = this.weServices.getAppletInfo(appletId);
         appletName = appletInfo.appletName;
-      } else {
-        /** Render semantic topic threads */
-        let subjectItems = Object.entries(appletThreads).map(([subjectHash, ppAhs]) => {
-          const subject = allSubjects[subjectHash];
-          return this.renderVinesSubLister(subjectHash, subject, ppAhs);
-        });
-
-        /** Handle empty sub-tree case */
-        if (subjectItems.length == 0) {
-          subjectItems = [html`
-              <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-                  <div style="color: grey; margin: auto;">${msg('No subjects found')}</div>
-              </div>
-          `];
-        }
-        appletSubLister = html`${subjectItems}`;
       }
+
+      /** Render applet subjects */
+      let subjectItems = Object.entries(appletThreads).map(([subjectHash, ppAhs]) => {
+        const subject = allSubjects[subjectHash];
+        return this.renderSubjectSubLister(subjectHash, subject, ppAhs);
+      });
+
+      /** Handle empty sub-tree case */
+      if (subjectItems.length == 0) {
+        subjectItems = [html`
+            <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
+                <div style="color: grey; margin: auto;">${msg('No subjects found')}</div>
+            </div>
+        `];
+      }
+      appletSubLister = html`${subjectItems}`;
+
 
       /** render appletSubLister */
       return html`
