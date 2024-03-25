@@ -58,7 +58,7 @@ export class Thread {
 
   /** Ctor */
   constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentPubKeyB64) {
-    console.log("New Thread() dnaOriginTime", dnaOriginTime);
+    console.log("New Thread() dnaOriginTime", dnaOriginTime, author);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
     this._creationTime = creationTime;

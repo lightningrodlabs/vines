@@ -63,24 +63,28 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   render() {
-    console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads);
+    console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads, this.cell.agentPubKey);
 
     if (this._loading) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
+    /** Grab my threads */
     const myBeads= Object.entries(this.perspective.beads).filter(([ah, pair]) => pair[0].author == this.cell.agentPubKey);
-    const myBeadThreads: [ActionHashB64, Thread][] = myBeads.map(([beadAh, [beadInfo, typed]]) => [beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)])
+    const myBeadThreads: Record<ActionHashB64, Thread> = {}
+    myBeads.map(([beadAh, [beadInfo, typed]]) => myBeadThreads[beadInfo.bead.ppAh] = this.perspective.threads.get(beadInfo.bead.ppAh));
 
-    const myThreads: [ActionHashB64, Thread][] = Object.entries(this.perspective.threads).filter(([h, thread]) => thread.author == this.cell.agentPubKey);
+    const myThreads: Record<ActionHashB64, Thread> = {}
+    Array.from(this.perspective.threads.entries())
+      .filter(([h, thread]) => thread.author == this.cell.agentPubKey)
+      .map(([h, thread]) => myThreads[h] = thread);
 
     console.log("<my-threads-lister>   count beads", Object.entries(this.perspective.beads).length, myBeads.length, myBeadThreads.length);
-    console.log("<my-threads-lister> count threads", Object.entries(this.perspective.threads).length, myThreads.length);
+    console.log("<my-threads-lister> count threads", this.perspective.threads.size, myThreads.length);
 
 
-    /** concat and dedup */
-    let allThreads = myThreads.concat(myBeadThreads);
-    allThreads = allThreads.filter((value, index) => allThreads.indexOf(value) === index)
+    /** concat (and dedup) */
+    const allThreads = Object.assign({}, myThreads, myBeadThreads);
 
     console.log("<my-threads-lister> myBeadThreads", myBeadThreads.length, myBeadThreads);
     console.log("<my-threads-lister> myThreads", myThreads.length, myThreads);
@@ -89,7 +93,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** appletId -> (subjectHash -> ppAh[]) */
     let allThreadsByApplet: Record<DnaHashB64, Dictionary<ActionHashB64[]>> = {};
     const allSubjects: Record<AnyLinkableHashB64, SubjectMat> = {}
-      allThreads.map(([ppAh, thread]) => {
+      Object.entries(allThreads).map(([ppAh, thread]) => {
       if (!allThreadsByApplet[thread.pp.subject.appletId]) {
         allThreadsByApplet[thread.pp.subject.appletId] = {}
       }
