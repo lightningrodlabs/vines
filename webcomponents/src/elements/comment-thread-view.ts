@@ -23,6 +23,7 @@ import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
+import {codeStyles} from "../markdown/code-css";
 
 
 /**
@@ -300,6 +301,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static get styles() {
     return [
+      codeStyles,
       sharedStyles,
       css`
         :host {

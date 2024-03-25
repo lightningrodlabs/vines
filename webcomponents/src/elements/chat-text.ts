@@ -7,6 +7,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {sharedStyles} from "../styles";
 import {md} from "../markdown/md";
+import {codeStyles} from "../markdown/code-css";
 
 
 /**
@@ -68,6 +69,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   static get styles() {
     return [
+      codeStyles,
       sharedStyles,
       css`
         .chatMsg {
