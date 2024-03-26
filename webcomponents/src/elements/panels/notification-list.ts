@@ -1,17 +1,17 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {timeSince, truncate} from "../utils";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {timeSince, truncate} from "../../utils";
 import {encodeHashToBase64} from "@holochain/client";
-import {composeNotificationTitle, renderAvatar} from "../render";
+import {composeNotificationTitle, renderAvatar} from "../../render";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {globaFilesContext, weClientContext} from "../../contexts";
 import {FilesDvm} from "@ddd-qc/files";
-import {JumpEvent, notification2JumpEvent} from "../jump";
+import {JumpEvent, notification2JumpEvent} from "../../jump";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 

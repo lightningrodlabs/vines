@@ -3,17 +3,17 @@ import {customElement, property} from "lit/decorators.js";
 
 import "@ui5/webcomponents/dist/TextArea.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {SearchParameters} from "../search";
-import {beadJumpEvent} from "../jump";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {SearchParameters} from "../../search";
+import {beadJumpEvent} from "../../jump";
 
 
 /**
  * @element
  */
 @customElement("search-result-panel")
-export class SearchResult extends DnaElement<unknown, ThreadsDvm> {
+export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)

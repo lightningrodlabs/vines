@@ -3,7 +3,7 @@ import {property, state, customElement} from "lit/decorators.js";
 import {consume} from "@lit/context";
 
 import '@weblogin/trendchart-elements';
-import {appProxyContext} from "../contexts";
+import {appProxyContext} from "../../contexts";
 import {AppProxy} from "@ddd-qc/cell-proxy";
 import {NetworkInfo, Timestamp} from "@holochain/client";
 import {delay} from "@ddd-qc/lit-happ";
@@ -15,8 +15,8 @@ import {FetchPoolInfo} from "@holochain/client/lib/types";
 /**
  * @element
  */
-@customElement("network-health")
-export class NetworkHealth extends LitElement {
+@customElement("network-health-panel")
+export class NetworkHealthPanel extends LitElement {
 
 
   @consume({ context: appProxyContext, subscribe: true})

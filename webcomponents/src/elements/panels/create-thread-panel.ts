@@ -1,6 +1,6 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {sharedStyles} from "../styles";
+import {sharedStyles} from "../../styles";
 
 import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";

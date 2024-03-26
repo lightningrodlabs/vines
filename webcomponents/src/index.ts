@@ -9,15 +9,16 @@ export * from './elements/chat-text';
 export * from './elements/chat-item';
 export * from './elements/chat-thread-view';
 export * from './elements/comment-thread-view';
-export * from './elements/edit-profile';
 export * from './elements/emoji-bar';
 export * from './elements/favorites-view';
 export * from './elements/input-bar';
-export * from './elements/network-health';
-export * from './elements/notification-list';
-export * from './elements/peer-list';
-export * from './elements/search-result';
 export * from './elements/wurl-link';
+export * from './elements/peer-list';
+
+export * from './elements/panels/edit-profile';
+export * from './elements/panels/network-health-panel';
+export * from './elements/panels/notification-list';
+export * from './elements/panels/search-result-panel';
 
 export * from './elements/listers/applet-lister';
 export * from './elements/listers/topics-lister';
