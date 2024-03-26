@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
@@ -67,6 +67,24 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
+  async loadBeadInfo(beadAh: ActionHashB64, threadsZvm: ThreadsZvm): Promise<boolean> {
+    const beadPair = threadsZvm.perspective.beads[beadAh];
+    if (beadPair) {
+      let thread = threadsZvm.perspective.threads[beadPair[0].bead.ppAh];
+      if (!thread) {
+        /*const ppMat =*/ await threadsZvm.fetchPp(beadPair[0].bead.ppAh);
+        thread = threadsZvm.getThread(beadPair[0].bead.ppAh);
+      }
+      console.log("<wurl-link> loadWal() thread", thread.name);
+      this._vinesTypes = ThreadsEntryType.AnyBead;
+      this._assetName = `${thread.name} > 💬`;
+      return true;
+    }
+    return false;
+  }
+
+  
+  /** */
   async loadWal(threadsZvm: ThreadsZvm) {
     console.log("<wurl-link>.loadWal()", this.wurl);
     if (!this.wurl) {
@@ -85,23 +103,24 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
           return;
         }
-        const beadPair = threadsZvm.perspective.beads[hash];
-        if (beadPair) {
-          let thread = threadsZvm.perspective.threads[beadPair[0].bead.ppAh];
-          if (!thread) {
-            /*const ppMat =*/ await threadsZvm.fetchPp(beadPair[0].bead.ppAh);
-            thread = threadsZvm.getThread(beadPair[0].bead.ppAh);
-          }
-          console.log("<wurl-link> loadWal() thread", thread.name);
-          this._vinesTypes = ThreadsEntryType.AnyBead;
-          this._assetName = `${thread.name} > 💬`;
+        const succeeded = await this.loadBeadInfo(hash, threadsZvm);
+        if (succeeded) {
           return;
         }
+        /** Try PP */
         try {
           await threadsZvm.fetchPp(hash);
           const thread = threadsZvm.getThread(hash);
           this._assetName = thread.name;
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
+        } catch(e) {}
+        /** Try Bead */
+        try {
+          await threadsZvm.fetchUnknownBead(wal.hrl[1], false);
+          const succeeded = await this.loadBeadInfo(hash, threadsZvm);
+          if (succeeded) {
+            return;
+          }
         } catch(e) {}
         return;
       }
