@@ -1,11 +1,11 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
+import {ActionHashB64} from "@holochain/client";
 import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
-import {AppletInfo, Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {AppletInfo} from "@lightningrodlabs/we-applet";
 import {AssetLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -27,7 +27,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** -- Properties -- */
 
-  /** Hash of File bead to display */
+  /** Hash of bead to display */
   @property() hash: ActionHashB64 = '' // BeadAh
 
   @consume({ context: weClientContext, subscribe: true })

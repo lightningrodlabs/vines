@@ -342,7 +342,7 @@ export class VinesApp extends HappElement {
       return;
     }
     const hrl: Hrl = [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(e.detail)];
-    const wurl = weaveUrlFromWal({hrl}, true);
+    const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
       this._weServices.walToPocket({hrl});

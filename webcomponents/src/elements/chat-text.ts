@@ -25,23 +25,24 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @property() hash: ActionHashB64 = ''
 
 
-  /** */
-  updated() {
-    /** Add target="_blank" to all links */
-    const parentElement = this.shadowRoot.getElementById('chat-text');
-    //console.log("<chat-text>.updated()", parentElement);
-    const anchorTags = parentElement.querySelectorAll('a');
-    //console.log("<chat-text>.updated() anchorTags ", anchorTags);
-    anchorTags.forEach(function(anchorTag) {
-      const url = new URL(anchorTag.href);
-      const scheme = url.protocol;
-      if (scheme == "agent:") {
-        anchorTag.classList.add("mention")
-      }
-      console.log("anchorTag", anchorTag, scheme);
-      anchorTag.setAttribute('target', '_blank');
-    });
-  }
+  // /** */
+  // updated() {
+  //   /** Add target="_blank" to all links */
+  //   const parentElement = this.shadowRoot.getElementById('chat-text');
+  //   //console.log("<chat-text>.updated()", parentElement);
+  //   const anchorTags = parentElement.querySelectorAll('a');
+  //   //console.log("<chat-text>.updated() anchorTags ", anchorTags);
+  //   anchorTags.forEach(function(anchorTag) {
+  //     /** Add mention class if it's a mention */
+  //     const url = new URL(anchorTag.href);
+  //     const scheme = url.protocol;
+  //     if (scheme == "agent:") {
+  //       anchorTag.classList.add("mention")
+  //     }
+  //     console.log("anchorTag", anchorTag, scheme);
+  //     anchorTag.setAttribute('target', '_blank');
+  //   });
+  // }
 
 
   /** */
@@ -60,6 +61,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //md.use(emoji/* , options */);
     const result = md.render(tm.value);
     const parsed = unsafeHTML(result);
+    //const parsed = result; // FOR DEBUGGING
 
     /** render all */
     return html`<div id="chat-text" class="chatMsg">${parsed}</div>`;
