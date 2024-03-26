@@ -167,6 +167,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         <!-- <sl-tooltip content="To ${this._appletName}"> -->
           <ui5-badge design="Set1" color-scheme=${colorIdx}  style="color:#0064D9"
                      @click=${(e) => {
+                       e.stopPropagation();
                        if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
                          this.dispatchEvent(threadJumpEvent(encodeHashToBase64(wal.hrl[1])))
                          return;
