@@ -360,7 +360,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                popover.close();  
              }}>
             <!-- avatar column -->
-            <div style="display: flex; flex-direction: column; width:48px;">
+            <div id="avatarColumn" style="display: flex; flex-direction: column; width:48px;"
+                    @click=${(e) => {
+                      e.stopPropagation();
+                      const popover = this.shadowRoot.getElementById("profilePop") as Popover;
+                      const elem = this.shadowRoot.getElementById("avatarColumn") as HTMLElement;
+                      popover.showAt(elem);
+                    }}>
               ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
                   <div style="flex-grow:1;"></div>
@@ -378,7 +384,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 ${item}
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
-            <!-- Popovers -->            
+            <!-- Popovers -->
+            <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
+                <profile-panel .hash=${beadInfo.author} @edit-profile=${(e) => (this.shadowRoot.getElementById("profilePop") as Popover).close()}></profile-panel>
+            </ui5-popover>
             <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text="Add Reaction">
                 <emoji-picker id="emoji-picker" class="light" 
@@ -440,6 +449,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     return [
       css`
         
+        #avatarColumn:hover {
+          cursor: pointer;
+        }
+        #profilePop::part(content),
         #buttonsPop::part(content) {
           padding: 0px;
         }

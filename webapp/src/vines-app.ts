@@ -36,12 +36,10 @@ import {
   AnyLinkableHashB64,
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
-  doodle_weave,
   onlineLoadedContext,
-  THIS_APPLET_ID,
-  ParticipationProtocol,
-  determineSubjectName,
-  materializeSubject, ThreadsZvm, weaveUrlToWal, Subject,
+    ParticipationProtocol,
+  determineSubjectName, CreateThreadRequest, toasty,
+  materializeSubject, weaveUrlToWal, Subject,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -58,8 +56,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import "./vines-page"
 
 import Button from "@ui5/webcomponents/dist/Button";
-import {toasty} from "@vines/elements/dist/toast";
-import {CreateThreadRequest} from "@vines/elements/dist/elements/create-thread-panel";
+
 
 /** */
 export interface VinesAssetQuery {

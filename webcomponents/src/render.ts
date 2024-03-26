@@ -29,17 +29,30 @@ import {md} from "./markdown/md";
 
 /** */
 export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string, slotArg?:string): TemplateResult<1> {
-    let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-    const maybeAgent = profilesZvm.perspective.profiles[agentKey];
-    if (maybeAgent) {
-        agent = maybeAgent;
-    } else {
-        console.log("Profile not found for agent", agentKey, profilesZvm.perspective.profiles)
-        profilesZvm.probeProfile(agentKey)
-        //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
-    }
-    const initials = getInitials(agent.nickname);
-    const avatarUrl = agent.fields['avatar'];
+  const profile = loadProfile(profilesZvm, agentKey);
+  return renderProfileAvatar(profile, size, slotArg);
+}
+
+
+
+export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64) {
+  let profile = {nickname: "unknown", fields: {}} as ProfileMat;
+  const maybeAgent = profilesZvm.perspective.profiles[agentKey];
+  if (maybeAgent) {
+    profile = maybeAgent;
+  } else {
+    console.log("Profile not found for agent", agentKey, profilesZvm.perspective.profiles)
+    profilesZvm.probeProfile(agentKey)
+    //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
+  }
+  return profile;
+}
+
+
+/** */
+export function renderProfileAvatar(profile: ProfileMat, size: string, slotArg?:string) {
+    const initials = getInitials(profile.nickname);
+    const avatarUrl = profile.fields['avatar'];
     const slot = slotArg? slotArg : "avatar";
     //console.log("renderAvatar()", initials, avatarUrl);
     return avatarUrl? html`

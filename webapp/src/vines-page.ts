@@ -194,12 +194,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('jump', this.onJump);
+    this.addEventListener('edit-profile', this.onEditProfile);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('jump', this.onJump);
+    this.removeEventListener('edit-profile', this.onEditProfile);
   }
 
+
+  onEditProfile(e) {
+    this.profileDialogElem.show();
+  }
 
   /** -- Fields -- */
 

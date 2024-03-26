@@ -1,6 +1,9 @@
 export * from './contexts';
 export * from './utils';
 export * from './styles';
+export * from './doodles';
+export * from './jump';
+export * from './toast';
 
 export * from './elements/chat-file';
 export * from './elements/chat-header';
@@ -15,7 +18,9 @@ export * from './elements/input-bar';
 export * from './elements/wurl-link';
 export * from './elements/peer-list';
 
+export * from './elements/panels/create-thread-panel';
 export * from './elements/panels/edit-profile';
+export * from './elements/panels/profile-panel';
 export * from './elements/panels/network-health-panel';
 export * from './elements/panels/notification-list';
 export * from './elements/panels/search-result-panel';
@@ -31,7 +36,4 @@ export * from './viewModels/threads.dvm';
 export * from './bindings/threads.proxy';
 export * from './bindings/threads.types';
 
-
-export * from './doodles';
-export * from './jump';
 export * from './markdown/md';

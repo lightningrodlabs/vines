@@ -12,11 +12,13 @@ import {weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../jump";
+import {localized} from "@lit/localize";
 
 
 /**
- * @element
+ *
  */
+@localized()
 @customElement("wurl-link")
 export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 

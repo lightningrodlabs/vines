@@ -3,7 +3,13 @@ import { css } from 'lit';
 
 /* p NEEDED because markdownit() generates <p> */
 export const sharedStyles = css`
-    
+  
+  blockquote {
+    border-left: 4px solid #d1e15d;
+    padding: 0px 5px 2px 12px;
+    margin: 10px 0px 0px 0px;
+  }
+  
   mark {
     padding: 0px 2px 0px 2px;
   }
