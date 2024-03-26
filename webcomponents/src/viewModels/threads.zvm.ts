@@ -428,8 +428,8 @@ export class ThreadsZvm extends ZomeViewModel {
   async initializePerspectiveOffline(): Promise<void> {
     //await delay(1000);
     await this.querySemanticTopics();
-    //await this.queryThreads();
-    //await this.queryBeads();
+    await this.queryThreads();
+    await this.queryBeads();
     await this.queryProbeLogs(true);
 
     this.notifySubscribers(); // check if this is useful

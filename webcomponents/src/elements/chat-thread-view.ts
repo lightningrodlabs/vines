@@ -76,7 +76,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    this.loadlatestMessages(newDvm);
+    await this.loadlatestMessages(newDvm);
   }
 
 
