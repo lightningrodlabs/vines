@@ -22,7 +22,6 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
-    //this.loadWal();
   }
 
 
@@ -47,12 +46,10 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-  //          private _assetLocAndInfo?: AssetLocationAndInfo;
-  // @state() private _appletInfo?: AppletInfo;
-
            private _vinesTypes?: string;
            private _assetName?: string;
   @state() private _appletName?: string;
+
 
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
@@ -60,6 +57,9 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const upper = super.shouldUpdate(changedProperties);
     /** */
     if (changedProperties.has("wurl")) {
+      delete this._vinesTypes;
+      delete this._appletName;
+      delete this._assetName;
       /* await */ this.loadWal(this._zvm);
     }
     return upper;
@@ -83,7 +83,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return false;
   }
 
-  
+
   /** */
   async loadWal(threadsZvm: ThreadsZvm) {
     console.log("<wurl-link>.loadWal()", this.wurl);
@@ -179,6 +179,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                          this.weServices.openWal(wal);
                        }
     }}>
+              <!-- Icon could also be taken from the asset's icon_src field -->
               <!-- <ui5-icon slot="icon" name="chain-link"></ui5-icon> -->
               ${this._assetName}
           </ui5-badge>
