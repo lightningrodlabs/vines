@@ -261,6 +261,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     const subjectPrefix = determineSubjectPrefix(subjectType);
 
+    const appletName = this.weServices
+      ? this.weServices.getAppletInfo(decodeHashFromBase64(thread.pp.subject.appletId)).appletName
+      : "N/A";
+
     const title = `Thread about`;
 
     let maybeInput = html``;
@@ -270,50 +274,57 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
                               @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
     }
 
-    // <h4 style="margin-left: 5px;"><abbr title="Thread: ${this.threadHash}">${title}</abbr></h4>
+    const titleTip = "Type: " + subjectType;
+
     /** render all */
     return html`
         ${doodle_bg}
         <h3 style="margin:10px; color:#021133;">
           ${title} 
-          <span class="subjectName" style="cursor: pointer;"<
-                @click=${(_e) => {
-                //this.dispatchEvent(threadJumpEvent(this.threadHash));
-                console.log("<comment-thread-view> title click", thread.pp.subject);
-                /** Use subject as WAL */
-                const wal: WAL = {hrl: [decodeHashFromBase64(thread.pp.subject.dnaHash), decodeHashFromBase64(thread.pp.subject.hash)], context: null};
-                /** Jump within app if subject is from Vines */
-                if (this.cell.dnaHash == thread.pp.subject.dnaHash) {
-                    if (thread.pp.subject.typeName == ThreadsEntryType.ParticipationProtocol) {
-                        this.dispatchEvent(threadJumpEvent(encodeHashToBase64(wal.hrl[1])))
-                        return;
-                    }
-                    if (thread.pp.subject.typeName == ThreadsEntryType.AnyBead
-                     || thread.pp.subject.typeName == ThreadsEntryType.EntryBead
-                     || thread.pp.subject.typeName == ThreadsEntryType.TextBead
-                    ) {
-                        this.dispatchEvent(beadJumpEvent(encodeHashToBase64(wal.hrl[1])))
-                        return;
-                    }
-                    return;
-                }
-                /** OpenWal() if weServices is available */
-                if (this.weServices) {
-                    if (this.weServices.appletId != thread.pp.subject.appletId) {
-                        //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
-                        this.weServices.openWal(wal);
-                    }
-                    return;
-                }
-                }
-          }>
-            ${subjectPrefix} ${subjectName}
-          </span>
-          <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
-              e.stopPropagation();
-              this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+          <sl-tooltip content=${titleTip} style="--show-delay: 500;">
+            <span class="subjectName" style="cursor: pointer;"
+                  @click=${(_e) => {
+                  //this.dispatchEvent(threadJumpEvent(this.threadHash));
+                  console.log("<comment-thread-view> title click", thread.pp.subject);
+                  /** Use subject as WAL */
+                  const wal: WAL = {hrl: [decodeHashFromBase64(thread.pp.subject.dnaHash), decodeHashFromBase64(thread.pp.subject.hash)], context: null};
+                  /** Jump within app if subject is from Vines */
+                  if (this.cell.dnaHash == thread.pp.subject.dnaHash) {
+                      if (thread.pp.subject.typeName == ThreadsEntryType.ParticipationProtocol) {
+                          this.dispatchEvent(threadJumpEvent(encodeHashToBase64(wal.hrl[1])))
+                          return;
+                      }
+                      if (thread.pp.subject.typeName == ThreadsEntryType.AnyBead
+                       || thread.pp.subject.typeName == ThreadsEntryType.EntryBead
+                       || thread.pp.subject.typeName == ThreadsEntryType.TextBead
+                      ) {
+                          this.dispatchEvent(beadJumpEvent(encodeHashToBase64(wal.hrl[1])))
+                          return;
+                      }
+                      return;
+                  }
+                  /** OpenWal() if weServices is available */
+                  if (this.weServices) {
+                      if (this.weServices.appletId != thread.pp.subject.appletId) {
+                          //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
+                          this.weServices.openWal(wal);
+                      }
+                      return;
+                  }
+                  }
+            }>
+              ${subjectPrefix} ${subjectName}
+            </span>
+          </sl-tooltip>
+          <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')}
+                      style="margin-left:5px;"
+                      @click=${(e) => {
+                        e.stopPropagation();
+                        this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
           }}></ui5-button>
-          <!-- <ui5-button icon="information" design="Transparent" tooltip=${subjectType}></ui5-button> -->
+          <ui5-button icon="journey-arrive" design="Transparent" tooltip=${msg('Open') + " " + appletName}
+                      style="margin-left:-5px;  display: ${this.weServices? "block" : "none"}"
+                      @click=${(e) => this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))}></ui5-button>
         </h3>
         <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
             ${sideItems}
