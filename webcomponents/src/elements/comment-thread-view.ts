@@ -290,7 +290,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
             }
           }}></ui5-button>
         </h3>
-        <div id="list">
+        <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
             ${sideItems}
         </div>
         ${maybeInput}
@@ -314,7 +314,11 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
           position: relative;
           z-index: 0;
         }
-        
+
+        ui5-avatar:hover {
+          outline: 1px solid #62c547;
+        }
+
         #list {
           overflow: auto;
           display: flex;

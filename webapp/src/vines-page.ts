@@ -128,7 +128,7 @@ import {
   JumpEvent,
   NotifySettingType, onlineLoadedContext,
   parseMentions,
-  ParticipationProtocol, searchFieldStyleTemplate,
+  ParticipationProtocol, ProfilePanel, searchFieldStyleTemplate,
   shellBarStyleTemplate, Subject, THIS_APPLET_ID, threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
@@ -186,7 +186,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
-    //new ContextProvider(this, wePerspectiveContext, this.wePerspective);
   }
 
 
@@ -194,14 +193,44 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('jump', this.onJump);
+    this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('jump', this.onJump);
     this.removeEventListener('edit-profile', this.onEditProfile);
+    this.removeEventListener('show-profile', this.onShowProfile);
   }
 
+
+  getDeepestElemAt(x: number, y: number): HTMLElement {
+    const elem = this.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+    let shadow: HTMLElement = elem;
+    let shadower;
+    do {
+      shadower = undefined;
+      if (shadow.shadowRoot) {
+        shadower = shadow.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+      }
+      if (shadower) {
+        shadow = shadower;
+      }
+    } while(shadower);
+    return shadow;
+  }
+
+
+  onShowProfile(e) {
+    console.log("onShowProfile()", e.detail)
+    const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
+    //console.log("onShowProfile() elem", elem)
+    const popover = this.shadowRoot.getElementById("profilePop") as Popover;
+    const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
+    sub.hash = e.detail.agent;
+    sub.requestUpdate();
+    popover.showAt(elem);
+  }
 
   onEditProfile(e) {
     this.profileDialogElem.show();
@@ -998,7 +1027,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${this.onCommitBtn}></ui5-button>
                 </div> -->
                 <div id="profile-row">
-                    <div id="profile-div" style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;" @click=${(e) => this.profileDialogElem.show()}>
+                    <div id="profile-div" 
+                         style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;"
+                         @click=${(e) => {
+                             e.stopPropagation();
+                             this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: this.cell.agentPubKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                       ${avatar}
                       <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
                           <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
@@ -1171,7 +1204,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <ui5-dialog id="wait-dialog">
             <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
         </ui5-dialog>
-        <!-- ProfileDialog -->
+        <!-- Profile Dialog/Popover -->
+        <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
+            <profile-panel id="profilePanel" @edit-profile=${(e) => (this.shadowRoot.getElementById("profilePop") as Popover).close()}></profile-panel>
+        </ui5-popover>
         <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
             <vines-edit-profile
                     allowCancel
@@ -1393,6 +1429,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*gap:15px;*/
         }
 
+        #profilePop::part(content) {
+          padding: 0px;
+        }
+        
         #profile-row {
           display: flex;
           flex-direction: row;

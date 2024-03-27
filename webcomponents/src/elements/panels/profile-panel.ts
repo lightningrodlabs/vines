@@ -71,7 +71,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
           <div style="display: flex; flex-direction:row; min-height:60px;">
               <div style="flex-grow:1;"></div>
               ${this.hash == this.cell.agentPubKey? html`
-                  <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")}
+                  <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")} style="margin-right: 5px;"
                   @click=${(e) => {
                   e.stopPropagation();
                   this.dispatchEvent(new CustomEvent('edit-profile', { detail: null, bubbles: true, composed: true }));
@@ -98,15 +98,15 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
   static styles = [
     css`
       :host {
-        display: flex; 
+        display: flex;
         flex-direction: column;
         min-width: 250px;
       }
-      
+
       h3 {
         margin: 0px;
       }
-      
+
       h5 {
         text-transform: uppercase;
         margin: 0px;
@@ -115,6 +115,10 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
       .info {
         margin-bottom: 8px;
       }
-      
-      `]
+
+      ui5-avatar {
+        outline: 1px solid #606060;
+      }
+
+    `]
 }

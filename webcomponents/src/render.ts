@@ -140,9 +140,12 @@ export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadIn
   /* render item */
   return html`
     <div class="sideItem" style="${isNew? "border: 1px solid #F64F4F;" : ""}"
-         @click=${(_e) => {console.log("sideItem clicked", beadAh); parent.dispatchEvent(beadJumpEvent(beadAh))}}
-    >
-        <div class="avatarRow">
+         @click=${(e) => {/*console.log("sideItem clicked", beadAh);*/ e.stopPropagation(); parent.dispatchEvent(beadJumpEvent(beadAh))}}>
+        <div class="avatarRow"
+             @click=${(e) => {
+                 //console.log("sideItem onShowProfile clicked", beadAh);
+                 e.stopPropagation();
+                 parent.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
             ${renderAvatar(threadsDvm.profilesZvm, beadInfo.author, "XS")}
             <div class="nameColumn" style="display:flex; flex-direction:column;">
                 <span class="sideAgentName">${agentName}</span>
