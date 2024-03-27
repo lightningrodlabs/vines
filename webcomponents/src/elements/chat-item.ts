@@ -225,7 +225,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     const typed = this._dvm.threadsZvm.getBead(this.hash);
     /** Determine the comment button to display depending on current comments for this message */
-    let subjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
+    let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
       item = html`<chat-text class="innerItem" .hash=${this.hash}></chat-text>`;
@@ -244,13 +244,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread for this message")} design="Transparent" style="border:none;"
-                      @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, beadInfo.beadType, "side")}">                      
+                      @click="${(_e) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">                      
         </ui5-button>`;
     const hasComments = maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread);
     if (hasComments) {
       commentButton = html`              
           <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
-                       @click="${(_e) => this.onClickComment(maybeCommentThread, subjectName, beadInfo.beadType, "side")}">
+                       @click="${(_e) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
       const commentLinkColor = isUnread ? "red" : "blue";

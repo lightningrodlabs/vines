@@ -5,7 +5,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {determineSubjectPrefix, parseMentions} from "../utils";
 
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -18,12 +18,13 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
-import {threadJumpEvent} from "../jump";
+import {beadJumpEvent, threadJumpEvent} from "../jump";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
 import {codeStyles} from "../markdown/code-css";
+import {WAL} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -275,20 +276,44 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
         ${doodle_bg}
         <h3 style="margin:10px; color:#021133;">
           ${title} 
-          <span class="subjectName" style="cursor: pointer;" @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>${subjectPrefix} ${subjectName}</span>
+          <span class="subjectName" style="cursor: pointer;"<
+                @click=${(_e) => {
+                //this.dispatchEvent(threadJumpEvent(this.threadHash));
+                console.log("<comment-thread-view> title click", thread.pp.subject);
+                /** Use subject as WAL */
+                const wal: WAL = {hrl: [decodeHashFromBase64(thread.pp.subject.dnaHash), decodeHashFromBase64(thread.pp.subject.hash)], context: null};
+                /** Jump within app if subject is from Vines */
+                if (this.cell.dnaHash == thread.pp.subject.dnaHash) {
+                    if (thread.pp.subject.typeName == ThreadsEntryType.ParticipationProtocol) {
+                        this.dispatchEvent(threadJumpEvent(encodeHashToBase64(wal.hrl[1])))
+                        return;
+                    }
+                    if (thread.pp.subject.typeName == ThreadsEntryType.AnyBead
+                     || thread.pp.subject.typeName == ThreadsEntryType.EntryBead
+                     || thread.pp.subject.typeName == ThreadsEntryType.TextBead
+                    ) {
+                        this.dispatchEvent(beadJumpEvent(encodeHashToBase64(wal.hrl[1])))
+                        return;
+                    }
+                    return;
+                }
+                /** OpenWal() if weServices is available */
+                if (this.weServices) {
+                    if (this.weServices.appletId != thread.pp.subject.appletId) {
+                        //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
+                        this.weServices.openWal(wal);
+                    }
+                    return;
+                }
+                }
+          }>
+            ${subjectPrefix} ${subjectName}
+          </span>
           <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
               e.stopPropagation();
               this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
           }}></ui5-button>
-          <ui5-button icon="information" design="Transparent" tooltip=${subjectType} 
-                      @click=${(e) => {
-            if (this.weServices) {
-                if (this.weServices.appletId != thread.pp.subject.appletId) this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
-              // TODO: Grab WAL somehow
-              //this.weServices.openWal();
-              return;
-            }
-          }}></ui5-button>
+          <!-- <ui5-button icon="information" design="Transparent" tooltip=${subjectType}></ui5-button> -->
         </h3>
         <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
             ${sideItems}

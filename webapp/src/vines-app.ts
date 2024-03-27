@@ -130,7 +130,7 @@ export class VinesApp extends HappElement {
     /** Provide it as context */
     app._weServices = new WeServicesEx(weServices, thisAppletId);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
-    let _weProvider = new ContextProvider(app, weClientContext, app._weServices);
+    /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.fromWe()", profilesProxy);
     await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);

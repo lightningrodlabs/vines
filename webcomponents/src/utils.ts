@@ -146,6 +146,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 
 /** We are determining the subject name and formatting it into a thread name */
 export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx) {
+  //console.log("determineSubjectName()", subject);
   /** Threads Applet */
   if (subject.appletId == THIS_APPLET_ID || (weServices && subject.appletId == weServices.appletId)) {
     switch (subject.typeName) {
@@ -189,6 +190,7 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
           typedMat = beadPair[1];
         }
         const beadName = determineBeadName(subject.typeName, typedMat, filesDvm, weServices);
+        //console.log("determineSubjectName() beadName", beadName);
         return beadName;
         break;
       /** unknown */
@@ -216,11 +218,12 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
 
 /** */
 export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx): string {
+  //console.log("determineBeadName()", typedBead);
   switch (beadType) {
     /** TextBead: text content */
     case ThreadsEntryType.TextBead:
       return truncate((typedBead as TextBeadMat).value, 60, true);
-      break;
+    break;
     /** EntryBead: Filename */
     case ThreadsEntryType.EntryBead:
       if (!filesDvm) {
@@ -232,7 +235,7 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<file>";
       }
       return tuple[0].name;
-      break;
+    break;
     /** AnyBead: assetInfo.name */
     case ThreadsEntryType.AnyBead:
       if (!weServices) {
@@ -245,10 +248,10 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<unknown asset>";
       }
       return attLocInfo.assetInfo.name;
-      break;
+    break;
     /** */
     default:
-      break;
+    break;
   }
   return "<unknown>";
 }
