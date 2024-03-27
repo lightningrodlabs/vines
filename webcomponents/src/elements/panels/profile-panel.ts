@@ -9,7 +9,7 @@ import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
 import {Profile as ProfileMat, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {AgentPubKeyB64, Timestamp} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {renderProfileAvatar} from "../../render";
+import {renderProfileAvatar, ts2day} from "../../render";
 import {toasty} from "../../toast";
 import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 
@@ -62,7 +62,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     if (!this._profile) {
       return html`<h3 style="margin:10px; color:#cc2525;">Missing Profile</h3>`;
     }
-
+    const timestamp = this.perspective.profileDates[this.hash];
     const avatar = renderProfileAvatar(this._profile, "XL");
 
     /** */
@@ -88,7 +88,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <h5>${msg('Language')}</h5>
             <div class="info">${this._profile.fields['lang']}</div>
             <h5>${msg('Member since')}</h5>
-            <div class="info">Jun 7, 20XX</div> <!-- FIXME -->
+            <div class="info">${ts2day(timestamp)}</div>
           </div>
           <div style="position:absolute; top:10px; left:10px">${avatar}</div>
     `;
