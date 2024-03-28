@@ -448,10 +448,10 @@ export class VinesApp extends HappElement {
             type: "creatable";
             name: CreatableName;
             resolve: (wal: WAL) => Promise<void>;
-            reject: (reason: any) => Promise<void>;
             cancel: () => Promise<void>;
+            reject: (reason: any) => Promise<void>;
           };
-          if (creatableViewInfo.name == "Thread") {
+          if (creatableViewInfo.name == "thread") {
             view = html`<create-thread-panel 
                     @create=${async (e: CustomEvent<CreateThreadRequest>) => {
                       try {

@@ -261,7 +261,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     const subjectPrefix = determineSubjectPrefix(subjectType);
 
-    const appletName = this.weServices
+    const appletName = this.weServices && this.weServices.getAppletInfo(decodeHashFromBase64(thread.pp.subject.appletId))
       ? this.weServices.getAppletInfo(decodeHashFromBase64(thread.pp.subject.appletId)).appletName
       : "N/A";
 
