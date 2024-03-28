@@ -106,7 +106,7 @@
     "@ddd-qc/cell-proxy": "=0.23.0",
     "@ddd-qc/lit-happ": "=0.23.0",
     "@ddd-qc/profiles-dvm": "=0.23.3",
-    "@ddd-qc/we-utils": "=0.23.1",
+    "@ddd-qc/we-utils": "=0.23.2",
     "@ddd-qc/files": "=0.3.0",
     "@ddd-qc/delivery": "=0.10.1",
     "@ddd-qc/path-explorer": "0.4.0",

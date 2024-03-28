@@ -17,6 +17,7 @@ export * from './elements/favorites-view';
 export * from './elements/input-bar';
 export * from './elements/wurl-link';
 export * from './elements/peer-list';
+export * from './elements/side-item';
 
 export * from './elements/panels/create-thread-panel';
 export * from './elements/panels/edit-profile';

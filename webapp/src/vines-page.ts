@@ -88,6 +88,7 @@ import "@ui5/webcomponents-icons/dist/hide.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/journey-arrive.js"
+import "@ui5/webcomponents-icons/dist/journey-depart.js"
 import "@ui5/webcomponents-icons/dist/less.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
@@ -423,16 +424,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
       console.log("<vines-page> firstUpdated() appletIds", appletIds);
       for (const appletId of appletIds) {
-        /*const appletInfo =*/ await this.weServices.appletInfo(decodeHashFromBase64(appletId));
-        //this.wePerspective.applets[appletId] = appletInfo;
-      }
-      /* Grab my appletInfo and groupProfile */
-      console.log("<vines-page> firstUpdated() appletInfo for", this.weServices.appletId);
-      const appletInfo = await this.weServices.appletInfo(decodeHashFromBase64(this.weServices.appletId));
-      for (const groupId of appletInfo.groupsIds) {
-        console.log("<vines-page> firstUpdated() groupId", encodeHashToBase64(groupId));
-        const gp = await this.weServices.groupProfile(groupId);
-        console.log("<vines-page> firstUpdated() gp", gp);
+        /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */
       const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
@@ -502,7 +494,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       const anyBead = beadPair[1] as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
-      if (!this.weServices.getAssetInfo(wal)) {
+      if (!this.weServices.assetInfoCached(wal)) {
         const maybe = await this.weServices.assetInfo(wal);
         if (maybe) {
           this.requestUpdate();
@@ -844,15 +836,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
     let appletOptions = [];
     if (this.weServices) {
-      appletOptions = this.weServices.getAppletIds().map((appletId) => {
-          const appletInfo = this.weServices.getAppletInfo(appletId);
+      appletOptions = Object.entries(this.weServices.cache.appletInfo).map(([appletId, appletInfo]) => {
           console.log("appletInfo", appletInfo);
           /** exclude this applet as it's handled specifically elsewhere */
-          if (!appletInfo || this.weServices.appletId == appletId) {
+          if (this.weServices.appletId == appletId) {
             return html``;
           }
-          return html`
-              <ui5-option id=${appletId} icon="discussion">${appletInfo.appletName}</ui5-option>`;
+          return html`<ui5-option id=${appletId} icon="discussion">${appletInfo.appletName}</ui5-option>`;
         }
       );
     }
@@ -899,11 +889,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const appletInfo = this.weServices.getAppletInfo(this.weServices.appletId);
+      const appletInfo = this.weServices.appletInfoCached(this.weServices.appletId);
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsIds[0]);
-        const weGroup = this.weServices.getGroupProfile(appletInfo.groupsIds[0]);
+        const weGroup = this.weServices.groupProfileCached(appletInfo.groupsIds[0]);
         if (weGroup) {
           groupProfile = weGroup;
         }

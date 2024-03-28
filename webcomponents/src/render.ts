@@ -1,30 +1,16 @@
 import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {ActionHashB64, AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
+import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {
   NotifiableEventType,
-  ThreadsEntryType,
   WeaveNotification
 } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
-import {
-  AnyBeadMat,
-  BeadInfo,
-  EntryBeadMat,
-  TextBeadMat,
-  TypedBeadMat
-} from "./viewModels/threads.perspective";
-import {determineBeadName, weaveUrlToWal} from "./utils";
-import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
-//import markdownit from "markdown-it";
-import {unsafeHTML} from "lit/directives/unsafe-html.js";
-import {toasty} from "./toast";
-import {ThreadsDvm} from "./viewModels/threads.dvm";
+import {determineBeadName} from "./utils";
+import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {beadJumpEvent} from "./jump";
-import {delay} from "@ddd-qc/lit-happ";
-import {md} from "./markdown/md";
+
 
 
 /** */
@@ -65,98 +51,6 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, slotArg?:
 }
 
 
-
-/** */
-export function renderSideBead(parent: LitElement, beadAh: ActionHashB64, beadInfo: BeadInfo, typedBead: TypedBeadMat, threadsDvm: ThreadsDvm, filesDvm: FilesDvm, isNew: boolean, weServices?: WeServicesEx) {
-  console.log("renderSideBead() infoPair", beadAh);
-  if (beadAh == undefined) {
-    return html``;
-  }
-
-  const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-  const date_str = date.toLocaleString('en-US', {hour12: false});
-
-  const agentName = threadsDvm.profilesZvm.perspective.profiles[beadInfo.author]? threadsDvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
-  let content = html`<div>__unknown__</div>`;
-  switch(beadInfo.beadType) {
-    case ThreadsEntryType.TextBead:
-      const tm = typedBead as TextBeadMat;
-      //content = tm.value;
-      //const md = markdownit();
-      //const md = markdownit().use(emoji/* , options */);
-      const result = md.render(tm.value);
-      const parsed = unsafeHTML(result);
-      /** render all */
-      content = html`<div>${parsed}</div>`;
-      break;
-    case ThreadsEntryType.AnyBead:
-      content = html`<div style="color: red;">HRL: WeServices not available</div>`;
-      const anyBead = typedBead as AnyBeadMat;
-      if (anyBead.typeInfo === "wal" && weServices) {
-        const wal = weaveUrlToWal(anyBead.value);
-        const id = "wal-item" + "-" + wal.hrl[1];
-        const maybeInfo = weServices.getAssetInfo(wal);
-        let innerText = anyBead.value;
-        if (maybeInfo) {
-          innerText = maybeInfo.assetInfo.name;
-        } else {
-            weServices.assetInfo(wal).then(async (attLocAndInfo) => {
-              //console.log("renderSideBead() attLocAndInfo", attLocAndInfo);
-              if (attLocAndInfo) {
-                await delay(100); /* Infinite loop counter */
-                parent.requestUpdate();
-              }
-          });
-        }
-        content = html`
-              <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e) => weServices.openWal(wal)}>
-                  ${innerText}
-              </div>
-          `;
-      }
-      break;
-    case ThreadsEntryType.EntryBead:
-      content = html`<div>__File__</div>`;
-      const entryBead = typedBead as EntryBeadMat;
-      console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
-      const manifestEh = entryBead.sourceEh;
-      const maybeTuple = filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
-      if (maybeTuple) {
-        const desc = maybeTuple[0];
-        content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                              @click=${(e) => {
-                                filesDvm.downloadFile(manifestEh);
-                                toasty("File downloaded: " + desc.name);
-                              }}>
-                         File: ${desc.name} (${prettyFileSize(desc.size)})
-                      </div>`;
-      }
-      break;
-    default:
-      break;
-  }
-
-  /* render item */
-  return html`
-    <div class="sideItem" style="${isNew? "border: 1px solid #F64F4F;" : ""}"
-         @click=${(e) => {/*console.log("sideItem clicked", beadAh);*/ e.stopPropagation(); parent.dispatchEvent(beadJumpEvent(beadAh))}}>
-        <div class="avatarRow"
-             @click=${(e) => {
-                 //console.log("sideItem onShowProfile clicked", beadAh);
-                 e.stopPropagation();
-                 parent.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-            ${renderAvatar(threadsDvm.profilesZvm, beadInfo.author, "XS")}
-            <div class="nameColumn" style="display:flex; flex-direction:column;">
-                <span class="sideAgentName">${agentName}</span>
-                <span class="sideChatDate"> ${date_str}</span>
-            </div>
-        </div>
-        <div class="sideContentRow">
-          ${content}
-        </div>
-    </div>`;
-}
 
 
 /** Return [notifTitle, notifBody] */

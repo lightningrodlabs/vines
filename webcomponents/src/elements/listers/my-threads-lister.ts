@@ -322,12 +322,12 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       let appletSubLister = html``;
       let appletName = "Vines";
       if (appletId != THIS_APPLET_ID && appletId != this.weServices.appletId) {
-        if (!this.weServices || !this.weServices.getAppletInfo(appletId)) {
+        if (!this.weServices || !this.weServices.appletInfoCached(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
           return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown applet')}</div>`;
         }
         /** render other appletId threads */
-        const appletInfo = this.weServices.getAppletInfo(appletId);
+        const appletInfo = this.weServices.appletInfoCached(appletId);
         appletName = appletInfo.appletName;
       }
 

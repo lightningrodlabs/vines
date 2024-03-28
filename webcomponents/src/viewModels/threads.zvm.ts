@@ -1180,7 +1180,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async fetchUnknownBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<TypedBead> {
+  async fetchUnknownBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<[TypedBead, ThreadsEntryType]> {
     let creationTime: Timestamp;
     let author: AgentPubKey;
     let typed: TypedBead;
@@ -1204,7 +1204,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const ts = alternateCreationTime? alternateCreationTime : creationTime;
     await this.storeTypedBead(encodeHashToBase64(beadAh), materializeTypedBead(typed, type), type, ts, encodeHashToBase64(author), canNotify, false);
-    return typed;
+    return [typed, type];
   }
 
 
@@ -1328,7 +1328,7 @@ export class ThreadsZvm extends ZomeViewModel {
     if (NotifiableEventType.Fork in notif.event) {
       return encodeHashToBase64(notif.content);
     } else {
-      const typed = await this.fetchUnknownBead(notif.content, false);
+      const [typed, type] = await this.fetchUnknownBead(notif.content, false);
       return encodeHashToBase64(typed.bead.ppAh);
     }
   }

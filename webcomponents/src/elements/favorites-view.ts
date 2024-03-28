@@ -13,7 +13,6 @@ import "@ui5/webcomponents/dist/List.js"
 
 
 import "./input-bar";
-import {renderSideBead} from "../render";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ActionHashB64} from "@holochain/client";
@@ -105,25 +104,12 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
     const bg_color = this._loading? "#ededf0" : "#ffffff"
 
-    let infoPairs: Record<ActionHashB64, [BeadInfo, TypedBeadMat]> = {};
-    for (const ah of this._dvm.threadsZvm.perspective.favorites) {
-      if (this._dvm.threadsZvm.perspective.beads[ah]) {
-        infoPairs[ah] = this._dvm.threadsZvm.perspective.beads[ah];
-      }
-    }
-    //FIXME infoPairs.sort((a, b) => {return 1})
-
-    //console.log("<favorites-view>.render() len =", infoPairs.length);
-
-    // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let textLi = Object.entries(infoPairs).map(
-      ([beadAh, [beadInfo, typedBead]]) => {
-        return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, false, this.weServices);
-      });
+    let beadLi = this._dvm.threadsZvm.perspective.favorites
+      .map((beadAh) => html`<side-item .hash=${beadAh}></side-item>`);
 
     /** Different UI if no message found for thread */
-    if (Object.keys(infoPairs).length == 0) {
-      textLi = [html`
+    if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
+      beadLi = [html`
             <ui5-li style="background: ${bg_color};">
                 "No favorites found"                     
             </ui5-li>`]
@@ -138,7 +124,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
         ${doodle_bg}
         <h3 style="margin: 10px;font-size: 25px; color: #021133;">${title}</h3>
         <div id="textList" style="overflow: auto;">
-            ${textLi}
+            ${beadLi}
         </div>
     `;
   }

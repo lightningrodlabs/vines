@@ -168,10 +168,7 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
         break;
       case SUBJECT_TYPE_TYPE_NAME:
         if (weServices) {
-          let appletInfo = weServices.getAppletInfo(weServices.appletId);
-          if (!appletInfo) {
-            appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
-          }
+          let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
           return `/${appletInfo.appletName}/{${subject.typeName}}`;
         } else {
           return `{${subject.typeName}}`;
@@ -201,9 +198,9 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
   } else {
     /** Unknown Applet */
     if (weServices) {
-      const appletInfo = weServices.getAppletInfo(subject.appletId);
+      const appletInfo = await weServices.appletInfo(decodeHashFromBase64(subject.appletId));
       const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
-      const maybeInfo = weServices.getAssetInfo({hrl});
+      const maybeInfo = await weServices.assetInfo({hrl});
       if (maybeInfo) {
         return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
       } else {
@@ -243,7 +240,7 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
       }
       const hrlBead = typedBead as AnyBeadMat;
       const wal = weaveUrlToWal(hrlBead.value);
-      const attLocInfo = weServices.getAssetInfo(wal);
+      const attLocInfo = weServices.assetInfoCached(wal);
       if (!attLocInfo) {
         return "<unknown asset>";
       }

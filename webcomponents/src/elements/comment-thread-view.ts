@@ -13,7 +13,6 @@ import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
 
 import "./input-bar";
-import {renderSideBead} from "../render";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ThreadsEntryType} from "../bindings/threads.types";
@@ -242,7 +241,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
       const isNew = initialProbeLogTs < beadInfo.creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
-      return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
+      //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
+      return html`<side-item .hash=${beadAh} ?new=${isNew}></side-item>`
     });
 
     /** Different UI if no message found for thread */
@@ -261,11 +261,10 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     const subjectPrefix = determineSubjectPrefix(subjectType);
 
-    const appletName = this.weServices && this.weServices.getAppletInfo(decodeHashFromBase64(thread.pp.subject.appletId))
-      ? this.weServices.getAppletInfo(decodeHashFromBase64(thread.pp.subject.appletId)).appletName
-      : "N/A";
+    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(decodeHashFromBase64(thread.pp.subject.appletId)) : undefined;
+    const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
+    console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName);
 
-    const title = `Thread about`;
 
     let maybeInput = html``;
     if (this.showInput) {
@@ -276,15 +275,48 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const titleTip = "Type: " + subjectType;
 
+    let openInMainViewBtn = html``;
+    let gotoAppletBtn = html``;
+    if (maybeAppletInfo) {
+      console.log("<comment-thread-view> appletIcon", maybeAppletInfo.appletIcon);
+      if (maybeAppletInfo.appletIcon == "") {
+        gotoAppletBtn = html`
+            <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
+                        icon="journey-depart"
+                        style="margin-right:-5px; transform: rotate(-90deg);"
+                        @click=${(e) => this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))}>
+            </ui5-button>
+        `;
+      } else {
+        gotoAppletBtn = html`
+            <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
+                        style="margin-right:-5px; max-width:40px;"
+                        @click=${(e) => this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))}>
+                <img src=${maybeAppletInfo.appletIcon} alt="${appletName} Icon">
+            </ui5-button>
+        `;
+      }
+    } else {
+      openInMainViewBtn = html`
+        <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
+                    icon="journey-depart"
+                    style="margin-right:0px; -webkit-transform: scaleX(-1); transform: scaleX(-1);"
+                    @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>
+        </ui5-button>
+    `;
+    }
+
     /** render all */
     return html`
         ${doodle_bg}
+        <!-- Title row -->
         <h3 style="margin:10px; color:#021133;">
-          ${title} 
+          ${openInMainViewBtn}
+          <span>${msg('Thread about')}</span>
+          ${gotoAppletBtn}
           <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
                   @click=${(_e) => {
-                  //this.dispatchEvent(threadJumpEvent(this.threadHash));
                   console.log("<comment-thread-view> title click", thread.pp.subject);
                   /** Use subject as WAL */
                   const wal: WAL = {hrl: [decodeHashFromBase64(thread.pp.subject.dnaHash), decodeHashFromBase64(thread.pp.subject.hash)], context: null};
@@ -322,10 +354,8 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
                         e.stopPropagation();
                         this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
           }}></ui5-button>
-          <ui5-button icon="journey-arrive" design="Transparent" tooltip=${msg('Open') + " " + appletName}
-                      style="margin-left:-5px;  display: ${this.weServices? "block" : "none"}"
-                      @click=${(e) => this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))}></ui5-button>
         </h3>
+        <!-- thread -->
         <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
             ${sideItems}
         </div>
