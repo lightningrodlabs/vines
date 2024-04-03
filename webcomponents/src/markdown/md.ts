@@ -52,11 +52,11 @@ md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
   const token = tokens[idx];
   const href = token.attrGet('href');
   const url = new URL(href);
-  console.log("link_open() url", url);
+  //console.log("link_open() url", url);
   const scheme = url.protocol;
   if (scheme == "we:" || scheme == "weave:") {
     try {
-      console.log("link_open() wal", href);
+      //console.log("link_open() wal", href);
       return `<wurl-link wurl="${href}">`
     } catch(e) {}
   }

@@ -32,7 +32,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    * Subscribe to ThreadsZvm
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    console.log("<wurl-link>.zvmUpdated()");
+    //console.log("<wurl-link>.zvmUpdated()");
     await this.loadWal(newZvm);
   }
 
@@ -55,7 +55,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<wurl-link>.shouldUpdate()", changedProperties, this.wurl);
+    //console.log("<wurl-link>.shouldUpdate()", changedProperties, this.wurl);
     const upper = super.shouldUpdate(changedProperties);
     /** */
     if (changedProperties.has("wurl")) {
@@ -77,7 +77,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         /*const ppMat =*/ await threadsZvm.fetchPp(beadPair[0].bead.ppAh);
         thread = threadsZvm.getThread(beadPair[0].bead.ppAh);
       }
-      console.log("<wurl-link> loadWal() thread", thread.name);
+      //console.log("<wurl-link> loadWal() thread", thread.name);
       this._vinesTypes = ThreadsEntryType.AnyBead;
       this._assetName = `${thread.name} > 💬`;
       return true;
@@ -88,7 +88,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async loadWal(threadsZvm: ThreadsZvm) {
-    console.log("<wurl-link>.loadWal()", this.wurl);
+    console.log("<wurl-link>.loadWal()", this.wurl, threadsZvm);
     if (!this.wurl) {
       return;
     }
@@ -98,7 +98,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         this._appletName = "Vines";
         /** Determine entry */
         const hash = encodeHashToBase64(wal.hrl[1]);
-        console.log("<wurl-link> loadWal() hash", hash);
+        //console.log("<wurl-link> loadWal() hash", hash);
         const maybeThread = threadsZvm.perspective.threads[hash];
         if (maybeThread) {
           this._assetName = maybeThread.name;
@@ -118,15 +118,17 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         } catch(e) {}
         /** Try Bead */
         try {
-          await threadsZvm.fetchUnknownBead(wal.hrl[1], false);
+          /*const pair =*/ await threadsZvm.fetchUnknownBead(wal.hrl[1], false);
           const succeeded = await this.loadBeadInfo(hash, threadsZvm);
           if (succeeded) {
             return;
           }
-        } catch(e) {}
+        } catch(e) {
+          //console.warn(`No bead found for wurl-link: ${e}`);
+        }
         return;
       }
-      const assetLocAndInfo = await this.weServices.assetInfo(wal);;
+      const assetLocAndInfo = await this.weServices.assetInfo(wal);
       this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
       this._appletName = (await this.weServices.appletInfo(assetLocAndInfo.appletHash)).appletName;
     } catch(e) {

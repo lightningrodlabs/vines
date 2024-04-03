@@ -379,14 +379,14 @@ export class ThreadsZvm extends ZomeViewModel {
         matchingTextBeads = matchingTextBeads.filter(([_beadAh, _beadPair, textLC]) => {
           for (const keywordLC of keywordsLC) {
             if (textLC.includes(keywordLC)) {
-              console.log("searchTextBeads() has", keywordLC, textLC);
+              //console.log("searchTextBeads() has", keywordLC, textLC);
               return true;
             }
           }
         })
     }
     /** DONE */
-    console.log("searchTextBeads() result", matchingTextBeads.length, matchingTextBeads);
+    console.log("searchTextBeads() result", /*matchingTextBeads.length,*/ matchingTextBeads);
     return matchingTextBeads;
   }
 
@@ -1197,8 +1197,8 @@ export class ThreadsZvm extends ZomeViewModel {
           [creationTime, author, typed] = await this.zomeProxy.getAnyBead(beadAh);
           type = ThreadsEntryType.AnyBead;
         } catch(e) {
-          console.error(e);
-          Promise.reject("Bead not found at " + encodeHashToBase64(beadAh));
+          //console.error(e);
+          Promise.reject(`Bead not found at hash ${encodeHashToBase64(beadAh)} : ${e}`);
         }
       }
     }

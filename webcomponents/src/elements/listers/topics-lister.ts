@@ -35,7 +35,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<topics-lister>.shouldUpdate()", changedProperties, this.onlineLoaded);
+    //console.log("<topics-lister>.shouldUpdate()", changedProperties, this.onlineLoaded);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;

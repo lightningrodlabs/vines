@@ -56,7 +56,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-  @state() private _isHovered = false;
   @state() private _loading = true;
 
 
@@ -129,7 +128,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
+    //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
       this._loading = true;
       this.loadBead();
@@ -296,7 +295,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
-    console.log("<chat-item>.render() maybeCommentThread", maybeCommentThread, commentThread);
+    //console.log("<chat-item>.render() maybeCommentThread", maybeCommentThread, commentThread);
 
     const menuButton = html`
         <ui5-button id="menu-btn" icon="overflow" tooltip=${msg('More')} design="Transparent" style="border:none;"
@@ -325,7 +324,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     `;
 
     let sideButtons = [menuButton];
-    console.log("<chat-item> shortmenu", this.shortmenu)
+    //console.log("<chat-item> shortmenu", this.shortmenu)
     if (!this.shortmenu) {
       sideButtons = [starButton, reactionButton, commentButton, menuButton];
     }
@@ -339,7 +338,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-      <div class="${this._isHovered? "hovered": ""}">
+      <div id="innerChatItem">
         <!-- Vine row -->
         <div id="topVine">
             <div style="flex-grow:1;"></div>
@@ -352,10 +351,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                  const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
                  const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
                  popover.showAt(anchor);
-                 this._isHovered = true;
               }} 
              @mouseleave=${(e) => {
-               this._isHovered = false;
                const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
                popover.close();  
              }}>
@@ -455,6 +452,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           background: #d8e2f6;
         }
 
+        #innerChatItem:hover {
+          background: #d8e2f6;
+        }
+        
         #agentName {
           font-family: "72";
           font-weight: bold;

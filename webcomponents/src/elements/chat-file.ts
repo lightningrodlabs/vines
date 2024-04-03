@@ -44,7 +44,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<chat-file>.shouldUpdate()", changedProperties, this.hash);
+    //console.log("<chat-file>.shouldUpdate()", changedProperties, this.hash);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;

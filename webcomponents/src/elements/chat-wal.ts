@@ -39,7 +39,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<chat-file>.shouldUpdate()", changedProperties, this.hash);
+    //console.log("<chat-wal>.shouldUpdate()", changedProperties, this.hash);
     const upper = super.shouldUpdate(changedProperties);
     /** */
     if (changedProperties.has("hash")) {

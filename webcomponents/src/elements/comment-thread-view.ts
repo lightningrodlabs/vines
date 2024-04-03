@@ -105,7 +105,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** FOR DEBUGGING */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
+    //console.log("<comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
     if (changedProperties.has("_cell_via_context")) {
       this._cell = this._cell_via_context;
     }
@@ -119,7 +119,7 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
+    //console.log("<comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
       this._loading = true;
       /* await */ this.loadCommentThread();

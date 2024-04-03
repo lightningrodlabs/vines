@@ -122,7 +122,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
+    //console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
     if (this._dvm) {
       if (!this._dvm.threadsZvm.perspective.notifSettings[this.threadHash]) {
         await this._dvm.threadsZvm.probeNotifSettings(this.threadHash);
