@@ -400,7 +400,7 @@ export class VinesApp extends HappElement {
     //let view = html`<slot></slot>`;
     // FIXME: should propable store networkInfoLogs in class field
     let view = html`
-            <vines-page style="height:100vh;" 
+            <vines-page
                       .selectedThreadHash=${this._selectedThreadHash}
                       .selectedBeadAh=${this._selectedBeadAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
@@ -460,7 +460,7 @@ export class VinesApp extends HappElement {
                         const attLocInfo = await this._weServices.assetInfo(hrlc);
                         const subject: Subject = {
                             hash: hrlc.hrl[1],
-                            typeName: attLocInfo.assetInfo.icon_src,
+                            typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
                             dnaHash: hrlc.hrl[0],
                             appletId: encodeHashToBase64(attLocInfo.appletHash),
                         }

@@ -176,7 +176,7 @@ export class InputBar extends LitElement {
   handleKeydown(e) {
     //console.log("keydown", e);
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
-    console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
+    //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     if (isSuggesting) {
       this.handleSuggestingKeydown(e);
       return;
@@ -223,7 +223,7 @@ export class InputBar extends LitElement {
     const words = this.splitByWordsAndPunctuation(input); //input.trim().split(/\s+/);
     const lastWord = words.length > 0 ? words[words.length - 1] : "";
     const lastWordIsMention = lastWord.length > 0 && lastWord[0] == '@' && !endsWithWhitespace;
-    console.log("input words", words, lastWordIsMention);
+    //console.log("input words", words, lastWordIsMention);
 
     /** enable suggestion popover */
     let agentItems = [];

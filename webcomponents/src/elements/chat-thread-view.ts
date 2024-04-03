@@ -236,7 +236,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onWheel(event) {
-    console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
+    //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
     //if (this.scrollTop == 0) {
     if (this.clientHeight - this.scrollHeight == this.scrollTop) {
       //this.style.background = 'grey';

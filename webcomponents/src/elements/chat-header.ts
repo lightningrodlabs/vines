@@ -59,8 +59,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
     if (maybeSemanticTopicThread) {
       const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-      title = html`Welcome to ${subjectName} !`;
-      subText = `This is the start of thread ${thread.name}`;
+      title = html`Welcome to ${thread.name} !`;
+      subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
@@ -74,7 +74,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
                       </span>`;
       } else {
         title = html`Thread about <span class="subjectName">${subjectName}</span>`;
-        subText = `This is the start of a thread about a "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
+        subText = msg(`This is the start of a thread about a`) + ` "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
       }
 
     }

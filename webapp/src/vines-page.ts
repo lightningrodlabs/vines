@@ -1056,7 +1056,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <abbr title=${this.cell.dnaHash}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <network-health></network-health>
+                        <network-health-panel></network-health-panel>
                         <div slot="footer" style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                           <div style="flex-grow: 1;"></div>
                           <ui5-button slot="footer" design="Emphasized" @click=${() => {
@@ -1378,8 +1378,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         :host {
           background: #FBFCFD;
           display: block;
-          height: inherit;
-          width: inherit;
+          height: 100vh;
+          width: 100vw;
         }
 
         abbr {
@@ -1406,7 +1406,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #mainDiv {
           display: flex;
           flex-direction: row;
-          flex-grow: 1;
           height: inherit;
         }
 
@@ -1434,8 +1433,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #mainSide {
-          width: 100%;
+          overflow: auto;
           display: flex;
+          flex-grow:1;
           flex-direction: column;
           z-index: 1;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
@@ -1444,16 +1444,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #lowerSide {
           display: flex;
           flex-direction: row;
-          flex: 1;
+          flex-grow: 1;
           overflow-y: auto;
         }
 
         #centerSide {
-          width: 100%;
-          background: #FBFCFD;
+          flex-grow: 1;
+          overflow: auto;
           display: flex;
           flex-direction: column;
-          /*margin-bottom: 5px;*/
+          background: #FBFCFD;          
         }
 
         #notifSettingsBtn {

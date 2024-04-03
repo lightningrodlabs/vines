@@ -339,7 +339,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <div class="${this._isHovered? "hovered": ""}">
+      <div class="${this._isHovered? "hovered": ""}">
         <!-- Vine row -->
         <div id="topVine">
             <div style="flex-grow:1;"></div>
@@ -371,7 +371,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
               </div>
             </div>
             <!-- message column -->
-            <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;">
+            <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto">
                 <div id="nameRow" style="display:flex; flex-direction:row;">
                     <span id="agentName">${agentName}</span>
                     <span class="chatDate"> ${date_str}</span>
@@ -442,7 +442,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   static get styles() {
     return [
       css`
-        
+        :host {
+          max-width:100%;
+        }
         #avatarColumn:hover {
           cursor: pointer;
         }

@@ -146,7 +146,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 
 /** We are determining the subject name and formatting it into a thread name */
 export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx) {
-  //console.log("determineSubjectName()", subject);
+  console.log("determineSubjectName()", subject);
   /** Threads Applet */
   if (subject.appletId == THIS_APPLET_ID || (weServices && subject.appletId == weServices.appletId)) {
     switch (subject.typeName) {

@@ -28,7 +28,7 @@ export const sharedStyles = css`
     margin: 0px;
     white-space: pre-wrap;
     overflow: auto;
-    /*line-height: 18px;*/
+    display: inline;
   }
 
   .mention {
