@@ -18,10 +18,10 @@ import {sharedStyles} from "../styles";
  */
 @customElement("chat-wal")
 export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
-
+  /** */
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
-    this.loadHrl();
+    //this.loadHrl();
   }
 
 
@@ -37,33 +37,48 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @state() private _appletInfo?: AppletInfo;
 
 
+  /** -- Methods -- */
+
   /** Don't update during online loading */
   shouldUpdate(changedProperties: PropertyValues<this>) {
-    //console.log("<chat-wal>.shouldUpdate()", changedProperties, this.hash);
+    console.log("<chat-wal>.shouldUpdate()", changedProperties, this.hash);
     const upper = super.shouldUpdate(changedProperties);
     /** */
     if (changedProperties.has("hash")) {
-      /* await */ this.loadHrl();
+      if (!changedProperties["hash"]) {
+        return false;
+      }
+      /* await */ this.loadHrl(changedProperties["hash"], this._zvm);
     }
     return upper;
   }
 
 
+  /**
+   * In zvmUpdated() this._zvm is not already set!
+   * Subscribe to ThreadsZvm
+   */
+  protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
+    //console.log("<wurl-link>.zvmUpdated()");
+    await this.loadHrl(this.hash, newZvm);
+  }
+
+
   /** */
-  async loadHrl() {
-    console.log("<chat-wal>.loadHrl()", this.hash);
-    if (!this.hash) {
+  async loadHrl(hash: ActionHashB64, zvm: ThreadsZvm) {
+    console.log("<chat-wal>.loadHrl()", hash);
+    if (!hash) {
       return;
     }
     try {
-      const anyBeadInfoPair = this.perspective.beads[this.hash];
+      const anyBeadInfoPair = zvm.perspective.beads[hash];
       const anyBead = anyBeadInfoPair[1] as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
 
       this._assetLocAndInfo = await this.weServices.assetInfo(wal);
       this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash);
     } catch(e) {
-      console.warn("Failed to load HRL", this.hash, e);
+      console.warn("Failed to load HRL", hash, e);
     }
   }
 
@@ -89,7 +104,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`        
           <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
-                  @click=${(e) => this.loadHrl()}>
+                  @click=${(e) => this.loadHrl(this.hash, this._zvm)}>
               Failed to retrieve Asset.
           </ui5-li>
       </ui5-list>

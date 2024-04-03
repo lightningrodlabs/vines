@@ -215,7 +215,7 @@ export class InputBar extends LitElement {
 
   /** */
   render() {
-    console.log("<vines-input-bar>.render()", this.showHrlBtn);
+    //console.log("<vines-input-bar>.render()", this.showHrlBtn);
 
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     const input = this.inputElem? this.inputElem.value : "";
