@@ -1028,7 +1028,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const notifiedPeers = [];
       for (const [recip, notif] of notifPairs) {
         const recipient = encodeHashToBase64(recip);
-        /* Check if can notify */
+        /* Check can notify */
         const notifSetting = this.getNotifSetting(ppAh, recipient);
         if (notifSetting == NotifySettingType.Never) {
           continue;
@@ -1287,6 +1287,14 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.zomeProxy.deleteInboxItem(decodeHashFromBase64(linkAh));
     delete this._inbox[linkAh]; // = undefined;
     this.notifySubscribers();
+  }
+
+
+  /** */
+  async flushInbox(): Promise<void> {
+    for (const linkAh of Object.keys(this._inbox)) {
+      await this.deleteInboxItem(linkAh);
+    }
   }
 
 

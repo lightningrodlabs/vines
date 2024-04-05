@@ -148,8 +148,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     super.updated(_changedProperties);
     try {
       const scrollContainer = this.listElem.shadowRoot.children[0].children[0];
-      //console.log("<comment-thread-view>.updated() ", scrollContainer)
-      console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+      //console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
       //this.listElem.scrollTo(0, this.listElem.scrollHeight);
       //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
       //this.listElem.scrollIntoView({block: "end"});
@@ -188,10 +187,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       return;
     }
 
-    let mentionedAgents = undefined;
-
     const mentions = parseMentions(inputText);
-    mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
+    let mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
 
     const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey, mentionedAgents);
     console.log("onCreateComment() ah:", ah);

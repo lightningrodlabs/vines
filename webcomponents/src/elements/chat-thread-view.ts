@@ -332,7 +332,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
             ${chatItems.reverse()}
-            ${this._loading? html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
+            ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
             ${maybeHeader}
     `;
   }

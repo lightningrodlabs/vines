@@ -693,10 +693,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
-    const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call by other functions.
-    /** set lastProbeTime for current thread */
+    const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
+    /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
+      /** set lastProbeTime for current thread */
       await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
+      /** Clear notifications on prevThread */
+      const prevThreadNotifs = this._dvm.threadsZvm.getPpNotifs(prevThreadHash);
+      for (const [linkAh, _notif] of prevThreadNotifs) {
+        await this._dvm.threadsZvm.deleteInboxItem(linkAh);
+      }
+      /** Cache and reset input-bar */
       const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
       if (inputBar) {
         this._dvm.perspective.threadInputs[prevThreadHash] = inputBar.value;
@@ -704,20 +711,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
       }
     }
-
     /** Close any opened popover */
     const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();
     }
-    // const searchField = this.shadowRoot.getElementById("search-field") as Input;
-    //console.log("onJump()", searchField);
-    // searchField.value = "";
     let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
     if (searchPopElem.isOpen()) {
       searchPopElem.close();
     }
-    //this._canShowSearchResults = false;
   }
 
 
@@ -1371,8 +1373,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCommitBtn(_e?: any) {
-    toasty("All marked 'read'");
+    toasty("All marked 'read' & cleared Inbox");
     await this._dvm.threadsZvm.commitAllProbeLogs();
+    await this._dvm.threadsZvm.flushInbox();
     //const semTopic = this.shadowRoot.getElementById("topicusView") as SemanticTopicsView;
     //semTopic.requestUpdate();
   }
