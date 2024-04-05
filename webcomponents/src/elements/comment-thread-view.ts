@@ -186,11 +186,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       console.error("Missing Comment thread");
       return;
     }
-
-    const mentions = parseMentions(inputText);
-    let mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
-
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey, mentionedAgents);
+    const agentsToNotify = parseMentions(inputText, this._dvm.profilesZvm);
+    /** Publish */
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey, agentsToNotify);
     console.log("onCreateComment() ah:", ah);
   }
 

@@ -102,6 +102,9 @@ export class InputBar extends LitElement {
   /** */
   private suggestionSelected(nickname?: string) {
     if (nickname) {
+      if (nickname[0] == '@') {
+        nickname = nickname.slice(1);
+      }
       this.inputElem.value = this._cacheInputValue + nickname + " "
     }
     this.inputElem.focus();
@@ -208,6 +211,11 @@ export class InputBar extends LitElement {
 
 
   /** */
+  _specialProfiles: Record<AgentPubKeyB64, ProfileMat> = {
+    "__all": {nickname: "all", fields: {}},
+  }
+
+  /** */
   _dummyProfiles: Record<AgentPubKeyB64, ProfileMat> = {
     "Alex": {nickname: "Alex", fields: {}},
     "Billy": {nickname: "Billy", fields: {}},
@@ -242,8 +250,10 @@ export class InputBar extends LitElement {
     if (lastWordIsMention) {
       const filter = lastWord.slice(1);
       /** Filter suggestions */
-      //let suggestionItems = Object.entries(this._dummyProfiles);
-      let suggestionItems = this.profilesZvm ? Object.entries(this.profilesZvm.perspective.profiles) : [];
+      let suggestionItems = Object.entries(this._specialProfiles);
+      if (this.profilesZvm) {
+        suggestionItems = suggestionItems.concat(Object.entries(this.profilesZvm.perspective.profiles));
+      }
       let suggestionKeys = suggestionItems.map(([agentKey, _profile]) => agentKey);
 
       /** Filter */
@@ -273,6 +283,18 @@ export class InputBar extends LitElement {
         .map((key) => {
           i += 1;
           const canSelect = i == 1 && canSelectFirst || key == selectedId;
+          /* Special mentions */
+          if (key == "__all") {
+            return html`             
+                <ui5-li id=${key} style="height: 3rem; border: none;" ?selected=${canSelect}
+                @click=${(e) => {
+                  e.preventDefault();
+                  this.suggestionSelected(key);
+                }}>
+              @all
+          </ui5-li>`;
+          }
+          /** Grab and display profile */
           const profile = this.profilesZvm.perspective.profiles[key];
           //const profile = this._dummyProfiles[key];
           if (!profile) return html``;

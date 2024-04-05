@@ -1,4 +1,4 @@
-import {ActionHashB64, decodeHashFromBase64, dhtLocationFrom32} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, dhtLocationFrom32} from "@holochain/client";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
@@ -15,6 +15,7 @@ import {
   SEMANTIC_TOPIC_TYPE_NAME,
   ThreadsEntryType
 } from "./bindings/threads.types";
+import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 
 
 /** */
@@ -85,7 +86,25 @@ export interface CommentRequest {
 
 
 /** */
-export function parseMentions(str: string): string[]  {
+export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentPubKeyB64[] {
+  const mentions = tokenizeMentions(str);
+  let mentionedAgents = profilesZvm.findProfiles(mentions);
+  /** Handle special mentions */
+  let hasAll = false;
+  for (const mention of mentions) {
+    if (mention == "all") {
+      hasAll = true;
+    }
+  }
+  if (hasAll) {
+    mentionedAgents = Object.keys(profilesZvm.perspective.profiles);
+  }
+  return mentionedAgents;
+}
+
+
+/** */
+function tokenizeMentions(str: string): string[]  {
   if (typeof str !== 'string') {
     throw new TypeError('expected a string');
   }

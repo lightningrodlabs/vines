@@ -344,16 +344,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateTextMessage(inputText: string) {
-    console.log("onCreateTextMessage", inputText)
-
-    const mentions = parseMentions(inputText);
-    console.log("parseMentions", mentions);
-    console.log("parseMentions reversed", this._dvm.profilesZvm.perspective.reversed);
-    const mentionedAgents = this._dvm.profilesZvm.findProfiles(mentions);
-    console.log("parseMentions mentionedAgents", mentionedAgents);
-
+    console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
+    const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
     let threadHash = this.selectedThreadHash;
-
     if (this._currentCommentRequest) {
       threadHash = await this.createCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
