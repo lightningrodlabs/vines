@@ -333,11 +333,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    const ah = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, input.value)[1];
-    //console.log("onCreateList() res:", res)
+    const tuple = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, input.value);
+    //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
-
-    await this.onJump(threadJumpEvent(ah));
+    
+    this.dispatchEvent(threadJumpEvent(tuple[1]));
     this.createThreadDialogElem.close(false);
   }
 
