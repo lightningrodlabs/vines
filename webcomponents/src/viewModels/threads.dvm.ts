@@ -22,7 +22,7 @@ import {
 import {
   AnyLinkableHashB64,
   BeadType,
-  materializeTypedBead, ParticipationProtocolMat,
+  materializeTypedBead,
   TypedBead, TypedContent,
 } from "./threads.perspective";
 import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
@@ -34,6 +34,8 @@ import {AuthorshipZvm} from "./authorship.zvm";
 /** */
 export interface ThreadsDnaPerspective {
   agentPresences: Record<AgentPubKeyB64, number>,
+  /** ppAh -> string */
+  threadInputs: Dictionary<String>,
   /** ppAh -> Timestamp */
   initialThreadProbeLogTss: Dictionary<Timestamp>,
   /** */
@@ -80,6 +82,7 @@ export class ThreadsDvm extends DnaViewModel {
   get perspective(): ThreadsDnaPerspective {
     return {
       agentPresences: this._agentPresences,
+      threadInputs: this._threadInputs,
       initialThreadProbeLogTss: this._initialThreadProbeLogTss,
       initialGlobalProbeLogTs: this._initialGlobalProbeLogTs,
       signaledNotifications: this._signaledNotifications,
@@ -89,6 +92,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** agentPubKey -> timestamp */
   private _agentPresences: Record<string, number> = {};
 
+  private _threadInputs = {};
   private _initialThreadProbeLogTss = {};
   private _initialGlobalProbeLogTs: Timestamp = 0;
 
@@ -284,6 +288,8 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async publishTypedBead(beadType: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
     let [ah, _time_anchor, creationTime, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments);
+    /** Erase saved input */
+    delete this._threadInputs[ppAh];
     /** Send signal to peers */
     const data = encode({typed, beadType});
     const signal: WeaveSignal = this.createGossipSignal({type: {NewBead: null}, content: [creationTime, ah, beadType, ppAh, data]}, ppAh);

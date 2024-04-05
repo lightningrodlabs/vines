@@ -45,6 +45,7 @@
     "prodtest2:we"       : "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"cross-env AGENT_NUM=1 npm run prodtest:we-launch\" \"sleep 10 && cross-env AGENT_NUM=2 npm run prodtest:we-launch\"",
     "prodtest:we-launch" : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.prodtest.config.json --agent-idx $AGENT_NUM",
     "prodtest:we-launch2"  : "we-dev-cli \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.prodtest.config.json --agent-idx $AGENT_NUM",
+    "we-dev"  : "we-dev-cli --help",
 
     "multitest"           : "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run multitest:we-launch\"",
     "multitest:we-launch" : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.multitest.config.json --agent-idx 1",
@@ -92,6 +93,7 @@
     "concurrently": "^6.2.1",
     "concurrently-repeat": "^0.0.1",
     "cross-env": "^7.0.3",
+    "electron": "^29.2.0",
     "jest": "^29.5.0",
     "new-port-cli": "^1.0.0",
     "ts-jest": "^29.1.0",
@@ -102,7 +104,7 @@
   "dependencies": {
     "@holochain/client": "^0.17.0-dev.3",
     "@lightningrodlabs/we-applet": "0.16.0",
-    "@lightningrodlabs/we-dev-cli": "0.11.4",
+    "@lightningrodlabs/we-dev-cli": "0.11.8-dev.2",
     "@ddd-qc/cell-proxy": "=0.23.0",
     "@ddd-qc/lit-happ": "=0.23.0",
     "@ddd-qc/profiles-dvm": "=0.23.3",

@@ -123,10 +123,10 @@ import {
   AnyBeadMat,
   AnyLinkableHashB64,
   ChatThreadView,
-  CommentRequest,
+  CommentRequest, CommentThreadView,
   doodle_flowers,
   event2type,
-  globaFilesContext, JumpDestinationType,
+  globaFilesContext, InputBar, JumpDestinationType,
   JumpEvent,
   NotifySettingType, onlineLoadedContext,
   parseMentions,
@@ -145,7 +145,6 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {
   ActionHashB64,
   decodeHashFromBase64,
-  DnaHashB64,
   encodeHashToBase64,
   NetworkInfo,
   Timestamp,
@@ -154,7 +153,6 @@ import {
 import {FrameNotification, GroupProfile, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {consume, ContextProvider} from "@lit/context";
 
-//import "./input-bar";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
@@ -604,6 +602,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (request.viewType == "side") {
       const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
       this._canShowComments = true;
+      /** Save input field before switching */
+      if (this._selectedCommentThreadHash) {
+        const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
+        if (commentView) {
+          this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
+        }
+      }
       this._selectedCommentThreadHash = threadHash;
       this._selectedCommentThreadSubjectName = request.subjectName;
       return;
@@ -687,11 +692,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
-    console.log("<vines-page>.onJump()", e.detail);
-
+    console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
+    const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call by other functions.
     /** set lastProbeTime for current thread */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
-      await this._dvm.threadsZvm.commitThreadProbeLog(this.selectedThreadHash);
+      await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
+      const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
+      if (inputBar) {
+        this._dvm.perspective.threadInputs[prevThreadHash] = inputBar.value;
+        inputBar.setValue("");
+        // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
+      }
     }
 
     /** Close any opened popover */
@@ -762,6 +773,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   render() {
     console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     let centerSide = html`
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
@@ -805,13 +817,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           style="border:none; padding:0px"
                           @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
-            <vines-input-bar .profilesZvm=${this._dvm.profilesZvm}
-                               .topic=${topic}
-                               .showHrlBtn=${!!this.weServices}
-                               showFileBtn="true"
-                               @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-                               @upload=${(e) => {e.preventDefault(); this.uploadFile(this.selectedThreadHash)}}
-                               @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
+            <vines-input-bar id="input-bar"
+                             .profilesZvm=${this._dvm.profilesZvm}
+                             .topic=${topic}
+                             .cachedInput=${this.perspective.threadInputs[this.selectedThreadHash]? this.perspective.threadInputs[this.selectedThreadHash] : ""}
+                             .showHrlBtn=${!!this.weServices}
+                             showFileBtn="true"
+                             @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
+                             @upload=${(e) => {e.preventDefault(); this.uploadFile(this.selectedThreadHash)}}
+                             @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
             ></vines-input-bar>`
             }
         `;
@@ -1176,7 +1190,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
                 <div id="commentSide"
                      style="display:${this._canShowComments ? 'flex' : 'none'};">
-                    <comment-thread-view .threadHash=${this._selectedCommentThreadHash} showInput="true"
+                    <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedCommentThreadSubjectName}"></comment-thread-view>
                 </div>
                   <div id="favoritesSide"

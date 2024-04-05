@@ -8,7 +8,6 @@ import {inputBarStyleTemplate, suggestionListTemplate} from "../styles";
 import "@ui5/webcomponents/dist/TextArea.js";
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
-import {ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {AgentPubKeyB64} from "@holochain/client";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderAvatar} from "../render";
@@ -27,6 +26,9 @@ export class InputBar extends LitElement {
   topic: string = ''
 
   @property()
+  cachedInput: string = ''
+
+  @property()
   showHrlBtn?: string;
 
   @property()
@@ -37,7 +39,7 @@ export class InputBar extends LitElement {
 
   @state() private _cacheInputValue: string = "";
 
-  /** -- Gettters -- */
+  /** -- Getters -- */
 
   get inputElem(): TextArea {
     return this.shadowRoot.getElementById("textMessageInput") as unknown as TextArea;
@@ -49,6 +51,21 @@ export class InputBar extends LitElement {
 
   get popoverElem(): Popover {
     return this.shadowRoot.getElementById("pop") as unknown as Popover;
+  }
+
+
+  get value(): string {
+    //console.log("<vines-input-var>.value()", this.inputElem? this.inputElem.value : "<no elem>");
+    if (this.inputElem) {
+      return this.inputElem.value;
+    }
+    return "";
+  }
+  setValue(v: string): void {
+    if (this.inputElem) {
+      this.inputElem.value = v;
+      //console.log("<vines-input-var> (jump) setValue to", v);
+    }
   }
 
 
@@ -74,6 +91,15 @@ export class InputBar extends LitElement {
 
 
   /** */
+  updated() {
+    if (this.inputElem && this.inputElem.value == "" && this.cachedInput != "") {
+      this.inputElem.value = this.cachedInput;
+      //console.log("<vines-input-var> (jump) updated to", this.cachedInput);
+      //this.requestUpdate();
+    }
+  }
+
+  /** */
   private suggestionSelected(nickname?: string) {
     if (nickname) {
       this.inputElem.value = this._cacheInputValue + nickname + " "
@@ -95,19 +121,6 @@ export class InputBar extends LitElement {
     this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
     this.inputElem.value = "";
     this._cacheInputValue = "";
-  }
-
-
-  /** */
-  private handleListKeydown(e) {
-    // /** Enter/Tab: select focused item */
-    // if (e.keyCode === 13 || e.keyCode === 9) {
-    //   console.log("List keydown keyCode ENTER/Tab", e.target);
-    //   this.suggestionSelected(e.target.innerText);
-    //   // if (this.suggestionListElem.items.length > 0) {
-    //   //   this.suggestionListElem.focusItem(this.suggestionListElem.items[0]);
-    //   // }
-    // }
   }
 
 
@@ -215,8 +228,9 @@ export class InputBar extends LitElement {
 
   /** */
   render() {
-    //console.log("<vines-input-bar>.render()", this.showHrlBtn);
+    console.log("<vines-input-bar>.render()", this.cachedInput);
 
+    /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     const input = this.inputElem? this.inputElem.value : "";
     const endsWithWhitespace = input.length != input.trimEnd().length;
@@ -224,8 +238,6 @@ export class InputBar extends LitElement {
     const lastWord = words.length > 0 ? words[words.length - 1] : "";
     const lastWordIsMention = lastWord.length > 0 && lastWord[0] == '@' && !endsWithWhitespace;
     //console.log("input words", words, lastWordIsMention);
-
-    /** enable suggestion popover */
     let agentItems = [];
     if (lastWordIsMention) {
       const filter = lastWord.slice(1);
@@ -304,6 +316,7 @@ export class InputBar extends LitElement {
             <ui5-button design="Transparent" icon="attachment" @click=${(e) => {
                 this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
             }}></ui5-button>` : html``}
+            <!--<div style="min-width:20px; min-height:20px; background:red;">${this.cachedInput}</div>-->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
                           placeholder="Message #${this.topic}, @ to mention"
                           growing
@@ -316,7 +329,7 @@ export class InputBar extends LitElement {
             <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
         </ui5-bar>
         <ui5-popover id="pop" hide-arrow allow-target-overlap placement-type="Top" horizontal-align="Stretch" initial-focus="textMessageInput">
-          <ui5-list id="agent-list" @keydown=${this.handleListKeydown} >
+          <ui5-list id="agent-list">
               ${agentItems}
           </ui5-list>
         </ui5-popover>

@@ -63,12 +63,12 @@ export interface ThreadsExportablePerspective {
   /** */
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: hash -> Subject */
-  allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>, //Map<AnyLinkableHashB64, SubjectMat>,
+  allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>,
   /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
   allSemanticTopics: Dictionary<[string, boolean]>,
 
   /** ppAh -> ppMat */
-  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>, // Map
+  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>,
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: Dictionary<[BeadInfo, TypedBeadMat]>,
 
@@ -91,15 +91,13 @@ export interface ThreadsPerspective {
   allSubjects: Map<AnyLinkableHashB64, SubjectMat>,
   /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
   allSemanticTopics: Dictionary<[string, boolean]>,
-  ///** Store of all PPmat: ppAh -> PP */
-  //allParticipationProtocols: Dictionary<ParticipationProtocolMat>,
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: Dictionary<ActionHashB64[]>,
   /** ppAh -> Thread */
   threads: Map<ActionHashB64, Thread>,
   /** beadAh -> [BeadInfo, TypedBead] */
   beads: Dictionary<[BeadInfo, TypedBeadMat]>,
-  /** bead_ah -> [agent, emoji] */
+  /** beadAh -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
 
 

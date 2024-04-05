@@ -1,7 +1,7 @@
 import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import { DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {determineSubjectPrefix, parseMentions} from "../utils";
 
@@ -24,13 +24,14 @@ import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
 import {codeStyles} from "../markdown/code-css";
 import {WAL} from "@lightningrodlabs/we-applet";
+import {InputBar} from "./input-bar";
 
 
 /**
  * @element
  */
 @customElement("comment-thread-view")
-export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
+export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   constructor() {
@@ -81,6 +82,15 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   get listElem() : HTMLElement {
     return this.shadowRoot.getElementById("list-broken") as HTMLElement;
+  }
+
+
+  get value(): string {
+    const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
+    if (inputBar) {
+      return inputBar.value;
+    }
+    return "";
   }
 
 
@@ -263,14 +273,19 @@ export class CommentThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(decodeHashFromBase64(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
-    console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName);
+    console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
 
+
+    //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
 
     let maybeInput = html``;
     if (this.showInput) {
       maybeInput = html`
-          <vines-input-bar topic="thread" .profilesZvm=${this._dvm.profilesZvm}
-                              @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
+          <vines-input-bar id="input-bar"
+                           topic="thread"
+                           .profilesZvm=${this._dvm.profilesZvm}
+                           .cachedInput=${this.perspective.threadInputs[this.threadHash]? this.perspective.threadInputs[this.threadHash] : ""}
+                           @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
     }
 
     const titleTip = "Type: " + subjectType;
