@@ -93,6 +93,7 @@ import "@ui5/webcomponents-icons/dist/less.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
 import "@ui5/webcomponents-icons/dist/navigation-down-arrow.js"
+import "@ui5/webcomponents-icons/dist/nav-back.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
@@ -121,7 +122,7 @@ import 'css-doodle';
 
 import {
   AnyBeadMat,
-  AnyLinkableHashB64,
+  AnyLinkableHashB64, beadJumpEvent,
   ChatThreadView,
   CommentRequest, CommentThreadView,
   doodle_flowers,
@@ -192,12 +193,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** Handle 'jump' event */
   connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('popstate', this.onPopState);
     this.addEventListener('jump', this.onJump);
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener('popstate', this.onPopState);
     this.removeEventListener('jump', this.onJump);
     this.removeEventListener('edit-profile', this.onEditProfile);
     this.removeEventListener('show-profile', this.onShowProfile);
@@ -336,7 +339,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const tuple = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, input.value);
     //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
-    
+
     this.dispatchEvent(threadJumpEvent(tuple[1]));
     this.createThreadDialogElem.close(false);
   }
@@ -684,6 +687,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  async onPopState(e: CustomEvent<PopStateEvent>) {
+    console.log("onPopState()", e);
+  }
+
+
+  /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
     const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
@@ -955,6 +964,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           ></my-threads-lister>
       `;
     }
+    let maybeBackBtn = html``;
+    const thread = this._dvm.threadsZvm.perspective.threads.get(this.selectedThreadHash);
+    if (thread) {
+      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
+      if (subjectBead) {
+        maybeBackBtn = html`
+            <ui5-button icon="nav-back" slot="startButton" class="shellbtn"
+                        @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}></ui5-button>`;
+      }
+    }
 
 
     /** Render all */
@@ -1085,7 +1104,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <div id="mainSide">
               <ui5-shellbar id="topicBar" primary-title=${primaryTitle} show-search-field>
                   ${this.selectedThreadHash == "" ? html`` :
-                          html`<ui5-button id="notifSettingsBtn" slot="startButton" icon="bell" tooltip=${msg('Notifications Settings')} 
+                          html`<ui5-button id="notifSettingsBtn" slot="startButton" class="shellbtn" 
+                                           icon="bell" 
+                                           tooltip=${msg('Notifications Settings')} 
                                            @click=${() => {
                           const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
                           if (popover.isOpen()) {
@@ -1096,6 +1117,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           popover.showAt(shellbar);
                     }}></ui5-button>`
                   }
+                  ${maybeBackBtn}
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
                              @input=${(e) => {
                                  console.log("<search-field> @input", e.keyCode, e);
@@ -1466,10 +1488,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: #FBFCFD;          
         }
 
-        #notifSettingsBtn {
+        .shellbtn {
           color: #464646;
         }
-        #notifSettingsBtn:hover {
+        .shellbtn:hover {
           background: #e6e6e6;
         }
 

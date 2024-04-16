@@ -76,7 +76,6 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         title = html`Thread about <span class="subjectName">${subjectName}</span>`;
         subText = msg(`This is the start of a thread about a`) + ` "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
       }
-
     }
 
     /** render all */
