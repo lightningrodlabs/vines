@@ -326,7 +326,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateTopic(e) {
     const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
-    await this._dvm.publishSemanticTopic(input.value);
+    const name = input.value.trim();
+    await this._dvm.publishSemanticTopic(name);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.createTopicDialogElem.close();
@@ -336,7 +337,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateThread(e) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    const tuple = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, input.value);
+    const name = input.value.trim();
+    if (name.length < 1) {
+      return;
+    }
+    const tuple = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, name);
     //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
 
@@ -1266,11 +1271,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <section>
                 <div>
                     <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
-                    <ui5-input id="threadPurposeInput" @keydown=${async (e) => {
-                        if (e.keyCode === 13) {
-                            e.preventDefault();
-                            await this.onCreateThread(e);
-                        }
+                    <ui5-input id="threadPurposeInput" 
+                               @keydown=${async (e) => {
+                                  if (e.keyCode === 13) {
+                                      e.preventDefault();
+                                      await this.onCreateThread(e);
+                                  }
                     }}></ui5-input>
                 </div>
             </section>
