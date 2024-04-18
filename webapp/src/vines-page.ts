@@ -1108,20 +1108,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             <div id="mainSide">
               <ui5-shellbar id="topicBar" primary-title=${primaryTitle} show-search-field>
-                  ${this.selectedThreadHash == "" ? html`` :
-                          html`<ui5-button id="notifSettingsBtn" slot="startButton" class="shellbtn" 
-                                           icon="bell" 
-                                           tooltip=${msg('Notifications Settings')} 
-                                           @click=${() => {
-                          const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
-                          if (popover.isOpen()) {
-                              popover.close();
-                              return;
-                          }
-                          const shellbar = this.shadowRoot.getElementById("notifSettingsBtn");
-                          popover.showAt(shellbar);
-                    }}></ui5-button>`
-                  }
                   ${maybeBackBtn}
                   <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
                              @input=${(e) => {
@@ -1159,20 +1145,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                }
                              }}
                   ></ui5-input>
-                  <ui5-shellbar-item id="favButton" icon="favorite-list" tooltip="Toggle Favorites" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
-                  <ui5-shellbar-item id="cmtButton" icon="comment" tooltip="Toggle Comments" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
+                  ${this.selectedThreadHash == "" ? html`` :
+                          html`<ui5-shellbar-item id="notifSettingsBtn" 
+                                           icon="bell" 
+                                           tooltip=${msg('Notifications Settings')} 
+                                           @click=${() => {
+                                             console.log("notifSettingsBtn.click()")
+                                            const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
+                                            if (popover.isOpen()) {
+                                                popover.close();
+                                                return;
+                                            }
+                                            const shellbar = this.shadowRoot.getElementById("topicBar");
+                                            popover.showAt(shellbar);
+                                        }}>
+                          </ui5-shellbar-item>`
+                  }                  
+                  <ui5-shellbar-item id="favButton" icon="favorite-list" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
+                  <ui5-shellbar-item id="cmtButton" icon="comment" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="inboxButton" icon="inbox"
                                      .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
                                      @click=${() => {
-                      console.log("inboxButton.click()")
-                      const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
-                      if (popover.isOpen()) {
-                          popover.close();
-                          return;
-                      }
-                      const shellbar = this.shadowRoot.getElementById("topicBar");
-                      popover.showAt(shellbar);
-                  }}></ui5-shellbar-item>
+                                        console.log("inboxButton.click()")
+                                        const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                                        if (popover.isOpen()) {
+                                            popover.close();
+                                            return;
+                                        }
+                                        const shellbar = this.shadowRoot.getElementById("topicBar");
+                                        popover.showAt(shellbar);
+                                    }}>
+                  </ui5-shellbar-item>
               </ui5-shellbar>
 
                 <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
@@ -1197,7 +1200,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" header-text="Notification settings">
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text="Notification settings">
                     <div  style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
                         <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>
