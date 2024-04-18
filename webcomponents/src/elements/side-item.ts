@@ -167,14 +167,15 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     /* render item */
     return html`
     <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
-         @click=${(e) => {/*console.log("sideItem clicked", beadAh);*/ e.stopPropagation(); parent.dispatchEvent(beadJumpEvent(this.hash))}}>
-        <div class="avatarRow"
-             @click=${(e) => {
-               //console.log("sideItem onShowProfile clicked", beadAh);
-               e.stopPropagation();
-               parent.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-        }}>
-            ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
+         @click=${(e) => {console.log("sideItem clicked", this.hash); e.stopPropagation(); this.dispatchEvent(beadJumpEvent(this.hash))}}>
+        <div class="avatarRow">
+            <div @click=${(e) => {
+                //console.log("sideItem onShowProfile clicked", beadAh);
+                e.stopPropagation();
+                this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+            }}>
+                ${renderAvatar(this._dvm.profilesZvm, author, "XS")}                
+            </div>
             <div class="nameColumn" style="display:flex; flex-direction:column;">
                 <span class="sideAgentName">${agentName}</span>
                 <span class="sideChatDate"> ${date}</span>

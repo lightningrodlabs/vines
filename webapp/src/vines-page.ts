@@ -473,15 +473,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
     //
     //   if (allRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.AllMessages);
+    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.AllMessages);
     //     return;
     //   }
     //   if (mentionRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.MentionsOnly);
+    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.MentionsOnly);
     //     return;
     //   }
     //   if (neverRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySettingType.Never);
+    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.Never);
     //     return;
     //   }
     // }
@@ -722,6 +722,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();
+    }
+    const pop = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
+    if (pop.isOpen()) {
+      pop.close();
     }
     let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
     if (searchPopElem.isOpen()) {

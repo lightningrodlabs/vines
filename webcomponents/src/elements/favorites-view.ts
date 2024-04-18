@@ -2,7 +2,7 @@ import {css, html} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {BeadInfo, ThreadsPerspective, TypedBeadMat} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -15,7 +15,6 @@ import "@ui5/webcomponents/dist/List.js"
 import "./input-bar";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
-import {ActionHashB64} from "@holochain/client";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {FilesDvm} from "@ddd-qc/files";

@@ -56,11 +56,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** for triggering an update */
   //@state() private _commentsLoading = false;
 
-  /** Store thread specific UI info */
-  /** Scroll to bottom only on first load of thread */
-  /* ppAh -> (fistLoad, cached input string) */
-  _threadUiInfo: Record<ActionHashB64, [Boolean, String]> = {}
-
 
   /** -- Methods -- */
 
@@ -96,13 +91,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return true;
     }
     if (changedProperties.has("threadsPerspective")) {
-
       const isFirstPerspective = this._prevThread == "";
       /** Don't update during loading */
       if (!isFirstPerspective && !this.onlineLoaded) {
         return false;
       }
-
       const tp = changedProperties.get("threadsPerspective");
       const newThread = JSON.stringify(tp.threads.get(this.threadHash));
       //const oldThread = this._prevThreadsPerspective? this._prevThreadsPerspective.threads.get(this.threadHash) : undefined;
@@ -114,8 +107,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       /** update only if something changed and we are not currently loading all the beads */
       return isFirstPerspective || !this._loading && !isEqual;
     }
-    return !this._loading;
-    //return true;
+    return !this._loading; //return true;
   }
 
 
@@ -126,18 +118,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this._dvm) {
       if (!this._dvm.threadsZvm.perspective.notifSettings[this.threadHash]) {
         await this._dvm.threadsZvm.probeNotifSettings(this.threadHash);
-        //this.requestUpdate();
       }
-      // if (changedProperties.has("threadHash")) {
-      //   this.loadlatestMessages();
-      // }
     }
-  }
-
-  /** Probe bead and its reactions */
-  protected firstUpdated(_changedProperties: PropertyValues) {
-    super.firstUpdated(_changedProperties);
-    this.scrollTop = this.scrollHeight;
   }
 
 
@@ -155,24 +137,24 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     //   /** i.e. element not present */
     // }
 
+
+    if (this.beadAh) {
+      //console.log("<chat-threaded-view>.updated()", this.beadAh)
+      const beadItem = this.shadowRoot.getElementById(`${this.beadAh}`);
+      if (beadItem) {
+        const scrollY = beadItem.offsetTop - this.offsetTop;
+        // Scroll the list container to the calculated position
+        this.scrollTo({ top: scrollY, behavior: 'smooth' });
+      }
+    }
+
+    /** Set background according to load state */
     if (this._loading)  {
       this.style.background = "#ececec";
     } else {
       this.style.background = "#FBFCFD";
     }
   }
-
-
-  // /** */
-  // async getUpdateComplete(): Promise<boolean> {
-  //   //console.log("ChatView.getUpdateComplete()")
-  //   let superCompleted = await super.getUpdateComplete();
-  //   /** Make sure mainChat has finished updating (i.e. loaded child chat-items) */
-  //   const mainChat = this.shadowRoot.getElementById('mainChat') as LitElement;
-  //   const childUpdated = await mainChat.updateComplete;
-  //   /** Done */
-  //   return superCompleted && childUpdated;
-  // }
 
 
   /** Check if beads have comments */
@@ -197,7 +179,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     dvm.threadsZvm.probeLatestBeads(this.threadHash, undefined, undefined, 20)
       .then(async (beadLinks) => {
         this._loading = false;
-        this._threadUiInfo[this.threadHash] = [true, ""];
+        //this._threadUiInfo[this.threadHash] = [true, ""];
         await this.loadBeadComments(beadLinks, dvm);
         await dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
         //this._commentsLoading = false; // This is for triggering a new requestUpdate
@@ -224,16 +206,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  // /** */
-  // onLoadMore() {
-  //   console.log("<chat-thread-view>.onLoadMore()");
-  //
-  //   this._busy = true;
-  //   // FIXME: Probe DHT
-  //   this._busy = false;
-  // }
-
-
   /** */
   async onWheel(event) {
     //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
@@ -256,21 +228,16 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-thread-view>.render()", this._loading, this.threadHash);
+    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh);
+    /** */
     if (this.threadHash == "") {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
     }
-    // if (this._loading && !this._threadUiInfo[this.threadHash]) {
-    //   console.log("<chat-thread-view>.render() SPINNER");
-    //   return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
-    // }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
       return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
-
-
-    /** */
+    /** chat-header */
     let maybeHeader = html``;
     const hasReachedBeginning = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
     console.log("<chat-header> begin reached", hasReachedBeginning);
@@ -279,7 +246,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
 
-    /** Should grab all probed and request probes if end is reached */
+    /** Should grab all probed messages and request probes if end is reached */
 
     const all = thread.getAll();
     let passedLog = false;
