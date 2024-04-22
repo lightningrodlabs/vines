@@ -79,6 +79,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash);
     } catch(e) {
       console.warn("Failed to load HRL", hash, e);
+      this._assetLocAndInfo = undefined;
+      this._appletInfo = undefined;
     }
   }
 
