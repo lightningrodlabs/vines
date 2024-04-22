@@ -228,7 +228,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh);
+    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
     /** */
     if (this.threadHash == "") {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
@@ -240,7 +240,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** chat-header */
     let maybeHeader = html``;
     const hasReachedBeginning = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
-    console.log("<chat-header> begin reached", hasReachedBeginning);
+    console.log("<chat-thread-view> begin reached", hasReachedBeginning);
     if (hasReachedBeginning) {
       maybeHeader = html`<chat-header .threadHash="${this.threadHash}"></chat-header>`;
     }
@@ -259,7 +259,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         let hr = html``;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
-        //console.log("thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime);
+        console.log("<chat-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime, blm.beadAh);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
           passedLog = true;

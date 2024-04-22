@@ -22,7 +22,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    /* await */ this.loadFile();
   }
 
   /** -- Properties -- */
@@ -35,9 +34,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   _filesDvm!: FilesDvm;
 
   @state() private _loading = true;
-  @state() private _manifest?: ParcelManifest;
-           private _maybeFile?: File;
-           private _maybeBlobUrl?: string;
+  @state() private _manifest?: ParcelManifest = undefined;
+           private _maybeFile: File | null = null;
+           private _maybeBlobUrl?: string = undefined;
 
 
   /** -- Methods -- */
@@ -59,7 +58,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   private async loadFile() {
-    console.log("<chat-file>.loadFile()", this.hash, this._filesDvm);
+    console.log("<chat-file>.loadFile()", this.hash);
     if (!this.hash || !this._filesDvm) {
       return;
     }
@@ -72,14 +71,15 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     try {
       const entryBead = beadInfoPair[1] as EntryBeadMat;
       const manifestEh = entryBead.sourceEh;
-      console.log("<chat-file>.loadFile() manifestEh", manifestEh);
+      console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
       //const beadInfoPair = this._filesDvm.filesZvm.perspective.loca[this.hash];
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(manifestEh));
-      console.log(`<chat-file>.loadFile() ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest);
+      console.log(`<chat-file>.loadFile() ${this.hash}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
       if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
         const mime = kind2mime(this._manifest.description.kind_info);
         //const fileType = kind2Type(this._manifest.description.kind_info);
         const data = await this._filesDvm.deliveryZvm.getParcelData(manifestEh);
+        //console.log("<chat-file>.loadFile() data len", data.length / 1024);
         this._maybeFile = this._filesDvm.data2File(this._manifest, data);
 
         const reader = new FileReader();
@@ -101,16 +101,18 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         reader.readAsArrayBuffer(this._maybeFile);
       } else {
         this._loading = false;
+        this._maybeFile = null;
       }
     } catch(e) {
       console.warn("Loading file failed:", this.hash, e);
       this._loading = false;
+      this._maybeFile = null;
     }
   }
 
 
   /** */
-  protected firstUpdated(_changedProperties: PropertyValues) {
+  protected /*async*/ firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     /*await*/ this.loadFile();
   }
@@ -118,7 +120,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-file>.render()", this.hash, this._loading, this._manifest/*this._dataHash*/);
+    console.log("<chat-file>.render()", this.hash, this._loading, this._manifest, this._maybeFile /*this._dataHash*/);
     if (this.hash == "") {
       return html`<div style="color:#c10a0a">${msg("No file selected")}</div>`;
     }
@@ -135,7 +137,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-list>`;
     }
     const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
-    console.log("<chat-file>.render() beadInfoPair", beadInfoPair);
+    //console.log("<chat-file>.render() beadInfoPair", beadInfoPair);
     if (!beadInfoPair) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
@@ -200,8 +202,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const mime = kind2mime(this._manifest.description.kind_info);
     //const fileType = kind2Type(this._manifest.description.kind_info);
 
-    //item = html`<div id="preview">File too big for preview</div>`;
-    if (this._maybeFile) {
+    if (this._maybeFile != null) {
       switch (fileType) {
         // case FileType.Text:
         //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
@@ -219,7 +220,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         //     break;
         case FileType.Audio:
           item = html`
-                        <audio id="preview" class="Audio" controls>
+                        <audio class="preview Audio" controls>
                             <source src=${this._maybeBlobUrl} type=${mime}>
                             Your browser does not support the audio element.
                         </audio>
@@ -228,15 +229,15 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         case FileType.Video:
           //  width="440" height="320"
           item = html`
-                        <video id="preview" class="Video" controls>
+                        <video class="preview Video" controls>
                             <source src=${this._maybeBlobUrl} type=${mime}>
                             Your browser does not support the video element.
                         </video>
                     `;
           break;
         default:
-          //preview = html`<div id="preview">Preview not available for this type</div>`;
-          item = html`<embed id="preview" class="${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
+          //preview = html`<div class="preview">Preview not available for this type</div>`;
+          item = html`<embed class="preview ${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
           break;
       }
     }
@@ -275,7 +276,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         }
 
 
-        #preview {
+        .preview {
           background: #ffffff;
           min-height: 40px;
           min-width: 40px;

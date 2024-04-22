@@ -921,7 +921,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return Promise.reject("No Thread data found for given ParticipationProtocol");
     }
     // const oldestTime = thread.beadLinksTree.begin.key;
-    const oldestTime = thread.probedUnion.begin;
+    const oldestTime = thread.probedUnion? thread.probedUnion.begin : undefined;
     const endTime = oldestTime? oldestTime : Date.now() * 1000;
     return this.probeLatestBeads(ppAh, undefined, endTime, limit);
   }
@@ -1423,7 +1423,9 @@ export class ThreadsZvm extends ZomeViewModel {
     //console.log("storeBeadInThread()", beadType);
     if (!this._threads.has(ppAh)) {
       await this.fetchPp(ppAh);
-      return;
+      if (!this._threads.has(ppAh)) {
+        return Promise.reject("Unknown ppAh");
+      }
     }
     const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType};
     const thread = this._threads.get(ppAh);

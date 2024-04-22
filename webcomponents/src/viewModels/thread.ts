@@ -172,7 +172,7 @@ export class Thread {
 
   /**  */
   addItem(blMat: BeadLinkMaterialized): void {
-    //console.log("ThreadInfo.addItem()", blMat.beadAh)
+    //console.log("Thread.addItem()", blMat.beadAh, this.pp.purpose)
     //this.print();
     if (this.has(blMat)) {
       return;
