@@ -44,6 +44,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_thread_logs",
 
 
+	"get_record_author",
 	"get_data_type",
 	"notify_peer",
 	"send_inbox_item",
@@ -62,6 +63,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"search_semantic_topics",
 	"get_topic",
 	"query_semantic_topics",
+	"update_semantic_topic",
 
 	"signal_peers",
 	"get_all_subjects",

@@ -1105,6 +1105,22 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  async editSemanticTopic(old_eh: EntryHashB64, title: string, preventStoring?: boolean) : Promise<EntryHashB64> {
+    const eh = await this.zomeProxy.updateSemanticTopic({eh: decodeHashFromBase64(old_eh), topic: {title}});
+    const ehB64 = encodeHashToBase64(eh);
+    this.unstoreSemanticTopic(old_eh);
+    if (!preventStoring) {
+      this.storeSemanticTopic(ehB64, title, false, false);
+    }
+    console.log("editSemanticTopic()", title, ehB64);
+    console.log("editSemanticTopic()", this._allSemanticTopics);
+    /** Done */
+    this.notifySubscribers();
+    return ehB64;
+  }
+
+
+  /** */
   async publishSemanticTopic(title: string, preventStoring?: boolean) : Promise<EntryHashB64> {
     const eh = await this.zomeProxy.createSemanticTopic({title});
     const ehB64 = encodeHashToBase64(eh);
@@ -1356,6 +1372,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   storeSemanticTopic(eh: EntryHashB64, title: string, isHidden: boolean, isNew: boolean): void {
+    //console.log("storeSemanticTopic()", title, Object.keys(this._allSemanticTopics).length);
     this._allSemanticTopics[eh] = [title, isHidden];
     // if (isNew && !this._newSubjects[eh]) {
     //   this._newSubjects[eh] = [];
@@ -1363,6 +1380,12 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
   }
 
+
+  /** */
+  unstoreSemanticTopic(eh: EntryHashB64): void {
+    delete this._allSemanticTopics[eh];
+    this.notifySubscribers();
+  }
 
   /** */
   storeNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64, setting: NotifySettingType, preventNotify?: boolean): void {

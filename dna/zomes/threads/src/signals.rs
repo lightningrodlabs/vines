@@ -51,6 +51,7 @@ pub enum DirectGossip {
     Ping(AgentPubKeyB64),
     Pong(AgentPubKeyB64),
 
+    UpdateSemanticTopic((EntryHashB64, EntryHashB64, String)), // oldTopicEh, newTopicEh, title
     NewSemanticTopic((EntryHashB64, String)), // topicEh, title
     NewPp((Timestamp, ActionHashB64, ParticipationProtocol)),
     NewBead((Timestamp, ActionHashB64, String, ActionHashB64, SerializedBytes)), // creation_time, beadAh, bead_type, ppAh, SerializedBytes specific to the bead_type

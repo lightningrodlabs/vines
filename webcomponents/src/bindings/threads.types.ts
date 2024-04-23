@@ -279,6 +279,12 @@ export interface SetNotifySettingInput {
   setting: NotifySetting
 }
 
+/** Input to the notify call */
+export interface UpdateTopicInput {
+  eh: EntryHash
+  topic: SemanticTopic
+}
+
 /**
  * 
  * Data sent by UI ONLY. That's why we use B64 here.
@@ -308,6 +314,7 @@ export interface WeaveSignal {
 export enum DirectGossipType {
 	Ping = 'Ping',
 	Pong = 'Pong',
+	UpdateSemanticTopic = 'UpdateSemanticTopic',
 	NewSemanticTopic = 'NewSemanticTopic',
 	NewPp = 'NewPp',
 	NewBead = 'NewBead',
@@ -316,6 +323,7 @@ export enum DirectGossipType {
 export type DirectGossip = 
  | {type: {Ping: null}, content: AgentPubKeyB64}
  | {type: {Pong: null}, content: AgentPubKeyB64}
+ | {type: {UpdateSemanticTopic: null}, content: [EntryHashB64, EntryHashB64, string]}
  | {type: {NewSemanticTopic: null}, content: [EntryHashB64, string]}
  | {type: {NewPp: null}, content: [Timestamp, ActionHashB64, ParticipationProtocol]}
  | {type: {NewBead: null}, content: [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array]}

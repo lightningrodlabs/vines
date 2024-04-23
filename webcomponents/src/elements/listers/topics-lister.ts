@@ -1,11 +1,11 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionHashB64} from "@holochain/client";
+import {ActionHashB64, EntryHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {CommentRequest} from "../../utils";
+import {CommentRequest, EditTopicRequest} from "../../utils";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../jump";
@@ -56,6 +56,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   onClickCommentTopic(maybeCommentThread: ActionHashB64 | null, ah: ActionHashB64, subjectName: string) {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ah, subjectType: SEMANTIC_TOPIC_TYPE_NAME, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
+  /** */
+  onClickEditTopic(topicHash: EntryHashB64, subjectName: string) {
+    this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', { detail: {topicHash, subjectName}, bubbles: true, composed: true }));
+
+  }
+
 
 
   /** */
@@ -262,22 +268,30 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      @mouseover=${(e) => {
                        const hide = this.shadowRoot.getElementById("hide-"+topicHash);
                        const cmt = this.shadowRoot.getElementById("cmt-"+topicHash);
+                       const edit = this.shadowRoot.getElementById("edit-"+topicHash);
                        if (hide) hide.style.display = "block";
                        if (cmt) cmt.style.display = "block";
+                       if (edit) edit.style.display = "block";
                      }}
                      @mouseout=${(e) => {
                        const hide = this.shadowRoot.getElementById("hide-"+topicHash);
                        const cmt = this.shadowRoot.getElementById("cmt-"+topicHash);
+                       const edit = this.shadowRoot.getElementById("edit-"+topicHash);
                        if (hide) hide.style.display = "none";
                        if (cmt) cmt.style.display = "none";
+                       if (edit) edit.style.display = "none";
                      }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
+                <!-- Edit not working properly -->
+                <!-- <ui5-button id=${"edit-"+topicHash} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
+                        style="border:none;display: none"
+                        @click="${(e) => this.onClickEditTopic(topicHash, title)}"></ui5-button>     -->            
                 ${topicHideBtn}                
                 ${topicCommentButton}
-                <ui5-button icon="add" tooltip="Create a new channel for this Topic" 
+                <ui5-button icon="add" tooltip=${msg("Create a new channel for this Topic")}
                             design="Transparent" 
                             style="color:grey"
                             @click=${async (e) => {

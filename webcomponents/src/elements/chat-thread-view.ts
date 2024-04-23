@@ -136,18 +136,15 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     // } catch(e) {
     //   /** i.e. element not present */
     // }
-
-
+    /** Scroll the list container to the requested bead */
     if (this.beadAh) {
       //console.log("<chat-threaded-view>.updated()", this.beadAh)
       const beadItem = this.shadowRoot.getElementById(`${this.beadAh}`);
       if (beadItem) {
         const scrollY = beadItem.offsetTop - this.offsetTop;
-        // Scroll the list container to the calculated position
         this.scrollTo({ top: scrollY, behavior: 'smooth' });
       }
     }
-
     /** Set background according to load state */
     if (this._loading)  {
       this.style.background = "#ececec";

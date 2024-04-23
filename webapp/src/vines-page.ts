@@ -76,6 +76,7 @@ import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/download.js"
+import "@ui5/webcomponents-icons/dist/edit.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
@@ -125,7 +126,7 @@ import {
   AnyLinkableHashB64, beadJumpEvent,
   ChatThreadView,
   CommentRequest, CommentThreadView,
-  doodle_flowers,
+  doodle_flowers, EditTopicRequest,
   event2type,
   globaFilesContext, InputBar, JumpDestinationType,
   JumpEvent,
@@ -284,6 +285,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   get createTopicDialogElem(): Dialog {
     return this.shadowRoot.getElementById("create-topic-dialog") as Dialog;
   }
+  get editTopicDialogElem(): Dialog {
+    return this.shadowRoot.getElementById("edit-topic-dialog") as Dialog;
+  }
 
   get createThreadDialogElem(): Dialog {
     return this.shadowRoot.getElementById("create-thread-dialog") as Dialog;
@@ -331,6 +335,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.createTopicDialogElem.close();
+  }
+
+
+  /** */
+  async onEditTopic(e) {
+    const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
+    const name = input.value.trim();
+    await this._dvm.editSemanticTopic(this.editTopicDialogElem.getAttribute('TopicHash'), name);
+    //console.log("onCreateList() res:", res)
+    input.value = "";
+    this.editTopicDialogElem.close();
   }
 
 
@@ -592,6 +607,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
+  }
+
+
+  /** */
+  async onEditTopicClicked(e: CustomEvent<EditTopicRequest>) {
+    console.log("onEditTopicClicked()", e.detail);
+    const request = e.detail;
+    const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
+    input.value = request.subjectName;
+    this.editTopicDialogElem.setAttribute('topicHash', request.topicHash);
+    this.editTopicDialogElem.open = true;
   }
 
 
@@ -987,7 +1013,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Render all */
     return html`
-        <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
+        <div id="mainDiv" 
+             @commenting-clicked=${this.onCommentingClicked} 
+             @edit-topic-clicked=${this.onEditTopicClicked} >
             <div id="leftSide" @contextmenu=${(e) => {
               console.log("LeftSide contextmenu", e);
                 // e.preventDefault();
@@ -1253,7 +1281,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ></vines-edit-profile>
         </ui5-dialog>
         <!-- CreateTopicDialog -->
-        <ui5-dialog id="create-topic-dialog" header-text="Create Topic">
+        <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
             <section>
                 <div>
                     <ui5-label for="topicTitleInput" required>Title:</ui5-label>
@@ -1273,6 +1301,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </ui5-button>
             </div>
         </ui5-dialog>
+          <!-- EditTopicDialog -->
+          <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
+              <section>
+                  <div>
+                      <ui5-label for="editTopicTitleInput" required>Title:</ui5-label>
+                      <ui5-input id="editTopicTitleInput" @keydown=${(e) => {
+                          if (e.keyCode === 13) {
+                              e.preventDefault();
+                              this.onEditTopic(e);
+                          }
+                      }}></ui5-input>
+                  </div>
+              </section>
+              <div slot="footer">
+                  <ui5-button id="createTopicDialogButton"
+                              style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>Create
+                  </ui5-button>
+                  <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
+                  </ui5-button>
+              </div>
+          </ui5-dialog>
         <!-- CreateThreadDialog -->
         <ui5-dialog id="create-thread-dialog" header-text="Create new channel">
             <section>

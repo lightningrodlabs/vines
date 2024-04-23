@@ -22,7 +22,6 @@ use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 
 
-
 #[hdk_extern]
 fn get_zome_info(_:()) -> ExternResult<ZomeInfo> {
   return zome_info();
@@ -35,15 +34,11 @@ fn get_dna_info(_:()) -> ExternResult<DnaInfo> {
 }
 
 
-// #[hdk_extern]
-// fn get_data_type(hash: AnyLinkableHash) -> ExternResult<String> {
-//   let data_type_name = zome_utils::get_data_type(hash.clone())?;
-//   if data_type_name == "App" {
-//     let (name, record) = zome_utils::get_app_entry_name(hash.into_any_dht_hash().unwrap())?;
-//     return Ok(name.0.into());
-//   }
-//   Ok(data_type_name)
-// }
+#[hdk_extern]
+fn get_record_author(dh: AnyDhtHash) -> ExternResult<AgentPubKey> {
+  return zome_utils::get_author(&dh);
+}
+
 
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
@@ -53,7 +48,7 @@ pub struct GetDataTypeInput {
   dna: Option<DnaHash>,
 }
 
-
+/// Return AppEntryName or data type name of data at hash in role or dna
 #[hdk_extern]
 fn get_data_type(input: GetDataTypeInput) -> ExternResult<String> {
   let data_type_name = zome_utils::get_data_type(input.hash.clone())?;

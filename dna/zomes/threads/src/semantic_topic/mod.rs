@@ -1,6 +1,7 @@
 
 mod create_semantic_topic;
 mod get_all_semantic_topics;
+mod update_semantic_topic;
 
 
 use hdi::hash_path::path::DELIMITER;

@@ -1,4 +1,4 @@
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, dhtLocationFrom32} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, dhtLocationFrom32, EntryHashB64} from "@holochain/client";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
@@ -72,6 +72,13 @@ export function timeSince(date: Date): string {
     return Math.floor(interval) + " minutes";
   }
   return Math.floor(seconds) + " seconds";
+}
+
+
+/** */
+export interface EditTopicRequest {
+  topicHash: EntryHashB64,
+  subjectName: string,
 }
 
 

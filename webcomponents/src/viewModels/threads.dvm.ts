@@ -194,6 +194,11 @@ export class ThreadsDvm extends DnaViewModel {
       case DirectGossipType.Ping:
       case DirectGossipType.Pong:
         break;
+      case DirectGossipType.UpdateSemanticTopic:
+        const [oldEh, newEh, newTitle] = gossip.content as [EntryHashB64, EntryHashB64, string];
+        this.threadsZvm.unstoreSemanticTopic(oldEh);
+        this.threadsZvm.storeSemanticTopic(newEh, newTitle, false, true);
+        break;
       case DirectGossipType.NewSemanticTopic:
         const [stEh, title] = gossip.content as [EntryHashB64, string];
         this.threadsZvm.storeSemanticTopic(stEh, title, false, true);
@@ -297,6 +302,15 @@ export class ThreadsDvm extends DnaViewModel {
     return ah;
   }
 
+
+
+  /** */
+  async editSemanticTopic(old_eh: EntryHashB64, title: string): Promise<EntryHashB64> {
+    let eh = await this.threadsZvm.editSemanticTopic(old_eh, title);
+    const signal: WeaveSignal = this.createGossipSignal({type: {UpdateSemanticTopic: null}, content: [old_eh, eh, title]});
+    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    return eh;
+  }
 
 
   /** */
