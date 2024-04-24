@@ -7,7 +7,7 @@ import {
   DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
-  Timestamp,
+  Timestamp, ZomeName,
 } from "@holochain/client";
 import {
   AnyBead,
@@ -31,7 +31,7 @@ import {
   WeaveSignal,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
-import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
+import {CellProxy, Dictionary, DnaViewModel, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
@@ -57,7 +57,7 @@ import {TimeInterval} from "./timeInterval";
 import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {encode} from "@msgpack/msgpack";
-import {weaveUrlToWal} from "../utils";
+import {MAIN_SUBJECT_HASH, weaveUrlToWal} from "../utils";
 import {generateSearchTest, SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
@@ -72,6 +72,13 @@ export class ThreadsZvm extends ZomeViewModel {
 
   static readonly ZOME_PROXY = ThreadsProxy;
   get zomeProxy(): ThreadsProxy {return this._zomeProxy as ThreadsProxy;}
+
+
+  constructor(cellProxy: CellProxy, dvmParent: DnaViewModel, zomeName?: ZomeName) {
+    super(cellProxy, dvmParent, zomeName);
+    this.storeSemanticTopic(MAIN_SUBJECT_HASH, "__main", false, false);
+  }
+
 
   /* */
   protected hasChanged(): boolean {
@@ -131,7 +138,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** ah -> Subject */
   private _allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
   /** eh -> (title, isHidden) */
-  private _allSemanticTopics: Dictionary<[string, boolean]> = {};
+  private _allSemanticTopics: Dictionary<[string, boolean]> = { };
   ///** ah -> ParticipationProtocol */
   //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> (BeadInfo, Bead) */

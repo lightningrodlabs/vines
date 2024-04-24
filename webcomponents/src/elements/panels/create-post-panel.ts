@@ -7,36 +7,23 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-
-
-/** */
-export interface CreateThreadRequest {
-  purpose: string,
-  rules: string,
-  wurl: string,
-}
 
 
 /**
  * @element
  */
-@customElement("create-thread-panel")
-export class CreateThreadPanel extends LitElement {
+@customElement("create-post-panel")
+export class CreatePostPanel extends LitElement {
 
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
+
   /** */
   onCreate() {
-    /** */
-    const input: CreateThreadRequest = {
-      purpose: (this.shadowRoot.getElementById("purposeInput") as Input).value,
-      wurl: (this.shadowRoot.getElementById("wurlInput") as Input).value,
-      rules: "N/A",
-    }
-    this.dispatchEvent(new CustomEvent<CreateThreadRequest>('create', {detail: input, bubbles: true, composed: true}))
+    const content = (this.shadowRoot.getElementById("purposeInput") as Input).value;
+    this.dispatchEvent(new CustomEvent('create', {detail: content, bubbles: true, composed: true}))
   }
 
 
@@ -45,21 +32,9 @@ export class CreateThreadPanel extends LitElement {
     return html`
       <section>
           <div>
-            <ui5-label for="purposeInput" required>Purpose:</ui5-label>
-            <ui5-input id="purposeInput" value=${msg('comment')}></ui5-input>
+            <ui5-label for="purposeInput" required>Content:</ui5-label>
+            <ui5-input id="purposeInput" value=${msg('Message')}></ui5-input>
           </div>
-          <div>
-              <ui5-label for="wurlInput" required>Subject weaveURL:</ui5-label>
-              <ui5-input id="wurlInput"></ui5-input>
-              <ui5-button icon="add" @click=${async (e) => {
-                  const maybeWal = await this.weServices.userSelectWal();
-                  if (!maybeWal) {
-                      return;
-                  }
-                  const input = this.shadowRoot.getElementById("wurlInput") as Input;
-                  input.value = weaveUrlFromWal(maybeWal);
-              }}></ui5-button>              
-          </div>          
       </section>
       <div slot="footer" class="footer">
         <ui5-button style="margin-top:5px" design="Emphasized" @click=${(e) => this.onCreate()}>

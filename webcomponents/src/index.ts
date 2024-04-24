@@ -19,6 +19,11 @@ export * from './elements/wurl-link';
 export * from './elements/peer-list';
 export * from './elements/side-item';
 
+export * from './elements/post-item';
+export * from './elements/post-header';
+export * from './elements/post-thread-view';
+
+export * from './elements/panels/create-post-panel';
 export * from './elements/panels/create-thread-panel';
 export * from './elements/panels/edit-profile';
 export * from './elements/panels/profile-panel';

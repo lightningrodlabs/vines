@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      media="(prefers-color-scheme:light)"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.4.0/dist/themes/light.css"
+    />
+    <style type="text/css" data-ui5-font-face="">
+      /* Works on Firefox */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(76, 76, 77, 0.22) rgba(178, 150, 99, 0.1);
+      }
+
+      @font-face {
+        font-family: "72";
+        font-style: normal;
+        font-weight: 200;
+        font-display: swap;
+        src: local("72-Light"),
+        url(https://sdk.openui5.org/resources/sap/ui/core/themes/sap_fiori_3/fonts/72-Light.woff2?ui5-webcomponents) format("woff2");
+      }
+    </style>
+  </head>
+  <body style="margin:0px;">
+    <community-feed-app></community-feed-app>
+    <script type="module">
+      import { CommunityFeedApp } from "./";
+    </script>
+  </body>
+</html>

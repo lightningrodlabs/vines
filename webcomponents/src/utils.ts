@@ -1,4 +1,11 @@
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, dhtLocationFrom32, EntryHashB64} from "@holochain/client";
+import {
+  ActionHashB64,
+  AgentPubKeyB64,
+  decodeHashFromBase64,
+  dhtLocationFrom32,
+  encodeHashToBase64,
+  EntryHashB64
+} from "@holochain/client";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
@@ -151,6 +158,11 @@ export function emptyAgentPubKey() {
   return emptyValidHash([0x84, 0x20, 0x24]);
 }
 
+export function emptyActionHash() {
+  return emptyValidHash([0x84, 0x29, 0x24]);
+}
+
+export const MAIN_SUBJECT_HASH = encodeHashToBase64(emptyActionHash());
 
 
 /** We  */
