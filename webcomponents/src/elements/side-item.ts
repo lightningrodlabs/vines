@@ -39,7 +39,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   @property() new: boolean = false;
 
-  @property({type: Boolean}) shortmenu: boolean = false;
+  @property() deletable: boolean = false;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -159,7 +159,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("renderSideBead() infoPair", this.hash);
+    console.log("<side-item>.render()", this.hash, this.deletable);
 
     const [content, author, date] = this.renderContent();
     const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
@@ -180,6 +180,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
                 <span class="sideAgentName">${agentName}</span>
                 <span class="sideChatDate"> ${date}</span>
             </div>
+            <div style="flex-grow: 1"></div>
+            ${this.deletable? html`<ui5-button icon="decline" design="Transparent"
+            @click=${(e) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
         </div>
         <div class="sideContentRow">
           ${content}

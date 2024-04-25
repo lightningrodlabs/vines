@@ -202,7 +202,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       toasty("Message added to favorites");
     } else {
       await this._dvm.threadsZvm.removeFavorite(beadAh);
-      toasty("Message removed to favorites");
+      toasty("Message removed from favorites");
     }
   }
 

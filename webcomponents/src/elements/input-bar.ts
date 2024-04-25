@@ -12,6 +12,7 @@ import {AgentPubKeyB64} from "@holochain/client";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderAvatar} from "../render";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -339,13 +340,13 @@ export class InputBar extends LitElement {
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
             ${this.showHrlBtn? html`
-            <ui5-button design="Transparent" icon="add" @click=${(e) => {
-                this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));
-            }}></ui5-button>` : html``}
+            <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
+                        @click=${(e) => {this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));}}>
+            </ui5-button>` : html``}
             ${this.showFileBtn? html`
-            <ui5-button design="Transparent" icon="attachment" @click=${(e) => {
-                this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));
-            }}></ui5-button>` : html``}
+            <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
+                        @click=${(e) => {this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));}}>
+            </ui5-button>` : html``}
             <!--<div style="min-width:20px; min-height:20px; background:red;">${this.cachedInput}</div>-->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
                           placeholder="Message #${this.topic}, @ to mention"

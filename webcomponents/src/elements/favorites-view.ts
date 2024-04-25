@@ -18,6 +18,7 @@ import {globaFilesContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {FilesDvm} from "@ddd-qc/files";
+import {toasty} from "../toast";
 
 
 /**
@@ -104,7 +105,11 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     const bg_color = this._loading? "#ededf0" : "#ffffff"
 
     let beadLi = this._dvm.threadsZvm.perspective.favorites
-      .map((beadAh) => html`<side-item .hash=${beadAh}></side-item>`);
+      .map((beadAh) => html`<side-item .hash=${beadAh} deletable="true" 
+                                       @deleted=${async(e) => {
+                                        await this._dvm.threadsZvm.removeFavorite(beadAh);
+                                        toasty("Message removed from favorites");
+                                    }}></side-item>`);
 
     /** Different UI if no message found for thread */
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {

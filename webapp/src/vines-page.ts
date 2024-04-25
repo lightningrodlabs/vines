@@ -72,6 +72,7 @@ import "@ui5/webcomponents-icons/dist/customer.js"
 import "@ui5/webcomponents-icons/dist/document.js"
 import "@ui5/webcomponents-icons/dist/document-text.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
+import "@ui5/webcomponents-icons/dist/decline.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
@@ -1232,7 +1233,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text="Notification settings">
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this channel")}>
                     <div  style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
                         <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>
