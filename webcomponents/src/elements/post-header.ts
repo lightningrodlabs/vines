@@ -62,7 +62,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     }
     const mainThreadAh = threads[0];
 
-    console.log(`Commit input value "${this.inputElem.value}"`);
+    console.log(`commitInput() value "${this.inputElem.value}"`, mainThreadAh);
     //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
 
     const inputText = this.inputElem.value;

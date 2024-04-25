@@ -327,10 +327,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
     const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
     let threadHash = this.selectedThreadHash;
-    if (this._currentCommentRequest) {
-      threadHash = await this.createCommentThread(this._currentCommentRequest);
-      this._currentCommentRequest = undefined;
-    }
     let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, this.cell.agentPubKey, mentionedAgents);
     console.log("onCreateTextMessage() res:", res);
 
@@ -574,49 +570,29 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   async onCommentingClicked(e: CustomEvent<CommentRequest>) {
-    console.log("onCommentingClicked()", e.detail);
-    const request = e.detail;
-
-    if (request.viewType == "side") {
-      const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
-      this._canShowComments = true;
-      /** Save input field before switching */
-      if (this._selectedCommentThreadHash) {
-        const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
-        if (commentView) {
-          this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
-        }
-      }
-      this._selectedCommentThreadHash = threadHash;
-      //this._selectedCommentThreadSubjectName = request.subjectName;
-      return;
-    }
-
-    if (!request.maybeCommentThread) {
-      this._currentCommentRequest = request;
-      //this._selectedThreadSubjectName = request.subjectName;
-      return;
-    }
-  }
-
-
-  /** */
-  async createCommentThread(request: CommentRequest) {
-    const subject: Subject = {
-        hash: decodeHashFromBase64(request.subjectHash),
-        typeName: request.subjectType,
-        appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
-        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-    };
-    const pp: ParticipationProtocol = {
-        purpose: "comment",
-        rules: "N/A",
-        subject,
-        subject_name: request.subjectName,
-        //subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
-    };
-    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
-    return ppAh;
+    // console.log("onCommentingClicked()", e.detail);
+    // const request = e.detail;
+    //
+    // if (request.viewType == "side") {
+    //   const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
+    //   this._canShowComments = true;
+    //   /** Save input field before switching */
+    //   if (this._selectedCommentThreadHash) {
+    //     const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
+    //     if (commentView) {
+    //       this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
+    //     }
+    //   }
+    //   this._selectedCommentThreadHash = threadHash;
+    //   //this._selectedCommentThreadSubjectName = request.subjectName;
+    //   return;
+    // }
+    //
+    // if (!request.maybeCommentThread) {
+    //   this._currentCommentRequest = request;
+    //   //this._selectedThreadSubjectName = request.subjectName;
+    //   return;
+    // }
   }
 
 
@@ -894,7 +870,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                           }}>
                   <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
               </ui5-avatar>
-              <ui5-button id="groupBtn" tooltip slot="startButton"
+              <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
                           style="margin-top:10px;"
                           design="Transparent" icon="navigation-down-arrow"
                           @click=${(e) => {
@@ -911,7 +887,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                             ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
                             : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>`}
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
-              </ui5-menu>
+              </ui5-menu> -->
                     <ui5-button id="settingsBtn"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}                                
                                 style="margin-top:10px;"

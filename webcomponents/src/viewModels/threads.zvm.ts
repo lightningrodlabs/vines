@@ -930,6 +930,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async createNextBead(ppAh: ActionHashB64): Promise<Bead> {
+    console.log("createNextBead()", ppAh);
     /** Figure out last known bead for this thread */
     let thread = this._threads.get(ppAh);
     if (!thread) {

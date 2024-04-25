@@ -5,12 +5,12 @@ import {consume} from "@lit/context";
 import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {materializeSubject, ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
 import {threadJumpEvent} from "../jump";
-import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
+import {globaFilesContext, onlineLoadedContext, THIS_APPLET_ID, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
@@ -20,8 +20,8 @@ import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
-import {popoverStyleTemplate} from "../styles";
-import {determineBeadName} from "../utils";
+import {CommentRequest, determineBeadName, determineSubjectName, parseMentions} from "../utils";
+import {ParticipationProtocol, Subject, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -116,12 +116,11 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, subjectType?: string, viewType?: string) {
-    this.dispatchEvent(new CustomEvent('commenting-clicked', {
-      detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
-      bubbles: true,
-      composed: true,
-    }));
+  onClickComment() {
+    const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    const typed = this._dvm.threadsZvm.getBead(this.hash);
+    const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
   }
 
 
@@ -154,11 +153,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       case "removeFavorite": this.updateFavorite(this.hash, false); break;
       case "viewComments":
       case "createCommentThread":
-        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-        const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
-        const typed = this._dvm.threadsZvm.getBead(this.hash);
-        const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
-        this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
+        this.onClickComment(/*maybeCommentThread, beadName, beadInfo.beadType, "side"*/);
       break;
       case "intoHrl":
         this.copyMessageLink();
@@ -181,6 +176,45 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** */
+  async onCreateComment(inputText: string) {
+    let commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    if (!commentThreadAh) {
+      await this._dvm.threadsZvm.probeSubjectThreads(this.hash);
+      commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+      if (!commentThreadAh) {
+        console.log("Missing Comment thread. Creating it");
+        commentThreadAh = await this.createCommentThread(this.hash);
+      }
+    }
+    const agentsToNotify = parseMentions(inputText, this._dvm.profilesZvm);
+    /** Publish */
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentPubKey, agentsToNotify);
+    console.log("onCreateComment() ah:", ah);
+  }
+
+
+
+
+  /** */
+  async createCommentThread(beadAh: ActionHashB64): Promise<ActionHashB64> {
+    const subject: Subject = {
+      hash: decodeHashFromBase64(beadAh),
+      typeName: ThreadsEntryType.EntryBead,
+      appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
+      dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+    };
+    const pp: ParticipationProtocol = {
+      purpose: "comment",
+      rules: "N/A",
+      subject,
+      //subject_name: request.subjectName,
+      subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
+    };
+    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
+    return ppAh;
+  }
+
 
   /** */
   render() {
@@ -193,11 +227,15 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       return html`<div>No posts found</div>`;
     }
     const beadInfo = tuple[0];
-    //const typed = this._dvm.threadsZvm.getBead(first.beadAh);
     /** Determine the comment button to display depending on current comments for this message */
     let postContent = html`<chat-text class="contentItem" .hash=${this.hash}></chat-text>`;
 
-    //let comments = thread.beadLinksTree.values;
+    const commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    let commentThread = undefined;
+    if (commentThreadAh) {
+      commentThread = this.threadsPerspective.threads.get(commentThreadAh);
+    }
+
 
 
     const menuButton = html`
@@ -210,9 +248,6 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                         menu.showAt(btn);
                     }}></ui5-button>`;
 
-    const reactionButton = html`
-              <ui5-button id="add-reaction-btn" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
-                          @click=${(_e) => this.onClickAddEmoji()}></ui5-button>`;
 
     const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
     const starButton = isFavorite? html`
@@ -230,12 +265,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
-
-    const id = "post-item__" + this.hash;
-
     const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
-
-    const hasComments = false;  // FIXE
 
     /** render all */
     return html`
@@ -267,29 +297,41 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <div style="display:flex; flex-direction:row; color:#686767">
             <emoji-bar .hash=${this.hash}></emoji-bar>
             <div style="flex-grow:1"></div>
-            <div>x comments</div>
+            <div>${!commentThread? html`` : html`${commentThread.beadLinksTree.values.length} comments`}</div>
         </div>
         <!-- Footer Action Row -->
-        <hr style="width: 100%; margin-bottom:0px;"/>
+        <hr/>
         <div style="display:flex; flex-direction:row; gap:5px; color:#686767">
             <!-- <div style="flex-grow:1; text-align: center;" @click=${(_e) => this.onClickAddEmoji()}>Like</div> -->
             <ui5-button id="add-reaction-btn" style="flex-grow:1; text-align: center;" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
                         @click=${(_e) => this.onClickAddEmoji()}>Like</ui5-button>
-            <div style="flex-grow:1; text-align: center;">Comment</div>
+            <!-- <div style="flex-grow:1; text-align: center;">Comment</div> -->
+            <ui5-button id="share-btn" style="flex-grow:1; text-align: center;" icon="comment" design="Transparent" style="border:none;"
+                        @click=${(_e) => this.onClickComment()}>Comment</ui5-button>
             <!-- <div style="flex-grow:1; text-align: center;">Share</div> -->
             <ui5-button id="share-btn" style="flex-grow:1; text-align: center;" icon="forward" design="Transparent" style="border:none;"
                         @click=${(_e) => this.copyMessageLink()}>Share</ui5-button>
         </div>
-            
+        <hr/>
         <!-- Comments row -->
         <div style="display:flex; flex-direction:column;">
+            ${commentThreadAh? html`<post-comment-thread-view .threadHash=${commentThreadAh}></post-comment-thread-view>` : html``}
         </div>
-          
         <!-- Input Row -->
-        <div>
-            <vines-input-var></vines-input-var>
+        <div id="inputRow">
+            ${renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "XS")}
+            <vines-input-bar id="input-bar"
+                             style="flex-grow:1;"
+                             background="#eee"
+                             .profilesZvm=${this._dvm.profilesZvm}
+                             topic="comment"
+                             .cachedInput=${this._dvm.perspective.threadInputs[this.hash]? this._dvm.perspective.threadInputs[this.hash] : ""}
+                             showFileBtn="true"
+                             @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}
+                             @upload=${(e) => {e.preventDefault();}}
+                             @grab_hrl=${async (e) => {e.preventDefault();}}
+            ></vines-input-bar>
         </div>
-          
         <!-- Popovers -->
         <ui5-popover id="emojiPopover" header-text="Add Reaction">
             <emoji-picker id="emoji-picker" class="light" 
@@ -337,18 +379,21 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
           border-radius: 6px;
         }
 
+        hr {
+          width: 100%;
+          margin: 0px;
+        }
+        
         #avatarColumn:hover {
           cursor: pointer;
         }
 
-        #buttonsPop::part(content) {
-          padding: 0px;
+        #inputRow {
+          display: flex;
+          flex-direction: row;
+          gap:5px;
         }
-
-        .hovered {
-          background: #d8e2f6;
-        }
-
+        
         #titleRow {
           display: flex;
           flex-direction: row;

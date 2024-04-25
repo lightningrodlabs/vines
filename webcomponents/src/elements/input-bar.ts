@@ -32,6 +32,9 @@ export class InputBar extends LitElement {
   showHrlBtn?: string;
 
   @property()
+  background?: string;
+
+  @property()
   showFileBtn?: string;
 
   @property({type: Object})
@@ -96,6 +99,11 @@ export class InputBar extends LitElement {
       this.inputElem.value = this.cachedInput;
       //console.log("<vines-input-var> (jump) updated to", this.cachedInput);
       //this.requestUpdate();
+    }
+    if (this.background) {
+      const elem = this.shadowRoot.getElementById('inputBar') as HTMLElement;
+      elem.style.background = this.background;
+      elem.style.borderRadius = "20px";
     }
   }
 

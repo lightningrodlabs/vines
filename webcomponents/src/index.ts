@@ -22,6 +22,8 @@ export * from './elements/side-item';
 export * from './elements/post-item';
 export * from './elements/post-header';
 export * from './elements/post-thread-view';
+export * from './elements/post-comment-thread-view';
+export * from './elements/post-comment-item';
 
 export * from './elements/panels/create-post-panel';
 export * from './elements/panels/create-thread-panel';
