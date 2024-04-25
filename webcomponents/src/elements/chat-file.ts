@@ -77,11 +77,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       console.log(`<chat-file>.loadFile() ${this.hash}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
       if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
         const mime = kind2mime(this._manifest.description.kind_info);
-        //const fileType = kind2Type(this._manifest.description.kind_info);
+        const fileType = kind2Type(this._manifest.description.kind_info);
+        console.log("<chat-file>.loadFile() fileType", fileType);
+        if (fileType == "Binary" || fileType == "Zip" || fileType == "Other") {
+            this._loading = false;
+            this._maybeFile = null;
+            return;
+        }
         const data = await this._filesDvm.deliveryZvm.getParcelData(manifestEh);
-        //console.log("<chat-file>.loadFile() data len", data.length / 1024);
+        console.log("<chat-file>.loadFile() data", data.length);
         this._maybeFile = this._filesDvm.data2File(this._manifest, data);
-
         const reader = new FileReader();
         if (this._maybeBlobUrl) {
           URL.revokeObjectURL(this._maybeBlobUrl);
