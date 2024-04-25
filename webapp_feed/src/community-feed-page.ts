@@ -83,6 +83,7 @@ import "@ui5/webcomponents-icons/dist/feedback.js"
 import "@ui5/webcomponents-icons/dist/favorite.js"
 import "@ui5/webcomponents-icons/dist/favorite-list.js"
 import "@ui5/webcomponents-icons/dist/flag.js"
+import "@ui5/webcomponents-icons/dist/forward.js"
 import "@ui5/webcomponents-icons/dist/group.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
@@ -129,7 +130,7 @@ import {
   doodle_flowers, EditTopicRequest,
   event2type,
   globaFilesContext, InputBar, JumpDestinationType,
-  JumpEvent,
+  JumpEvent, MAIN_TOPIC_HASH,
   NotifySettingType, onlineLoadedContext,
   parseMentions,
   ParticipationProtocol, ProfilePanel, searchFieldStyleTemplate,
@@ -156,13 +157,11 @@ import {FrameNotification, GroupProfile, weaveUrlFromWal} from "@lightningrodlab
 import {consume} from "@lit/context";
 
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
-import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
-import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
-import {composeNotificationTitle, loadProfile, renderAvatar} from "@vines/elements/dist/render";
+import {composeNotificationTitle} from "@vines/elements/dist/render";
 import {toasty} from "@vines/elements/dist/toast";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
@@ -299,15 +298,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    //newDvm.probeAll();
-    // if (this.weServices) {
-    //   const appletInfo = await this.weServices.appletInfo(a)
-    //   const groupProfile = await this.weServices.groupProfile(decodeHashFromBase64(newDvm.cell.dnaHash));
-    //   console.log("dvmUpdated() groupProfile", groupProfile);
-    // }
-    this.selectedThreadHash = '';
+
     this.selectedBeadAh = '';
-    this._listerToShow = newDvm.cell.dnaHash;
   }
 
 
@@ -369,12 +361,17 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
-  ///** */
-  //shouldUpdate(changedProperties: PropertyValues<this>): boolean {
-  //  const canUpdate = super.shouldUpdate(changedProperties);
-  //  console.log("<community-feed-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
-  //  return canUpdate;
-  //}
+  /** */
+  shouldUpdate(changedProperties: PropertyValues<this>): boolean {
+    const canUpdate = super.shouldUpdate(changedProperties);
+    if (!canUpdate) {
+      return false;
+    }
+    //console.log("<community-feed-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
+    const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    console.log("<community-feed-page>.shouldUpdate() mainThreadContext", threads);
+    return threads && threads.length > 0;
+  }
 
 
   /** After first render only */
@@ -1151,7 +1148,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     return [
       css`
         :host {
-          background: #FBFCFD;
+          /*background: #FBFCFD;*/
+          background: white;
           display: block;
           height: 100vh;
           width: 100vw;

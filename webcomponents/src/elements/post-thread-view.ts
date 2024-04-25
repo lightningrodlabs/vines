@@ -7,9 +7,8 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {ts2day} from "../render";
 import {onlineLoadedContext} from "../contexts";
-import {emptyActionHash, MAIN_SUBJECT_HASH} from "../utils";
+import {MAIN_TOPIC_HASH} from "../utils";
 
 
 /**
@@ -26,8 +25,8 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  /** Hash of Thread to display */
-  @property() threadHash: string = ''
+  /** Hash of Post to display */
+  @property() beadAh: ActionHashB64 = ''
 
   /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
   @property()
@@ -123,9 +122,9 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected async updated(_changedProperties: PropertyValues) {
     /** Scroll the list container to the requested bead */
-    if (this.threadHash) {
+    if (this.beadAh) {
       //console.log("<post-thread-view>.updated()", this.beadAh)
-      const item = this.shadowRoot.getElementById(`${this.threadHash}`);
+      const item = this.shadowRoot.getElementById(`${this.beadAh}`);
       if (item) {
         const scrollY = item.offsetTop - this.offsetTop;
         this.scrollTo({ top: scrollY, behavior: 'smooth' });
@@ -135,7 +134,8 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this._loading)  {
       this.style.background = "#ececec";
     } else {
-      this.style.background = "#FBFCFD";
+      //this.style.background = "#FBFCFD";
+      this.style.background = "white";
     }
   }
 
@@ -158,7 +158,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   protected loadlatestThreads(newDvm?: ThreadsDvm) {
     console.log("<post-thread-view>.loadlatestThreads() probe", !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.probeSubjectThreads(MAIN_SUBJECT_HASH)
+    dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH)
       .then(async (pps) => {
         this._loading = false;
         await dvm.threadsZvm.commitGlobalProbeLog();
@@ -168,14 +168,15 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async loadPreviousThreads(): Promise<void> {
-    const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
+  async loadPreviousPosts(): Promise<void> {
+    const mainThreadAh = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH][0];
+    const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(mainThreadAh);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {
       return;
     }
     this._loading = true;
-    const bls = await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
+    const bls = await this._dvm.threadsZvm.probePreviousBeads(mainThreadAh, 10);
     this._loading = false;
     await this.loadThreadComments(bls, this._dvm);
   }
@@ -185,33 +186,37 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   async onWheel(event) {
     //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
     if (this.clientHeight - this.scrollHeight == this.scrollTop) {
-      await this.loadPreviousThreads();
+      await this.loadPreviousPosts();
     }
   }
 
 
   /** */
   render() {
-    console.log("<post-thread-view>.render()", this._loading, this.threadHash, this._dvm.threadsZvm);
-    const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
+    console.log("<post-thread-view>.render()", this._loading, this.beadAh, this._dvm.threadsZvm);
+
+    const threads = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    if (!threads || threads.length == 0) {
+      return html`<div>error</div>`;
+    }
+    const mainThreadAh = threads[0];
+    const thread = this._dvm.threadsZvm.perspective.threads.get(mainThreadAh);
 
     //const all = thread.getAll();
-    const all = this.threadsPerspective.threadsPerSubject[MAIN_SUBJECT_HASH];
     let passedLog = false;
 
-    let threadItems = Object.values(all).map(
-      (ppAh) => {
-        console.log("<post-thread-view> ppAh", ppAh, this.threadsPerspective);
+    let postItems = Object.values(thread.beadLinksTree.values).map(
+      (blm) => {
+        console.log("<post-thread-view> blm", blm, this.threadsPerspective);
         /** 'new' if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[ppAh];
-        const thread = this.threadsPerspective.threads.get(ppAh);
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[mainThreadAh];
         console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
-        if (!passedLog && thread.creationTime > initialProbeLogTs) {
+        if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
         }
         return html`
-            <post-item id=${(ppAh)} .hash=${(ppAh)}
-                       style="${ppAh == this.threadHash? "background:#c4f2b07a" : ""}">
+            <post-item id=${(blm.beadAh)} .hash=${(blm.beadAh)}
+                       style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}">
         </post-item>`;
       }
     );
@@ -219,9 +224,9 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <post-header .threadHash="${this.threadHash}"></post-header>
+        <post-header></post-header>
         ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
-        ${threadItems}
+        ${postItems.reverse()}
     `;
   }
 
@@ -232,11 +237,11 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       css`
         :host {
           min-width: 400px;
+          width: 650px;
           display: flex;
           flex-direction: column;
-          gap:15px;
+          gap:25px;
           height: 100%;
-          background: #FBFCFD;
           font-family: '72-Light';
         }
       `,

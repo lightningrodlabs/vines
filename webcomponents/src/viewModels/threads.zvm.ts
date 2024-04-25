@@ -57,7 +57,7 @@ import {TimeInterval} from "./timeInterval";
 import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {encode} from "@msgpack/msgpack";
-import {MAIN_SUBJECT_HASH, weaveUrlToWal} from "../utils";
+import {MAIN_TOPIC_HASH, weaveUrlToWal} from "../utils";
 import {generateSearchTest, SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
@@ -72,12 +72,6 @@ export class ThreadsZvm extends ZomeViewModel {
 
   static readonly ZOME_PROXY = ThreadsProxy;
   get zomeProxy(): ThreadsProxy {return this._zomeProxy as ThreadsProxy;}
-
-
-  constructor(cellProxy: CellProxy, dvmParent: DnaViewModel, zomeName?: ZomeName) {
-    super(cellProxy, dvmParent, zomeName);
-    this.storeSemanticTopic(MAIN_SUBJECT_HASH, "__main", false, false);
-  }
 
 
   /* */

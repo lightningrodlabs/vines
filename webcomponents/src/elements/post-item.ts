@@ -116,16 +116,6 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
-    /** Fiddle with shadow CSS */
-    const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
-    if (popover) {
-      popover.shadowRoot.appendChild(popoverStyleTemplate.content.cloneNode(true));
-    }
-  }
-
-
-  /** */
   onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, subjectType?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
       detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
@@ -138,10 +128,21 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   onClickAddEmoji() {
     const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
-    const btn = this.shadowRoot.getElementById("buttonsPop") as HTMLElement;
+    const btn = this.shadowRoot.getElementById("add-reaction-btn") as HTMLElement;
     popover.showAt(btn);
   }
 
+
+  /** */
+  copyMessageLink() {
+    const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+    const wurl = weaveUrlFromWal({hrl});
+    navigator.clipboard.writeText(wurl);
+    if (this.weServices) {
+      this.weServices.walToPocket({hrl});
+    }
+    toasty(("Copied Message's WAL to clipboard"));
+  }
 
 
   /** */
@@ -160,13 +161,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
       case "intoHrl":
-        const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
-        const wurl = weaveUrlFromWal({hrl});
-        navigator.clipboard.writeText(wurl);
-        if (this.weServices) {
-          this.weServices.walToPocket({hrl});
-        }
-        toasty(("Copied Message's WAL to clipboard"));
+        this.copyMessageLink();
       break;
       case "copyText": /* TODO */break;
       case "flagMessage": /* TODO */  break;
@@ -191,19 +186,18 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<post-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
     if (this.hash == "") {
-      return html`<div>No thread selected</div>`;
+      return html`<div>No post selected</div>`;
     }
-    const thread = this.threadsPerspective.threads.get(this.hash);
-    const first = thread.getFirst(1)[0];
-    const beadInfo = this._dvm.threadsZvm.getBeadInfo(first.beadAh);
-    if (!beadInfo) {
-      return html`<div>Unknown bead hash</div>`;
+    const tuple = this.threadsPerspective.beads[this.hash];
+    if (!tuple) {
+      return html`<div>No posts found</div>`;
     }
+    const beadInfo = tuple[0];
     //const typed = this._dvm.threadsZvm.getBead(first.beadAh);
     /** Determine the comment button to display depending on current comments for this message */
     let postContent = html`<chat-text class="contentItem" .hash=${this.hash}></chat-text>`;
 
-    let comments = thread.beadLinksTree.values;
+    //let comments = thread.beadLinksTree.values;
 
 
     const menuButton = html`
@@ -232,7 +226,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     }}"></ui5-button>
     `;
 
-    let sideButtons= [starButton, menuButton];
+    let sideButtons= [/*starButton,*/ menuButton];
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
@@ -253,7 +247,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                   @click=${(e) => {
                     e.stopPropagation();
                     this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-            ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
+            ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "XS")}
           </div>
           <!-- Info column -->
           <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto">
@@ -270,16 +264,21 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <!-- Content Row -->
         ${postContent}
         <!-- Reaction Row -->
-        <div style="display: flex; flex-direction: row">
+        <div style="display:flex; flex-direction:row; color:#686767">
             <emoji-bar .hash=${this.hash}></emoji-bar>
             <div style="flex-grow:1"></div>
             <div>x comments</div>
         </div>
         <!-- Footer Action Row -->
-        <div style="display: flex; flex-direction: row">
-            <div>Like</div>
-            <div>Comment</div>
-            <div>Share</div>
+        <hr style="width: 100%; margin-bottom:0px;"/>
+        <div style="display:flex; flex-direction:row; gap:5px; color:#686767">
+            <!-- <div style="flex-grow:1; text-align: center;" @click=${(_e) => this.onClickAddEmoji()}>Like</div> -->
+            <ui5-button id="add-reaction-btn" style="flex-grow:1; text-align: center;" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
+                        @click=${(_e) => this.onClickAddEmoji()}>Like</ui5-button>
+            <div style="flex-grow:1; text-align: center;">Comment</div>
+            <!-- <div style="flex-grow:1; text-align: center;">Share</div> -->
+            <ui5-button id="share-btn" style="flex-grow:1; text-align: center;" icon="forward" design="Transparent" style="border:none;"
+                        @click=${(_e) => this.copyMessageLink()}>Share</ui5-button>
         </div>
             
         <!-- Comments row -->
@@ -308,23 +307,22 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     }}></emoji-picker>
         </ui5-popover>
         <ui5-menu id="moreMenu" @item-click=${this.onMoreMenu}>
-            <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item>
+            <!-- <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item> -->
             ${isFavorite
       ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>`
       : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
     }
-            ${hasComments
-      ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
-      : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
-    }
             <ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link"></ui5-menu-item>
             <ui5-menu-item id="copyText" disabled text=${msg("Copy Text")} icon="copy"></ui5-menu-item>
             <ui5-menu-item id="flagMessage" disabled text=${msg("Report Message")} icon="flag"></ui5-menu-item>
-
-        </ui5-menu>  
-          
+        </ui5-menu>
       </div>
     `;
+
+//     ${hasComments
+// ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
+//   : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
+//   }
 
   }
 
@@ -333,26 +331,33 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     return [
       css`
         :host {
-          max-width:100%;
-          box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
+          max-width: 100%;
+          box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+          padding: 10px;
+          border-radius: 6px;
         }
+
         #avatarColumn:hover {
           cursor: pointer;
         }
+
         #buttonsPop::part(content) {
           padding: 0px;
         }
+
         .hovered {
           background: #d8e2f6;
+        }
+
+        #titleRow {
+          display: flex;
+          flex-direction: row;
         }
 
         #innerPostItem {
           display: flex;
           flex-direction: column;
-        }
-        
-        #innerPostItem:hover {
-          background: #d8e2f6;
+          gap: 5px;
         }
         
         #agentName {
@@ -378,9 +383,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .contentItem {
-          /*margin: 10px 5px 10px 5px;*/
-          margin-top: 5px;
-          margin-bottom: 10px;
+          margin: 5px 5px 10px 5px;
         }
 
         .chatItem {
@@ -394,12 +397,11 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
         .chatAvatar {
           margin: 2px 0px 0px 2px;
-          box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;
-          outline: #4a7b57 solid 2px;
+          box-shadow: rgba(38, 38, 38, 0.86) 1px 1px 1px 1px;
+          outline: rgba(74, 74, 74, 0.82) solid 1px;
         }
 
         .chatDate {
-          margin: 0px 0px 0px 5px;
           font-size: smaller;
           color: gray;
         }

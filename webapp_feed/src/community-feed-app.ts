@@ -37,9 +37,15 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
   onlineLoadedContext,
-    ParticipationProtocol,
-  determineSubjectName, toasty,
-  materializeSubject, weaveUrlToWal, Subject,
+  ParticipationProtocol,
+  determineSubjectName,
+  toasty,
+  materializeSubject,
+  weaveUrlToWal,
+  Subject,
+  MAIN_TOPIC_HASH,
+  THIS_APPLET_ID,
+  SEMANTIC_TOPIC_TYPE_NAME,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -251,6 +257,33 @@ export class CommunityFeedApp extends HappElement {
       await this.hvm.probeAll();
     }
     await this.networkInfoAll(); // FIXME: should propable store result in class field
+
+
+    /** Make sure main topic and thread exists */
+    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, "__main", false, false);
+    const threads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    console.log("<community-feed-app>.perspectiveInitializedOnline() threads", threads);
+    let ppAh;
+    if (!threads || threads.length == 0) {
+      const tuple = await this.threadsDvm.threadsZvm.publishParticipationProtocol({
+        purpose: "main",
+        rules: "n/a",
+        subject: {
+          hash: decodeHashFromBase64(MAIN_TOPIC_HASH),
+          typeName: SEMANTIC_TOPIC_TYPE_NAME,
+          appletId: this._weServices? this._weServices.appletId : THIS_APPLET_ID,
+          dnaHash: decodeHashFromBase64(this.threadsDvm.cell.dnaHash),
+        },
+        subject_name: "__main",
+      });
+      ppAh = tuple[0];
+    } else {
+      ppAh = threads[0];
+    }
+    console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", ppAh);
+
+
+    /** */
     console.log("<community-feed-app>.perspectiveInitializedOnline() DONE");
     this._onlineLoaded = true;
     this._onlineLoadedProvider.setValue(true);

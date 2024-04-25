@@ -162,7 +162,7 @@ export function emptyActionHash() {
   return emptyValidHash([0x84, 0x29, 0x24]);
 }
 
-export const MAIN_SUBJECT_HASH = encodeHashToBase64(emptyActionHash());
+export const MAIN_TOPIC_HASH = encodeHashToBase64(emptyActionHash());
 
 
 /** We  */

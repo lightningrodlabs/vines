@@ -7,22 +7,18 @@ import {sharedStyles} from "../styles";
 import {renderAvatar} from "../render";
 
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
-import {MAIN_SUBJECT_HASH, parseMentions} from "../utils";
+import {MAIN_TOPIC_HASH, parseMentions} from "../utils";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {THIS_APPLET_ID, weClientContext} from "../contexts";
+import {weClientContext} from "../contexts";
 import {consume} from "@lit/context";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+
 
 /**
  * @element
  */
 @customElement("post-header")
 export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
-
-  constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-  }
-
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -31,6 +27,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
   get inputElem(): TextArea {
     return this.shadowRoot.getElementById("textMessageInput") as unknown as TextArea;
   }
+
 
   /** */
   handleKeydown(e) {
@@ -59,15 +56,19 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!this.inputElem.value || this.inputElem.value.length == 0) {
       return;
     }
+    const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    if (!threads || threads.length == 0) {
+      return;
+    }
+    const mainThreadAh = threads[0];
+
     console.log(`Commit input value "${this.inputElem.value}"`);
     //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
 
     const inputText = this.inputElem.value;
     const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
-    const appletId = this.weServices? this.weServices.appletId : THIS_APPLET_ID;
-    let tuple = await this._dvm.publishThreadFromSemanticTopic(appletId, MAIN_SUBJECT_HASH, "none");
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, tuple[1], this.cell.agentPubKey, mentionedAgents);
-    console.log("onCreateTextMessage() res:", res);
+    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh, this.cell.agentPubKey, mentionedAgents);
+    console.log("commitInput() res:", res);
 
     this.inputElem.value = "";
     //this._cacheInputValue = "";
@@ -76,7 +77,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<post-header>.render()");
+    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH]);
 
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "S");
 
@@ -107,9 +108,13 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
         #post-header {
           display: flex; 
           flex-direction: row;
+          gap:10px;
           min-height: 55px;
           margin: 5px 5px 10px 10px;
           box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
+          border-radius: 6px;
+          padding:10px;
+          background: #cdd2c9;
         }
       `,];
   }
