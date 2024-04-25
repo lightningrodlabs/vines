@@ -12,6 +12,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 
+import "@lightningrodlabs/we-elements/dist/elements/wal-embed.js";
 
 /**
  * @element
@@ -141,14 +142,21 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
     }
 
+    // /** render all */
+    // return html`
+    //     <ui5-list id="fileList">
+    //       <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
+    //               @click=${(e) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
+    //         ${this._assetLocAndInfo.assetInfo.name}
+    //       </ui5-li>
+    //     </ui5-list>
+    // `;
+
     /** render all */
     return html`
-        <ui5-list id="fileList">
-          <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-                  @click=${(e) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
-            ${this._assetLocAndInfo.assetInfo.name}
-          </ui5-li>
-        </ui5-list>
+        <div id="fileList" style="min-height: 300px;">
+            <wal-embed .src=${anyBead.value} style="width: 100%; height: 100%"></wal-embed>
+        </div>
     `;
   }
 

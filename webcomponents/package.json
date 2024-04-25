@@ -22,6 +22,7 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
+    "@lightningrodlabs/we-elements": "0.5.0",
     "markdown-it": "~14.0.0",
     "markdown-it-emoji": "~3.0.0",
     "markdown-it-mark": "~4.0.0",
