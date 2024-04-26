@@ -32,7 +32,7 @@
     "typescript": "~5.2.0"
   },
   "dependencies": {
-    "@vines/app": "file:../webapp",
+    "@vines/app": "file:../webapp_feed",
     "@mdi/js": "^7.2.0"
   }
 }
