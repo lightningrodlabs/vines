@@ -222,6 +222,12 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     );
 
 
+    if (postItems.length == 0) {
+      return html`
+        <div>${msg('Feed is empty')}</div>
+      `;
+    }
+
     /** render all */
     return html`
         <!-- <post-header style="margin-top:15px;"></post-header> -->

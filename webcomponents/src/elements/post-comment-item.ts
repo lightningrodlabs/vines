@@ -13,14 +13,16 @@ import {AnyBeadMat, EntryBeadMat, TextBeadMat, ThreadsPerspective,} from "../vie
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {AnyBead, ThreadsEntryType} from "../bindings/threads.types";
 import {md} from "../markdown/md";
-import {weaveUrlToWal} from "../utils";
+import {timeSince, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
 import {beadJumpEvent} from "../jump";
 import {renderAvatar} from "../render";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
+import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 
+import Popover from "@ui5/webcomponents/dist/Popover";
 
 /**
  * @element
@@ -74,11 +76,17 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       const wal = weaveUrlToWal(anyBead.value);
       await this.weServices.assetInfo(wal);
     }
+    /** */
+    const beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
+    if (!beadInfo) {
+      await newDvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+    }
+    await newDvm.threadsZvm.probeEmojiReactions(this.hash);
   }
 
 
   /** */
-  renderContent(): [TemplateResult<1>, AgentPubKeyB64, string] {
+  renderContent(): [TemplateResult<1>, AgentPubKeyB64, Date] {
     let content = html``;
 
     if (this.hash == "") {
@@ -93,7 +101,6 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
     const [beadInfo, typedBead] = maybePair;
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-    const date_str = date.toLocaleString('en-US', {hour12: false});
 
     switch(beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
@@ -153,7 +160,19 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       default:
         break;
     }
-    return [content, beadInfo.author, date_str];
+    return [content, beadInfo.author, date];
+  }
+
+
+  /** */
+  copyMessageLink() {
+    const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+    const wurl = weaveUrlFromWal({hrl});
+    navigator.clipboard.writeText(wurl);
+    if (this.weServices) {
+      this.weServices.walToPocket({hrl});
+    }
+    toasty(("Copied Message's WAL to clipboard"));
   }
 
 
@@ -163,6 +182,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
     const [content, author, date] = this.renderContent();
     const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
+    const date_str = timeSince(date);
 
     /* render item */
     return html`
@@ -179,10 +199,18 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         <div id="sideContentColumn">
           <div class="nameColumn" style="display:flex; flex-direction:column;">
               <span class="sideAgentName">${agentName}</span>
-          </div>            
-          ${content}
+              ${content}              
+          </div>
+          <div class="underRow">
+              <div>${date_str}</div>
+              <div id="likeBtn" class="textBtn" @click=${(e) => this.dispatchEvent(new CustomEvent('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}))}>${msg('Like')}</div>
+              <div class="textBtn" @click=${(_e) => this.copyMessageLink()}>${msg('Share')}</div>
+              <div style="flex-grow: 1;"></div>
+              <emoji-bar .hash=${this.hash} style="margin-top:2px;"></emoji-bar>
+          </div>
         </div>
-    </div>`;
+    </div>
+    `;
   }
 
 
@@ -192,6 +220,15 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       codeStyles,
       sharedStyles,
       css`
+        
+        .textBtn {
+          font-weight: bold;
+        }
+
+        .textBtn:hover {
+          text-decoration: underline;
+          cursor: pointer;
+        }
         #sideItem {
           display: flex;
           flex-direction: row;
@@ -203,13 +240,25 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           padding-top: 3px;
         }
         
+        .nameColumn {
+          background: #eee;
+          border-radius: 10px;
+          padding-left: 8px;
+          padding-bottom: 8px;
+        }
         #sideContentColumn {
           display: flex;
           flex-direction: column;
-          background: #eee;
           flex-grow: 1;
-          border-radius: 10px;
           padding: 5px;          
+        }
+        
+        .underRow {
+          display: flex; 
+          flex-direction: row;
+          gap: 15px;
+          font-size: 0.75em;
+          margin-left: 5px;
         }
       `,
     ];

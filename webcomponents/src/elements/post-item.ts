@@ -129,9 +129,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickAddEmoji() {
+  onClickAddEmoji(elem?: HTMLElement) {
     const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
-    const btn = this.shadowRoot.getElementById("add-reaction-btn") as HTMLElement;
+    const btn = elem? elem : this.shadowRoot.getElementById("add-reaction-btn") as HTMLElement;
     popover.showAt(btn);
   }
 
@@ -205,6 +205,23 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+  /** */
+  getDeepestElemAt(x: number, y: number): HTMLElement {
+    const elem = this.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+    let shadow: HTMLElement = elem;
+    let shadower;
+    do {
+      shadower = undefined;
+      if (shadow.shadowRoot) {
+        shadower = shadow.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+      }
+      if (shadower) {
+        shadow = shadower;
+      }
+    } while(shadower);
+    return shadow;
+  }
 
 
   /** */
@@ -329,7 +346,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <div style="display:flex; flex-direction:row; gap:5px; color:#686767">
             <!-- <div style="flex-grow:1; text-align: center;" @click=${(_e) => this.onClickAddEmoji()}>Like</div> -->
             <ui5-button id="add-reaction-btn" style="flex-grow:1; text-align: center;" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
-                        @click=${(_e) => this.onClickAddEmoji()}>Like</ui5-button>
+                        @click=${(_e) => {this._commentAh = undefined; this.onClickAddEmoji();}}>Like</ui5-button>
             <!-- <div style="flex-grow:1; text-align: center;">Comment</div> -->
             <ui5-button id="share-btn" style="flex-grow:1; text-align: center;" icon="comment" design="Transparent" style="border:none;"
                         @click=${(_e) => this.onClickComment()}>Comment</ui5-button>
@@ -340,7 +357,15 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <!-- Comments row -->
         <div style="display:${this._canShowComment? "flex" : "none"}; flex-direction:column;">
             <hr/>            
-            ${commentThreadAh? html`<post-comment-thread-view .threadHash=${commentThreadAh}></post-comment-thread-view>` : html``}
+            ${commentThreadAh? html`
+                <post-comment-thread-view .threadHash=${commentThreadAh}
+                @show-emoji=${(e) => {
+                  //console.log("SHOW EMOJI", e.detail, e.detail.x, e.detail.y);
+                  const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
+                  this._commentAh = e.detail.bead;
+                  this.onClickAddEmoji(elem);
+                }}></post-comment-thread-view>
+            ` : html``}
         </div>
         <!-- Input Row -->
         <div id="inputRow" style="display:${this._canShowComment? "flex" : "none"};">
@@ -364,16 +389,18 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
             <emoji-picker id="emoji-picker" class="light" 
                           style="display: block" 
                           @emoji-click=${(event) => {
-      const unicode = event?.detail?.unicode
-      console.log("emoji-click: " + unicode)
-      if (unicode) {
-        this._dvm.publishEmoji(this.hash, unicode);
-      }
-      const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
-      if (popover.isOpen()) {
-        popover.close();
-      }
-    }}></emoji-picker>
+                          const unicode = event?.detail?.unicode
+                          //console.log("emoji-click: ", unicode, this._commentAh);
+                          const ah = this._commentAh? this._commentAh : this.hash;
+                          if (unicode) {
+                            this._dvm.publishEmoji(ah, unicode);
+                          }
+                          this._commentAh = undefined;
+                          const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
+                          if (popover.isOpen()) {
+                            popover.close();
+                          }
+                        }}></emoji-picker>
         </ui5-popover>
         <ui5-menu id="moreMenu" @item-click=${this.onMoreMenu}>
             <!-- <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item> -->
@@ -389,7 +416,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     `;
   }
 
-
+  private _commentAh?: ActionHashB64;
   @state() private _splitObj?: SplitObject;
 
   /** */
