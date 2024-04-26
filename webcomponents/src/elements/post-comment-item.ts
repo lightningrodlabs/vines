@@ -198,7 +198,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         </div>
         <div id="sideContentColumn">
           <div class="nameColumn" style="display:flex; flex-direction:column;">
-              <span class="sideAgentName">${agentName}</span>
+              <span class="sideAgentName" style="font-size: 0.8em">${agentName}</span>
               ${content}              
           </div>
           <div class="underRow">
@@ -237,7 +237,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         }
         
         #avatarColumn {
-          padding-top: 3px;
+          padding-top: 8px;
         }
         
         .nameColumn {
