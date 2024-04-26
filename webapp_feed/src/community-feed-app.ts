@@ -574,6 +574,7 @@ export class CommunityFeedApp extends HappElement {
           height: 100vh;
           width: 100%;
           font-family: '72';
+          overflow-x: clip; /* HACK */
         }
 
         #profileCard {

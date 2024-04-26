@@ -147,13 +147,12 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {
   ActionHashB64,
-  decodeHashFromBase64,
   encodeHashToBase64,
   NetworkInfo,
   Timestamp,
 } from "@holochain/client";
 
-import {FrameNotification, GroupProfile, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {FrameNotification, GroupProfile} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
 
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -205,6 +204,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
+  /** */
   getDeepestElemAt(x: number, y: number): HTMLElement {
     const elem = this.shadowRoot.elementFromPoint(x, y) as HTMLElement;
     let shadow: HTMLElement = elem;
@@ -222,6 +222,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
+  /** */
   onShowProfile(e) {
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
@@ -233,9 +234,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     popover.showAt(elem);
   }
 
+  /** */
   onEditProfile(e) {
     this.profileDialogElem.show();
   }
+
 
   /** -- Fields -- */
 
@@ -274,16 +277,16 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Getters -- */
 
-  get createThreadDialogElem(): Dialog {
-    return this.shadowRoot.getElementById("create-thread-dialog") as Dialog;
-  }
-
   get profileDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
   }
 
   get waitDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
+  }
+
+  get createPostDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("create-post-dialog") as Dialog;
   }
 
 
@@ -303,60 +306,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
-  /** -- Update -- */
-
-
-  /** */
-  async onCreateThread(e) {
-    const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
-    const name = input.value.trim();
-    if (name.length < 1) {
-      return;
-    }
-    const tuple = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, name);
-    //console.log("onCreateThread()", tuple, tuple[1])
-    input.value = "";
-
-    this.dispatchEvent(threadJumpEvent(tuple[1]));
-    this.createThreadDialogElem.close(false);
-  }
-
-
-  /** */
-  async onCreateTextMessage(inputText: string) {
-    console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
-    const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
-    let threadHash = this.selectedThreadHash;
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, this.cell.agentPubKey, mentionedAgents);
-    console.log("onCreateTextMessage() res:", res);
-
-    // /** DEBUG */
-    // if (this.weServices) {
-    //   const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
-    //   console.log("entryInfo2", this.cell.dnaHash, entryInfo);
-    // }
-  }
-
-
-  /** */
-  async onCreateHrlMessage() {
-    const maybeWal = await this.weServices.userSelectWal();
-    if (!maybeWal) {
-      return;
-    }
-    console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
-    //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
-    // FIXME make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash);
-  }
-
-
-  /** */
-  async onCreateSemanticTopic(topic: string) {
-    await this._dvm.publishSemanticTopic(topic);
-  }
-
-
   /** */
   shouldUpdate(changedProperties: PropertyValues<this>): boolean {
     const canUpdate = super.shouldUpdate(changedProperties);
@@ -365,7 +314,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
     //console.log("<community-feed-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
     const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    console.log("<community-feed-page>.shouldUpdate() mainThreadContext", threads);
+    //console.log("<community-feed-page>.shouldUpdate() mainThreadContext", threads);
     return threads && threads.length > 0;
   }
 
@@ -435,11 +384,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
 
     // /** Fiddle with shadow parts CSS */
-    // const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
-    // if (shellBar) {
-    //   shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
-    // }
-
     //   /** Toggle notif settings switch if necessary */
     //   const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
     //   const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
@@ -597,54 +541,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  onAppletSelected(e) {
-    console.log("onAppletSelected()", e);
-    const selectedOption = e.detail.selectedOption;
-    console.log("onAppletSelected() selectedOption", e.detail.selectedOption);
-    if (selectedOption.id == "mine-option") {
-      this._listerToShow = null;
-      return;
-    }
-    if (selectedOption.id == "topics-option") {
-      this._listerToShow = this.cell.dnaHash;
-      return;
-    }
-    if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
-      this._listerToShow = THIS_APPLET_ID;
-      return;
-    }
-    /* it's an appletId so display the applet lister */
-    this._listerToShow = selectedOption.id;
-    this.requestUpdate();
-  }
-
-
-  @state() private _hideFiles = true;
-
-
-  /** */
-  uploadFile(ppAh: ActionHashB64) {
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = async (e:any) => {
-      console.log("target upload file", e);
-      const file = e.target.files[0];
-      // if (file.size > this._dvm.dnaProperties.maxParcelSize) {
-      //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
-      //   return;
-      // }
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
-        console.log("<community-feed-page> startPublishFile callback", eh);
-        /*let ah =*/ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh);
-        this._splitObj = undefined;
-      });
-      console.log("uploadFile()", this._splitObj);
-    }
-    input.click();
-  }
-
-
-  /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<community-feed-page>.onJump()", e.detail, this.selectedThreadHash);
     const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
@@ -734,17 +630,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   render() {
     console.log("<community-feed-page>.render()", this.onlineLoaded, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
-//     <vines-input-bar id="input-bar"
-//       .profilesZvm=${this._dvm.profilesZvm}
-//   .topic="comment"
-//       .cachedInput=${this.perspective.threadInputs[this.selectedThreadHash]? this.perspective.threadInputs[this.selectedThreadHash] : ""}
-//   .showHrlBtn=${!!this.weServices}
-//       showFileBtn="true"
-//   @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-// @upload=${(e) => {e.preventDefault(); this.uploadFile(this.selectedThreadHash)}}
-// @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
-// ></vines-input-bar>
-
     /** This agent's profile info */
     let myProfile = this._dvm.profilesZvm.getMyProfile();
     if (!myProfile) {
@@ -808,7 +693,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
-          <div id="topicBar">
+          <div id="topBar">
             <sl-tooltip content=${groupProfile.name} style="--show-delay: 500;">
               <ui5-avatar size="S" class="chatAvatar"
                           @click=${() => {
@@ -920,7 +805,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
             
           <div id="rowDiv" style="display:flex; flex-direction:row; flex-grow: 1;">
             <div id="left" style="flex-grow:1"></div>
-            <div id="center">
+            <div id="center" style="padding-top: 80px;">
                 <post-thread-view></post-thread-view>
                 ${this._splitObj? html`
                   <div id="uploadCard">
@@ -939,40 +824,45 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
             <div id="right" style="flex-grow:1"></div>
         </div>
         
-                <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
-                    <div class="popover-content">
-                        <ui5-list mode="None" separators="None">
-                            <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <!-- <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li> -->
-                            <ui5-li @click=${(e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
-                        </ui5-list>
-                    </div>
-                </ui5-popover>
+          <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
+              <div class="popover-content">
+                  <ui5-list mode="None" separators="None">
+                      <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
+                      <!-- <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li> -->
+                      <ui5-li @click=${(e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                      <ui5-li @click=${(e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
+                      <ui5-li @click=${(e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                      <ui5-li @click=${(e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                  </ui5-list>
+              </div>
+          </ui5-popover>
+  
+          <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
+              <notification-list></notification-list>
+          </ui5-popover>
+  
+          <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text="Notification settings">
+              <div  style="flex-direction: column; display: flex">
+                  <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
+                  <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>
+                  <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.Never) as Boolean}></ui5-radio-button>
+              </div>
+          </ui5-popover>
 
-                <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
-                    <notification-list></notification-list>
-                </ui5-popover>
-
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text="Notification settings">
-                    <div  style="flex-direction: column; display: flex">
-                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.Never) as Boolean}></ui5-radio-button>
-                    </div>
-                </ui5-popover>
-
-            </div>
+        </div>
+        <!-- FAB -->
+        <ui5-button id="create-fab" icon="add" design="Emphasized" tooltip=${msg("Create Post")} @click=${(e) => this.createPostDialogElem.show()}></ui5-button>
         <!-- DIALOGS -->
         <ui5-dialog id="wait-dialog">
             <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
         </ui5-dialog>
-        <ui5-dialog id="new-post-dialog">
-            <create-post-panel></create-post-panel>
+        <ui5-dialog id="create-post-dialog">
+            <create-post-panel
+                    @created=${(e) => this.createPostDialogElem.close(false)}
+                    @cancel=${() => this.createPostDialogElem.close(false)}
+            ></create-post-panel>
         </ui5-dialog>
-        <!-- Profile Dialog/Popover -->
+        <!-- Profile  -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
             <profile-panel id="profilePanel" @edit-profile=${(e) => (this.shadowRoot.getElementById("profilePop") as Popover).close()}></profile-panel>
         </ui5-popover>
@@ -986,33 +876,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
             ></vines-edit-profile>
         </ui5-dialog>
-        <!-- CreateThreadDialog -->
-        <ui5-dialog id="create-thread-dialog" header-text="Create new channel">
-            <section>
-                <div>
-                    <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
-                    <ui5-input id="threadPurposeInput" 
-                               @keydown=${async (e) => {
-                                  if (e.keyCode === 13) {
-                                      e.preventDefault();
-                                      await this.onCreateThread(e);
-                                  }
-                    }}></ui5-input>
-                </div>
-            </section>
-            <div slot="footer" style:
-            "display:flex;">
-            <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                        @click=${async (e) => await this.onCreateThread(e)} >Create
-            </ui5-button>
-            <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel
-            </ui5-button>
-            </div>
-        </ui5-dialog>
     `;
   }
 
 
+  /** */
   private importDvm(canPublish: boolean) {
     console.log("importDvm()");
     //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
@@ -1140,6 +1008,16 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           width: 100vw;
         }
 
+        #create-fab {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          border-radius: 50%;
+          box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+          width: 4.5em;
+          height: 4.5em;
+        }
+        
         abbr {
           text-decoration: none;
         }
@@ -1149,6 +1027,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           outline: 1px solid darkblue;
         }
 
+        #create-post-dialog::part(content) {
+          padding: 0px;
+        }
         .reply-info {
           background: #b4c4be;
           margin: 0px 10px -9px 10px;
@@ -1193,7 +1074,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           background: #e6e6e6;
         }
 
-        #topicBar {
+        #topBar {
           display: flex;
           flex-direction: row;
           gap: 5px;
@@ -1203,6 +1084,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           border-radius:5px;
           /*box-shadow: rgba(30, 30, 30, 0.17) 2px 10px 10px;*/
           box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
+          position: fixed;
+          width: 100%;
+          z-index: 10;
         }
 
 

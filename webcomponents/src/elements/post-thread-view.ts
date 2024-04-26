@@ -224,7 +224,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <post-header style="margin-top:15px;"></post-header>
+        <!-- <post-header style="margin-top:15px;"></post-header> -->
         ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
         ${postItems.reverse()}
     `;

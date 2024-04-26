@@ -7,13 +7,21 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {MAIN_TOPIC_HASH, parseMentions} from "../../utils";
+import {ThreadsEntryType} from "../../bindings/threads.types";
+import {DnaElement} from "@ddd-qc/lit-happ";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
 
 
 /**
  * @element
  */
 @customElement("create-post-panel")
-export class CreatePostPanel extends LitElement {
+export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
+
+  constructor() {
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+  }
 
 
   @consume({ context: weClientContext, subscribe: true })
@@ -21,28 +29,39 @@ export class CreatePostPanel extends LitElement {
 
 
   /** */
-  onCreate() {
-    const content = (this.shadowRoot.getElementById("purposeInput") as Input).value;
-    this.dispatchEvent(new CustomEvent('create', {detail: content, bubbles: true, composed: true}))
+  async onCreate() {
+    const inputElem = this.shadowRoot.getElementById("contentInput") as Input;
+    const content = inputElem.value.trim();
+    if (content.length == 0) {
+      return;
+    }
+
+    const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    if (!threads || threads.length == 0) {
+      return;
+    }
+    const mainThreadAh = threads[0];
+
+    const mentionedAgents = parseMentions(content, this._dvm.profilesZvm);
+    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.agentPubKey, mentionedAgents);
+    console.log("onCreate() beadAh:", beadAh);
+
+    inputElem.value = "";
+    this.dispatchEvent(new CustomEvent('created', {detail: beadAh, bubbles: true, composed: true}));
   }
 
 
   /** */
   render() {
     return html`
-      <section>
-          <div>
-            <ui5-label for="purposeInput" required>Content:</ui5-label>
-            <ui5-input id="purposeInput" value=${msg('Message')}></ui5-input>
-          </div>
-      </section>
-      <div slot="footer" class="footer">
-        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(e) => this.onCreate()}>
-            Create
-        </ui5-button>
-        <ui5-button style="margin-top:5px" @click=${(e) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}>
-            Cancel
-        </ui5-button>
+      <div id="titleRow">
+          <div id="title">${msg('Create a post')}</div>
+          <ui5-button icon="decline" design="Transparent" style="border-radius: 50%;"
+                      @click=${(e) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}></ui5-button>
+      </div>
+      <ui5-textarea id="contentInput" placeholder=${msg('Whats up?')} growing></ui5-textarea>
+      <div class="footer">
+        <ui5-button design="Emphasized" @click=${(e) => this.onCreate()}>${msg('Publish')}</ui5-button>
       </div>
     `;
   }
@@ -55,18 +74,50 @@ export class CreatePostPanel extends LitElement {
       css`
         :host {
           /*background: darkgray;*/
+          display: flex;
+          flex-direction: column;
+          width: 600px;
+          /*min-height: 200px;*/
         }
         
-        section {
-          padding-left: 10px;
-          padding-top: 5px;
+        #contentInput {
+          flex-grow:1;
+          /*height: 120px;*/
+        }
+        
+        #contentInput::part(textarea) {
+          background: #f1f6fb;
+        }
+        
+        #titleRow {
+          /*display:flex;*/
+          /*flex-direction: row;*/
+        }
+        
+        #title {
+          flex-grow: 1;
+          text-align: center;
+          font-weight: bold;
+          font-size: larger;
+          padding-top:2px;
+          padding-bottom:5px;
+          margin-top: 5px;
+        }
+
+        #titleRow > ui5-button {
+          position:absolute;
+          top: 1px;
+          right: 1px;
         }
         
         .footer {
           display: flex;
           gap: 5px;
-          margin-left: 10px;
-          margin-top: 10px;
+          margin: 0px 5px 5px;
+        }
+
+        .footer > ui5-button {
+          flex-grow: 1;
         }
       `
     ];
