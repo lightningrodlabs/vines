@@ -808,8 +808,18 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
-          <ui5-shellbar id="topicBar" primary-title=${groupProfile.name} show-search-field>
-            <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
+          <div id="topicBar">
+            <sl-tooltip content=${groupProfile.name} style="--show-delay: 500;">
+              <ui5-avatar size="S" class="chatAvatar"
+                          @click=${() => {
+                              const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                              const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                              popover.showAt(btn);
+                          }}>
+                <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
+              </ui5-avatar>
+            </sl-tooltip>
+            <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
                        @input=${(e) => {
                           console.log("<search-field> @input", e.keyCode, e);
                           let searchElem = this.shadowRoot.getElementById("search-field") as Input;
@@ -841,35 +851,25 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                             this.requestUpdate(); // important
                           }
                         }}>
-            </ui5-input>               
-            <ui5-shellbar-item id="favButton" icon="favorite-list" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
-            <ui5-shellbar-item id="inboxButton" icon="bell"
-                                     .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
-                                     @click=${() => {
-                                      console.log("inboxButton.click()")
-                                      const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
-                                      if (popover.isOpen()) {
-                                        popover.close();
-                                        return;
-                                      }
-                                      const shellbar = this.shadowRoot.getElementById("topicBar");
-                                      popover.showAt(shellbar);
-                                    }}>
-            </ui5-shellbar-item>
-            <ui5-avatar size="S" class="chatAvatar" slot="profile" initials=${initials}
-                        @click=${(e) => {
-                            e.stopPropagation();
-                            this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: this.cell.agentPubKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-                <img src=${avatarUrl}>
-            </ui5-avatar>
-              <ui5-avatar size="S" class="chatAvatar" slot="startButton"
-                          @click=${() => {
-                              const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                              const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
-                              popover.showAt(btn);
-                          }}>
-                  <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
-              </ui5-avatar>
+            </ui5-input>
+            <div style="flex-grow: 1"></div>
+            <ui5-button id="favButton" icon="favorite-list" tooltip=${msg("Favorites")}
+                        style="border-radius: 30px;"
+                        @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
+            <ui5-button id="inboxButton" icon="bell" tooltip=${msg("Notifications")}
+                        style="border-radius: 30px;"                        
+                        .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
+                        @click=${() => {
+                        console.log("inboxButton.click()")
+                        const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                        if (popover.isOpen()) {
+                          popover.close();
+                          return;
+                        }
+                        const elem = this.shadowRoot.getElementById("inboxButton");
+                        popover.showAt(elem);
+                      }}>
+            </ui5-button>
               <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
                           style="margin-top:10px;"
                           design="Transparent" icon="navigation-down-arrow"
@@ -888,29 +888,35 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                             : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>`}
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
               </ui5-menu> -->
-                    <ui5-button id="settingsBtn"
-                                design="Transparent" icon="action-settings" tooltip=${msg("Settings")}                                
-                                style="margin-top:10px;"
-                                @click=${(e) => {
-                                  //console.log("onSettingsMenu()", e);
-                                  const settingsMenu = this.shadowRoot.getElementById("settingsMenu") as Menu;
-                                  const settingsBtn = this.shadowRoot.getElementById("settingsBtn") as Button;
-                                  settingsMenu.showAt(settingsBtn);
-                                }}>
-                    </ui5-button>
-                      <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
-                                @item-click=${(e) => this.onSettingsMenu(e)}>
-                          <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
-                          <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
-                          <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
-                          <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
-                          <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="dumpItem" text=${msg("Dump app logs")}></ui5-menu-item>
-                          <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
-                      </ui5-menu>              
-          </ui5-shellbar>
+              <ui5-button id="settingsBtn"
+                          icon="action-settings" tooltip=${msg("Settings")}
+                          style="border-radius: 30px;"
+                          @click=${(e) => {
+                            //console.log("onSettingsMenu()", e);
+                            const settingsMenu = this.shadowRoot.getElementById("settingsMenu") as Menu;
+                            const settingsBtn = this.shadowRoot.getElementById("settingsBtn") as Button;
+                            settingsMenu.showAt(settingsBtn);
+                          }}>
+              </ui5-button>
+                <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
+                          @item-click=${(e) => this.onSettingsMenu(e)}>
+                    <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
+                    <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
+                    <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
+                    <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
+                    <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
+                    <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
+                    <ui5-menu-item id="dumpItem" text=${msg("Dump app logs")}></ui5-menu-item>
+                    <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
+                    <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>                    
+                </ui5-menu>
+              <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"
+                          @click=${(e) => {
+                              e.stopPropagation();
+                              this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: this.cell.agentPubKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                  ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
+              </ui5-avatar>              
+          </div>
             
           <div id="rowDiv" style="display:flex; flex-direction:row; flex-grow: 1;">
             <div id="left" style="flex-grow:1"></div>
@@ -937,7 +943,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                     <div class="popover-content">
                         <ui5-list mode="None" separators="None">
                             <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
+                            <!-- <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li> -->
                             <ui5-li @click=${(e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
                             <ui5-li @click=${(e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
                             <ui5-li @click=${(e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
@@ -962,6 +968,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         <!-- DIALOGS -->
         <ui5-dialog id="wait-dialog">
             <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+        </ui5-dialog>
+        <ui5-dialog id="new-post-dialog">
+            <create-post-panel></create-post-panel>
         </ui5-dialog>
         <!-- Profile Dialog/Popover -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
@@ -1158,7 +1167,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           height: inherit;
         }
 
-
+        #groupLabel {
+          /*display: flex;*/
+          /*align-items: center;*/
+        }
+        
         #profilePop::part(content) {
           padding: 0px;
         }
@@ -1180,10 +1193,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           background: #e6e6e6;
         }
 
-        #topicBar::part(root) {
-          /*border: 1px solid dimgray;*/
-          /*color:black;*/
-          /*background: rgb(94, 120, 200);*/
+        #topicBar {
+          display: flex;
+          flex-direction: row;
+          gap: 5px;
+          align-items: center;
           background: white;
           padding-left: 2px;
           border-radius:5px;
@@ -1198,6 +1212,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           margin-bottom: 5px;
           margin-right: 5px;
           min-width: 48px;
+          cursor:pointer;
         }
 
         #threadTitle {

@@ -250,6 +250,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
     const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
+    const bellButton = html`
+        <ui5-button id="star-btn" icon="bell" tooltip=${msg("Get notifications")} design="Transparent" style="border:none;"
+                    @click=${(_e) => {}}></ui5-button>
+        `;
     const starButton = isFavorite? html`
         <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent" style="border:none;"
                     @click=${(_e) => this.updateFavorite(this.hash, false)}></ui5-button>
@@ -261,7 +265,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     }}"></ui5-button>
     `;
 
-    let sideButtons= [/*starButton,*/ menuButton];
+    let sideButtons= [/*starButton,*/ bellButton, menuButton];
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});

@@ -155,7 +155,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render all */
     return html`
         <div id="fileList" style="min-height: 300px;">
-            <wal-embed .src=${anyBead.value} style="width: 100%; height: 100%"></wal-embed>
+            <wal-embed .src=${anyBead.value} style="width: 100%; height: 100%"
+                       @click=${(e:any)=> {e.stopPropagation()}}></wal-embed>
         </div>
     `;
   }
