@@ -13,6 +13,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ActionHashB64} from "@holochain/client";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
+import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -67,13 +68,28 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
         console.log("<create-post-panel> startPublishFile callback", eh);
         const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
         const mainThreadAh = threads[0];
-        let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, mainThreadAh);
+        const ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, mainThreadAh);
         this._splitObj = undefined;
         this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
       });
       console.log("uploadFile()", this._splitObj);
     }
     input.click();
+  }
+
+
+  /** */
+  async onCreateHrlPost() {
+    const maybeWal = await this.weServices.userSelectWal();
+    if (!maybeWal) {
+      return;
+    }
+    console.log("onCreateHrlPost()", weaveUrlFromWal(maybeWal), maybeWal);
+    const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    const mainThreadAh = threads[0];
+    // FIXME make sure hrl is an entryHash
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, mainThreadAh);
+    this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
   }
 
 
@@ -90,7 +106,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       <div id="extraRow">
           ${this.weServices? html`
             <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
-                        @click=${(e) => {this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));}}>
+                        @click=${(e) => this.onCreateHrlPost()}>
             </ui5-button>` : html``}
         <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
                     @click=${(e) => this.uploadFile()}>

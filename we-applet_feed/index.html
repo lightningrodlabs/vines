@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="Description" content="Vines we-applet" />
+    <link href="../node_modules/@shoelace-style/shoelace/dist/themes/light.css" rel="stylesheet"/>
+    <base href="." />
+    <title>Vines we-applet</title>
+  </head>
+
+  <body style="margin: 0px;">
+  <script type="module">
+    console.log("Stream we-applet index.html START");
+    window.IN_WE = true;
+  </script>
+    <script type="module">
+      import setupFeedApplet from "./out-tsc";
+      const happElem = await setupFeedApplet();
+      document.body.append(happElem);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: Feed Official Applet
+ui:
+  bundled: "../../artifacts/feed-we_applet-ui.zip"
+happ_manifest:
+  bundled: "../../artifacts/vines.happ"

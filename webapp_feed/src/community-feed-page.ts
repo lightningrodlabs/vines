@@ -1046,6 +1046,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           display: flex;
           flex-direction: column;
           height: inherit;
+          overflow: auto;
         }
 
         #groupLabel {

@@ -13,14 +13,14 @@ import {threadJumpEvent} from "../jump";
 import {globaFilesContext, onlineLoadedContext, THIS_APPLET_ID, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {FilesDvm} from "@ddd-qc/files";
+import {FilesDvm, SplitObject} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
-import {determineBeadName, determineSubjectName, parseMentions} from "../utils";
+import {determineBeadName, determineSubjectName, MAIN_TOPIC_HASH, parseMentions} from "../utils";
 import {ParticipationProtocol, Subject, ThreadsEntryType} from "../bindings/threads.types";
 
 
@@ -181,7 +181,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateComment(inputText: string) {
+  async getCommentThread(): Promise<ActionHashB64> {
     let commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     if (!commentThreadAh) {
       await this._dvm.threadsZvm.probeSubjectThreads(this.hash);
@@ -191,6 +191,13 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         commentThreadAh = await this.createCommentThread(this.hash);
       }
     }
+    return commentThreadAh;
+  }
+
+
+  /** */
+  async onCreateComment(inputText: string) {
+    const commentThreadAh = await this.getCommentThread();
     const agentsToNotify = parseMentions(inputText, this._dvm.profilesZvm);
     /** Publish */
     const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentPubKey, agentsToNotify);
@@ -338,17 +345,19 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <!-- Input Row -->
         <div id="inputRow" style="display:${this._canShowComment? "flex" : "none"};">
             ${renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "XS")}
+            ${this._splitObj? html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>` : html`
             <vines-input-bar id="input-bar"
                              style="flex-grow:1;"
                              background="#eee"
                              .profilesZvm=${this._dvm.profilesZvm}
                              topic="comment"
                              .cachedInput=${this._dvm.perspective.threadInputs[this.hash]? this._dvm.perspective.threadInputs[this.hash] : ""}
+                             .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
                              @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}
-                             @upload=${(e) => {e.preventDefault();}}
-                             @grab_hrl=${async (e) => {e.preventDefault();}}
-            ></vines-input-bar>
+                             @upload=${(e) => {e.preventDefault(); this.onUploadComment()}}
+                             @grab_hrl=${async (e) => {e.preventDefault(); this.onHrlComment()}}
+            ></vines-input-bar>`}
         </div>
         <!-- Popovers -->
         <ui5-popover id="emojiPopover" header-text="Add Reaction">
@@ -378,13 +387,42 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         </ui5-menu>
       </div>
     `;
-
-//     ${hasComments
-// ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
-//   : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
-//   }
-
   }
+
+
+  @state() private _splitObj?: SplitObject;
+
+  /** */
+  onUploadComment() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async (e:any) => {
+      console.log("target upload file", e);
+      const file = e.target.files[0];
+      const commentThreadAh = await this.getCommentThread();
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
+        console.log("<create-post-panel> startPublishFile callback", eh);
+        let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, commentThreadAh);
+        this._splitObj = undefined;
+        //this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
+      });
+      console.log("onUploadComment()", this._splitObj);
+    }
+    input.click();
+  }
+
+  /** */
+  async onHrlComment() {
+    const maybeWal = await this.weServices.userSelectWal();
+    if (!maybeWal) {
+      return;
+    }
+    console.log("onHrlComment()", weaveUrlFromWal(maybeWal), maybeWal);
+    const commentThreadAh = await this.getCommentThread();
+    // FIXME make sure hrl is an entryHash
+    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, commentThreadAh);
+  }
+
 
   /** */
   static get styles() {

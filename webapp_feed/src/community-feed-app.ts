@@ -35,7 +35,6 @@ import {
   JumpDestinationType,
   AnyLinkableHashB64,
   VINES_DEFAULT_ROLE_NAME,
-  doodle_flowers,
   onlineLoadedContext,
   ParticipationProtocol,
   determineSubjectName,
@@ -45,7 +44,7 @@ import {
   Subject,
   MAIN_TOPIC_HASH,
   THIS_APPLET_ID,
-  SEMANTIC_TOPIC_TYPE_NAME,
+  SEMANTIC_TOPIC_TYPE_NAME, doodle_comment_manual, doodle_threads,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -517,7 +516,7 @@ export class CommunityFeedApp extends HappElement {
 
     const doodle_bg =  html `
       <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
-        ${doodle_flowers}
+        ${doodle_threads}
       </div>
     `;
 

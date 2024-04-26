@@ -1,0 +1,10 @@
+dist
+out-tsc
+node_modules
+*.tsbuildinfo
+*.happ
+*.dna
+*.zip
+target
+
+*.webhapp

@@ -1,0 +1,57 @@
+{
+  "groups": [
+    {
+      "name": "Batiment 7",
+      "networkSeed": "test",
+      "icon": {
+        "type": "filesystem",
+        "path": "S:\\media\\images\\b7.jpg"
+      },
+      "creatingAgent": {
+        "agentIdx": 1,
+        "agentProfile": {
+          "nickname": "Alex",
+          "avatar": {
+            "type": "filesystem",
+            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+          }
+        }
+      },
+      "joiningAgents": [
+        {
+          "agentIdx": 2,
+          "agentProfile": {
+            "nickname": "Billy",
+            "avatar": {
+              "type": "filesystem",
+              "path": "S:\\media\\images\\308954_10150302956291669_246474565_n.jpg"
+            }
+          }
+        }
+      ],
+      "applets": [
+        {
+          "name": "Feed",
+          "instanceName": "Feed",
+          "registeringAgent": 1,
+          "joiningAgents": [2]
+        }
+      ]
+    }
+  ],
+  "applets": [
+    {
+      "name": "Feed",
+      "subtitle": "Main News Feed for a group\n",
+      "description": "...",
+      "icon": {
+        "type": "filesystem",
+        "path": "./webapp_feed/icon.png"
+      },
+      "source": {
+        "type": "filesystem",
+        "path": "./artifacts/feed-we_applet.webhapp"
+      }
+    }
+  ]
+}

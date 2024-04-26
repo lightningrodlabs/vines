@@ -243,6 +243,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
           gap:25px;
           height: 100%;
           font-family: '72-Light';
+          padding-bottom: 20px;
         }
       `,
     ];
