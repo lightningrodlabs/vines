@@ -5,12 +5,14 @@ import {sharedStyles} from "../../styles";
 import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {weClientContext} from "../../contexts";
+import {globaFilesContext, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {MAIN_TOPIC_HASH, parseMentions} from "../../utils";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ActionHashB64} from "@holochain/client";
+import {FilesDvm, SplitObject} from "@ddd-qc/files";
 
 
 /**
@@ -27,6 +29,11 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
+  @consume({ context: globaFilesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
+
+  @state() private _splitObj?: SplitObject;
+
 
   /** */
   async onCreate() {
@@ -35,13 +42,11 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     if (content.length == 0) {
       return;
     }
-
     const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
     if (!threads || threads.length == 0) {
       return;
     }
     const mainThreadAh = threads[0];
-
     const mentionedAgents = parseMentions(content, this._dvm.profilesZvm);
     let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.agentPubKey, mentionedAgents);
     console.log("onCreate() beadAh:", beadAh);
@@ -52,16 +57,49 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  uploadFile() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async (e:any) => {
+      console.log("target upload file", e);
+      const file = e.target.files[0];
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
+        console.log("<create-post-panel> startPublishFile callback", eh);
+        const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+        const mainThreadAh = threads[0];
+        let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, mainThreadAh);
+        this._splitObj = undefined;
+        this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
+      });
+      console.log("uploadFile()", this._splitObj);
+    }
+    input.click();
+  }
+
+
+  /** */
   render() {
     return html`
       <div id="titleRow">
           <div id="title">${msg('Create a post')}</div>
-          <ui5-button icon="decline" design="Transparent" style="border-radius: 50%;"
+          <ui5-button icon="decline" design="Transparent" tooltip=${msg('Cancel')}
+                      style="border-radius: 50%;"
                       @click=${(e) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}></ui5-button>
       </div>
       <ui5-textarea id="contentInput" placeholder=${msg('Whats up?')} growing></ui5-textarea>
+      <div id="extraRow">
+          ${this.weServices? html`
+            <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
+                        @click=${(e) => {this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));}}>
+            </ui5-button>` : html``}
+        <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
+                    @click=${(e) => this.uploadFile()}>
+        </ui5-button>
+      </div>          
       <div class="footer">
-        <ui5-button design="Emphasized" @click=${(e) => this.onCreate()}>${msg('Publish')}</ui5-button>
+        <ui5-button design="Emphasized" 
+                    .disabled=${!!this._splitObj}
+                    @click=${(e) => this.onCreate()}>${msg('Publish')}</ui5-button>
       </div>
     `;
   }
@@ -108,6 +146,11 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
           position:absolute;
           top: 1px;
           right: 1px;
+        }
+        
+        #extraRow {
+          display: flex;
+          flex-direction: row;
         }
         
         .footer {

@@ -20,7 +20,7 @@ import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
-import {CommentRequest, determineBeadName, determineSubjectName, parseMentions} from "../utils";
+import {determineBeadName, determineSubjectName, parseMentions} from "../utils";
 import {ParticipationProtocol, Subject, ThreadsEntryType} from "../bindings/threads.types";
 
 
@@ -56,6 +56,8 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _loading = true;
 
+  @state() private _canShowComment = false;
+
 
   /**
    * In dvmUpdated() this._dvm is not already set!
@@ -81,21 +83,22 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   private async loadPost() {
-    let thread = this.threadsPerspective.threads[this.hash];
-    if (!thread) {
-      await this._dvm.threadsZvm.fetchPp(this.hash);
-      thread = this.threadsPerspective.threads[this.hash];
-      if (!thread) {
-        console.error("Thread not found");
-        return;
-      }
-    }
-    const blms = await this._dvm.threadsZvm.probeAllBeads(this.hash);
-    if (blms.length == 0) {
-      console.error("Thread has no beads");
-      return;
-    }
-    const beadInfo = this._dvm.threadsZvm.getBeadInfo(encodeHashToBase64(blms[0].beadAh));
+    console.log("<post-item>.loadPost()")
+    // let thread = this.threadsPerspective.threads[this.hash];
+    // if (!thread) {
+    //   await this._dvm.threadsZvm.fetchPp(this.hash);
+    //   thread = this.threadsPerspective.threads[this.hash];
+    //   if (!thread) {
+    //     console.error("Thread not found");
+    //     return;
+    //   }
+    // }
+    // const blms = await this._dvm.threadsZvm.probeAllBeads(this.hash);
+    // if (blms.length == 0) {
+    //   console.error("Thread has no beads");
+    //   return;
+    // }
+    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     if (!beadInfo) {
       await this._dvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
     }
@@ -117,10 +120,11 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickComment() {
-    const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
-    const typed = this._dvm.threadsZvm.getBead(this.hash);
-    const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
+    // const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    // const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    // const typed = this._dvm.threadsZvm.getBead(this.hash);
+    // const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
+    this._canShowComment = !this._canShowComment;
   }
 
 
@@ -227,9 +231,19 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       return html`<div>No posts found</div>`;
     }
     const beadInfo = tuple[0];
-    /** Determine the comment button to display depending on current comments for this message */
-    let postContent = html`<chat-text class="contentItem" .hash=${this.hash}></chat-text>`;
 
+    let postContent = html``;
+    if (beadInfo.beadType == ThreadsEntryType.TextBead) {
+      postContent = html`<chat-text class="contentItem" .hash=${this.hash}></chat-text>`;
+    }
+    if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
+      postContent = html`<chat-file class="contentItem" .hash=${this.hash}></chat-file>`;
+    }
+    if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
+      postContent = html`<chat-wal class="contentItem" .hash=${this.hash}></chat-wal>`;
+    }
+
+    /** Determine the comment button to display depending on current comments for this message */
     const commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     let commentThread = undefined;
     if (commentThreadAh) {
@@ -316,13 +330,13 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
             <ui5-button id="share-btn" style="flex-grow:1; text-align: center;" icon="forward" design="Transparent" style="border:none;"
                         @click=${(_e) => this.copyMessageLink()}>Share</ui5-button>
         </div>
-        <hr/>
         <!-- Comments row -->
-        <div style="display:flex; flex-direction:column;">
+        <div style="display:${this._canShowComment? "flex" : "none"}; flex-direction:column;">
+            <hr/>            
             ${commentThreadAh? html`<post-comment-thread-view .threadHash=${commentThreadAh}></post-comment-thread-view>` : html``}
         </div>
         <!-- Input Row -->
-        <div id="inputRow">
+        <div id="inputRow" style="display:${this._canShowComment? "flex" : "none"};">
             ${renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "XS")}
             <vines-input-bar id="input-bar"
                              style="flex-grow:1;"
