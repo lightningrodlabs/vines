@@ -5,7 +5,7 @@ import {msg} from "@lit/localize";
 
 import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 
-import {AppletId, CreatableType, Hrl} from "@lightningrodlabs/we-applet";
+import {AppletId, CreatableType} from "@lightningrodlabs/we-applet";
 
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ZomeElement} from "@ddd-qc/lit-happ";
@@ -50,7 +50,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   @state() private _loading = true;
   @state() private _isHovered: Dictionary<boolean> = {};
-
+           private _threadCreatableType?: CreatableType;
 
   /**
    * In zvmUpdated() this._zvm is not already set!
@@ -58,8 +58,9 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<applet-lister>.zvmUpdated()");
-    await this.loadSubjectTypes();
+    await this.loadSubjectTypes(newZvm);
   }
+
 
   /** */
   protected async willUpdate(changedProperties: PropertyValues<this>) {
@@ -70,15 +71,20 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
   }
 
-  private async loadSubjectTypes() {
+
+  /** */
+  private async loadSubjectTypes(newZvm?: ThreadsZvm) {
     console.log("<applet-lister>.loadSubjectTypes()");
     this._loading = true;
-    await this._zvm.probeSubjectTypes(this.appletId);
+    const zvm = newZvm? newZvm : this._zvm;
+    const subs = await zvm.probeSubjectTypes(this.appletId);
+    console.log("<applet-lister>.loadSubjectTypes() subs", subs);
     this._loading = false;
   }
 
 
-  private _threadCreatableType?: CreatableType;
+
+
 
   /** Search for Vines attachmentType in based on _appInfoMap */
   getThreadAttachmentType(): CreatableType | undefined {
@@ -283,6 +289,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
 
     let subjectTypes = this.perspective.appletSubjectTypes[this.appletId];
+    console.log("<applet-lister>.render() subjectTypes", subjectTypes);
     if (!subjectTypes) {
       subjectTypes = {};
     }
@@ -294,6 +301,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const unreadSubjects = this._zvm.getUnreadSubjects();
 
     let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
+      console.log("<applet-lister>.render() subjectType", subjectType, pathHash);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
       const isUnread = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
