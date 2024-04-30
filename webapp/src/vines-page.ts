@@ -1066,7 +1066,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                 <ui5-select id="dna-select" @change=${this.onAppletSelected}>
                     ${appletOptions}
-                    <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>
+                    <!-- <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>  FIXME: disabled because not working -->
                     <ui5-option id="mine-option" icon="bookmark">My Threads</ui5-option>
                     <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
                 </ui5-select>
