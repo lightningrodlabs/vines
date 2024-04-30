@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
   "dna/zomes/path_explorer",
   "dna/zomes/authorship_integrity",
@@ -17,13 +18,13 @@ edition = "2021"
 
 [workspace.dependencies]
 serde = { version = "=1.0.197", default-features = false }
-hdi = { version = "=0.4.0-beta-dev.30", default-features = false }
-hdk = { version = "=0.3.0-beta-dev.34", default-features = false }
+hdi = { version = "=0.4.0-beta-dev.36", default-features = false }
+hdk = { version = "=0.3.0-beta-dev.41", default-features = false }
 
 zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-3.0" }
 time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-3.0" }
-path_explorer_types = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-3.0"}
-path_explorer = {git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-3.0"}
+path_explorer_types = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-3.0" }
+path_explorer = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-3.0" }
 
 [profile.dev]
 lto = false

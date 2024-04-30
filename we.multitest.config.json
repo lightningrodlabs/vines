@@ -43,8 +43,8 @@
           "joiningAgents": [2]
         },
         {
-          "name": "Where",
-          "instanceName": "Where",
+          "name": "Feed",
+          "instanceName": "Feed",
           "registeringAgent": 1,
           "joiningAgents": [2]
         }
@@ -66,16 +66,16 @@
       }
     },
     {
-      "name": "Where",
-      "subtitle": "Group awareness\n",
+      "name": "Feed",
+      "subtitle": "Blog\n",
       "description": "...",
       "icon": {
         "type": "filesystem",
-        "path": "../where/we-applet/icon.png"
+        "path": "./webapp_feed/icon.png"
       },
       "source": {
         "type": "filesystem",
-        "path": "../where/artifacts/where-we_applet.webhapp"
+        "path": "./artifacts/feed-we_applet.webhapp"
       }
     },
     {
@@ -84,11 +84,11 @@
       "description": "...",
       "icon": {
         "type": "filesystem",
-        "path": "../file-share/assets/icon.png"
+        "path": "../files/assets/icon.png"
       },
       "source": {
         "type": "filesystem",
-        "path": "../file-share/artifacts/files-we_applet.webhapp"
+        "path": "../files/artifacts/files-we_applet.webhapp"
       }
     }
   ]
