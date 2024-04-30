@@ -453,31 +453,10 @@ export class VinesApp extends HappElement {
           };
           if (creatableViewInfo.name == "thread") {
             view = html`<create-thread-panel 
-                    @create=${async (e: CustomEvent<CreateThreadRequest>) => {
-                      try {
+                    @create=${async (e: CustomEvent<WAL>) => {
                         console.log("@create event", e.detail);
-                        const hrlc = weaveUrlToWal(e.detail.wurl);
-                        const attLocInfo = await this._weServices.assetInfo(hrlc);
-                        const subject: Subject = {
-                            hash: hrlc.hrl[1],
-                            typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
-                            dnaHash: hrlc.hrl[0],
-                            appletId: encodeHashToBase64(attLocInfo.appletHash),
-                        }
-                        const subject_name = await determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
-                        console.log("@create event subject_name", subject_name);                        
-                        const pp: ParticipationProtocol = {
-                            purpose: e.detail.purpose,
-                            rules: e.detail.rules,
-                            subject,
-                            subject_name,
-                        };
-                        const [ppAh, ppMat] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
-                        const wal: WAL = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: ppMat.subject.hash}
-                        await creatableViewInfo.resolve(wal);
-                      } catch(e) {
-                          creatableViewInfo.reject(e)
-                    }}}
+                        await creatableViewInfo.resolve(e.detail);
+                      }}
                     @cancel=${(_e) => creatableViewInfo.cancel()}
                     @reject=${(e) => creatableViewInfo.reject(e.detail)}
             ></create-thread-panel>`;

@@ -5,9 +5,16 @@ import {sharedStyles} from "../../styles";
 import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {weClientContext} from "../../contexts";
+import {globaFilesContext, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {DnaElement} from "@ddd-qc/lit-happ";
+import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
+import {determineSubjectName, weaveUrlToWal} from "../../utils";
+import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
+import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {materializeSubject} from "../../viewModels/threads.perspective";
+import {FilesDvm} from "@ddd-qc/files";
 
 
 /** */
@@ -22,26 +29,63 @@ export interface CreateThreadRequest {
  * @element
  */
 @customElement("create-thread-panel")
-export class CreateThreadPanel extends LitElement {
+export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
+  constructor() {
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+  }
+
+  @consume({ context: globaFilesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
+  @state() private _creating = false;
+
   /** */
-  onCreate() {
-    /** */
-    const input: CreateThreadRequest = {
-      purpose: (this.shadowRoot.getElementById("purposeInput") as Input).value,
-      wurl: (this.shadowRoot.getElementById("wurlInput") as Input).value,
-      rules: "N/A",
+  async onCreate() {
+    this._creating = true;
+    try {
+      const purpose = (this.shadowRoot.getElementById("purposeInput") as Input).value;
+      const wurl = (this.shadowRoot.getElementById("wurlInput") as Input).value;
+      const hrlc = weaveUrlToWal(wurl);
+      const attLocInfo = await this.weServices.assetInfo(hrlc);
+      const subject: Subject = {
+        hash: hrlc.hrl[1],
+        typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
+        dnaHash: hrlc.hrl[0],
+        appletId: encodeHashToBase64(attLocInfo.appletHash),
+      }
+      const subject_name = await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices);
+      console.log("@create event subject_name", subject_name);
+      const pp: ParticipationProtocol = {
+        purpose,
+        rules: "N/A",
+        subject,
+        subject_name,
+      };
+      const [ppAh, ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
+      const wal: WAL = {
+        hrl: [decodeHashFromBase64(this._dvm.cell.dnaHash), decodeHashFromBase64(ppAh)],
+        context: ppMat.subject.hash
+      };
+      this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))
+    } catch(e) {
+      this.dispatchEvent(new CustomEvent('reject', {detail: e, bubbles: true, composed: true}))
     }
-    this.dispatchEvent(new CustomEvent<CreateThreadRequest>('create', {detail: input, bubbles: true, composed: true}))
+    this._creating = false;
   }
 
 
   /** */
   render() {
+
+    if (this._creating) {
+      return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
+    }
+
+    /** */
     return html`
       <section>
           <div>
