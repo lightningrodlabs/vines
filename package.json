@@ -74,6 +74,10 @@
     "network2"           : "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\"",
     "network3"           : "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:local\" \"sleep 1 && cross-env INDEX=1 npm run start:local\" \"sleep 2 && cross-env INDEX=2 npm run start:local\"",
     "network:we"         : "npm run clean:hc & npm run network2 -w we-applet",
+
+    "start:feed:local"   : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run _save-ports\" \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp_feed\"",
+    "network2:feed"      : "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:feed:local\" \"sleep 1 && cross-env INDEX=1 npm run start:feed:local\"",
+
     "_sandbox"           : "echo INDEX $INDEX & echo PORTS $BOOT_PORT $SIGNAL_PORT $HC_APP_PORT $HC_ADMIN_PORT & RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX",
     "_local"             : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(cat .hc_app_$INDEX) HC_ADMIN_PORT=$(cat .hc_admin_$INDEX) HAPP_BUILD_MODE='Debug' concurrently \"npm run _sandbox\" \"sleep 7 && npm run start:ui-only -w webapp\"",
     "local0"             : "cross-env INDEX=0 npm run _local",

@@ -232,8 +232,8 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         #sideItem {
           display: flex;
           flex-direction: row;
-          padding: 5px;
-          gap:5px;
+          /*padding: 5px;*/
+          /*gap:5px;*/
         }
         
         #avatarColumn {
@@ -243,8 +243,9 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         .nameColumn {
           background: #eee;
           border-radius: 10px;
-          padding-left: 8px;
+          padding-top: 2px;
           padding-bottom: 8px;
+          padding-left: 8px;          
         }
         #sideContentColumn {
           display: flex;

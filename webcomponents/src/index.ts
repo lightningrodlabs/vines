@@ -24,6 +24,7 @@ export * from './elements/post-header';
 export * from './elements/post-thread-view';
 export * from './elements/post-comment-thread-view';
 export * from './elements/post-comment-item';
+export * from './utils_feed';
 
 export * from './elements/panels/create-post-panel';
 export * from './elements/panels/create-thread-panel';

@@ -1,58 +1,54 @@
-import {html, css} from "lit";
-import { state, customElement } from "lit/decorators.js";
+import {css, html} from "lit";
+import {customElement, state} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
 import {PropertyValues} from "lit/development";
 import {
   ActionHashB64,
-  AdminWebsocket, AgentPubKeyB64,
+  AdminWebsocket,
+  AgentPubKeyB64,
   AppSignal,
-  AppWebsocket, decodeHashFromBase64, encodeHashToBase64,
+  AppWebsocket,
+  decodeHashFromBase64,
+  encodeHashToBase64,
   EntryHashB64,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
+import {AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeServices,} from "@lightningrodlabs/we-applet";
+import {delay, DnaViewModel, DvmDef, HappElement, HCL, HvmDef, pascal,} from "@ddd-qc/lit-happ";
 import {
-  AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal,
-  WeServices,
-} from "@lightningrodlabs/we-applet";
-import {
-  HCL,
-  HappElement,
-  HvmDef,
-  DvmDef,
-  DnaViewModel, pascal, delay,
-} from "@ddd-qc/lit-happ";
-import {
-  ThreadsDvm,
-  ThreadsEntryType,
-  THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
-  THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
-  globaFilesContext,
-  weClientContext,
-  cardStyleTemplate,
-  appProxyContext,
-  JumpEvent,
-  JumpDestinationType,
   AnyLinkableHashB64,
-  VINES_DEFAULT_ROLE_NAME,
+  appProxyContext,
+  cardStyleTemplate,
+  determineSubjectName,
+  doodle_threads,
+  globaFilesContext,
+  JumpDestinationType,
+  JumpEvent,
+  MAIN_TOPIC_HASH,
+  materializeSubject,
+  NotifySettingType,
   onlineLoadedContext,
   ParticipationProtocol,
-  determineSubjectName,
-  toasty,
-  materializeSubject,
-  weaveUrlToWal,
+  SEMANTIC_TOPIC_TYPE_NAME,
   Subject,
-  MAIN_TOPIC_HASH,
   THIS_APPLET_ID,
-  SEMANTIC_TOPIC_TYPE_NAME, doodle_comment_manual, doodle_threads,
+  THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
+  THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
+  ThreadsDvm,
+  ThreadsEntryType,
+  toasty,
+  VINES_DEFAULT_ROLE_NAME,
+  weaveUrlToWal,
+  weClientContext,
+  getMainThread,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import { msg, localized } from '@lit/localize';
+import {localized, msg} from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
-import {WeServicesEx} from "@ddd-qc/we-utils";
-import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
-import {AssetViewInfo} from "@ddd-qc/we-utils";
+import {AssetViewInfo, WeServicesEx} from "@ddd-qc/we-utils";
+import {AppProxy, BaseRoleName, CloneId} from "@ddd-qc/cell-proxy";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
@@ -257,6 +253,7 @@ export class CommunityFeedApp extends HappElement {
     }
     await this.networkInfoAll(); // FIXME: should propable store result in class field
 
+    this.threadsDvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
 
     /** Make sure main topic and thread exists */
     this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, "__main", false, false);
@@ -277,10 +274,15 @@ export class CommunityFeedApp extends HappElement {
       });
       ppAh = tuple[0];
     } else {
-      ppAh = threads[0];
+      ppAh = getMainThread(this.threadsDvm);
     }
     console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", ppAh);
-
+    /** Make sure subscribe to notifications for main thread */
+    await this.threadsDvm.threadsZvm.probeNotifSettings(ppAh);
+    const notif = this.threadsDvm.threadsZvm.getNotifSetting(ppAh, this.threadsDvm.cell.agentPubKey);
+    if (notif != NotifySettingType.AllMessages) {
+      await this.threadsDvm.threadsZvm.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
+    }
 
     /** */
     console.log("<community-feed-app>.perspectiveInitializedOnline() DONE");

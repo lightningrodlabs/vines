@@ -21,7 +21,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
 import {determineBeadName, determineSubjectName, MAIN_TOPIC_HASH, parseMentions} from "../utils";
-import {ParticipationProtocol, Subject, ThreadsEntryType} from "../bindings/threads.types";
+import {NotifySettingType, ParticipationProtocol, Subject, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -113,6 +113,8 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       await this._dvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
     }
     await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
+    const ppAh = await this.getCommentThread();
+    await this._dvm.threadsZvm.probeNotifSettings(ppAh);
     this._loading = false;
   }
 
@@ -197,8 +199,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       await this._dvm.threadsZvm.probeSubjectThreads(this.hash);
       commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
       if (!commentThreadAh) {
-        console.log("Missing Comment thread. Creating it");
-        commentThreadAh = await this.createCommentThread(this.hash);
+        console.error("Missing Comment thread for Post", this.hash);
+        return Promise.reject("Missing comment thread for Post");
+        //commentThreadAh = await this.createCommentThread(this.hash);
       }
     }
     return commentThreadAh;
@@ -235,22 +238,15 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async createCommentThread(beadAh: ActionHashB64): Promise<ActionHashB64> {
-    const subject: Subject = {
-      hash: decodeHashFromBase64(beadAh),
-      typeName: ThreadsEntryType.EntryBead,
-      appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
-      dnaHash: decodeHashFromBase64(this.cell.dnaHash),
-    };
-    const pp: ParticipationProtocol = {
-      purpose: "comment",
-      rules: "N/A",
-      subject,
-      //subject_name: request.subjectName,
-      subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
-    };
-    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
-    return ppAh;
+  async onNotifSettingsChange(canNotifyAll: boolean) {
+    const commentThreadAh = await this.getCommentThread();
+    console.log("onNotifSettingsChange() all", canNotifyAll, commentThreadAh);
+    if (canNotifyAll) {
+      await this._dvm.threadsZvm.publishNotifSetting(commentThreadAh, NotifySettingType.AllMessages);
+    } else {
+      await this._dvm.threadsZvm.publishNotifSetting(commentThreadAh, NotifySettingType.Never);
+    }
+    this.requestUpdate();
   }
 
 
@@ -280,10 +276,12 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     /** Determine the comment button to display depending on current comments for this message */
     const commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     let commentThread = undefined;
+    let canNotifyAll = false;
     if (commentThreadAh) {
       commentThread = this.threadsPerspective.threads.get(commentThreadAh);
+      canNotifyAll = this._dvm.threadsZvm.getNotifSetting(commentThreadAh, this.cell.agentPubKey) == NotifySettingType.AllMessages;
     }
-
+    console.log("<post-item>.render() comment", canNotifyAll, commentThreadAh)
 
 
     const menuButton = html`
@@ -299,8 +297,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
     const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
     const bellButton = html`
-        <ui5-button id="star-btn" icon="bell" tooltip=${msg("Get notifications")} design="Transparent" style="border:none;"
-                    @click=${(_e) => {}}></ui5-button>
+        <ui5-button id="bell-btn" icon="bell"  tooltip=${msg("Toggle Notifications")} 
+                    design=${canNotifyAll? "Emphasized" : "Transparent"}
+                    style="border:none; border-radius:50%;"
+                    @click=${(_e) => {this.onNotifSettingsChange(!canNotifyAll)}}></ui5-button>
         `;
     const starButton = isFavorite? html`
         <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent" style="border:none;"
@@ -318,6 +318,14 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
     const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
+
+    let commentLine = "";
+    if (commentThread && commentThread.beadLinksTree.values.length == 1) {
+      commentLine = "1 " + msg("comment");
+    }
+    if (commentThread && commentThread.beadLinksTree.values.length > 1) {
+      commentLine = "" + commentThread.beadLinksTree.values.length + " " + msg("comments");
+    }
 
     /** render all */
     return html`
@@ -349,7 +357,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <div style="display:flex; flex-direction:row; color:#686767">
             <emoji-bar .hash=${this.hash}></emoji-bar>
             <div style="flex-grow:1"></div>
-            <div>${!commentThread? html`` : html`${commentThread.beadLinksTree.values.length} comments`}</div>
+            <div>${commentLine}</div>
         </div>
         <!-- Footer Action Row -->
         <hr/>
@@ -429,6 +437,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   private _commentAh?: ActionHashB64;
   @state() private _splitObj?: SplitObject;
 
+
   /** */
   onUploadComment() {
     var input = document.createElement('input');
@@ -447,6 +456,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     }
     input.click();
   }
+
 
   /** */
   async onHrlComment() {

@@ -12,6 +12,7 @@ import {ThreadsEntryType} from "../bindings/threads.types";
 import {weClientContext} from "../contexts";
 import {consume} from "@lit/context";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {getMainThread} from "../utils_feed";
 
 
 /**
@@ -56,11 +57,12 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!this.inputElem.value || this.inputElem.value.length == 0) {
       return;
     }
-    const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    if (!threads || threads.length == 0) {
-      return;
-    }
-    const mainThreadAh = threads[0];
+    // const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    // if (!threads || threads.length == 0) {
+    //   return;
+    // }
+    // const mainThreadAh = threads[0];
+    const mainThreadAh = getMainThread(this._dvm);
 
     console.log(`commitInput() value "${this.inputElem.value}"`, mainThreadAh);
     //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));

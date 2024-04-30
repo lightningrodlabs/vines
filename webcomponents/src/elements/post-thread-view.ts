@@ -1,4 +1,4 @@
-import {css, html, LitElement, PropertyValues} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
@@ -9,6 +9,7 @@ import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../contexts";
 import {MAIN_TOPIC_HASH} from "../utils";
+import {getMainThread} from "../utils_feed";
 
 
 /**
@@ -50,8 +51,8 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- State variables -- */
 
-  @state() _loading = true;
-
+  @state() private _loading = true;
+  private _mainThreadAh?: ActionHashB64;
 
   /** -- Methods -- */
 
@@ -155,15 +156,15 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected loadlatestThreads(newDvm?: ThreadsDvm) {
+  protected async loadlatestThreads(newDvm?: ThreadsDvm) {
     console.log("<post-thread-view>.loadlatestThreads() probe", !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH)
-      .then(async (pps) => {
-        this._loading = false;
-        await dvm.threadsZvm.commitGlobalProbeLog();
-      });
     this._loading = true;
+    await dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
+    await dvm.threadsZvm.commitGlobalProbeLog();
+    this._mainThreadAh = getMainThread(dvm);
+    await dvm.threadsZvm.probeAllBeads(this._mainThreadAh);
+    this._loading = false;
   }
 
 
@@ -195,12 +196,13 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<post-thread-view>.render()", this._loading, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
-    const threads = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    if (!threads || threads.length == 0) {
-      return html`<div>error</div>`;
-    }
-    const mainThreadAh = threads[0];
-    const thread = this._dvm.threadsZvm.perspective.threads.get(mainThreadAh);
+    // const threads = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    // if (!threads || threads.length == 0) {
+    //   return html`<div>error</div>`;
+    // }
+    // const mainThreadAh = threads[0];
+
+    const thread = this._dvm.threadsZvm.perspective.threads.get(this._mainThreadAh);
 
     //const all = thread.getAll();
     let passedLog = false;
@@ -209,7 +211,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       (blm) => {
         console.log("<post-thread-view> blm", blm, this.threadsPerspective);
         /** 'new' if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[mainThreadAh];
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this._mainThreadAh];
         console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
@@ -237,7 +239,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <!-- <post-header style="margin-top:15px;"></post-header> -->
-        ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
+        ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
         ${postItems.reverse()}
     `;
   }
