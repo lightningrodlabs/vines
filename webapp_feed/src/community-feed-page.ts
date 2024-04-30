@@ -739,6 +739,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
             </ui5-input>
             <div style="flex-grow: 1"></div>
             <ui5-button id="favButton" icon="favorite-list" tooltip=${msg("Favorites")}
+                        design="${this._canShowFavorites? "Emphasized" : ""}"
                         style="border-radius: 30px;"
                         @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
             <ui5-button id="inboxButton" icon="bell" tooltip=${msg("Notifications")}
@@ -802,11 +803,12 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                   ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
               </ui5-avatar>              
           </div>
-            
-          <div id="rowDiv" style="display:flex; flex-direction:row; flex-grow: 1;">
+          
+          <!-- Main area -->  
+          <div style="display:flex; flex-direction:row; flex-grow: 1;">
             <div id="left" style="flex-grow:1"></div>
             <div id="center" style="padding-top: 80px;">
-                <post-thread-view></post-thread-view>
+                <post-thread-view .favorites=${this._canShowFavorites}>
                 ${this._splitObj? html`
                   <div id="uploadCard">
                     <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
@@ -955,9 +957,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         if (content == "") content = await this._dvm.exportAllPerspective();
       case "exportItem":
         const files_json = await this._filesDvm.exportPerspective();
-        this.downloadTextFile("dump_files.json", files_json);
+        this.downloadTextFile("dump_feed_files.json", files_json);
         if (content == "") content = this._dvm.exportPerspective();
-        this.downloadTextFile("dump_threads.json", content);
+        this.downloadTextFile("dump_feed.json", content);
         toasty(`Exported data to json in Downloads folder`);
         break;
       case "importCommitItem": this.importDvm(true); break;

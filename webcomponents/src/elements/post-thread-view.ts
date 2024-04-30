@@ -28,9 +28,9 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of Post to display */
   @property() beadAh: ActionHashB64 = ''
 
-  /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
-  @property()
-  startFromBeginning: boolean = false;
+  /** */
+  @property({type: Boolean})
+  favorites: boolean = false;
   /** */
   @property()
   timeReferenceMs: number = Date.now();
@@ -193,7 +193,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<post-thread-view>.render()", this._loading, this.beadAh, this._dvm.threadsZvm);
+    console.log("<post-thread-view>.render()", this._loading, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
     const threads = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH];
     if (!threads || threads.length == 0) {
@@ -213,6 +213,12 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
         console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
+        }
+        if (this.favorites) {
+          const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(blm.beadAh);
+          if (!isFavorite) {
+            return html``;
+          }
         }
         return html`
             <post-item id=${(blm.beadAh)} .hash=${(blm.beadAh)}

@@ -81,6 +81,16 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+
+  protected updated() {
+    const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
+    if (isFavorite) {
+      this.style.background = "rgb(223, 246, 255)";
+    } else {
+      this.style.background = "";
+    }
+  }
+
   /** */
   private async loadPost() {
     console.log("<post-item>.loadPost()")
