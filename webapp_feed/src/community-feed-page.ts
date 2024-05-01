@@ -1,4 +1,4 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, LitElement, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {delay, DnaElement, HappBuildModeType} from "@ddd-qc/lit-happ";
 
@@ -127,7 +127,7 @@ import {
   AnyBeadMat,
   AnyLinkableHashB64, beadJumpEvent,
   ChatThreadView,
-  CommentRequest, CommentThreadView,
+  CommentRequest, CommentThreadView, composeFeedNotificationTitle,
   doodle_flowers, EditTopicRequest,
   event2type,
   globaFilesContext, InputBar, JumpDestinationType,
@@ -307,17 +307,17 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
-  /** */
-  shouldUpdate(changedProperties: PropertyValues<this>): boolean {
-    const canUpdate = super.shouldUpdate(changedProperties);
-    if (!canUpdate) {
-      return false;
-    }
-    //console.log("<community-feed-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
-    const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    //console.log("<community-feed-page>.shouldUpdate() mainThreadContext", threads);
-    return threads && threads.length > 0;
-  }
+  // /** */
+  // shouldUpdate(changedProperties: PropertyValues<this>): boolean {
+  //   const canUpdate = super.shouldUpdate(changedProperties);
+  //   if (!canUpdate) {
+  //     return false;
+  //   }
+  //   //console.log("<community-feed-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
+  //   const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+  //   //console.log("<community-feed-page>.shouldUpdate() mainThreadContext", threads);
+  //   return threads && threads.length > 0;
+  // }
 
 
   /** After first render only */
@@ -384,26 +384,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       /** i.e. element not present */
     }
 
-    // /** Fiddle with shadow parts CSS */
-    //   /** Toggle notif settings switch if necessary */
-    //   const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
-    //   const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
-    //   const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
-    //
-    //   if (allRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.AllMessages);
-    //     return;
-    //   }
-    //   if (mentionRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.MentionsOnly);
-    //     return;
-    //   }
-    //   if (neverRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.Never);
-    //     return;
-    //   }
-    // }
-
     /** Grab AssetInfo for all AnyBeads */
     for (const [beadInfo, beadPair] of Object.entries(this.threadsPerspective.beads)) {
       if (beadInfo != ThreadsEntryType.AnyBead) {
@@ -426,7 +406,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
-      const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
+      const [notifTitle, notifBody] = composeFeedNotificationTitle(notif, this._dvm, this._filesDvm, this.weServices);
       let message = `"${notifBody}" from @${author}.` ; // | ${date_str}`;
       /** in-app toast */
       if (canPopup) {
@@ -574,31 +554,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
     if (searchPopElem.isOpen()) {
       searchPopElem.close();
-    }
-  }
-
-
-  /** */
-  onNotifSettingsChange() {
-    console.log("onNotifSettingsChange()")
-    const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
-    const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
-    const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
-
-    if (allRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.AllMessages);
-      //console.log("notifSetting checked", NotifySettingType.AllMessages);
-      return;
-    }
-    if (mentionRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.MentionsOnly);
-      //console.log("notifSetting checked", NotifySettingType.MentionsOnly);
-      return;
-    }
-    if (neverRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.Never);
-      //console.log("notifSetting checked", NotifySettingType.Never);
-      return;
     }
   }
 
@@ -809,7 +764,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           <div style="display:flex; flex-direction:row; flex-grow: 1;">
             <div id="left" style="flex-grow:1"></div>
             <div id="center" style="padding-top: 80px;">
-                <post-thread-view .favorites=${this._canShowFavorites}>
+                <post-thread-view id="feed" .favorites=${this._canShowFavorites}>
                 ${this._splitObj? html`
                   <div id="uploadCard">
                     <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
@@ -843,15 +798,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
               <notification-list></notification-list>
           </ui5-popover>
-  
-          <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text="Notification settings">
-              <div  style="flex-direction: column; display: flex">
-                  <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
-                  <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>
-                  <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.Never) as Boolean}></ui5-radio-button>
-              </div>
-          </ui5-popover>
-
+            
         </div>
         <!-- FAB -->
         <ui5-button id="create-fab" icon="add" design="Emphasized" tooltip=${msg("Create Post")} @click=${(e) => this.createPostDialogElem.show()}></ui5-button>
@@ -861,7 +808,17 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         </ui5-dialog>
         <ui5-dialog id="create-post-dialog">
             <create-post-panel
-                    @created=${(e) => this.createPostDialogElem.close(false)}
+                    @created=${async (e) => {
+                      //console.log("@created", e.detail); 
+                      this.createPostDialogElem.close(false);
+                      if (e.detail.createdMainThread) {
+                        // FIXME: Find a way to refresh feed
+                        window.location.reload();
+                        // const feed = this.shadowRoot.getElementById("feed") as LitElement;
+                        // await this._dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
+                        // feed.requestUpdate();
+                      }
+                    }}
                     @cancel=${() => this.createPostDialogElem.close(false)}
             ></create-post-panel>
         </ui5-dialog>

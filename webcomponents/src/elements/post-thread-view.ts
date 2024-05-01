@@ -161,9 +161,11 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     const dvm = newDvm? newDvm : this._dvm;
     this._loading = true;
     await dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
-    await dvm.threadsZvm.commitGlobalProbeLog();
     this._mainThreadAh = getMainThread(dvm);
-    await dvm.threadsZvm.probeAllBeads(this._mainThreadAh);
+    if (this._mainThreadAh) {
+      await dvm.threadsZvm.probeAllBeads(this._mainThreadAh);
+      await dvm.threadsZvm.commitGlobalProbeLog();
+    }
     this._loading = false;
   }
 
@@ -194,13 +196,13 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<post-thread-view>.render()", this._loading, this.favorites, this.beadAh, this._dvm.threadsZvm);
+    console.log("<post-thread-view>.render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
-    // const threads = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    // if (!threads || threads.length == 0) {
-    //   return html`<div>error</div>`;
-    // }
-    // const mainThreadAh = threads[0];
+    if (!this._mainThreadAh) {
+      return html`
+        <div>${msg('No Main Feed')}</div>
+      `;
+    }
 
     const thread = this._dvm.threadsZvm.perspective.threads.get(this._mainThreadAh);
 

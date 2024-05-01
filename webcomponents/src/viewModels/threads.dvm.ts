@@ -14,14 +14,14 @@ import {
   DirectGossipType,
   NotifiableEventType,
   ParticipationProtocol,
-  SignalPayloadType,
+  SignalPayloadType, Subject,
   ThreadsEntryType, ThreadsProperties, VINES_DEFAULT_ROLE_NAME,
   WeaveNotification,
   WeaveSignal
 } from "../bindings/threads.types";
 import {
   AnyLinkableHashB64,
-  BeadType,
+  BeadType, dematerializeParticipationProtocol, materializeSubject,
   materializeTypedBead,
   TypedBead, TypedContent,
 } from "./threads.perspective";
@@ -29,6 +29,8 @@ import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
+import {THIS_APPLET_ID} from "../contexts";
+import {determineSubjectName} from "../utils";
 
 
 /** */
@@ -328,6 +330,23 @@ export class ThreadsDvm extends DnaViewModel {
     const signal: WeaveSignal = this.createGossipSignal({type: {NewPp: null}, content: [ts, ah, pp]}, ah);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return [ts, ah, pp];
+  }
+
+
+
+
+  /** */
+  async publishCommentThread(subject: Subject, subject_name: string): Promise<ActionHashB64> {
+    const pp: ParticipationProtocol = {
+      purpose: "comment",
+      rules: "N/A",
+      subject,
+      subject_name,
+    };
+    const [ts, ppAh, ppMat] = await this.threadsZvm.publishParticipationProtocol(pp);
+    const signal: WeaveSignal = this.createGossipSignal({type: {NewPp: null}, content: [ts, ppAh, dematerializeParticipationProtocol(ppMat)]}, ppAh);
+    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    return ppAh;
   }
 
 

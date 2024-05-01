@@ -253,35 +253,21 @@ export class CommunityFeedApp extends HappElement {
     }
     await this.networkInfoAll(); // FIXME: should propable store result in class field
 
-    this.threadsDvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
 
     /** Make sure main topic and thread exists */
     this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, "__main", false, false);
-    const threads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    console.log("<community-feed-app>.perspectiveInitializedOnline() threads", threads);
-    let ppAh;
-    if (!threads || threads.length == 0) {
-      const tuple = await this.threadsDvm.threadsZvm.publishParticipationProtocol({
-        purpose: "main",
-        rules: "n/a",
-        subject: {
-          hash: decodeHashFromBase64(MAIN_TOPIC_HASH),
-          typeName: SEMANTIC_TOPIC_TYPE_NAME,
-          appletId: this._weServices? this._weServices.appletId : THIS_APPLET_ID,
-          dnaHash: decodeHashFromBase64(this.threadsDvm.cell.dnaHash),
-        },
-        subject_name: "__main",
-      });
-      ppAh = tuple[0];
-    } else {
-      ppAh = getMainThread(this.threadsDvm);
-    }
-    console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", ppAh);
-    /** Make sure subscribe to notifications for main thread */
-    await this.threadsDvm.threadsZvm.probeNotifSettings(ppAh);
-    const notif = this.threadsDvm.threadsZvm.getNotifSetting(ppAh, this.threadsDvm.cell.agentPubKey);
-    if (notif != NotifySettingType.AllMessages) {
-      await this.threadsDvm.threadsZvm.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
+    this.threadsDvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
+    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
+    if (mainThreads && mainThreads.length > 0) {
+      const mainThreadAh = getMainThread(this.threadsDvm);
+      console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", mainThreadAh);
+      /** Make sure subscribe to notifications for main thread */
+      await this.threadsDvm.threadsZvm.probeNotifSettings(mainThreadAh);
+      const notif = this.threadsDvm.threadsZvm.getNotifSetting(mainThreadAh, this.threadsDvm.cell.agentPubKey);
+      if (notif != NotifySettingType.AllMessages) {
+        await this.threadsDvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySettingType.AllMessages);
+      }
     }
 
     /** */
@@ -373,7 +359,7 @@ export class CommunityFeedApp extends HappElement {
 
   /** */
   render() {
-    console.log("<community-feed-app> render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
+    console.log("<community-feed-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
 
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
@@ -494,7 +480,7 @@ export class CommunityFeedApp extends HappElement {
                             subject,
                             subject_name,
                         };
-                        const [ppAh, ppMat] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
+                        const [ts, ppAh, ppMat] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
                         const wal: WAL = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: ppMat.subject.hash}
                         await creatableViewInfo.resolve(wal);
                       } catch(e) {

@@ -1138,7 +1138,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[ActionHashB64, ParticipationProtocolMat]> {
+  async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[Timestamp, ActionHashB64, ParticipationProtocolMat]> {
     const [pp_ah, ts, maybeNotifPair] = await this.zomeProxy.createParticipationProtocol(pp);
     /** Store PP */
     const ppAh = encodeHashToBase64(pp_ah);
@@ -1154,7 +1154,7 @@ export class ThreadsZvm extends ZomeViewModel {
       /*await*/ this.notifyPeer(recipient, signal);
     }
     /** */
-    return [ppAh, ppMat];
+    return [ts, ppAh, ppMat];
   }
 
 

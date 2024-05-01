@@ -665,7 +665,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         subject_name: request.subjectName,
         //subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
     };
-    const [ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
+    const [ts, ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }
 
