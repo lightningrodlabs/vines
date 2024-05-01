@@ -18,12 +18,20 @@ pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Times
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
+
+///
+#[hdk_extern]
+pub fn get_text_bead_option(ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, TextBead)>> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
+  return Ok(get_typed_bead::<TextBead>(ah).ok());
+}
+
+
 ///
 #[hdk_extern]
 pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   return get_typed_bead::<TextBead>(ah);
-
 }
 
 

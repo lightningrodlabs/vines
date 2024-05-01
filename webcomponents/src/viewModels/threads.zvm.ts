@@ -1203,22 +1203,25 @@ export class ThreadsZvm extends ZomeViewModel {
     let author: AgentPubKey;
     let typed: TypedBead;
     let type: BeadType;
-    try {
-      [creationTime, author, typed] = await this.zomeProxy.getTextBead(beadAh);
-      type = ThreadsEntryType.TextBead;
-    } catch(e) {
-      try {
-        [creationTime, author, typed] = await this.zomeProxy.getEntryBead(beadAh);
-        type = ThreadsEntryType.EntryBead;
-      } catch(e) {
+
+    const textTuple = await this.zomeProxy.getTextBeadOption(beadAh);
+    if (textTuple == null) {
+      const entryTuple = await this.zomeProxy.getEntryBeadOption(beadAh);
+      if (entryTuple == null) {
         try {
           [creationTime, author, typed] = await this.zomeProxy.getAnyBead(beadAh);
           type = ThreadsEntryType.AnyBead;
-        } catch(e) {
+        } catch (e) {
           //console.error(e);
           Promise.reject(`Bead not found at hash ${encodeHashToBase64(beadAh)} : ${e}`);
         }
+      } else {
+        type = ThreadsEntryType.EntryBead;
+        [creationTime, author, typed] = entryTuple;
       }
+    } else {
+      type = ThreadsEntryType.TextBead;
+      [creationTime, author, typed] = textTuple;
     }
     const ts = alternateCreationTime? alternateCreationTime : creationTime;
     await this.storeTypedBead(encodeHashToBase64(beadAh), materializeTypedBead(typed, type), type, ts, encodeHashToBase64(author), canNotify, false);

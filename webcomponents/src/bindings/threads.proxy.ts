@@ -163,6 +163,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('add_any_bead', input);
   }
 
+  async getAnyBeadOption(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, AnyBead] | null> {
+    return this.call('get_any_bead_option', beadAh);
+  }
+
   async getAnyBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, AnyBead]> {
     return this.call('get_any_bead', beadAh);
   }
@@ -195,6 +199,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('add_entry_as_bead', input);
   }
 
+  async getEntryBeadOption(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EntryBead] | null> {
+    return this.call('get_entry_bead_option', beadAh);
+  }
+
   async getEntryBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EntryBead]> {
     return this.call('get_entry_bead', beadAh);
   }
@@ -221,6 +229,10 @@ export class ThreadsProxy extends ZomeProxy {
 
   async addTextBead(texto: TextBead): Promise<[ActionHash, string, Timestamp]> {
     return this.callBlocking('add_text_bead', texto);
+  }
+
+  async getTextBeadOption(ah: ActionHash): Promise<[Timestamp, AgentPubKey, TextBead] | null> {
+    return this.call('get_text_bead_option', ah);
   }
 
   async getTextBead(ah: ActionHash): Promise<[Timestamp, AgentPubKey, TextBead]> {

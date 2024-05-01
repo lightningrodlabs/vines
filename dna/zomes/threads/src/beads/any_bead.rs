@@ -40,6 +40,14 @@ pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String,
 
 ///
 #[hdk_extern]
+pub fn get_any_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, AnyBead)>> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
+    return Ok(get_typed_bead::<AnyBead>(bead_ah).ok());
+}
+
+
+///
+#[hdk_extern]
 pub fn get_any_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, AnyBead)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     return get_typed_bead::<AnyBead>(bead_ah);
