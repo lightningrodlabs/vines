@@ -13,6 +13,7 @@ import {globaFilesContext, weClientContext} from "../../contexts";
 import {FilesDvm} from "@ddd-qc/files";
 import {JumpEvent, notification2JumpEvent} from "../../jump";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {composeFeedNotificationTitle} from "../../utils_feed";
 
 
 /**
@@ -31,6 +32,8 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
+
+  @property({type: Boolean}) feed = false
 
   @consume({ context: globaFilesContext, subscribe: true })
   filesDvm!: FilesDvm;
@@ -67,7 +70,9 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
       ([linkAh, [_ppAh, notif]]) => {
 
         /** Content */
-        const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.weServices);
+        const [notifTitle, notifBody] = this.feed
+          ? composeFeedNotificationTitle(notif, this._dvm, this.filesDvm, this.weServices)
+          : composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.weServices);
 
         /** Author */
         const author = encodeHashToBase64(notif.author);

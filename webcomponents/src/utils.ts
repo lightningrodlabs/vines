@@ -23,6 +23,7 @@ import {
   ThreadsEntryType
 } from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {POST_TYPE_NAME} from "./utils_feed";
 
 
 /** */
@@ -163,6 +164,7 @@ export function emptyActionHash() {
 }
 
 export const MAIN_TOPIC_HASH = encodeHashToBase64(emptyActionHash());
+export const MAIN_SEMANTIC_TOPIC = "__main";
 
 
 /** We  */
@@ -172,6 +174,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
       case SEMANTIC_TOPIC_TYPE_NAME: return `#`; break;
       case PP_TYPE_NAME: return `🧵`; break;
       case SUBJECT_TYPE_TYPE_NAME: return `🧶`; break;
+      case POST_TYPE_NAME: return ``; break;
       /** -- bead types -- */
       case ThreadsEntryType.TextBead: return "💬"; break;
       case ThreadsEntryType.EntryBead: return "📎"; break;
@@ -196,14 +199,14 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
           semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
         }
         return semTopic[0];
-        break;
+      break;
       case PP_TYPE_NAME:
         let thread = threadsZvm.perspective.threads[subject.hash];
         if (!thread) {
           thread = await threadsZvm.fetchPp(subject.hash);
         }
         return thread.name;
-        break;
+      break;
       case SUBJECT_TYPE_TYPE_NAME:
         if (weServices) {
           let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
@@ -211,7 +214,15 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
         } else {
           return `{${subject.typeName}}`;
         }
-        break;
+      break;
+      case POST_TYPE_NAME:
+        let beadTuple = threadsZvm.perspective.beads[subject.hash];
+        if (beadTuple) {
+          return determineBeadName(beadTuple[0].beadType, beadTuple[1], filesDvm, weServices);
+        } else {
+          return `unknown`;
+        }
+      break;
       /** -- bead types -- */
       case ThreadsEntryType.TextBead:
       case ThreadsEntryType.EntryBead:
@@ -227,11 +238,11 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
         const beadName = determineBeadName(subject.typeName, typedMat, filesDvm, weServices);
         //console.log("determineSubjectName() beadName", beadName);
         return beadName;
-        break;
+      break;
       /** unknown */
       default:
         return `{unknown '${subject.typeName}'}`;
-        break;
+      break;
     }
   } else {
     /** Unknown Applet */

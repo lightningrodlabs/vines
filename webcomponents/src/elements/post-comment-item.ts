@@ -143,7 +143,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       case ThreadsEntryType.EntryBead:
         content = html`<div>__File__</div>`;
         const entryBead = typedBead as EntryBeadMat;
-        console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
+        console.log("<post-comment-item> entryBead", entryBead, entryBead.sourceEh);
         const manifestEh = entryBead.sourceEh;
         const maybeTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
         if (maybeTuple) {
@@ -178,7 +178,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("renderSideBead() infoPair", this.hash);
+    console.log("<post-comment-item>.render()", this.hash);
 
     const [content, author, date] = this.renderContent();
     const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
@@ -188,11 +188,12 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     return html`
     <div id="sideItem">
         <div id="avatarColumn">
-            <div @click=${(e) => {
-                //console.log("sideItem onShowProfile clicked", beadAh);
-                e.stopPropagation();
-                this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-            }}>
+            <div style="cursor:pointer"
+                @click=${(e) => {
+                    //console.log("sideItem onShowProfile clicked", beadAh);
+                    e.stopPropagation();
+                    this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                }}>
                 ${renderAvatar(this._dvm.profilesZvm, author, "XS")}                
             </div>
         </div>

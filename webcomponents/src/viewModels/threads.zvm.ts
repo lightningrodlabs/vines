@@ -813,13 +813,13 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Probe all emojis on this bead */
   async probeEmojiReactions(beadAh: ActionHashB64) {
-    console.log("probeEmojiReactions()", beadAh);
+    //console.log("probeEmojiReactions()", beadAh);
     let prevReactions = this._emojiReactions[beadAh];
     if (!prevReactions) prevReactions = [];
     const reactions: [AgentPubKeyB64, string][] = (await this.zomeProxy.getReactions(decodeHashFromBase64(beadAh)))
       .map(([key, emoji]) => [encodeHashToBase64(key), emoji]);
     const notEqual = JSON.stringify(prevReactions) !== JSON.stringify(reactions);
-    console.log("probeEmojiReactions() count", reactions.length, notEqual);
+    //console.log("probeEmojiReactions() count", reactions.length, notEqual);
     if (notEqual) {
       this._emojiReactions[beadAh] = reactions;
       this.notifySubscribers();
@@ -930,7 +930,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async createNextBead(ppAh: ActionHashB64): Promise<Bead> {
-    console.log("createNextBead()", ppAh);
+    //console.log("createNextBead()", ppAh);
     /** Figure out last known bead for this thread */
     let thread = this._threads.get(ppAh);
     if (!thread) {
@@ -950,7 +950,7 @@ export class ThreadsZvm extends ZomeViewModel {
       ppAh: decodeHashFromBase64(ppAh),
       prevKnownBeadAh,
     }
-    console.log("createNextBead() bead", prevKnownBeadAh? encodeHashToBase64(prevKnownBeadAh): undefined, ppAh);
+    //console.log("createNextBead() bead", prevKnownBeadAh? encodeHashToBase64(prevKnownBeadAh): undefined, ppAh);
     return bead;
   }
 
@@ -976,13 +976,14 @@ export class ThreadsZvm extends ZomeViewModel {
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
     /** Commit Entry */
     let typed: TypedBead;
-    let global_time_anchor, bucket_ts;
+    let global_time_anchor: string;
+    let bucket_ts: Timestamp;
     let notifPairs: [AgentPubKey, WeaveNotification][] = [];
     let bead_ah: ActionHash;
     switch (beadTypeEx) {
       case ThreadsEntryType.TextBead:
         typed = {value: content as string, bead: nextBead} as TextBead;
-        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtWithMentions({texto: typed, creationTime, mentionees});
+        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtWithMentions({texto: typed, creationTime, mentionees, canNotifyReply: false});
         break;
       case ThreadsEntryType.EntryBead:
         const entryInfo = {
@@ -992,6 +993,7 @@ export class ThreadsZvm extends ZomeViewModel {
           roleName: "rFiles", // FILES_CELL_NAME
           creationTime,
           author,
+          canNotifyReply: false,
         };
         [bead_ah, typed, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addEntryAsBead(entryInfo);
         break;
@@ -1010,7 +1012,7 @@ export class ThreadsZvm extends ZomeViewModel {
           typeInfo: "wal",
         } as AnyBead;
         console.log("publishHrlBeadAt()", wurl, anyBead);
-        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime});
+        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime, canNotifyReply: false});
         typed = anyBead;
         break;
       default: throw Error("Unknown beadType: " + beadTypeEx);
@@ -1213,7 +1215,7 @@ export class ThreadsZvm extends ZomeViewModel {
           type = ThreadsEntryType.AnyBead;
         } catch (e) {
           //console.error(e);
-          Promise.reject(`Bead not found at hash ${encodeHashToBase64(beadAh)} : ${e}`);
+          return Promise.reject(`Bead not found at hash ${encodeHashToBase64(beadAh)} : ${e}`);
         }
       } else {
         type = ThreadsEntryType.EntryBead;

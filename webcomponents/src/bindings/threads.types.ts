@@ -152,6 +152,7 @@ export interface AddAnyBeadInput {
   anyBead: AnyBead
   creationTime: Timestamp
   originalAuthor?: AgentPubKey
+  canNotifyReply: boolean
 }
 
 /**  */
@@ -176,6 +177,7 @@ export interface AddEntryAsBeadInput {
   zomeName: string
   originalCreationTime?: Timestamp
   originalAuthor?: AgentPubKey
+  canNotifyReply: boolean
 }
 
 export interface GetLatestBeadsInput {
@@ -189,6 +191,7 @@ export interface AddTextAndMentionsAtInput {
   texto: TextBead
   creationTime: Timestamp
   mentionees: AgentPubKey[]
+  canNotifyReply: boolean
 }
 
 export interface BeadLink {

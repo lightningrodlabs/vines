@@ -81,16 +81,6 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-
-  protected updated() {
-    const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
-    if (isFavorite) {
-      this.style.background = "rgb(223, 246, 255)";
-    } else {
-      this.style.background = "";
-    }
-  }
-
   /** */
   private async loadPost() {
     console.log("<post-item>.loadPost()")
@@ -184,10 +174,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   async updateFavorite(beadAh: ActionHashB64, canAdd: boolean) {
     if (canAdd) {
       await this._dvm.threadsZvm.addFavorite(beadAh);
-      toasty("Message added to favorites");
+      toasty("Post added to favorites");
     } else {
       await this._dvm.threadsZvm.removeFavorite(beadAh);
-      toasty("Message removed to favorites");
+      toasty("Post removed from favorites");
     }
   }
 
@@ -209,12 +199,12 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateComment(inputText: string) {
+  async onTextComment(inputText: string) {
     const commentThreadAh = await this.getCommentThread();
     const agentsToNotify = parseMentions(inputText, this._dvm.profilesZvm);
     /** Publish */
     const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentPubKey, agentsToNotify);
-    console.log("onCreateComment() ah:", ah);
+    console.log("onTextComment() ah:", ah);
   }
 
 
@@ -320,13 +310,16 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
 
     let commentLine = "";
-    if (commentThread && commentThread.beadLinksTree.values.length == 1) {
-      commentLine = "1 " + msg("comment");
+    if (commentThread) {
+      const count = commentThread.beadLinksTree.values.length;
+      if (count == 0) this._dvm.threadsZvm.probeAllBeads(commentThreadAh);
+      if (count == 1) {
+        commentLine = "1 " + msg("comment");
+      }
+      if (count > 1) {
+        commentLine = "" + commentThread.beadLinksTree.values.length + " " + msg("comments");
+      }
     }
-    if (commentThread && commentThread.beadLinksTree.values.length > 1) {
-      commentLine = "" + commentThread.beadLinksTree.values.length + " " + msg("comments");
-    }
-
     /** render all */
     return html`
       <div id="innerPostItem">
@@ -375,14 +368,14 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         <!-- Comments row -->
         <div style="display:${this._canShowComment? "flex" : "none"}; flex-direction:column;">
             <hr/>            
-            ${commentThreadAh? html`
+            ${commentThreadAh && this._canShowComment? html`
                 <post-comment-thread-view .threadHash=${commentThreadAh}
-                @show-emoji=${(e) => {
-                  //console.log("SHOW EMOJI", e.detail, e.detail.x, e.detail.y);
-                  const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
-                  this._commentAh = e.detail.bead;
-                  this.onClickAddEmoji(elem);
-                }}></post-comment-thread-view>
+                                          @show-emoji=${(e) => {
+                                            //console.log("SHOW EMOJI", e.detail, e.detail.x, e.detail.y);
+                                            const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
+                                            this._commentAh = e.detail.bead;
+                                            this.onClickAddEmoji(elem);
+                                          }}></post-comment-thread-view>
             ` : html``}
         </div>
         <!-- Input Row -->
@@ -397,8 +390,8 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                              .cachedInput=${this._dvm.perspective.threadInputs[this.hash]? this._dvm.perspective.threadInputs[this.hash] : ""}
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
-                             @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}
-                             @upload=${(e) => {e.preventDefault(); this.onUploadComment()}}
+                             @input=${(e) => {e.preventDefault(); this.onTextComment(e.detail)}}
+                             @upload=${(e) => {e.preventDefault(); this.onFileComment()}}
                              @grab_hrl=${async (e) => {e.preventDefault(); this.onHrlComment()}}
             ></vines-input-bar>`}
         </div>
@@ -439,7 +432,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onUploadComment() {
+  onFileComment() {
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {

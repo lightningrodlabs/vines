@@ -12,6 +12,7 @@ pub struct AddTextAndMentionsAtInput {
   pub texto: TextBead,
   pub creation_time: Timestamp,
   mentionees: Vec<AgentPubKey>,
+  pub can_notify_reply: bool,
 }
 
 
@@ -35,11 +36,13 @@ pub fn add_text_bead_at_with_mentions(input: AddTextAndMentionsAtInput) -> Exter
     }
   }
   /// Reply
-  if let Some(reply_ah) = input.texto.bead.prev_known_bead_ah.clone() {
-    let reply_author = get_author(&reply_ah.clone().into())?;
-    let maybe= send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
-    if let Some((_link_ah, notif)) = maybe {
-      notifs.push((reply_author, notif));
+  if input.can_notify_reply {
+    if let Some(reply_ah) = input.texto.bead.prev_known_bead_ah.clone() {
+      let reply_author = get_author(&reply_ah.clone().into())?;
+      let maybe = send_inbox_item(SendInboxItemInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply })?;
+      if let Some((_link_ah, notif)) = maybe {
+        notifs.push((reply_author, notif));
+      }
     }
   }
   /// Done

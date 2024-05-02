@@ -15,7 +15,7 @@ import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {BeadType, materializeSubject} from "../../viewModels/threads.perspective";
-import {getMainThread} from "../../utils_feed";
+import {getMainThread, POST_TYPE_NAME} from "../../utils_feed";
 
 
 /**
@@ -143,7 +143,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async createCommentThread(beadAh: ActionHashB64): Promise<ActionHashB64> {
     const subject: Subject = {
       hash: decodeHashFromBase64(beadAh),
-      typeName: ThreadsEntryType.EntryBead,
+      typeName: POST_TYPE_NAME, // ThreadsEntryType.TextBead,
       appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
       dnaHash: decodeHashFromBase64(this.cell.dnaHash),
     };
@@ -172,7 +172,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       <ui5-textarea id="contentInput" placeholder=${msg('Whats up?')} growing></ui5-textarea>
       <div id="extraRow">
           ${this.weServices? html`
-            <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
+            <ui5-button design="Transparent" icon="add" tooltip=${msg('Attach WAL from pocket')}
                         @click=${(e) => this.onCreateHrl()}>
             </ui5-button>` : html``}
         <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}

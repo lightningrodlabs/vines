@@ -5,7 +5,7 @@ import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {determineSubjectPrefix, parseMentions} from "../utils";
 
-import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -17,13 +17,11 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
-import {beadJumpEvent, threadJumpEvent} from "../jump";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
 import {codeStyles} from "../markdown/code-css";
-import {WAL} from "@lightningrodlabs/we-applet";
 import {InputBar} from "./input-bar";
 
 
@@ -243,7 +241,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     let commentItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
       const isNew = initialProbeLogTs < beadInfo.creationTime;
-      console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
+      //console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
       return html`<post-comment-item .hash=${beadAh} ?new=${isNew}></post-comment-item>`
     });

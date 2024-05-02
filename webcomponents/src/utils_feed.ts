@@ -7,13 +7,15 @@ import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
+export const POST_TYPE_NAME = "Post";
+
 /**
  * Grab oldest thread about MAIN TOPIC.
  * This is because partitioned networks edge case where several agents create the main thread.
  */
 export function getMainThread(dvm: ThreadsDvm): ActionHashB64 | null {
   const threads = dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
-  console.log("getMainThread()", threads, dvm);
+  //console.log("getMainThread()", threads, dvm);
   if (threads.length == 0) {
     return null;
   }
@@ -64,7 +66,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
         if (beadInfo.bead.ppAh == mainThreadAh) {
           title = "New post";
         } else {
-          title = "New comment in " + maybeThread.name;
+          title = `New comment on post "${maybeThread.pp.subject_name}"` //maybeThread.name;
         }
         content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
       }

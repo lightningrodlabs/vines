@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -61,7 +61,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<post-thread-view>.dvmUpdated()");
+    console.log("<post-thread-view>.dvmUpdated() mainThreadAh");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -157,11 +157,12 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected async loadlatestThreads(newDvm?: ThreadsDvm) {
-    console.log("<post-thread-view>.loadlatestThreads() probe", !!this._dvm);
+    console.log("<post-thread-view>.loadlatestThreads()", !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
     this._loading = true;
     await dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
     this._mainThreadAh = getMainThread(dvm);
+    console.log("<post-thread-view>.loadlatestThreads() mainThreadAh", this._mainThreadAh);
     if (this._mainThreadAh) {
       await dvm.threadsZvm.probeAllBeads(this._mainThreadAh);
       await dvm.threadsZvm.commitGlobalProbeLog();
@@ -198,10 +199,13 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<post-thread-view>.render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
+    /** If no main thread, check again in 1 min */
+    console.log("<post-thread-view>.render() mainThreadAh", this._mainThreadAh);
     if (!this._mainThreadAh) {
-      return html`
-        <div>${msg('No Main Feed')}</div>
-      `;
+      if (!this._loading) {
+        delay(60 * 1000).then(() => {this.loadlatestThreads()});
+      }
+      return html`<div>${msg('No Main Feed')}</div>`;
     }
 
     const thread = this._dvm.threadsZvm.perspective.threads.get(this._mainThreadAh);
@@ -218,16 +222,21 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
         }
+        const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(blm.beadAh);
         if (this.favorites) {
-          const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(blm.beadAh);
           if (!isFavorite) {
             return html``;
           }
         }
+        const bg_color = blm.beadAh == this.beadAh
+          ? "#c4f2b07a"
+          : isFavorite? "rgb(223, 246, 255)" : "";
         return html`
-            <post-item id=${(blm.beadAh)} .hash=${(blm.beadAh)}
-                       style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}">
-        </post-item>`;
+            <post-item id=${(blm.beadAh)} 
+                       .hash=${(blm.beadAh)}
+                       style="background: ${bg_color}"
+            ></post-item>
+        `;
       }
     );
 

@@ -30,9 +30,7 @@ import {
   NotifySettingType,
   onlineLoadedContext,
   ParticipationProtocol,
-  SEMANTIC_TOPIC_TYPE_NAME,
   Subject,
-  THIS_APPLET_ID,
   THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   ThreadsDvm,
@@ -41,7 +39,7 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   weaveUrlToWal,
   weClientContext,
-  getMainThread,
+  getMainThread, MAIN_SEMANTIC_TOPIC,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {localized, msg} from '@lit/localize';
@@ -73,12 +71,9 @@ export class CommunityFeedApp extends HappElement {
   @state() private _hasWeProfile = false;
   @state() private _lang?: string
 
-  @state() private _currentSpaceEh: null | EntryHashB64 = null;
-
   static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
-  @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
-  @state() private _selectedBeadAh: ActionHashB64 = '';
+  @state() private _selectedPostAh: ActionHashB64 = '';
 
 
   /** -- We-applet specifics -- */
@@ -255,7 +250,7 @@ export class CommunityFeedApp extends HappElement {
 
 
     /** Make sure main topic and thread exists */
-    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, "__main", false, false);
+    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, MAIN_SEMANTIC_TOPIC, false, false);
     this.threadsDvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
     const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
@@ -314,26 +309,30 @@ export class CommunityFeedApp extends HappElement {
       }
     }
     if (e.detail.type == JumpDestinationType.Thread) {
-      if (this.appletView && this.appletView.type != "main") {
-        if (this._weServices) {
-          this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
-          //this._weServices.openHrl();
-        }
-      } else {
-        this._selectedThreadHash = e.detail.hash;
-        this._selectedBeadAh = '';
-      }
+      // if (this.appletView && this.appletView.type != "main") {
+      //   if (this._weServices) {
+      //     this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
+      //     //this._weServices.openHrl();
+      //   }
+      // } else {
+      //   this._selectedThreadHash = e.detail.hash;
+      //   this._selectedBeadAh = '';
+      // }
     }
     if (e.detail.type == JumpDestinationType.Bead) {
-      //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
-      //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
+      /** Directly to post or get post from comment thread subject */
       const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);
       if (beadInfo) {
-        this._selectedThreadHash = beadInfo.bead.ppAh;
-        this._selectedBeadAh = e.detail.hash;
+        const pp = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
+        if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
+          this._selectedPostAh = e.detail.hash;
+        } else {
+          this._selectedPostAh = pp.subject.hash;
+        }
       } else {
         console.warn("JumpEvent failed. Bead not found", e.detail.hash);
       }
+      this.requestUpdate();
     }
     if (e.detail.type == JumpDestinationType.Dm) {
       // TODO
@@ -410,7 +409,7 @@ export class CommunityFeedApp extends HappElement {
     // FIXME: should propable store networkInfoLogs in class field
     let view = html`
             <community-feed-page
-                      .selectedThreadHash=${this._selectedThreadHash}
+                      .selectedPostAh=${this._selectedPostAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}

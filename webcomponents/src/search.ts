@@ -53,7 +53,7 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesPer
   const quoted = splitSpacesExcludeQuotesDetailed(sanitized);
   const words = mergeSearchKeywords(quoted);
   //const words = sanitized.split(/\s+/)
-  console.log(`parseSearchInput() "${input}"`, words, quoted);
+  //console.log(`parseSearchInput() "${input}"`, words, quoted);
 
   let result: SearchParameters = {canSearchHidden: false};
 

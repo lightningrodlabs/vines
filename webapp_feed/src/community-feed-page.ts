@@ -243,20 +243,14 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Fields -- */
 
-  @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
-  @state() private _createTopicHash: AnyLinkableHashB64 = '';
-
-  @state() private _canShowComments = false;
   @state() private _canShowFavorites = false;
-  @state() private _listerToShow: string | null = null;
 
   @state() private _canViewArchivedSubjects = false;
   @state() private _currentCommentRequest?: CommentRequest;
 
   @state() private _splitObj?: SplitObject;
 
-  @property() selectedThreadHash: AnyLinkableHashB64 = '';
-  @property() selectedBeadAh: ActionHashB64 = '';
+  @property() selectedPostAh: ActionHashB64 = '';
 
   @property({type: Object})
   networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
@@ -302,8 +296,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-
-    this.selectedBeadAh = '';
+    //this.selectedPostAh = '';
   }
 
 
@@ -523,33 +516,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
-    console.log("<community-feed-page>.onJump()", e.detail, this.selectedThreadHash);
-    const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
-    /** */
-    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
-      /** set lastProbeTime for current thread */
-      await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
-      /** Clear notifications on prevThread */
-      const prevThreadNotifs = this._dvm.threadsZvm.getPpNotifs(prevThreadHash);
-      for (const [linkAh, _notif] of prevThreadNotifs) {
-        await this._dvm.threadsZvm.deleteInboxItem(linkAh);
-      }
-      /** Cache and reset input-bar */
-      const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
-      if (inputBar) {
-        this._dvm.perspective.threadInputs[prevThreadHash] = inputBar.value;
-        inputBar.setValue("");
-        // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
-      }
-    }
+    console.log("<community-feed-page>.onJump()", e.detail);
     /** Close any opened popover */
     const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();
-    }
-    const pop = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
-    if (pop.isOpen()) {
-      pop.close();
     }
     let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
     if (searchPopElem.isOpen()) {
@@ -584,7 +555,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   render() {
-    console.log("<community-feed-page>.render()", this.onlineLoaded, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<community-feed-page>.render()", this.onlineLoaded, this.selectedPostAh, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     /** This agent's profile info */
     let myProfile = this._dvm.profilesZvm.getMyProfile();
@@ -601,11 +572,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
     const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
     const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
-
-    let notifSetting = NotifySettingType.MentionsOnly; // default
-    if (this.selectedThreadHash) {
-      notifSetting = this._dvm.threadsZvm.getNotifSetting(this.selectedThreadHash, this.cell.agentPubKey);
-    }
 
     /** Group Info */
     let groupProfile: GroupProfile = {
@@ -653,9 +619,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
             <sl-tooltip content=${groupProfile.name} style="--show-delay: 500;">
               <ui5-avatar size="S" class="chatAvatar"
                           @click=${() => {
-                              const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                              const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
-                              popover.showAt(btn);
+                              //const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                              //const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                              //popover.showAt(btn);
                           }}>
                 <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
               </ui5-avatar>
@@ -764,7 +730,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           <div style="display:flex; flex-direction:row; flex-grow: 1;">
             <div id="left" style="flex-grow:1"></div>
             <div id="center" style="padding-top: 80px;">
-                <post-thread-view id="feed" .favorites=${this._canShowFavorites}>
+                <post-thread-view id="feed" .beadAh=${this.selectedPostAh} .favorites=${this._canShowFavorites}>
                 ${this._splitObj? html`
                   <div id="uploadCard">
                     <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
@@ -796,7 +762,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           </ui5-popover>
   
           <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
-              <notification-list></notification-list>
+              <notification-list feed></notification-list>
           </ui5-popover>
             
         </div>
