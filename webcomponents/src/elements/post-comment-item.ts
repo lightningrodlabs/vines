@@ -9,20 +9,24 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
-import {AnyBeadMat, EntryBeadMat, TextBeadMat, ThreadsPerspective,} from "../viewModels/threads.perspective";
+import {
+  AnyBeadMat,
+  dematerializeAnyBead,
+  EntryBeadMat, materializeBead,
+  TextBeadMat,
+  ThreadsPerspective,
+} from "../viewModels/threads.perspective";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {AnyBead, ThreadsEntryType} from "../bindings/threads.types";
 import {md} from "../markdown/md";
 import {timeSince, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
-import {beadJumpEvent} from "../jump";
 import {renderAvatar} from "../render";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 
-import Popover from "@ui5/webcomponents/dist/Popover";
 
 /**
  * @element
@@ -61,25 +65,26 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    console.log("<post-comment-item>.dvmUpdated()", this.hash, newDvm);
     if (oldDvm) {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+    let beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
+    let typedBead = newDvm.threadsZvm.getBead(this.hash);
     /* Try loading AnyBead Asset */
-    const pair = await newDvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
-    if (!pair) {
-      return;
+    if (!beadInfo) {
+      const pair = await newDvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+      if (!pair) {
+        return;
+      }
+      beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
+      typedBead = newDvm.threadsZvm.getBead(this.hash);
     }
-    const [typedBead, type] = pair;
-    if (type == ThreadsEntryType.AnyBead && this.weServices) {
-      const anyBead = typedBead as AnyBead;
+    if (beadInfo.beadType == ThreadsEntryType.AnyBead && this.weServices) {
+      const anyBead = typedBead as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
       await this.weServices.assetInfo(wal);
-    }
-    /** */
-    const beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
-    if (!beadInfo) {
-      await newDvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
     }
     await newDvm.threadsZvm.probeEmojiReactions(this.hash);
   }

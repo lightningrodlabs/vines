@@ -234,8 +234,8 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
     const beads = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
 
-    console.log("<post-comment-thread-view>.render() len =", beads.length);
-    console.log("Has thread some unreads?", thread.hasUnreads());
+    //console.log("<post-comment-thread-view>.render() len =", beads.length);
+    //console.log("Has thread some unreads?", thread.hasUnreads());
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let commentItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
@@ -255,9 +255,9 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //<!--style="height: 400px" growing="Scroll" -->
     //<!-- @load-more=${this.onLoadMore}-->
 
-    const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
-    const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
-    const subjectPrefix = determineSubjectPrefix(subjectType);
+    //const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
+    //const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
+    //const subjectPrefix = determineSubjectPrefix(subjectType);
 
     const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(decodeHashFromBase64(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";

@@ -103,8 +103,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       await this._dvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
     }
     await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
-    const ppAh = await this.getCommentThread();
-    await this._dvm.threadsZvm.probeNotifSettings(ppAh);
+    const commentThreadAh = await this.getCommentThread();
+    await this._dvm.threadsZvm.probeNotifSettings(commentThreadAh);
+    await this._dvm.threadsZvm.probeAllBeads(commentThreadAh); // TODO: Get links count instead as it should be faster
     this._loading = false;
   }
 
@@ -312,7 +313,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     let commentLine = "";
     if (commentThread) {
       const count = commentThread.beadLinksTree.values.length;
-      if (count == 0) this._dvm.threadsZvm.probeAllBeads(commentThreadAh);
+      //if (count == 0) this._dvm.threadsZvm.probeAllBeads(commentThreadAh);
       if (count == 1) {
         commentLine = "1 " + msg("comment");
       }

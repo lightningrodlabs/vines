@@ -1480,7 +1480,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     const beadInfo = {creationTime, author, beadType, bead: typedBead.bead};
-    console.log("storeBead()", typedBead.bead.ppAh, typedBead, author);
+    console.log("storeBead()", beadAh, typedBead.bead.ppAh, typedBead, author);
     await this.storeBeadInThread(beadAh, typedBead.bead.ppAh, creationTime, isNew, beadInfo.beadType);
     this._beads[beadAh] = [beadInfo, typedBead];
     if (canNotify) {

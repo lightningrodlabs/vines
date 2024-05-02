@@ -200,7 +200,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("<post-thread-view>.render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
     /** If no main thread, check again in 1 min */
-    console.log("<post-thread-view>.render() mainThreadAh", this._mainThreadAh);
+    //console.log("<post-thread-view>.render() mainThreadAh", this._mainThreadAh);
     if (!this._mainThreadAh) {
       if (!this._loading) {
         delay(60 * 1000).then(() => {this.loadlatestThreads()});
@@ -213,19 +213,19 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     //const all = thread.getAll();
     let passedLog = false;
 
-    let postItems = Object.values(thread.beadLinksTree.values).map(
-      (blm) => {
-        console.log("<post-thread-view> blm", blm, this.threadsPerspective);
+    let postItems = Object.values(thread.beadLinksTree.values)
+      .map((blm) => {
+        //console.log("<post-thread-view> blm", blm, this.threadsPerspective);
         /** 'new' if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this._mainThreadAh];
-        console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
+        //console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
         }
         const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(blm.beadAh);
         if (this.favorites) {
           if (!isFavorite) {
-            return html``;
+            return;
           }
         }
         const bg_color = blm.beadAh == this.beadAh
@@ -238,13 +238,16 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
             ></post-item>
         `;
       }
-    );
+    )
+      .filter((item) => !!item);
 
+    console.log("<post-thread-view>.render() postItems", postItems.length, postItems, this.favorites);
 
     if (postItems.length == 0) {
-      return html`
-        <div>${msg('Feed is empty')}</div>
-      `;
+      if (this.favorites) {
+        return html`<div>${msg('No favorites')}</div>`;
+      }
+      return html`<div>${msg('Feed is empty')}</div>`;
     }
 
     /** render all */

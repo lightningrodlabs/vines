@@ -125,17 +125,14 @@ import 'css-doodle';
 
 import {
   AnyBeadMat,
-  AnyLinkableHashB64, beadJumpEvent,
   ChatThreadView,
-  CommentRequest, CommentThreadView, composeFeedNotificationTitle,
-  doodle_flowers, EditTopicRequest,
+  CommentRequest, composeFeedNotificationTitle,
   event2type,
-  globaFilesContext, InputBar, JumpDestinationType,
-  JumpEvent, MAIN_TOPIC_HASH,
-  NotifySettingType, onlineLoadedContext,
-  parseMentions,
-  ParticipationProtocol, ProfilePanel, searchFieldStyleTemplate,
-  shellBarStyleTemplate, Subject, THIS_APPLET_ID, threadJumpEvent,
+  globaFilesContext,
+  JumpEvent,
+  onlineLoadedContext,
+  ProfilePanel, searchFieldStyleTemplate,
+  shellBarStyleTemplate,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
@@ -161,7 +158,6 @@ import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
-import {composeNotificationTitle} from "@vines/elements/dist/render";
 import {toasty} from "@vines/elements/dist/toast";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
@@ -665,8 +661,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                         style="border-radius: 30px;"
                         @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
             <ui5-button id="inboxButton" icon="bell" tooltip=${msg("Notifications")}
-                        style="border-radius: 30px;"                        
-                        .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
+                        style="border-radius: 30px;"
                         @click=${() => {
                         console.log("inboxButton.click()")
                         const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
@@ -678,6 +673,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                         popover.showAt(elem);
                       }}>
             </ui5-button>
+              ${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? html`
+                  <div id="notifCount">${Object.keys(this._dvm.threadsZvm.perspective.inbox).length}</div>
+              `: html``}
               <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
                           style="margin-top:10px;"
                           design="Transparent" icon="navigation-down-arrow"
@@ -1087,6 +1085,21 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           text-transform: uppercase;
           padding-top: 0px;
         }
+        
+        #notifCount {
+          border-radius: 50%;
+          background: red;
+          position: absolute;
+          top: 10px;
+          right: 104px;
+          padding: 4px;
+          font-size: 0.6em;
+          color: white;
+          font-weight: bold;
+          text-align: center;
+          min-width: 1em;
+        }
+        
       `,
 
     ];
