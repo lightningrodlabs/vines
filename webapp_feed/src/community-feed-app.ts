@@ -114,10 +114,10 @@ export class CommunityFeedApp extends HappElement {
     const app = new CommunityFeedApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
     /** Provide it as context */
     app._weServices = new WeServicesEx(weServices, thisAppletId);
-    console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
+    console.log(`<community-feed-app> \t\tProviding context "${weClientContext}" | in host `, app);
     /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
-    console.log("<thread-app>.fromWe()", profilesProxy);
+    console.log("<<community-feed-app>.fromWe()", profilesProxy);
     await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
     return app;
   }
@@ -130,11 +130,11 @@ export class CommunityFeedApp extends HappElement {
     const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
-    console.log("createProfilesDvm() cell_infos:", cell_infos);
+    console.log("<community-feed-app> createProfilesDvm() cell_infos:", cell_infos);
     /** Create Profiles DVM */
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
-    console.log("createProfilesDvm() dvm", dvm);
+    console.log("<community-feed-app> createProfilesDvm() dvm", dvm);
     await this.setupWeProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
   }
 
@@ -147,7 +147,7 @@ export class CommunityFeedApp extends HappElement {
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
-        console.log("Setting locale from We Profile", maybeLang);
+        console.log("<community-feed-app> Setting locale from We Profile", maybeLang);
         setLocale(maybeLang);
       }
       this._hasWeProfile = true;
@@ -191,16 +191,17 @@ export class CommunityFeedApp extends HappElement {
     /** Authorize all zome calls */
     if (!this._adminWs && this._canAuthorizeZfns) {
       this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
-      console.log("hvmConstructed() connect() called", this._adminWs);
+      console.log("<community-feed-app>.hvmConstructed() connect() called", this._adminWs);
     }
     if (this._adminWs && this._canAuthorizeZfns) {
+      console.info("<community-feed-app> Zome call authorization start");
       await this.hvm.authorizeAllZomeCalls(this._adminWs);
-      console.log("*** Zome call authorization complete");
+      console.info("<community-feed-app> Zome call authorization complete");
     } else {
       if (!this._canAuthorizeZfns) {
         console.warn("No adminWebsocket provided (Zome call authorization done)")
       } else {
-        console.log("Zome call authorization done externally")
+        console.log("<community-feed-app> Zome call authorization done externally")
       }
     }
 
@@ -209,8 +210,8 @@ export class CommunityFeedApp extends HappElement {
     while(this._hasHolochainFailed == undefined || this._hasHolochainFailed && attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
-      console.log(`${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
+      console.log("<community-feed-app> happInitialized(), allAppEntryTypes", allAppEntryTypes);
+      console.log(`<community-feed-app> ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
       if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
         console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(1000);
@@ -224,7 +225,7 @@ export class CommunityFeedApp extends HappElement {
     }
     /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();
-    console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
+    console.log(`<community-feed-app>\t\tProviding context "${globaFilesContext}" | in host `, this);
     let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
 
@@ -233,7 +234,7 @@ export class CommunityFeedApp extends HappElement {
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOffline()");
     const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
-    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
+    console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
     /** Done */
     this._offlineLoaded = true;
   }
@@ -294,7 +295,7 @@ export class CommunityFeedApp extends HappElement {
 
   /** */
   async onDumpNetworkLogs(e) {
-    console.log("onDumpNetworkLogs()")
+    console.log("<community-feed-app>.onDumpNetworkLogs()")
     await this.networkInfoAll();
     this.dumpNetworkInfoLogs();
   }
@@ -415,7 +416,7 @@ export class CommunityFeedApp extends HappElement {
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}
             ></community-feed-page>`;
     if (this.appletView) {
-      console.log("appletView", this.appletView);
+      console.log("<community-feed-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
           let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
@@ -431,11 +432,11 @@ export class CommunityFeedApp extends HappElement {
             throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
           }
           const entryType = pascal(assetViewInfo.entryType);
-          console.log("pascal entryType", assetViewInfo.entryType, entryType);
+          //console.log("pascal entryType", assetViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
               const ppAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
-              console.log("asset ppAh:", ppAh);
+              //console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
             break;
@@ -462,7 +463,7 @@ export class CommunityFeedApp extends HappElement {
             view = html`<create-post-panel 
                     @create=${async (e: CustomEvent/*<CreatePostRequest>*/) => {
                       try {
-                        console.log("@create post event", e.detail);
+                        //console.log("@create post event", e.detail);
                         const hrlc = weaveUrlToWal(e.detail.wurl);
                         const attLocInfo = await this._weServices.assetInfo(hrlc);
                         const subject: Subject = {
@@ -472,7 +473,7 @@ export class CommunityFeedApp extends HappElement {
                             appletId: encodeHashToBase64(attLocInfo.appletHash),
                         }
                         const subject_name = await determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
-                        console.log("@create event subject_name", subject_name);                        
+                        //console.log("@create event subject_name", subject_name);                        
                         const pp: ParticipationProtocol = {
                             purpose: e.detail.purpose,
                             rules: e.detail.rules,
@@ -523,7 +524,7 @@ export class CommunityFeedApp extends HappElement {
               <vines-edit-profile
                   .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
-                    console.log("createMyProfile()", e.detail);
+                    console.log("<community-feed-app> createMyProfile()", e.detail);
                     try {
                       await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
                     } catch(e) {
@@ -532,7 +533,7 @@ export class CommunityFeedApp extends HappElement {
                     this.requestUpdate();
                   }}
                   @lang-selected=${(e: CustomEvent) => {
-                    console.log("set locale", e.detail);
+                    console.log("<community-feed-app> set locale", e.detail);
                     setLocale(e.detail)
                   }}
               ></vines-edit-profile>

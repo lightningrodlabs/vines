@@ -21,6 +21,6 @@ console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
 if (HAPP_BUILD_MODE === HappBuildModeType.Retail) {
   // console.log("console.log() disabled");
   // console.log = () => {};
-  //console.log("console.log() changed into console.debug()");
-  //console.log = console.debug
+  console.log("console.log() changed into console.debug()");
+  console.log = console.debug
 }

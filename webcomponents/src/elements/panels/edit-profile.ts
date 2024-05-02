@@ -173,7 +173,7 @@ export class EditProfile extends LitElement {
 
   /** */
   shouldSaveButtonBeEnabled() {
-    console.log("shouldSaveButtonBeEnabled() this._nicknameField", this._nicknameField);
+    //console.log("shouldSaveButtonBeEnabled() this._nicknameField", this._nicknameField);
     if (!this._nicknameField || !this._nicknameField.value) return false;
     //if (!this._nicknameField.validity.valid) return false;
     if (this.avatarMode === 'avatar-required' && !this._avatar)
