@@ -1256,9 +1256,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       <favorites-view></favorites-view>
                   </div>
                   <!-- <peer-list></peer-list> -->
-                  <div id="rightSide" style="display: ${this._canShowSearchResults? "block" : "none"}">
+                  ${this._canShowSearchResults? html`
+                  <div id="rightSide">
                       <search-result-panel .parameters=${searchParameters}></search-result-panel>
-                  </div>
+                  </div>`
+                  : html``}
                   <anchor-tree id="debugSide"
                                style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
               </div>

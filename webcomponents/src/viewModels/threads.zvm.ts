@@ -334,7 +334,10 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Return matching beadAhs */
   searchTextBeads(parameters: SearchParameters): [ActionHashB64, BeadInfo, string][] {
     console.log("searchTextBeads()", parameters);
-
+    /** Must have at least one param */
+    if (Object.keys(parameters).length == 1) {
+      return [];
+    }
     if (parameters.beforeTs && parameters.afterTs && parameters.afterTs < parameters.beforeTs) {
       throw new Error(`Invalid search parameters. Search time interval: [${parameters.afterTs}; ${parameters.beforeTs}]'.`);
     }
@@ -428,11 +431,12 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Query all entries from local source-chain */
   async initializePerspectiveOffline(): Promise<void> {
     //await delay(1000);
+    console.log("threadsZvm.initializePerspectiveOffline() START");
     await this.querySemanticTopics();
     await this.queryThreads();
     await this.queryBeads();
     await this.queryProbeLogs(true);
-
+    console.log("threadsZvm.initializePerspectiveOffline() END");
     this.notifySubscribers(); // check if this is useful
   }
 

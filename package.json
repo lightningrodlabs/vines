@@ -55,8 +55,6 @@
     "prodtest:feed:we-launch"   : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.prodtest.feed.config.json --dev-data-dir \"C:\\ddd_temp\" --agent-idx $AGENT_NUM",
     "prodtest:feed:we-launch2"  : "we-dev-cli \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\"  --dev-data-dir \"C:\\ddd_temp\" --dev-config we.prodtest.feed.config.json --agent-idx $AGENT_NUM",
 
-
-
     "multitest"           : "cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"npm run multitest:we-launch\"",
     "multitest:we-launch" : "/c/Users/damien/AppData/Local/Programs/org.lightningrodlabs.we-electron-alpha/lightningrodlabs-we \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config we.multitest.config.json --dev-data-dir \"C:\\ddd_temp\" --agent-idx 1",
 
@@ -128,8 +126,8 @@
     "@ddd-qc/lit-happ": "=0.23.1",
     "@ddd-qc/profiles-dvm": "=0.23.3",
     "@ddd-qc/we-utils": "=0.23.2",
-    "@ddd-qc/files": "=0.3.1",
-    "@ddd-qc/delivery": "=0.10.1",
+    "@ddd-qc/files": "=0.3.3",
+    "@ddd-qc/delivery": "=0.10.2",
     "@ddd-qc/path-explorer": "0.4.0",
     "@holochain-open-dev/core-types": "0.7.0",
     "@holochain-open-dev/profiles": "0.17.3",

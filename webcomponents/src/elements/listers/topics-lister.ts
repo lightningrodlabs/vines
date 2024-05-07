@@ -74,7 +74,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         return;
       }
       /** Render threads for Topic */
-      let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
+      //let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
+      let threads = [];
       let topicThreads = this.perspective.threadsPerSubject[topicHash];
       if (topicThreads == undefined) {
         topicThreads = [];
@@ -98,7 +99,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
           //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
           const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
-          console.log("<topics-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
+          //console.log("<topics-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
           if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return;
           }
@@ -256,6 +257,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       const topicHasUnreads = unreadSubjects.includes(topicHash);
 
+      //console.log("<topics-lister>.render() threads", threads);
       if (threads.length == 0) {
         threads = [html`<div class="threadItem">
                    <span style="margin-left:28px;margin-right:10px;color:gray">${msg('No threads found')}</span>
