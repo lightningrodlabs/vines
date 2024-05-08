@@ -1,11 +1,11 @@
 use hdi::prelude::*;
 
-///
+/// First bead: prev_bead_ah == pp_ah
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bead {
     pub pp_ah: ActionHash,
-    pub prev_known_bead_ah: Option<ActionHash>,
+    pub prev_bead_ah: ActionHash,
 }
 
 

@@ -195,18 +195,18 @@ export function dematerializeSubject(subject: SubjectMat): Subject {
 
 export interface BeadMat {
   ppAh: ActionHashB64,
-  prevKnownBeadAh?: ActionHashB64,
+  prevBeadAh: ActionHashB64,
 }
 export function materializeBead(bead: Bead): BeadMat {
   return {
     ppAh: encodeHashToBase64(bead.ppAh),
-    prevKnownBeadAh: bead.prevKnownBeadAh? encodeHashToBase64(bead.prevKnownBeadAh) : undefined,
+    prevBeadAh: encodeHashToBase64(bead.prevBeadAh),
   }
 }
 export function dematerializeBead(bead: BeadMat): Bead {
   return {
     ppAh: decodeHashFromBase64(bead.ppAh),
-    prevKnownBeadAh: bead.prevKnownBeadAh? decodeHashFromBase64(bead.prevKnownBeadAh) : undefined,
+    prevBeadAh: decodeHashFromBase64(bead.prevBeadAh),
   }
 }
 

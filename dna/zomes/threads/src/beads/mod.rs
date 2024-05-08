@@ -2,7 +2,6 @@ mod text_bead;
 mod get_latest_beads;
 mod get_all_beads;
 mod index_bead;
-mod mentions;
 mod entry_bead;
 mod any_bead;
 mod emoji_reaction;

@@ -104,6 +104,7 @@ import "@ui5/webcomponents-icons/dist/person-placeholder.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/product.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
+import "@ui5/webcomponents-icons/dist/response.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
@@ -258,6 +259,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @state() private _splitObj?: SplitObject;
 
+  @state() private _replyToAh?: ActionHashB64;
+
+
   private _threadNames: Record<ActionHashB64, string> = {};
 
   @property() selectedThreadHash: AnyLinkableHashB64 = '';
@@ -375,8 +379,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       threadHash = await this.createCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
     }
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, this.cell.agentPubKey, mentionedAgents);
-    console.log("onCreateTextMessage() res:", res);
+    let ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, undefined, mentionedAgents, this._replyToAh);
+    console.log("onCreateTextMessage() ah", ah, this._replyToAh);
+    this._replyToAh = undefined;
+    this.selectedBeadAh = '';
 
     // /** DEBUG */
     // if (this.weServices) {
@@ -395,7 +401,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash);
+    let ah = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, [], this._replyToAh);
+    this._replyToAh = undefined;
+    this.selectedBeadAh = '';
+    console.log("onCreateHrlMessage() ah", ah);
   }
 
 
@@ -623,6 +632,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  async onReplyClicked(e: CustomEvent) {
+    console.log("onReplyClicked()", e.detail);
+    const beadAh = e.detail;
+    this._replyToAh = beadAh;
+  }
+
+
+  /** */
   async onCommentingClicked(e: CustomEvent<CommentRequest>) {
     console.log("onCommentingClicked()", e.detail);
     const request = e.detail;
@@ -697,7 +714,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  uploadFile(ppAh: ActionHashB64) {
+  onCreateFileMessage(ppAh: ActionHashB64) {
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {
@@ -709,10 +726,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<vines-page> startPublishFile callback", eh);
-        /*let ah =*/ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh);
+        let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
         this._splitObj = undefined;
+        this._replyToAh = undefined;
+        this.selectedBeadAh = '';
+        console.log("onCreateFileMessage() ah", ah);
       });
-      console.log("uploadFile()", this._splitObj);
+      console.log("onCreateFileMessage()", this._splitObj);
     }
     input.click();
   }
@@ -728,6 +748,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
     const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
+    this._replyToAh = undefined;
     /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
       /** set lastProbeTime for current thread */
@@ -843,6 +864,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           pct = Math.ceil(this._filesDvm.perspective.uploadState.chunks.length / this._filesDvm.perspective.uploadState.splitObj.numChunks * 100)
         }
 
+        let maybeReplyAuthorName = "unknown"
+        if (this._replyToAh) {
+          const beadInfo = this._dvm.threadsZvm.getBeadInfo(this._replyToAh);
+          if (beadInfo) {
+            const maybeProfile = this._dvm.profilesZvm.perspective.profiles[beadInfo.author];
+            if (maybeProfile) {
+              maybeReplyAuthorName = maybeProfile.nickname;
+            }
+          }
+        }
+
         centerSide = html`
             <chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>
             ${this._splitObj? html`
@@ -857,6 +889,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           style="border:none; padding:0px"
                           @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
+            <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}">
+                Replying to ${maybeReplyAuthorName}
+                <div style="flex-grow: 1"></div>
+                <ui5-button icon="decline" design="Transparent"
+                            style="border:none; padding:0px"
+                            @click=${(e) => {this._replyToAh = undefined;}}></ui5-button>
+            </div>
             <vines-input-bar id="input-bar"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
@@ -864,7 +903,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-                             @upload=${(e) => {e.preventDefault(); this.uploadFile(this.selectedThreadHash)}}
+                             @upload=${(e) => {e.preventDefault(); this.onCreateFileMessage(this.selectedThreadHash)}}
                              @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
             ></vines-input-bar>`
             }
@@ -1015,7 +1054,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Render all */
     return html`
         <div id="mainDiv" 
-             @commenting-clicked=${this.onCommentingClicked} 
+             @commenting-clicked=${this.onCommentingClicked}
+             @reply-clicked=${this.onReplyClicked}
              @edit-topic-clicked=${this.onEditTopicClicked} >
             <div id="leftSide" @contextmenu=${(e) => {
               console.log("LeftSide contextmenu", e);
@@ -1495,6 +1535,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           border: 1px solid black;
         }
 
+        .reply-to-div {
+          flex-direction: row;
+          background: rgb(208, 208, 208);
+          margin: 0px 12px -4px;
+          border-radius: 12px;
+          font-size: smaller;
+          padding-left: 5px;
+          align-items: center;
+          color: #202020;
+        }
+        
         .ui5-select-label-root {
           font-size: larger;
           font-weight: bold;

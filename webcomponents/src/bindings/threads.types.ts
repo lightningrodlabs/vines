@@ -187,13 +187,6 @@ export interface GetLatestBeadsInput {
   target_limit?: number
 }
 
-export interface AddTextAndMentionsAtInput {
-  texto: TextBead
-  creationTime: Timestamp
-  mentionees: AgentPubKey[]
-  canNotifyReply: boolean
-}
-
 export interface BeadLink {
   creationTime: Timestamp
   beadAh: ActionHash
@@ -203,14 +196,21 @@ export interface BeadLink {
 
 /** DEBUG ONLY */
 export interface AddTextBeadAtInput {
-  texto: TextBead
+  textBead: TextBead
   creationTime: Timestamp
 }
 
 export interface AddManyTextBeadAtInput {
-  texto: TextBead
+  textBead: TextBead
   intervalUs: number
   count: number
+}
+
+export interface AddTextAtAndNotifyInput {
+  textBead: TextBead
+  creationTime: Timestamp
+  mentionees: AgentPubKey[]
+  canNotifyReply: boolean
 }
 
 export interface CommitGlobalLogInput {
@@ -345,10 +345,10 @@ export interface GetProtocolsInput {
   subjectType: string
 }
 
-/**  */
+/** First bead: prev_bead_ah == pp_ah */
 export interface Bead {
   ppAh: ActionHash
-  prevKnownBeadAh?: ActionHash
+  prevBeadAh: ActionHash
 }
 
 /**  */

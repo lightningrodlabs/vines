@@ -250,6 +250,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     let currentDay = "";
 
+    let prevBeadAh = undefined;
+
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let chatItems = Object.values(all).map(
       (blm) => {
@@ -285,9 +287,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
         //console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
         const chatItem = html`
-            <chat-item id=${(blm.beadAh)} .hash=${(blm.beadAh)} 
+            <chat-item id=${(blm.beadAh)} .hash=${(blm.beadAh)} .prevBeadAh=${prevBeadAh}
                        style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}">
             </chat-item>`;
+        prevBeadAh = blm.beadAh;
         return html`${chatItem}${hr}${timeHr}`;
       }
     );

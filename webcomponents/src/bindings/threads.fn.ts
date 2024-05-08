@@ -24,7 +24,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_entry_beads",
 	"get_all_beads",
 	"get_latest_beads",
-	"add_text_bead_at_with_mentions",
 	"add_text_bead",
 	"get_text_bead_option",
 	"get_text_bead",
@@ -32,6 +31,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_text_beads",
 	"add_text_bead_at",
 	"add_many_text_bead_at",
+	"add_text_bead_at_and_notify",
 
 	"set_favorite",
 	"unset_favorite",

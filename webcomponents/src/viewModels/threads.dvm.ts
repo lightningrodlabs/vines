@@ -293,8 +293,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]): Promise<ActionHashB64> {
-    let [ah, _time_anchor, creationTime, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments);
+  async publishTypedBead(beadType: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
+    let [ah, _time_anchor, creationTime, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
     /** Erase saved input */
     delete this._threadInputs[ppAh];
     /** Send signal to peers */

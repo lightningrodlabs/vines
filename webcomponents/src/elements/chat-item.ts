@@ -5,12 +5,12 @@ import {consume} from "@lit/context";
 import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {BeadInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {threadJumpEvent} from "../jump";
+import {beadJumpEvent, threadJumpEvent} from "../jump";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
@@ -23,6 +23,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 import {toasty} from "../toast";
 import {popoverStyleTemplate} from "../styles";
 import {determineBeadName} from "../utils";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 /**
@@ -39,6 +40,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of bead to display */
   @property() hash: ActionHashB64 = ''
+
+  @property() prevBeadAh: ActionHashB64 = ''
 
   @property({type: Boolean}) shortmenu: boolean = false;
 
@@ -157,6 +160,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  onClickReply() {
+    this.dispatchEvent(new CustomEvent('reply-clicked', {detail: this.hash, bubbles: true, composed: true,}));
+  }
+
+  /** */
   onClickAddEmoji() {
     const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
     const btn = this.shadowRoot.getElementById("buttonsPop") as HTMLElement;
@@ -206,6 +214,55 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
+
+  /** */
+  renderTopVine(beadInfo: BeadInfo) {
+    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh;
+    const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
+    const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
+    let prevProfile: ProfileMat;
+    let avatarUrl;
+    if (prevBeadInfo) {
+      prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
+      if (prevProfile) avatarUrl = prevProfile.fields['avatar'];
+    }
+    //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
+    // ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
+
+    const topVineRow = hasFarPrev? html`
+        <div class="topRow" style="display: flex; flex-direction: row; gap: 5px; font-size: small; align-items: center; color: #2c6ea8; ">
+          <div class="vineColumn" style="display: flex; flex-direction: column;">
+            <div class="topVine" style="flex-grow:1;">
+                <div style="flex-grow:1;"></div>
+                <div class=""></div>
+            </div>
+            <div class="topVine" style="flex-grow:1;">
+                <div style="flex-grow:1;"></div>
+                <div class="vine replyVine"></div>
+            </div>
+          </div>
+          <div id="prevAuthor"                     
+               @click=${(e) => {
+                  e.stopPropagation();
+                  this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: prevBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+            @${prevProfile? prevProfile.nickname : "unknown"}
+          </div>
+          <div id="prevBeadName"               
+               @click=${(e) => {
+                  e.stopPropagation();
+                  this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
+              ${determineBeadName(prevBeadInfo.beadType, prevBead, this._filesDvm, this.weServices, 200)}
+          </div>
+        </div>
+    ` : html`
+        <div class="topVine">
+            <div style="flex-grow:1;"></div>
+            <div class="vine"></div>
+        </div>
+    `;
+    /** */
+    return topVineRow;
+  }
 
 
   /** */
@@ -307,6 +364,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         menu.showAt(btn);
                     }}></ui5-button>`;
 
+    const replyButton = this.cell.agentPubKey == beadInfo.author? html`` : 
+      html`
+        <ui5-button id="reply-btn" icon="response" tooltip=${msg('Reply')} design="Transparent" style="border:none;"
+                    @click=${(_e) => this.onClickReply()}></ui5-button>`;
+
     const reactionButton = html`
               <ui5-button id="add-reaction-btn" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
                           @click=${(_e) => this.onClickAddEmoji()}></ui5-button>`;
@@ -326,7 +388,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let sideButtons = [menuButton];
     //console.log("<chat-item> shortmenu", this.shortmenu)
     if (!this.shortmenu) {
-      sideButtons = [starButton, reactionButton, commentButton, menuButton];
+      sideButtons = [starButton, reactionButton, replyButton, commentButton, menuButton];
     }
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
@@ -336,25 +398,22 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
 
+
     /** render all */
     return html`
       <div id="innerChatItem">
         <!-- Vine row -->
-        <div id="topVine">
-            <div style="flex-grow:1;"></div>
-            <div class="vine"></div>
-        </div>      
-        
+        ${this.renderTopVine(beadInfo)}
         <!-- main horizontal div (row) -->
-        <div id=${id} class="chatItem" 
+        <div id=${id} class="chatItem"
              @mouseenter=${(e) => {
                  const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
                  const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
                  popover.showAt(anchor);
-              }} 
+              }}
              @mouseleave=${(e) => {
                const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
-               popover.close();  
+               popover.close();
              }}>
             <!-- avatar column -->
             <div id="avatarColumn" style="display: flex; flex-direction: column; width:48px;"
@@ -381,8 +440,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <!-- Popovers -->
             <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text="Add Reaction">
-                <emoji-picker id="emoji-picker" class="light" 
-                              style="display: block" 
+                <emoji-picker id="emoji-picker" class="light"
+                              style="display: block"
                               @emoji-click=${(event) => {
                                   const unicode = event?.detail?.unicode
                                   console.log("emoji-click: " + unicode)
@@ -398,7 +457,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <ui5-menu id="moreMenu" @item-click=${this.onMoreMenu}>
                 <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item>
                 ${isFavorite
-                        ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>` 
+                        ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>`
                         : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
                 }
                 ${hasComments
@@ -411,7 +470,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
             </ui5-menu>
         </div>
-            
+
         <!-- Reply row -->
         <div id="replyRow" style="display:flex; flex-direction:row; min-height: ${hasComments? "36px" : "0px"};">
             <div id="bottomLeft" style="display: flex; flex-direction: column;;">
@@ -424,7 +483,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     <!-- split in middle horizontal -->
                     <div style="flex-grow:1;"></div>
                     <div class="vine"></div>
-                </div>                
+                </div>
             </div>
             <div style="display:flex; flex-direction:row;">
                 ${commentThread}
@@ -455,7 +514,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #innerChatItem:hover {
           background: #d8e2f6;
         }
-        
+
         #agentName {
           font-family: "72";
           font-weight: bold;
@@ -466,7 +525,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 58px;
         }
 
-        #topVine {
+        .topVine {
           display: flex;
           flex-direction: row;
           min-height: 15px;
@@ -474,13 +533,35 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           margin-bottom: 1px;
         }
 
+        #prevAuthor {
+          font-weight: bold
+        }
+        
+        #prevAuthor:hover {
+          text-decoration: underline;
+          cursor: pointer;
+        }
+
+        #prevBeadName {
+          flex-grow: 1;
+        }
+        
+        #prevBeadName:hover {
+          color: black;
+          cursor: pointer;
+        }
+        
         .vine {
           flex-grow: 1;
           border-left: 2px solid rgb(108, 176, 70); /*#939393;*/
         }
 
+        .replyVine {
+          border-top: 2px solid rgb(108, 176, 70); /*#939393;*/
+          border-top-left-radius: 10px;
+        }
+        
         .bordered {
-          /*flex-grow: 1;*/
           /*border-left: 2px solid #939393;*/
           border-bottom: 2px solid rgb(108, 176, 70); /*#939393;*/
           border-bottom-left-radius: 10px;

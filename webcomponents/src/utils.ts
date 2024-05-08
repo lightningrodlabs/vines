@@ -263,12 +263,12 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
 
 
 /** */
-export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx): string {
+export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx, charCount: number = 60): string {
   //console.log("determineBeadName()", typedBead);
   switch (beadType) {
     /** TextBead: text content */
     case ThreadsEntryType.TextBead:
-      return truncate((typedBead as TextBeadMat).value, 60, true);
+      return truncate((typedBead as TextBeadMat).value, charCount, true);
     break;
     /** EntryBead: Filename */
     case ThreadsEntryType.EntryBead:

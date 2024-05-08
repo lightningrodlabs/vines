@@ -28,8 +28,8 @@ pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String,
     /// Reply
     let mut maybe_notif = Vec::new();
     if input.can_notify_reply {
-        if let Some(reply_ah) = input.anyBead.bead.prev_known_bead_ah.clone() {
-            let reply_author = get_author(&reply_ah.clone().into())?;
+        if input.anyBead.bead.pp_ah != input.anyBead.bead.prev_bead_ah.clone() {
+            let reply_author = get_author(&input.anyBead.bead.prev_bead_ah.clone().into())?;
             let maybe = send_inbox_item(SendInboxItemInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply })?;
             if let Some((_link_ah, notif)) = maybe {
                 maybe_notif.push((reply_author, notif));

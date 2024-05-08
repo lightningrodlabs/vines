@@ -933,8 +933,8 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async createNextBead(ppAh: ActionHashB64): Promise<Bead> {
-    //console.log("createNextBead()", ppAh);
+  async createNextBead(ppAh: ActionHashB64, prevBeadAh?: ActionHashB64): Promise<Bead> {
+    console.log("createNextBead()", ppAh);
     /** Figure out last known bead for this thread */
     let thread = this._threads.get(ppAh);
     if (!thread) {
@@ -944,15 +944,19 @@ export class ThreadsZvm extends ZomeViewModel {
         return Promise.reject("Unknown thread: " + ppAh);
       }
     }
-    const lastKnownBeadOnThread = thread.getLast(1);
-    let prevKnownBeadAh;
-    if (lastKnownBeadOnThread && lastKnownBeadOnThread.length > 0) {
-      prevKnownBeadAh = decodeHashFromBase64(lastKnownBeadOnThread[0].beadAh)
+    if (!prevBeadAh) {
+      const lastKnownBeadOnThread = thread.getLast(1);
+      if (lastKnownBeadOnThread && lastKnownBeadOnThread.length > 0) {
+        prevBeadAh = lastKnownBeadOnThread[0].beadAh;
+      }
+      if (!prevBeadAh) {
+        prevBeadAh = ppAh;
+      }
     }
     /** Make bead */
     const bead: Bead = {
       ppAh: decodeHashFromBase64(ppAh),
-      prevKnownBeadAh,
+      prevBeadAh: decodeHashFromBase64(prevBeadAh),
     }
     //console.log("createNextBead() bead", prevKnownBeadAh? encodeHashToBase64(prevKnownBeadAh): undefined, ppAh);
     return bead;
@@ -962,9 +966,9 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
 
   /** */
-  async publishTypedBead(type: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[]) : Promise<[ActionHashB64, string, number, TypedBead]> {
+  async publishTypedBead(type: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64) : Promise<[ActionHashB64, string, number, TypedBead]> {
     const creation_time = Date.now() * 1000;
-    const nextBead = await this.createNextBead(ppAh);
+    const nextBead = await this.createNextBead(ppAh, prevBead);
     const beadAuthor = author? author : this.cell.agentPubKey;
     const [ah, global_time_anchor, tm] = await this.publishTypedBeadAt(type, content, nextBead, creation_time, beadAuthor, ments);
     return [ah, global_time_anchor, creation_time, tm];
@@ -987,7 +991,7 @@ export class ThreadsZvm extends ZomeViewModel {
     switch (beadTypeEx) {
       case ThreadsEntryType.TextBead:
         typed = {value: content as string, bead: nextBead} as TextBead;
-        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtWithMentions({texto: typed, creationTime, mentionees, canNotifyReply: false});
+        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtAndNotify({textBead: typed, creationTime, mentionees, canNotifyReply: false});
         break;
       case ThreadsEntryType.EntryBead:
         const entryInfo = {
@@ -1793,11 +1797,11 @@ export class ThreadsZvm extends ZomeViewModel {
           continue;
         }
         /* Grab prev bead mapping */
-        let prevKnownBeadAh;
-        if (beadInfo.bead.prevKnownBeadAh) {
-          const prevKnownBeadAh = beadAhMapping[beadInfo.bead.prevKnownBeadAh];
+        let prevBeadAh = beadInfo.bead.ppAh;
+        if (beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh) {
+          const prevKnownBeadAh = beadAhMapping[beadInfo.bead.prevBeadAh];
           if (!prevKnownBeadAh) {
-            console.warn("PubImp() Missing prev Bead", beadInfo.bead.prevKnownBeadAh);
+            console.warn("PubImp() Missing prev Bead", beadInfo.bead.prevBeadAh);
             continue;
           }
         }
@@ -1819,7 +1823,7 @@ export class ThreadsZvm extends ZomeViewModel {
         /* Publish */
         const newPpAh = decodeHashFromBase64(ppAhMapping[beadInfo.bead.ppAh]);
         console.log(`PubImp() Bead newPpAh: ${ppAhMapping[beadInfo.bead.ppAh]}`);
-        const nextBead: Bead = {ppAh: newPpAh, prevKnownBeadAh: prevKnownBeadAh? decodeHashFromBase64(prevKnownBeadAh) : undefined};
+        const nextBead: Bead = {ppAh: newPpAh, prevBeadAh: decodeHashFromBase64(prevBeadAh)};
         const authorshipLog: [Timestamp, AgentPubKeyB64 | null] = authorshipZvm.perspective.allLogs[beadAh] != undefined
           ? authorshipZvm.perspective.allLogs[beadAh]
           : [beadInfo.creationTime, this.cell.agentPubKey];
