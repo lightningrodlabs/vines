@@ -274,7 +274,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     if (!beadInfo) {
-      return html`<div>Unknown hash</div>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
     const typed = this._dvm.threadsZvm.getBead(this.hash);
     /** Determine the comment button to display depending on current comments for this message */

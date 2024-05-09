@@ -129,9 +129,13 @@ shellBarStyleTemplate.innerHTML = `
   ui5-button {
     color: #464646 !important;
   }
-  
+ 
+  ui5-button.pressed {
+    box-shadow: inset 2px 2px 1px #7b7878, inset 2px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -3px 5px rgba(255, 255, 255, 0.5);
+  }
+   
   ui5-button:hover {
-    background: #e6e6e6  !important;
+    background: #e6e6e6 !important;
   }
   
 </style>

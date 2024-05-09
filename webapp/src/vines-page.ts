@@ -173,8 +173,7 @@ import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
-
-console.log("FILES_CELL_NAME", FILES_CELL_NAME);
+console.log("<vines-page> FILES_CELL_NAME", FILES_CELL_NAME);
 
 
 /**
@@ -1727,7 +1726,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
           border-radius: 20px;
         }
-
+        
       `,
 
     ];
