@@ -241,18 +241,21 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("<comment-thread-view>.render() len =", beads.length);
     console.log("Has thread some unreads?", thread.hasUnreads());
 
+    let prevBeadAh = undefined;
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let sideItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
+    let commentItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
       const isNew = initialProbeLogTs < beadInfo.creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
-      return html`<side-item .hash=${beadAh} ?new=${isNew}></side-item>`
+      const item = html`<side-item .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
+      prevBeadAh = beadAh;
+      return item;
     });
 
     /** Different UI if no message found for thread */
     if (beads.length == 0) {
-      sideItems = [html`
+      commentItems = [html`
             <div style="font-weight: bold; color: #1e1e1ecc;">
                 ${this.showInput? "Add first message:" : "No messages found"}                       
             </div>`]
@@ -367,7 +370,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         </h3>
         <!-- thread -->
         <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
-            ${sideItems}
+            ${commentItems}
         </div>
         ${maybeInput}
     `;

@@ -9,17 +9,18 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
-import {AnyBeadMat, EntryBeadMat, TextBeadMat, ThreadsPerspective,} from "../viewModels/threads.perspective";
+import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat, ThreadsPerspective,} from "../viewModels/threads.perspective";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {AnyBead, ThreadsEntryType} from "../bindings/threads.types";
 import {md} from "../markdown/md";
-import {weaveUrlToWal} from "../utils";
+import {determineBeadName, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
 import {beadJumpEvent} from "../jump";
 import {renderAvatar} from "../render";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
+import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 /**
@@ -36,6 +37,8 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of bead to display */
   @property() hash: ActionHashB64 = ''
+
+  @property() prevBeadAh: ActionHashB64 = ''
 
   @property() new: boolean = false;
 
@@ -158,9 +161,32 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  renderPrevBead(beadInfo: BeadInfo) {
+    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh;
+    if (!hasFarPrev) {
+      return html``;
+    }
+    const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
+    const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
+    // let prevProfile: ProfileMat;
+    // if (prevBeadInfo) {
+    //   prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
+    // }
+    /** */
+    return html`
+      <blockquote class="reply"
+           @click=${(e) => {e.stopPropagation(); this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
+          ${determineBeadName(prevBeadInfo.beadType, prevBead, this._filesDvm, this.weServices, 200)}
+      </blockquote>
+    `;
+  }
+
+
+  /** */
   render() {
     console.log("<side-item>.render()", this.hash, this.deletable);
 
+    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     const [content, author, date] = this.renderContent();
     const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
 
@@ -184,6 +210,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             ${this.deletable? html`<ui5-button icon="decline" design="Transparent"
             @click=${(e) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
         </div>
+        ${this.renderPrevBead(beadInfo)}
         <div class="sideContentRow">
           ${content}
         </div>
@@ -196,7 +223,20 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     return [
       codeStyles,
       sharedStyles,
-      css``,
+      css`
+        .chatAvatar {
+          outline: rgb(152, 155, 153) solid 1px;
+        }
+        .reply {
+          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;*/
+          color: gray;
+          padding: 5px 0px 5px 10px;
+        }
+        
+        .reply:hover {
+          background: #def9de;
+        }
+      `,
     ];
   }
 }

@@ -8,7 +8,7 @@ import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {BeadInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
-import {renderAvatar} from "../render";
+import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../jump";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
@@ -239,7 +239,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <div class="vine replyVine"></div>
             </div>
           </div>
-          ${renderAvatar(this._dvm.profilesZvm, prevBeadInfo.author, "XS", "replyAvatar")}
+          ${renderProfileAvatar(prevProfile, "XS", "replyAvatar")}
           <div id="prevAuthor"                     
                @click=${(e) => {
                   e.stopPropagation();
@@ -247,9 +247,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             @${prevProfile? prevProfile.nickname : "unknown"}
           </div>
           <div id="prevBeadName"               
-               @click=${(e) => {
-                  e.stopPropagation();
-                  this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
+               @click=${(e) => {e.stopPropagation();this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
               ${determineBeadName(prevBeadInfo.beadType, prevBead, this._filesDvm, this.weServices, 200)}
           </div>
         </div>
