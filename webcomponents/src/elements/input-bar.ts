@@ -313,7 +313,7 @@ export class InputBar extends LitElement {
                   e.preventDefault();
                   this.suggestionSelected(profile.nickname);
                   }}>
-              ${renderAvatar(this.profilesZvm, key, "XS", "imageContent")}
+              ${renderAvatar(this.profilesZvm, key, "XS", "chatAvatar", "imageContent")}
               ${profile.nickname}
           </ui5-li>`;
         });

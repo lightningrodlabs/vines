@@ -221,13 +221,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
     const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
     let prevProfile: ProfileMat;
-    let avatarUrl;
     if (prevBeadInfo) {
       prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
-      if (prevProfile) avatarUrl = prevProfile.fields['avatar'];
     }
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
-    // ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
+    //
 
     const topVineRow = hasFarPrev? html`
         <div class="topRow" style="display: flex; flex-direction: row; gap: 5px; font-size: small; align-items: center; color: #2c6ea8; ">
@@ -241,6 +239,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <div class="vine replyVine"></div>
             </div>
           </div>
+          ${renderAvatar(this._dvm.profilesZvm, prevBeadInfo.author, "XS", "replyAvatar")}
           <div id="prevAuthor"                     
                @click=${(e) => {
                   e.stopPropagation();
@@ -364,7 +363,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         menu.showAt(btn);
                     }}></ui5-button>`;
 
-    const replyButton = this.cell.agentPubKey == beadInfo.author? html`` : 
+    const replyButton = /*this.cell.agentPubKey == beadInfo.author? html`` :*/
       html`
         <ui5-button id="reply-btn" icon="response" tooltip=${msg('Reply')} design="Transparent" style="border:none;"
                     @click=${(_e) => this.onClickReply()}></ui5-button>`;
@@ -593,6 +592,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           outline: #4a7b57 solid 2px;
         }
 
+        .replyAvatar {
+          margin: 0px -7px 0px -5px;
+          transform: scale(0.6);
+          outline: #4a7b57 solid 1px;
+        }
+        
         .chatDate {
           margin: 0px 0px 0px 5px;
           font-size: smaller;

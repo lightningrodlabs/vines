@@ -14,9 +14,9 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 /** */
-export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string, slotArg?:string): TemplateResult<1> {
+export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
   const profile = loadProfile(profilesZvm, agentKey);
-  return renderProfileAvatar(profile, size, slotArg);
+  return renderProfileAvatar(profile, size, classArg, slotArg);
 }
 
 
@@ -36,13 +36,13 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB6
 
 
 /** */
-export function renderProfileAvatar(profile: ProfileMat, size: string, slotArg?:string) {
+export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?:string) {
     const initials = getInitials(profile.nickname);
     const avatarUrl = profile.fields['avatar'];
     const slot = slotArg? slotArg : "avatar";
     //console.log("renderAvatar()", initials, avatarUrl);
     return avatarUrl? html`
-              <ui5-avatar size=${size} class="chatAvatar" slot=${slot}>
+              <ui5-avatar size=${size} class=${classArg} slot=${slot}>
                   <img src=${avatarUrl}>
               </ui5-avatar>
             `: html`
