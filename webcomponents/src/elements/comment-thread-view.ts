@@ -392,6 +392,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           flex-grow: 1;
           position: relative;
           z-index: 0;
+          height: 100%;
         }
 
         ui5-avatar:hover {

@@ -1286,15 +1286,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${centerSide}
                     ${fileTable}
                 </div>
-                <div id="commentSide"
-                     style="display:${this._canShowComments ? 'flex' : 'none'};">
+                  ${this._canShowComments? html`
+                <div id="commentSide">
                     <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedCommentThreadSubjectName}"></comment-thread-view>
-                </div>
-                  <div id="favoritesSide"
-                       style="display:${this._canShowFavorites ? 'flex' : 'none'};">
+                </div>` : html``}
+                  ${this._canShowFavorites? html`
+                  <div id="favoritesSide">
                       <favorites-view></favorites-view>
-                  </div>
+                  </div>` : html``}
                   <!-- <peer-list></peer-list> -->
                   ${this._canShowSearchResults? html`
                   <div id="rightSide">

@@ -146,6 +146,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
           padding-right: 5px;
           padding-left: 5px;
           max-height: 100%;
+          height: 100%;
           display: flex;
           flex-direction: column;
           flex-grow: 1;

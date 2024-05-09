@@ -217,7 +217,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderTopVine(beadInfo: BeadInfo) {
-    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh;
+    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh != '';
     const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
     const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
     let prevProfile: ProfileMat;
@@ -361,7 +361,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         menu.showAt(btn);
                     }}></ui5-button>`;
 
-    const replyButton = this.cell.agentPubKey == beadInfo.author? html`` :
+    const replyButton = /*this.cell.agentPubKey == beadInfo.author? html`` :*/
       html`
         <ui5-button id="reply-btn" icon="response" tooltip=${msg('Reply')} design="Transparent" style="border:none;"
                     @click=${(_e) => this.onClickReply()}></ui5-button>`;

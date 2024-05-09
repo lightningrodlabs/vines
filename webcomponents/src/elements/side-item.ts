@@ -20,7 +20,6 @@ import {renderAvatar} from "../render";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
-import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 /**
@@ -162,7 +161,8 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderPrevBead(beadInfo: BeadInfo) {
-    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh;
+    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh != '';
+    //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
     if (!hasFarPrev) {
       return html``;
     }
