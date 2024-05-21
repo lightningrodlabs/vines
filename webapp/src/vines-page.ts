@@ -944,10 +944,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let fileTable = html``;
     if (!this._hideFiles) {
       const publicItems = Object.entries(this._filesDvm.deliveryZvm.perspective.publicParcels)
-          .map(([ppEh, [description, timestamp, author]]) => {
+          .map(([ppEh, pprm]) => {
             //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
             const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests[ppEh];
-            return {ppEh, description, timestamp, author, isLocal, isPrivate: false} as FileTableItem;
+            return {ppEh, description: pprm.description, timestamp: pprm.creationTs, author: pprm.author, isLocal, isPrivate: false} as FileTableItem;
           });
       console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
       console.log("dFiles filesDvm cell", this._filesDvm.cell);
