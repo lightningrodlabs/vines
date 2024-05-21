@@ -148,8 +148,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     const entryBead = beadInfoPair[1] as EntryBeadMat;
     const manifestEh = entryBead.sourceEh;
-    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
-    if (!fileTuple) {
+    const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+    if (!filePprm) {
       //return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
       return html`
         <ui5-list id="fileList">
@@ -165,7 +165,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-li>
         </ui5-list>`;
     }
-    const fileDesc = fileTuple[0];
+    const fileDesc = filePprm.description;
 
 
     const fileType = kind2Type(fileDesc.kind_info);

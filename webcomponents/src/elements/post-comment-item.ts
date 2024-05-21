@@ -150,9 +150,9 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         const entryBead = typedBead as EntryBeadMat;
         console.log("<post-comment-item> entryBead", entryBead, entryBead.sourceEh);
         const manifestEh = entryBead.sourceEh;
-        const maybeTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
-        if (maybeTuple) {
-          const desc = maybeTuple[0];
+        const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+        if (maybePprm) {
+          const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
                               @click=${(e) => {
             this._filesDvm.downloadFile(manifestEh);

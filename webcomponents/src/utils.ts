@@ -276,11 +276,11 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<unknown file>";
       }
       const fileBead = typedBead as EntryBeadMat;
-      const tuple = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
-      if (!tuple) {
+      const pprm = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
+      if (!pprm) {
         return "<file>";
       }
-      return tuple[0].name;
+      return pprm.description.name;
     break;
     /** AnyBead: assetInfo.name */
     case ThreadsEntryType.AnyBead:
