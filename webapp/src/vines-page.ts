@@ -100,6 +100,7 @@ import "@ui5/webcomponents-icons/dist/number-sign.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
 import "@ui5/webcomponents-icons/dist/overflow.js"
+import "@ui5/webcomponents-icons/dist/paper-plane.js"
 import "@ui5/webcomponents-icons/dist/person-placeholder.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/product.js"
@@ -109,6 +110,7 @@ import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
+import "@ui5/webcomponents-icons/dist/thing-type.js"
 import "@ui5/webcomponents-icons/dist/user-edit.js"
 import "@ui5/webcomponents-icons/dist/upload-to-cloud.js"
 import "@ui5/webcomponents-icons/dist/unfavorite.js"
@@ -687,10 +689,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onAppletSelected(e) {
-    console.log("onAppletSelected()", e);
+  onListerSelected(e) {
+    console.log("onListerSelected()", e);
     const selectedOption = e.detail.selectedOption;
-    console.log("onAppletSelected() selectedOption", e.detail.selectedOption);
+    console.log("onListerSelected() selectedOption", e.detail.selectedOption);
+    if (selectedOption.id == "dm-option") {
+      this._listerToShow = this.cell.agentPubKey;
+      return;
+    }
     if (selectedOption.id == "mine-option") {
       this._listerToShow = null;
       return;
@@ -846,6 +852,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
       } else {
         primaryTitle = thread.name;
+        const dmThread = this._dvm.threadsZvm.perspective.dmThreads.get(this.selectedThreadHash);
+        if (dmThread) {
+          const profile = this._dvm.profilesZvm.getProfile(dmThread[0]);
+          primaryTitle = profile.nickname
+        }
         const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
         let topic;
          if (maybeSemanticTopicThread) {
@@ -1012,6 +1023,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
 
     let lister= html`<applet-lister .appletId=${this._listerToShow}></applet-lister>`
+    if (this._listerToShow == this.cell.agentPubKey) {
+      lister = html`
+          <dm-lister
+                  .showArchivedTopics=${this._canViewArchivedSubjects}
+                  .selectedThreadHash=${this.selectedThreadHash}
+                  @createNewDm=${(e) => {
+                      const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog;
+                      dialog.show();
+                  }}
+                  @createThreadClicked=${(e) => {
+                      this._createTopicHash = e.detail;
+                      this.createThreadDialogElem.show();
+                  }}
+          ></dm-lister>
+      `;
+    }
     if (this._listerToShow == this.cell.dnaHash) {
       lister = html`
           <topics-lister 
@@ -1103,11 +1130,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-menu>
                 </div>
 
-                <ui5-select id="dna-select" @change=${this.onAppletSelected}>
+                <ui5-select id="lister-select" @change=${this.onListerSelected}>
                     ${appletOptions}
                     <!-- <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>  FIXME: disabled because not working -->
-                    <ui5-option id="mine-option" icon="bookmark">My Threads</ui5-option>
-                    <ui5-option id="topics-option" icon="org-chart" selected>Topics</ui5-option>
+                    <ui5-option id="dm-option" icon="paper-plane">${msg('Direct Messages')}</ui5-option>
+                    <ui5-option id="mine-option" icon="bookmark">${msg('My Threads')}</ui5-option>
+                    <ui5-option id="topics-option" icon="thing-type" selected>${msg('Topics')}</ui5-option>
                 </ui5-select>
                 ${lister}
 
@@ -1307,6 +1335,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <!-- DIALOGS -->
         <ui5-dialog id="wait-dialog">
             <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+        </ui5-dialog>
+        <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
+            <peer-list @avatar-clicked=${async (e) => {
+                console.log("@avatar-clicked", e.detail)
+                const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog;
+                dialog.close();
+                const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail);
+                this.dispatchEvent(threadJumpEvent(ppAh));
+            }}></peer-list>
+            <ui5-button @click=${(e) => {const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog; dialog.close()}}>Cancel</ui5-button>
         </ui5-dialog>
         <!-- Profile Dialog/Popover -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
@@ -1675,7 +1713,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding-right: 7px;
         }
 
-        #dna-select {
+        #lister-select {
           width:auto;
           border:none;
           margin:0px 1px 0px 1px;
@@ -1687,7 +1725,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #group-div:hover,
-        #dna-select:hover {
+        #lister-select:hover {
           /*background:red;*/
           /*font-weight: bold;*/
           z-index:0;

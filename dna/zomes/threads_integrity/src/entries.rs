@@ -1,5 +1,24 @@
 use hdi::prelude::*;
 
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum BaseBeadKind {
+    AnyBead(AnyBead),
+    EntryBead(EntryBead),
+    TextBead(TextBead),
+}
+impl BaseBeadKind {
+    pub fn bead(&self) -> Bead {
+        match self {
+            BaseBeadKind::AnyBead(a) => a.bead.clone(),
+            BaseBeadKind::EntryBead(a) => a.bead.clone(),
+            BaseBeadKind::TextBead(a) => a.bead.clone(),
+        }
+    }
+}
+
+
+
 /// First bead: prev_bead_ah == pp_ah
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -40,6 +59,17 @@ pub struct AnyBead {
     pub bead: Bead,
     pub value: String,
     pub type_info: String,
+}
+
+
+///
+#[hdk_entry_helper]
+#[derive(Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct EncryptedBead {
+    pub for_other: XSalsa20Poly1305EncryptedData,
+    pub for_self: XSalsa20Poly1305EncryptedData,
+    pub bead_type: String,
 }
 
 

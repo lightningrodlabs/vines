@@ -3,7 +3,7 @@ import { property, state, customElement } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 
@@ -12,6 +12,7 @@ import "@shoelace-style/shoelace/dist/components/badge/badge.js"
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import {Profile as ProfileMat, ProfilesPerspective} from "@ddd-qc/profiles-dvm";
+import {renderAvatar, renderProfileAvatar} from "../render";
 
 /** @element peer-list */
 @localized()
@@ -65,12 +66,11 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  handleClickAvatar(e: any) {
-    const key = e.currentTarget.id
-    console.log("Avatar clicked: " + key)
-    this.dispatchEvent(new CustomEvent('avatar-clicked', { detail: key, bubbles: true, composed: true }));
+  handleClickAvatar(agentId: AgentPubKeyB64) {
+    console.log("Avatar clicked:", agentId)
+    this.dispatchEvent(new CustomEvent('avatar-clicked', { detail: agentId, bubbles: true, composed: true }));
     //console.log(e.detail)
-    this.soloAgent = key == this.soloAgent? null : key;
+    this.soloAgent = agentId == this.soloAgent? null : agentId;
     //this.requestUpdate();
   }
 
@@ -133,17 +133,19 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // })
 
     /** Build avatar agent list */
-    const peers = Object.entries(profiles).map(([keyB64, profile]) => {
+    const peers = Object.entries(profiles)
+      .filter(([keyB64, profile]) => keyB64 != this.cell.agentPubKey)
+      .map(([keyB64, profile]) => {
       let key = decodeHashFromBase64(keyB64);
 
       let threadButton = html``;
-      if (this._isHovered) {
-        //const profileHash = this._profilesZvm.getProfileHash(keyB64);
-        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(keyB64);
-        threadButton = maybeCommentThread != null
-          ? html`<ui5-button icon="comment" tooltip="Create new Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`
-          : html`<ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`;
-      }
+      // if (this._isHovered) {
+      //   //const profileHash = this._profilesZvm.getProfileHash(keyB64);
+      //   const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(keyB64);
+      //   threadButton = maybeCommentThread != null
+      //     ? html`<ui5-button icon="comment" tooltip="Create new Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`
+      //     : html`<ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`;
+      // }
 
 
       let opacity = 1.0;
@@ -154,11 +156,9 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <li class="folk" style="opacity:${opacity};display:flex;align-items:center" 
             @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}
         >
-          <span @click="${this.handleClickAvatar}">
-            <sl-avatar id=${key} .image=${profile.fields.avatar}
-                       style="background-color:${profile.fields.color};border: black 1px solid;border-radius: var(--sl-border-radius-circle);">
-            </sl-avatar>
-            <sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge>
+          <span @click=${(e) => this.handleClickAvatar(keyB64)}>
+            ${renderProfileAvatar(this.profilesPerspective.profiles[keyB64], "S")}
+            <!--<sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge> -->
             <span style="color:${profile.fields['color']};margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
               ${profile.nickname}
             </span>

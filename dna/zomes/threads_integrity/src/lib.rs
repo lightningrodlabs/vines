@@ -43,11 +43,13 @@ pub enum ThreadsEntry {
     #[entry_type(required_validations = 3, visibility = "public")]
     EntryBead(EntryBead),
     #[entry_type(required_validations = 3, visibility = "public")]
+    TextBead(TextBead),
+    #[entry_type(required_validations = 3, visibility = "public")]
+    EncryptedBead(EncryptedBead),
+    #[entry_type(required_validations = 3, visibility = "public")]
     SemanticTopic(SemanticTopic),
     #[entry_type(required_validations = 3, visibility = "public")]
     ParticipationProtocol(ParticipationProtocol),
-    #[entry_type(required_validations = 3, visibility = "public")]
-    TextBead(TextBead),
     #[entry_type(required_validations = 1, visibility = "private")]
     GlobalProbeLog(GlobalLastProbeLog),
     #[entry_type(required_validations = 1, visibility = "private")]
@@ -78,4 +80,5 @@ pub enum ThreadsLinkType {
     EmojiReaction,
     NotifySetting,
     Favorite,
+    Dm,
 }

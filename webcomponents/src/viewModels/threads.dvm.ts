@@ -154,7 +154,7 @@ export class ThreadsDvm extends DnaViewModel {
       const pp = decode(extra) as ParticipationProtocol;
       ppAh = encodeHashToBase64(notif.content);
       console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
-      this.threadsZvm.storePp(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true); // only real author should notify others
+      this.threadsZvm.storeThread(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), true, true); // only real author should notify others
     }
 
     /** Store Notification */
@@ -208,7 +208,7 @@ export class ThreadsDvm extends DnaViewModel {
       case DirectGossipType.NewPp:
         const [tss, newPpAh, pp] = gossip.content as [Timestamp, ActionHashB64, ParticipationProtocol];
         ///*await */ this.threadsZvm.fetchPp(newPpAh);
-        this.threadsZvm.storePp(newPpAh, pp, tss, weaveSignal.from, false, true);
+        this.threadsZvm.storeThread(newPpAh, pp, tss, weaveSignal.from, false, true);
         break;
       case DirectGossipType.NewBead:
         const [ts, beadAh, beadTypeStr, ppAh, encBead] = gossip.content as [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array];
@@ -331,8 +331,6 @@ export class ThreadsDvm extends DnaViewModel {
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return [ts, ah, pp];
   }
-
-
 
 
   /** */

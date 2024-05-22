@@ -162,6 +162,24 @@ export interface AddReactionInput {
   from?: AgentPubKey
 }
 
+export interface EncryptBeadInput {
+  base: BaseBeadKind
+  otherAgent: AgentPubKey
+}
+
+export interface DecryptBeadInput {
+  encBead: EncryptedBead
+  otherAgent: AgentPubKey
+}
+
+/** ------------------------------------------------------------------------------------------------- */
+export interface AddEncBeadInput {
+  encBead: EncryptedBead
+  otherAgent: AgentPubKey
+  creationTime: Timestamp
+  canNotifyReply: boolean
+}
+
 /**  */
 export interface AddEntryBeadInput {
   entryBead: EntryBead
@@ -345,6 +363,17 @@ export interface GetProtocolsInput {
   subjectType: string
 }
 
+export enum BaseBeadKindType {
+	AnyBead = 'AnyBead',
+	EntryBead = 'EntryBead',
+	TextBead = 'TextBead',
+}
+export type BaseBeadKindVariantAnyBead = {AnyBead: AnyBead}
+export type BaseBeadKindVariantEntryBead = {EntryBead: EntryBead}
+export type BaseBeadKindVariantTextBead = {TextBead: TextBead}
+export type BaseBeadKind = 
+ | BaseBeadKindVariantAnyBead | BaseBeadKindVariantEntryBead | BaseBeadKindVariantTextBead;
+
 /** First bead: prev_bead_ah == pp_ah */
 export interface Bead {
   ppAh: ActionHash
@@ -371,6 +400,13 @@ export interface AnyBead {
   bead: Bead
   value: string
   typeInfo: string
+}
+
+/**  */
+export interface EncryptedBead {
+  forOther: unknown
+  forSelf: unknown
+  beadType: string
 }
 
 /**  */
@@ -435,21 +471,23 @@ export const PP_ITEM_TYPE = "__protocol";
 export enum ThreadsEntryType {
 	AnyBead = 'AnyBead',
 	EntryBead = 'EntryBead',
+	TextBead = 'TextBead',
+	EncryptedBead = 'EncryptedBead',
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
-	TextBead = 'TextBead',
 	GlobalProbeLog = 'GlobalProbeLog',
 	ThreadProbeLog = 'ThreadProbeLog',
 }
 export type ThreadsEntryVariantAnyBead = {AnyBead: AnyBead}
 export type ThreadsEntryVariantEntryBead = {EntryBead: EntryBead}
+export type ThreadsEntryVariantTextBead = {TextBead: TextBead}
+export type ThreadsEntryVariantEncryptedBead = {EncryptedBead: EncryptedBead}
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
-export type ThreadsEntryVariantTextBead = {TextBead: TextBead}
 export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
 export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
 export type ThreadsEntry = 
- | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantTextBead | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
+ | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantTextBead | ThreadsEntryVariantEncryptedBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
 
 /**
  * -------------------------------------------------------------------------------------------------
@@ -457,7 +495,7 @@ export type ThreadsEntry =
  * -------------------------------------------------------------------------------------------------
  */
 export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Inbox: null} | {Hide: null} | {EmojiReaction: null} | {NotifySetting: null} | {Favorite: null};
+  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Inbox: null} | {Hide: null} | {EmojiReaction: null} | {NotifySetting: null} | {Favorite: null} | {Dm: null};
 export enum ThreadsLinkTypeType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
@@ -475,6 +513,7 @@ export enum ThreadsLinkTypeType {
 	EmojiReaction = 'EmojiReaction',
 	NotifySetting = 'NotifySetting',
 	Favorite = 'Favorite',
+	Dm = 'Dm',
 }
 
 /** Dna properties */

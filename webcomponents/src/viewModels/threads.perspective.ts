@@ -68,7 +68,7 @@ export interface ThreadsExportablePerspective {
   allSemanticTopics: Dictionary<[string, boolean]>,
 
   /** ppAh -> ppMat */
-  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]>,
+  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]>,
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: Dictionary<[BeadInfo, TypedBeadMat]>,
 
@@ -100,6 +100,12 @@ export interface ThreadsPerspective {
   /** beadAh -> [agent, emoji] */
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
 
+  /** -- DM stuff  -- */
+  /** agentId -> [ppAh, isHidden] */
+  dmAgents: Dictionary<[ActionHashB64, boolean]>
+  dmThreads: Map<ActionHashB64, [AgentPubKeyB64, Thread]>,
+  /** encBeadAh -> [BeadInfo, TypedBead] */
+  decBeads: Dictionary<[BeadInfo, TypedBeadMat]>,
 
   /**  -- Applet threads  -- */
 

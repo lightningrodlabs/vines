@@ -7,7 +7,7 @@ import {
   DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
-  Timestamp, ZomeName,
+  Timestamp,
 } from "@holochain/client";
 import {
   AnyBead,
@@ -23,7 +23,7 @@ import {
   SEMANTIC_TOPIC_TYPE_NAME,
   SendInboxItemInput,
   SetNotifySettingInput,
-  SignalPayloadType, Subject,
+  Subject,
   TextBead,
   ThreadLastProbeLog,
   ThreadsEntryType,
@@ -31,7 +31,7 @@ import {
   WeaveSignal,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
-import {CellProxy, Dictionary, DnaViewModel, ZomeViewModel} from "@ddd-qc/lit-happ";
+import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
@@ -109,6 +109,11 @@ export class ThreadsZvm extends ZomeViewModel {
       threadsPerSubject: this._threadsPerSubject,
       threads: this._threads,
       beads: this._beads,
+
+      dmAgents: this._dmAgents,
+      dmThreads: this._dmThreads,
+      decBeads: this._decBeads,
+
       appletSubjectTypes: this._appletSubjectTypes,
       subjectsPerType: this._subjectsPerType,
       emojiReactions:  this._emojiReactions,
@@ -137,6 +142,12 @@ export class ThreadsZvm extends ZomeViewModel {
   //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> (BeadInfo, Bead) */
   private _beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
+
+  private _dmAgents: Dictionary<[ActionHashB64, boolean]> = {};
+  private _dmThreads: Map<ActionHashB64, [AgentPubKeyB64, Thread]> = new Map();
+  /** encBeadAh -> [BeadInfo, TypedBead] */
+  private _decBeads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
+
   /** lh -> ppAhs */
   private _threadsPerSubject: Dictionary<ActionHashB64[]> = {};
   /** Name -> ppAh */
@@ -209,7 +220,19 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   getThread(ppAh: ActionHashB64): Thread | undefined {
-    return this._threads.get(ppAh);
+    const maybe = this._threads.get(ppAh);
+    if (!maybe) {
+      return this.getDmThread(ppAh);
+    }
+    return maybe;
+  }
+
+  getDmThread(ppAh: ActionHashB64): Thread | undefined {
+    const tuple = this._dmThreads.get(ppAh);
+    if (tuple) {
+      return tuple[1];
+    }
+    return undefined;
   }
 
   getSubjectType(appletId: AppletId, pathHash: EntryHashB64): string | undefined {
@@ -251,7 +274,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   getMostRecentBeadsOnThread(ppAh: ActionHashB64): [BeadInfo, TypedBead][] {
-    const thread = this._threads.get(ppAh);
+    const thread = this.getThread(ppAh);
     if (!thread) {
       return [];
     }
@@ -269,7 +292,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   getAllBeadsOnThread(ppAh: ActionHashB64): [ActionHashB64, BeadInfo, TypedBeadMat][] {
-    const thread = this._threads.get(ppAh);
+    const thread = this.getThread(ppAh);
     if (!thread) {
       return [];
     }
@@ -287,9 +310,12 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   hasReachedBeginning(ppAh: ActionHashB64): boolean {
-    const thread = this._threads.get(ppAh);
+    let thread = this.getThread(ppAh);
     if (!thread) {
-      return false;
+      let thread = this.getDmThread(ppAh);
+      if (!thread) {
+        return false;
+      }
     }
     return thread.hasSearchedOldestBead;
   }
@@ -302,7 +328,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return null;
     }
     for (const ppAh of ppAhs) {
-      const thread = this._threads.get(ppAh);
+      const thread = this.getThread(ppAh);
       if (thread && thread.pp.purpose == "comment") {
         return ppAh;
       }
@@ -414,7 +440,7 @@ export class ThreadsZvm extends ZomeViewModel {
     } else {
       // TODO: progressive timeframe search
       /** Get beads on all threads within timeframe */
-      for (const ppAh of this._threads.keys()) {
+      for (const ppAh of this.getThreadKeys()) {
         await this.probeLatestBeads(ppAh, parameters.afterTs, parameters.beforeTs, limit);
       }
       result = this.searchTextBeads(parameters);
@@ -425,6 +451,12 @@ export class ThreadsZvm extends ZomeViewModel {
     return result;
   }
 
+
+  /** */
+  getThreadKeys(): ActionHashB64[] {
+    const dms = Array.from(this._dmThreads.keys())
+    return dms.concat(Array.from(this._threads.keys()));
+  }
 
   /** -- Init -- */
 
@@ -478,6 +510,7 @@ export class ThreadsZvm extends ZomeViewModel {
     await Promise.all(probes);
 
     /** Get last elements since last time (global search log) */
+    await this.probeDmThreads();
     await this.probeAllLatest();
     await this.probeInbox();
 
@@ -524,8 +557,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const threadLogs = await this.zomeProxy.queryThreadLogs();
     for (const threadLog of threadLogs) {
       const ppAh = encodeHashToBase64(threadLog.ppAh)
-      if (!this._threads.has(ppAh)) {
-        //this._threads[ppAh] = new Thread();
+      if (!this.getThreadKeys().includes(ppAh)) {
         try {
           await this.fetchPp(ppAh);
         } catch(e) {
@@ -533,7 +565,7 @@ export class ThreadsZvm extends ZomeViewModel {
           continue;
         }
       }
-      this._threads.get(ppAh).setLatestProbeLogTime(threadLog.ts);
+      this.getThread(ppAh).setLatestProbeLogTime(threadLog.ts);
     }
   }
 
@@ -559,7 +591,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const ppAh = encodeHashToBase64(ah);
       const ppAuthor = encodeHashToBase64(author);
       // FIXME get REAL author from OriginalsZvm
-      this.storePp(encodeHashToBase64(ah), pp, ts, ppAuthor, hiddens.includes(ppAh), false, true);
+      this.storeThread(encodeHashToBase64(ah), pp, ts, ppAuthor, hiddens.includes(ppAh), false, true);
     }
     console.log("queryThreads()", this._threads.size);
     this.notifySubscribers();
@@ -583,7 +615,6 @@ export class ThreadsZvm extends ZomeViewModel {
       // FIXME get REAL author from OriginalsZvm
       await this.storeTypedBead(encodeHashToBase64(ah), materializeTypedBead(typed, ThreadsEntryType.EntryBead), ThreadsEntryType.EntryBead, ts, this.cell.agentPubKey, false, false);
     }
-    console.log("queryBeads()", this._threads.size);
   }
 
 
@@ -643,7 +674,7 @@ export class ThreadsZvm extends ZomeViewModel {
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = encodeHashToBase64(pp_ah);
       const [pp, ts, author] = await this.zomeProxy.getPp(pp_ah);
-      this.storePp(ppAh, pp, ts, encodeHashToBase64(author), hiddens.includes(ppAh), false);
+      this.storeThread(ppAh, pp, ts, encodeHashToBase64(author), hiddens.includes(ppAh), false);
       res[ppAh] = pp;
     }
     return res;
@@ -687,7 +718,7 @@ export class ThreadsZvm extends ZomeViewModel {
     for (const [subject_hash, pp_ah] of latest.newThreadsBySubject) {
       const ppAh = encodeHashToBase64(pp_ah)
       const _ppMat = await this.fetchPp(ppAh);
-      let maybeThread = this._threads.get(ppAh);
+      let maybeThread = this.getThread(ppAh);
       if (maybeThread.author != this.cell.agentPubKey) {
         newThreads[ppAh] = encodeHashToBase64(subject_hash);
       }
@@ -699,10 +730,10 @@ export class ThreadsZvm extends ZomeViewModel {
     let unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]> = {};
     latest.newBeadsByThread.map(async ([pp_ah, bl]) => {
       const ppAh =  encodeHashToBase64(pp_ah);
-      let maybeThread = this._threads.get(ppAh);
+      let maybeThread = this.getThread(ppAh);
       if (!maybeThread) {
         /* _ppMat = */ await this.fetchPp(ppAh);
-        maybeThread = this._threads.get(ppAh);
+        maybeThread = this.getThread(ppAh);
         if (!maybeThread) {
           console.warn("Thread not found", ppAh);
           return;
@@ -877,9 +908,10 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("probeAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Store */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval));
-    if (this._threads.get(ppAh)) {
-      this._threads.get(ppAh).setSearchedOldestBead();
-      console.log("setSearchedOldestBead for", ppAh, this._threads.get(ppAh).hasSearchedOldestBead);
+    const thread = this.getThread(ppAh);
+    if (thread) {
+      thread.setSearchedOldestBead();
+      console.log("setSearchedOldestBead for", ppAh, thread.hasSearchedOldestBead);
     }
     /** Done */
     return beadLinks;
@@ -889,7 +921,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** Get all beads from "now" and back until `limit` is reached or `startTime` is reached */
   async probeLatestBeads(ppAh: ActionHashB64, begin_time?: Timestamp, end_time?: Timestamp, target_limit?: number): Promise<BeadLink[]> {
     console.log("probeLatestBeads()", ppAh);
-    let thread = this._threads.get(ppAh);
+    let thread = this.getThread(ppAh);
     if (!thread) {
       try {
         await this.fetchPp(ppAh);
@@ -897,7 +929,7 @@ export class ThreadsZvm extends ZomeViewModel {
         console.error("probeLatestBeads() Failed. ParticipationProtocol not found");
         return [];
       }
-      thread = this._threads.get(ppAh);
+      thread = this.getThread(ppAh);
     }
     /** Probe the latest beads */
     const [searchedInterval, beadLinks] = await this.zomeProxy.getLatestBeads({
@@ -920,7 +952,7 @@ export class ThreadsZvm extends ZomeViewModel {
     // if (this.reachedBeginning(ppAh)) {
     //   return [];
     // }
-    const thread = this._threads.get(ppAh);
+    const thread = this.getThread(ppAh);
     console.log("probePreviousBeads", ppAh, thread);
     if (!thread) {
       return Promise.reject("No Thread data found for given ParticipationProtocol");
@@ -936,10 +968,10 @@ export class ThreadsZvm extends ZomeViewModel {
   async createNextBead(ppAh: ActionHashB64, prevBeadAh?: ActionHashB64): Promise<Bead> {
     console.log("createNextBead()", ppAh);
     /** Figure out last known bead for this thread */
-    let thread = this._threads.get(ppAh);
+    let thread = this.getThread(ppAh);
     if (!thread) {
       await this.fetchPp(ppAh);
-      thread = this._threads.get(ppAh);
+      thread = this.getThread(ppAh);
       if (!thread) {
         return Promise.reject("Unknown thread: " + ppAh);
       }
@@ -983,7 +1015,7 @@ export class ThreadsZvm extends ZomeViewModel {
     //console.log("publishTypedBeadAt()", beadType)
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
     /** Notify reply is prevBead in Bead is different from last known bead for pp */
-    const lastKnownBead = this._threads.get(encodeHashToBase64(nextBead.ppAh)).getLast(1);
+    const lastKnownBead = this.getThread(encodeHashToBase64(nextBead.ppAh)).getLast(1);
     const canNotifyReply = lastKnownBead.length > 0 && lastKnownBead[0].beadAh != encodeHashToBase64(nextBead.prevBeadAh);
     /** Commit Entry */
     let typed: TypedBead;
@@ -1157,7 +1189,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const ppAh = encodeHashToBase64(pp_ah);
     const [pp2, _ts2, author] = await this.zomeProxy.getPp(pp_ah);
     const ppAuthor = encodeHashToBase64(author);
-    const ppMat = this.storePp(ppAh, pp2, ts, ppAuthor, false, false);
+    const ppMat = this.storeThread(ppAh, pp2, ts, ppAuthor, false, false);
     /** Notify subject author */
     if (maybeNotifPair && ppAuthor == this.cell.agentPubKey) {
       const recipient = encodeHashToBase64(maybeNotifPair[0]);
@@ -1189,7 +1221,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const [pp_ah, ts, _maybeNotif] = await this.zomeProxy.createParticipationProtocol(pp);
     const ppAh = encodeHashToBase64(pp_ah);
-    this.storePp(ppAh, pp, ts, this.cell.agentPubKey, false, false);
+    this.storeThread(ppAh, pp, ts, this.cell.agentPubKey, false, false);
     /** */
     return [ts, ppAh, pp];
   }
@@ -1205,7 +1237,19 @@ export class ThreadsZvm extends ZomeViewModel {
       Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
     const isHidden = await this.zomeProxy.getHideLink(decodeHashFromBase64(ppAh));
-    const ppMat = this.storePp(ppAh, pp, ts, encodeHashToBase64(author), isHidden != null, false, preventNotify);
+    const ppMat = this.storeThread(ppAh, pp, ts, encodeHashToBase64(author), isHidden != null, false, preventNotify);
+    return ppMat;
+  }
+
+
+  /** */
+  async fetchDmThread(other: AgentPubKeyB64, ppAh: ActionHashB64, preventNotify?: boolean): Promise<ParticipationProtocolMat> {
+    const [pp, ts, author] = await this.zomeProxy.getPp(decodeHashFromBase64(ppAh));
+    if (pp === null) {
+      Promise.reject("ParticipationProtocol not found at " + ppAh)
+    }
+    const isHidden = await this.zomeProxy.getHideLink(decodeHashFromBase64(ppAh));
+    const ppMat = this.storeDmThread(other, ppAh, pp, ts, encodeHashToBase64(author), isHidden != null, false, preventNotify);
     return ppMat;
   }
 
@@ -1269,10 +1313,10 @@ export class ThreadsZvm extends ZomeViewModel {
     if (beadLinks.length == 0) {
       return;
     }
-    let thread = this._threads.get(ppAh);
+    let thread = this.getThread(ppAh);
     if (!thread) {
       await this.fetchPp(ppAh, true);
-      thread = this._threads.get(ppAh);
+      thread = this.getThread(ppAh);
     }
     /** fetch each TextBead */
     for (const bl of beadLinks) {
@@ -1281,6 +1325,20 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     thread.addProbedInterval(probedInterval);
     this.notifySubscribers();
+  }
+
+
+  /** */
+  async hideDm(agent: AgentPubKeyB64) {
+    //await this.zomeProxy.hideSubject(decodeHashFromBase64(subjectHash));
+    //this.changeHideState(agent, true);
+  }
+
+
+  /** */
+  async unhideDm(agent: AgentPubKeyB64) {
+    //await this.zomeProxy.unhideSubject(decodeHashFromBase64(subjectHash));
+    //this.changeHideState(agent, false);
   }
 
 
@@ -1307,9 +1365,9 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     /** Check if it's a thread */
-    const maybeThreadAh = Array.from(this._threads.keys()).find(key => key === hash);
-    if (maybeThreadAh && this._threads.has(maybeThreadAh)) {
-      this._threads.get(maybeThreadAh).setIsHidden(canHide);
+    const maybeThreadAh = Array.from(this.getThreadKeys()).find(key => key === hash);
+    if (maybeThreadAh && this.getThreadKeys().includes(maybeThreadAh)) {
+      this.getThread(maybeThreadAh).setIsHidden(canHide);
       this.notifySubscribers();
       return;
     }
@@ -1353,6 +1411,7 @@ export class ThreadsZvm extends ZomeViewModel {
   async storeInboxItem(notif: WeaveNotification, canProbeAll: boolean, ppAh?: ActionHashB64) {
     /* Brutal way to make sure we have the content signaled in the notification */
     if (canProbeAll) {
+      await this.probeDmThreads();
       await this.probeAllLatest();
     }
     if (!ppAh) {
@@ -1428,7 +1487,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  storePp(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentPubKeyB64, isHidden: boolean, isNew: boolean, preventNotify?: boolean): ParticipationProtocolMat {
+  storeThread(ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentPubKeyB64, isHidden: boolean, isNew: boolean, preventNotify?: boolean): ParticipationProtocolMat {
     if (this._threads.has(ppAh)) {
       /** Return already stored PP */
       return this._threads.get(ppAh).pp;
@@ -1436,7 +1495,7 @@ export class ThreadsZvm extends ZomeViewModel {
     let ppMat = materializeParticipationProtocol(pp);
     const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, author);
     thread.setIsHidden(isHidden);
-    console.log(`storePp() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden);
+    console.log(`storeThread() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden);
     this._threads.set(ppAh, thread);
     /** threadsPerSubject */
     if (!this._threadsPerSubject[ppMat.subject.hash]) {
@@ -1459,17 +1518,65 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+
+  /** */
+  async probeDmThreads() {
+    const tuple = await this.zomeProxy.getDmThreads();
+    this._dmThreads = new Map();
+    for (const [agent, pp_ah] of tuple) {
+      const _ppMat = await this.fetchDmThread(encodeHashToBase64(agent), encodeHashToBase64(pp_ah));
+    }
+    this.notifySubscribers();
+  }
+
+  /** */
+  async createDmThread(otherAgent: AgentPubKeyB64): Promise<ActionHashB64> {
+    const pair = this._dmAgents[otherAgent];
+    if (pair) {
+      return pair[0];
+    }
+    const [pp_ah, notif] = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));
+    let _mat = await this.fetchDmThread(otherAgent, encodeHashToBase64(pp_ah)); // trigger storage
+    /** Notify other */
+    const extra = encode(42);
+    const signal = this.createNotificationSignal(notif, extra);
+    console.log("createDmThread() signaling notification to peer", otherAgent, (signal.payload.content[0] as WeaveNotification).event)
+    await this.notifyPeer(otherAgent, signal);
+    /* */
+    return encodeHashToBase64(pp_ah);
+}
+
+  /** */
+  storeDmThread(otherAgent: AgentPubKeyB64, ppAh: ActionHashB64, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentPubKeyB64, isHidden: boolean, isNew: boolean, preventNotify?: boolean): ParticipationProtocolMat {
+    let ppMat = materializeParticipationProtocol(pp);
+    const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, author);
+    thread.setIsHidden(isHidden);
+    console.log(`storeDmThread() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden, otherAgent);
+    this._dmThreads.set(ppAh, [otherAgent, thread]);
+    /* _dmAgents */
+    this._dmAgents[otherAgent] = [ppAh, isHidden];
+    if (isNew) {
+      this._newThreads[ppAh] = ppMat.subject.hash;
+    }
+    /** Done */
+    if (!preventNotify) {
+      this.notifySubscribers();
+    }
+    return ppMat;
+  }
+
+
   /* Store Bead in its Thread */
   private async storeBeadInThread(beadAh: ActionHashB64, ppAh: ActionHashB64, creationTime: Timestamp, isNew: boolean, beadType: string) {
     //console.log("storeBeadInThread()", beadType);
-    if (!this._threads.has(ppAh)) {
+    if (!this.getThreadKeys().includes(ppAh)) {
       await this.fetchPp(ppAh);
-      if (!this._threads.has(ppAh)) {
+      if (!this.getThreadKeys().includes(ppAh)) {
         return Promise.reject("Unknown ppAh");
       }
     }
     const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType};
-    const thread = this._threads.get(ppAh);
+    const thread = this.getThread(ppAh);
     thread.addItem(blMat);
     if (isNew) {
       if (!this._unreadThreads[ppAh]) {
@@ -1519,7 +1626,7 @@ export class ThreadsZvm extends ZomeViewModel {
     console.log("commitAllProbeLogs() start");
     await this.commitGlobalProbeLog();
     /** Commit each Thread Log */
-    for (const ppAh of this._threads.keys()) {
+    for (const ppAh of this.getThreadKeys()) {
       await this.commitThreadProbeLog(ppAh);
     }
   }
@@ -1543,7 +1650,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async commitThreadProbeLog(ppAh: ActionHashB64): Promise<void> {
-    const thread = this._threads.get(ppAh);
+    const thread = this.getThread(ppAh);
     //console.log(`commitThreadProbeLog() Thread "${thread.pp.purpose}":`, thread.probedUnion, thread.beadLinksTree.end.key, thread.latestProbeLogTime);
     if (!thread || !thread.probedUnion || thread.probedUnion.end <= thread.latestProbeLogTime) {
       return;
@@ -1612,10 +1719,14 @@ export class ThreadsZvm extends ZomeViewModel {
     });
 
     /** pps */
-    const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp]> = new Array();
+    const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]> = new Array();
     Array.from(this._threads.entries()).map(([ppAh, thread]) => {
       originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
-      pps.push([ppAh, thread.pp, thread.creationTime]);
+      pps.push([ppAh, thread.pp, thread.creationTime, ""]);
+    });
+    Array.from(this._dmThreads.entries()).map(([ppAh, [otherAgent, thread]]) => {
+      originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
+      pps.push([ppAh, thread.pp, thread.creationTime, otherAgent]);
     });
 
     /** beads */
@@ -1675,11 +1786,15 @@ export class ThreadsZvm extends ZomeViewModel {
       this._allSubjects.set(subjectHash, subject)
     }
     /** this._threads */
-    for (const [ppAh, ppMat, creationTime] of Object.values(external.pps)) {
+    for (const [ppAh, ppMat, creationTime, maybeOtherAgent] of Object.values(external.pps)) {
       const authorshipLog: [Timestamp, AgentPubKeyB64 | null] = authorshipZvm.perspective.allLogs[ppAh] != undefined
         ? authorshipZvm.perspective.allLogs[ppAh]
         : [creationTime, this.cell.agentPubKey];
-      this.storePp(ppAh, dematerializeParticipationProtocol(ppMat), authorshipLog[0], authorshipLog[1], false, true, true);
+      if (maybeOtherAgent == "") {
+        this.storeThread(ppAh, dematerializeParticipationProtocol(ppMat), authorshipLog[0], authorshipLog[1], false, true, true);
+      } else {
+        this.storeDmThread(maybeOtherAgent, ppAh, dematerializeParticipationProtocol(ppMat), authorshipLog[0], authorshipLog[1], false, true, true);
+      }
     }
     /** this._beads */
     for (const [beadAh, [beadInfo, typedBead]] of Object.entries(external.beads)) {
@@ -1734,7 +1849,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** -- Threads & Beads -- */
     const ppAhMapping: Record<ActionHashB64, ActionHashB64> = {}
     /* Sort by creation time */
-    const sortedPps: [ActionHashB64, ParticipationProtocolMat, Timestamp][] = Object.values(impPersp.pps).sort(
+    const sortedPps: [ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64][] = Object.values(impPersp.pps).sort(
       ([ppAhA, ppMatA, creationTimeA], [ppAhB, ppMatB, creationTimeB]) => {
         return creationTimeA - creationTimeB
       })
@@ -1780,7 +1895,7 @@ export class ThreadsZvm extends ZomeViewModel {
           ? authorshipZvm.perspective.allLogs[ppAh]
           : [creationTime, this.cell.agentPubKey];
         /* store pp */
-        this.storePp(newPpAh, pp, authorshipLog[0], authorshipLog[1], false, true, true);
+        this.storeThread(newPpAh, pp, authorshipLog[0], authorshipLog[1], false, true, true);
         /** commit authorshipLog for new pp */
         if (authorshipZvm.perspective.allLogs[ppAh] != undefined) {
           await authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, newPpAh, authorshipLog[0], authorshipLog[1]);

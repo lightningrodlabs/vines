@@ -5,6 +5,7 @@ mod index_bead;
 mod entry_bead;
 mod any_bead;
 mod emoji_reaction;
+mod encrypted_bead;
 
 pub use index_bead::*;
 pub use text_bead::*;
