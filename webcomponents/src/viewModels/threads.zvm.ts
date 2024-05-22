@@ -982,6 +982,9 @@ export class ThreadsZvm extends ZomeViewModel {
   {
     //console.log("publishTypedBeadAt()", beadType)
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
+    /** Notify reply is prevBead in Bead is different from last known bead for pp */
+    const lastKnownBead = this._threads.get(encodeHashToBase64(nextBead.ppAh)).getLast(1);
+    const canNotifyReply = lastKnownBead.length > 0 && lastKnownBead[0].beadAh != encodeHashToBase64(nextBead.prevBeadAh);
     /** Commit Entry */
     let typed: TypedBead;
     let global_time_anchor: string;
@@ -991,7 +994,7 @@ export class ThreadsZvm extends ZomeViewModel {
     switch (beadTypeEx) {
       case ThreadsEntryType.TextBead:
         typed = {value: content as string, bead: nextBead} as TextBead;
-        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtAndNotify({textBead: typed, creationTime, mentionees, canNotifyReply: false});
+        [bead_ah, global_time_anchor, notifPairs] = await this.zomeProxy.addTextBeadAtAndNotify({textBead: typed, creationTime, mentionees, canNotifyReply});
         break;
       case ThreadsEntryType.EntryBead:
         const entryInfo = {
@@ -1001,7 +1004,7 @@ export class ThreadsZvm extends ZomeViewModel {
           roleName: "rFiles", // FILES_CELL_NAME
           creationTime,
           author,
-          canNotifyReply: false,
+          canNotifyReply,
         };
         [bead_ah, typed, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addEntryAsBead(entryInfo);
         break;
@@ -1020,7 +1023,7 @@ export class ThreadsZvm extends ZomeViewModel {
           typeInfo: "wal",
         } as AnyBead;
         console.log("publishHrlBeadAt()", wurl, anyBead);
-        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime, canNotifyReply: false});
+        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime, canNotifyReply});
         typed = anyBead;
         break;
       default: throw Error("Unknown beadType: " + beadTypeEx);
