@@ -230,8 +230,8 @@ export interface AddEncBeadInput {
   canNotifyReply: boolean
 }
 
-export interface NotifyDmInput {
-  beadAh: ActionHash
+export interface NotifyNewDmThreadInput {
+  ppAh: ActionHash
   otherAgent: AgentPubKey
 }
 
@@ -254,13 +254,13 @@ export interface GetDataTypeInput {
 
 /**  */
 export type NotifiableEvent =
-  | {NewBead: null} | {Mention: null} | {Reply: null} | {Fork: null} | {Dm: null};
+  | {NewBead: null} | {Mention: null} | {Reply: null} | {Fork: null} | {NewDmThread: null};
 export enum NotifiableEventType {
 	NewBead = 'NewBead',
 	Mention = 'Mention',
 	Reply = 'Reply',
 	Fork = 'Fork',
-	Dm = 'Dm',
+	NewDmThread = 'NewDmThread',
 }
 
 /**  */
@@ -302,6 +302,7 @@ export enum NotifySettingType {
 export interface SetNotifySettingInput {
   pp_ah: ActionHash
   setting: NotifySetting
+  agent: AgentPubKey
 }
 
 /** Input to the notify call */

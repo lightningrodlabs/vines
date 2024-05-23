@@ -338,6 +338,6 @@ export function event2type(event: NotifiableEvent): string {
   if (NotifiableEventType.Reply in event) { return NotifiableEventType.Reply }
   if (NotifiableEventType.NewBead in event) { return NotifiableEventType.NewBead }
   if (NotifiableEventType.Fork in event) { return NotifiableEventType.Fork }
-  if (NotifiableEventType.Dm in event) { return NotifiableEventType.Dm }
+  if (NotifiableEventType.NewDmThread in event) { return NotifiableEventType.NewDmThread }
   return "";
 }

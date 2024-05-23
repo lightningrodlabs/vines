@@ -12,7 +12,7 @@ pub enum NotifiableEvent {
     Mention, // Another agent mentionned you in a textMessage ; Title is
     Reply,   // Another agent replied to one of your bead
     Fork,    // Another agent created a thread off of some entry you own
-    Dm,      // Another agent sent you a private bead to your agentPubKey
+    NewDmThread, // Another agent created a DmThread with you
 }
 impl From<NotifiableEvent> for u8 {
     fn from(m: NotifiableEvent) -> u8 {

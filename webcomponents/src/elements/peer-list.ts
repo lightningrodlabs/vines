@@ -108,52 +108,14 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </li>`;
     }
 
-    // const filterField = this.shadowRoot!.getElementById("filter-field") as Input;
-    // const filterStr = filterField && filterField.value? filterField.value : "";
-    //
-    // const visibleProfiles = Object.entries(profiles).filter(([key, profile]) => {
-    //   return filterStr.length < 2 || profile.nickname.toLowerCase().includes(filterStr.toLowerCase())
-    // });
-
-    //console.log({visibleProfiles})
-
-    /** Build avatar agent list */
-    // const folks = visibleProfiles.map(([key, profile])=> {
-    //   let opacity = 1.0;
-    //   if (this.soloAgent && this.soloAgent != key) {
-    //     opacity = 0.4;
-    //   }
-    //   return html`
-    //     <li class="folk" style="opacity: ${opacity};">
-    //       <sl-tooltip content=${profile.nickname} placement="right">
-    //             <sl-avatar id=${key} @click="${this.handleClickAvatar}" .image=${profile.fields.avatar} style="background-color:${profile.fields.color};border: ${profile.fields.color} 1px solid;" ></sl-avatar>
-    //             <sl-badge class="avatar-badge" type="${this.determineAgentStatus(key)}" pill></sl-badge>
-    //       </sl-tooltip>
-    //     </li>`
-    // })
 
     /** Build avatar agent list */
     const peers = Object.entries(profiles)
-      .filter(([keyB64, profile]) => keyB64 != this.cell.agentPubKey)
+      .filter(([keyB64, _profile]) => keyB64 != this.cell.agentPubKey)
       .map(([keyB64, profile]) => {
-      let key = decodeHashFromBase64(keyB64);
 
-      let threadButton = html``;
-      // if (this._isHovered) {
-      //   //const profileHash = this._profilesZvm.getProfileHash(keyB64);
-      //   const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(keyB64);
-      //   threadButton = maybeCommentThread != null
-      //     ? html`<ui5-button icon="comment" tooltip="Create new Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`
-      //     : html`<ui5-button icon="sys-add" tooltip="Create new Thread" design="Transparent" @click="${(e) => this.onClickComment(maybeCommentThread, keyB64)}"></ui5-button>`;
-      // }
-
-
-      let opacity = 1.0;
-      if (this.soloAgent && this.soloAgent != keyB64) {
-        opacity = 0.4;
-      }
       return html`
-        <li class="folk" style="opacity:${opacity};display:flex;align-items:center" 
+        <li class="folk" style="display:flex; align-items:center" 
             @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}
         >
           <span @click=${(e) => this.handleClickAvatar(keyB64)}>
@@ -163,7 +125,6 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               ${profile.nickname}
             </span>
           </span>
-          ${threadButton}
         </li>`
     })
 
@@ -201,12 +162,17 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           list-style: none;
           cursor: pointer;
         }
+
         .folk {
           list-style: none;
           margin: 2px;
           /*text-align: center;*/
           font-size: 70%;
           cursor: pointer;
+        }
+
+        .folk:hover {
+          background: rgba(202, 230, 250, 0.66);
         }
 
         .folk > img {
@@ -223,7 +189,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           border: 1px solid;
           padding-top: 10px;
         }
-        
+
         sl-tooltip {
           display: inline;
         }

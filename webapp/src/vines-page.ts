@@ -382,7 +382,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     let ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, ppAh, undefined, mentionedAgents, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
-    await this._dvm.threadsZvm.notifyIfDm(ppAh, ah);
+    await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
@@ -406,7 +406,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // FIXME make sure hrl is an entryHash
     let ah = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, [], this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
-    await this._dvm.threadsZvm.notifyIfDm(this.selectedThreadHash, ah);
+    await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
 
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
@@ -539,7 +539,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
-      let message = `"${notifBody}" from @${author}.` ; // | ${date_str}`;
+      let message = `from @${author}.` ;
+      if (notifBody != "") {
+        message = `"${notifBody}" from @${author}.`; // | ${date_str}`;
+      }
       /** in-app toast */
       if (canPopup) {
         toasty(notifTitle + " " + message);
@@ -737,7 +740,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         console.log("<vines-page> startPublishFile callback", eh);
         let ah = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
         console.log("onCreateFileMessage() ah", ah);
-        await this._dvm.threadsZvm.notifyIfDm(ppAh, ah);
+        await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
         this._splitObj = undefined;
         this._replyToAh = undefined;
@@ -1302,7 +1305,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this channel")}>
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this thread")}>
                     <div  style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.AllMessages) as Boolean}><</ui5-radio-button>
                         <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySettingType.MentionsOnly) as Boolean}></ui5-radio-button>

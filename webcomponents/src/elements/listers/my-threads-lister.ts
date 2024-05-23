@@ -303,14 +303,19 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** appletId -> (subjectHash -> ppAh[]) */
     let allThreadsByApplet: Record<DnaHashB64, Dictionary<ActionHashB64[]>> = {};
     const allSubjects: Record<AnyLinkableHashB64, SubjectMat> = {}
-      Object.entries(allThreads).map(([ppAh, thread]) => {
-      if (!allThreadsByApplet[thread.pp.subject.appletId]) {
-        allThreadsByApplet[thread.pp.subject.appletId] = {}
+    Object.entries(allThreads).map(([ppAh, thread]) => {
+      let appletId = thread.pp.subject.appletId;
+      if (appletId == "") {
+        //appletId = THIS_APPLET_ID;
+        return;
       }
-      if (!allThreadsByApplet[thread.pp.subject.appletId][thread.pp.subject.hash]) {
-        allThreadsByApplet[thread.pp.subject.appletId][thread.pp.subject.hash] = [];
+      if (!allThreadsByApplet[appletId]) {
+        allThreadsByApplet[appletId] = {}
       }
-      allThreadsByApplet[thread.pp.subject.appletId][thread.pp.subject.hash].push(ppAh);
+      if (!allThreadsByApplet[appletId][thread.pp.subject.hash]) {
+        allThreadsByApplet[appletId][thread.pp.subject.hash] = [];
+      }
+      allThreadsByApplet[appletId][thread.pp.subject.hash].push(ppAh);
       allSubjects[thread.pp.subject.hash] = thread.pp.subject;
     });
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);

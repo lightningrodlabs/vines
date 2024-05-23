@@ -304,7 +304,7 @@ export class VinesApp extends HappElement {
         this._weServices.openAppletMain(decodeHashFromBase64(e.detail.hash));
       }
     }
-    if (e.detail.type == JumpDestinationType.Thread) {
+    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
       if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
           this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
@@ -315,7 +315,7 @@ export class VinesApp extends HappElement {
         this._selectedBeadAh = '';
       }
     }
-    if (e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
+    if (e.detail.type == JumpDestinationType.Bead) {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);

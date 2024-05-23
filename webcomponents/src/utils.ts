@@ -190,7 +190,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx) {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
-  if (subject.appletId == THIS_APPLET_ID || (weServices && subject.appletId == weServices.appletId)) {
+  if (subject.appletId == THIS_APPLET_ID || subject.appletId == "" || (weServices && subject.appletId == weServices.appletId)) {
     switch (subject.typeName) {
       /** -- special types -- */
       case SEMANTIC_TOPIC_TYPE_NAME:

@@ -98,7 +98,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
     //   content = "Rules: " + maybeThread.pp.rules;
     // }
   }
-  if (NotifiableEventType.Dm in notif.event) {
+  if (NotifiableEventType.NewDmThread in notif.event) {
     // TODO
   }
   return [title, content];

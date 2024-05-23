@@ -80,8 +80,14 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         const beadInfo = beadPair[0];
         const typedBead = beadPair[1];
         const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
-        if (maybeThread) {
-          title = "New message in thread " + maybeThread.name;
+        const dmThread = threadsZvm.perspective.dmThreads.get(beadInfo.bead.ppAh);
+        if (dmThread) {
+          title = "DM received";
+        }
+        else {
+          if (maybeThread) {
+            title = "New message in thread " + maybeThread.name;
+          }
         }
         content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
       }
@@ -112,14 +118,8 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             content = "Rules: " + maybeThread.pp.rules;
         }
     }
-    if (NotifiableEventType.Dm in notif.event) {
-      const beadPair = threadsZvm.perspective.beads[ah];
-      title = "DM received";
-      if (beadPair) {
-        const beadInfo = beadPair[0];
-        const typedBead = beadPair[1];
-        content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
-      }
+    if (NotifiableEventType.NewDmThread in notif.event) {
+      title = "New DM thread started";
     }
     return [title, content];
 }

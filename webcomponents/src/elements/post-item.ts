@@ -2,15 +2,14 @@ import {html, css, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {materializeSubject, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
-import {threadJumpEvent} from "../jump";
-import {globaFilesContext, onlineLoadedContext, THIS_APPLET_ID, weClientContext} from "../contexts";
+import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
@@ -20,8 +19,8 @@ import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
-import {determineBeadName, determineSubjectName, MAIN_TOPIC_HASH, parseMentions} from "../utils";
-import {NotifySettingType, ParticipationProtocol, Subject, ThreadsEntryType} from "../bindings/threads.types";
+import {parseMentions} from "../utils";
+import {NotifySettingType, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**

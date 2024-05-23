@@ -12,7 +12,7 @@ import {
 import {
   DirectGossip,
   DirectGossipType,
-  NotifiableEventType,
+  NotifiableEventType, NotifySettingType,
   ParticipationProtocol,
   SignalPayloadType, Subject,
   ThreadsEntryType, ThreadsProperties, VINES_DEFAULT_ROLE_NAME,
@@ -21,16 +21,14 @@ import {
 } from "../bindings/threads.types";
 import {
   AnyLinkableHashB64,
-  BeadType, dematerializeParticipationProtocol, materializeSubject,
+  BeadType, dematerializeParticipationProtocol,
   materializeTypedBead,
   TypedBead, TypedContent,
 } from "./threads.perspective";
-import {AppletId, Hrl} from "@lightningrodlabs/we-applet";
+import {AppletId} from "@lightningrodlabs/we-applet";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
-import {THIS_APPLET_ID} from "../contexts";
-import {determineSubjectName} from "../utils";
 
 
 /** */
@@ -142,7 +140,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     let ppAh: ActionHashB64;
     /** Store received Entry */
-    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event || NotifiableEventType.Dm in notif.event) {
+    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event) {
       const {typed, beadType} = decode(extra) as {typed: TypedBead, beadType: BeadType};
       const typedMat = materializeTypedBead(typed, beadType);
       const beadAh = encodeHashToBase64(notif.content);
@@ -150,8 +148,19 @@ export class ThreadsDvm extends DnaViewModel {
       console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typedMat);
       await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
-    if (NotifiableEventType.Dm in notif.event) {
-      // FIXME: Delete notification in inbox if any?
+    /* Set notif setting */
+    if (NotifiableEventType.NewDmThread in notif.event) {
+      ppAh = encodeHashToBase64(notif.content);
+      /* skip if known thread */
+      const dmThread = this.threadsZvm.getDmThread(ppAh);
+      if (dmThread) {
+        return;
+      }
+      /* */
+      console.log("NewDmThread.publishNotifSetting() signal", ppAh);
+      //const res = await this.threadsZvm.probeNotifSettings(ppAh);
+      await this.threadsZvm.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
+      //console.log("NewDmThread settings:", res[1]);
     }
     if (NotifiableEventType.Fork in notif.event) {
       const pp = decode(extra) as ParticipationProtocol;

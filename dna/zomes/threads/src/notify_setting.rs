@@ -27,6 +27,7 @@ impl From<NotifySetting> for u8 {
 pub struct SetNotifySettingInput {
     pub pp_ah: ActionHash,
     pub setting: NotifySetting,
+    pub agent: AgentPubKey,
 }
 
 
@@ -53,7 +54,7 @@ pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<A
     }
     /// Set new setting
     let repr: u8 = input.setting.into();
-    let new_link_ah = create_link(input.pp_ah, agent_info()?.agent_latest_pubkey, ThreadsLinkType::NotifySetting, LinkTag::from(vec![repr]))?;
+    let new_link_ah = create_link(input.pp_ah, input.agent, ThreadsLinkType::NotifySetting, LinkTag::from(vec![repr]))?;
     /// Done
     Ok(Some(new_link_ah))
 }
@@ -62,11 +63,18 @@ pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<A
 ///
 #[hdk_extern]
 pub fn get_my_notify_settings(pp_ah: ActionHash) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
+    return get_notify_settings((pp_ah, agent_info()?.agent_latest_pubkey));
+}
+
+
+///
+#[hdk_extern]
+pub fn get_notify_settings(pair: (ActionHash, AgentPubKey)) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let links = get_links(link_input(pp_ah, ThreadsLinkType::NotifySetting, None))?;
-    let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
+    let links = get_links(link_input(pair.0, ThreadsLinkType::NotifySetting, None))?;
+    let agent_hash = AnyLinkableHash::from(pair.1);
     for link in links {
-        if link.target == me {
+        if link.target == agent_hash {
             let repr: u8 = link.tag.clone().into_inner()[0];
             let setting = NotifySetting::from_repr(repr).unwrap();
             return Ok((setting, Some(link.create_link_hash)))

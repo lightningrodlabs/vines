@@ -20,7 +20,7 @@ export function notification2JumpEvent(notif: NotifiableEvent): JumpDestinationT
   if (NotifiableEventType.Fork in notif) {
     return JumpDestinationType.Thread;
   }
-  if (NotifiableEventType.Dm in notif) {
+  if (NotifiableEventType.NewDmThread in notif) {
     return JumpDestinationType.Dm;
   }
   return JumpDestinationType.Bead;
