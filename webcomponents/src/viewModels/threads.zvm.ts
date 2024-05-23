@@ -6,7 +6,7 @@ import {
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
-  EntryHashB64,
+  EntryHashB64, hashFrom32AndType, sliceCore32,
   Timestamp,
 } from "@holochain/client";
 import {
@@ -1250,8 +1250,8 @@ export class ThreadsZvm extends ZomeViewModel {
     if (pp === null) {
       Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
-    const isHidden = await this.zomeProxy.getHideLink(decodeHashFromBase64(ppAh));
-    const ppMat = this.storeDmThread(other, ppAh, pp, ts, encodeHashToBase64(author), isHidden != null, false, preventNotify);
+    const isHidden = await this.isDmThreadHidden(other);
+    const ppMat = this.storeDmThread(other, ppAh, pp, ts, encodeHashToBase64(author), isHidden, false, preventNotify);
     return ppMat;
   }
 
@@ -1329,24 +1329,36 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
   }
 
+  async isDmThreadHidden(agent: AgentPubKeyB64): Promise<boolean> {
+    const core = sliceCore32(decodeHashFromBase64(agent));
+    const agent_eh = hashFrom32AndType(core, "Entry");
+    return await this.zomeProxy.getHideLink(agent_eh) != null;
+  }
 
   /** */
-  async hideDm(agent: AgentPubKeyB64) {
-    //await this.zomeProxy.hideSubject(decodeHashFromBase64(subjectHash));
-    //this.changeHideState(agent, true);
+  async hideDmThread(agent: AgentPubKeyB64) {
+    const core = sliceCore32(decodeHashFromBase64(agent));
+    const agent_eh = hashFrom32AndType(core, "Entry");
+    await this.hideSubject(encodeHashToBase64(agent_eh));
+    this._dmAgents[agent][1] = true;
+    this.notifySubscribers();
   }
 
 
   /** */
-  async unhideDm(agent: AgentPubKeyB64) {
-    //await this.zomeProxy.unhideSubject(decodeHashFromBase64(subjectHash));
-    //this.changeHideState(agent, false);
+  async unhideDmThread(agent: AgentPubKeyB64) {
+    const core = sliceCore32(decodeHashFromBase64(agent));
+    const agent_eh = hashFrom32AndType(core, "Entry");
+    await this.unhideSubject(encodeHashToBase64(agent_eh));
+    this._dmAgents[agent][1] = false;
+    this.notifySubscribers();
   }
 
 
   /** */
   async hideSubject(subjectHash: AnyLinkableHashB64) {
     await this.zomeProxy.hideSubject(decodeHashFromBase64(subjectHash));
+    //wait this.publishNotifSetting(, NotifySettingType.Never)
     this.changeHideState(subjectHash, true);
   }
 
@@ -1553,6 +1565,7 @@ export class ThreadsZvm extends ZomeViewModel {
   async createDmThread(otherAgent: AgentPubKeyB64): Promise<ActionHashB64> {
     const pair = this._dmAgents[otherAgent];
     if (pair) {
+      await this.unhideDmThread(otherAgent);
       return pair[0];
     }
     const pp_ah = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));

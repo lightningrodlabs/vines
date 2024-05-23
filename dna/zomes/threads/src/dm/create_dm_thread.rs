@@ -47,3 +47,31 @@ pub fn create_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
   /// Done
   Ok(pp_ah)
 }
+
+
+// #[hdk_extern]
+// #[feature(zits_blocking)]
+// pub fn hide_dm_thread(other_agent: AgentPubKey) -> ExternResult<()> {
+//   std::panic::set_hook(Box::new(zome_panic_hook));
+//   let me = agent_info()?.agent_latest_pubkey;
+//   let links = get_links(link_input(me, ThreadsLinkType::Dm, Some(hash2tag(other_agent))))?;
+//   for link in links {
+//     delete_link(link.create_link_hash)?;
+//   }
+//   Ok(())
+// }
+//
+//
+// #[hdk_extern]
+// #[feature(zits_blocking)]
+// pub fn unhide_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
+//   std::panic::set_hook(Box::new(zome_panic_hook));
+//   let me = agent_info()?.agent_latest_pubkey;
+//   create_link(
+//     me.clone(),
+//     pp_ah.clone(),
+//     ThreadsLinkType::Dm,
+//     hash2tag(other_agent.clone()),
+//     // str2tag(&subject_hash_str), // Store Subject Hash in Tag
+//   )?;
+// }

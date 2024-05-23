@@ -1032,15 +1032,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._listerToShow == this.cell.agentPubKey) {
       lister = html`
           <dm-lister
-                  .showArchivedTopics=${this._canViewArchivedSubjects}
+                  .showArchived=${this._canViewArchivedSubjects}
                   .selectedThreadHash=${this.selectedThreadHash}
                   @createNewDm=${(e) => {
                       const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog;
                       dialog.show();
-                  }}
-                  @createThreadClicked=${(e) => {
-                      this._createTopicHash = e.detail;
-                      this.createThreadDialogElem.show();
                   }}
           ></dm-lister>
       `;
@@ -1726,12 +1722,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #lister-select {
           width:auto;
           border:none;
-          margin:0px 1px 0px 1px;
           background: none;
           padding-left: 5px;
           padding-right: 7px;
-          margin-top:15px;
-          margin-bottom:15px;
+          margin: 15px 1px 5px 1px;
         }
 
         #group-div:hover,
