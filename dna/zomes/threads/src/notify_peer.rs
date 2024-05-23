@@ -10,9 +10,9 @@ use zome_utils::*;
 pub enum NotifiableEvent {
     NewBead, // Another agent added a Bead to a PP you "follow"
     Mention, // Another agent mentionned you in a textMessage ; Title is
-    Reply, // Another agent replied to one of your bead
-    Fork, // Another agent created a thread off of some entry you own
-    Dm, // Another agent sent you a private bead to your agentPubKey
+    Reply,   // Another agent replied to one of your bead
+    Fork,    // Another agent created a thread off of some entry you own
+    Dm,      // Another agent sent you a private bead to your agentPubKey
 }
 impl From<NotifiableEvent> for u8 {
     fn from(m: NotifiableEvent) -> u8 {

@@ -162,24 +162,6 @@ export interface AddReactionInput {
   from?: AgentPubKey
 }
 
-export interface EncryptBeadInput {
-  base: BaseBeadKind
-  otherAgent: AgentPubKey
-}
-
-export interface DecryptBeadInput {
-  encBead: EncryptedBead
-  otherAgent: AgentPubKey
-}
-
-/** ------------------------------------------------------------------------------------------------- */
-export interface AddEncBeadInput {
-  encBead: EncryptedBead
-  otherAgent: AgentPubKey
-  creationTime: Timestamp
-  canNotifyReply: boolean
-}
-
 /**  */
 export interface AddEntryBeadInput {
   entryBead: EntryBead
@@ -229,6 +211,28 @@ export interface AddTextAtAndNotifyInput {
   creationTime: Timestamp
   mentionees: AgentPubKey[]
   canNotifyReply: boolean
+}
+
+export interface DecryptBeadInput {
+  encBead: EncryptedBead
+  otherAgent: AgentPubKey
+}
+
+export interface EncryptBeadInput {
+  base: BaseBeadKind
+  otherAgent: AgentPubKey
+}
+
+export interface AddEncBeadInput {
+  encBead: EncryptedBead
+  otherAgent: AgentPubKey
+  creationTime: Timestamp
+  canNotifyReply: boolean
+}
+
+export interface NotifyDmInput {
+  beadAh: ActionHash
+  otherAgent: AgentPubKey
 }
 
 export interface CommitGlobalLogInput {

@@ -1,7 +1,6 @@
 
 mod get_pps_from_subject;
 mod create_participation_protocol;
-mod dm_thread;
 
 pub use create_participation_protocol::*;
 

@@ -175,7 +175,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
       case PP_TYPE_NAME: return `🧵`; break;
       case SUBJECT_TYPE_TYPE_NAME: return `🧶`; break;
       case POST_TYPE_NAME: return ``; break;
-      case "peer": return "🧑"; break;
+      case "AgentPubKey": return "🧑"; break;
       /** -- bead types -- */
       case ThreadsEntryType.TextBead: return "💬"; break;
       case ThreadsEntryType.EntryBead: return "📎"; break;

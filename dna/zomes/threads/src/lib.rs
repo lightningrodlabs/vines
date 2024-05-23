@@ -17,6 +17,7 @@ mod callbacks;
 mod notify_peer;
 mod notify_setting;
 mod favorite;
+mod dm;
 
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;

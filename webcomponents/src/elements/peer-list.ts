@@ -159,7 +159,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <span @click=${(e) => this.handleClickAvatar(keyB64)}>
             ${renderProfileAvatar(this.profilesPerspective.profiles[keyB64], "S")}
             <!--<sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge> -->
-            <span style="color:${profile.fields['color']};margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
+            <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
               ${profile.nickname}
             </span>
           </span>
@@ -194,10 +194,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return [
       css`
         .folks {
-          /*background-color: red;*/
           overflow-y: auto;
-          margin-left: 10px;
-          margin-top: 10px;
         }
 
         .folk-row {

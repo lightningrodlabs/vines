@@ -142,13 +142,16 @@ export class ThreadsDvm extends DnaViewModel {
 
     let ppAh: ActionHashB64;
     /** Store received Entry */
-    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event) {
+    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event || NotifiableEventType.Dm in notif.event) {
       const {typed, beadType} = decode(extra) as {typed: TypedBead, beadType: BeadType};
       const typedMat = materializeTypedBead(typed, beadType);
       const beadAh = encodeHashToBase64(notif.content);
       ppAh = typedMat.bead.ppAh;
       console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typedMat);
       await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
+    }
+    if (NotifiableEventType.Dm in notif.event) {
+      // FIXME: Delete notification in inbox if any?
     }
     if (NotifiableEventType.Fork in notif.event) {
       const pp = decode(extra) as ParticipationProtocol;

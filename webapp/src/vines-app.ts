@@ -315,7 +315,7 @@ export class VinesApp extends HappElement {
         this._selectedBeadAh = '';
       }
     }
-    if (e.detail.type == JumpDestinationType.Bead) {
+    if (e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);

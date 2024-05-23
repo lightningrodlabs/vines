@@ -136,7 +136,6 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div id=${ppAh} class="threadItem" 
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
-                     ${threadIsNew || notifCount? "color: #359C07;" : ""}
                      ${isSelected? "background:#DBDBDB" : ""}
                      "
                      @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>

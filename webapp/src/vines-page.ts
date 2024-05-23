@@ -375,13 +375,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCreateTextMessage(inputText: string) {
     console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
     const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
-    let threadHash = this.selectedThreadHash;
+    let ppAh = this.selectedThreadHash;
     if (this._currentCommentRequest) {
-      threadHash = await this.createCommentThread(this._currentCommentRequest);
+      ppAh = await this.createCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
     }
-    let ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, threadHash, undefined, mentionedAgents, this._replyToAh);
+    let ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, ppAh, undefined, mentionedAgents, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
+    await this._dvm.threadsZvm.notifyIfDm(ppAh, ah);
+
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
 
@@ -403,9 +405,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
     let ah = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, [], this._replyToAh);
+    console.log("onCreateHrlMessage() ah", ah);
+    await this._dvm.threadsZvm.notifyIfDm(this.selectedThreadHash, ah);
+
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
-    console.log("onCreateHrlMessage() ah", ah);
   }
 
 
@@ -731,11 +735,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<vines-page> startPublishFile callback", eh);
-        let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
+        let ah = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
+        console.log("onCreateFileMessage() ah", ah);
+        await this._dvm.threadsZvm.notifyIfDm(ppAh, ah);
+
         this._splitObj = undefined;
         this._replyToAh = undefined;
         this.selectedBeadAh = '';
-        console.log("onCreateFileMessage() ah", ah);
       });
       console.log("onCreateFileMessage()", this._splitObj);
     }
@@ -755,7 +761,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
     /** */
-    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead) {
+    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
       /** set lastProbeTime for current thread */
       await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
       /** Clear notifications on prevThread */
@@ -1344,7 +1350,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail);
                 this.dispatchEvent(threadJumpEvent(ppAh));
             }}></peer-list>
-            <ui5-button @click=${(e) => {const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog; dialog.close()}}>Cancel</ui5-button>
+            <ui5-button 
+                    style="margin-top: 10px; float: right;"
+                    @click=${(e) => {const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog; dialog.close()}}>
+                Cancel
+            </ui5-button>
         </ui5-dialog>
         <!-- Profile Dialog/Popover -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">

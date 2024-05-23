@@ -37,9 +37,9 @@ import {
   AnyLinkableHashB64,
   BeadInfo,
   BeadLinkMaterialized,
-  BeadType,
+  BeadType, dematerializeBead,
   dematerializeEntryBead,
-  dematerializeParticipationProtocol,
+  dematerializeParticipationProtocol, dematerializeTypedBead,
   EntryBeadMat,
   materializeParticipationProtocol,
   materializeSubject,
@@ -226,6 +226,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     return maybe;
   }
+
 
   getDmThread(ppAh: ActionHashB64): Thread | undefined {
     const tuple = this._dmThreads.get(ppAh);
@@ -1014,9 +1015,10 @@ export class ThreadsZvm extends ZomeViewModel {
   {
     //console.log("publishTypedBeadAt()", beadType)
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
-    /** Notify reply is prevBead in Bead is different from last known bead for pp */
+    /** Notify reply is prevBead in Bead is different from last known bead for pp and not in a DM thread */
     const lastKnownBead = this.getThread(encodeHashToBase64(nextBead.ppAh)).getLast(1);
-    const canNotifyReply = lastKnownBead.length > 0 && lastKnownBead[0].beadAh != encodeHashToBase64(nextBead.prevBeadAh);
+    const isDmThread = this._dmThreads.get(encodeHashToBase64(nextBead.ppAh));
+    const canNotifyReply = lastKnownBead.length > 0 && lastKnownBead[0].beadAh != encodeHashToBase64(nextBead.prevBeadAh) && !isDmThread;
     /** Commit Entry */
     let typed: TypedBead;
     let global_time_anchor: string;
@@ -1405,6 +1407,23 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
+  /** */
+  async notifyIfDm(ppAh: ActionHashB64, beadAh: ActionHashB64) {
+    const beadPair = this._beads[beadAh];
+    const dmThread = this._dmThreads.get(ppAh);
+    if (dmThread) {
+      const otherAgent = dmThread[0];
+      const notif = await this.zomeProxy.notifyDm({beadAh: decodeHashFromBase64(beadAh), otherAgent: decodeHashFromBase64(otherAgent)})
+      /** Notify other */
+      const beadType = beadPair[0].beadType;
+      const extra = encode({typed: dematerializeTypedBead(beadPair[1], beadType), beadType});
+      const signal = this.createNotificationSignal(notif, extra);
+      console.log("notifyIfDm() signaling notification to peer", otherAgent, (signal.payload.content[0] as WeaveNotification).event)
+      await this.notifyPeer(otherAgent, signal);
+    }
+  }
+
+
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
@@ -1529,19 +1548,15 @@ export class ThreadsZvm extends ZomeViewModel {
     this.notifySubscribers();
   }
 
+
   /** */
   async createDmThread(otherAgent: AgentPubKeyB64): Promise<ActionHashB64> {
     const pair = this._dmAgents[otherAgent];
     if (pair) {
       return pair[0];
     }
-    const [pp_ah, notif] = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));
+    const pp_ah = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));
     let _mat = await this.fetchDmThread(otherAgent, encodeHashToBase64(pp_ah)); // trigger storage
-    /** Notify other */
-    const extra = encode(42);
-    const signal = this.createNotificationSignal(notif, extra);
-    console.log("createDmThread() signaling notification to peer", otherAgent, (signal.payload.content[0] as WeaveNotification).event)
-    await this.notifyPeer(otherAgent, signal);
     /* */
     return encodeHashToBase64(pp_ah);
 }
@@ -1692,7 +1707,8 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): WeaveSignal {
     let maybePpHash;
-    if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification || NotifiableEventType.NewBead in notification) {
+    if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification
+        || NotifiableEventType.NewBead in notification || NotifiableEventType.Dm in notification) {
       const beadAh = encodeHashToBase64(notification.content);
       const beadInfo = this.getBeadInfo(beadAh);
       maybePpHash = beadInfo.bead.ppAh;

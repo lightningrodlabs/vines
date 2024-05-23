@@ -113,7 +113,13 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         }
     }
     if (NotifiableEventType.Dm in notif.event) {
-        // TODO
+      const beadPair = threadsZvm.perspective.beads[ah];
+      title = "DM received";
+      if (beadPair) {
+        const beadInfo = beadPair[0];
+        const typedBead = beadPair[1];
+        content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
+      }
     }
     return [title, content];
 }

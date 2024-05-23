@@ -219,13 +219,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   renderTopVine(beadInfo: BeadInfo) {
     const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh != '';
     const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
+    if (!prevBeadInfo) {
+      return html``;
+    }
     const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
-    let prevProfile: ProfileMat;
+    let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     if (prevBeadInfo) {
       prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
     }
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
-    //
 
     const topVineRow = hasFarPrev? html`
         <div class="topRow" style="display: flex; flex-direction: row; gap: 5px; font-size: small; align-items: center; color: #2c6ea8; ">

@@ -2,7 +2,7 @@ import {css, html, LitElement, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {encodeHashToBase64} from "@holochain/client";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
