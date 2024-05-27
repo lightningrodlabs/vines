@@ -177,7 +177,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
   /** */
   async onCreateComment(inputText: string) {
-    const thread = this._dvm.threadsZvm.getThread(this.threadHash);
+    const thread = this.threadsPerspective.threads.get(this.threadHash);
     if (!thread) {
       console.error("Missing Comment thread");
       return;

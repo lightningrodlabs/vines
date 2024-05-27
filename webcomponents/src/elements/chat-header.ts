@@ -8,7 +8,6 @@ import {renderAvatar, renderProfileAvatar} from "../render";
 import {beadJumpEvent} from "../jump";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../styles";
-import {Thread} from "../viewModels/thread";
 import {toasty} from "../toast";
 
 
@@ -38,6 +37,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /* */
   renderDmThreadHeader(otherAgent: AgentPubKeyB64) {
+    console.log("renderDmThreadHeader()", otherAgent, this.cell.dnaHash);
     const profile = this._dvm.profilesZvm.getProfile(otherAgent);
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
@@ -71,9 +71,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!thread) {
       return html`<div>No thread found</div>`;
     }
-    const maybeDmThread = this._dvm.threadsZvm.perspective.dmThreads.get(this.threadHash);
+    const maybeDmThread = this._dvm.threadsZvm.isThreadDm(this.threadHash);
     if (maybeDmThread) {
-      return this.renderDmThreadHeader(maybeDmThread[0]);
+      return this.renderDmThreadHeader(maybeDmThread);
     }
 
     const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];

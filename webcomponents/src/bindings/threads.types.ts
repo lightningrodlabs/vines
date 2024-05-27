@@ -464,6 +464,8 @@ export const ROOT_ANCHOR_SUBJECTS = "all_subjects";
 
 export const SEMANTIC_TOPIC_TYPE_NAME = "SemanticTopic";
 
+export const DM_SUBJECT_TYPE_NAME = "AgentPubKey";
+
 export const GLOBAL_TIME_INDEX = "global_time";
 
 export const PP_ITEM_TYPE = "__protocol";

@@ -89,18 +89,23 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div class="info">${this._profile.fields['lang']}</div>
             <h5>${msg('Member since')}</h5>
             <div class="info">${ts2day(timestamp)}</div>
+            ${this.hash != this.cell.agentPubKey? html`<vines-input-bar
+                    .profilesZvm=${this._zvm}
+                    .topic=${this._profile.nickname}
+            ></vines-input-bar>`:html``}
           </div>
           <div style="position:absolute; top:10px; left:10px">${avatar}</div>
     `;
   }
 
 
+  /** */
   static styles = [
     css`
       :host {
         display: flex;
         flex-direction: column;
-        min-width: 250px;
+        min-width: 280px;
       }
 
       h3 {

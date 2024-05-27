@@ -46,7 +46,7 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
                   <img src=${avatarUrl}>
               </ui5-avatar>
             `: html`
-              <ui5-avatar size=${size} class="chatAvatar" slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
+              <ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
     `;
 }
 
@@ -65,7 +65,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
-            const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
+            const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
                 title = "Mention in thread " + maybeThread.name;
             }
@@ -79,8 +79,8 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
       } else {
         const beadInfo = beadPair[0];
         const typedBead = beadPair[1];
-        const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
-        const dmThread = threadsZvm.perspective.dmThreads.get(beadInfo.bead.ppAh);
+        const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+        const dmThread = threadsZvm.isThreadDm(beadInfo.bead.ppAh);
         if (dmThread) {
           title = "DM received";
         }
@@ -99,7 +99,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         } else {
             const beadInfo = beadPair[0];
             const typedBead = beadPair[1];
-            const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
+            const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
                 title = "Reply in thread " + maybeThread.name;
             }
@@ -107,7 +107,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         }
     }
     if (NotifiableEventType.Fork in notif.event) {
-        const maybeThread = threadsZvm.getThread(ah);
+        const maybeThread = threadsZvm.perspective.threads.get(ah);
         if (!maybeThread)  {
             title = "New thread";
         } else {
@@ -119,7 +119,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         }
     }
     if (NotifiableEventType.NewDmThread in notif.event) {
-      title = "New DM thread started";
+      title = "New DM thread";
     }
     return [title, content];
 }

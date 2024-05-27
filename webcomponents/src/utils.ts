@@ -1,10 +1,10 @@
 import {
-  ActionHashB64,
+  ActionHashB64, AgentPubKey,
   AgentPubKeyB64,
   decodeHashFromBase64,
   dhtLocationFrom32,
-  encodeHashToBase64,
-  EntryHashB64
+  encodeHashToBase64, EntryHash,
+  EntryHashB64, HASH_TYPE_PREFIX, sliceCore32, sliceDhtLocation
 } from "@holochain/client";
 import {
   AnyBeadMat,
@@ -19,6 +19,7 @@ import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
+  DM_SUBJECT_TYPE_NAME,
   SEMANTIC_TOPIC_TYPE_NAME,
   ThreadsEntryType
 } from "./bindings/threads.types";
@@ -163,6 +164,19 @@ export function emptyActionHash() {
   return emptyValidHash([0x84, 0x29, 0x24]);
 }
 
+export function eh2agent(eh: EntryHash): AgentPubKey {
+  const meCore = sliceCore32(eh);
+  const meDht = sliceDhtLocation(eh)
+  return Uint8Array.from([...HASH_TYPE_PREFIX["Agent"], ...meCore, ...meDht]);
+}
+
+export function agent2eh(agent: AgentPubKey): EntryHash {
+  const meCore = sliceCore32(agent);
+  const meDht = sliceDhtLocation(agent)
+  return Uint8Array.from([...HASH_TYPE_PREFIX["Entry"], ...meCore, ...meDht]);
+}
+
+
 export const MAIN_TOPIC_HASH = encodeHashToBase64(emptyActionHash());
 export const MAIN_SEMANTIC_TOPIC = "__main";
 
@@ -175,7 +189,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
       case PP_TYPE_NAME: return `🧵`; break;
       case SUBJECT_TYPE_TYPE_NAME: return `🧶`; break;
       case POST_TYPE_NAME: return ``; break;
-      case "AgentPubKey": return "🧑"; break;
+      case DM_SUBJECT_TYPE_NAME: return "🧑"; break;
       /** -- bead types -- */
       case ThreadsEntryType.TextBead: return "💬"; break;
       case ThreadsEntryType.EntryBead: return "📎"; break;

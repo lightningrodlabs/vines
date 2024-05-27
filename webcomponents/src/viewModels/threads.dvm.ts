@@ -152,7 +152,7 @@ export class ThreadsDvm extends DnaViewModel {
     if (NotifiableEventType.NewDmThread in notif.event) {
       ppAh = encodeHashToBase64(notif.content);
       /* skip if known thread */
-      const dmThread = this.threadsZvm.getDmThread(ppAh);
+      const dmThread = this.threadsZvm.perspective.threads.get(ppAh);
       if (dmThread) {
         return;
       }

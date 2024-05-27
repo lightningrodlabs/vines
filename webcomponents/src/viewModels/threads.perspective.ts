@@ -103,7 +103,6 @@ export interface ThreadsPerspective {
   /** -- DM stuff  -- */
   /** agentId -> [ppAh, isHidden] */
   dmAgents: Dictionary<[ActionHashB64, boolean]>
-  dmThreads: Map<ActionHashB64, [AgentPubKeyB64, Thread]>,
   /** encBeadAh -> [BeadInfo, TypedBead] */
   decBeads: Dictionary<[BeadInfo, TypedBeadMat]>,
 

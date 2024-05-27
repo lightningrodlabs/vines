@@ -172,14 +172,14 @@ export class Thread {
 
   /**  */
   addItem(blMat: BeadLinkMaterialized): void {
-    //console.log("Thread.addItem()", blMat.beadAh, this.pp.purpose)
+    console.log("Thread.addItem()", this.pp.purpose)
     //this.print();
     if (this.has(blMat)) {
       return;
     }
-    //console.log("ThreadInfo.addItem().inserting at", blMat.creationTime, blMat.beadAh)
+    console.log("ThreadInfo.addItem().inserting at", blMat.creationTime, blMat.beadAh)
     this._beadLinksTree = this._beadLinksTree.insert(blMat.creationTime, blMat);
-    //console.log("ThreadInfo.addItem() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
+    console.log("ThreadInfo.addItem() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   }
 
 

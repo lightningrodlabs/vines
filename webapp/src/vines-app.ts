@@ -87,7 +87,7 @@ export class VinesApp extends HappElement {
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
-  @state() private _selectedThreadHash: AnyLinkableHashB64 = '';
+  @state() private _selectedThreadHash?: AnyLinkableHashB64;
   @state() private _selectedBeadAh: ActionHashB64 = '';
 
 
