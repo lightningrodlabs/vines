@@ -36,8 +36,6 @@ pub struct SetNotifySettingInput {
 #[feature(zits_blocking)]
 pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    /// Make sure pp_ah is a PP
-    let (_pp_eh, _pp): (EntryHash, ParticipationProtocol)  = get_typed_from_ah(input.pp_ah.clone())?;
     /// Get current setting if any
     let (current_setting, maybe_link_ah) = get_my_notify_settings(input.pp_ah.clone())?;
     /// Bail if setting already set

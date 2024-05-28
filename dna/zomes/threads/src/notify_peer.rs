@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use strum_macros::FromRepr;
 use threads_integrity::{THREADS_DEFAULT_COORDINATOR_ZOME_NAME, ThreadsLinkType};
-use crate::signals::WeaveSignal;
+use crate::signals::ThreadsSignal;
 use zome_utils::*;
 
 ///
@@ -47,7 +47,7 @@ impl WeaveNotification {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct NotifyPeerInput {
-    pub payload: WeaveSignal,
+    pub payload: ThreadsSignal,
     pub peer: AgentPubKey,
 }
 
@@ -73,7 +73,7 @@ fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
 #[hdk_extern]
 fn recv_notification(signal: ExternIO) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let sig: WeaveSignal = signal.decode().unwrap();
+    let sig: ThreadsSignal = signal.decode().unwrap();
     debug!("Received notification {:?}", sig);
     let _ = emit_signal(&sig)?;
     Ok(())

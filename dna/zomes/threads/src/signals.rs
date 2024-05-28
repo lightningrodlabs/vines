@@ -5,9 +5,7 @@ use threads_integrity::{ParticipationProtocol};
 use crate::notify_peer::WeaveNotification;
 
 
-///
 /// Data sent by UI ONLY. That's why we use B64 here.
-///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(tag = "type", content = "content")]
 pub enum SignalPayload {
@@ -18,7 +16,7 @@ pub enum SignalPayload {
 ///
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct WeaveSignal {
+pub struct ThreadsSignal {
     maybe_pp_hash: Option<ActionHashB64>, // used for filtering by PP if applicable
     from: AgentPubKeyB64, // if from self, than its not a DM,
     payload: SignalPayload,
@@ -63,7 +61,7 @@ pub enum DirectGossip {
 #[hdk_extern]
 fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let sig: WeaveSignal = signal.decode().unwrap();
+    let sig: ThreadsSignal = signal.decode().unwrap();
     debug!("Received signal {:?}", sig);
     Ok(emit_signal(&sig)?)
 }
@@ -73,7 +71,7 @@ fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SignalPeersInput {
-    pub signal: WeaveSignal,
+    pub signal: ThreadsSignal,
     pub peers: Vec<AgentPubKey>,
 }
 

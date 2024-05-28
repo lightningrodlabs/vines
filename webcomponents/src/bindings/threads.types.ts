@@ -230,11 +230,6 @@ export interface AddEncBeadInput {
   canNotifyReply: boolean
 }
 
-export interface NotifyNewDmThreadInput {
-  ppAh: ActionHash
-  otherAgent: AgentPubKey
-}
-
 export interface CommitGlobalLogInput {
   maybe_ts?: Timestamp
   maybe_last_known_pp_ah?: ActionHash
@@ -274,7 +269,7 @@ export interface WeaveNotification {
 
 /** Input to the notify call */
 export interface NotifyPeerInput {
-  payload: WeaveSignal
+  payload: ThreadsSignal
   peer: AgentPubKey
 }
 
@@ -311,11 +306,7 @@ export interface UpdateTopicInput {
   topic: SemanticTopic
 }
 
-/**
- * 
- * Data sent by UI ONLY. That's why we use B64 here.
- * 
- */
+/** Data sent by UI ONLY. That's why we use B64 here. */
 export enum SignalPayloadType {
 	DirectGossip = 'DirectGossip',
 	Notification = 'Notification',
@@ -326,7 +317,7 @@ export type SignalPayload =
 
 
 /**  */
-export interface WeaveSignal {
+export interface ThreadsSignal {
   maybePpHash?: ActionHashB64
   from: AgentPubKeyB64
   payload: SignalPayload
@@ -358,7 +349,7 @@ export type DirectGossip =
 
 /** Input to the notify call */
 export interface SignalPeersInput {
-  signal: WeaveSignal
+  signal: ThreadsSignal
   peers: AgentPubKey[]
 }
 

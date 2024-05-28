@@ -28,7 +28,7 @@ import {
   ThreadLastProbeLog,
   ThreadsEntryType,
   WeaveNotification,
-  WeaveSignal,
+  ThreadsSignal,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -1243,6 +1243,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   async fetchUnknownBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<[TypedBead, ThreadsEntryType]> {
+    //console.log("fetchUnknownBead()", encodeHashToBase64(beadAh));
     let creationTime: Timestamp;
     let author: AgentPubKey;
     let typed: TypedBead;
@@ -1397,22 +1398,6 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
 
-  /** */
-  async notifyIfDmThread(ppAh: ActionHashB64, beadAh: ActionHashB64) {
-    const beadPair = this._beads[beadAh];
-    const otherAgent = this.isThreadDm(ppAh);
-    if (otherAgent) {
-      const notif = await this.zomeProxy.notifyNewDmThread({ppAh: decodeHashFromBase64(ppAh), otherAgent: decodeHashFromBase64(otherAgent)})
-      /** Notify other */
-      const beadType = beadPair[0].beadType;
-      const extra = encode({typed: dematerializeTypedBead(beadPair[1], beadType), beadType});
-      const signal = this.createNotificationSignal(notif, extra);
-      console.log("notifyIfDmThread() signaling notification to peer", otherAgent, (signal.payload.content[0] as WeaveNotification).event)
-      await this.notifyPeer(otherAgent, signal);
-    }
-  }
-
-
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
@@ -1426,6 +1411,7 @@ export class ThreadsZvm extends ZomeViewModel {
       await this.fetchPp(ppAh, true); // make sure we have the content signaled in the notification
     }
     /* */
+    //console.log("storeInboxItem()", notif.event, ppAh);
     this._inbox[encodeHashToBase64(notif.link_ah)] = [ppAh, notif];
     this.notifySubscribers();
   }
@@ -1433,9 +1419,14 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** get ppAh of Notif */
   async getNotifPp(notif: WeaveNotification): Promise<ActionHashB64> {
+    //console.log("getNotifPp()", notif.event);
     if (NotifiableEventType.Fork in notif.event || NotifiableEventType.NewDmThread in notif.event) {
       return encodeHashToBase64(notif.content);
     } else {
+      const maybeBead = this._beads[encodeHashToBase64(notif.content)];
+      if (maybeBead) {
+        return maybeBead[0].bead.ppAh;
+      }
       const [typed, type] = await this.fetchUnknownBead(notif.content, false);
       return encodeHashToBase64(typed.bead.ppAh);
     }
@@ -1504,10 +1495,6 @@ export class ThreadsZvm extends ZomeViewModel {
     thread.setIsHidden(isHidden);
     console.log(`storeThread() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: "`, creationTime, isHidden);
     this._threads.set(ppAh, thread);
-    /** isNew */
-    if (isNew) {
-      this._newThreads[ppAh] = ppMat.subject.hash;
-    }
     if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       /** DM thread */
       const agent_hash = encodeHashToBase64(eh2agent(decodeHashFromBase64(ppMat.subject.hash)));
@@ -1515,6 +1502,10 @@ export class ThreadsZvm extends ZomeViewModel {
       console.log("storeThread() dmThread", otherAgent);
       this._dmAgents[otherAgent] = [ppAh, isHidden];
     } else {
+      /** isNew */
+      if (isNew) {
+        this._newThreads[ppAh] = ppMat.subject.hash;
+      }
       /** threadsPerSubject */
       if (!this._threadsPerSubject[ppMat.subject.hash]) {
         this._threadsPerSubject[ppMat.subject.hash] = [];
@@ -1547,19 +1538,18 @@ export class ThreadsZvm extends ZomeViewModel {
       return pair[0];
     }
     /** Create new Thread */
-    const pp_ah = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));
+    const [pp_ah, notif] = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));
     const ppAh = encodeHashToBase64(pp_ah);
-    let _mat = await this.fetchPp(ppAh); // trigger storage
+    let ppMat = await this.fetchPp(ppAh); // trigger storage
     await this.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
-    const notif = await this.zomeProxy.notifyNewDmThread({ppAh: decodeHashFromBase64(ppAh), otherAgent: decodeHashFromBase64(otherAgent)})
     /** Notify other */
-    const extra = encode(ppAh);
+    const extra = encode(dematerializeParticipationProtocol(ppMat));
     const signal = this.createNotificationSignal(notif, extra);
     console.log("createDmThread() signaling notification to peer", otherAgent, (signal.payload.content[0] as WeaveNotification).event)
     await this.notifyPeer(otherAgent, signal);
     /* */
     return ppAh;
-}
+  }
 
 
   /** */
@@ -1612,8 +1602,8 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     const beadInfo = {creationTime, author, beadType, bead: typedBead.bead};
     console.log("storeBead()", beadAh, typedBead.bead.ppAh, typedBead, author);
-    await this.storeBeadInThread(beadAh, typedBead.bead.ppAh, creationTime, isNew, beadInfo.beadType);
     this._beads[beadAh] = [beadInfo, typedBead];
+    await this.storeBeadInThread(beadAh, typedBead.bead.ppAh, creationTime, isNew, beadInfo.beadType);
     if (canNotify) {
       this.notifySubscribers();
     }
@@ -1684,13 +1674,14 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Signaling / Notifying -- */
 
   /** */
-  async signalPeers(signal: WeaveSignal, agents: Array<AgentPubKeyB64>): Promise<void> {
+  async signalPeers(signal: ThreadsSignal, agents: Array<AgentPubKeyB64>): Promise<void> {
     const peers = agents.map((key) => decodeHashFromBase64(key));
     return this.zomeProxy.signalPeers({signal, peers});
   }
 
+
   /** Return true if sent synchronously */
-  async notifyPeer(agent: AgentPubKeyB64, signal: WeaveSignal): Promise<boolean> {
+  async notifyPeer(agent: AgentPubKeyB64, signal: ThreadsSignal): Promise<boolean> {
     try {
       await this.zomeProxy.notifyPeer({peer: decodeHashFromBase64(agent), payload: signal});
       return true;
@@ -1703,7 +1694,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): WeaveSignal {
+  private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): ThreadsSignal {
     let maybePpHash;
     if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification
         || NotifiableEventType.NewBead in notification) {
@@ -1711,7 +1702,7 @@ export class ThreadsZvm extends ZomeViewModel {
       const beadInfo = this.getBeadInfo(beadAh);
       maybePpHash = beadInfo.bead.ppAh;
     }
-    const signal: WeaveSignal = {
+    const signal: ThreadsSignal = {
       maybePpHash,
       from: this.cell.agentPubKey,
       payload: { type: {Notification: null}, content: [notification, extra]}
