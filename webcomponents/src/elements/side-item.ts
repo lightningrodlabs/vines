@@ -87,13 +87,13 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       content = html`<span>${msg("<Missing hash>")}</span>`;
       return [content, undefined, undefined];
     }
-    const maybePair = this._dvm.threadsZvm.perspective.beads[this.hash];
-    if (!maybePair) {
+    const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
+    if (!beadInfo) {
       content = html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       return [content, undefined, undefined];
     }
 
-    const [beadInfo, typedBead] = maybePair;
+    const typedBead = this._dvm.threadsZvm.getBaseBead(this.hash);
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
@@ -166,8 +166,8 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     if (!hasFarPrev) {
       return html``;
     }
-    const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
-    const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
+    const prevBeadInfo = this._dvm.threadsZvm.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
+    const prevBead = this._dvm.threadsZvm.getBaseBead(beadInfo.bead.prevBeadAh);
     // let prevProfile: ProfileMat;
     // if (prevBeadInfo) {
     //   prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];

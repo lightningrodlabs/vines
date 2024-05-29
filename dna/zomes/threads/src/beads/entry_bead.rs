@@ -49,30 +49,7 @@ pub struct AddEntryAsBeadInput {
 pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_as_bead() {:?}", input);
-    let response = call(
-        CallTargetCell::OtherRole(input.role_name.clone()),
-        ZomeName::from(input.zome_name.clone()),
-        "get_any_record".into(),
-        None,
-        input.eh.clone())?;
-    let maybeRecord: Option<Record> = decode_response(response)?;
-    //let maybeRecord = get(input.ah.clone(), GetOptions::content())?;
-    let Some(record) = maybeRecord
-        else { return error("No record found at given EntryHash")};
-    let Some(entry_type) = record.action().entry_type()
-        else { return error("No entry found at given EntryHash")};
-    let EntryType::App(entry_def) = entry_type
-        else { return error("No AppEntryDef found at given EntryHash")};
-    let creation_time = input.original_creation_time.unwrap_or(record.action().timestamp()); //   ah_time
-    let bead_type = format!("{}::{}", entry_def.zome_index, entry_def.entry_index.0);
-    let entry_bead = EntryBead {
-        bead: input.bead.clone(),
-        source_role: input.role_name,
-        source_zome: input.zome_name,
-        source_eh: input.eh,
-        source_type: bead_type.clone(),
-
-    };
+    let (entry_bead, creation_time) = create_entry_bead(input.clone())?;
     let ah = create_entry(ThreadsEntry::EntryBead(entry_bead.clone()))?;
     let tp_pair = index_bead(entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
@@ -89,6 +66,36 @@ pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash
     }
     ///
     Ok((ah, entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time, maybe_notif))
+}
+
+
+///
+#[hdk_extern]
+pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead, Timestamp)> {
+    let response = call(
+    CallTargetCell::OtherRole(input.role_name.clone()),
+    ZomeName::from(input.zome_name.clone()),
+    "get_any_record".into(),
+    None,
+    input.eh.clone())?;
+    let maybeRecord: Option<Record> = decode_response(response)?;
+    //let maybeRecord = get(input.ah.clone(), GetOptions::content())?;
+    let Some(record) = maybeRecord
+    else { return error("No record found at given EntryHash")};
+    let creation_time = input.original_creation_time.unwrap_or(record.action().timestamp()); //   ah_time
+    let Some(entry_type) = record.action().entry_type()
+    else { return error("No entry found at given EntryHash")};
+    let EntryType::App(entry_def) = entry_type
+    else { return error("No AppEntryDef found at given EntryHash")};
+    let bead_type = format!("{}::{}", entry_def.zome_index, entry_def.entry_index.0);
+    let entry_bead = EntryBead {
+    bead: input.bead.clone(),
+    source_role: input.role_name,
+    source_zome: input.zome_name,
+    source_eh: input.eh,
+    source_type: bead_type.clone(),
+    };
+    Ok((entry_bead, creation_time))
 }
 
 

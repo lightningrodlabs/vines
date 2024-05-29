@@ -183,8 +183,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       case "viewComments":
       case "createCommentThread":
         const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-        const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
-        const typed = this._dvm.threadsZvm.getBead(this.hash);
+        const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
+        const typed = this._dvm.threadsZvm.getBaseBead(this.hash);
         const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
@@ -218,11 +218,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   renderTopVine(beadInfo: BeadInfo) {
     const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh != '';
-    const prevBeadInfo = this._dvm.threadsZvm.getBeadInfo(beadInfo.bead.prevBeadAh);
+    const prevBeadInfo = this._dvm.threadsZvm.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {
       return html``;
     }
-    const prevBead = this._dvm.threadsZvm.getBead(beadInfo.bead.prevBeadAh);
+    const prevBead = this._dvm.threadsZvm.getBaseBead(beadInfo.bead.prevBeadAh);
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     if (prevBeadInfo) {
       prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
@@ -274,11 +274,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //   return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     // }
 
-    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
     if (!beadInfo) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
-    const typed = this._dvm.threadsZvm.getBead(this.hash);
+    const typed = this._dvm.threadsZvm.getBaseBead(this.hash);
     /** Determine the comment button to display depending on current comments for this message */
     let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
@@ -291,7 +291,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
       item = html`<chat-wal class="innerItem" .hash=${this.hash}></chat-wal>`;
     }
-
 
     const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
 

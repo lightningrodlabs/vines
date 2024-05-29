@@ -280,7 +280,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     // }
 
     /** Grab my threads */
-    const myBeads= Object.entries(this.perspective.beads).filter(([ah, pair]) => pair[0].author == this.cell.agentPubKey);
+    const myBeads = Object.entries(this.perspective.beads)
+      .filter(([ah, pair]) => pair[0].author == this.cell.agentPubKey)
+      .filter(([ah, pair]) => pair[0].beadType != ThreadsEntryType.EncryptedBead);
     const myBeadThreads: Record<ActionHashB64, Thread> = {}
     myBeads.map(([beadAh, [beadInfo, typed]]) => myBeadThreads[beadInfo.bead.ppAh] = this.perspective.threads.get(beadInfo.bead.ppAh));
 

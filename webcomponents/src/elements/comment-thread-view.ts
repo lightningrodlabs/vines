@@ -342,6 +342,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                       if (thread.pp.subject.typeName == ThreadsEntryType.AnyBead
                        || thread.pp.subject.typeName == ThreadsEntryType.EntryBead
                        || thread.pp.subject.typeName == ThreadsEntryType.TextBead
+                       || thread.pp.subject.typeName == ThreadsEntryType.EncryptedBead
                       ) {
                           this.dispatchEvent(beadJumpEvent(encodeHashToBase64(wal.hrl[1])))
                           return;

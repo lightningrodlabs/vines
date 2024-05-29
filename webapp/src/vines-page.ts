@@ -384,7 +384,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.error("No thread selected");
       return;
     }
-    let ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, ppAh, undefined, mentionedAgents, this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, mentionedAgents, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
     //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
@@ -398,27 +398,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // }
   }
 
+
   /** */
   async onDmTextMessage(inputText: string) {
     const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
     const otherAgent = sub.hash;
     //const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
-    const dmPair = this._dvm.threadsZvm.perspective.dmAgents[otherAgent];
-    console.log("onDmTextMessage()", inputText, otherAgent, dmPair)
-    let ppAh: ActionHashB64;
-    if (!dmPair) {
-      ppAh = await this._dvm.threadsZvm.createDmThread(otherAgent);
-    } else {
-      ppAh = dmPair[0];
-    }
-    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, ppAh);
+    let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
     console.log("onDmTextMessage() ah", beadAh, this._dvm.threadsZvm.perspective.threads);
     //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, beadAh);
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
-    await delay(1000);
+    //await delay(1000);
     this.dispatchEvent(beadJumpEvent(beadAh));
   }
+
 
   /** */
   async onCreateHrlMessage() {
@@ -429,7 +423,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    let ah = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, [], this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, [], this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
 
@@ -763,7 +757,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
         console.log("<vines-page> startPublishFile callback", eh);
-        let ah = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
+        let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
         console.log("onCreateFileMessage() ah", ah);
         //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 

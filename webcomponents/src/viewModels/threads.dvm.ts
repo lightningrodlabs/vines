@@ -19,8 +19,8 @@ import {
   WeaveNotification, ThreadsSignal,
 } from "../bindings/threads.types";
 import {
-  AnyLinkableHashB64,
-  BeadType, dematerializeParticipationProtocol,
+  AnyLinkableHashB64, BaseBeadType, bead2base,
+  BeadType, dematerializeParticipationProtocol, EncryptedBeadContent,
   materializeTypedBead,
   TypedBead, TypedContent,
 } from "./threads.perspective";
@@ -143,7 +143,11 @@ export class ThreadsDvm extends DnaViewModel {
       const {typed, beadType} = decode(extra) as {typed: TypedBead, beadType: BeadType};
       const typedMat = materializeTypedBead(typed, beadType);
       const beadAh = encodeHashToBase64(notif.content);
-      ppAh = typedMat.bead.ppAh;
+      //ppAh = typedMat.bead.ppAh;
+      // if (!notifSignal.maybePpHash) {
+      //   console.error("Missing ppAh in ThreadsSignal");
+      // }
+      ppAh = notifSignal.maybePpHash;
       console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typedMat);
       await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
@@ -226,7 +230,7 @@ export class ThreadsDvm extends DnaViewModel {
         const [ts, beadAh, beadTypeStr, ppAh, encBead] = gossip.content as [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array];
         console.log("Signal is NewBead of type", beadTypeStr);
         const {typed, beadType} = decode(encBead) as {typed: TypedBead, beadType: BeadType};
-        console.log("NewBead", typed, beadType, beadTypeStr);
+        console.log("NewBead", beadAh, typed, beadType, beadTypeStr);
         //const beadType = beadTypeStr as BeadType;
         /* await*/ this.threadsZvm.storeTypedBead(beadAh, materializeTypedBead(typed, beadType), beadType, ts, threadsSignal.from, true, true);
         break;
@@ -305,11 +309,42 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
+  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
+    const isDmThread = this.threadsZvm.isThreadDm(ppAh);
+    if (isDmThread) {
+      return this.publishDm(isDmThread, beadType, content, prevBead);
+    }
+    return this.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
+  }
+
+
+  /** */
+  async publishDm(otherAgent: AgentPubKeyB64, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionHashB64): Promise<ActionHashB64> {
+    const dmPair = this.threadsZvm.perspective.dmAgents[otherAgent];
+    /** Create or grab DmThread */
+    let ppAh: ActionHashB64;
+    if (!dmPair) {
+      ppAh = await this.threadsZvm.createDmThread(otherAgent);
+    } else {
+      ppAh = dmPair[0];
+    }
+    /** Create Bead */
+    const bead = await this.threadsZvm.createNextBead(ppAh, prevBead);
+    const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
+    const base = bead2base(typed, beadType);
+    const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: decodeHashFromBase64(otherAgent)});
+    let beadAh = await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent: decodeHashFromBase64(otherAgent)}, ppAh);
+    return beadAh;
+  }
+
+
+  /** */
+  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
     let [ah, _time_anchor, creationTime, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
     /** Erase saved input */
     delete this._threadInputs[ppAh];
-    /** Send signal to peers */
+    /** Send gossip to peers */
+    await delay(20); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
     const data = encode({typed, beadType});
     const signal: ThreadsSignal = this.createGossipSignal({type: {NewBead: null}, content: [creationTime, ah, beadType, ppAh, data]}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);

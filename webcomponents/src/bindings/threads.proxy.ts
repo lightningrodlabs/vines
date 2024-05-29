@@ -199,6 +199,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('add_entry_as_bead', input);
   }
 
+  async createEntryBead(input: AddEntryAsBeadInput): Promise<[EntryBead, Timestamp]> {
+    return this.call('create_entry_bead', input);
+  }
+
   async getEntryBeadOption(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EntryBead] | null> {
     return this.call('get_entry_bead_option', beadAh);
   }

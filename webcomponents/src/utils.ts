@@ -242,13 +242,13 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
       case ThreadsEntryType.TextBead:
       case ThreadsEntryType.EntryBead:
       case ThreadsEntryType.AnyBead:
-        let beadPair = threadsZvm.perspective.beads[subject.hash];
-        let typedMat;
-        if (!beadPair) {
-          const typed = await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName, false);
-          typedMat = materializeTypedBead(typed, subject.typeName);
-        } else {
-          typedMat = beadPair[1];
+      case ThreadsEntryType.EncryptedBead:
+        let typedMat = threadsZvm.getBaseBead(subject.hash);
+        if (!typedMat) {
+          //console.log("determineSubjectName() bead not found. Fetching.", subject.hash);
+          /*const typed =*/ await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName, false);
+          //typedMat = materializeTypedBead(typed, subject.typeName);
+          typedMat = threadsZvm.getBaseBead(subject.hash);
         }
         const beadName = determineBeadName(subject.typeName, typedMat, filesDvm, weServices);
         //console.log("determineSubjectName() beadName", beadName);

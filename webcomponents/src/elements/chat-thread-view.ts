@@ -255,6 +255,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Should grab all probed messages and request probes if end is reached */
 
     const all = thread.getAll();
+    console.log("<chat-thread-view>.render() all", all.length);
     let passedLog = false;
 
     let currentDay = "";

@@ -1,5 +1,6 @@
 import {
-  ActionHashB64,
+  ActionHash,
+  ActionHashB64, AgentPubKey,
   AgentPubKeyB64, decodeHashFromBase64, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
@@ -9,13 +10,13 @@ import {
 import {Dictionary} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
-  AnyBead, Bead,
+  AnyBead, BaseBeadKind, Bead, EncryptedBead,
   EntryBead,
   GlobalLastProbeLog, NotifiableEvent, NotifiableEventType, NotifySettingType,
   ParticipationProtocol,
   Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
-import {WAL} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 
 
 /** -- Should be defined in @holochain/client */
@@ -23,11 +24,15 @@ import {WAL} from "@lightningrodlabs/we-applet";
 export declare type AnyLinkableHashB64 = HoloHashB64;
 //export const HOLOCHAIN_EPOCH = 1640995200000000;
 
-export type TypedBead = EntryBead | AnyBead | TextBead;
+export type TypedBaseBead = EntryBead | AnyBead | TextBead;
+export type TypedBead = TypedBaseBead | EncryptedBead;
 
 export type TypedContent = string | WAL | EntryHashB64;
 
-export type BeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead;
+export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead
+export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
+
+export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentPubKey}
 
 
 /** */
@@ -290,7 +295,8 @@ export function dematerializeAnyBead(bead: AnyBeadMat): AnyBead {
 
 /** -- TypedBeadMat -- */
 
-export type TypedBeadMat = EntryBeadMat | AnyBeadMat | TextBeadMat;
+export type TypedBaseBeadMat = EntryBeadMat | AnyBeadMat | TextBeadMat;
+export type TypedBeadMat = TypedBaseBeadMat | EncryptedBead;
 
 
 // /** */
@@ -306,12 +312,33 @@ export type TypedBeadMat = EntryBeadMat | AnyBeadMat | TextBeadMat;
 
 
 /** */
+export function base2typed(base: BaseBeadKind): [TypedBaseBead, BaseBeadType] {
+  if ("AnyBead" in base) return [base.AnyBead, ThreadsEntryType.AnyBead];
+  if ("EntryBead" in base) return [base.EntryBead, ThreadsEntryType.EntryBead];
+  if ("TextBead" in base) return [base.TextBead, ThreadsEntryType.TextBead];
+  throw Error("Unknown BaseBeadKind");
+}
+
+
+/** */
+export function bead2base(typed: TypedBaseBead, beadType: BaseBeadType): BaseBeadKind {
+  switch(beadType) {
+    case ThreadsEntryType.TextBead: return {TextBead: typed as TextBead}; break;
+    case ThreadsEntryType.AnyBead: return {AnyBead: typed as AnyBead}; break;
+    case ThreadsEntryType.EntryBead: return {EntryBead: typed as EntryBead}; break;
+    default: throw Error("Unknown bead type: " + beadType); break;
+  }
+}
+
+
+/** */
 export function materializeTypedBead(typed: TypedBead, beadType: BeadType): TypedBeadMat {
   let typedMat: TypedBeadMat;
   switch(beadType) {
     case ThreadsEntryType.TextBead: typedMat = materializeTextBead(typed as TextBead); break;
     case ThreadsEntryType.AnyBead: typedMat = materializeAnyBead(typed as AnyBead); break;
     case ThreadsEntryType.EntryBead: typedMat = materializeEntryBead(typed as EntryBead); break;
+    case ThreadsEntryType.EncryptedBead: typedMat = typed as EncryptedBead; break;
     default: throw Error("Unknown bead type: " + beadType); break;
   }
   return typedMat;
@@ -323,6 +350,7 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
     case ThreadsEntryType.TextBead: typed = dematerializeTextBead(typedMat as TextBeadMat); break;
     case ThreadsEntryType.AnyBead: typed = dematerializeAnyBead(typedMat as AnyBeadMat); break;
     case ThreadsEntryType.EntryBead: typed = dematerializeEntryBead(typedMat as EntryBeadMat); break;
+    case ThreadsEntryType.EncryptedBead: typed = typedMat as EncryptedBead; break;
     default: throw Error("Unknown bead type: " + beadType); break;
   }
   return typed;

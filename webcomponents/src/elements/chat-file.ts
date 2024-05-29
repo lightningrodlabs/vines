@@ -63,16 +63,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     this._loading = true;
-    const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
-    if (!beadInfoPair) {
+    const entryBead = this._dvm.threadsZvm.getBaseBead(this.hash) as EntryBeadMat;
+    if (!entryBead) {
       console.warn("<chat-file> Bead not found", this.hash);
       return;
     }
     try {
-      const entryBead = beadInfoPair[1] as EntryBeadMat;
       const manifestEh = entryBead.sourceEh;
       console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
-      //const beadInfoPair = this._filesDvm.filesZvm.perspective.loca[this.hash];
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(manifestEh));
       console.log(`<chat-file>.loadFile() ${this.hash}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
       if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
@@ -141,12 +139,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
               </ui5-li>
           </ui5-list>`;
     }
-    const beadInfoPair = this._dvm.threadsZvm.perspective.beads[this.hash];
-    //console.log("<chat-file>.render() beadInfoPair", beadInfoPair);
-    if (!beadInfoPair) {
+    const entryBead = this._dvm.threadsZvm.getBaseBead(this.hash) as EntryBeadMat;
+    //console.log("<chat-file>.render() entryBead", entryBead);
+    if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    const entryBead = beadInfoPair[1] as EntryBeadMat;
     const manifestEh = entryBead.sourceEh;
     const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
     if (!filePprm) {

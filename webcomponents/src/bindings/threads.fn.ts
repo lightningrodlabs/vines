@@ -18,6 +18,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_reactions",
 	"add_entry_bead",
 	"add_entry_as_bead",
+	"create_entry_bead",
 	"get_entry_bead_option",
 	"get_entry_bead",
 	"get_many_entry_beads",

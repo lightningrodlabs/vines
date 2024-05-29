@@ -70,12 +70,12 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async loadBeadInfo(beadAh: ActionHashB64, threadsZvm: ThreadsZvm): Promise<boolean> {
-    const beadPair = threadsZvm.perspective.beads[beadAh];
-    if (beadPair) {
-      let thread = threadsZvm.perspective.threads[beadPair[0].bead.ppAh];
+    const beadInfo = threadsZvm.getBaseBeadInfo(beadAh);
+    if (beadInfo) {
+      let thread = threadsZvm.perspective.threads[beadInfo.bead.ppAh];
       if (!thread) {
-        /*const ppMat =*/ await threadsZvm.fetchPp(beadPair[0].bead.ppAh);
-        thread = threadsZvm.perspective.threads.get(beadPair[0].bead.ppAh);
+        /*const ppMat =*/ await threadsZvm.fetchPp(beadInfo.bead.ppAh);
+        thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       }
       //console.log("<wurl-link> loadWal() thread", thread.name);
       this._vinesTypes = ThreadsEntryType.AnyBead;

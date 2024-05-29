@@ -6,14 +6,18 @@ import {
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
-  EntryHashB64, sliceCore32,
+  EntryHashB64,
   Timestamp,
 } from "@holochain/client";
 import {
+  AddEntryAsBeadInput,
   AnyBead,
+  BaseBeadKind,
   Bead,
   BeadLink,
-  CommitGlobalLogInput, DM_SUBJECT_TYPE_NAME,
+  CommitGlobalLogInput,
+  DM_SUBJECT_TYPE_NAME,
+  EncryptedBead,
   EntryBead,
   GlobalLastProbeLog,
   NotifiableEventType,
@@ -27,20 +31,25 @@ import {
   TextBead,
   ThreadLastProbeLog,
   ThreadsEntryType,
-  WeaveNotification,
   ThreadsSignal,
+  WeaveNotification,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, ZomeViewModel} from "@ddd-qc/lit-happ";
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
+  base2typed,
+  BaseBeadType,
   BeadInfo,
   BeadLinkMaterialized,
-  BeadType, dematerializeBead,
+  BeadType,
   dematerializeEntryBead,
-  dematerializeParticipationProtocol, dematerializeTypedBead,
+  dematerializeParticipationProtocol,
+  dematerializeTypedBead,
+  EncryptedBeadContent,
   EntryBeadMat,
+  materializeBead,
   materializeParticipationProtocol,
   materializeSubject,
   materializeTypedBead,
@@ -49,16 +58,19 @@ import {
   TextBeadMat,
   ThreadsExportablePerspective,
   ThreadsPerspective,
+  TypedBaseBead,
+  TypedBaseBeadMat,
   TypedBead,
-  TypedBeadMat, TypedContent,
+  TypedBeadMat,
+  TypedContent,
 } from "./threads.perspective";
 import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
 import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
-import {decode, encode} from "@msgpack/msgpack";
+import {encode} from "@msgpack/msgpack";
 import {agent2eh, eh2agent, weaveUrlToWal} from "../utils";
-import {generateSearchTest, SearchParameters} from "../search";
+import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
 
@@ -141,10 +153,10 @@ export class ThreadsZvm extends ZomeViewModel {
   //private _allParticipationProtocols: Dictionary<ParticipationProtocolMat> = {};
   /** ah -> (BeadInfo, Bead) */
   private _beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
-
+  /** agentId -> [ppAh, isHidden] */
   private _dmAgents: Dictionary<[ActionHashB64, boolean]> = {};
   /** encBeadAh -> [BeadInfo, TypedBead] */
-  private _decBeads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
+  private _decBeads: Dictionary<[BeadInfo, TypedBaseBeadMat]> = {};
 
   /** lh -> ppAhs */
   private _threadsPerSubject: Dictionary<ActionHashB64[]> = {};
@@ -246,12 +258,46 @@ export class ThreadsZvm extends ZomeViewModel {
     return maybeBead[0];
   }
 
+
+  getBaseBeadInfo(beadAh: ActionHashB64): BeadInfo | undefined {
+    const maybeBead = this._beads[beadAh];
+    if (!maybeBead) {
+      return undefined;
+    }
+    if (maybeBead[0].beadType != ThreadsEntryType.EncryptedBead) {
+      return maybeBead[0];
+    }
+    const maybeDecBead = this._decBeads[beadAh];
+    if (!maybeDecBead) {
+      return undefined;
+    }
+    return maybeDecBead[0];
+  }
+
+
   getBead(beadAh: ActionHashB64): TypedBeadMat | undefined {
     const maybeBead = this._beads[beadAh];
     if (!maybeBead) {
       return undefined;
     }
     return maybeBead[1];
+  }
+
+
+  getBaseBead(beadAh: ActionHashB64): TypedBaseBeadMat | undefined {
+    const maybeBead = this._beads[beadAh];
+    if (!maybeBead) {
+      return undefined;
+    }
+    if (maybeBead[0].beadType != ThreadsEntryType.EncryptedBead) {
+      return maybeBead[1] as TypedBaseBeadMat;
+    }
+    //console.log("getBaseBead()", beadAh);
+    const maybeDecBead = this._decBeads[beadAh];
+    if (!maybeDecBead) {
+      return undefined;
+    }
+    return maybeDecBead[1];
   }
 
 
@@ -265,7 +311,7 @@ export class ThreadsZvm extends ZomeViewModel {
     let infos = [];
     for (const ah of beadAhs) {
       if (this._beads[ah]) {
-        infos.push(this._beads[ah])
+        infos.push(this.getBaseBead(ah))
       }
     }
     //FIXME tuples.sort((a, b) => {return 1})
@@ -283,7 +329,7 @@ export class ThreadsZvm extends ZomeViewModel {
     let infos = [];
     for (const ah of beadAhs) {
       if (this._beads[ah]) {
-        infos.push([ah, this._beads[ah][0], this._beads[ah][1]])
+        infos.push([ah, this.getBaseBeadInfo(ah), this.getBaseBead(ah)]);
       }
     }
     //FIXME tuples.sort((a, b) => {return 1})
@@ -352,6 +398,10 @@ export class ThreadsZvm extends ZomeViewModel {
     let matchingTextBeads: [ActionHashB64, BeadInfo, string][] = Object.entries(this._beads)
       .filter(([_beadAh, beadPair]) => beadPair[0].beadType == ThreadsEntryType.TextBead)
       .map(([beadAh, beadPair]) => [beadAh, beadPair[0], (beadPair[1] as TextBeadMat).value.toLowerCase()]);
+    let decMatchingTextBeads: [ActionHashB64, BeadInfo, string][] = Object.entries(this._decBeads)
+      .filter(([_beadAh, beadPair]) => beadPair[0].beadType == ThreadsEntryType.TextBead)
+      .map(([beadAh, beadPair]) => [beadAh, beadPair[0], (beadPair[1] as TextBeadMat).value.toLowerCase()]);
+    matchingTextBeads = matchingTextBeads.concat(decMatchingTextBeads);
 
     /** filter applet */
     if (parameters.appletByName) {
@@ -981,7 +1031,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
 
   /** */
-  async publishTypedBead(type: BeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64) : Promise<[ActionHashB64, string, number, TypedBead]> {
+  async publishTypedBead(type: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64) : Promise<[ActionHashB64, string, number, TypedBead]> {
     const creation_time = Date.now() * 1000;
     const nextBead = await this.createNextBead(ppAh, prevBead);
     const beadAuthor = author? author : this.cell.agentPubKey;
@@ -992,7 +1042,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishTypedBeadAt(beadTypeEx: BeadType | "EntryBeadImport", content: TypedContent | EntryBeadMat, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
+  async publishTypedBeadAt(beadTypeEx: BeadType | "EntryBeadImport", content: TypedContent | EntryBeadMat | EncryptedBeadContent, nextBead: Bead, creationTime: Timestamp, author: AgentPubKeyB64, ments?: AgentPubKeyB64[], dontStore?: boolean)
     : Promise<[ActionHashB64, string, TypedBead]>
   {
     const mentionees = ments? ments.map((m) => decodeHashFromBase64(m)) : [];
@@ -1042,6 +1092,12 @@ export class ThreadsZvm extends ZomeViewModel {
         [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addAnyBead({anyBead, creationTime, canNotifyReply});
         typed = anyBead;
         break;
+      case ThreadsEntryType.EncryptedBead:
+        const encContent = content as EncryptedBeadContent;
+        beadTypeEx = ThreadsEntryType.EncryptedBead;
+        typed = encContent.encBead;
+        [bead_ah, global_time_anchor, bucket_ts, notifPairs] = await this.zomeProxy.addEncBead({encBead: encContent.encBead, otherAgent: encContent.otherAgent, creationTime, canNotifyReply});
+        break;
       default: throw Error("Unknown beadType: " + beadTypeEx);
         break;
     }
@@ -1054,7 +1110,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Notify Mentions/reply asychronously */
     const extra = encode({typed, beadType: beadTypeEx});
     if (author == this.cell.agentPubKey) { // only real author should notify
-      const ppAh = encodeHashToBase64(typed.bead.ppAh);
+      const ppAh = encodeHashToBase64(nextBead.ppAh);
       await this.probeNotifSettings(ppAh);
       const notifiedPeers = [];
       for (const [recip, notif] of notifPairs) {
@@ -1242,8 +1298,8 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async fetchUnknownBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<[TypedBead, ThreadsEntryType]> {
-    //console.log("fetchUnknownBead()", encodeHashToBase64(beadAh));
+  async fetchUnknownBead(beadAh: ActionHash, canNotify: boolean, alternateCreationTime?: Timestamp): Promise<[TypedBead, BeadType]> {
+    console.log("fetchUnknownBead()", encodeHashToBase64(beadAh));
     let creationTime: Timestamp;
     let author: AgentPubKey;
     let typed: TypedBead;
@@ -1253,12 +1309,18 @@ export class ThreadsZvm extends ZomeViewModel {
     if (textTuple == null) {
       const entryTuple = await this.zomeProxy.getEntryBeadOption(beadAh);
       if (entryTuple == null) {
-        try {
-          [creationTime, author, typed] = await this.zomeProxy.getAnyBead(beadAh);
+        const anyTuple = await this.zomeProxy.getAnyBeadOption(beadAh);
+        if (anyTuple == null) {
+          try {
+            [creationTime, author, typed] = await this.zomeProxy.getEncBead(beadAh);
+            type = ThreadsEntryType.EncryptedBead;
+          } catch (e) {
+            //console.error(e);
+            return Promise.reject(`Bead not found at hash ${encodeHashToBase64(beadAh)} : ${e}`);
+          }
+        } else {
           type = ThreadsEntryType.AnyBead;
-        } catch (e) {
-          //console.error(e);
-          return Promise.reject(`Bead not found at hash ${encodeHashToBase64(beadAh)} : ${e}`);
+          [creationTime, author, typed] = anyTuple;
         }
       } else {
         type = ThreadsEntryType.EntryBead;
@@ -1284,6 +1346,7 @@ export class ThreadsZvm extends ZomeViewModel {
         case ThreadsEntryType.TextBead: [creationTime, author, typed] = await this.zomeProxy.getTextBead(beadAh); break;
         case ThreadsEntryType.EntryBead: [creationTime, author, typed] = await this.zomeProxy.getEntryBead(beadAh); break;
         case ThreadsEntryType.AnyBead: [creationTime, author, typed] = await this.zomeProxy.getAnyBead(beadAh); break;
+        case ThreadsEntryType.EncryptedBead: [creationTime, author, typed] = await this.zomeProxy.getEncBead(beadAh); break;
       }
       const ts = alternateCreationTime? alternateCreationTime : creationTime;
       await this.storeTypedBead(encodeHashToBase64(beadAh), materializeTypedBead(typed, beadType), beadType, ts, encodeHashToBase64(author), canNotify, false);
@@ -1419,7 +1482,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** get ppAh of Notif */
   async getNotifPp(notif: WeaveNotification): Promise<ActionHashB64> {
-    //console.log("getNotifPp()", notif.event);
+    console.log("getNotifPp()", notif.event);
     if (NotifiableEventType.Fork in notif.event || NotifiableEventType.NewDmThread in notif.event) {
       return encodeHashToBase64(notif.content);
     } else {
@@ -1427,8 +1490,9 @@ export class ThreadsZvm extends ZomeViewModel {
       if (maybeBead) {
         return maybeBead[0].bead.ppAh;
       }
-      const [typed, type] = await this.fetchUnknownBead(notif.content, false);
-      return encodeHashToBase64(typed.bead.ppAh);
+      const [typed, beadType] = await this.fetchUnknownBead(notif.content, false);
+      const [base, _baseType] = await this.getBaseTypedBead(typed, beadType, encodeHashToBase64(notif.author)); // WARN: Assuming notif sender is also bead author
+      return encodeHashToBase64(base.bead.ppAh);
     }
   }
 
@@ -1592,6 +1656,24 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  async getBaseTypedBead(typedBead: TypedBead, beadType: BeadType, author: AgentPubKeyB64): Promise<[TypedBaseBead, BaseBeadType]> {
+    if (beadType == ThreadsEntryType.EncryptedBead) {
+      let innerBead: BaseBeadKind;
+      if (author == this.cell.agentPubKey) {
+        innerBead = await this.zomeProxy.decryptMyBead(typedBead as EncryptedBead);
+      } else {
+        innerBead = await this.zomeProxy.decryptBead({
+          encBead: typedBead as EncryptedBead,
+          otherAgent: decodeHashFromBase64(author)
+        });
+      }
+      return base2typed(innerBead);
+    }
+    return [typedBead as TypedBaseBead, beadType];
+  }
+
+
+  /** */
   async storeTypedBead(beadAh: ActionHashB64, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentPubKeyB64, canNotify: boolean, isNew: boolean) {
     if (this._beads[beadAh]) {
       return;
@@ -1600,10 +1682,27 @@ export class ThreadsZvm extends ZomeViewModel {
       console.error("storeBead() Trying to store a null Bead");
       return;
     }
-    const beadInfo = {creationTime, author, beadType, bead: typedBead.bead};
-    console.log("storeBead()", beadAh, typedBead.bead.ppAh, typedBead, author);
-    this._beads[beadAh] = [beadInfo, typedBead];
-    await this.storeBeadInThread(beadAh, typedBead.bead.ppAh, creationTime, isNew, beadInfo.beadType);
+    if (beadType == ThreadsEntryType.EncryptedBead) {
+      /** Get inner */
+      const [innerTyped, innerBeadType] = await this.getBaseTypedBead(dematerializeTypedBead(typedBead, beadType), beadType, author);
+      /** Store inner Bead */
+      const bead = innerTyped.bead;
+      const innerBeadInfo = {creationTime, author, beadType: innerBeadType, bead: materializeBead(bead)} as BeadInfo;
+      this._decBeads[beadAh] = [innerBeadInfo, materializeTypedBead(innerTyped, innerBeadType) as TypedBaseBeadMat];
+      /** Store EncryptedBead */
+      const beadInfo = {creationTime, author, beadType: ThreadsEntryType.EncryptedBead, bead: materializeBead(bead)} as BeadInfo;
+      console.log("storeBead() encrypted", beadAh, typedBead, author);
+      this._beads[beadAh] = [beadInfo, typedBead];
+      await this.storeBeadInThread(beadAh, encodeHashToBase64(bead.ppAh), creationTime, isNew, beadInfo.beadType);
+    } else {
+      /** Store normal base Bead */
+      const bead = (typedBead as TypedBaseBeadMat).bead;
+      const beadInfo = {creationTime, author, beadType, bead} as BeadInfo;
+      console.log("storeBead()", beadAh, bead.ppAh, typedBead, author);
+      this._beads[beadAh] = [beadInfo, typedBead];
+      await this.storeBeadInThread(beadAh, bead.ppAh, creationTime, isNew, beadInfo.beadType);
+    }
+
     if (canNotify) {
       this.notifySubscribers();
     }
@@ -1921,8 +2020,13 @@ export class ThreadsZvm extends ZomeViewModel {
           }
         }
         /* Determine typed bead content */
-        let content: TypedContent | EntryBeadMat;
+        let content: TypedContent | EntryBeadMat | EncryptedBeadContent;
         switch(beadInfo.beadType) {
+          case ThreadsEntryType.EncryptedBead: {
+            const encBead = typedBead as EncryptedBead;
+            const otherAgent = beadInfo.author != this.cell.agentPubKey? beadInfo.author : this._threads.get(beadInfo.bead.ppAh).pp.subject.hash;
+            content = {encBead, otherAgent: decodeHashFromBase64(otherAgent)};
+          } break;
           case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
           //case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat).sourceEh; break;
           case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat); break;
@@ -1989,6 +2093,41 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.probeAllSubjects();
   }
 
+
+
+  /** */
+  async content2Typed(bead: Bead, content: TypedContent, beadType: BaseBeadType): Promise<TypedBaseBead> {
+    switch (beadType) {
+      case ThreadsEntryType.TextBead:
+        return {value: content as string, bead} as TextBead;
+        break;
+      case ThreadsEntryType.EntryBead:
+        const entryInfo: AddEntryAsBeadInput = {
+          eh: decodeHashFromBase64(content as EntryHashB64),
+          bead,
+          zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
+          roleName: "rFiles", // FILES_CELL_NAME
+          // creationTime,
+          // author,
+          canNotifyReply: false,
+        };
+        const [entry_bead, creation_ts] = await this.zomeProxy.createEntryBead(entryInfo);
+        return entry_bead;
+        break;
+      case ThreadsEntryType.AnyBead:
+        //const encHrl = encodeHrl(content as Hrl);
+        const wurl = weaveUrlFromWal(content as WAL);
+        return {
+          bead,
+          value: wurl,
+          typeInfo: "wal",
+        } as AnyBead;
+        break;
+      default:
+        throw Error("Unknown beadType: " + beadType);
+        break;
+    }
+  }
 
   /** -- Debug -- */
 

@@ -72,8 +72,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return;
     }
     try {
-      const anyBeadInfoPair = zvm.perspective.beads[hash];
-      const anyBead = anyBeadInfoPair[1] as AnyBeadMat;
+      const anyBead = zvm.getBaseBead(hash) as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
 
       this._assetLocAndInfo = await this.weServices.assetInfo(wal);
@@ -114,15 +113,15 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
     }
 
-    const anyBeadInfoPair = this.perspective.beads[this.hash];
-    if (!anyBeadInfoPair) {
+    const anyBead = this._zvm.getBaseBead(this.hash) as AnyBeadMat;
+    if (!anyBead) {
       return html`
         <ui5-list id="fileList">
             <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
                     @click=${async (e) => {
                         await this._zvm.probeAllInner();
-                        const anyBeadInfoPair = this.perspective.beads[this.hash];
-                        if (anyBeadInfoPair) {
+                        const anyBead = this._zvm.getBaseBead(this.hash);
+                        if (anyBead) {
                           this.requestUpdate();
                         }
                       }}>
@@ -131,7 +130,6 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         </ui5-list>
       `;
     }
-    const anyBead = anyBeadInfoPair[1] as AnyBeadMat;
     if (anyBead.typeInfo != "wal") {
       return html`          
           <ui5-list id="fileList">

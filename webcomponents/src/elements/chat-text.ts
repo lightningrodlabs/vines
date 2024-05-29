@@ -52,12 +52,10 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`<div style="color:red">No message found</div>`;
     }
 
-    const beadPair = this.perspective.beads[this.hash];
-    if (!beadPair) {
+    const tm = this._zvm.getBaseBead(this.hash) as TextBeadMat;
+    if (!tm) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    const tm = beadPair[1] as TextBeadMat;
-
     //md.use(emoji/* , options */);
     const result = md.render(tm.value);
     const parsed = unsafeHTML(result);

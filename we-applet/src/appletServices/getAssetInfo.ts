@@ -12,6 +12,7 @@ import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiComment, mdiCommentBookmark, mdiCommentText, mdiCommentTextMultiple} from "@mdi/js";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 
+
 /** */
 export async function getAssetInfo(
   appletClient: AppAgentClient,
