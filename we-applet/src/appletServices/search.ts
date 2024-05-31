@@ -1,10 +1,10 @@
 import {
     AgentPubKeyB64,
-    AppAgentClient,
+    AppClient,
     decodeHashFromBase64,
 } from "@holochain/client";
 import {AppletHash, WAL} from "@lightningrodlabs/we-applet/dist/types";
-import {WeServices} from "@lightningrodlabs/we-applet/dist/api";
+import {WeaveServices} from "@lightningrodlabs/we-applet/dist/api";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {FilesProxy} from "@ddd-qc/files";
 import {ParcelDescription} from "@ddd-qc/delivery";
@@ -19,7 +19,7 @@ export interface VinesSearchContext {
 
 
 /** Return EntryHashs of Manifests whose name match the search filter */
-export async function search(appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices, searchFilter: string): Promise<Array<WAL>> {
+export async function search(appletClient: AppClient, appletHash: AppletHash, weServices: WeaveServices, searchFilter: string): Promise<Array<WAL>> {
     console.log("Vines/we-applet/search():", searchFilter);
     const searchLC = searchFilter.toLowerCase();
 

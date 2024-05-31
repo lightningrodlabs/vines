@@ -10,14 +10,12 @@ import {
   AppWebsocket,
   decodeHashFromBase64,
   encodeHashToBase64,
-  EntryHashB64,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
-import {AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeServices,} from "@lightningrodlabs/we-applet";
+import {AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@lightningrodlabs/we-applet";
 import {delay, DnaViewModel, DvmDef, HappElement, HCL, HvmDef, pascal,} from "@ddd-qc/lit-happ";
 import {
-  AnyLinkableHashB64,
   appProxyContext,
   cardStyleTemplate,
   determineSubjectName,
@@ -87,7 +85,7 @@ export class CommunityFeedApp extends HappElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
-    super(appWs? appWs : HC_APP_PORT, appId);
+    super(appWs? appWs : HC_APP_PORT, appId, _adminWs? undefined : new URL(`ws://localhost:${HC_ADMIN_PORT}`));
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
@@ -106,7 +104,7 @@ export class CommunityFeedApp extends HappElement {
     profilesCloneId: CloneId | undefined,
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
-    weServices: WeServices,
+    weServices: WeaveServices,
     thisAppletId: AppletId,
     //showCommentThreadOnly?: boolean,
     appletView: AppletView,
@@ -127,7 +125,7 @@ export class CommunityFeedApp extends HappElement {
   async createWeProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
                             profilesCloneId: CloneId | undefined,
                             _profilesZomeName: ZomeName): Promise<void> {
-    const profilesAppInfo = await profilesProxy.appInfo({installed_app_id: profilesAppId});
+    const profilesAppInfo = await profilesProxy.appInfo();
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
     console.log("<community-feed-app> createProfilesDvm() cell_infos:", cell_infos);
@@ -188,22 +186,22 @@ export class CommunityFeedApp extends HappElement {
   async hvmConstructed() {
     console.log("<community-feed-app>.hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
 
-    /** Authorize all zome calls */
-    if (!this._adminWs && this._canAuthorizeZfns) {
-      this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
-      console.log("<community-feed-app>.hvmConstructed() connect() called", this._adminWs);
-    }
-    if (this._adminWs && this._canAuthorizeZfns) {
-      console.info("<community-feed-app> Zome call authorization start");
-      await this.hvm.authorizeAllZomeCalls(this._adminWs);
-      console.info("<community-feed-app> Zome call authorization complete");
-    } else {
-      if (!this._canAuthorizeZfns) {
-        console.warn("No adminWebsocket provided (Zome call authorization done)")
-      } else {
-        console.log("<community-feed-app> Zome call authorization done externally")
-      }
-    }
+    // /** Authorize all zome calls */
+    // if (!this._adminWs && this._canAuthorizeZfns) {
+    //   this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
+    //   console.log("<community-feed-app>.hvmConstructed() connect() called", this._adminWs);
+    // }
+    // if (this._adminWs && this._canAuthorizeZfns) {
+    //   console.info("<community-feed-app> Zome call authorization start");
+    //   await this.hvm.authorizeAllZomeCalls(this._adminWs);
+    //   console.info("<community-feed-app> Zome call authorization complete");
+    // } else {
+    //   if (!this._canAuthorizeZfns) {
+    //     console.warn("No adminWebsocket provided (Zome call authorization done)")
+    //   } else {
+    //     console.log("<community-feed-app> Zome call authorization done externally")
+    //   }
+    // }
 
     /** Attempt Probe EntryDefs */
     let attempts = 5;
@@ -426,13 +424,16 @@ export class CommunityFeedApp extends HappElement {
           throw new Error("Threads/we-applet: Block view is not implemented.");
         case "asset":
           const assetViewInfo = this.appletView as AssetViewInfo;
-          if (assetViewInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
-            throw new Error(`Threads/we-applet: Unknown role name '${this.appletView.roleName}'.`);
+          if (!assetViewInfo.recordInfo) {
+            throw new Error(`Feed/we-applet: Missing AssetViewInfo.recordInfo.`);
           }
-          if (assetViewInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
-            throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.integrityZomeName}'.`);
+          if (assetViewInfo.recordInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
+            throw new Error(`Feed/we-applet: Unknown role name '${this.appletView.recordInfo.roleName}'.`);
           }
-          const entryType = pascal(assetViewInfo.entryType);
+          if (assetViewInfo.recordInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
+            throw new Error(`Feed/we-applet: Unknown zome '${this.appletView.recordInfo.integrityZomeName}'.`);
+          }
+          const entryType = pascal(assetViewInfo.recordInfo.entryType);
           //console.log("pascal entryType", assetViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
@@ -449,7 +450,7 @@ export class CommunityFeedApp extends HappElement {
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
             default:
-              throw new Error(`Unhandled entry type ${assetViewInfo.entryType}.`);
+              throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);
           }
         break;
         case "creatable":

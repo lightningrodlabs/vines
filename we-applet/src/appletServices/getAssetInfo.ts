@@ -1,4 +1,4 @@
-import {encodeHashToBase64, ZomeName, RoleName, AppAgentClient} from "@holochain/client";
+import {encodeHashToBase64, ZomeName, RoleName, AppClient} from "@holochain/client";
 import {
     materializeAnyBead,
     ThreadsEntryType,
@@ -11,21 +11,23 @@ import {AssetInfo, WAL} from "@lightningrodlabs/we-applet";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiComment, mdiCommentBookmark, mdiCommentText, mdiCommentTextMultiple} from "@mdi/js";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
+import {RecordInfo} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
 export async function getAssetInfo(
-  appletClient: AppAgentClient,
-  roleName: RoleName,
-  integrityZomeName: ZomeName,
-  entryType: string,
+  appletClient: AppClient,
   wal: WAL,
+  recordInfo?: RecordInfo,
 ): Promise<AssetInfo> {
-    if (roleName != devtestNames.provisionedRoleName) {
-        throw new Error(`Vines/we-applet: Unknown role name '${roleName}'.`);
+    if (!recordInfo) {
+        throw new Error(`Vines/we-applet/getAssetInfo(): Missing recordInfo`);
     }
-    if (integrityZomeName != "threads_integrity") {
-        throw new Error(`Vines/we-applet: Unknown zome '${integrityZomeName}'.`);
+    if (recordInfo.roleName != devtestNames.provisionedRoleName) {
+        throw new Error(`Vines/we-applet: Unknown role name '${recordInfo.roleName}'.`);
+    }
+    if (recordInfo.integrityZomeName != "threads_integrity") {
+        throw new Error(`Vines/we-applet: Unknown zome '${recordInfo.integrityZomeName}'.`);
     }
 
     const mainAppInfo = await appletClient.appInfo();
@@ -38,7 +40,7 @@ export async function getAssetInfo(
     );
     const threadsProxy: ThreadsProxy = new ThreadsProxy(cellProxy);
 
-    const pEntryType = pascal(entryType);
+    const pEntryType = pascal(recordInfo.entryType);
 
     switch (pEntryType) {
         case ThreadsEntryType.TextBead:
@@ -96,7 +98,7 @@ export async function getAssetInfo(
         //     };
         // }
         default:
-            throw new Error(`Vines/we-applet: Unknown entry type ${entryType}.`);
+            throw new Error(`Vines/we-applet: Unknown entry type ${recordInfo.entryType}.`);
     }
 }
 

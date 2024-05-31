@@ -1,11 +1,11 @@
 import {
-  AppAgentWebsocket, encodeHashToBase64,
+  AppWebsocket, encodeHashToBase64,
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
 
 import {
   RenderInfo,
-  WeServices,
+  WeaveServices,
 } from "@lightningrodlabs/we-applet";
 
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
@@ -19,7 +19,7 @@ import {CommunityFeedApp} from "@communityfeed/app";
 /** */
 export async function createFeedApplet(
   renderInfo: RenderInfo,
-  weServices: WeServices,
+  weServices: WeaveServices,
 ): Promise<CommunityFeedApp> {
 
   if (renderInfo.type =="cross-applet-view") {
@@ -36,8 +36,8 @@ export async function createFeedApplet(
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
 
   /** Determine profilesAppInfo */
-  const mainAppAgentWs = appletViewInfo.appletClient as AppAgentWebsocket;
-  const mainAppWs = mainAppAgentWs.appWebsocket;
+  const mainAppWs = appletViewInfo.appletClient as AppWebsocket;
+  //const mainAppWs = mainAppAgentWs.appWebsocket;
   let profilesAppInfo = await profilesClient.client.appInfo();
   console.log("createFeedApplet() mainAppInfo", mainAppInfo);
   console.log("createFeedApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);

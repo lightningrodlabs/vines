@@ -572,7 +572,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     /** Group Info */
     let groupProfile: GroupProfile = {
       name: "CommunityFeed",
-      logo_src: "icon.png",
+      icon_src: "icon.png",
     };
 
     /* Use weServices, otherise try from dna properties */
@@ -580,8 +580,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       const appletInfo = this.weServices.appletInfoCached(this.weServices.appletId);
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
-        console.log("get groupProfile", appletInfo.groupsIds[0]);
-        const weGroup = this.weServices.groupProfileCached(appletInfo.groupsIds[0]);
+        console.log("get groupProfile", appletInfo.groupsHashes[0]);
+        const weGroup = this.weServices.groupProfileCached(appletInfo.groupsHashes[0]);
         if (weGroup) {
           groupProfile = weGroup;
         }
@@ -596,9 +596,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         // const tagRegex = /^[a-zA-Z][^\s>\/]*(?:\s(?:[^=]+=(?:"[^"]*"|'[^']*'))?)*\s*\/?$/;
         // const isValid = tagRegex.test("svg");
         // if (isValid) {
-        //   groupProfile.logo_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
+        //   groupProfile.icon_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
         // }
-        groupProfile.logo_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
+        groupProfile.icon_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
       }
     }
 
@@ -619,7 +619,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                               //const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
                               //popover.showAt(btn);
                           }}>
-                <img src=${groupProfile.logo_src} style="background: #fff; border: 1px solid #66666669;">
+                <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
               </ui5-avatar>
             </sl-tooltip>
             <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon

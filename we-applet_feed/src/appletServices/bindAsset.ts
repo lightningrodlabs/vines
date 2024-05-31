@@ -1,17 +1,15 @@
 import {
-  AppAgentClient, RoleName, ZomeName
+  AppClient, RoleName, ZomeName
 } from "@holochain/client";
-import {WAL} from "@lightningrodlabs/we-applet/dist/types";
+import {RecordInfo, WAL} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */
 export async function bindAsset(
-  appletClient: AppAgentClient,
+  appletClient: AppClient,
   srcWal: WAL,
   dstWal: WAL,
-  dstRoleName: RoleName,
-  dstIntegrityZomeName: ZomeName,
-  dstEntryType: string,
+  dstRecordInfo?: RecordInfo,
 ): Promise<void> {
 
 }

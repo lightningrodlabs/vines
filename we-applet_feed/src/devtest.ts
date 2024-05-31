@@ -28,9 +28,11 @@ export async function setupFeedEntryView() {
 /** */
 function createPpEntryRenderInfo(pp_ah: ActionHash, context/*: VinesAssetQuery*/): AssetViewInfo {
     const assetViewInfo = emptyEntryAppletView as AssetViewInfo;
-    assetViewInfo.roleName = VINES_DEFAULT_ROLE_NAME;
-    assetViewInfo.integrityZomeName = THREADS_DEFAULT_INTEGRITY_ZOME_NAME;
-    assetViewInfo.entryType = snake(ThreadsEntryType.ParticipationProtocol);
+    assetViewInfo.recordInfo = {
+        roleName: VINES_DEFAULT_ROLE_NAME,
+        integrityZomeName: THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
+        entryType: snake(ThreadsEntryType.ParticipationProtocol),
+    };
     assetViewInfo.wal.hrl[1] = pp_ah;
     assetViewInfo.wal.context = context;
 
