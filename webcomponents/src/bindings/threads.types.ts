@@ -307,14 +307,18 @@ export interface UpdateTopicInput {
 }
 
 /** Data sent by UI ONLY. That's why we use B64 here. */
-export enum SignalPayloadType {
-	DirectGossip = 'DirectGossip',
-	Notification = 'Notification',
+export type SignalPayloadVariantDirectGossip = {
+  type: "DirectGossip"
+  value: DirectGossip
 }
-export type SignalPayload = 
- | {type: {DirectGossip: null}, content: DirectGossip}
- | {type: {Notification: null}, content: [WeaveNotification, Uint8Array]}
-
+export type SignalPayloadVariantNotification = {
+  type: "Notification"
+  notification: WeaveNotification
+  data: Uint8Array
+}
+export type SignalPayload =
+  | SignalPayloadVariantDirectGossip
+  | SignalPayloadVariantNotification;
 
 /**  */
 export interface ThreadsSignal {
@@ -328,24 +332,54 @@ export interface ThreadsSignal {
  * Data sent by UI ONLY. That's why we use B64 here.
  * 
  */
-export enum DirectGossipType {
-	Ping = 'Ping',
-	Pong = 'Pong',
-	UpdateSemanticTopic = 'UpdateSemanticTopic',
-	NewSemanticTopic = 'NewSemanticTopic',
-	NewPp = 'NewPp',
-	NewBead = 'NewBead',
-	EmojiReactionChange = 'EmojiReactionChange',
+export type DirectGossipVariantPing = {
+  type: "Ping"
+  from: AgentPubKeyB64
 }
-export type DirectGossip = 
- | {type: {Ping: null}, content: AgentPubKeyB64}
- | {type: {Pong: null}, content: AgentPubKeyB64}
- | {type: {UpdateSemanticTopic: null}, content: [EntryHashB64, EntryHashB64, string]}
- | {type: {NewSemanticTopic: null}, content: [EntryHashB64, string]}
- | {type: {NewPp: null}, content: [Timestamp, ActionHashB64, ParticipationProtocol]}
- | {type: {NewBead: null}, content: [Timestamp, ActionHashB64, string, ActionHashB64, Uint8Array]}
- | {type: {EmojiReactionChange: null}, content: [ActionHashB64, AgentPubKeyB64, string, boolean]}
-
+export type DirectGossipVariantPong = {
+  type: "Pong"
+  from: AgentPubKeyB64
+}
+export type DirectGossipVariantUpdateSemanticTopic = {
+  type: "UpdateSemanticTopic"
+  old_topic_eh: EntryHashB64
+  new_topic_eh: EntryHashB64
+  title: string
+}
+export type DirectGossipVariantNewSemanticTopic = {
+  type: "NewSemanticTopic"
+  topic_eh: EntryHashB64
+  title: string
+}
+export type DirectGossipVariantNewPp = {
+  type: "NewPp"
+  creation_ts: Timestamp
+  ah: ActionHashB64
+  pp: ParticipationProtocol
+}
+export type DirectGossipVariantNewBead = {
+  type: "NewBead"
+  creation_ts: Timestamp
+  bead_ah: ActionHashB64
+  bead_type: string
+  pp_ah: ActionHashB64
+  data: Uint8Array
+}
+export type DirectGossipVariantEmojiReactionChange = {
+  type: "EmojiReactionChange"
+  bead_ah: ActionHashB64
+  author: AgentPubKeyB64
+  emoji: string
+  is_added: boolean
+}
+export type DirectGossip =
+  | DirectGossipVariantPing
+  | DirectGossipVariantPong
+  | DirectGossipVariantUpdateSemanticTopic
+  | DirectGossipVariantNewSemanticTopic
+  | DirectGossipVariantNewPp
+  | DirectGossipVariantNewBead
+  | DirectGossipVariantEmojiReactionChange;
 
 /** Input to the notify call */
 export interface SignalPeersInput {

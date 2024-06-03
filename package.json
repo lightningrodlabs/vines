@@ -103,6 +103,7 @@
     "clean:all"          : "git clean -f -x -d -e .idea && rm -rf submodules"
   },
   "devDependencies": {
+    "@lightningrodlabs/we-dev-cli": "0.12.0-dev.3",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
@@ -120,11 +121,11 @@
   },
   "dependencies": {
     "@holochain/client": "^0.18.0-dev.1",
-    "@lightningrodlabs/we-applet": "0.17.0-dev.2",
+    "@lightningrodlabs/we-applet": "0.17.0-dev.3",
     "@ddd-qc/cell-proxy": "=0.24.0",
     "@ddd-qc/lit-happ": "=0.24.0",
     "@ddd-qc/profiles-dvm": "=0.24.1",
-    "@ddd-qc/we-utils": "=0.24.1",
+    "@ddd-qc/we-utils": "=0.24.2",
     "@ddd-qc/files": "=0.4.0",
     "@ddd-qc/delivery": "=0.12.0",
     "@ddd-qc/path-explorer": "0.5.0",

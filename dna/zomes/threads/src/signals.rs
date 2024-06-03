@@ -1,16 +1,19 @@
 use hdk::prelude::*;
 use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
 use zome_utils::zome_panic_hook;
-use threads_integrity::{ParticipationProtocol};
+use threads_integrity::ParticipationProtocol;
 use crate::notify_peer::WeaveNotification;
 
 
 /// Data sent by UI ONLY. That's why we use B64 here.
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
-#[serde(tag = "type", content = "content")]
+#[serde(tag = "type")]
 pub enum SignalPayload {
-    DirectGossip(DirectGossip),
-    Notification((WeaveNotification, SerializedBytes)),
+    DirectGossip {value: DirectGossip},
+    Notification {
+        notification: WeaveNotification,
+        data: SerializedBytes,
+    },
 }
 
 ///
@@ -44,16 +47,16 @@ pub struct ThreadsSignal {
 /// Data sent by UI ONLY. That's why we use B64 here.
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
-#[serde(tag = "type", content = "content")]
+#[serde(tag = "type")]
 pub enum DirectGossip {
-    Ping(AgentPubKeyB64),
-    Pong(AgentPubKeyB64),
+    Ping {from: AgentPubKeyB64},
+    Pong {from: AgentPubKeyB64},
 
-    UpdateSemanticTopic((EntryHashB64, EntryHashB64, String)), // oldTopicEh, newTopicEh, title
-    NewSemanticTopic((EntryHashB64, String)), // topicEh, title
-    NewPp((Timestamp, ActionHashB64, ParticipationProtocol)),
-    NewBead((Timestamp, ActionHashB64, String, ActionHashB64, SerializedBytes)), // creation_time, beadAh, bead_type, ppAh, SerializedBytes specific to the bead_type
-    EmojiReactionChange((ActionHashB64, AgentPubKeyB64, String, bool)), // beadAh, author, emoji, isAdded
+    UpdateSemanticTopic {old_topic_eh: EntryHashB64, new_topic_eh: EntryHashB64, title: String},
+    NewSemanticTopic { topic_eh: EntryHashB64, title: String },
+    NewPp { creation_ts: Timestamp, ah: ActionHashB64, pp: ParticipationProtocol },
+    NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},
+    EmojiReactionChange {bead_ah: ActionHashB64, author: AgentPubKeyB64, emoji: String, is_added: bool},
 }
 
 
