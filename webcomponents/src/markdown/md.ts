@@ -22,6 +22,7 @@ md.linkify
   .set({fuzzyEmail: false })
   .add('we:', 'http:')
   .add('weave:', 'http:')
+  .add('weave-0.12:', 'http:')
   /** MENTION */
   .add('@', {
     validate: function (text, pos, self) {
@@ -54,7 +55,7 @@ md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
   const url = new URL(href);
   //console.log("link_open() url", url);
   const scheme = url.protocol;
-  if (scheme == "we:" || scheme == "weave:") {
+  if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:") {
     try {
       //console.log("link_open() wal", href);
       return `<wurl-link wurl="${href}">`
@@ -79,7 +80,7 @@ md.renderer.rules.link_close = function(tokens, idx, options, env, self) {
   if (href) {
     const url = new URL(href);
     const scheme = url.protocol;
-    if (scheme == "we:" || scheme == "weave:") {
+    if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:") {
       return "</wurl-link>";
     }
   }
