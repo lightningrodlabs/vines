@@ -12,7 +12,7 @@ import {Thread} from "./thread";
 import {
   AnyBead, BaseBeadKind, Bead, EncryptedBead,
   EntryBead,
-  GlobalLastProbeLog, NotifiableEvent, NotifiableEventType, NotifySettingType,
+  GlobalLastProbeLog, NotifiableEvent, NotifySetting,
   ParticipationProtocol,
   Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
@@ -144,7 +144,7 @@ export interface ThreadsPerspective {
   /** linkAh -> (ppAh, notif) */
   inbox: Dictionary<[ActionHashB64, WeaveNotification]>,
   /* ppAh -> (agent -> value) */
-  notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySettingType>>,
+  notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySetting>>,
 }
 
 
@@ -360,11 +360,11 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
 /** -- NotifiableEvent -- */
 
 /** */
-export function event2type(event: NotifiableEvent): string {
-  if (NotifiableEventType.Mention in event) { return NotifiableEventType.Mention }
-  if (NotifiableEventType.Reply in event) { return NotifiableEventType.Reply }
-  if (NotifiableEventType.NewBead in event) { return NotifiableEventType.NewBead }
-  if (NotifiableEventType.Fork in event) { return NotifiableEventType.Fork }
-  if (NotifiableEventType.NewDmThread in event) { return NotifiableEventType.NewDmThread }
-  return "";
-}
+// export function event2type(event: NotifiableEvent): string {
+//   if (NotifiableEventType.Mention in event) { return NotifiableEventType.Mention }
+//   if (NotifiableEventType.Reply in event) { return NotifiableEventType.Reply }
+//   if (NotifiableEventType.NewBead in event) { return NotifiableEventType.NewBead }
+//   if (NotifiableEventType.Fork in event) { return NotifiableEventType.Fork }
+//   if (NotifiableEventType.NewDmThread in event) { return NotifiableEventType.NewDmThread }
+//   return "";
+// }

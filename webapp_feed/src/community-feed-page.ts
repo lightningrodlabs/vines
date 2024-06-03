@@ -127,7 +127,6 @@ import {
   AnyBeadMat,
   ChatThreadView,
   CommentRequest, composeFeedNotificationTitle,
-  event2type,
   globaFilesContext,
   JumpEvent,
   onlineLoadedContext,
@@ -406,7 +405,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         const myNotif: FrameNotification = {
           title: notifTitle,
           body: message,
-          notification_type: event2type(notif.event),
+          notification_type: notif.event,
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'high',
           timestamp: notif.timestamp / 1000,

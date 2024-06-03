@@ -20,9 +20,8 @@ import {
   EncryptedBead,
   EntryBead,
   GlobalLastProbeLog,
-  NotifiableEventType,
+  NotifiableEvent,
   NotifySetting,
-  NotifySettingType,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
   SendInboxItemInput,
@@ -184,7 +183,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /* linkAh -> (ppAh, Notif) */
   private _inbox: Dictionary<[ActionHashB64, WeaveNotification]> = {};
   /* ppAh -> (agent -> value) */
-  private _notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySettingType>> = {};
+  private _notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySetting>> = {};
 
   /** -- Favorites -- */
   private _favorites: ActionHashB64[] = [];
@@ -192,18 +191,18 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** -- Get: Return a stored element -- */
 
-  getPpNotifSettings(ppAh: ActionHashB64): Record<AgentPubKeyB64, NotifySettingType> | undefined {return this._notifSettings[ppAh]}
+  getPpNotifSettings(ppAh: ActionHashB64): Record<AgentPubKeyB64, NotifySetting> | undefined {return this._notifSettings[ppAh]}
 
-  getNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64): NotifySettingType {
+  getNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64): NotifySetting {
     const settings = this.getPpNotifSettings(ppAh);
     if (!settings) {
       // Return default
-      return NotifySettingType.MentionsOnly;
+      return NotifySetting.MentionsOnly;
     }
     const maybeAgentSetting = settings[agent];
     if (!maybeAgentSetting) {
       // Return default
-      return NotifySettingType.MentionsOnly;
+      return NotifySetting.MentionsOnly;
     }
     return maybeAgentSetting;
   }
@@ -555,13 +554,13 @@ export class ThreadsZvm extends ZomeViewModel {
     this._inbox = {};
     for (const notif of items) {
       await this.storeInboxItem(notif, false);
-      if (NotifiableEventType.NewDmThread in notif.event) {
+      if (NotifiableEvent.NewDmThread === notif.event) {
         const ppAh = encodeHashToBase64(notif.content);
         console.log("NewDmThread in inbox:", ppAh);
         const notifSettings = (await this.zomeProxy.getPpNotifySettings(notif.content))
           .filter(([agent, _setting, _link_ah]) => encodeHashToBase64(agent) != this.cell.agentPubKey);
         if (notifSettings.length == 0) {
-          await this.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
+          await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
           console.log("NewDmThread.publishNotifSetting() inbox", ppAh);
         }
       }
@@ -843,15 +842,15 @@ export class ThreadsZvm extends ZomeViewModel {
   async probeNotifSettings(ppAh: ActionHashB64): Promise<[AgentPubKey, NotifySetting, ActionHash][]> {
     const notifSettings = await this.zomeProxy.getPpNotifySettings(decodeHashFromBase64(ppAh));
     delete this._notifSettings[ppAh];
-    this.storeNotifSetting(ppAh, this.cell.agentPubKey, NotifySettingType.MentionsOnly, true); // add default for self to prove that we did a probe
+    this.storeNotifSetting(ppAh, this.cell.agentPubKey, NotifySetting.MentionsOnly, true); // add default for self to prove that we did a probe
     for (const [agent_key, setting, _link_ah] of notifSettings) {
       console.log("probeNotifSettings:", setting);
-      let value = NotifySettingType.MentionsOnly;
-      if (NotifySettingType.Never in setting) {
-        value = NotifySettingType.Never;
+      let value = NotifySetting.MentionsOnly;
+      if (NotifySetting.Never === setting) {
+        value = NotifySetting.Never;
       }
-      if (NotifySettingType.AllMessages in setting) {
-        value = NotifySettingType.AllMessages;
+      if (NotifySetting.AllMessages === setting) {
+        value = NotifySetting.AllMessages;
       }
       this.storeNotifSetting(ppAh, encodeHashToBase64(agent_key), value, true);
     }
@@ -1117,7 +1116,7 @@ export class ThreadsZvm extends ZomeViewModel {
         const recipient = encodeHashToBase64(recip);
         /* Check can notify */
         const notifSetting = this.getNotifSetting(ppAh, recipient);
-        if (notifSetting == NotifySettingType.Never) {
+        if (notifSetting == NotifySetting.Never) {
           continue;
         }
         /* Notify */
@@ -1127,7 +1126,7 @@ export class ThreadsZvm extends ZomeViewModel {
         notifiedPeers.push(recipient);
       }
       /* Do Peers with "AllMessages" */
-      const notifAlls = Object.entries(this.getPpNotifSettings(ppAh)).filter(([agent, n]) => !notifiedPeers.includes(agent) && n == NotifySettingType.AllMessages)
+      const notifAlls = Object.entries(this.getPpNotifSettings(ppAh)).filter(([agent, n]) => !notifiedPeers.includes(agent) && n == NotifySetting.AllMessages)
       if (notifAlls.length > 0) {
         /* Notif "AllMessages" */
         for (const [recipient, _n] of notifAlls) {
@@ -1135,7 +1134,7 @@ export class ThreadsZvm extends ZomeViewModel {
           const maybe = await this.zomeProxy.sendInboxItem({
             content: bead_ah,
             who: decodeHashFromBase64(recipient),
-            event: {NewBead: null}
+            event: NotifiableEvent.NewBead,
           } as SendInboxItemInput);
           if (!maybe) {
             continue;
@@ -1172,16 +1171,9 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async publishNotifSetting(ppAh: ActionHashB64, value: NotifySettingType, agent?: AgentPubKeyB64) : Promise<void> {
+  async publishNotifSetting(ppAh: ActionHashB64, setting: NotifySetting, agent?: AgentPubKeyB64) : Promise<void> {
     if (!ppAh) {
       return;
-    }
-    let setting: NotifySetting = {MentionsOnly: null};
-    if (value == NotifySettingType.AllMessages) {
-      setting = {AllMessages: null}
-    }
-    if (value == NotifySettingType.Never) {
-      setting = {Never: null}
     }
     if (!agent) {
       agent = this.cell.agentPubKey;
@@ -1191,7 +1183,7 @@ export class ThreadsZvm extends ZomeViewModel {
       setting,
       agent: decodeHashFromBase64(agent),
     } as SetNotifySettingInput);
-    this.storeNotifSetting(ppAh, agent, value);
+    this.storeNotifSetting(ppAh, agent, setting);
   }
 
 
@@ -1483,7 +1475,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** get ppAh of Notif */
   async getNotifPp(notif: WeaveNotification): Promise<ActionHashB64> {
     console.log("getNotifPp()", notif.event);
-    if (NotifiableEventType.Fork in notif.event || NotifiableEventType.NewDmThread in notif.event) {
+    if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event) {
       return encodeHashToBase64(notif.content);
     } else {
       const maybeBead = this._beads[encodeHashToBase64(notif.content)];
@@ -1527,7 +1519,7 @@ export class ThreadsZvm extends ZomeViewModel {
   }
 
   /** */
-  storeNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64, setting: NotifySettingType, preventNotify?: boolean): void {
+  storeNotifSetting(ppAh: ActionHashB64, agent: AgentPubKeyB64, setting: NotifySetting, preventNotify?: boolean): void {
     if (!this._notifSettings[ppAh]) {
       this._notifSettings[ppAh] = {}
     }
@@ -1605,7 +1597,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const [pp_ah, notif] = await this.zomeProxy.createDmThread(decodeHashFromBase64(otherAgent));
     const ppAh = encodeHashToBase64(pp_ah);
     let ppMat = await this.fetchPp(ppAh); // trigger storage
-    await this.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
+    await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
     /** Notify other */
     const extra = encode(dematerializeParticipationProtocol(ppMat));
     const signal = this.createNotificationSignal(notif, extra);
@@ -1795,8 +1787,8 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): ThreadsSignal {
     let maybePpHash;
-    if (NotifiableEventType.Mention in notification || NotifiableEventType.Reply in notification
-        || NotifiableEventType.NewBead in notification) {
+    if (NotifiableEvent.Mention === notification.event || NotifiableEvent.Reply === notification.event
+        || NotifiableEvent.NewBead === notification.event) {
       const beadAh = encodeHashToBase64(notification.content);
       const beadInfo = this.getBeadInfo(beadAh);
       maybePpHash = beadInfo.bead.ppAh;

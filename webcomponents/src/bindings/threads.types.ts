@@ -248,9 +248,7 @@ export interface GetDataTypeInput {
 }
 
 /**  */
-export type NotifiableEvent =
-  | {NewBead: null} | {Mention: null} | {Reply: null} | {Fork: null} | {NewDmThread: null};
-export enum NotifiableEventType {
+export enum NotifiableEvent {
 	NewBead = 'NewBead',
 	Mention = 'Mention',
 	Reply = 'Reply',
@@ -286,9 +284,7 @@ export interface SendInboxItemInput {
  * An agent has to declare if it wants notifications for all messages or none, since it deviates from the default setting
  * 
  */
-export type NotifySetting =
-  | {Never: null} | {AllMessages: null} | {MentionsOnly: null};
-export enum NotifySettingType {
+export enum NotifySetting {
 	Never = 'Never',
 	AllMessages = 'AllMessages',
 	MentionsOnly = 'MentionsOnly',
@@ -526,9 +522,7 @@ export type ThreadsEntry =
  * Threads zome's link types
  * -------------------------------------------------------------------------------------------------
  */
-export type ThreadsLinkType =
-  | {ReversePath: null} | {GlobalTimePath: null} | {ThreadTimePath: null} | {SemanticTopicPath: null} | {SubjectPath: null} | {TimeItem: null} | {Topics: null} | {Threads: null} | {Beads: null} | {Protocols: null} | {Invalid: null} | {Inbox: null} | {Hide: null} | {EmojiReaction: null} | {NotifySetting: null} | {Favorite: null} | {Dm: null};
-export enum ThreadsLinkTypeType {
+export enum ThreadsLinkType {
 	ReversePath = 'ReversePath',
 	GlobalTimePath = 'GlobalTimePath',
 	ThreadTimePath = 'ThreadTimePath',

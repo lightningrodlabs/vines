@@ -11,8 +11,8 @@ import {
 } from "@holochain/client";
 import {
   DirectGossip,
-  NotifiableEventType,
-  NotifySettingType,
+  NotifiableEvent,
+  NotifySetting,
   ParticipationProtocol,
   Subject,
   ThreadsEntryType,
@@ -148,7 +148,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     let ppAh: ActionHashB64;
     /** Store received Entry */
-    if (NotifiableEventType.Mention in notif.event || NotifiableEventType.Reply in notif.event || NotifiableEventType.NewBead in notif.event) {
+    if (NotifiableEvent.Mention == notif.event || NotifiableEvent.Reply == notif.event || NotifiableEvent.NewBead == notif.event) {
       const {typed, beadType} = decode(extra) as {typed: TypedBead, beadType: BeadType};
       const typedMat = materializeTypedBead(typed, beadType);
       const beadAh = encodeHashToBase64(notif.content);
@@ -161,7 +161,7 @@ export class ThreadsDvm extends DnaViewModel {
       await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
     /* Set notif setting */
-    if (NotifiableEventType.NewDmThread in notif.event) {
+    if (NotifiableEvent.NewDmThread == notif.event) {
       ppAh = encodeHashToBase64(notif.content);
       /* skip if known thread */
       const dmThread = this.threadsZvm.perspective.threads.get(ppAh);
@@ -173,12 +173,12 @@ export class ThreadsDvm extends DnaViewModel {
       this.threadsZvm.storeThread(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), false, true);
       /* Set NotifSetting */
       console.log("NewDmThread.publishNotifSetting() signal", ppAh);
-      await this.threadsZvm.publishNotifSetting(ppAh, NotifySettingType.AllMessages);
+      await this.threadsZvm.publishNotifSetting(ppAh, NotifySetting.AllMessages);
     }
-    if (NotifiableEventType.Fork in notif.event) {
+    if (NotifiableEvent.Fork === notif.event) {
       const pp = decode(extra) as ParticipationProtocol;
       ppAh = encodeHashToBase64(notif.content);
-      console.log(`Received NotificationSignal of type ${NotifiableEventType.Fork}:`, pp);
+      console.log(`Received NotificationSignal of type ${NotifiableEvent.Fork}:`, pp);
       this.threadsZvm.storeThread(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), false, true);
     }
 
@@ -354,7 +354,7 @@ export class ThreadsDvm extends DnaViewModel {
     /** Erase saved input */
     delete this._threadInputs[ppAh];
     /** Send gossip to peers */
-    await delay(20); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
+    await delay(100); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
     const data = encode({typed, beadType});
     const signal: ThreadsSignal = this.createGossipSignal({type: "NewBead", creation_ts, bead_ah: ah, bead_type: beadType, pp_ah: ppAh, data}, ppAh);
     await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);

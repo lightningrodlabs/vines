@@ -3,7 +3,7 @@ import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {
-  NotifiableEventType,
+  NotifiableEvent,
   WeaveNotification
 } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
@@ -58,7 +58,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
     let title: string = "";
     let content: string = "";
     const ah = encodeHashToBase64(notif.content);
-    if (NotifiableEventType.Mention in notif.event) {
+    if (NotifiableEvent.Mention === notif.event) {
         const beadInfo = threadsZvm.getBaseBeadInfo(ah);
         if (!beadInfo) {
             title = "Mention in thread";
@@ -71,7 +71,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
         }
     }
-    if (NotifiableEventType.NewBead in notif.event) {
+    if (NotifiableEvent.NewBead === notif.event) {
       const beadInfo = threadsZvm.getBaseBeadInfo(ah);
       if (!beadInfo) {
         title = "New message in thread";
@@ -90,7 +90,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
         content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
       }
     }
-    if (NotifiableEventType.Reply in notif.event) {
+    if (NotifiableEvent.Reply === notif.event) {
       const beadInfo = threadsZvm.getBaseBeadInfo(ah);
         if (!beadInfo) {
             title = "Reply in thread";
@@ -103,7 +103,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
         }
     }
-    if (NotifiableEventType.Fork in notif.event) {
+    if (NotifiableEvent.Fork === notif.event) {
         const maybeThread = threadsZvm.perspective.threads.get(ah);
         if (!maybeThread)  {
             title = "New thread";
@@ -115,7 +115,7 @@ export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: 
             content = "Rules: " + maybeThread.pp.rules;
         }
     }
-    if (NotifiableEventType.NewDmThread in notif.event) {
+    if (NotifiableEvent.NewDmThread === notif.event) {
       title = "New DM thread";
     }
     return [title, content];

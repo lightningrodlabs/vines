@@ -2,7 +2,7 @@
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {determineBeadName, MAIN_TOPIC_HASH} from "./utils";
-import {NotifiableEventType, WeaveNotification} from "./bindings/threads.types";
+import {NotifiableEvent, WeaveNotification} from "./bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
@@ -41,7 +41,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
   let title: string = "";
   let content: string = "";
   const ah = encodeHashToBase64(notif.content);
-  if (NotifiableEventType.Mention in notif.event) {
+  if (NotifiableEvent.Mention === notif.event) {
     const beadPair = threadsDvm.threadsZvm.perspective.beads[ah];
     if (!beadPair) {
       title = "Mentionned";
@@ -55,7 +55,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
       content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
     }
   }
-  if (NotifiableEventType.NewBead in notif.event) {
+  if (NotifiableEvent.NewBead === notif.event) {
     const beadPair = threadsDvm.threadsZvm.perspective.beads[ah];
     if (beadPair) {
       const beadInfo = beadPair[0];
@@ -72,7 +72,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
       }
     }
   }
-  if (NotifiableEventType.Reply in notif.event) {
+  if (NotifiableEvent.Reply === notif.event) {
     // const beadPair = threadsZvm.perspective.beads[ah];
     // if (!beadPair) {
     //   title = "Reply in thread";
@@ -86,7 +86,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
     //   content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
     //}
   }
-  if (NotifiableEventType.Fork in notif.event) {
+  if (NotifiableEvent.Fork === notif.event) {
     // const maybeThread = threadsZvm.getThread(ah);
     // if (!maybeThread)  {
     //   title = "New thread";
@@ -98,7 +98,7 @@ export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsD
     //   content = "Rules: " + maybeThread.pp.rules;
     // }
   }
-  if (NotifiableEventType.NewDmThread in notif.event) {
+  if (NotifiableEvent.NewDmThread === notif.event) {
     // TODO
   }
   return [title, content];

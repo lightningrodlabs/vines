@@ -25,7 +25,7 @@ import {
   JumpEvent,
   MAIN_TOPIC_HASH,
   materializeSubject,
-  NotifySettingType,
+  NotifySetting,
   onlineLoadedContext,
   ParticipationProtocol,
   Subject,
@@ -260,8 +260,8 @@ export class CommunityFeedApp extends HappElement {
       /** Make sure subscribe to notifications for main thread */
       await this.threadsDvm.threadsZvm.probeNotifSettings(mainThreadAh);
       const notif = this.threadsDvm.threadsZvm.getNotifSetting(mainThreadAh, this.threadsDvm.cell.agentPubKey);
-      if (notif != NotifySettingType.AllMessages) {
-        await this.threadsDvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySettingType.AllMessages);
+      if (notif != NotifySetting.AllMessages) {
+        await this.threadsDvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);
       }
     }
 

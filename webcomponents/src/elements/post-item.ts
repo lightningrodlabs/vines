@@ -20,7 +20,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
 import {parseMentions} from "../utils";
-import {NotifySettingType, ThreadsEntryType} from "../bindings/threads.types";
+import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
 
 
 /**
@@ -232,9 +232,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     const commentThreadAh = await this.getCommentThread();
     console.log("onNotifSettingsChange() all", canNotifyAll, commentThreadAh);
     if (canNotifyAll) {
-      await this._dvm.threadsZvm.publishNotifSetting(commentThreadAh, NotifySettingType.AllMessages);
+      await this._dvm.threadsZvm.publishNotifSetting(commentThreadAh, NotifySetting.AllMessages);
     } else {
-      await this._dvm.threadsZvm.publishNotifSetting(commentThreadAh, NotifySettingType.Never);
+      await this._dvm.threadsZvm.publishNotifSetting(commentThreadAh, NotifySetting.Never);
     }
     this.requestUpdate();
   }
@@ -269,7 +269,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     let canNotifyAll = false;
     if (commentThreadAh) {
       commentThread = this.threadsPerspective.threads.get(commentThreadAh);
-      canNotifyAll = this._dvm.threadsZvm.getNotifSetting(commentThreadAh, this.cell.agentPubKey) == NotifySettingType.AllMessages;
+      canNotifyAll = this._dvm.threadsZvm.getNotifSetting(commentThreadAh, this.cell.agentPubKey) == NotifySetting.AllMessages;
     }
     console.log("<post-item>.render() comment", canNotifyAll, commentThreadAh)
 

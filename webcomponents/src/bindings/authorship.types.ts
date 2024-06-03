@@ -196,9 +196,7 @@ export interface Bogus {
  * Zome's link types
  * -------------------------------------------------------------------------------------------------
  */
-export type AuthorshipLinkType =
-  | {AuthorshipPath: null} | {Target: null} | {Author: null};
-export enum AuthorshipLinkTypeType {
+export enum AuthorshipLinkType {
 	AuthorshipPath = 'AuthorshipPath',
 	Target = 'Target',
 	Author = 'Author',

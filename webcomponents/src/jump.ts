@@ -1,5 +1,5 @@
 import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
-import {NotifiableEvent, NotifiableEventType} from "./bindings/threads.types";
+import {NotifiableEvent} from "./bindings/threads.types";
 import {ActionHashB64} from "@holochain/client";
 
 export interface JumpEvent {
@@ -17,10 +17,10 @@ export enum JumpDestinationType {
 
 
 export function notification2JumpEvent(notif: NotifiableEvent): JumpDestinationType {
-  if (NotifiableEventType.Fork in notif) {
+  if (NotifiableEvent.Fork === notif) {
     return JumpDestinationType.Thread;
   }
-  if (NotifiableEventType.NewDmThread in notif) {
+  if (NotifiableEvent.NewDmThread === notif) {
     return JumpDestinationType.Dm;
   }
   return JumpDestinationType.Bead;

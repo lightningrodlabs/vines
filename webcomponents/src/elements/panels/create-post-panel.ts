@@ -8,7 +8,7 @@ import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {determineSubjectName, MAIN_TOPIC_HASH, parseMentions} from "../../utils";
-import {NotifySettingType, Subject, ThreadsEntryType,} from "../../bindings/threads.types";
+import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
@@ -54,8 +54,8 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       /** Make sure agent subscribed to notifications for main thread */
       await this._dvm.threadsZvm.probeNotifSettings(mainThreadAh);
       const notif = this._dvm.threadsZvm.getNotifSetting(mainThreadAh, this._dvm.cell.agentPubKey);
-      if (notif != NotifySettingType.AllMessages) {
-        await this._dvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySettingType.AllMessages);
+      if (notif != NotifySetting.AllMessages) {
+        await this._dvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);
       }
       createdMainThread = true;
     } else {
@@ -69,7 +69,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async afterCreate(beadAh: ActionHashB64, createdMainThread: boolean) {
     /** Create comment thread and  get notifications for your own post */
     const commentPpAh = await this.createCommentThread(beadAh);
-    await this._dvm.threadsZvm.publishNotifSetting(commentPpAh, NotifySettingType.AllMessages);
+    await this._dvm.threadsZvm.publishNotifSetting(commentPpAh, NotifySetting.AllMessages);
     /** */
     this.dispatchEvent(new CustomEvent('created', {detail: {beadAh, createdMainThread}, bubbles: true, composed: true}));
     this._creating = false;
