@@ -3,8 +3,7 @@ use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::{EntryBead, Bead, ThreadsEntry, ThreadsEntryTypes};
 use crate::beads::{get_typed_bead, index_bead};
-use crate::notify_peer::{NotifiableEvent, send_inbox_item, SendInboxItemInput, WeaveNotification};
-
+use crate::notifications::*;
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

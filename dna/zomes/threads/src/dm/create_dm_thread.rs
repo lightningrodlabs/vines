@@ -1,8 +1,8 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-use crate::notify_peer::{SendInboxItemInput, NotifiableEvent, send_inbox_item, WeaveNotification};
-
+use crate::notifications::{SendInboxItemInput, NotifiableEvent, WeaveNotification};
+use crate::notifications::*;
 
 /// Create a Pp off of another Agent
 #[hdk_extern]

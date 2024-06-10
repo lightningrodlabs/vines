@@ -1,7 +1,8 @@
 use hdk::prelude::*;
-use zome_utils::*;
-use threads_integrity::*;
 use strum_macros::FromRepr;
+use zome_utils::*;
+//use crate::signals::*;
+use threads_integrity::*;
 
 /// Notification settings are per ParticipationProtocol.
 /// Default setting is receive notification only for mentions.

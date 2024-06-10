@@ -3,9 +3,8 @@ use threads_integrity::*;
 use zome_utils::*;
 use time_indexing::{index_item};
 use path_explorer_types::*;
-use crate::notify_peer::{SendInboxItemInput, NotifiableEvent, send_inbox_item, WeaveNotification};
 use crate::participation_protocols::*;
-
+use crate::notifications::*;
 
 /// Create a Pp off of anything
 #[hdk_extern]

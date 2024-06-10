@@ -10,14 +10,15 @@ pub(crate) mod utils;
 pub mod beads;
 mod participation_protocols;
 mod subjects;
-mod signals;
 mod last_probe_log;
 mod get_latest_items;
 mod callbacks;
-mod notify_peer;
-mod notify_setting;
 mod favorite;
 mod dm;
+mod notifications;
+mod signals;
+
+pub use signals::*;
 
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;

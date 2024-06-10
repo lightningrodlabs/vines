@@ -4,7 +4,7 @@ use zome_utils::*;
 use threads_integrity::{ThreadsEntry, ThreadsEntryTypes, EncryptedBead};
 use crate::beads::{get_typed_bead, index_bead};
 use crate::dm::decrypt_my_bead;
-use crate::notify_peer::{NotifiableEvent, send_inbox_item, SendInboxItemInput, WeaveNotification};
+use crate::notifications::{NotifiableEvent, send_inbox_item, SendInboxItemInput, WeaveNotification};
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
