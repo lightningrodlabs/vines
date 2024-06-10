@@ -10,7 +10,6 @@ import {
   EntryHashB64, Timestamp
 } from "@holochain/client";
 import {
-  DirectGossip,
   NotifiableEvent,
   NotifySetting,
   ParticipationProtocol,
@@ -20,12 +19,14 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   WeaveNotification,
   ThreadsSignal,
-  SignalPayloadVariantNotification,
-  DirectGossipVariantUpdateSemanticTopic,
-  DirectGossipVariantNewSemanticTopic,
-  DirectGossipVariantNewPp,
-  DirectGossipVariantNewBead,
-  DirectGossipVariantEmojiReactionChange,
+  ThreadsSignalProtocol,
+  ThreadsNotification,
+  DirectGossipProtocol,
+  DirectGossipProtocolVariantUpdateSemanticTopic,
+  DirectGossipProtocolVariantNewSemanticTopic,
+  DirectGossipProtocolVariantNewPp,
+  DirectGossipProtocolVariantNewBead,
+  DirectGossipProtocolVariantEmojiReactionChange,
 } from "../bindings/threads.types";
 import {
   AnyLinkableHashB64, BaseBeadType, bead2base,
@@ -142,7 +143,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Signaling -- */
 
   /** */
-  private async handleNotificationSignal(notifSignal: SignalPayloadVariantNotification, maybePpHash?: ActionHashB64) {
+  private async handleNotificationSignal(notifSignal: ThreadsNotification, from: AgentPubKeyB64) {
     const notif = notifSignal.notification as WeaveNotification;
     const extra: Uint8Array = notifSignal.data;
 
@@ -156,7 +157,7 @@ export class ThreadsDvm extends DnaViewModel {
       // if (!notifSignal.maybePpHash) {
       //   console.error("Missing ppAh in ThreadsSignal");
       // }
-      ppAh = maybePpHash;
+      ppAh = encodeHashToBase64(notifSignal.pp_ah);
       console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typedMat);
       await this.threadsZvm.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true, true);
     }
@@ -191,29 +192,46 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   handleSignal(signal: AppSignal) {
     console.log("[threads.dvm] Received Signal", signal);
-    if (signal.zome_name === ProfilesZvm.DEFAULT_ZOME_NAME) {
+    if (signal.zome_name !== ThreadsZvm.DEFAULT_ZOME_NAME) {
       return;
     }
     const threadsSignal = signal.payload as ThreadsSignal;
-    const signalType = threadsSignal.payload.type;
+    console.log("THREADS received signal", threadsSignal);
+    if (!("signal" in threadsSignal)) {
+      return;
+    }
+    for (const signal of threadsSignal.signal) {
+      /*await*/ this.handleThreadsSignal(signal, encodeHashToBase64(threadsSignal.from));
+    }
+    this.notifySubscribers();
+  }
+
+
+  /** */
+  async handleThreadsSignal(threadsSignal: ThreadsSignalProtocol, from: AgentPubKeyB64): Promise<void> {
+    const signalType = threadsSignal.type;
 
     /* Update agent's presence stat */
-    this.updatePresence(threadsSignal.from);
+    this.updatePresence(from);
 
-    /** -- Handle Notification -- */
-    if (signalType == "Notification") {
-      return this.handleNotificationSignal(threadsSignal.payload, threadsSignal.maybePpHash);
+    /** -- Handle Signal according to type -- */
+    if ("Notification" in signalType) {
+      return this.handleNotificationSignal(threadsSignal.content as ThreadsNotification, from);
     }
+    if ("DirectGossip" in signalType) {
+      return this.handleGossip(threadsSignal.content as DirectGossipProtocol, from);
+    }
+  }
 
-    /** -- Handle Gossip -- */
-    const gossip = threadsSignal.payload.value as DirectGossip;
+
+  /** */
+  private async handleGossip(gossip: DirectGossipProtocol, from: AgentPubKeyB64) {
+    //const gossip = threadsSignal.payload.value as DirectGossip;
     /* Send pong response */
     if (gossip.type != "Pong") {
-      console.log("PONGING ", threadsSignal.from)
-      const pong: ThreadsSignal = {
-        from: this._cellProxy.cell.agentPubKey,
-        payload: {type: "DirectGossip", value: {type: "Pong", from: this._cellProxy.cell.agentPubKey}}};
-      this.signalPeers(pong, [threadsSignal.from])
+      console.log("PONGING ", from)
+      const pong: DirectGossipProtocol = {type: "Pong", from: this._cellProxy.cell.agentPubKey};
+      this.broadcastGossip(pong, [from])
     }
     /* Handle signal */
     switch (gossip.type) {
@@ -221,31 +239,31 @@ export class ThreadsDvm extends DnaViewModel {
       case "Pong":
       break;
       case "UpdateSemanticTopic": {
-        const {old_topic_eh, new_topic_eh, title} = gossip as DirectGossipVariantUpdateSemanticTopic;
+        const {old_topic_eh, new_topic_eh, title} = gossip as DirectGossipProtocolVariantUpdateSemanticTopic;
         this.threadsZvm.unstoreSemanticTopic(old_topic_eh);
         this.threadsZvm.storeSemanticTopic(new_topic_eh, title, false, true);
       }
       break;
       case "NewSemanticTopic":
-        const {topic_eh, title} = gossip as DirectGossipVariantNewSemanticTopic;
+        const {topic_eh, title} = gossip as DirectGossipProtocolVariantNewSemanticTopic;
         this.threadsZvm.storeSemanticTopic(topic_eh, title, false, true);
         break;
       case "NewPp": {
-        const {creation_ts, ah, pp} = gossip as DirectGossipVariantNewPp;
+        const {creation_ts, ah, pp} = gossip as DirectGossipProtocolVariantNewPp;
         ///*await */ this.threadsZvm.fetchPp(newPpAh);
-        this.threadsZvm.storeThread(ah, pp, creation_ts, threadsSignal.from, false, true);
+        this.threadsZvm.storeThread(ah, pp, creation_ts, from, false, true);
       }
       break;
       case "NewBead":
-        const {creation_ts, bead_ah, bead_type, pp_ah, data} = gossip as DirectGossipVariantNewBead;
+        const {creation_ts, bead_ah, bead_type, pp_ah, data} = gossip as DirectGossipProtocolVariantNewBead;
         console.log("Signal is NewBead of type", bead_type);
         const {typed, beadType} = decode(data) as {typed: TypedBead, beadType: BeadType};
         console.log("NewBead", bead_ah, typed, beadType, bead_type);
         //const beadType = beadTypeStr as BeadType;
-        /* await*/ this.threadsZvm.storeTypedBead(bead_ah, materializeTypedBead(typed, beadType), beadType, creation_ts, threadsSignal.from, true, true);
+        /* await*/ this.threadsZvm.storeTypedBead(bead_ah, materializeTypedBead(typed, beadType), beadType, creation_ts, from, true, true);
       break;
       case "EmojiReactionChange": {
-        const {bead_ah, author, emoji, is_added} = gossip as DirectGossipVariantEmojiReactionChange;
+        const {bead_ah, author, emoji, is_added} = gossip as DirectGossipProtocolVariantEmojiReactionChange;
         if (is_added) {
           this.threadsZvm.storeEmojiReaction(bead_ah, author, emoji);
         } else {
@@ -258,21 +276,16 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async signalPeers(signal: ThreadsSignal, peers: Array<AgentPubKeyB64>): Promise<void> {
-    if (signal.payload.type != "DirectGossip") {
-      console.error("signalPeers() failed. Can only signal DirectGossip", signal);
-      return;
-    }
-    const gossip = signal.payload.value as DirectGossip;
+  async broadcastGossip(gossip: DirectGossipProtocol, peers: Array<AgentPubKeyB64>): Promise<void> {
     const filtered = peers.filter((key) => key != this._cellProxy.cell.agentPubKey);
-    console.log(`[threads.dvm] signalPeers() Sending DirectGossip "${gossip.type}" to`, filtered, this._cellProxy.cell.agentPubKey);
+    console.log(`[threads.dvm] broadcastGossip() Sending DirectGossip "${gossip.type}" to`, filtered, this._cellProxy.cell.agentPubKey);
     /* Skip if no recipients or sending to self only */
     //if (!peers || peers.length == 1 && peers[0] === this._cellProxy.cell.agentPubKey) {
     if (!filtered || filtered.length == 0) {
-      console.log("[threads.dvm] signalPeers() aborted: No recipients for notification")
+      console.log("[threads.dvm] broadcastGossip() aborted: No recipients for notification")
       return;
     }
-    return this.threadsZvm.signalPeers(signal, filtered);
+    return this.threadsZvm.broadcastGossip(gossip, filtered);
   }
 
 
@@ -307,15 +320,6 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** -- Call ZVM and signal peers -- */
-
-  /** */
-  private createGossipSignal(gossip: DirectGossip, maybePpHash?: ActionHashB64): ThreadsSignal {
-    return {
-      maybePpHash,
-      from: this._cellProxy.cell.agentPubKey,
-      payload: {type: "DirectGossip", value: gossip},
-    };
-  }
 
 
   /** */
@@ -356,8 +360,8 @@ export class ThreadsDvm extends DnaViewModel {
     /** Send gossip to peers */
     await delay(100); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
     const data = encode({typed, beadType});
-    const signal: ThreadsSignal = this.createGossipSignal({type: "NewBead", creation_ts, bead_ah: ah, bead_type: beadType, pp_ah: ppAh, data}, ppAh);
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "NewBead", creation_ts, bead_ah: ah, bead_type: beadType, pp_ah: ppAh, data};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ah;
   }
 
@@ -366,8 +370,8 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async editSemanticTopic(old_eh: EntryHashB64, title: string): Promise<EntryHashB64> {
     let eh = await this.threadsZvm.editSemanticTopic(old_eh, title);
-    const signal: ThreadsSignal = this.createGossipSignal({type: "UpdateSemanticTopic", old_topic_eh: old_eh, new_topic_eh: eh, title});
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "UpdateSemanticTopic", old_topic_eh: old_eh, new_topic_eh: eh, title};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return eh;
   }
 
@@ -375,8 +379,8 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async publishSemanticTopic(title: string): Promise<EntryHashB64> {
     let topic_eh = await this.threadsZvm.publishSemanticTopic(title);
-    const signal: ThreadsSignal = this.createGossipSignal({type: "NewSemanticTopic", topic_eh, title});
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "NewSemanticTopic", topic_eh, title};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return topic_eh;
   }
 
@@ -384,8 +388,8 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async publishThreadFromSemanticTopic(appletId: AppletId, topicHash: AnyLinkableHashB64, purpose: string): Promise<[number, ActionHashB64, ParticipationProtocol]> {
     let [creation_ts, ah, pp] = await this.threadsZvm.publishThreadFromSemanticTopic(appletId, this.cell.dnaHash, topicHash, purpose);
-    const signal: ThreadsSignal = this.createGossipSignal({type: "NewPp", creation_ts, ah, pp}, ah);
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "NewPp", creation_ts, ah, pp};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return [creation_ts, ah, pp];
   }
 
@@ -399,8 +403,8 @@ export class ThreadsDvm extends DnaViewModel {
       subject_name,
     };
     const [creation_ts, ppAh, ppMat] = await this.threadsZvm.publishParticipationProtocol(pp);
-    const signal: ThreadsSignal = this.createGossipSignal({type: "NewPp", creation_ts, ah: ppAh, pp: dematerializeParticipationProtocol(ppMat)}, ppAh);
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "NewPp", creation_ts, ah: ppAh, pp: dematerializeParticipationProtocol(ppMat)};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
     return ppAh;
   }
 
@@ -413,8 +417,8 @@ export class ThreadsDvm extends DnaViewModel {
     }
     await this.threadsZvm.zomeProxy.addReaction({bead_ah: decodeHashFromBase64(beadAh), emoji});
     /** Send signal to peers */
-    const signal: ThreadsSignal = this.createGossipSignal({type: "EmojiReactionChange", bead_ah: beadAh, author: this.cell.agentPubKey, emoji, is_added: true});
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "EmojiReactionChange", bead_ah: beadAh, author: this.cell.agentPubKey, emoji, is_added: true};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
   }
 
 
@@ -423,8 +427,8 @@ export class ThreadsDvm extends DnaViewModel {
     await this.threadsZvm.zomeProxy.removeReaction(decodeHashFromBase64(beadAh));
     await this.threadsZvm.unstoreEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
     /** Send signal to peers */
-    const signal: ThreadsSignal = this.createGossipSignal({type: "EmojiReactionChange", bead_ah: beadAh, author: this.cell.agentPubKey, emoji, is_added: false});
-    await this.signalPeers(signal, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
+    const gossip: DirectGossipProtocol = {type: "EmojiReactionChange", bead_ah: beadAh, author: this.cell.agentPubKey, emoji, is_added: false};
+    await this.broadcastGossip(gossip, this.profilesZvm.getAgents()/*this.allCurrentOthers()*/);
   }
 
 

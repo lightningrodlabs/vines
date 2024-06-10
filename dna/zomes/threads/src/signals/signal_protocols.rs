@@ -16,11 +16,11 @@ pub struct ThreadsSignal {
 
 
 /// Data sent by UI ONLY. That's why we use B64 here.
-#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum ThreadsSignalProtocol {
     System(SystemSignalProtocol), /// From System
-    DirectGossip(DirectGossip), /// From Other peer
+    DirectGossip(DirectGossipProtocol), /// From Other peer
     Notification(ThreadsNotification), // From self
 }
 
@@ -29,9 +29,9 @@ pub enum ThreadsSignalProtocol {
 pub struct SystemSignal {
     pub System: SystemSignalProtocol,
 }
-#[derive(Debug, Serialize, Deserialize, SerializedBytes)]
+#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
 pub struct GossipSignal {
-    pub DirectGossip: DirectGossip,
+    pub DirectGossip: DirectGossipProtocol,
 }
 
 
@@ -49,6 +49,7 @@ pub enum SystemSignalProtocol {
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ThreadsNotification {
+    pp_ah: ActionHash,
     notification: WeaveNotification,
     data: SerializedBytes,
 }
@@ -59,11 +60,12 @@ pub struct ThreadsNotification {
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 #[serde(tag = "type")]
-pub enum DirectGossip {
+pub enum DirectGossipProtocol {
     Ping {from: AgentPubKeyB64},
     Pong {from: AgentPubKeyB64},
     ///
     UpdateSemanticTopic {old_topic_eh: EntryHashB64, new_topic_eh: EntryHashB64, title: String},
+    ///
     NewSemanticTopic { topic_eh: EntryHashB64, title: String },
     NewPp { creation_ts: Timestamp, ah: ActionHashB64, pp: ParticipationProtocol },
     NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},

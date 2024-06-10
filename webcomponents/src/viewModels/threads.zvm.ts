@@ -15,7 +15,7 @@ import {
   BaseBeadKind,
   Bead,
   BeadLink,
-  CommitGlobalLogInput,
+  CommitGlobalLogInput, DirectGossipProtocol,
   DM_SUBJECT_TYPE_NAME,
   EncryptedBead,
   EntryBead,
@@ -29,7 +29,7 @@ import {
   Subject,
   TextBead,
   ThreadLastProbeLog,
-  ThreadsEntryType,
+  ThreadsEntryType, ThreadsNotification,
   ThreadsSignal,
   WeaveNotification,
 } from "../bindings/threads.types";
@@ -1120,9 +1120,9 @@ export class ThreadsZvm extends ZomeViewModel {
           continue;
         }
         /* Notify */
-        const signal = this.createNotificationSignal(notif, extra);
-        console.log("publishTypedBeadAt() signaling notification to peer", recipient, signal.payload)
-        /*await*/ this.notifyPeer(recipient, signal);
+        const notifSignal = this.createNotificationSignal(notif, extra);
+        console.log("publishTypedBeadAt() signaling notification to peer", recipient, notifSignal)
+        /*await*/ this.emitNotification(recipient, notifSignal);
         notifiedPeers.push(recipient);
       }
       /* Do Peers with "AllMessages" */
@@ -1140,7 +1140,7 @@ export class ThreadsZvm extends ZomeViewModel {
             continue;
           }
           const signal = this.createNotificationSignal(maybe[1], extra);
-          /*await*/ this.notifyPeer(recipient, signal);
+          /*await*/ this.emitNotification(recipient, signal);
           notifiedPeers.push(recipient); // just useful for debugging
         }
       }
@@ -1230,9 +1230,9 @@ export class ThreadsZvm extends ZomeViewModel {
     if (maybeNotifPair && ppAuthor == this.cell.agentPubKey) {
       const recipient = encodeHashToBase64(maybeNotifPair[0]);
       const extra = encode(pp);
-      const signal = this.createNotificationSignal(maybeNotifPair[1], extra);
-      console.log("publishParticipationProtocol() signaling notification to peer", recipient, signal.payload)
-      /*await*/ this.notifyPeer(recipient, signal);
+      const notif = this.createNotificationSignal(maybeNotifPair[1], extra);
+      console.log("publishParticipationProtocol() signaling notification to peer", recipient, notif)
+      /*await*/ this.emitNotification(recipient, notif);
     }
     /** */
     return [ts, ppAh, ppMat];
@@ -1600,9 +1600,9 @@ export class ThreadsZvm extends ZomeViewModel {
     await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
     /** Notify other */
     const extra = encode(dematerializeParticipationProtocol(ppMat));
-    const signal = this.createNotificationSignal(notif, extra);
-    console.log("createDmThread() signaling notification to peer", otherAgent, signal.payload)
-    await this.notifyPeer(otherAgent, signal);
+    const notifSignal = this.createNotificationSignal(notif, extra);
+    console.log("createDmThread() signaling notification to peer", otherAgent, notifSignal)
+    await this.emitNotification(otherAgent, notifSignal);
     /* */
     return ppAh;
   }
@@ -1765,16 +1765,16 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Signaling / Notifying -- */
 
   /** */
-  async signalPeers(signal: ThreadsSignal, agents: Array<AgentPubKeyB64>): Promise<void> {
+  async broadcastGossip(gossip: DirectGossipProtocol, agents: Array<AgentPubKeyB64>): Promise<void> {
     const peers = agents.map((key) => decodeHashFromBase64(key));
-    return this.zomeProxy.signalPeers({signal, peers});
+    return this.zomeProxy.broadcastGossip({gossip, peers});
   }
 
 
   /** Return true if sent synchronously */
-  async notifyPeer(agent: AgentPubKeyB64, signal: ThreadsSignal): Promise<boolean> {
+  async emitNotification(agent: AgentPubKeyB64, notification: ThreadsNotification): Promise<boolean> {
     try {
-      await this.zomeProxy.notifyPeer({peer: decodeHashFromBase64(agent), payload: signal});
+      await this.zomeProxy.emitNotification({peer: decodeHashFromBase64(agent), notification});
       return true;
     } catch (e) {
       /** Peer might not be online, use notificationZome instead */
@@ -1785,20 +1785,20 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): ThreadsSignal {
-    let maybePpHash;
+  private createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): ThreadsNotification {
+    let pp_ah = notification.content;
     if (NotifiableEvent.Mention === notification.event || NotifiableEvent.Reply === notification.event
         || NotifiableEvent.NewBead === notification.event) {
       const beadAh = encodeHashToBase64(notification.content);
       const beadInfo = this.getBeadInfo(beadAh);
-      maybePpHash = beadInfo.bead.ppAh;
+      pp_ah = decodeHashFromBase64(beadInfo.bead.ppAh);
     }
-    const signal: ThreadsSignal = {
-      maybePpHash,
-      from: this.cell.agentPubKey,
-      payload: { type: "Notification", notification, data: extra}
+    const notif: ThreadsNotification = {
+      pp_ah,
+      notification,
+      data: extra,
     }
-    return signal;
+    return notif;
   }
 
 

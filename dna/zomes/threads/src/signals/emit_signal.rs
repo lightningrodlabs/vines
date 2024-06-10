@@ -1,34 +1,36 @@
 use hdk::prelude::*;
 //use crate::*;
 use crate::signals::*;
-//use zome_utils::*;
+use zome_utils::*;
 //use threads_integrity::*;
 
 
-// /// Input to the notify call
-// #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
-// #[serde(rename_all = "camelCase")]
-// pub struct NotifyPeerInput {
-//   pub payload: ThreadsSignal,
-//   pub peer: AgentPubKey,
-// }
-//
-// ///
-// #[hdk_extern]
-// fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
-//   std::panic::set_hook(Box::new(zome_panic_hook));
-//   debug!("Notifying {:?} to {}", input.payload, input.peer);
-//   let _ = call_remote(
-//     input.peer,
-//     THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
-//     "recv_remote_signal".into(),
-//     None,
-//     ExternIO::encode(input.payload).unwrap(),
-//   )?;
-//   Ok(())
-// }
+/// Input to the notify call
+#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct NotifyPeerInput {
+  pub notification: ThreadsNotification,
+  pub peer: AgentPubKey,
+}
 
-
+///
+#[hdk_extern]
+fn emit_notification(input: NotifyPeerInput) -> ExternResult<()> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
+  /// Pre-conditions: Don't call yourself (otherwise we get concurrency issues)
+  let me = agent_info()?.agent_latest_pubkey;
+  if me == input.peer {
+    return error("Can't notify self");
+  }
+  /// emit signal
+  debug!("Notifying {:?} to {}", input.notification, input.peer);
+  let signal = ThreadsSignal { from: me, signal: vec![ThreadsSignalProtocol::Notification(input.notification)] };
+  send_remote_signal(
+    ExternIO::encode(signal).unwrap(),
+    vec![input.peer],
+  )?;
+  Ok(())
+}
 
 
 ///

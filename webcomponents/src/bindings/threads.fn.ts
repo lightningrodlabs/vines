@@ -34,6 +34,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"add_many_text_bead_at",
 	"add_text_bead_at_and_notify",
 
+
 	"create_dm_thread",
 	"decrypt_my_bead",
 	"decrypt_bead",
@@ -60,7 +61,6 @@ export const threadsFunctionNames: FunctionName[] = [
 
 	"get_record_author",
 	"get_data_type",
-	"notify_peer",
 	"send_inbox_item",
 	"probe_inbox",
 	"delete_inbox_item",
@@ -79,8 +79,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_topic",
 	"query_semantic_topics",
 	"update_semantic_topic",
-
-	"signal_peers",
+	"broadcast_gossip",
+	"emit_notification",
 	"get_all_subjects",
 	"get_applets",
 	"get_subjects_by_type",

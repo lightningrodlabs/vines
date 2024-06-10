@@ -5,7 +5,7 @@ use zome_utils::*;
 use threads_integrity::*;
 
 /// Notification settings are per ParticipationProtocol.
-/// Default setting is receive notification only for mentions.
+/// Default setting is MentionsOnly (for normal threads, AllMessages for DM threads).
 /// An agent has to declare if it wants notifications for all messages or none, since it deviates from the default setting
 
 
