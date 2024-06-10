@@ -754,7 +754,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
       //   return;
       // }
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.getAgents(),async (eh) => {
         console.log("<vines-page> startPublishFile callback", eh);
         let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
         console.log("onCreateFileMessage() ah", ah);
@@ -909,7 +909,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (this._splitObj) {
           /** auto refresh since we can't observe filesDvm */
           delay(500).then(() => {this.requestUpdate()});
-          pct = Math.ceil(this._filesDvm.perspective.uploadState.chunks.length / this._filesDvm.perspective.uploadState.splitObj.numChunks * 100)
+          pct = Math.ceil(this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].chunks.length / this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].splitObj.numChunks * 100)
         }
 
         let maybeReplyAuthorName = "unknown"
@@ -927,7 +927,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>
             ${this._splitObj? html`
               <div id="uploadCard">
-                <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
+                <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].file.name}</div>
                 <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
               </div>
             ` : html`
@@ -1518,7 +1518,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
       const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
-      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, (_manifestEh) => {
+      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.getAgents(),(_manifestEh) => {
         toasty(msg("File successfully shared") +": " + splitObj.dataHash);
         this.requestUpdate();
       });
@@ -1562,7 +1562,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
       case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
-      case "dumpItem": this._dvm.dumpLogs(); break;
+      case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); this._filesDvm.dumpSignalLogs(); break;
       case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
     }
     this.waitDialogElem.close();

@@ -730,7 +730,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                 <post-thread-view id="feed" .beadAh=${this.selectedPostAh} .favorites=${this._canShowFavorites}>
                 ${this._splitObj? html`
                   <div id="uploadCard">
-                    <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadState.file.name}</div>
+                    <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].file.name}</div>
                     <ui5-progress-indicator style="width:100%;"></ui5-progress-indicator>
                   </div>
                 ` : html`
@@ -843,7 +843,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         return;
       }
       const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
-      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, (_manifestEh) => {
+      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.getAgents(),(_manifestEh) => {
         toasty(msg("File successfully shared") +": " + splitObj.dataHash);
         this.requestUpdate();
       });
@@ -886,7 +886,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
       case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
-      case "dumpItem": this._dvm.dumpLogs(); break;
+      case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); this._filesDvm.dumpSignalLogs(); break;
       case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
     }
     this.waitDialogElem.close();

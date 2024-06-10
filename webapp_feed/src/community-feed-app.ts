@@ -234,7 +234,7 @@ export class CommunityFeedApp extends HappElement {
     const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
     console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
     /** Done */
-    this.threadsDvm.dumpLogs();
+    this.threadsDvm.dumpCallLogs();
     this._offlineLoaded = true;
   }
 

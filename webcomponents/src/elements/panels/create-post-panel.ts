@@ -109,7 +109,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       /** Before */
       const [mainThreadAh, createdMainThread] = await this.beforeCreate();
       /** Create */
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], async (eh) => {
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.getAgents(),async (eh) => {
         console.log("<create-post-panel> startPublishFile callback", eh);
         const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, mainThreadAh);
         this._splitObj = undefined;
