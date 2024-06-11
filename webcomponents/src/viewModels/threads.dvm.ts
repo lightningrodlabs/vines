@@ -26,7 +26,7 @@ import {
   DirectGossipProtocolVariantNewSemanticTopic,
   DirectGossipProtocolVariantNewPp,
   DirectGossipProtocolVariantNewBead,
-  DirectGossipProtocolVariantEmojiReactionChange,
+  DirectGossipProtocolVariantEmojiReactionChange, ThreadsSignalProtocolType,
 } from "../bindings/threads.types";
 import {
   AnyLinkableHashB64, BaseBeadType, bead2base,
@@ -209,17 +209,14 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async handleThreadsSignal(threadsSignal: ThreadsSignalProtocol, from: AgentPubKeyB64): Promise<void> {
-    const signalType = threadsSignal.type;
-
     /* Update agent's presence stat */
     this.updatePresence(from);
-
     /** -- Handle Signal according to type -- */
-    if ("Notification" in signalType) {
-      return this.handleNotificationSignal(threadsSignal.content as ThreadsNotification, from);
+    if (ThreadsSignalProtocolType.Notification in threadsSignal) {
+      return this.handleNotificationSignal(threadsSignal.Notification as ThreadsNotification, from);
     }
-    if ("DirectGossip" in signalType) {
-      return this.handleGossip(threadsSignal.content as DirectGossipProtocol, from);
+    if (ThreadsSignalProtocolType.Gossip in threadsSignal) {
+      return this.handleGossip(threadsSignal.Gossip as DirectGossipProtocol, from);
     }
   }
 

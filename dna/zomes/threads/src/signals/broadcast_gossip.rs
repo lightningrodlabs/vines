@@ -18,7 +18,7 @@ pub fn broadcast_gossip_inner(destinations: Vec<AgentPubKey>, gossip: DirectGoss
   let me = agent_info()?.agent_latest_pubkey;
   let dests = destinations.into_iter().filter(|agent| agent != &me).collect();
   /// Prepare payload
-  let signal = ThreadsSignal { from: me, signal: vec![ThreadsSignalProtocol::DirectGossip(gossip.clone())] };
+  let signal = ThreadsSignal { from: me, signal: vec![ThreadsSignalProtocol::Gossip(gossip.clone())] };
   /// Signal peers
   debug!("calling remote recv_remote_signal() to {:?}", dests);
   trace!("gossip = '{:?}'", gossip);

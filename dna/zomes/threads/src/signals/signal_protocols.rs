@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
 //use zome_utils::*;
-use threads_integrity::ParticipationProtocol;
+use threads_integrity::*;
 use crate::notifications::WeaveNotification;
 
 
@@ -17,11 +17,11 @@ pub struct ThreadsSignal {
 
 /// Data sent by UI ONLY. That's why we use B64 here.
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-#[serde(tag = "type")]
 pub enum ThreadsSignalProtocol {
-    System(SystemSignalProtocol), /// From System
-    DirectGossip(DirectGossipProtocol), /// From Other peer
-    Notification(ThreadsNotification), // From self
+    System(SystemSignalProtocol), /// From "System"
+    Gossip(DirectGossipProtocol), /// From Other peer
+    Notification(ThreadsNotification), // From self?
+    Entry((EntryInfo, ThreadsEntryKind)), // From self
 }
 
 
@@ -73,3 +73,30 @@ pub enum DirectGossipProtocol {
 }
 
 
+/// Bool: True if state change just happened (real-time)
+#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
+pub enum EntryStateChange {
+    Create(bool),
+    Update(bool),
+    Delete(bool),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
+pub struct EntryInfo {
+    pub hash: AnyDhtHash,
+    pub ts: Timestamp,
+    pub author: AgentPubKey,
+    pub state: EntryStateChange,
+}
+
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub enum ThreadsEntryKind {
+    AnyBead(AnyBead),
+    EntryBead(EntryBead),
+    TextBead(TextBead),
+    EncryptedBead(EncryptedBead),
+    SemanticTopic(SemanticTopic),
+    ParticipationProtocol(ParticipationProtocol),
+    GlobalLastProbeLog(GlobalLastProbeLog),
+    ThreadLastProbeLog(ThreadLastProbeLog),
+}

@@ -23,6 +23,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
 fn recv_remote_signal(signal: ExternIO) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    let sig: ThreadsSignal = signal.decode().unwrap();
-   debug!("Received signal {:?}", sig);
+   let caller = call_info()?.provenance;
+   debug!("Received signal from {} == {}? \n content:{:?}", caller, sig.from, sig);
    Ok(emit_signal(&sig)?)
 }
