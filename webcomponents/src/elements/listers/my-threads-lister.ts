@@ -44,8 +44,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     super.zvmUpdated(newZvm, oldZvm)
     this._loading = true;
-    await newZvm.queryThreads();
-    await newZvm.queryBeads();
+    await newZvm.zomeProxy.queryAll();
+    //await newZvm.queryThreads();
+    //await newZvm.queryBeads();
     this._loading = false;
   }
 
@@ -118,7 +119,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       /** 'new', 'notif' or 'unread' badge to display */
       let badge = html`
             <ui5-badge>0</ui5-badge>`;
-      let notifCount = this._zvm.getPpNotifs(ppAh).length;
+      let notifCount = this._zvm.getNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
               <ui5-badge class="notifBadge">New</ui5-badge>`;

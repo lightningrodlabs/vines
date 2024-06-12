@@ -336,7 +336,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCreateTopic(e) {
     const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
     const name = input.value.trim();
-    await this._dvm.publishSemanticTopic(name);
+    await this._dvm.threadsZvm.publishSemanticTopic(name);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.createTopicDialogElem.close();
@@ -361,11 +361,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (name.length < 1) {
       return;
     }
-    const tuple = await this._dvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, name);
+    const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, name);
     //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
 
-    this.dispatchEvent(threadJumpEvent(tuple[1]));
+    this.dispatchEvent(threadJumpEvent(ppAh));
     this.createThreadDialogElem.close(false);
   }
 
@@ -433,7 +433,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateSemanticTopic(topic: string) {
-    await this._dvm.publishSemanticTopic(topic);
+    await this._dvm.threadsZvm.publishSemanticTopic(topic);
   }
 
 
@@ -708,7 +708,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         subject_name: request.subjectName,
         //subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
     };
-    const [ts, ppAh, _ppMat] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
+    const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }
 
@@ -788,7 +788,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
       }
       /** Clear notifications on prevThread */
-      const prevThreadNotifs = this._dvm.threadsZvm.getPpNotifs(prevThreadHash);
+      const prevThreadNotifs = this._dvm.threadsZvm.getNotificationsForPp(prevThreadHash);
       for (const [linkAh, _notif] of prevThreadNotifs) {
         await this._dvm.threadsZvm.deleteInboxItem(linkAh);
       }

@@ -69,9 +69,9 @@ export interface ThreadsExportablePerspective {
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: hash -> Subject */
   allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>,
-  /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
-  allSemanticTopics: Dictionary<[string, boolean]>,
-
+  /** Store of all SemTopic: eh -> TopicTitle */
+  allSemanticTopics: Dictionary<string>,
+  hiddens: Dictionary<boolean>,
   /** ppAh -> ppMat */
   pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]>,
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
@@ -88,16 +88,18 @@ export interface ThreadsExportablePerspective {
 }
 
 
+export type ThreadsPerspective = ThreadsPerspectiveCore & ThreadsPerspectiveLive;
+
 /** */
-export interface ThreadsPerspective {
+export interface ThreadsPerspectiveCore {
   /** */
   allAppletIds: EntryHashB64[],
   /** Store of all Subjects: eh -> Subject */
   allSubjects: Map<AnyLinkableHashB64, SubjectMat>,
-  /** Store of all SemTopic: eh -> [TopicTitle, isHidden] */
-  allSemanticTopics: Dictionary<[string, boolean]>,
-  /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
-  threadsPerSubject: Dictionary<ActionHashB64[]>,
+  /** Store of all SemTopic: eh -> TopicTitle */
+  allSemanticTopics: Dictionary<string>,
+  /** Any hash -> isHidden */
+  hiddens: Dictionary<boolean>,
   /** ppAh -> Thread */
   threads: Map<ActionHashB64, Thread>,
   /** beadAh -> [BeadInfo, TypedBead] */
@@ -115,30 +117,14 @@ export interface ThreadsPerspective {
 
   /** AppletId -> PathEntryHash -> subjectType */
   appletSubjectTypes: Dictionary<Dictionary<string>>,
-  /** PathEntryHash -> subjectHash[] */
-  subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
-
 
   /** -- Favorites -- */
-
   favorites: ActionHashB64[],
 
-
   /** -- New / unread -- */
-
   globalProbeLog?: GlobalLastProbeLog,
 
-  /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
-  /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
-  /* ppAh -> SubjectHash */
-  newThreads: Record<ActionHashB64, AnyLinkableHashB64>,
-  /** Unread subject == Has at least one unread thread */
-  /** ppAh -> (subjectHash, beadAh[]) */
-  unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]>, // Unread thread == Has "new" beads
-
-
   /** -- Notification Inbox -- */
-
   /** linkAh -> [agent, beadAh] */
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
   /** linkAh -> (ppAh, notif) */
@@ -146,6 +132,23 @@ export interface ThreadsPerspective {
   /* ppAh -> (agent -> value) */
   notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySetting>>,
 }
+
+
+/** Perspective fields that are built from the Core perspective. There is no exclusif data. */
+export interface ThreadsPerspectiveLive {
+  /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
+  threadsPerSubject: Dictionary<ActionHashB64[]>,
+  /** PathEntryHash -> subjectHash[] */
+  subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
+  /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
+  /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
+  /* ppAh -> SubjectHash */
+  newThreads: Record<ActionHashB64, AnyLinkableHashB64>,
+  /** Unread subject == Has at least one unread thread */
+  /** ppAh -> (subjectHash, beadAh[]) */
+  unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]>, // Unread thread == Has "new" beads
+}
+
 
 
 /** -- PpMat -- */

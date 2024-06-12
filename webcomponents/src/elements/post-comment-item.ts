@@ -74,7 +74,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     let typedBead = newDvm.threadsZvm.getBead(this.hash);
     /* Try loading AnyBead Asset */
     if (!beadInfo) {
-      const pair = await newDvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+      const pair = await newDvm.threadsZvm.fetchUnknownBead(this.hash, false);
       if (!pair) {
         return;
       }

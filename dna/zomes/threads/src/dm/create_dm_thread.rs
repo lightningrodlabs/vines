@@ -1,13 +1,12 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-use crate::notifications::{SendInboxItemInput, NotifiableEvent, WeaveNotification};
 use crate::notifications::*;
 
 /// Create a Pp off of another Agent
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn create_dm_thread(other_agent: AgentPubKey) -> ExternResult<(ActionHash, WeaveNotification)> {
+pub fn create_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let me = agent_info()?.agent_latest_pubkey;
   if me == other_agent {
@@ -43,7 +42,7 @@ pub fn create_dm_thread(other_agent: AgentPubKey) -> ExternResult<(ActionHash, W
     hash2tag(me),
   )?;
   /// Notify other agent author
-  let (_link_ah, notif) = send_inbox_item(SendInboxItemInput { content: pp_ah.clone().into(), who: other_agent.clone(), event: NotifiableEvent::NewDmThread })?.unwrap();
+  let _link_ah = notify_peer(NotifyPeerInput { content: pp_ah.clone().into(), who: other_agent.clone(), event: NotifiableEvent::NewDmThread })?.unwrap();
   /// Done
-  Ok((pp_ah, notif))
+  Ok(pp_ah)
 }

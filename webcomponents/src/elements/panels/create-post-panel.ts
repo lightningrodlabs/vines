@@ -48,11 +48,11 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
       const appletId = this.weServices? this.weServices.appletId : THIS_APPLET_ID;
-      const tuple = await this._dvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_HASH, "main");
-      mainThreadAh = tuple[1];
+      const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_HASH, "main");
+      mainThreadAh = ppAh;
       console.log("<create-post-panel>.onCreate()", mainThreadAh)
       /** Make sure agent subscribed to notifications for main thread */
-      await this._dvm.threadsZvm.probeNotifSettings(mainThreadAh);
+      await this._dvm.threadsZvm.pullNotifSettings(mainThreadAh);
       const notif = this._dvm.threadsZvm.getNotifSetting(mainThreadAh, this._dvm.cell.agentPubKey);
       if (notif != NotifySetting.AllMessages) {
         await this._dvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);

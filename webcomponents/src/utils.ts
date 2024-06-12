@@ -201,7 +201,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 
 
 /** We are determining the subject name and formatting it into a thread name */
-export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx) {
+export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): Promise<string> {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
   if (subject.appletId == THIS_APPLET_ID || subject.appletId == "" || (weServices && subject.appletId == weServices.appletId)) {
@@ -210,8 +210,7 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
       case SEMANTIC_TOPIC_TYPE_NAME:
         let semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
         if (!semTopic) {
-          await threadsZvm.probeSemanticTopics();
-          semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
+          semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
         }
         return semTopic[0];
       break;

@@ -248,7 +248,7 @@ export interface GetDataTypeInput {
 }
 
 /**  */
-export interface SendInboxItemInput {
+export interface NotifyPeerInput {
   content: AnyLinkableHash
   who: AgentPubKey
   event: NotifiableEvent
@@ -297,13 +297,13 @@ export interface UpdateTopicInput {
 }
 
 /** Input to the notify call */
-export interface BroadcastGossipInput {
-  gossip: DirectGossipProtocol
+export interface BroadcastTipInput {
+  tip: TipProtocol
   peers: AgentPubKey[]
 }
 
 /** Input to the notify call */
-export interface NotifyPeerInput {
+export interface EmitNotificationTipInput {
   notification: ThreadsNotification
   peer: AgentPubKey
 }
@@ -311,29 +311,29 @@ export interface NotifyPeerInput {
 /**  */
 export interface ThreadsSignal {
   from: AgentPubKey
-  signal: ThreadsSignalProtocol[]
+  pulses: ThreadsSignalProtocol[]
 }
 
 /** Data sent by UI ONLY. That's why we use B64 here. */
 export enum ThreadsSignalProtocolType {
 	System = 'System',
-	Gossip = 'Gossip',
-	Notification = 'Notification',
+	Tip = 'Tip',
 	Entry = 'Entry',
+	Link = 'Link',
 }
 export type ThreadsSignalProtocolVariantSystem = {System: SystemSignalProtocol}
-export type ThreadsSignalProtocolVariantGossip = {Gossip: DirectGossipProtocol}
-export type ThreadsSignalProtocolVariantNotification = {Notification: ThreadsNotification}
-export type ThreadsSignalProtocolVariantEntry = {Entry: [EntryInfo, ThreadsEntryKind]}
+export type ThreadsSignalProtocolVariantTip = {Tip: TipProtocol}
+export type ThreadsSignalProtocolVariantEntry = {Entry: [EntryInfo, ThreadsEntry]}
+export type ThreadsSignalProtocolVariantLink = {Link: [ActionHash, LinkInfo, ThreadsLinkType]}
 export type ThreadsSignalProtocol = 
- | ThreadsSignalProtocolVariantSystem | ThreadsSignalProtocolVariantGossip | ThreadsSignalProtocolVariantNotification | ThreadsSignalProtocolVariantEntry;
+ | ThreadsSignalProtocolVariantSystem | ThreadsSignalProtocolVariantTip | ThreadsSignalProtocolVariantEntry | ThreadsSignalProtocolVariantLink;
 
 export interface SystemSignal {
   System: SystemSignalProtocol
 }
 
-export interface GossipSignal {
-  DirectGossip: DirectGossipProtocol
+export interface TipSignal {
+  Tip: TipProtocol
 }
 
 /** Protocol for notifying the ViewModel (UI) of system level events */
@@ -363,46 +363,39 @@ export type SystemSignalProtocol =
   | SystemSignalProtocolVariantSelfCallStart
   | SystemSignalProtocolVariantSelfCallEnd;
 
-/**  */
-export interface ThreadsNotification {
-  pp_ah: ActionHash
-  notification: WeaveNotification
-  data: Uint8Array
-}
-
 /**
  * 
  * Data sent by UI ONLY. That's why we use B64 here.
  * 
  */
-export type DirectGossipProtocolVariantPing = {
+export type TipProtocolVariantPing = {
   type: "Ping"
   from: AgentPubKeyB64
 }
-export type DirectGossipProtocolVariantPong = {
+export type TipProtocolVariantPong = {
   type: "Pong"
   from: AgentPubKeyB64
 }
   /**  */
-export type DirectGossipProtocolVariantUpdateSemanticTopic = {
+export type TipProtocolVariantUpdateSemanticTopic = {
   type: "UpdateSemanticTopic"
   old_topic_eh: EntryHashB64
   new_topic_eh: EntryHashB64
   title: string
 }
   /**  */
-export type DirectGossipProtocolVariantNewSemanticTopic = {
+export type TipProtocolVariantNewSemanticTopic = {
   type: "NewSemanticTopic"
   topic_eh: EntryHashB64
   title: string
 }
-export type DirectGossipProtocolVariantNewPp = {
+export type TipProtocolVariantNewPp = {
   type: "NewPp"
   creation_ts: Timestamp
   ah: ActionHashB64
   pp: ParticipationProtocol
 }
-export type DirectGossipProtocolVariantNewBead = {
+export type TipProtocolVariantNewBead = {
   type: "NewBead"
   creation_ts: Timestamp
   bead_ah: ActionHashB64
@@ -410,61 +403,62 @@ export type DirectGossipProtocolVariantNewBead = {
   pp_ah: ActionHashB64
   data: Uint8Array
 }
-export type DirectGossipProtocolVariantEmojiReactionChange = {
+export type TipProtocolVariantEmojiReactionChange = {
   type: "EmojiReactionChange"
   bead_ah: ActionHashB64
   author: AgentPubKeyB64
   emoji: string
   is_added: boolean
 }
-export type DirectGossipProtocol =
-  | DirectGossipProtocolVariantPing
-  | DirectGossipProtocolVariantPong
-  | DirectGossipProtocolVariantUpdateSemanticTopic
-  | DirectGossipProtocolVariantNewSemanticTopic
-  | DirectGossipProtocolVariantNewPp
-  | DirectGossipProtocolVariantNewBead
-  | DirectGossipProtocolVariantEmojiReactionChange;
+  /**  */
+export type TipProtocolVariantNotification = {
+  type: "Notification"
+  value: ThreadsNotification
+}
+export type TipProtocol =
+  | TipProtocolVariantPing
+  | TipProtocolVariantPong
+  | TipProtocolVariantUpdateSemanticTopic
+  | TipProtocolVariantNewSemanticTopic
+  | TipProtocolVariantNewPp
+  | TipProtocolVariantNewBead
+  | TipProtocolVariantEmojiReactionChange
+  | TipProtocolVariantNotification;
+
+/**  */
+export interface ThreadsNotification {
+  pp_ah: ActionHash
+  notification: WeaveNotification
+  data: Uint8Array
+}
 
 /** Bool: True if state change just happened (real-time) */
-export enum EntryStateChangeType {
+export enum StateChangeType {
 	Create = 'Create',
 	Update = 'Update',
 	Delete = 'Delete',
 }
-export type EntryStateChangeVariantCreate = {Create: boolean}
-export type EntryStateChangeVariantUpdate = {Update: boolean}
-export type EntryStateChangeVariantDelete = {Delete: boolean}
-export type EntryStateChange = 
- | EntryStateChangeVariantCreate | EntryStateChangeVariantUpdate | EntryStateChangeVariantDelete;
+export type StateChangeVariantCreate = {Create: boolean}
+export type StateChangeVariantUpdate = {Update: boolean}
+export type StateChangeVariantDelete = {Delete: boolean}
+export type StateChange = 
+ | StateChangeVariantCreate | StateChangeVariantUpdate | StateChangeVariantDelete;
 
 export interface EntryInfo {
   hash: AnyDhtHash
   ts: Timestamp
   author: AgentPubKey
-  state: EntryStateChange
+  state: StateChange
 }
 
-export enum ThreadsEntryKindType {
-	AnyBead = 'AnyBead',
-	EntryBead = 'EntryBead',
-	TextBead = 'TextBead',
-	EncryptedBead = 'EncryptedBead',
-	SemanticTopic = 'SemanticTopic',
-	ParticipationProtocol = 'ParticipationProtocol',
-	GlobalLastProbeLog = 'GlobalLastProbeLog',
-	ThreadLastProbeLog = 'ThreadLastProbeLog',
+export interface LinkInfo {
+  base: AnyLinkableHash
+  target: AnyLinkableHash
+  tag?: number[]
+  ts: Timestamp
+  author: AgentPubKey
+  state: StateChange
 }
-export type ThreadsEntryKindVariantAnyBead = {AnyBead: AnyBead}
-export type ThreadsEntryKindVariantEntryBead = {EntryBead: EntryBead}
-export type ThreadsEntryKindVariantTextBead = {TextBead: TextBead}
-export type ThreadsEntryKindVariantEncryptedBead = {EncryptedBead: EncryptedBead}
-export type ThreadsEntryKindVariantSemanticTopic = {SemanticTopic: SemanticTopic}
-export type ThreadsEntryKindVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
-export type ThreadsEntryKindVariantGlobalLastProbeLog = {GlobalLastProbeLog: GlobalLastProbeLog}
-export type ThreadsEntryKindVariantThreadLastProbeLog = {ThreadLastProbeLog: ThreadLastProbeLog}
-export type ThreadsEntryKind = 
- | ThreadsEntryKindVariantAnyBead | ThreadsEntryKindVariantEntryBead | ThreadsEntryKindVariantTextBead | ThreadsEntryKindVariantEncryptedBead | ThreadsEntryKindVariantSemanticTopic | ThreadsEntryKindVariantParticipationProtocol | ThreadsEntryKindVariantGlobalLastProbeLog | ThreadsEntryKindVariantThreadLastProbeLog;
 
 /**  */
 export interface GetProtocolsInput {
@@ -586,8 +580,8 @@ export enum ThreadsEntryType {
 	EncryptedBead = 'EncryptedBead',
 	SemanticTopic = 'SemanticTopic',
 	ParticipationProtocol = 'ParticipationProtocol',
-	GlobalProbeLog = 'GlobalProbeLog',
-	ThreadProbeLog = 'ThreadProbeLog',
+	GlobalLastProbeLog = 'GlobalLastProbeLog',
+	ThreadLastProbeLog = 'ThreadLastProbeLog',
 }
 export type ThreadsEntryVariantAnyBead = {AnyBead: AnyBead}
 export type ThreadsEntryVariantEntryBead = {EntryBead: EntryBead}
@@ -595,10 +589,10 @@ export type ThreadsEntryVariantTextBead = {TextBead: TextBead}
 export type ThreadsEntryVariantEncryptedBead = {EncryptedBead: EncryptedBead}
 export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
 export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
-export type ThreadsEntryVariantGlobalProbeLog = {GlobalProbeLog: GlobalLastProbeLog}
-export type ThreadsEntryVariantThreadProbeLog = {ThreadProbeLog: ThreadLastProbeLog}
+export type ThreadsEntryVariantGlobalLastProbeLog = {GlobalLastProbeLog: GlobalLastProbeLog}
+export type ThreadsEntryVariantThreadLastProbeLog = {ThreadLastProbeLog: ThreadLastProbeLog}
 export type ThreadsEntry = 
- | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantTextBead | ThreadsEntryVariantEncryptedBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantGlobalProbeLog | ThreadsEntryVariantThreadProbeLog;
+ | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantTextBead | ThreadsEntryVariantEncryptedBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantGlobalLastProbeLog | ThreadsEntryVariantThreadLastProbeLog;
 
 /**
  * -------------------------------------------------------------------------------------------------

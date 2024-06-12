@@ -43,18 +43,7 @@ pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, 
 }
 
 
-/// Get all TextBead in local source-chain
-/// WARN Will return actual action creation time and not stored ts_us
-#[hdk_extern]
-pub fn query_text_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, TextBead)>> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  let entry_type = EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap());
-  let tuples = get_all_typed_local::<TextBead>(entry_type)?;
-  let res = tuples.into_iter().map(|(ah, create_action, typed)| {
-    (create_action.timestamp, ah, typed)
-  }).collect();
-  Ok(res)
-}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,10 +110,11 @@ pub struct AddTextAtAndNotifyInput {
   pub can_notify_reply: bool,
 }
 
-///
+
+/// Notifications must be sent out at the same validation step as a Bead is committed
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_text_bead_at_and_notify(input: AddTextAtAndNotifyInput) -> ExternResult<(ActionHash, String, Vec<(AgentPubKey, WeaveNotification)>)> {
+pub fn add_text_bead_at_and_notify(input: AddTextAtAndNotifyInput) -> ExternResult<(ActionHash, String)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.text_bead.clone()))?;
@@ -133,23 +123,16 @@ pub fn add_text_bead_at_and_notify(input: AddTextAtAndNotifyInput) -> ExternResu
   //let fn_end = sys_time()?;
   //debug!("               ADD TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
   /// Notify Mentions
-  let mut notifs = Vec::new();
   for mentionee in input.mentionees {
-    let maybe = send_inbox_item(SendInboxItemInput {content: ah.clone().into(), who: mentionee.clone(), event: NotifiableEvent::Mention})?;
-    if let Some((_link_ah, notif)) = maybe {
-      notifs.push((mentionee, notif));
-    }
+    let _maybe = notify_peer(NotifyPeerInput {content: ah.clone().into(), who: mentionee.clone(), event: NotifiableEvent::Mention})?;
   }
   /// Reply
   if input.can_notify_reply {
     if input.text_bead.bead.pp_ah != input.text_bead.bead.prev_bead_ah.clone() {
       let reply_author = get_author(&input.text_bead.bead.prev_bead_ah.clone().into())?;
-      let maybe = send_inbox_item(SendInboxItemInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
-      if let Some((_link_ah, notif)) = maybe {
-        notifs.push((reply_author, notif));
-      }
+      let _maybe = notify_peer(NotifyPeerInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply})?;
     }
   }
   /// Done
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), notifs))
+  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
 }

@@ -17,6 +17,7 @@ mod favorite;
 mod dm;
 mod notifications;
 mod signals;
+mod query_all;
 
 pub use signals::*;
 

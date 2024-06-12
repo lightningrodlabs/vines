@@ -120,7 +120,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
     if (this._dvm) {
       if (this.threadHash && !this._dvm.threadsZvm.perspective.notifSettings[this.threadHash]) {
-        await this._dvm.threadsZvm.probeNotifSettings(this.threadHash);
+        await this._dvm.threadsZvm.pullNotifSettings(this.threadHash);
       }
     }
   }

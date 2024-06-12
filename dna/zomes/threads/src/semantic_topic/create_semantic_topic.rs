@@ -3,6 +3,7 @@ use threads_integrity::*;
 use zome_utils::*;
 use crate::semantic_topic::determine_topic_anchor;
 
+
 /// Creates the SemanticTopic
 #[hdk_extern]
 #[feature(zits_blocking)]

@@ -14,7 +14,7 @@ fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
 ///
 fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
   debug!("search_global_log()");
-  let entry_type = EntryType::App(ThreadsEntryTypes::GlobalProbeLog.try_into().unwrap());
+  let entry_type = EntryType::App(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap());
   let tuples = get_all_typed_local::<GlobalLastProbeLog>(entry_type.clone())?;
   if tuples.len() > 1 {
     return zome_error!("More than one global query log create found");
@@ -25,7 +25,7 @@ fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
       ts: sys_time()?,
       maybe_last_known_pp_ah: None,
     };
-    let ah = create_entry(ThreadsEntry::GlobalProbeLog(first_log.clone()))?;
+    let ah = create_entry(ThreadsEntry::GlobalLastProbeLog(first_log.clone()))?;
     return Ok((ah, first_log))
   }
   /// Search for updates
@@ -72,7 +72,7 @@ pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp>
     maybe_last_known_pp_ah: input.maybe_last_known_pp_ah,
   };
   /// Update the entry
-  let _ah = update_entry(ah, ThreadsEntry::GlobalProbeLog(gql.clone()))?;
+  let _ah = update_entry(ah, ThreadsEntry::GlobalLastProbeLog(gql.clone()))?;
   /// Done
   Ok(gql.ts)
 }
@@ -80,13 +80,4 @@ pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp>
 
 
 
-/// Get all GlobalQueryLog in local source-chain
-#[hdk_extern]
-pub fn query_global_log(_: ()) -> ExternResult<Vec<(Timestamp, GlobalLastProbeLog)>> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  let tuples = get_all_typed_local::<GlobalLastProbeLog>( EntryType::App(ThreadsEntryTypes::GlobalProbeLog.try_into().unwrap()))?;
-  let res = tuples.into_iter().map(|(_ah, create_action, typed)| {
-    (create_action.timestamp, typed)
-  }).collect();
-  Ok(res)
-}
+

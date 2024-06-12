@@ -121,7 +121,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   private async loadBead() {
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     if (!beadInfo) {
-      await this._dvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+      await this._dvm.threadsZvm.fetchUnknownBead(this.hash, false);
     }
     await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
     this._loading = false;

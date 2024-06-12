@@ -99,11 +99,11 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     // }
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     if (!beadInfo) {
-      await this._dvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+      await this._dvm.threadsZvm.fetchUnknownBead(this.hash, false);
     }
     await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
     const commentThreadAh = await this.getCommentThread();
-    await this._dvm.threadsZvm.probeNotifSettings(commentThreadAh);
+    await this._dvm.threadsZvm.pullNotifSettings(commentThreadAh);
     await this._dvm.threadsZvm.probeAllBeads(commentThreadAh); // TODO: Get links count instead as it should be faster
     this._loading = false;
   }

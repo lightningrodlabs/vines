@@ -11,7 +11,7 @@ use crate::notifications::WeaveNotification;
 pub struct ThreadsSignal {
     //maybe_pp_hash: Option<ActionHashB64>, // used for filtering by PP if applicable
     pub from: AgentPubKey, // if from self, than its not a DM,
-    pub signal: Vec<ThreadsSignalProtocol>,
+    pub pulses: Vec<ThreadsSignalProtocol>,
 }
 
 
@@ -19,9 +19,9 @@ pub struct ThreadsSignal {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub enum ThreadsSignalProtocol {
     System(SystemSignalProtocol), /// From "System"
-    Gossip(DirectGossipProtocol), /// From Other peer
-    Notification(ThreadsNotification), // From self?
-    Entry((EntryInfo, ThreadsEntryKind)), // From self
+    Tip(TipProtocol), /// From Other peer
+    Entry((EntryInfo, ThreadsEntry)), // From self
+    Link((ActionHash, LinkInfo, ThreadsLinkType)), // From self
 }
 
 
@@ -30,8 +30,8 @@ pub struct SystemSignal {
     pub System: SystemSignalProtocol,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-pub struct GossipSignal {
-    pub DirectGossip: DirectGossipProtocol,
+pub struct TipSignal {
+    pub Tip: TipProtocol,
 }
 
 
@@ -47,20 +47,11 @@ pub enum SystemSignalProtocol {
 
 
 ///
-#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub struct ThreadsNotification {
-    pp_ah: ActionHash,
-    notification: WeaveNotification,
-    data: SerializedBytes,
-}
-
-
-///
 /// Data sent by UI ONLY. That's why we use B64 here.
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 #[serde(tag = "type")]
-pub enum DirectGossipProtocol {
+pub enum TipProtocol {
     Ping {from: AgentPubKeyB64},
     Pong {from: AgentPubKeyB64},
     ///
@@ -70,12 +61,23 @@ pub enum DirectGossipProtocol {
     NewPp { creation_ts: Timestamp, ah: ActionHashB64, pp: ParticipationProtocol },
     NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},
     EmojiReactionChange {bead_ah: ActionHashB64, author: AgentPubKeyB64, emoji: String, is_added: bool},
+    ///
+    Notification { value: ThreadsNotification },
+}
+
+
+///
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub struct ThreadsNotification {
+    pp_ah: ActionHash,
+    notification: WeaveNotification,
+    data: SerializedBytes,
 }
 
 
 /// Bool: True if state change just happened (real-time)
 #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-pub enum EntryStateChange {
+pub enum StateChange {
     Create(bool),
     Update(bool),
     Delete(bool),
@@ -86,17 +88,17 @@ pub struct EntryInfo {
     pub hash: AnyDhtHash,
     pub ts: Timestamp,
     pub author: AgentPubKey,
-    pub state: EntryStateChange,
+    pub state: StateChange,
 }
 
-#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub enum ThreadsEntryKind {
-    AnyBead(AnyBead),
-    EntryBead(EntryBead),
-    TextBead(TextBead),
-    EncryptedBead(EncryptedBead),
-    SemanticTopic(SemanticTopic),
-    ParticipationProtocol(ParticipationProtocol),
-    GlobalLastProbeLog(GlobalLastProbeLog),
-    ThreadLastProbeLog(ThreadLastProbeLog),
+
+#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
+pub struct LinkInfo {
+    pub base: AnyLinkableHash,
+    pub target: AnyLinkableHash,
+    pub tag: Option<Vec<u8>>,
+    pub ts: Timestamp,
+    pub author: AgentPubKey,
+    pub state: StateChange,
 }
+

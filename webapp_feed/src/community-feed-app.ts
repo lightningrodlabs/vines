@@ -250,7 +250,7 @@ export class CommunityFeedApp extends HappElement {
 
 
     /** Make sure main topic and thread exists */
-    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, MAIN_SEMANTIC_TOPIC, false, false);
+    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, MAIN_SEMANTIC_TOPIC, false);
     this.threadsDvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
     const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
@@ -258,7 +258,7 @@ export class CommunityFeedApp extends HappElement {
       const mainThreadAh = getMainThread(this.threadsDvm);
       console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", mainThreadAh);
       /** Make sure subscribe to notifications for main thread */
-      await this.threadsDvm.threadsZvm.probeNotifSettings(mainThreadAh);
+      await this.threadsDvm.threadsZvm.pullNotifSettings(mainThreadAh);
       const notif = this.threadsDvm.threadsZvm.getNotifSetting(mainThreadAh, this.threadsDvm.cell.agentPubKey);
       if (notif != NotifySetting.AllMessages) {
         await this.threadsDvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);
@@ -482,8 +482,8 @@ export class CommunityFeedApp extends HappElement {
                             subject,
                             subject_name,
                         };
-                        const [ts, ppAh, ppMat] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
-                        const wal: WAL = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: ppMat.subject.hash}
+                        const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
+                        const wal: WAL = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: encodeHashToBase64(pp.subject.hash)}
                         await creatableViewInfo.resolve(wal);
                       } catch(e) {
                           creatableViewInfo.reject(e)

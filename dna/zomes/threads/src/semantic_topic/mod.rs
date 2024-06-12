@@ -12,25 +12,14 @@ use threads_integrity::*;
 
 /// Get a SemanticTopic
 #[hdk_extern]
-pub fn get_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
+pub fn fetch_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  debug!("get_topic() {:?}", eh);
+  debug!("fetch_topic() {:?}", eh);
   let typed = get_typed_from_eh(eh)?;
   Ok(typed)
 }
 
 
-
-/// Get all SemanticTopics in local source-chain
-#[hdk_extern]
-pub fn query_semantic_topics(_: ()) -> ExternResult<Vec<(Timestamp, EntryHash, SemanticTopic)>> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  let tuples = get_all_typed_local::<SemanticTopic>( EntryType::App(ThreadsEntryTypes::SemanticTopic.try_into().unwrap()))?;
-  let res = tuples.into_iter().map(|(_ah, create_action, typed)| {
-    (create_action.timestamp, create_action.entry_hash, typed)
-  }).collect();
-  Ok(res)
-}
 
 
 ///

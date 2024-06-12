@@ -5,7 +5,7 @@ use threads_integrity::ThreadsLinkType;
 
 ///
 #[hdk_extern]
-fn get_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHash>> {
+fn find_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHash>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   for link in links.iter() {
@@ -31,7 +31,7 @@ fn hide_subject(subjectHash: AnyLinkableHash) -> ExternResult<ActionHash> {
 #[feature(zits_blocking)]
 fn unhide_subject(subjectHash: AnyLinkableHash) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let Some(create_link_hash) = get_hide_link(subjectHash)?
+  let Some(create_link_hash) = find_hide_link(subjectHash)?
     else { return Ok(()) };
   let _hash = delete_link(create_link_hash)?;
   Ok(())
@@ -40,7 +40,7 @@ fn unhide_subject(subjectHash: AnyLinkableHash) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
-fn get_hidden_subjects(_: ()) -> ExternResult<Vec<AnyLinkableHash>> {
+fn probe_all_hidden_subjects(_: ()) -> ExternResult<Vec<AnyLinkableHash>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   let hashs = links.iter().map(|link| link.target.clone()).collect();

@@ -66,7 +66,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     /* Try loading AnyBead Asset */
-    const pair = await newDvm.threadsZvm.fetchUnknownBead(decodeHashFromBase64(this.hash), false);
+    const pair = await newDvm.threadsZvm.fetchUnknownBead(this.hash, false);
     if (!pair) {
       return;
     }

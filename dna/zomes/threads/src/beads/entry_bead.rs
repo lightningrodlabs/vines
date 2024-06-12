@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
-use threads_integrity::{EntryBead, Bead, ThreadsEntry, ThreadsEntryTypes};
+use threads_integrity::*;
 use crate::beads::{get_typed_bead, index_bead};
 use crate::notifications::*;
 
@@ -45,7 +45,7 @@ pub struct AddEntryAsBeadInput {
 /// Return bead type, Global Time Anchor, bucket time
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp, Vec<(AgentPubKey, WeaveNotification)>)> {
+pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_as_bead() {:?}", input);
     let (entry_bead, creation_time) = create_entry_bead(input.clone())?;
@@ -53,18 +53,14 @@ pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash
     let tp_pair = index_bead(entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     /// Reply
-    let mut maybe_notif = Vec::new();
     if input.can_notify_reply {
         if entry_bead.bead.pp_ah != entry_bead.bead.prev_bead_ah.clone() {
             let reply_author = get_author(&entry_bead.bead.prev_bead_ah.clone().into())?;
-            let maybe = send_inbox_item(SendInboxItemInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply })?;
-            if let Some((_link_ah, notif)) = maybe {
-                maybe_notif.push((reply_author, notif));
-            }
+            let _maybe = notify_peer(NotifyPeerInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply })?;
         }
     }
     ///
-    Ok((ah, entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time, maybe_notif))
+    Ok((ah, entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
 
@@ -122,15 +118,4 @@ pub fn get_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp
 }
 
 
-/// Get all EntryBeads in local source-chain
-/// WARN Will return actual action creation time and not stored ts_us
-#[hdk_extern]
-pub fn query_entry_beads(_: ()) -> ExternResult<Vec<(Timestamp, ActionHash, EntryBead)>> {
-    std::panic::set_hook(Box::new(zome_panic_hook));
-    let entry_type = EntryType::App(ThreadsEntryTypes::EntryBead.try_into().unwrap());
-    let tuples = get_all_typed_local::<EntryBead>(entry_type)?;
-    let res = tuples.into_iter().map(|(ah, create_action, typed)| {
-        (create_action.timestamp, ah, typed)
-    }).collect();
-    Ok(res)
-}
+
