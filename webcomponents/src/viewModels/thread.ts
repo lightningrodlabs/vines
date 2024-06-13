@@ -53,7 +53,7 @@ export class Thread {
   /* Time interval of the probed beads */
   private _probedTimeIntervals: [Timestamp, TimeInterval][] = [];
 
-  private _isHidden: boolean = false;
+  //private _isHidden: boolean = false;
 
 
   /** Ctor */
@@ -79,7 +79,7 @@ export class Thread {
 
   get author(): AgentPubKeyB64 { return this._author}
 
-  get isHidden(): boolean { return this._isHidden}
+  //get isHidden(): boolean { return this._isHidden}
 
   get latestProbeLogTime(): Timestamp { return this._latestProbeLogTime}
 
@@ -108,10 +108,10 @@ export class Thread {
 
   /** -- Setters -- */
 
-  /** */
-  setIsHidden(isHidden: boolean): void {
-    this._isHidden = isHidden;
-  }
+  // /** */
+  // setIsHidden(isHidden: boolean): void {
+  //   this._isHidden = isHidden;
+  // }
 
   /** */
   setLatestProbeLogTime(time: Timestamp): void {

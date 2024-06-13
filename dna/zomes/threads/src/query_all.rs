@@ -2,19 +2,19 @@ use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
 use crate::*;
-
+use crate::last_probe_log::*;
 
 #[hdk_extern]
 pub fn query_all(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    query_semantic_topics(())?;
+   query_global_log(())?;
    query_pps(())?;
+   query_thread_logs(())?;
    query_any_beads(())?;
    query_entry_beads(())?;
    query_text_beads(())?;
    query_enc_beads(())?;
-   query_global_logs(())?;
-   //query_threads_logs(())?;
    Ok(())
 }
 
@@ -112,14 +112,14 @@ pub fn query_enc_beads(_: ()) -> ExternResult<()> {
 }
 
 
-///
-#[hdk_extern]
-pub fn query_global_logs(_: ()) -> ExternResult<()> {
-   std::panic::set_hook(Box::new(zome_panic_hook));
-   query_all_typed::<GlobalLastProbeLog>(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap())?;
-   /// Done
-   Ok(())
-}
+// ///
+// #[hdk_extern]
+// pub fn query_global_logs(_: ()) -> ExternResult<()> {
+//    std::panic::set_hook(Box::new(zome_panic_hook));
+//    query_all_typed::<GlobalLastProbeLog>(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap())?;
+//    /// Done
+//    Ok(())
+// }
 
 
 ///
@@ -131,7 +131,7 @@ fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()>
    let pulses = tuples.into_iter()
      .map(|(_ah, create, entry)| {
         let typed = into_typed(entry, &app_entry_def).unwrap();
-        return entry_signal(StateChange::Create(false), &create, typed);
+        return ThreadsSignalProtocol::Entry((EntryInfo::from_action(&Action::Create(create), false),  typed));
      })
      .collect();
    emit_self_signal(pulses)?;

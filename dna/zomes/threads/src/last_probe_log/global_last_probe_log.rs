@@ -1,19 +1,20 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
+use crate::*;
 
 ///
 #[hdk_extern]
 fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let (_ah, gql) = search_global_log()?;
+  let (_ah, gql) = query_global_log(())?;
   Ok(gql)
 }
 
 
-///
-fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
-  debug!("search_global_log()");
+#[hdk_extern]
+pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
+  debug!("query_global_log()");
   let entry_type = EntryType::App(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap());
   let tuples = get_all_typed_local::<GlobalLastProbeLog>(entry_type.clone())?;
   if tuples.len() > 1 {
@@ -34,15 +35,29 @@ fn search_global_log() -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
     .action_type(ActionType::Update)
     .entry_type(entry_type);
   let records = query(query_args)?;
-  debug!("search_global_log() updates found: {:?}", records);
+  debug!("query_global_log() updates found: {:?}", records);
+
   /// If no updated found return the create
   if records.is_empty() {
-    return Ok((tuples[0].0.clone(), tuples[0].2.clone()));
+    let (ah, create, typed) = tuples[0].clone();
+    emit_entry_signal(&Action::Create(create), false, ThreadsEntry::GlobalLastProbeLog(typed.clone()))?;
+    return Ok((ah, typed));
   }
+
   /// Grab last one (ascending order)
-  let typed = get_typed_from_record(records.last().unwrap().clone())?;
+  let latest_record = records.last().unwrap().clone();
+  let typed: GlobalLastProbeLog = get_typed_from_record(latest_record.clone())?;
+  /// Emit signal
+  let entry_info = EntryInfo {
+    hash: AnyDhtHash::from(latest_record.action().entry_hash().unwrap().to_owned()),
+    ts: latest_record.action().timestamp(),
+    author: latest_record.action().author().to_owned(),
+    state: StateChange::Update(false),
+  };
+  let dsp = ThreadsSignalProtocol::Entry((entry_info, ThreadsEntry::GlobalLastProbeLog(typed.clone())));
+  emit_self_signal(vec![dsp])?;
   /// Done
-  Ok((records[0].action_address().to_owned(), typed))
+  Ok((latest_record.action_address().to_owned(), typed))
 }
 
 
@@ -60,7 +75,7 @@ pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp>
   std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("commit_global_log() {:?}", input);
   /// Get Previous one (this also makes sure that one has been created so we can do update)
-  let (ah, prev) = search_global_log()?;
+  let (ah, prev) = query_global_log(())?;
   /// Create latest log
   let now = sys_time()?;
   let ts = input.maybe_ts.unwrap_or(now);

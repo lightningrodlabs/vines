@@ -108,8 +108,8 @@ export interface ThreadsPerspectiveCore {
   emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
 
   /** -- DM stuff  -- */
-  /** agentId -> [ppAh, isHidden] */
-  dmAgents: Dictionary<[ActionHashB64, boolean]>
+  /** agentId -> ppAh */
+  dmAgents: Dictionary<ActionHashB64>
   /** encBeadAh -> [BeadInfo, TypedBead] */
   decBeads: Dictionary<[BeadInfo, TypedBeadMat]>,
 
@@ -122,7 +122,7 @@ export interface ThreadsPerspectiveCore {
   favorites: ActionHashB64[],
 
   /** -- New / unread -- */
-  globalProbeLog?: GlobalLastProbeLog,
+  globalProbeLogTs?: Timestamp,
 
   /** -- Notification Inbox -- */
   /** linkAh -> [agent, beadAh] */

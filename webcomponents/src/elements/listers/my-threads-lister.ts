@@ -69,7 +69,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   renderSubjectSubLister(subjectHash: AnyLinkableHashB64, subject: SubjectMat, myThreads: ActionHashB64[], /*title: string, isHidden: boolean*/) {
-    const isHidden = false;
+    const isSubjectHidden = this._zvm.perspective.hiddens[subjectHash]? this._zvm.perspective.hiddens[subjectHash] : false;
     let title = "";
     let threads = myThreads.map((ppAh) => {
       const thread = this.perspective.threads.get(ppAh);
@@ -77,6 +77,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
       console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
+      const isThreadHidden = this._zvm.perspective.hiddens[ppAh]? this._zvm.perspective.hiddens[ppAh] : false;
       const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
       title = thread.name;
       //const hasNewBeads = thread && thread.hasUnreads();
@@ -85,7 +86,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
       console.log("<my-threads-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
-      if (!thread.pp || (thread.isHidden && !this.showArchivedSubjects) /*|| thread.pp.purpose == "comment"*/) {
+      if (!thread.pp || (isThreadHidden && !this.showArchivedSubjects) /*|| thread.pp.purpose == "comment"*/) {
         return html``;
       }
 
@@ -135,7 +136,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         }
       }
 
-      const hideShowBtn = this.showArchivedSubjects && thread.isHidden ?
+      const hideShowBtn = this.showArchivedSubjects && isThreadHidden ?
         html`
               <ui5-button icon="show" tooltip="Show" design="Transparent"
                           class="showBtn"
@@ -220,7 +221,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
     }
 
-    const subjectHideBtn = this.showArchivedSubjects && isHidden ? html`
+    const subjectHideBtn = this.showArchivedSubjects && isSubjectHidden ? html`
           <ui5-button id=${"hide-"+subjectHash} icon="show" tooltip="Show" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {

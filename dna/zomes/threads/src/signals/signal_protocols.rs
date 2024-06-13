@@ -92,6 +92,33 @@ pub struct EntryInfo {
 }
 
 
+impl EntryInfo {
+    pub fn from_action(action: &Action, is_new: bool) -> Self {
+        match action {
+            Action::Create(create) => Self {
+                hash: AnyDhtHash::from(create.entry_hash.clone()),
+                ts: create.timestamp,
+                author: create.author.clone(),
+                state: StateChange::Create(is_new),
+            },
+            Action::Update(update) => Self {
+                hash: AnyDhtHash::from(update.entry_hash.clone()),
+                ts: update.timestamp,
+                author: update.author.clone(),
+                state: StateChange::Update(is_new),
+            },
+            Action::Delete(delete) => Self {
+                hash: AnyDhtHash::from(delete.deletes_entry_address.clone()),
+                ts: delete.timestamp,
+                author: delete.author.clone(),
+                state: StateChange::Delete(is_new),
+            },
+        _ => panic!("Unhandled action type: {:?}", action),
+        }
+    }
+}
+
+
 #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
 pub struct LinkInfo {
     pub base: AnyLinkableHash,

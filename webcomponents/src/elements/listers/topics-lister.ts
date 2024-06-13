@@ -68,9 +68,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   render() {
     console.log("<topics-lister>.render()", this.perspective.allSemanticTopics);
 
-    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, [title, isHidden]]) => {
+    let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, title]) => {
+      const isSubjectHidden = this._zvm.perspective.hiddens[topicHash]? this._zvm.perspective.hiddens[topicHash] : false;
       /** Skip if hidden */
-      if (isHidden && !this.showArchivedTopics) {
+      if (isSubjectHidden && !this.showArchivedTopics) {
         return;
       }
       /** Render threads for Topic */
@@ -93,14 +94,14 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           }
           console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
-
+          const isThreadHidden = this._zvm.perspective.hiddens[ppAh]? this._zvm.perspective.hiddens[ppAh] : false;
           //const hasNewBeads = thread && thread.hasUnreads();
           const maybeUnreadThread = this.perspective.unreadThreads[ppAh];
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
           //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
           const threadIsNew = Object.keys(this.perspective.newThreads).includes(ppAh);
           //console.log("<topics-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
-          if (!thread.pp || (thread.isHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
+          if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return;
           }
 
@@ -149,7 +150,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             }
           }
 
-          const hideShowBtn = this.showArchivedTopics && thread.isHidden ?
+          const hideShowBtn = this.showArchivedTopics && isThreadHidden ?
             html`
                 <ui5-button icon="show" tooltip="Show" design="Transparent"
                             class="showBtn"
@@ -239,7 +240,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
       }
 
-      const topicHideBtn = this.showArchivedTopics && isHidden ? html`
+      const topicHideBtn = this.showArchivedTopics && isSubjectHidden ? html`
           <ui5-button id=${"hide-"+topicHash} icon="show" tooltip="Show" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
@@ -260,7 +261,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       //console.log("<topics-lister>.render() threads", threads);
       if (threads.length == 0) {
         threads = [html`<div class="threadItem">
-                   <span style="margin-left:28px;margin-right:10px;color:gray">${msg('No threads found')}</span>
+                   <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No threads found')}</span>
               </div>`];
       }
 
@@ -315,7 +316,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (treeItems.length == 0) {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-            <div style="color: gray; margin: auto;">${msg('No topics found')}</div>
+            <div style="color: grey; margin: auto;">${msg('No topics found')}</div>
             <ui5-button design="Emphasized"
                         @click=${(e) => this.dispatchEvent(new CustomEvent('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
                 ${msg('Create new topic')}

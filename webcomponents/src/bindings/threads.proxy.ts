@@ -306,6 +306,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_global_log', null);
   }
 
+  async queryGlobalLog(): Promise<[ActionHash, GlobalLastProbeLog]> {
+    return this.call('query_global_log', null);
+  }
+
   async commitGlobalLog(input: CommitGlobalLogInput): Promise<Timestamp> {
     return this.callBlocking('commit_global_log', input);
   }
@@ -402,10 +406,6 @@ export class ThreadsProxy extends ZomeProxy {
 
   async queryEncBeads(): Promise<void> {
     return this.call('query_enc_beads', null);
-  }
-
-  async queryGlobalLogs(): Promise<void> {
-    return this.call('query_global_logs', null);
   }
 
   async createSemanticTopic(semanticTopic: SemanticTopic): Promise<EntryHash> {

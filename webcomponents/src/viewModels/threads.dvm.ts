@@ -137,10 +137,10 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Methods -- */
 
   /** Store probeLog timestamp upon first load of app */
-  async initializePerspectiveOffline(): Promise<void> {
+  async initializePerspectiveOnline(): Promise<void> {
     console.log("ThreadsDvm.initializePerspectiveOffline() override")
-    await super.initializePerspectiveOffline();
-    this._initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLog.ts;
+    await super.initializePerspectiveOnline();
+    this._initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
         this._initialThreadProbeLogTss[ppAh] = thread.latestProbeLogTime;
     }
@@ -271,16 +271,8 @@ export class ThreadsDvm extends DnaViewModel {
       case ThreadsLinkType.Inbox:
         this.handleInboxSignal(encodeHashToBase64(link_ah), linkInfo, from);
       break;
-      case ThreadsLinkType.Hide: {
-        if (StateChangeType.Create in linkInfo.state) {
-          //const isNew = linkInfo.state.Create;
-          this.threadsZvm.storeHidden(target, true, false);
-        }
-        if (StateChangeType.Delete in linkInfo.state) {
-          //const isNew = linkInfo.state.Delete;
-          this.threadsZvm.storeHidden(target, false, false);
-        }
-      }
+      case ThreadsLinkType.Hide:
+        this.threadsZvm.storeHidden(target, StateChangeType.Create in linkInfo.state, false);
       break;
       case ThreadsLinkType.EmojiReaction: {
         if (StateChangeType.Create in linkInfo.state) {
@@ -382,20 +374,30 @@ export class ThreadsDvm extends DnaViewModel {
           }
         }
       break;
-      case "GlobalLastProbeLog":
+      case "GlobalLastProbeLog": {
         const globalLog = (kind as ThreadsEntryVariantGlobalLastProbeLog).GlobalLastProbeLog;
+        let isNew = false;
         if (StateChangeType.Create in entryInfo.state) {
-          const isNew = entryInfo.state.Create;
-          //this.threadsZvm.storeSemanticTopic(hash, semTopic.title, isNew);
+          isNew = entryInfo.state.Create;
         }
-        break;
-      case "ThreadLastProbeLog":
+        if (StateChangeType.Update in entryInfo.state) {
+          isNew = entryInfo.state.Update;
+        }
+        this.threadsZvm.storeGlobalLog(globalLog.ts);
+      }
+      break;
+      case "ThreadLastProbeLog": {
         const threadLog = (kind as ThreadsEntryVariantThreadLastProbeLog).ThreadLastProbeLog;
+        let isNew = false;
         if (StateChangeType.Create in entryInfo.state) {
-          const isNew = entryInfo.state.Create;
-          //this.threadsZvm.storeSemanticTopic(hash, semTopic.title, isNew);
+          isNew = entryInfo.state.Create;
         }
-        break;
+        if (StateChangeType.Update in entryInfo.state) {
+          isNew = entryInfo.state.Update;
+        }
+        this.threadsZvm.storeThreadLog(threadLog);
+      }
+      break;
     }
     /** */
     if (tip) {
@@ -585,13 +587,13 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishDm(otherAgent: AgentPubKeyB64, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionHashB64): Promise<ActionHashB64> {
-    const dmPair = this.threadsZvm.perspective.dmAgents[otherAgent];
+    const dmAh = this.threadsZvm.perspective.dmAgents[otherAgent];
     /** Create or grab DmThread */
     let ppAh: ActionHashB64;
-    if (!dmPair) {
+    if (!dmAh) {
       ppAh = await this.threadsZvm.createDmThread(otherAgent);
     } else {
-      ppAh = dmPair[0];
+      ppAh = dmAh;
     }
     /** Create Bead */
     const bead = await this.threadsZvm.createNextBead(ppAh, prevBead);
@@ -606,7 +608,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
     /** */
-    let [ah, _time_anchor, creation_ts, typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
+    let [ah, _time_anchor, _creation_ts, _typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
     /** Erase saved input */
     delete this._threadInputs[ppAh];
     /** */

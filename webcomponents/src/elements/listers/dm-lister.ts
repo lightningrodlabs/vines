@@ -51,9 +51,10 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   render() {
     console.log("<dm-lister>.render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
 
-    let treeItems = Object.entries(this.threadsPerspective.dmAgents).map(([otherAgent, [ppAh, isHidden]]) => {
+    let treeItems = Object.entries(this.threadsPerspective.dmAgents).map(([otherAgent, ppAh]) => {
       /** Skip if hidden */
-      if (isHidden && !this.showArchived) {
+      const isThreadHidden = this.threadsPerspective.hiddens[ppAh]? this.threadsPerspective.hiddens[ppAh] : false;
+      if (isThreadHidden && !this.showArchived) {
         return;
       }
       /** Render DM thread */
@@ -98,7 +99,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
       }
 
-      const hideShowBtn = this.showArchived && isHidden
+      const hideShowBtn = this.showArchived && isThreadHidden
         ? html`
             <ui5-button icon="show" tooltip="Show" design="Transparent"
                         class="showBtn"
