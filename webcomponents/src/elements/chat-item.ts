@@ -59,8 +59,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-  @state() private _loading = true;
-
 
   /**
    * In dvmUpdated() this._dvm is not already set!
@@ -121,10 +119,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   private async loadBead() {
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     if (!beadInfo) {
-      await this._dvm.threadsZvm.fetchUnknownBead(this.hash, false);
+      await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
     await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
-    this._loading = false;
   }
 
 
@@ -133,7 +130,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
-      this._loading = true;
       this.loadBead();
     }
   }
@@ -270,10 +266,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (this.hash == "") {
       return html`<div>No bead selected</div>`;
     }
-    // if (this._loading) {
-    //   return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
-    // }
-
     const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
     if (!beadInfo) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;

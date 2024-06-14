@@ -14,6 +14,8 @@ pub use text_bead::*;
 use hdk::prelude::*;
 use zome_utils::*;
 use authorship_zapi::get_original_author;
+use crate::*;
+//use threads_integrity::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,13 +38,17 @@ pub fn get_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(T
   let Ok(typed) = get_typed_from_record::<T>(record.clone()) else {
     return error("get_typed_bead(): Entry not of requested type");
   };
+  let mut res = (record.action().timestamp(), record.action().author().to_owned(), typed);
   /// Get Original author
   let maybe = get_original_author(bead_ah)?;
   if let Some(pair) = maybe {
     debug!("get_typed_bead() original author found: {}", pair.1);
-    return Ok((pair.0, pair.1, typed))
+    res.0 = pair.0;
+    res.1 = pair.1;
   }
-  debug!("get_typed_bead() original author not found");
+  //debug!("get_typed_bead() original author not found");
+  /// Emit signal
+  emit_entry_signal_record(record, false)?;
   ///
-  Ok((record.action().timestamp(), record.action().author().to_owned(), typed))
+  Ok(res)
 }

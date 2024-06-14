@@ -788,9 +788,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
       }
       /** Clear notifications on prevThread */
-      const prevThreadNotifs = this._dvm.threadsZvm.getNotificationsForPp(prevThreadHash);
+      const prevThreadNotifs = this._dvm.threadsZvm.getAllNotificationsForPp(prevThreadHash);
       for (const [linkAh, _notif] of prevThreadNotifs) {
-        await this._dvm.threadsZvm.deleteInboxItem(linkAh);
+        await this._dvm.threadsZvm.deleteNotification(linkAh);
       }
       /** Cache and reset input-bar */
       const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;

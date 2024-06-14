@@ -40,7 +40,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
   /// If no updated found return the create
   if records.is_empty() {
     let (ah, create, typed) = tuples[0].clone();
-    emit_entry_signal(&Action::Create(create), false, ThreadsEntry::GlobalLastProbeLog(typed.clone()))?;
+    emit_entry_signal(ah.clone(), &Action::Create(create), false, ThreadsEntry::GlobalLastProbeLog(typed.clone()))?;
     return Ok((ah, typed));
   }
 

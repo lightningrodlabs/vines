@@ -50,13 +50,14 @@ import {
   AnyBeadMat,
   AnyLinkableHashB64, BaseBeadType, bead2base,
   BeadType, dematerializeParticipationProtocol, dematerializeTypedBead, EncryptedBeadContent, EntryBeadMat,
-  materializeTypedBead, TextBeadMat, TypedBaseBead,
+  materializeTypedBead, TextBeadMat, TypedBaseBead, TypedBaseBeadMat,
   TypedBead, TypedContent,
 } from "./threads.perspective";
 import {AppletId} from "@lightningrodlabs/we-applet";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode, encode} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
+import {isHashType} from "../utils";
 
 
 /** */
@@ -208,7 +209,7 @@ export class ThreadsDvm extends DnaViewModel {
     if (StateChangeType.Delete in linkInfo.state) {
       //const isNew = linkInfo.state.Delete;
       if (target == this.cell.agentPubKey) {
-        await this.threadsZvm.unstoreInboxItem(linkAh);
+        await this.threadsZvm.unstoreNotification(linkAh);
       }
       return;
     }
@@ -227,7 +228,7 @@ export class ThreadsDvm extends DnaViewModel {
     /** I got notified */
     if (base == this.cell.agentPubKey) {
       /** Store Notification */
-      await this.threadsZvm.storeInboxItem(notif, false);
+      await this.threadsZvm.storeNotification(notif, false);
       /** Publish a NotifySetting.AllMessages for this thread if non exists */
       if (NotifiableEvent.NewDmThread === event && isNew) {
         const ppAh = encodeHashToBase64(notif.content);
@@ -408,6 +409,11 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   private async handleBeadEntry(entryInfo: EntryInfo, bead: TypedBead, beadType: BeadType, isNew: boolean): Promise<TipProtocol> {
+    console.log("handleBeadEntry()", beadType, encodeHashToBase64(entryInfo.hash));
+    if (!isHashType(entryInfo.author, 'Agent') || !isHashType(entryInfo.hash, 'Action')) {
+      console.error("Bad hash typed in EntryInfo", entryInfo);
+      return;
+    }
     const author = encodeHashToBase64(entryInfo.author);
     const beadAh = encodeHashToBase64(entryInfo.hash);
     const typed = materializeTypedBead(bead, beadType);
@@ -416,7 +422,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     const ppAh = beadType == ThreadsEntryType.EncryptedBead
       ? this.threadsZvm.perspective.decBeads[beadAh][0].bead.ppAh
-      : encodeHashToBase64((typed as unknown as TypedBaseBead).bead.ppAh);
+      : (typed as unknown as TypedBaseBeadMat).bead.ppAh;
     const data = encode({typed, beadType});
     if (isNew) {
       //await delay(100); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
@@ -524,7 +530,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     /** Store Notification */
     this._signaledNotifications.push(notif);
-    await this.threadsZvm.storeInboxItem(notif, true, ppAh);
+    await this.threadsZvm.storeNotification(notif, true, ppAh);
   }
 
 
@@ -640,8 +646,8 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishEmoji(beadAh: ActionHashB64, emoji: string) {
-    const succeeded = await this.threadsZvm.storeEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
-    if (!succeeded) {
+    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+    if (has) {
       return;
     }
     await this.threadsZvm.zomeProxy.addReaction({bead_ah: decodeHashFromBase64(beadAh), emoji});
@@ -650,6 +656,10 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async unpublishEmoji(beadAh: ActionHashB64, emoji: string) {
+    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+    if (!has) {
+      return;
+    }
     await this.threadsZvm.zomeProxy.removeReaction(decodeHashFromBase64(beadAh));
   }
 

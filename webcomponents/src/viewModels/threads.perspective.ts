@@ -17,6 +17,7 @@ import {
   Subject, TextBead, ThreadsEntryType, WeaveNotification,
 } from "../bindings/threads.types";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {AuthorshipZvm} from "./authorship.zvm";
 
 
 /** -- Should be defined in @holochain/client */
@@ -371,3 +372,46 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
 //   if (NotifiableEventType.NewDmThread in event) { return NotifiableEventType.NewDmThread }
 //   return "";
 // }
+
+
+
+/** Compact Perspective */
+export function intoExportable(persp: ThreadsPerspectiveCore, originalsZvm: AuthorshipZvm): ThreadsExportablePerspective {
+  /** allSubjects */
+  const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
+  Array.from(persp.allSubjects.entries()).map(([subjectAh, subject]) => {
+    originalsZvm.ascribeTarget("Subject", subjectAh, 0/*FIXME*/, null, true);
+    allSubjects.set(subjectAh, subject);
+  });
+
+  /** pps */
+  const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]> = new Array();
+  Array.from(persp.threads.entries()).map(([ppAh, thread]) => {
+    originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
+    pps.push([ppAh, thread.pp, thread.creationTime, ""]);
+  });
+
+  /** beads */
+  //console.log("exportPerspective() beads", this._beads);
+  //const beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
+  Object.entries(persp.beads).map(([beadAh, [beadInfo, typed]]) => {
+    //beads[beadAh] = (typed, beadInfo.beadType); // TODO: Optimize to not store twice core bead info.
+    originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
+  });
+
+
+  /** -- Package -- */
+  let exPersp: ThreadsExportablePerspective = {
+    emojiReactions: persp.emojiReactions,
+    allAppletIds: persp.allAppletIds,
+    allSubjects: Array.from(allSubjects.entries()),
+    allSemanticTopics: persp.allSemanticTopics,
+    hiddens: persp.hiddens,
+    appletSubjectTypes: persp.appletSubjectTypes,
+    pps,
+    beads: persp.beads,
+    favorites: persp.favorites,
+  };
+
+  return exPersp;
+}

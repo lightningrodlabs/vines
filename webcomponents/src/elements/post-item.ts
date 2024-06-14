@@ -99,7 +99,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     // }
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     if (!beadInfo) {
-      await this._dvm.threadsZvm.fetchUnknownBead(this.hash, false);
+      await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
     await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
     const commentThreadAh = await this.getCommentThread();

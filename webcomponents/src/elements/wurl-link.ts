@@ -118,11 +118,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         } catch(e) {}
         /** Try Bead */
         try {
-          /*const pair =*/ await threadsZvm.fetchUnknownBead(encodeHashToBase64(wal.hrl[1]), false);
-          const succeeded = await this.loadBeadInfo(hash, threadsZvm);
-          if (succeeded) {
-            return;
-          }
+          await threadsZvm.fetchUnknownBead(encodeHashToBase64(wal.hrl[1]));
         } catch(e) {
           //console.warn(`No bead found for wurl-link: ${e}`);
         }

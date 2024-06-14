@@ -90,7 +90,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
           <ui5-li-notification 
               show-close
               title-text=${title} 
-              @close=${async (_e) => {await this._dvm.threadsZvm.deleteInboxItem(linkAh);}}>
+              @close=${async (_e) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
               ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>

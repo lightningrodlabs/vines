@@ -11,6 +11,7 @@ use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_en
 use zome_utils::*;
 use threads_integrity::*;
 use authorship_zapi::*;
+use crate::*;
 
 
 // ///
@@ -25,12 +26,17 @@ use authorship_zapi::*;
 #[hdk_extern]
 pub fn fetch_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let typed_pair = get_typed_and_record(&ah.clone().into())?;
+  let (record, typed) = get_typed_and_record(&ah.clone().into())?;
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {
-    return Ok((typed_pair.1, opPair.0, opPair.1));
+    return Ok((typed, opPair.0, opPair.1));
   };
-  Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
+  let action = record.action().clone();
+  /// Emit Signal
+  emit_entry_signal_record(record, false)?;
+  //emit_entry_signal(record.action_address().to_owned(), action, false, ThreadsEntry::ParticipationProtocol(typed.clone()))?;
+  ///
+  Ok((typed, action.timestamp(), action.author().to_owned()))
 }
 
 

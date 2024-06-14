@@ -6,18 +6,18 @@ mod update_semantic_topic;
 
 use hdi::hash_path::path::DELIMITER;
 use hdk::prelude::*;
-use zome_utils::*;
+//use zome_utils::*;
 use threads_integrity::*;
 
 
-/// Get a SemanticTopic
-#[hdk_extern]
-pub fn fetch_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  debug!("fetch_topic() {:?}", eh);
-  let typed = get_typed_from_eh(eh)?;
-  Ok(typed)
-}
+// /// Get a SemanticTopic
+// #[hdk_extern]
+// pub fn fetch_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
+//   std::panic::set_hook(Box::new(zome_panic_hook));
+//   debug!("fetch_topic() {:?}", eh);
+//   let typed = get_typed_from_eh(eh)?;
+//   Ok(typed)
+// }
 
 
 

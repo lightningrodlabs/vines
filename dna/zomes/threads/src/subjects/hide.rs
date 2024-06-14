@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::ThreadsLinkType;
+use crate::*;
 
 
 ///
@@ -10,7 +11,9 @@ fn find_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHas
   let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   for link in links.iter() {
     if link.target.clone() == subjectHash {
-      return Ok(Some(link.create_link_hash.to_owned()));
+      let link_ah = link.create_link_hash.to_owned();
+      emit_link_signal(link_ah.clone(), ThreadsLinkType::Hide, link, StateChange::Create(false))?;
+      return Ok(Some(link_ah));
     }
   }
   Ok(None)

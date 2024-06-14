@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
+use crate::*;
 
 
 ///
@@ -39,14 +40,20 @@ pub fn remove_reaction(bead_ah: ActionHash) -> ExternResult<()> {
 }
 
 
-/// Return pairs of (agent, emoji)
+///
 #[hdk_extern]
-pub fn get_reactions(bead_ah: ActionHash) -> ExternResult<Vec<(AgentPubKey, String)>> {
+pub fn pull_reactions(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let links= get_links(link_input(bead_ah.clone(), ThreadsLinkType::EmojiReaction, None))?;
-    //debug!("get_reactions() found {} for {}", links.len(), bead_ah.clone());
-    let pairs: Vec<(AgentPubKey, String)> = links.into_iter()
-        .map(|link| (link.target.into_agent_pub_key().unwrap(), tag2str(&link.tag).unwrap()))
+    let links = get_links(link_input(bead_ah.clone(), ThreadsLinkType::EmojiReaction, None))?;
+    debug!("pull_reactions() found {} for {}", links.len(), bead_ah.clone());
+    /// Emit Signal
+    let pulses: Vec<ThreadsSignalProtocol> = links.into_iter()
+        .map(|link| {
+            let info = link_info(&link, StateChange::Create(false));
+            ThreadsSignalProtocol::Link((link.create_link_hash, info, ThreadsLinkType::EmojiReaction))
+        })
         .collect();
-    Ok(pairs)
+    emit_self_signal(pulses)?;
+    ///
+    Ok(())
 }

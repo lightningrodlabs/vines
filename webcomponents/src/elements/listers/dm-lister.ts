@@ -83,7 +83,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
       /** 'new', 'notif' or 'unread' badge to display */
       let badge = html`<ui5-badge>0</ui5-badge>`;
-      let notifCount = this._dvm.threadsZvm.getNotificationsForPp(ppAh).length;
+      let notifCount = this._dvm.threadsZvm.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
             <ui5-badge class="notifBadge">New</ui5-badge>`;

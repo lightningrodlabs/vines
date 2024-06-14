@@ -183,8 +183,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('remove_reaction', beadAh);
   }
 
-  async getReactions(beadAh: ActionHash): Promise<[AgentPubKey, string][]> {
-    return this.call('get_reactions', beadAh);
+  async pullReactions(beadAh: ActionHash): Promise<void> {
+    return this.call('pull_reactions', beadAh);
   }
 
   async addEntryBead(input: AddEntryBeadInput): Promise<[ActionHash, EntryBead, string, Timestamp]> {
@@ -418,10 +418,6 @@ export class ThreadsProxy extends ZomeProxy {
 
   async searchSemanticTopics(titleFilter: string): Promise<[EntryHash, string][]> {
     return this.call('search_semantic_topics', titleFilter);
-  }
-
-  async fetchTopic(eh: EntryHash): Promise<SemanticTopic> {
-    return this.call('fetch_topic', eh);
   }
 
   async updateSemanticTopic(input: UpdateTopicInput): Promise<EntryHash> {

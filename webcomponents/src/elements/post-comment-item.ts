@@ -12,7 +12,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {
   AnyBeadMat,
   dematerializeAnyBead,
-  EntryBeadMat, materializeBead,
+  EntryBeadMat, materializeAnyBead, materializeBead, materializeTypedBead,
   TextBeadMat,
   ThreadsPerspective,
 } from "../viewModels/threads.perspective";
@@ -72,16 +72,16 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     let beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
     let typedBead = newDvm.threadsZvm.getBead(this.hash);
+    let beadType;
     /* Try loading AnyBead Asset */
     if (!beadInfo) {
-      const pair = await newDvm.threadsZvm.fetchUnknownBead(this.hash, false);
-      if (!pair) {
-        return;
-      }
-      beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
-      typedBead = newDvm.threadsZvm.getBead(this.hash);
+      const tuple = await newDvm.threadsZvm.fetchUnknownBead(this.hash);
+      beadType = tuple[1];
+      typedBead = materializeTypedBead(tuple[0], beadType);
+    } else {
+      beadType = beadInfo.beadType
     }
-    if (beadInfo.beadType == ThreadsEntryType.AnyBead && this.weServices) {
+    if (beadType == ThreadsEntryType.AnyBead && this.weServices) {
       const anyBead = typedBead as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
       await this.weServices.assetInfo(wal);

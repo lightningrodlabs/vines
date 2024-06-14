@@ -474,7 +474,7 @@ export class CommunityFeedApp extends HappElement {
                             dnaHash: hrlc.hrl[0],
                             appletId: encodeHashToBase64(attLocInfo.appletHash),
                         }
-                        const subject_name = await determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
+                        const subject_name = determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
                         //console.log("@create event subject_name", subject_name);                        
                         const pp: ParticipationProtocol = {
                             purpose: e.detail.purpose,

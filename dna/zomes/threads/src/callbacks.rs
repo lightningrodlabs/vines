@@ -84,7 +84,7 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
             let variant_name = format!("{:?}", entry_index_to_variant(app_entry_def.entry_index).unwrap());
             let _ = emit_system_signal(SystemSignalProtocol::PostCommitStart { entry_type: variant_name.clone() });
             /// handle post_commit
-            let result = post_commit_app_entry(&sah.action(), &app_entry_def);
+            let result = post_commit_app_entry(ah, &sah.action(), &app_entry_def);
             /// Emit System Signal
             let _ = emit_system_signal(SystemSignalProtocol::PostCommitEnd { entry_type: variant_name, succeeded: result.is_ok() });
             ///
@@ -149,12 +149,12 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
 
 
 ///
-fn post_commit_app_entry(action: &Action, app_entry_def: &AppEntryDef) -> ExternResult<()> {
+fn post_commit_app_entry(ah: ActionHash, action: &Action, app_entry_def: &AppEntryDef) -> ExternResult<()> {
    debug!(">> post_commit_app_entry() called for a {:?}", app_entry_def);
    let entry = must_get_entry(action.entry_hash().unwrap().clone())?.content;
    let typed: ThreadsEntry = into_typed(entry, app_entry_def)?;
    /// Emit Signal
-   emit_entry_signal(action, true, typed)?;
+   emit_entry_signal(ah, action, true, typed)?;
    Ok(())
 }
 

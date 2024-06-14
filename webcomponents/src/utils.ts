@@ -4,7 +4,7 @@ import {
   decodeHashFromBase64,
   dhtLocationFrom32,
   encodeHashToBase64, EntryHash,
-  EntryHashB64, HASH_TYPE_PREFIX, sliceCore32, sliceDhtLocation
+  EntryHashB64, HASH_TYPE_PREFIX, sliceCore32, sliceDhtLocation, sliceHashType
 } from "@holochain/client";
 import {
   AnyBeadMat,
@@ -20,12 +20,39 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
   DM_SUBJECT_TYPE_NAME,
-  SEMANTIC_TOPIC_TYPE_NAME,
+  SEMANTIC_TOPIC_TYPE_NAME, StateChange, StateChangeType,
   ThreadsEntryType
 } from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
+import {HoloHash} from "@holochain/client/lib/types";
 
+
+/** */
+export function isHashType(hash: HoloHash, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
+  const slice = sliceHashType(hash);
+  const prefix = HASH_TYPE_PREFIX[hashType];
+  for (let i = 0; i < prefix.length; i++) {
+    if (slice[i] !== prefix[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/** */
+export function prettyState(state: StateChange): string {
+  if (StateChangeType.Create in state) {
+    return state.Create? "Create NEW" : "Create";
+  }
+  if (StateChangeType.Update in state) {
+    return state.Update? "Update NEW" : "Update";
+  }
+  if (StateChangeType.Delete in state) {
+    return state.Delete? "Delete NEW" : "Delete";
+  }
+}
 
 /** */
 export function type2ui5Icon(type: FileType): string {
@@ -201,7 +228,7 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 
 
 /** We are determining the subject name and formatting it into a thread name */
-export async function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): Promise<string> {
+export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
   if (subject.appletId == THIS_APPLET_ID || subject.appletId == "" || (weServices && subject.appletId == weServices.appletId)) {
@@ -210,20 +237,27 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
       case SEMANTIC_TOPIC_TYPE_NAME:
         let semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
         if (!semTopic) {
-          semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
+          //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
+          return "{Unknown Topic}";
         }
-        return semTopic[0];
+        return semTopic;
       break;
       case PP_TYPE_NAME:
         let thread = threadsZvm.perspective.threads[subject.hash];
         if (!thread) {
-          thread = await threadsZvm.fetchPp(subject.hash);
+          //thread = await threadsZvm.fetchPp(subject.hash);
+          return "{Unknown Thread}";
         }
         return thread.name;
       break;
       case SUBJECT_TYPE_TYPE_NAME:
         if (weServices) {
-          let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
+          //let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
+          let appletInfo = weServices.cache.appletInfos[weServices.appletId];
+          if (!appletInfo) {
+            //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
+            return "{Unknown Applet}";
+          }
           return `/${appletInfo.appletName}/{${subject.typeName}}`;
         } else {
           return `{${subject.typeName}}`;
@@ -234,7 +268,7 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
         if (beadTuple) {
           return determineBeadName(beadTuple[0].beadType, beadTuple[1], filesDvm, weServices);
         } else {
-          return `unknown`;
+          return `{Unknown Post}`;
         }
       break;
       /** -- bead types -- */
@@ -245,9 +279,10 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
         let typedMat = threadsZvm.getBaseBead(subject.hash);
         if (!typedMat) {
           //console.log("determineSubjectName() bead not found. Fetching.", subject.hash);
-          /*const typed =*/ await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName, false);
+          ///*const typed =*/ await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName/*, false*/);
           //typedMat = materializeTypedBead(typed, subject.typeName);
-          typedMat = threadsZvm.getBaseBead(subject.hash);
+          //typedMat = threadsZvm.getBaseBead(subject.hash);
+          return "{Unknown Message}";
         }
         const beadName = determineBeadName(subject.typeName, typedMat, filesDvm, weServices);
         //console.log("determineSubjectName() beadName", beadName);
@@ -255,22 +290,25 @@ export async function determineSubjectName(subject: SubjectMat, threadsZvm: Thre
       break;
       /** unknown */
       default:
-        return `{unknown '${subject.typeName}'}`;
+        return `{Unknown '${subject.typeName}'}`;
       break;
     }
   } else {
-    /** Unknown Applet */
+    /** Unknown Asset */
     if (weServices) {
-      const appletInfo = await weServices.appletInfo(decodeHashFromBase64(subject.appletId));
-      const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
-      const maybeInfo = await weServices.assetInfo({hrl});
+      let appletInfo = weServices.cache.appletInfos[weServices.appletId];
+      if (!appletInfo) {
+        return "{Unknown Applet Asset}";
+      }
+      //const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
+      const maybeInfo = weServices.cache.assetInfos[subject.hash];
       if (maybeInfo) {
         return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
       } else {
         return `/${appletInfo.appletName}/{${subject.typeName}}`;
       }
     } else {
-      return `{UnknownApplet}`;
+      return `{Unknown Applet Asset}`;
     }
   }
 }

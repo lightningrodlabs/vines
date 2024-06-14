@@ -147,7 +147,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
       dnaHash: decodeHashFromBase64(this.cell.dnaHash),
     };
-    const subjectName = await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices)
+    const subjectName = determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices);
     return this._dvm.publishCommentThread( subject, subjectName);
   }
 
