@@ -42,7 +42,7 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     };
     all.push(subject);
   }
-  ///
+  /// Done
   debug!("all {:?}", all);
   Ok(all)
 }

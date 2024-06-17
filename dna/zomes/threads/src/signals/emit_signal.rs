@@ -57,56 +57,63 @@ pub fn entry_info(ah: ActionHash, action: &Action, is_new: bool, typed: &Threads
 
 
 ///
-pub fn emit_link_delete_signal(link_ah: ActionHash, link_type: ThreadsLinkType, delete: &DeleteLink, create: &CreateLink, is_new: bool) -> ExternResult<()> {
-  let dsp = link_delete_info(delete, create, is_new);
-  return emit_threads_signal(vec![ThreadsSignalProtocol::Link((link_ah, dsp, link_type))]);
+pub fn emit_link_delete_signal(delete: &DeleteLink, create: &CreateLink, is_new: bool) -> ExternResult<()> {
+  let link = link_from_delete(delete, create);
+  return emit_threads_signal( vec![ThreadsSignalProtocol::Link((link, StateChange::Delete(is_new)))]);
 }
 
 ///
-pub fn emit_link_create_signal(link_ah: ActionHash, link_type: ThreadsLinkType, create: &CreateLink, is_new: bool) -> ExternResult<()> {
-  let dsp = link_create_info(create, is_new);
-  return emit_threads_signal( vec![ThreadsSignalProtocol::Link((link_ah, dsp, link_type))]);
+pub fn emit_link_create_signal(link_ah: ActionHash, create: &CreateLink, is_new: bool) -> ExternResult<()> {
+  let link = link_from_create(link_ah, create);
+  return emit_threads_signal( vec![ThreadsSignalProtocol::Link((link, StateChange::Create(is_new)))]);
 }
 
 
 ///
-pub fn emit_link_signal(link_ah: ActionHash, link_type: ThreadsLinkType, link: &Link, state: StateChange) -> ExternResult<()> {
-  let dsp = link_info(link, state);
-  return emit_threads_signal(vec![ThreadsSignalProtocol::Link((link_ah, dsp, link_type))]);
+pub fn emit_link_signal(link: Link, state: StateChange) -> ExternResult<()> {
+  return emit_threads_signal(vec![ThreadsSignalProtocol::Link((link, state))]);
 }
 
-///
-pub fn link_info(link: &Link, state: StateChange) -> LinkInfo {
-  LinkInfo {
-    base: link.base.clone(),
-    target: link.target.clone(),
-    tag: Some(link.tag.clone().into_inner()),
-    ts: link.timestamp,
-    author: link.author.clone(),
-    state,
-  }
-}
 
 ///
-pub fn link_create_info(create: &CreateLink, is_new: bool) -> LinkInfo {
-  LinkInfo {
+pub fn emit_links_signal(links: Vec<Link>) -> ExternResult<()> {
+  let pulses = links
+    .into_iter()
+    .map(|link| {
+      ThreadsSignalProtocol::Link((link, StateChange::Create(false)))
+    })
+    .collect();
+  emit_threads_signal(pulses)?;
+  Ok(())
+}
+
+
+
+///
+pub fn link_from_create(create_ah: ActionHash, create: &CreateLink) -> Link {
+  Link {
+    author: create.author.clone(),
     base: create.base_address.clone(),
     target: create.target_address.clone(),
-    tag: Some(create.tag.clone().into_inner()),
-    ts: create.timestamp,
-    author: create.author.clone(),
-    state: StateChange::Create(is_new),
+    timestamp: create.timestamp,
+    zome_index: create.zome_index,
+    link_type: create.link_type,
+    tag: LinkTag::from(create.tag.clone().into_inner()),
+    create_link_hash: create_ah,
   }
 }
 
+
 ///
-pub fn link_delete_info(delete: &DeleteLink, create: &CreateLink, is_new: bool) -> LinkInfo {
-  LinkInfo {
-    base: delete.base_address.clone(),
-    target: create.target_address.clone(),
-    tag: Some(create.tag.clone().into_inner()),
-    ts: delete.timestamp,
+pub fn link_from_delete(delete: &DeleteLink, create: &CreateLink) -> Link {
+  Link {
     author: delete.author.clone(),
-    state: StateChange::Delete(is_new),
+    base: create.base_address.clone(),
+    target: create.target_address.clone(),
+    timestamp: delete.timestamp,
+    zome_index: create.zome_index,
+    link_type: create.link_type,
+    tag: LinkTag::from(create.tag.clone().into_inner()),
+    create_link_hash: delete.link_add_address.clone(),
   }
 }

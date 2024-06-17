@@ -20,7 +20,6 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   subject_tp.ensure()?;
   debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
-
   /// Use given index_time or use the PP's creation time
   let index_time = if let Some(index_time) = maybe_index_time {
     index_time
@@ -28,7 +27,6 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     let action_ts = get(pp_ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
     action_ts
   };
-
   /// Link from Subject Path to Protocol
   create_link(
     subject_tp.path_entry_hash()?,
@@ -45,7 +43,6 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     ts2Tag(index_time), // Store index-time in Tag
     //str2tag(&ta.anchor), // Store Anchor in Tag
   )?;
-
   /// Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
@@ -56,9 +53,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     ThreadsLinkType::TimeItem.try_into().unwrap(),
     index_time,
     pp.subject.hash.get_raw_39())?;
-
   debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.hash);
-
   /// Notify Subject author
   if pp.subject.dna_hash == dna_info()?.hash {
     if let Ok(subject_hash) = AnyDhtHash::try_from(pp.subject.hash) {
@@ -68,7 +63,6 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
       }
     }
   }
-
   /// Done
   Ok((pp_ah, index_time))
 }

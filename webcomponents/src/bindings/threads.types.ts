@@ -180,18 +180,18 @@ export interface AddEntryAsBeadInput {
   canNotifyReply: boolean
 }
 
-export interface BeadLink {
-  creationTime: Timestamp
-  beadAh: ActionHash
-  beadType: string
-  author: AgentPubKey
-}
-
 export interface GetLatestBeadsInput {
   pp_ah: ActionHash
   begin_time?: Timestamp
   end_time?: Timestamp
   target_limit?: number
+}
+
+export interface BeadLink {
+  creationTime: Timestamp
+  beadAh: ActionHash
+  beadType: string
+  author: AgentPubKey
 }
 
 export interface AddTextBeadAtInput {
@@ -323,7 +323,7 @@ export enum ThreadsSignalProtocolType {
 export type ThreadsSignalProtocolVariantSystem = {System: SystemSignalProtocol}
 export type ThreadsSignalProtocolVariantTip = {Tip: TipProtocol}
 export type ThreadsSignalProtocolVariantEntry = {Entry: [EntryInfo, ThreadsEntry]}
-export type ThreadsSignalProtocolVariantLink = {Link: [ActionHash, LinkInfo, ThreadsLinkType]}
+export type ThreadsSignalProtocolVariantLink = {Link: [Link, StateChange]}
 export type ThreadsSignalProtocol = 
  | ThreadsSignalProtocolVariantSystem | ThreadsSignalProtocolVariantTip | ThreadsSignalProtocolVariantEntry | ThreadsSignalProtocolVariantLink;
 
@@ -445,15 +445,6 @@ export type StateChange =
 
 export interface EntryInfo {
   hash: AnyDhtHash
-  ts: Timestamp
-  author: AgentPubKey
-  state: StateChange
-}
-
-export interface LinkInfo {
-  base: AnyLinkableHash
-  target: AnyLinkableHash
-  tag?: number[]
   ts: Timestamp
   author: AgentPubKey
   state: StateChange

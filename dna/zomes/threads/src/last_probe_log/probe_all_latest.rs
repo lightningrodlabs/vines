@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use time_indexing::*;
-use zome_utils::zome_panic_hook;
+use zome_utils::*;
 use crate::beads::{BeadLink};
 
 
@@ -79,4 +79,18 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
     new_threads_by_subject: pps,
     new_beads_by_thread: bls,
   })
+}
+
+
+/// Get the latest 20 items from the global time-index
+#[hdk_extern]
+pub fn probe_latest_items(_ : ()) -> ExternResult<SweepResponse> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
+  let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
+  let search_res = get_latest_time_indexed_links(root_tp, SweepInterval::now(), 20, None, ThreadsLinkType::TimeItem)?;
+  debug!("links.len = {}\n\n", search_res.1.len());
+  let item_links = search_res.1.into_iter()
+    .map(|(ts, link)| (ts, ItemLink::from(link)))
+    .collect();
+  Ok(SweepResponse::new(search_res.0, item_links))
 }

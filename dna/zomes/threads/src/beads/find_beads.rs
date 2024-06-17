@@ -7,7 +7,7 @@ use crate::beads::{BeadLink};
 /// Travers the thread-specific time-index tree and get all BeadLinks
 /// USE WITH CARE as this can easily timeout as it's a loop of get_links()
 #[hdk_extern]
-pub fn probe_all_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
+pub fn find_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let link_tag = None;
   let search_interval = SweepInterval::now();

@@ -21,7 +21,7 @@ pub enum ThreadsSignalProtocol {
     System(SystemSignalProtocol), /// From "System"
     Tip(TipProtocol), /// From Other peer
     Entry((EntryInfo, ThreadsEntry)), // From self
-    Link((ActionHash, LinkInfo, ThreadsLinkType)), // From self
+    Link((Link, StateChange)), // From self
 }
 
 
@@ -119,13 +119,13 @@ impl EntryInfo {
 }
 
 
-#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-pub struct LinkInfo {
-    pub base: AnyLinkableHash,
-    pub target: AnyLinkableHash,
-    pub tag: Option<Vec<u8>>,
-    pub ts: Timestamp,
-    pub author: AgentPubKey,
-    pub state: StateChange,
-}
+// #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
+// pub struct LinkInfo {
+//     pub author: AgentPubKey,
+//     pub base: AnyLinkableHash,
+//     pub target: AnyLinkableHash,
+//     pub ts: Timestamp,
+//     pub link_type: LinkType,
+//     pub tag: Option<Vec<u8>>,
+// }
 

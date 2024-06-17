@@ -3,6 +3,7 @@ use strum_macros::FromRepr;
 use zome_utils::*;
 //use crate::signals::*;
 use threads_integrity::*;
+use crate::*;
 
 /// Notification settings are per ParticipationProtocol.
 /// Default setting is MentionsOnly (for normal threads, AllMessages for DM threads).
@@ -72,13 +73,15 @@ pub fn pull_notify_settings(pair: (ActionHash, AgentPubKey)) -> ExternResult<(No
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(link_input(pair.0, ThreadsLinkType::NotifySetting, None))?;
     let agent_hash = AnyLinkableHash::from(pair.1);
-    for link in links {
+    for link in links.clone() {
         if link.target == agent_hash {
             let repr: u8 = link.tag.clone().into_inner()[0];
             let setting = NotifySetting::from_repr(repr).unwrap();
             return Ok((setting, Some(link.create_link_hash)))
         }
     }
+    /// Emit Signal
+    emit_links_signal(links)?;
     /// Default
     Ok((NotifySetting::MentionsOnly, None))
 }
@@ -90,12 +93,16 @@ pub fn pull_pp_notify_settings(pp_ah: ActionHash) -> ExternResult<Vec<(AgentPubK
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(link_input(pp_ah, ThreadsLinkType::NotifySetting, None))?;
     let mut res = Vec::new();
-    for link in links {
-        let agent: AgentPubKey = link.target.into_agent_pub_key().unwrap();
+    for link in &links {
+        let agent: AgentPubKey = link.target.clone().into_agent_pub_key().unwrap();
         let repr: u8 = link.tag.clone().into_inner()[0];
         let setting = NotifySetting::from_repr(repr).unwrap();
-        res.push((agent, setting, link.create_link_hash))
+        res.push((agent, setting, link.create_link_hash.to_owned()))
     }
+    /// Emit Signal
+    emit_links_signal(links)?;
     /// Default
     Ok(res)
 }
+
+

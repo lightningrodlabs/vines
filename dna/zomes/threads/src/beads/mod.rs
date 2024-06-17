@@ -1,6 +1,6 @@
 mod text_bead;
-mod probe_latest_beads;
-mod probe_all_beads;
+mod find_latest_beads;
+mod find_beads;
 mod index_bead;
 mod entry_bead;
 mod any_bead;

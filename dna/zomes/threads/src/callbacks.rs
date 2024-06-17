@@ -56,9 +56,9 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
               else { error!("Failed to get CreateLink action"); continue };
             let Action::CreateLink(create_link) = record.action()
               else { error!("Record should be a CreateLink"); continue };
-            let Ok(Some(link_type)) = ThreadsLinkType::from_type(create_link.zome_index, create_link.link_type)
-              else { error!("CreateLink should have a LinkType"); continue };
-            let res = emit_link_delete_signal(ah, link_type, delete_link, create_link, true);
+            // let Ok(Some(link_type)) = ThreadsLinkType::from_type(create_link.zome_index, create_link.link_type)
+            //   else { error!("CreateLink should have a LinkType"); continue };
+            let res = emit_link_delete_signal(delete_link, create_link, true);
             if let Err(e) = res {
                error!("Emitting DeleteLink signal failed: {:?}", e);
             }
@@ -69,7 +69,7 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
               else { error!("CreateLink should have a LinkType. Could be a Link from a different zome: {} ({})", create_link.link_type.0, create_link.zome_index); continue };
             //let _ = emit_system_signal(SystemSignalProtocol::PostCommitStart { entry_type: link_type.clone() });
             debug!("CreateLink: {:?} ({}, {:?})", link_type, create_link.zome_index, create_link.link_type);
-            let res = emit_link_create_signal(ah, link_type, create_link, true);
+            let res = emit_link_create_signal(ah, create_link, true);
             if let Err(e) = res {
                error!("Emitting CreateLink signal failed: {:?}", e);
             }

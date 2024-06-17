@@ -11,9 +11,8 @@ fn find_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHas
   let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   for link in links.iter() {
     if link.target.clone() == subjectHash {
-      let link_ah = link.create_link_hash.to_owned();
-      emit_link_signal(link_ah.clone(), ThreadsLinkType::Hide, link, StateChange::Create(false))?;
-      return Ok(Some(link_ah));
+      //emit_link_signal(link, StateChange::Create(false))?;
+      return Ok(Some(link.create_link_hash.clone()));
     }
   }
   Ok(None)
@@ -47,13 +46,7 @@ fn probe_all_hiddens(_: ()) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
   /// Emit Signal
-  let pulses = links.into_iter()
-    .map(|l| {
-      let info = link_info(&l, StateChange::Create(false));
-      ThreadsSignalProtocol::Link((l.create_link_hash.to_owned(), info, ThreadsLinkType::Hide))
-    })
-    .collect();
-  emit_threads_signal(pulses)?;
+  emit_links_signal(links)?;
   ///
   Ok(())
 }

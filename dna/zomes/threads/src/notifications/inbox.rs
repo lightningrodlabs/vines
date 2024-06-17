@@ -48,25 +48,9 @@ pub fn probe_inbox(_ : ()) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_latest_pubkey;
     let links = get_links(link_input(me, ThreadsLinkType::Inbox, None))?;
-    //let notifs: Vec<WeaveNotification> = links.into_iter().map(|link| { WeaveNotification::from_link(&link)}).collect();
-
-    let pulses = links
-      .into_iter()
-      .map(|link| {
-        let info = LinkInfo {
-            base: link.base.clone(),
-            target: link.target.clone(),
-            tag: Some(link.tag.clone().into_inner()),
-            ts: link.timestamp,
-            author: link.author.clone(),
-            state: StateChange::Create(false),
-        };
-        ThreadsSignalProtocol::Link((link.create_link_hash, info, ThreadsLinkType::Inbox))
-      })
-      .collect();
-
-    emit_threads_signal(pulses)?;
-
+    /// Emit Signal
+    emit_links_signal(links)?;
+    /// Done
     Ok(())
 }
 

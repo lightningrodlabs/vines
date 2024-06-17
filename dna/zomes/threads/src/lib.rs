@@ -11,7 +11,6 @@ pub mod beads;
 mod participation_protocols;
 mod subjects;
 mod last_probe_log;
-mod probe_latest_items;
 mod callbacks;
 mod favorite;
 mod dm;

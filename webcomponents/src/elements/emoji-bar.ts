@@ -103,7 +103,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onClickEmoji(emoji: string, iReacted: boolean) {
-    console.log("onClickEmoji()", emoji);
+    console.log("onClickEmoji()", emoji, iReacted);
     if (iReacted) {
       await this._dvm.unpublishEmoji(this.hash, emoji);
     } else {

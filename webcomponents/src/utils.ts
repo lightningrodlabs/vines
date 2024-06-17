@@ -1,6 +1,6 @@
 import {
   ActionHashB64, AgentPubKey,
-  AgentPubKeyB64,
+  AgentPubKeyB64, AnyLinkableHash,
   decodeHashFromBase64,
   dhtLocationFrom32,
   encodeHashToBase64, EntryHash,
@@ -21,11 +21,28 @@ import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
   DM_SUBJECT_TYPE_NAME,
   SEMANTIC_TOPIC_TYPE_NAME, StateChange, StateChangeType,
-  ThreadsEntryType
+  ThreadsEntryType, ThreadsLinkType
 } from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
+
+
+// export interface LinkFixed extends Link {
+//   base: AnyLinkableHash;
+// }
+
+
+/** */
+export function getLinkType(index: number): string {
+  const keys = Object.keys(ThreadsLinkType);
+  if (index >= 0 && index < keys.length) {
+    const key = keys[index];
+    return ThreadsLinkType[key];
+  }
+  /** */
+  throw Error("Out of bounds index for ThreadsLinkType");
+}
 
 
 /** */

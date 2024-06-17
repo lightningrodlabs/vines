@@ -6,7 +6,7 @@ import {
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
-  EntryHashB64,
+  EntryHashB64, Link,
   Timestamp,
 } from "@holochain/client";
 import {
@@ -21,7 +21,6 @@ import {
   EntryBead,
   EntryInfo,
   GlobalLastProbeLog,
-  LinkInfo,
   NotifiableEvent,
   NotifySetting,
   ParticipationProtocol,
@@ -89,7 +88,7 @@ import {TimeInterval} from "./timeInterval";
 import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {decode, encode} from "@msgpack/msgpack";
-import {agent2eh, eh2agent, isHashType, prettyState, weaveUrlToWal} from "../utils";
+import {agent2eh, eh2agent, getLinkType, isHashType, prettyState, weaveUrlToWal} from "../utils";
 import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
@@ -817,7 +816,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return [];
     }
     /** Probe */
-    const [interval, beadLinks] = await this.zomeProxy.probeAllBeads(decodeHashFromBase64(ppAh));
+    const [interval, beadLinks] = await this.zomeProxy.findBeads(decodeHashFromBase64(ppAh));
     console.log("pullAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Fetch */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval));
@@ -842,7 +841,7 @@ export class ThreadsZvm extends ZomeViewModel {
       //thread = this._threads.get(ppAh);
     }
     /** Probe the latest beads */
-    const [searchedInterval, beadLinks] = await this.zomeProxy.probeLatestBeads({
+    const [searchedInterval, beadLinks] = await this.zomeProxy.findLatestBeads({
       pp_ah: decodeHashFromBase64(ppAh), begin_time, end_time, target_limit
     });
     /** Cache them */
@@ -1949,7 +1948,7 @@ export class ThreadsZvm extends ZomeViewModel {
         continue;
       }
       if (ThreadsSignalProtocolType.Link in pulse) {
-        all.push(this.handleLinkSignal(pulse.Link as [ActionHash, LinkInfo, ThreadsLinkType], from));
+        all.push(this.handleLinkSignal(pulse.Link as [Link, StateChange], from));
         continue;
       }
     }
@@ -1960,16 +1959,16 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleInboxSignal(linkAh: ActionHashB64, linkInfo: LinkInfo, from: AgentPubKeyB64) {
-    const author = encodeHashToBase64(linkInfo.author);
-    const base = encodeHashToBase64(linkInfo.base);
-    const target = encodeHashToBase64(linkInfo.target);
+  private async handleInboxSignal(linkAh: ActionHashB64, link: Link, state: StateChange, from: AgentPubKeyB64) {
+    const author = encodeHashToBase64(link.author);
+    const base = encodeHashToBase64((link as any).base);
+    const target = encodeHashToBase64(link.target);
 
-    if (StateChangeType.Update in linkInfo.state) {
+    if (StateChangeType.Update in state) {
       console.error("Not possible to Update a link");
       return;
     }
-    if (StateChangeType.Delete in linkInfo.state) {
+    if (StateChangeType.Delete in state) {
       //const isNew = linkInfo.state.Delete;
       if (target == this.cell.agentPubKey) {
         await this.unstoreNotification(linkAh);
@@ -1977,16 +1976,16 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     /** Create */
-    const isNew = linkInfo.state.Create;
-    const eventIndex = Number(linkInfo.tag)
+    const isNew = state.Create;
+    const eventIndex = Number(link.tag)
     const event = NotifiableEvent[eventIndex];
     console.log("handleInboxSignal() eventIndex", eventIndex, event);
     const notif: WeaveNotification = {
       event,
-      author: linkInfo.author,
-      timestamp: linkInfo.ts,
+      author: link.author,
+      timestamp: link.timestamp,
       link_ah: decodeHashFromBase64(linkAh),
-      content: linkInfo.target,
+      content: link.target,
     };
     /** I got notified */
     if (base == this.cell.agentPubKey) {
@@ -2009,13 +2008,13 @@ export class ThreadsZvm extends ZomeViewModel {
       let extra;
       if (NotifiableEvent.NewDmThread === event || NotifiableEvent.Fork === event) {
         console.log("Signaling new PP notification to peer", base, target);
-        const ppAh = encodeHashToBase64(linkInfo.target);
+        const ppAh = encodeHashToBase64(link.target);
         const ppMat = this.getParticipationProtocol(ppAh);
         extra = encode(dematerializeParticipationProtocol(ppMat));
       } else {
         /** NewBead, Mention, Reply */
         console.log("Signaling new Bead notification to peer", base, target);
-        const beadAh = encodeHashToBase64(linkInfo.target);
+        const beadAh = encodeHashToBase64(link.target);
         const beadPair = this.perspective.beads[beadAh];
         extra = encode(dematerializeTypedBead(beadPair[1], beadPair[0].beadType));
       }
@@ -2026,32 +2025,35 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleLinkSignal([link_ah, linkInfo, linkType]: [ActionHash, LinkInfo, ThreadsLinkType], from: AgentPubKeyB64) {
-    const author = encodeHashToBase64(linkInfo.author);
-    const base = encodeHashToBase64(linkInfo.base);
-    const target = encodeHashToBase64(linkInfo.target);
+  private async handleLinkSignal([link, state]: [Link, StateChange], from: AgentPubKeyB64) {
+    const author = encodeHashToBase64(link.author);
+    const base = encodeHashToBase64((link as any).base);
+    const target = encodeHashToBase64(link.target);
+    const linkAh = encodeHashToBase64(link.create_link_hash);
     let tip: TipProtocol;
-    switch(linkType) {
+    switch(getLinkType(link.link_type)) {
       case ThreadsLinkType.Inbox:
-        this.handleInboxSignal(encodeHashToBase64(link_ah), linkInfo, from);
+        this.handleInboxSignal(linkAh, link, state, from);
         break;
       case ThreadsLinkType.Hide:
-        this.storeHidden(target, StateChangeType.Create in linkInfo.state);
+        this.storeHidden(target, StateChangeType.Create in state);
         break;
       case ThreadsLinkType.EmojiReaction: {
-        if (StateChangeType.Create in linkInfo.state) {
-          const isNew = linkInfo.state.Create;
-          const emoji = String(linkInfo.tag);
-          console.warn("EmojiReaction CreateLink:", linkInfo.tag, emoji);
+        if (StateChangeType.Create in state) {
+          const isNew = state.Create;
+          const decoder = new TextDecoder('utf-8');
+          const emoji = decoder.decode(link.tag);
+          console.warn("EmojiReaction CreateLink:", link.tag, emoji);
           await this.storeEmojiReaction(base, author, emoji);
           if (isNew) {
             tip = {type: "EmojiReactionChange", bead_ah: base, author, emoji, is_added: true};
           }
         }
-        if (StateChangeType.Delete in linkInfo.state) {
-          const isNew = linkInfo.state.Delete;
-          const emoji = String(linkInfo.tag);
-          console.warn("EmojiReaction DeleteLink:", linkInfo.tag, emoji);
+        if (StateChangeType.Delete in state) {
+          const isNew = state.Delete;
+          const decoder = new TextDecoder('utf-8');
+          const emoji = decoder.decode(link.tag);
+          console.warn("EmojiReaction DeleteLink:", link.tag, emoji);
           await this.unstoreEmojiReaction(base, author, emoji);
           if (isNew) {
             tip = {type: "EmojiReactionChange", bead_ah: base, author, emoji, is_added: false};
@@ -2060,21 +2062,22 @@ export class ThreadsZvm extends ZomeViewModel {
       }
         break;
       case ThreadsLinkType.NotifySetting: {
-        if (StateChangeType.Create in linkInfo.state) {
-          const setting = String(linkInfo.tag);
-          console.warn("NotifySetting CreateLink:", linkInfo.tag, setting);
+        if (StateChangeType.Create in state) {
+          const decoder = new TextDecoder('utf-8');
+          const setting = decoder.decode(link.tag);
+          console.warn("NotifySetting CreateLink:", link.tag, setting);
           this.storeNotifSetting(base, target, setting as NotifySetting);
         }
-        // if (StateChangeType.Delete in linkInfo.state) {
+        // if (StateChangeType.Delete in state) {
         //   this.threadsZvm.storeNotifSetting(target);
         // }
       }
         break;
       case ThreadsLinkType.Favorite: {
-        if (StateChangeType.Create in linkInfo.state) {
+        if (StateChangeType.Create in state) {
           this.storeFavorite(target);
         }
-        if (StateChangeType.Delete in linkInfo.state) {
+        if (StateChangeType.Delete in state) {
           this.unstoreFavorite(target);
         }
       }
@@ -2305,9 +2308,9 @@ export class ThreadsZvm extends ZomeViewModel {
             appSignals.push({timestamp, from, type: ThreadsSignalProtocolType.Entry, subType: entryType, state: prettyState(entryInfo.state), payload: threadsEntry, hash: encodeHashToBase64(entryInfo.hash)});
           }
           if (ThreadsSignalProtocolType.Link in pulse) {
-            const [link_ah, linkInfo, linkType] = pulse.Link;
-            const hash = `${encodeHashToBase64(linkInfo.base)} -> ${encodeHashToBase64(linkInfo.target)}`;
-            appSignals.push({timestamp, from, type: ThreadsSignalProtocolType.Link, subType: linkType, state: prettyState(linkInfo.state), payload: linkInfo.tag, hash});
+            const [link, state] = pulse.Link;
+            const hash = `${encodeHashToBase64((link as any).base)} -> ${encodeHashToBase64(link.target)}`;
+            appSignals.push({timestamp, from, type: ThreadsSignalProtocolType.Link, subType: getLinkType(link.link_type), state: prettyState(state), payload: link.tag, hash});
           }
         }
       });

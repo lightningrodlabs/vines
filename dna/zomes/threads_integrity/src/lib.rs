@@ -123,6 +123,7 @@ pub fn record_to_typed(record: Record) -> ExternResult<ThreadsEntry> {
 
 #[hdk_link_types]
 #[derive(Serialize, Deserialize)]
+#[repr(u8)]
 pub enum ThreadsLinkType {
     ReversePath,
     GlobalTimePath,
