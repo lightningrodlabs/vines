@@ -164,9 +164,12 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   private async loadCommentThread() {
     console.log("<comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
-    await this._dvm.threadsZvm.pullAllBeads(this.threadHash);
-    await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
-    this._loading = false;
+    const maybePpMat = this._dvm.threadsZvm.getParticipationProtocol(this.threadHash);
+    if (maybePpMat) {
+      await this._dvm.threadsZvm.pullAllBeads(this.threadHash);
+      await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
+      this._loading = false;
+    }
   }
 
 
@@ -220,6 +223,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     }
 
     if (this._loading) {
+      this.loadCommentThread();
       return html `
         ${doodle_bg}
         <ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>

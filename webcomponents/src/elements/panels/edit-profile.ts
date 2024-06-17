@@ -100,7 +100,7 @@ export class EditProfile extends LitElement {
 
   /** */
   async onKeyUp(e) {
-    console.log("<edit-profile>.onKeyUp()", e.keyCode);
+    //console.log("<edit-profile>.onKeyUp()", e.keyCode);
     if (e.keyCode === 13 && this.shouldSaveButtonBeEnabled()) {
       e.stopPropagation();
       this.fireSaveProfile();

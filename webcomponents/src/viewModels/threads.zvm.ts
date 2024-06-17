@@ -1578,6 +1578,7 @@ export class ThreadsZvm extends ZomeViewModel {
       ts: thread.beadLinksTree.end.key,
       ppAh: decodeHashFromBase64(ppAh),
     }
+    console.log(`commitThreadProbeLog() ppAh:`,ppAh);
     const _ah = await this.zomeProxy.commitThreadLog(probeLog);
   }
 

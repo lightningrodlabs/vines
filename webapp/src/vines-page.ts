@@ -376,7 +376,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
     let ppAh = this.selectedThreadHash;
     if (this._currentCommentRequest) {
-      ppAh = await this.createCommentThread(this._currentCommentRequest);
+      ppAh = await this.publishCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
     }
     if (!ppAh) {
@@ -666,25 +666,35 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  async showSideCommentThread(commentThreadAh: ActionHashB64, subjectName: string) {
+    /** Save input field before switching */
+    if (this._selectedCommentThreadHash && this._canShowComments) {
+      const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
+      if (commentView) {
+        this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
+      }
+    }
+    /** */
+    this._canShowComments = true;
+    this._selectedCommentThreadHash = commentThreadAh;
+    this._selectedCommentThreadSubjectName = subjectName;
+  }
+
+
+  /** */
   async onCommentingClicked(e: CustomEvent<CommentRequest>) {
     console.log("onCommentingClicked()", e.detail);
     const request = e.detail;
 
     if (request.viewType == "side") {
-      const threadHash = request.maybeCommentThread? request.maybeCommentThread : await this.createCommentThread(request);
-      this._canShowComments = true;
-      /** Save input field before switching */
-      if (this._selectedCommentThreadHash) {
-        const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
-        if (commentView) {
-          this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
-        }
+      if (!request.maybeCommentThread) {
+        request.maybeCommentThread = await this.publishCommentThread(request);
+        //return;
       }
-      this._selectedCommentThreadHash = threadHash;
-      this._selectedCommentThreadSubjectName = request.subjectName;
+      await this.showSideCommentThread(request.maybeCommentThread, request.subjectName);
       return;
     }
-
+    /** Main */
     if (!request.maybeCommentThread) {
       this._currentCommentRequest = request;
       //this._selectedThreadSubjectName = request.subjectName;
@@ -694,7 +704,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async createCommentThread(request: CommentRequest) {
+  async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
         hash: decodeHashFromBase64(request.subjectHash),
         typeName: request.subjectType,
