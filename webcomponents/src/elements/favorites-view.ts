@@ -71,18 +71,16 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name);
-    this.loadFavorites(newDvm);
+    //this.loadFavorites(newDvm);
   }
 
 
-  /** */
-  loadFavorites(newDvm?: ThreadsDvm) {
-    this._loading = true;
-    const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.probeMyFavorites().then(() =>
-      dvm.threadsZvm.fetchAllFavorites().then(() =>
-        this._loading = false));
-  }
+  // /** */
+  // loadFavorites(newDvm?: ThreadsDvm) {
+  //   this._loading = true;
+  //   const dvm = newDvm? newDvm : this._dvm;
+  //   dvm.threadsZvm.pullFavorites().then(() => this._loading = false);
+  // }
 
 
   /** */

@@ -77,7 +77,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log("<applet-lister>.loadSubjectTypes()");
     this._loading = true;
     const zvm = newZvm? newZvm : this._zvm;
-    const subs = await zvm.probeSubjectTypes(this.appletId);
+    const subs = await zvm.pullAppletSubjectTypes(this.appletId);
     console.log("<applet-lister>.loadSubjectTypes() subs", subs);
     this._loading = false;
   }
@@ -192,7 +192,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** SubjectType has been toggled */
     if (event.detail.item.level == 1) {
       /** Grab children */
-      let subjects = await this._zvm.probeSubjects(this.appletId, toggledTreeItem.id);
+      let subjects = await this._zvm.findSubjects(this.appletId, toggledTreeItem.id);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
         console.warn("weServices not found in <applet-lister>")
@@ -232,11 +232,11 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** SubjectHash has been toggled */
     if (event.detail.item.level == 2) {
       /** Grab children */
-      let pps = await this._zvm.probeSubjectThreads(toggledTreeItem.id);
+      let pps = await this._zvm.pullSubjectThreads(toggledTreeItem.id);
 
       const tmpls = [];
       /** Convert to TreeItem and append to Tree */
-      for (const [ppAh, pp] of Object.entries(pps)) {
+      for (const [ppAh, [pp, _ts, _author]] of Object.entries(pps)) {
         /* Skip if item already exists */
         if (currentChildren.includes(ppAh)) {
           continue;

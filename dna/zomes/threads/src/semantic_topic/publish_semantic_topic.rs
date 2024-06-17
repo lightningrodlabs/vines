@@ -7,7 +7,7 @@ use crate::semantic_topic::determine_topic_anchor;
 /// Creates the SemanticTopic
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn create_semantic_topic(semanticTopic: SemanticTopic) -> ExternResult<EntryHash> {
+pub fn publish_semantic_topic(semanticTopic: SemanticTopic) -> ExternResult<EntryHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Make sur length is OK
   if let Ok(properties) = get_properties() {

@@ -101,10 +101,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     if (!beadInfo) {
       await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
-    await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
+    await this._dvm.threadsZvm.pullEmojiReactions(this.hash);
     const commentThreadAh = await this.getCommentThread();
     await this._dvm.threadsZvm.pullNotifSettings(commentThreadAh);
-    await this._dvm.threadsZvm.probeAllBeads(commentThreadAh); // TODO: Get links count instead as it should be faster
+    await this._dvm.threadsZvm.pullAllBeads(commentThreadAh); // TODO: Get links count instead as it should be faster
     this._loading = false;
   }
 
@@ -186,7 +186,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   async getCommentThread(): Promise<ActionHashB64> {
     let commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     if (!commentThreadAh) {
-      await this._dvm.threadsZvm.probeSubjectThreads(this.hash);
+      await this._dvm.threadsZvm.pullSubjectThreads(this.hash);
       commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
       if (!commentThreadAh) {
         console.error("Missing Comment thread for Post", this.hash);

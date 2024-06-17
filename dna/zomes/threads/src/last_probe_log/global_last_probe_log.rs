@@ -3,17 +3,18 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::*;
 
-///
-#[hdk_extern]
-fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  let (_ah, gql) = query_global_log(())?;
-  Ok(gql)
-}
+// ///
+// #[hdk_extern]
+// fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
+//   std::panic::set_hook(Box::new(zome_panic_hook));
+//   let (_ah, gql) = query_global_log(())?;
+//   Ok(gql)
+// }
 
 
 #[hdk_extern]
 pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("query_global_log()");
   let entry_type = EntryType::App(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap());
   let tuples = get_all_typed_local::<GlobalLastProbeLog>(entry_type.clone())?;
@@ -55,7 +56,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
     state: StateChange::Update(false),
   };
   let dsp = ThreadsSignalProtocol::Entry((entry_info, ThreadsEntry::GlobalLastProbeLog(typed.clone())));
-  emit_self_signal(vec![dsp])?;
+  emit_threads_signal(vec![dsp])?;
   /// Done
   Ok((latest_record.action_address().to_owned(), typed))
 }

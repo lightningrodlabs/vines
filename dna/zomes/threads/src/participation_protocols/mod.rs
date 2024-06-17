@@ -1,6 +1,6 @@
 
-mod get_pps_from_subject;
-mod create_participation_protocol;
+mod probe_pps_from_subject;
+mod publish_participation_protocol;
 
 //pub use create_participation_protocol::*;
 

@@ -86,7 +86,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       const wal = weaveUrlToWal(anyBead.value);
       await this.weServices.assetInfo(wal);
     }
-    await newDvm.threadsZvm.probeEmojiReactions(this.hash);
+    await newDvm.threadsZvm.pullEmojiReactions(this.hash);
   }
 
 

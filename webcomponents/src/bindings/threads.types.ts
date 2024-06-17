@@ -180,13 +180,6 @@ export interface AddEntryAsBeadInput {
   canNotifyReply: boolean
 }
 
-export interface GetLatestBeadsInput {
-  pp_ah: ActionHash
-  begin_time?: Timestamp
-  end_time?: Timestamp
-  target_limit?: number
-}
-
 export interface BeadLink {
   creationTime: Timestamp
   beadAh: ActionHash
@@ -194,7 +187,13 @@ export interface BeadLink {
   author: AgentPubKey
 }
 
-/** DEBUG ONLY */
+export interface GetLatestBeadsInput {
+  pp_ah: ActionHash
+  begin_time?: Timestamp
+  end_time?: Timestamp
+  target_limit?: number
+}
+
 export interface AddTextBeadAtInput {
   textBead: TextBead
   creationTime: Timestamp
@@ -461,7 +460,7 @@ export interface LinkInfo {
 }
 
 /**  */
-export interface GetProtocolsInput {
+export interface FindSubjectsInput {
   appletId: string
   subjectType: string
 }

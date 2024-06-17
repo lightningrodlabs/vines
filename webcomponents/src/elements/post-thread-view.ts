@@ -144,8 +144,8 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Check if threads have comments */
   protected async loadThreadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
     for (const bl of bls) {
-      const pps = await dvm.threadsZvm.probeSubjectThreads(encodeHashToBase64(bl.beadAh));
-      for (const [ppAh, pp] of Object.entries(pps)) {
+      const pps = await dvm.threadsZvm.pullSubjectThreads(encodeHashToBase64(bl.beadAh));
+      for (const [ppAh, [pp, _ts, _author]] of Object.entries(pps)) {
         if (pp.purpose == "comment") {
           await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
           break;
@@ -160,11 +160,11 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("<post-thread-view>.loadlatestThreads()", !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
     this._loading = true;
-    await dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
+    await dvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_HASH);
     this._mainThreadAh = getMainThread(dvm);
     console.log("<post-thread-view>.loadlatestThreads() mainThreadAh", this._mainThreadAh);
     if (this._mainThreadAh) {
-      await dvm.threadsZvm.probeAllBeads(this._mainThreadAh);
+      await dvm.threadsZvm.pullAllBeads(this._mainThreadAh);
       await dvm.threadsZvm.commitGlobalProbeLog();
     }
     this._loading = false;

@@ -50,3 +50,29 @@ fn broadcast_tip(input: BroadcastTipInput) -> ExternResult<()> {
   debug!("Broadcasting tip {:?} to {:?}", input.tip, input.peers);
   return broadcast_tip_inner(input.peers, input.tip);
 }
+
+
+
+/// Input to the notify call
+#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct EmitNotificationTipInput {
+  pub notification: ThreadsNotification,
+  pub peer: AgentPubKey,
+}
+
+///
+#[hdk_extern]
+fn cast_notification_tip(input: EmitNotificationTipInput) -> ExternResult<()> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
+  /// Pre-conditions: Don't call yourself (otherwise we get concurrency issues)
+  let me = agent_info()?.agent_latest_pubkey;
+  if me == input.peer {
+    return error("Can't notify self");
+  }
+  /// emit signal
+  let tip = TipProtocol::Notification { value: input.notification };
+  broadcast_tip_inner(vec![input.peer], tip)?;
+  /// Done
+  Ok(())
+}

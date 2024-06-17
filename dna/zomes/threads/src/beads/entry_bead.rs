@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::*;
-use crate::beads::{get_typed_bead, index_bead};
+use crate::beads::{fetch_typed_bead, index_bead};
 use crate::notifications::*;
 
 ///
@@ -16,7 +16,7 @@ pub struct AddEntryBeadInput {
 
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_entry_bead(input: AddEntryBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
+pub fn publish_entry_bead(input: AddEntryBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let ah = create_entry(ThreadsEntry::EntryBead(input.entry_bead.clone()))?;
     let tp_pair = index_bead(input.entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, input.creation_time)?;
@@ -45,7 +45,7 @@ pub struct AddEntryAsBeadInput {
 /// Return bead type, Global Time Anchor, bucket time
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
+pub fn publish_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_as_bead() {:?}", input);
     let (entry_bead, creation_time) = create_entry_bead(input.clone())?;
@@ -96,25 +96,25 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
 
 ///
 #[hdk_extern]
-pub fn get_entry_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
+pub fn fetch_entry_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return Ok(get_typed_bead::<EntryBead>(bead_ah).ok());
+    return Ok(fetch_typed_bead::<EntryBead>(bead_ah).ok());
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EntryBead)> {
+pub fn fetch_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EntryBead)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return get_typed_bead::<EntryBead>(bead_ah);
+    return fetch_typed_bead::<EntryBead>(bead_ah);
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EntryBead)>> {
+pub fn fetch_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EntryBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return ahs.into_iter().map(|ah| get_typed_bead::<EntryBead>(ah)).collect();
+    return ahs.into_iter().map(|ah| fetch_typed_bead::<EntryBead>(ah)).collect();
 }
 
 

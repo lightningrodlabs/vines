@@ -6,24 +6,25 @@ use threads_integrity::*;
 
 /// Return ppAhs and timestamp of its index-time
 #[hdk_extern]
-pub fn get_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
+pub fn probe_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(lh, ThreadsLinkType::Threads, None))?;
   let ahs = links
     .into_iter()
     .map(|l| {
       let ts = tag2Ts(l.tag);
-      debug!("get_pps_from_subject_hash() thread {}, creationTime: {}", l.target, ts);
+      //debug!("get_pps_from_subject_hash() thread {}, creationTime: {}", l.target, ts);
       (ActionHash::try_from(l.target).unwrap(), ts)
     })
     .collect();
+  /// Done
   Ok(ahs)
 }
 
 
 /// Return ppAhs and timestamp of its index-time
 #[hdk_extern]
-pub fn get_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
+pub fn probe_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   if anchor.is_empty() {
     return error("Empty anchor input");
@@ -34,5 +35,6 @@ pub fn get_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHa
     .into_iter()
     .map(|l| { (ActionHash::try_from(l.target).unwrap(), tag2Ts(l.tag)) })
     .collect();
+  /// Done
   Ok(ahs)
 }

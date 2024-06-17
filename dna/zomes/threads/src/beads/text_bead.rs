@@ -8,7 +8,7 @@ use crate::notifications::*;
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Timestamp)> {
+pub fn publish_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Timestamp)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let ah = create_entry(ThreadsEntry::TextBead(texto.clone()))?;
   //let ah_time = sys_time()?; // FIXME: use Action's timestamp
@@ -21,33 +21,27 @@ pub fn add_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, Times
 
 ///
 #[hdk_extern]
-pub fn get_text_bead_option(ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, TextBead)>> {
+pub fn fetch_text_bead_option(ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, TextBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return Ok(get_typed_bead::<TextBead>(ah).ok());
+  return Ok(fetch_typed_bead::<TextBead>(ah).ok());
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
+pub fn fetch_text_bead(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, TextBead)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return get_typed_bead::<TextBead>(ah);
+  return fetch_typed_bead::<TextBead>(ah);
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
+pub fn fetch_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return ahs.into_iter().map(|ah| get_typed_bead::<TextBead>(ah)).collect();
+  return ahs.into_iter().map(|ah| fetch_typed_bead::<TextBead>(ah)).collect();
 }
 
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/// DEBUG ONLY
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -58,7 +52,7 @@ pub struct AddTextBeadAtInput {
 
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_text_bead_at(input: AddTextBeadAtInput) -> ExternResult<(ActionHash, String)> {
+pub fn publish_text_bead_at(input: AddTextBeadAtInput) -> ExternResult<(ActionHash, String)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.text_bead.clone()))?;
@@ -80,7 +74,7 @@ pub struct AddManyTextBeadAtInput {
 
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
+pub fn publish_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<Vec<(ActionHash, String, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let mut start = sys_time()?.0;
   let mut res = Vec::new();
@@ -114,7 +108,7 @@ pub struct AddTextAtAndNotifyInput {
 /// Notifications must be sent out at the same validation step as a Bead is committed
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_text_bead_at_and_notify(input: AddTextAtAndNotifyInput) -> ExternResult<(ActionHash, String)> {
+pub fn publish_text_bead_at_and_notify(input: AddTextAtAndNotifyInput) -> ExternResult<(ActionHash, String)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   //let fn_start = sys_time()?;
   let ah = create_entry(ThreadsEntry::TextBead(input.text_bead.clone()))?;

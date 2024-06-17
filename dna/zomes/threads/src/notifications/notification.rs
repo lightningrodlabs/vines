@@ -28,15 +28,15 @@ pub struct WeaveNotification {
   pub link_ah: ActionHash,
   pub content: AnyLinkableHash,
 }
-impl WeaveNotification {
-  pub fn from_link(link: &Link) -> Self {
-    let repr: u8 = link.tag.clone().into_inner()[0];
-    WeaveNotification {
-      event: NotifiableEvent::from_repr(repr).unwrap(),
-      author: link.author.clone(),
-      timestamp: link.timestamp,
-      link_ah: link.create_link_hash.clone(),
-      content: link.target.clone(),
-    }
-  }
-}
+// impl WeaveNotification {
+//   pub fn from_link(link: &Link) -> Self {
+//     let repr: u8 = link.tag.clone().into_inner()[0];
+//     WeaveNotification {
+//       event: NotifiableEvent::from_repr(repr).unwrap(),
+//       author: link.author.clone(),
+//       timestamp: link.timestamp,
+//       link_ah: link.create_link_hash.clone(),
+//       content: link.target.clone(),
+//     }
+//   }
+// }

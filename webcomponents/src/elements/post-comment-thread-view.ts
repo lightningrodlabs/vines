@@ -104,7 +104,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    newDvm.threadsZvm.probeAllBeads(this.threadHash);
+    newDvm.threadsZvm.pullAllBeads(this.threadHash);
   }
 
 
@@ -160,7 +160,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   /** */
   private async loadCommentThread() {
     console.log("<post-comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
-    await this._dvm.threadsZvm.probeAllBeads(this.threadHash);
+    await this._dvm.threadsZvm.pullAllBeads(this.threadHash);
     await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
     this._loading = false;
   }

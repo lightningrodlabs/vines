@@ -14,7 +14,7 @@ pub struct AddReactionInput {
 
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_reaction(input: AddReactionInput) -> ExternResult<()> {
+pub fn publish_reaction(input: AddReactionInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     // TODO: Check input string is a proper emoji. (todo also in validation)
     //debug!("add_reaction({:?}) to {}", input.emoji, input.bead_ah);
@@ -28,7 +28,7 @@ pub fn add_reaction(input: AddReactionInput) -> ExternResult<()> {
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn remove_reaction(bead_ah: ActionHash) -> ExternResult<()> {
+pub fn unpublish_reaction(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_latest_pubkey;
     let links = get_links(link_input(bead_ah, ThreadsLinkType::EmojiReaction, None))?;
@@ -53,7 +53,7 @@ pub fn pull_reactions(bead_ah: ActionHash) -> ExternResult<()> {
             ThreadsSignalProtocol::Link((link.create_link_hash, info, ThreadsLinkType::EmojiReaction))
         })
         .collect();
-    emit_self_signal(pulses)?;
+    emit_threads_signal(pulses)?;
     ///
     Ok(())
 }

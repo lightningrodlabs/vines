@@ -9,7 +9,7 @@ import {
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
-  BeadType, EntryBeadMat, materializeTypedBead,
+  BeadType, EntryBeadMat, materializeTypedBead, ParticipationProtocolMat,
   SubjectMat, TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.perspective";
@@ -206,6 +206,11 @@ export function agent2eh(agent: AgentPubKey): EntryHash {
 
 export const MAIN_TOPIC_HASH = encodeHashToBase64(emptyActionHash());
 export const MAIN_SEMANTIC_TOPIC = "__main";
+
+
+export function ppName(ppMat: ParticipationProtocolMat): string {
+  return `${determineSubjectPrefix(ppMat.subject.typeName)} ${ppMat.subject_name}: ${ppMat.purpose}`;
+}
 
 
 /** We  */

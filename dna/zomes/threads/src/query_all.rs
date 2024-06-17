@@ -23,15 +23,7 @@ pub fn query_all(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_pps(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   let tuples = get_all_local(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap())?;
-   /// Emit Self Signal
-   let pulses = tuples.into_iter()
-     .map(|(ah, create, entry)| {
-        let typed = ThreadsEntry::ParticipationProtocol(ParticipationProtocol::try_from(entry).unwrap());
-        return entry_signal_ah(StateChange::Create(false), &create, typed, ah);
-     })
-     .collect();
-   emit_self_signal(pulses)?;
+  query_all_typed::<ParticipationProtocol>(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap())?;
    Ok(())
 }
 
@@ -50,15 +42,7 @@ pub fn query_semantic_topics(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_any_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   let tuples = get_all_local(ThreadsEntryTypes::AnyBead.try_into().unwrap())?;
-   /// Emit Self Signal
-   let pulses = tuples.into_iter()
-     .map(|(ah, create, entry)| {
-        let typed = ThreadsEntry::AnyBead(AnyBead::try_from(entry).unwrap());
-        return entry_signal_ah(StateChange::Create(false), &create, typed, ah);
-     })
-     .collect();
-   emit_self_signal(pulses)?;
+   query_all_typed::<AnyBead>(ThreadsEntryTypes::AnyBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -66,15 +50,7 @@ pub fn query_any_beads(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_entry_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   let tuples = get_all_local(ThreadsEntryTypes::EntryBead.try_into().unwrap())?;
-   /// Emit Self Signal
-   let pulses = tuples.into_iter()
-     .map(|(ah, create, entry)| {
-        let typed = ThreadsEntry::EntryBead(EntryBead::try_from(entry).unwrap());
-        entry_signal_ah(StateChange::Create(false), &create, typed, ah)
-     })
-     .collect();
-   emit_self_signal(pulses)?;
+   query_all_typed::<EntryBead>(ThreadsEntryTypes::EntryBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -82,15 +58,7 @@ pub fn query_entry_beads(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_text_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   let tuples = get_all_local(ThreadsEntryTypes::TextBead.try_into().unwrap())?;
-   /// Emit Self Signal
-   let pulses = tuples.into_iter()
-     .map(|(ah, create, entry)| {
-        let typed = ThreadsEntry::TextBead(TextBead::try_from(entry).unwrap());
-        return entry_signal_ah(StateChange::Create(false), &create, typed, ah);
-     })
-     .collect();
-   emit_self_signal(pulses)?;
+   query_all_typed::<TextBead>(ThreadsEntryTypes::TextBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -99,15 +67,7 @@ pub fn query_text_beads(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_enc_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   let tuples = get_all_local(ThreadsEntryTypes::EncryptedBead.try_into().unwrap())?;
-   /// Emit Self Signal
-   let pulses = tuples.into_iter()
-     .map(|(ah, create, entry)| {
-        let typed = ThreadsEntry::EncryptedBead(EncryptedBead::try_from(entry).unwrap());
-        return entry_signal_ah(StateChange::Create(false), &create, typed, ah);
-     })
-     .collect();
-   emit_self_signal(pulses)?;
+   query_all_typed::<EncryptedBead>(ThreadsEntryTypes::EncryptedBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -126,21 +86,22 @@ pub fn query_enc_beads(_: ()) -> ExternResult<()> {
 fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()> {
    let EntryType::App(app_entry_def) = entry_type.clone()
      else { return error("Must be an App Entry type") };
-   let tuples = get_all_local(entry_type)?;
+   let tuples = query_all_local(entry_type)?;
   /// Emit System Signal
    let pulses = tuples.into_iter()
-     .map(|(_ah, create, entry)| {
+     .map(|(ah, create, entry)| {
         let typed = into_typed(entry, &app_entry_def).unwrap();
-        return ThreadsSignalProtocol::Entry((EntryInfo::from_action(&Action::Create(create), false),  typed));
+        let info = entry_info(ah, &Action::Create(create), false, &typed);
+        return ThreadsSignalProtocol::Entry((info, typed));
      })
      .collect();
-   emit_self_signal(pulses)?;
+   emit_threads_signal(pulses)?;
    Ok(())
 }
 
 
 /// Return vec of typed entries of given entry type found in local source chain
-fn get_all_local(entry_type: EntryType) -> ExternResult<Vec<(ActionHash, Create, Entry)>> {
+fn query_all_local(entry_type: EntryType) -> ExternResult<Vec<(ActionHash, Create, Entry)>> {
    /// Query type
    let query_args = ChainQueryFilter::default()
      .include_entries(true)

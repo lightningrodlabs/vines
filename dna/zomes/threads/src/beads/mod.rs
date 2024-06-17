@@ -1,6 +1,6 @@
 mod text_bead;
-mod get_latest_beads;
-mod get_all_beads;
+mod probe_latest_beads;
+mod probe_all_beads;
 mod index_bead;
 mod entry_bead;
 mod any_bead;
@@ -29,24 +29,24 @@ pub struct BeadLink {
 
 
 ///
-pub fn get_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, T)> {
-  debug!("get_typed_bead() {}", bead_ah);
+pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, T)> {
+  debug!("fetch_typed_bead() {}", bead_ah);
   /// Get typed
   let Some(record) = get(bead_ah.clone(), GetOptions::network())? else {
-    return error("get_typed_bead(): Entry not found");
+    return error("fetch_typed_bead(): Entry not found");
   };
   let Ok(typed) = get_typed_from_record::<T>(record.clone()) else {
-    return error("get_typed_bead(): Entry not of requested type");
+    return error("fetch_typed_bead(): Entry not of requested type");
   };
   let mut res = (record.action().timestamp(), record.action().author().to_owned(), typed);
   /// Get Original author
   let maybe = get_original_author(bead_ah)?;
   if let Some(pair) = maybe {
-    debug!("get_typed_bead() original author found: {}", pair.1);
+    debug!("fetch_typed_bead() original author found: {}", pair.1);
     res.0 = pair.0;
     res.1 = pair.1;
   }
-  //debug!("get_typed_bead() original author not found");
+  //debug!("fetch_typed_bead() original author not found");
   /// Emit signal
   emit_entry_signal_record(record, false)?;
   ///

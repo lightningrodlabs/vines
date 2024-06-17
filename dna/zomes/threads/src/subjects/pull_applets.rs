@@ -5,7 +5,7 @@ use zome_utils::*;
 
 /// Returns list of AppletIds that have at least one subject
 #[hdk_extern]
-pub fn get_applets(_:()) -> ExternResult<Vec<String>> {
+pub fn pull_applets(_:()) -> ExternResult<Vec<String>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("get_applets()");
   let tp = Path::from(format!("{}", ROOT_ANCHOR_SUBJECTS))

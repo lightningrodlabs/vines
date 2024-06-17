@@ -160,8 +160,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Check if beads have comments */
   protected async loadBeadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
     for (const bl of bls) {
-      const pps = await dvm.threadsZvm.probeSubjectThreads(encodeHashToBase64(bl.beadAh));
-      for (const [ppAh, pp] of Object.entries(pps)) {
+      const pps = await dvm.threadsZvm.pullSubjectThreads(encodeHashToBase64(bl.beadAh));
+      for (const [ppAh, [pp, _ts, _author]] of Object.entries(pps)) {
         if (pp.purpose == "comment") {
           await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
           break;
@@ -179,7 +179,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     const dvm = newDvm? newDvm : this._dvm;
     //dvm.threadsZvm.probeAllBeads(this.threadHash)
-    dvm.threadsZvm.probeLatestBeads(this.threadHash, undefined, undefined, 20)
+    dvm.threadsZvm.pullLatestBeads(this.threadHash, undefined, undefined, 20)
       .then(async (beadLinks) => {
         this._loading = false;
         //this._threadUiInfo[this.threadHash] = [true, ""];

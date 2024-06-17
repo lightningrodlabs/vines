@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::*;
-use crate::beads::{get_typed_bead, index_bead};
+use crate::beads::{fetch_typed_bead, index_bead};
 use crate::dm::decrypt_my_bead;
 use crate::notifications::*;
 
@@ -19,9 +19,9 @@ pub struct AddEncBeadInput {
 /// Return bead ah, type, Global Time Anchor, bucket time
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_enc_bead(input: AddEncBeadInput) -> ExternResult<(ActionHash, String, Timestamp)> {
+pub fn publish_enc_bead(input: AddEncBeadInput) -> ExternResult<(ActionHash, String, Timestamp)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  debug!("add_enc_bead() {:?}", input);
+  debug!("publish_enc_bead() {:?}", input);
   let typed = decrypt_my_bead(input.enc_bead.clone())?;
   let bead = typed.bead();
   /// Commit
@@ -43,25 +43,25 @@ pub fn add_enc_bead(input: AddEncBeadInput) -> ExternResult<(ActionHash, String,
 
 ///
 #[hdk_extern]
-pub fn get_enc_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EncryptedBead)>> {
+pub fn fetch_enc_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EncryptedBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return Ok(get_typed_bead::<EncryptedBead>(bead_ah).ok());
+  return Ok(fetch_typed_bead::<EncryptedBead>(bead_ah).ok());
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_enc_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EncryptedBead)> {
+pub fn fetch_enc_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EncryptedBead)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return get_typed_bead::<EncryptedBead>(bead_ah);
+  return fetch_typed_bead::<EncryptedBead>(bead_ah);
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_many_enc_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EncryptedBead)>> {
+pub fn fetch_many_enc_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EncryptedBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return ahs.into_iter().map(|ah| get_typed_bead::<EncryptedBead>(ah)).collect();
+  return ahs.into_iter().map(|ah| fetch_typed_bead::<EncryptedBead>(ah)).collect();
 }
 
 

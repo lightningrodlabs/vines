@@ -250,8 +250,8 @@ export class CommunityFeedApp extends HappElement {
 
 
     /** Make sure main topic and thread exists */
-    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, MAIN_SEMANTIC_TOPIC, false);
-    this.threadsDvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
+    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, MAIN_SEMANTIC_TOPIC);
+    this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_HASH);
     const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
@@ -323,7 +323,7 @@ export class CommunityFeedApp extends HappElement {
       /** Directly to post or get post from comment thread subject */
       const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);
       if (beadInfo) {
-        const pp = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
+        const [pp, _ts, _author] = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
         if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
           this._selectedPostAh = e.detail.hash;
         } else {

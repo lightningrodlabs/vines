@@ -17,7 +17,7 @@ pub struct AddAnyBeadInput {
 /// Return bead ah, type, Global Time Anchor, bucket time
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String, Timestamp)> {
+pub fn publish_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("add_any_bead() {:?}", input);
     let ah = create_entry(ThreadsEntry::AnyBead(input.anyBead.clone()))?;
@@ -38,24 +38,24 @@ pub fn add_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, String,
 
 ///
 #[hdk_extern]
-pub fn get_any_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, AnyBead)>> {
+pub fn fetch_any_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, AnyBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return Ok(get_typed_bead::<AnyBead>(bead_ah).ok());
+    return Ok(fetch_typed_bead::<AnyBead>(bead_ah).ok());
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_any_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, AnyBead)> {
+pub fn fetch_any_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, AnyBead)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return get_typed_bead::<AnyBead>(bead_ah);
+    return fetch_typed_bead::<AnyBead>(bead_ah);
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_many_any_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, AnyBead)>> {
+pub fn fetch_many_any_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, AnyBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return ahs.into_iter().map(|ah| get_typed_bead::<AnyBead>(ah)).collect();
+    return ahs.into_iter().map(|ah| fetch_typed_bead::<AnyBead>(ah)).collect();
 }
 

@@ -67,7 +67,6 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   render() {
     console.log("<topics-lister>.render()", this.perspective.allSemanticTopics);
-
     let treeItems = Object.entries(this.perspective.allSemanticTopics).map(([topicHash, title]) => {
       const isSubjectHidden = this._zvm.perspective.hiddens[topicHash]? this._zvm.perspective.hiddens[topicHash] : false;
       /** Skip if hidden */
@@ -80,7 +79,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       let topicThreads = this.perspective.threadsPerSubject[topicHash];
       if (topicThreads == undefined) {
         topicThreads = [];
-        this._zvm.probeSubjectThreads(topicHash).then(() => this.requestUpdate())
+        //this._zvm.pullSubjectThreads(topicHash).then(() => this.requestUpdate())
       } else {
         topicThreads = topicThreads.sort((a, b) => {
           const nameA = this.perspective.threads.get(a).name;

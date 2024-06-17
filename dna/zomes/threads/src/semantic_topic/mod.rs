@@ -1,6 +1,6 @@
 
-mod create_semantic_topic;
-mod get_all_semantic_topics;
+mod publish_semantic_topic;
+mod pull_all_semantic_topics;
 mod update_semantic_topic;
 
 

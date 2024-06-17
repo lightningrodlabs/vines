@@ -9,7 +9,7 @@ use crate::notifications::*;
 /// Create a Pp off of anything
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp)> {
+pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let maybe_index_time: Option<Timestamp> = None; // FIXME
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
@@ -18,7 +18,7 @@ pub fn create_participation_protocol(pp: ParticipationProtocol) -> ExternResult<
   /// Global Subjects Index
   let subject_tp = get_subject_tp(pp.subject.applet_id, &pp.subject.type_name, pp.subject.dna_hash.clone(), pp.subject.hash.clone())?;
   subject_tp.ensure()?;
-  debug!("create_pp(): {} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
+  debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
 
   /// Use given index_time or use the PP's creation time

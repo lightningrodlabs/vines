@@ -13,13 +13,13 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticTopicPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
-  debug!("get_all_semantic_topics() {:?}", root_anchor);
+  debug!("pull_all_semantic_topics() {:?}", root_anchor);
   let leaf_anchors = root_anchor.walk()?;
-  debug!("get_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
+  debug!("pull_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
   let mut all: Vec<(EntryInfo, SemanticTopic)> = Vec::new();
   for leaf_anchor in leaf_anchors {
     let mut sts = pull_semantic_topics(leaf_anchor.anchor)?;
-    //debug!("get_all_semantic_topics() sts {:?}", sts);
+    //debug!("pull_all_semantic_topics() sts {:?}", sts);
     all.append(&mut sts);
   }
   /// Emit signal
@@ -27,7 +27,7 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
     .into_iter()
     .map(|(info, typed)| ThreadsSignalProtocol::Entry((info, ThreadsEntry::SemanticTopic(typed))))
     .collect();
-  emit_self_signal(pulses)?;
+  emit_threads_signal(pulses)?;
   ///
   Ok(())
 }
@@ -37,7 +37,7 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
 fn pull_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(EntryInfo, SemanticTopic)>>  {
   let path = Path::from(&leaf_anchor);
   let itemlinks = get_itemlinks(path, ThreadsLinkType::Topics.try_into_filter()?, None)?;
-  debug!("get_semantic_topics() {} leaf_links found", itemlinks.len());
+  debug!("pull_semantic_topics() {} leaf_links found", itemlinks.len());
   let semantic_topics = itemlinks
     .into_iter()
     .map(|ll| {

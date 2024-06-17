@@ -6,7 +6,7 @@ use threads_integrity::*;
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
+pub fn publish_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sure pp_ah is a PP
     //let (_pp_eh, _pp): (EntryHash, Bead)  = get_typed_from_ah(bead_ah.clone())?;
@@ -30,7 +30,7 @@ pub fn set_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
+pub fn unpublish_favorite(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
     let links = get_links(link_input(me, ThreadsLinkType::Favorite, None))?;
@@ -47,7 +47,7 @@ pub fn unset_favorite(bead_ah: ActionHash) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
-pub fn get_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
+pub fn probe_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
     let links = get_links(link_input(me, ThreadsLinkType::Favorite, None))?;

@@ -35,10 +35,10 @@ pub struct SetNotifySettingInput {
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
+pub fn publish_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Get current setting if any
-    let (current_setting, maybe_link_ah) = get_my_notify_settings(input.pp_ah.clone())?;
+    let (current_setting, maybe_link_ah) = pull_my_notify_settings(input.pp_ah.clone())?;
     /// Bail if setting already set
     if current_setting == input.setting {
         return Ok(None);
@@ -61,14 +61,14 @@ pub fn set_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<A
 
 ///
 #[hdk_extern]
-pub fn get_my_notify_settings(pp_ah: ActionHash) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
-    return get_notify_settings((pp_ah, agent_info()?.agent_latest_pubkey));
+pub fn pull_my_notify_settings(pp_ah: ActionHash) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
+    return pull_notify_settings((pp_ah, agent_info()?.agent_latest_pubkey));
 }
 
 
 ///
 #[hdk_extern]
-pub fn get_notify_settings(pair: (ActionHash, AgentPubKey)) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
+pub fn pull_notify_settings(pair: (ActionHash, AgentPubKey)) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(link_input(pair.0, ThreadsLinkType::NotifySetting, None))?;
     let agent_hash = AnyLinkableHash::from(pair.1);
@@ -86,7 +86,7 @@ pub fn get_notify_settings(pair: (ActionHash, AgentPubKey)) -> ExternResult<(Not
 
 ///
 #[hdk_extern]
-pub fn get_pp_notify_settings(pp_ah: ActionHash) -> ExternResult<Vec<(AgentPubKey, NotifySetting, ActionHash)>> {
+pub fn pull_pp_notify_settings(pp_ah: ActionHash) -> ExternResult<Vec<(AgentPubKey, NotifySetting, ActionHash)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(link_input(pp_ah, ThreadsLinkType::NotifySetting, None))?;
     let mut res = Vec::new();

@@ -62,7 +62,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
       ThreadsSignalProtocol::Entry((entry_info, ThreadsEntry::ThreadLastProbeLog(tql.clone())))
     })
     .collect();
-  emit_self_signal(pulses)?;
+  emit_threads_signal(pulses)?;
   /// Done
   let res = hashmap.into_values()
     .map(|(log, _action)| log)

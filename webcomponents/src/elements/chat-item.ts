@@ -121,7 +121,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (!beadInfo) {
       await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
-    await this._dvm.threadsZvm.probeEmojiReactions(this.hash);
+    await this._dvm.threadsZvm.pullEmojiReactions(this.hash);
   }
 
 

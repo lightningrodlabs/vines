@@ -467,8 +467,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
-      console.log("<vines-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
-      const appletIds = await this._dvm.threadsZvm.probeAllAppletIds();
+      console.log("<vines-page> firstUpdated() calling pullAppletIds()", this.weServices);
+      const appletIds = await this._dvm.threadsZvm.pullAppletIds();
       console.log("<vines-page> firstUpdated() appletIds", appletIds);
       for (const appletId of appletIds) {
         /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
@@ -886,7 +886,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (!thread) {
-        this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
+        console.log("<vines-page>.render() fetchPp WARNING");
+        /*await*/ this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
       } else {
         primaryTitle = thread.name;
         const dmThread = this._dvm.threadsZvm.isThreadDm(this.selectedThreadHash);

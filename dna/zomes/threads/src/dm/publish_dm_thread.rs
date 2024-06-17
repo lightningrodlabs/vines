@@ -3,10 +3,10 @@ use threads_integrity::*;
 use zome_utils::*;
 use crate::notifications::*;
 
-/// Create a Pp off of another Agent
+/// Publish a Pp off of another Agent
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn create_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
+pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let me = agent_info()?.agent_latest_pubkey;
   if me == other_agent {

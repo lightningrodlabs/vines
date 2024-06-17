@@ -8,7 +8,7 @@ import {weClientContext} from "../contexts";
 import {WeaveUrl} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {weaveUrlToWal} from "../utils";
+import {ppName, weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../jump";
@@ -73,13 +73,16 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const beadInfo = threadsZvm.getBaseBeadInfo(beadAh);
     if (beadInfo) {
       let thread = threadsZvm.perspective.threads[beadInfo.bead.ppAh];
+      let name;
       if (!thread) {
-        /*const ppMat =*/ await threadsZvm.fetchPp(beadInfo.bead.ppAh);
-        thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+        const [ppMat, _ts, _author] = await threadsZvm.fetchPp(beadInfo.bead.ppAh);
+        name = ppName(ppMat);
+      } else {
+        name = thread.name;
       }
       //console.log("<wurl-link> loadWal() thread", thread.name);
       this._vinesTypes = ThreadsEntryType.AnyBead;
-      this._assetName = `${thread.name} > 💬`;
+      this._assetName = `${name} > 💬`;
       return true;
     }
     return false;

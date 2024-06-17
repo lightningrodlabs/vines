@@ -10,7 +10,7 @@ use crate::participation_protocols::comp2subject;
 /// Walk Subjects AnchorTree
 /// Return Anchor, EntryHash of every threaded Subject.
 #[hdk_extern]
-pub fn get_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
+pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let root_path = Path::from(ROOT_ANCHOR_SUBJECTS).typed(ThreadsLinkType::SubjectPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();

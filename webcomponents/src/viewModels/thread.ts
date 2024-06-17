@@ -5,7 +5,7 @@ import {TimeInterval} from "./timeInterval";
 import createRBTree, {Tree} from "functional-red-black-tree";
 import {Base64} from "js-base64";
 import {BeadLinkMaterialized, ParticipationProtocolMat} from "./threads.perspective";
-import {determineSubjectPrefix} from "../utils";
+import {determineSubjectPrefix, ppName} from "../utils";
 
 /** Importing this from holochain will cause jest to fail */
 function encodeHashToBase64(hash: Uint8Array) {
@@ -71,7 +71,7 @@ export class Thread {
 
   /** -- Getters -- */
 
-  get name(): string { return `${determineSubjectPrefix(this._pp.subject.typeName)} ${this._pp.subject_name}: ${this._pp.purpose}`}
+  get name(): string { return ppName(this._pp)}
 
   get pp(): ParticipationProtocolMat { return this._pp}
 
@@ -124,7 +124,7 @@ export class Thread {
 
 
   /** */
-  setSearchedOldestBead(): void {
+  setHasSearchedOldestBead(): void {
     this._hasSearchedOldestBead = true;
   }
 

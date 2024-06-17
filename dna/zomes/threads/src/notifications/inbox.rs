@@ -19,7 +19,7 @@ pub struct NotifyPeerInput {
 //#[hdk_extern]
 //#[feature(zits_blocking)]
 pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<Option<ActionHash>> {
-    std::panic::set_hook(Box::new(zome_panic_hook));
+    //std::panic::set_hook(Box::new(zome_panic_hook));
     // Don't notify self
     if input.who == agent_info()?.agent_latest_pubkey {
         return Ok(None);
@@ -65,7 +65,7 @@ pub fn probe_inbox(_ : ()) -> ExternResult<()> {
       })
       .collect();
 
-    emit_self_signal(pulses)?;
+    emit_threads_signal(pulses)?;
 
     Ok(())
 }
@@ -74,9 +74,9 @@ pub fn probe_inbox(_ : ()) -> ExternResult<()> {
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn delete_inbox_item(link_ah : ActionHash) -> ExternResult<()> {
+pub fn unpublish_notification(link_ah : ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    // FIXME: Make sure its a mention link
+    // FIXME: Make sure its a Inbox link
     let _ = delete_link(link_ah)?;
     Ok(())
 }
