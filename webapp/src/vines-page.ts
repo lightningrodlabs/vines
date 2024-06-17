@@ -906,11 +906,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           const profile = this._dvm.profilesZvm.getProfile(dmThread);
           primaryTitle = profile? profile.nickname : "unknown";
         }
-        const maybeSemanticTopicThread = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
+        const maybeSemanticTopicTitle = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
         let topic;
-         if (maybeSemanticTopicThread) {
-           const [semTopic, _topicHidden] = maybeSemanticTopicThread;
-           topic = semTopic;
+         if (maybeSemanticTopicTitle) {
+           topic = maybeSemanticTopicTitle;
          } else {
            topic = "Reply";
          }

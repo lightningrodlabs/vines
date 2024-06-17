@@ -65,7 +65,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
         subject,
         subject_name,
       };
-      const [ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
+      const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {
         hrl: [decodeHashFromBase64(this._dvm.cell.dnaHash), decodeHashFromBase64(ppAh)],
         context: encodeHashToBase64(pp.subject.hash),

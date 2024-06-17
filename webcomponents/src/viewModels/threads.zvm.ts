@@ -1056,12 +1056,12 @@ export class ThreadsZvm extends ZomeViewModel {
       appletId,
       dnaHash: decodeHashFromBase64(this.cell.dnaHash), // FIXME: remove this useless field?
     };
-    const semTopic = this.perspective.allSemanticTopics[subjectHash];
+    const semTopicTitle = this.perspective.allSemanticTopics[subjectHash];
     const pp: ParticipationProtocol = {
       purpose,
       rules: "N/A",
       subject,
-      subject_name: `${semTopic[0]}`
+      subject_name: `${semTopicTitle}`
     }
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
     /** */
@@ -1710,7 +1710,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** */
   async publishAllFromPerspective(impPersp: ThreadsExportablePerspective, authorshipZvm: AuthorshipZvm) {
     /** this._allSemanticTopics */
-    for (const [_topicEh, [title, _isHidden]] of Object.entries(impPersp.allSemanticTopics)) {
+    for (const [_topicEh, title] of Object.entries(impPersp.allSemanticTopics)) {
       /* const newTopicEh = */ await this.publishSemanticTopic(title);
     }
     /** this._allSubjects */
@@ -2004,6 +2004,9 @@ export class ThreadsZvm extends ZomeViewModel {
         }
       }
     } else {
+      if (!isNew) {
+        return;
+      }
       /** I notified a peer */
       /** Tip peer that we send them a notification */
       let extra;
@@ -2017,7 +2020,7 @@ export class ThreadsZvm extends ZomeViewModel {
         console.log("Signaling new Bead notification to peer", base, target);
         const beadAh = encodeHashToBase64(link.target);
         const beadPair = this.perspective.beads[beadAh];
-        extra = encode(dematerializeTypedBead(beadPair[1], beadPair[0].beadType));
+        extra = encode({typed: beadPair[1], beadType: beadPair[0].beadType});
       }
       const notifPulse = this.createNotificationSignal(notif, extra);
       await this.emitNotificationTip(target, notifPulse);
@@ -2222,10 +2225,10 @@ export class ThreadsZvm extends ZomeViewModel {
       case "NewBead":
         const {creation_ts, bead_ah, bead_type, pp_ah, data} = tip as TipProtocolVariantNewBead;
         console.log("Signal is NewBead of type", bead_type);
-        const {typed, beadType} = decode(data) as {typed: TypedBead, beadType: BeadType};
+        const {typed, beadType} = decode(data) as {typed: TypedBeadMat, beadType: BeadType};
         console.log("NewBead", bead_ah, typed, beadType, bead_type);
         //const beadType = beadTypeStr as BeadType;
-        /* await*/ this.storeTypedBead(bead_ah, materializeTypedBead(typed, beadType), beadType, creation_ts, from, true);
+        /* await*/ this.storeTypedBead(bead_ah, typed, beadType, creation_ts, from, true);
         break;
       case "EmojiReactionChange": {
         const {bead_ah, author, emoji, is_added} = tip as TipProtocolVariantEmojiReactionChange;
@@ -2248,16 +2251,15 @@ export class ThreadsZvm extends ZomeViewModel {
     let ppAh: ActionHashB64;
     /** Store received Entry */
     if (NotifiableEvent.Mention == notif.event || NotifiableEvent.Reply == notif.event || NotifiableEvent.NewBead == notif.event) {
-      const {typed, beadType} = decode(extra) as {typed: TypedBead, beadType: BeadType};
-      const typedMat = materializeTypedBead(typed, beadType);
+      const {typed, beadType} = decode(extra) as {typed: TypedBeadMat, beadType: BeadType};
       const beadAh = encodeHashToBase64(notif.content);
       //ppAh = typedMat.bead.ppAh;
       // if (!notifSignal.maybePpHash) {
       //   console.error("Missing ppAh in ThreadsSignal");
       // }
       ppAh = encodeHashToBase64(notifTip.pp_ah);
-      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typedMat);
-      await this.storeTypedBead(beadAh, typedMat, beadType, notif.timestamp, encodeHashToBase64(notif.author), true);
+      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typed);
+      await this.storeTypedBead(beadAh, typed, beadType, notif.timestamp, encodeHashToBase64(notif.author), true);
     }
     /* Set notif setting */
     if (NotifiableEvent.NewDmThread == notif.event) {

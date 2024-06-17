@@ -76,7 +76,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return this.renderDmThreadHeader(maybeDmThread);
     }
 
-    const maybeSemanticTopicThread = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];
+    const maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];
     let title;
     let subText;
     const copyBtn = html`
@@ -86,8 +86,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     `;
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName);
     const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
-    if (maybeSemanticTopicThread) {
-      const [semTopic, _topicHidden] = maybeSemanticTopicThread;
+    if (maybeSemanticTopicTitle) {
       title = html`Welcome to ${thread.name} !`;
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {

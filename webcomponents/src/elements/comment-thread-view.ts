@@ -230,16 +230,6 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       `;
     }
 
-    // if (pp.subjectType == SEMANTIC_TOPIC_TYPE_NAME) {
-    //   const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
-    //   if (!topic) {
-    //     return html`
-    //         <div>Loading thread topic...</div>`;
-    //   }
-    // } else {
-    //
-    // }
-
     const beads = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
 
     console.log("<comment-thread-view>.render() len =", beads.length);

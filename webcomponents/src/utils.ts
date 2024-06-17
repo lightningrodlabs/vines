@@ -257,12 +257,12 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
     switch (subject.typeName) {
       /** -- special types -- */
       case SEMANTIC_TOPIC_TYPE_NAME:
-        let semTopic = threadsZvm.perspective.allSemanticTopics[subject.hash];
-        if (!semTopic) {
+        let semTopicTitle = threadsZvm.perspective.allSemanticTopics[subject.hash];
+        if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
           return "{Unknown Topic}";
         }
-        return semTopic;
+        return semTopicTitle;
       break;
       case PP_TYPE_NAME:
         let thread = threadsZvm.perspective.threads[subject.hash];
