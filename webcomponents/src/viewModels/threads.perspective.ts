@@ -48,7 +48,7 @@ export interface BeadInfo {
 export interface BeadLinkMaterialized {
   creationTime: Timestamp,
   beadAh: ActionHashB64,
-  beadType: string,
+  beadType: BeadType,
 }
 
 

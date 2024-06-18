@@ -278,6 +278,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('fetch_many_enc_beads', ahs);
   }
 
+  async probeDmThreads(): Promise<void> {
+    return this.call('probe_dm_threads', null);
+  }
+
   async publishDmThread(otherAgent: AgentPubKey): Promise<ActionHash> {
     return this.callBlocking('publish_dm_thread', otherAgent);
   }

@@ -40,6 +40,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"fetch_enc_bead_option",
 	"fetch_enc_bead",
 	"fetch_many_enc_beads",
+	"probe_dm_threads",
 	"publish_dm_thread",
 	"publish_favorite",
 	"unpublish_favorite",
