@@ -15,7 +15,6 @@ import {
   ThreadsEntryType,
   ThreadsProperties,
   VINES_DEFAULT_ROLE_NAME,
-  WeaveNotification,
   ThreadsSignal,
   ThreadsSignalProtocol,
   ThreadsSignalProtocolType,
@@ -24,7 +23,7 @@ import {
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
-  BeadType, EncryptedBeadContent,
+  BeadType, EncryptedBeadContent, ThreadsNotification,
   TypedContent,
 } from "./threads.perspective";
 import {AppletId} from "@lightningrodlabs/we-applet";
@@ -43,7 +42,7 @@ export interface ThreadsDnaPerspective {
   /** */
   initialGlobalProbeLogTs: Timestamp;
   /** */
-  signaledNotifications: WeaveNotification[],
+  signaledNotifications: ThreadsNotification[],
 }
 
 
@@ -96,7 +95,7 @@ export class ThreadsDvm extends DnaViewModel {
   private _threadInputs = {};
   private _initialThreadProbeLogTss = {};
   private _initialGlobalProbeLogTs: Timestamp = 0;
-  private _signaledNotifications: WeaveNotification[] = [];
+  private _signaledNotifications: ThreadsNotification[] = [];
 
 
   /** */
@@ -172,7 +171,19 @@ export class ThreadsDvm extends DnaViewModel {
       case "Ping":
       case "Pong":
         break;
-      case "Notification": this._signaledNotifications.push((tip as TipProtocolVariantNotification).value.notification); break;
+      case "Notification": {
+        const notifTip = (tip as TipProtocolVariantNotification).value;
+        const notif: ThreadsNotification = {
+          //eventIndex: notifTip.event_index,
+          event: notifTip.event,
+          createLinkAh: encodeHashToBase64(notifTip.link_ah),
+          author: encodeHashToBase64(notifTip.author),
+          timestamp: notifTip.timestamp,
+          content: encodeHashToBase64(notifTip.content),
+        }
+        this._signaledNotifications.push(notif);
+      }
+      break;
       default:
         break;
     }
@@ -212,12 +223,12 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- (un)Publish / Edit -- */
 
   /** */
-  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
+  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, prevBead?: ActionHashB64): Promise<ActionHashB64> {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
       return this.publishDm(isDmThread, beadType, content, prevBead);
     }
-    return this.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
+    return this.publishTypedBead(beadType, content, ppAh, author, prevBead);
   }
 
 
@@ -242,9 +253,9 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64): Promise<ActionHashB64> {
+  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, prevBead?: ActionHashB64): Promise<ActionHashB64> {
     /** */
-    let [ah, _time_anchor, _creation_ts, _typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, ments, prevBead);
+    let [ah, _time_anchor, _creation_ts, _typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
     /** Erase saved input */
     delete this._threadInputs[ppAh];
     /** */

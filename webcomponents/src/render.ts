@@ -4,12 +4,12 @@ import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {
   NotifiableEvent,
-  WeaveNotification
-} from "./bindings/threads.types";
+  } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {determineBeadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {ThreadsNotification} from "./viewModels/threads.perspective";
 
 
 
@@ -54,10 +54,10 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
 
 
 /** Return [notifTitle, notifBody] */
-export function  composeNotificationTitle(notif: WeaveNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
+export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
     let title: string = "";
     let content: string = "";
-    const ah = encodeHashToBase64(notif.content);
+    const ah = notif.content;
     if (NotifiableEvent.Mention === notif.event) {
         const beadInfo = threadsZvm.getBaseBeadInfo(ah);
         if (!beadInfo) {

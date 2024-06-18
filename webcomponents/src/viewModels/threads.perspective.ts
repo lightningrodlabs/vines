@@ -14,7 +14,7 @@ import {
   EntryBead,
   GlobalLastProbeLog, NotifiableEvent, NotifySetting,
   ParticipationProtocol,
-  Subject, TextBead, ThreadsEntryType, WeaveNotification,
+  Subject, TextBead, ThreadsEntryType,
 } from "../bindings/threads.types";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {AuthorshipZvm} from "./authorship.zvm";
@@ -34,6 +34,16 @@ export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBea
 export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
 
 export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentPubKey}
+
+
+export interface ThreadsNotification {
+  //eventIndex: number,
+  event: NotifiableEvent,
+  createLinkAh: ActionHashB64,
+  author: AgentPubKeyB64,
+  timestamp: Timestamp,
+  content: AnyLinkableHashB64, // ppAh or beadAh depending on event
+}
 
 
 /** */
@@ -129,7 +139,7 @@ export interface ThreadsPerspectiveCore {
   /** linkAh -> [agent, beadAh] */
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
   /** linkAh -> (ppAh, notif) */
-  inbox: Dictionary<[ActionHashB64, WeaveNotification]>,
+  inbox: Dictionary<[ActionHashB64, ThreadsNotification]>,
   /* ppAh -> (agent -> value) */
   notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySetting>>,
 }

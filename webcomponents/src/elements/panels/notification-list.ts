@@ -75,7 +75,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
           : composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.weServices);
 
         /** Author */
-        const author = encodeHashToBase64(notif.author);
+        const author = notif.author;
         const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
 
         /** Timestamp */
@@ -96,7 +96,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
               <span slot="footnotes">${date_str}</span>
               <ui5-notification-action text="Jump" slot="actions" @click=${(e) => {
                   this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
-                  hash: encodeHashToBase64(notif.content),
+                  hash: notif.content,
                   type: notification2JumpEvent(notif.event),
                   }, bubbles: true, composed: true}));
               }}>

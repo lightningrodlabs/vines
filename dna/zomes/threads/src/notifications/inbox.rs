@@ -16,29 +16,19 @@ pub struct NotifyPeerInput {
 
 
 /// Called Directly by other zfns
-//#[hdk_extern]
-//#[feature(zits_blocking)]
-pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<Option<ActionHash>> {
-    //std::panic::set_hook(Box::new(zome_panic_hook));
+#[hdk_extern]
+#[feature(zits_blocking)]
+pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
+    std::panic::set_hook(Box::new(zome_panic_hook));
     // Don't notify self
     if input.who == agent_info()?.agent_latest_pubkey {
-        return Ok(None);
+        return Ok(());
     }
-
-    let repr: u8 = input.event.into();
-
-
-    let link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, LinkTag::from(vec![repr]))?;
-
-    // let notif = WeaveNotification {
-    //     event: NotifiableEvent::from_repr(repr).unwrap(),
-    //     author: agent_info()?.agent_latest_pubkey,
-    //     timestamp: sys_time()?,
-    //     link_ah: link_ah.clone(),
-    //     content: input.content.clone(),
-    // };
-
-    Ok(Some(link_ah))
+    //let repr: u8 = input.event.into(); // let tag = LinkTag::from(vec![repr]);
+    let tag = obj2Tag(input.event)?;
+    let _link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, tag)?;
+    /// Done
+    Ok(())
 }
 
 

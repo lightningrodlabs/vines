@@ -134,7 +134,6 @@ import {
   globaFilesContext, InputBar, JumpDestinationType,
   JumpEvent,
   NotifySetting, onlineLoadedContext,
-  parseMentions,
   ParticipationProtocol, ProfilePanel, searchFieldStyleTemplate,
   shellBarStyleTemplate, Subject, THIS_APPLET_ID, threadJumpEvent,
   ThreadsDnaPerspective,
@@ -373,7 +372,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateTextMessage(inputText: string) {
     console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
-    const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
     let ppAh = this.selectedThreadHash;
     if (this._currentCommentRequest) {
       ppAh = await this.publishCommentThread(this._currentCommentRequest);
@@ -383,9 +381,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.error("No thread selected");
       return;
     }
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, mentionedAgents, this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
-    //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
@@ -402,10 +399,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onDmTextMessage(inputText: string) {
     const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
     const otherAgent = sub.hash;
-    //const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
     let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
     console.log("onDmTextMessage() ah", beadAh, this._dvm.threadsZvm.perspective.threads);
-    //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, beadAh);
     this._replyToAh = undefined;
     this.selectedBeadAh = '';
     //await delay(1000);
@@ -422,7 +417,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // FIXME make sure hrl is an entryHash
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, [], this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
 
@@ -552,7 +547,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
-      const author = this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)] ? this._dvm.profilesZvm.perspective.profiles[encodeHashToBase64(notif.author)].nickname : "unknown";
+      const author = this._dvm.profilesZvm.perspective.profiles[notif.author] ? this._dvm.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
       const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
@@ -766,7 +761,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       // }
       this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.getAgents(),async (eh) => {
         console.log("<vines-page> startPublishFile callback", eh);
-        let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, [], this._replyToAh);
+        let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
         console.log("onCreateFileMessage() ah", ah);
         //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 

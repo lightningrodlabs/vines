@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use zome_utils::*;
 //use threads_integrity::*;
 use crate::*;
-
+use crate::notifications::*;
 
 // ///
 // #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
@@ -56,14 +56,14 @@ fn broadcast_tip(input: BroadcastTipInput) -> ExternResult<()> {
 /// Input to the notify call
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct EmitNotificationTipInput {
-  pub notification: ThreadsNotification,
+pub struct CastNotificationTipInput {
+  pub notification_tip: ThreadsNotificationTip,
   pub peer: AgentPubKey,
 }
 
 ///
 #[hdk_extern]
-fn cast_notification_tip(input: EmitNotificationTipInput) -> ExternResult<()> {
+fn cast_notification_tip(input: CastNotificationTipInput) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Pre-conditions: Don't call yourself (otherwise we get concurrency issues)
   let me = agent_info()?.agent_latest_pubkey;
@@ -71,7 +71,7 @@ fn cast_notification_tip(input: EmitNotificationTipInput) -> ExternResult<()> {
     return error("Can't notify self");
   }
   /// emit signal
-  let tip = TipProtocol::Notification { value: input.notification };
+  let tip = TipProtocol::Notification { value: input.notification_tip };
   broadcast_tip_inner(vec![input.peer], tip)?;
   /// Done
   Ok(())

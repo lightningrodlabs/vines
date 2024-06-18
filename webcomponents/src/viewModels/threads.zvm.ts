@@ -2,7 +2,7 @@ import {
   ActionHash,
   ActionHashB64,
   AgentPubKey,
-  AgentPubKeyB64, AppSignal, AppSignalCb,
+  AgentPubKeyB64, AnyLinkableHash, AppSignal, AppSignalCb,
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
@@ -21,13 +21,13 @@ import {
   EntryBead,
   EntryInfo,
   GlobalLastProbeLog,
-  NotifiableEvent,
+  NotifiableEvent, NotifyPeerInput,
   NotifySetting,
   ParticipationProtocol,
   SEMANTIC_TOPIC_TYPE_NAME,
   SetNotifySettingInput,
   StateChange,
-  StateChangeType,
+  StateChangeType, StateChangeVariantCreate,
   Subject,
   TextBead,
   ThreadLastProbeLog,
@@ -41,8 +41,7 @@ import {
   ThreadsEntryVariantSemanticTopic,
   ThreadsEntryVariantTextBead,
   ThreadsEntryVariantThreadLastProbeLog,
-  ThreadsLinkType,
-  ThreadsNotification,
+  ThreadsLinkType, ThreadsNotificationTip,
   ThreadsSignal,
   ThreadsSignalProtocol,
   ThreadsSignalProtocolType,
@@ -51,7 +50,6 @@ import {
   TipProtocolVariantNewPp,
   TipProtocolVariantNewSemanticTopic,
   TipProtocolVariantUpdateSemanticTopic,
-  WeaveNotification,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {delay, Dictionary, LitHappSignal, prettyDate, SignalLog, SignalType, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -75,7 +73,7 @@ import {
   ParticipationProtocolMat,
   SubjectMat,
   TextBeadMat,
-  ThreadsExportablePerspective,
+  ThreadsExportablePerspective, ThreadsNotification,
   ThreadsPerspective, ThreadsPerspectiveCore,
   TypedBaseBead,
   TypedBaseBeadMat,
@@ -88,7 +86,16 @@ import {TimeInterval} from "./timeInterval";
 import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {decode, encode} from "@msgpack/msgpack";
-import {agent2eh, eh2agent, getLinkType, isHashType, prettyState, weaveUrlToWal} from "../utils";
+import {
+  agent2eh,
+  eh2agent,
+  getEventType,
+  getLinkType,
+  isHashType,
+  parseMentions,
+  prettyState,
+  weaveUrlToWal
+} from "../utils";
 import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 
@@ -204,7 +211,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** Notification Inbox */
   /* linkAh -> (ppAh, Notif) */
-  private _inbox: Dictionary<[ActionHashB64, WeaveNotification]> = {};
+  private _inbox: Dictionary<[ActionHashB64, ThreadsNotification]> = {};
   /* ppAh -> (agent -> value) */
   private _notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySetting>> = {};
 
@@ -386,7 +393,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  getAllNotificationsForPp(argPpAh: ActionHashB64): [ActionHashB64, WeaveNotification][] {
+  getAllNotificationsForPp(argPpAh: ActionHashB64): [ActionHashB64, ThreadsNotification][] {
     let result = [];
     for (const [linkAh, [ppAh, notif]] of Object.entries(this._inbox)) {
       if (argPpAh == ppAh) {
@@ -908,11 +915,11 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
 
   /** */
-  async publishTypedBead(type: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, ments?: AgentPubKeyB64[], prevBead?: ActionHashB64) : Promise<[ActionHashB64, string, number, TypedBead]> {
+  async publishTypedBead(type: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, prevBead?: ActionHashB64) : Promise<[ActionHashB64, string, number, TypedBead]> {
     const creation_time = Date.now() * 1000;
     const nextBead = await this.createNextBead(ppAh, prevBead);
     const beadAuthor = author? author : this.cell.agentPubKey;
-    const [ah, global_time_anchor, tm] = await this.publishTypedBeadAt(type, content, nextBead, creation_time, beadAuthor, ments);
+    const [ah, global_time_anchor, tm] = await this.publishTypedBeadAt(type, content, nextBead, creation_time, beadAuthor);
     return [ah, global_time_anchor, creation_time, tm];
   }
 
@@ -923,23 +930,10 @@ export class ThreadsZvm extends ZomeViewModel {
     content: TypedContent | EntryBeadMat | EncryptedBeadContent,
     nextBead: Bead,
     creationTime: Timestamp,
-    author: AgentPubKeyB64,
-    ments?: AgentPubKeyB64[])
+    author: AgentPubKeyB64)
     : Promise<[ActionHashB64, string, TypedBead]>
   {
     const ppAh = encodeHashToBase64(nextBead.ppAh);
-    /** Notify reply is prevBead in Bead is different from last known bead for pp and not in a DM thread */
-    const prevBeadAh = encodeHashToBase64(nextBead.prevBeadAh);
-    let canNotifyReply = false;
-    if (prevBeadAh != ppAh) { // Thread's first bead has ppAh == prevBeadAh
-      const prevBeadTuple = await this.fetchUnknownBead(prevBeadAh);
-      const lastKnownBead = this._threads.get(ppAh).getLast(1);
-      const isDmThread = this.isThreadDm(ppAh);
-      console.log("publishTypedBeadAt()", isDmThread);
-      const hasJumpedBead = lastKnownBead.length > 0 && lastKnownBead[0].beadAh != prevBeadAh && !isDmThread;
-      const canNotifyPrevOwner = this.getNotifSetting(ppAh, prevBeadTuple[3]) != NotifySetting.Never;
-      canNotifyReply = hasJumpedBead && canNotifyPrevOwner;
-    }
     /** Commit Entry (& notify peers) */
     let typed: TypedBead;
     let global_time_anchor: string;
@@ -947,27 +941,21 @@ export class ThreadsZvm extends ZomeViewModel {
     let bead_ah: ActionHash;
     switch (beadTypeEx) {
       case ThreadsEntryType.TextBead:
-        /** Keep only notifiable mentionees */
-        const mentionees = ments
-          ? ments
-            .filter((m) => this.getNotifSetting(ppAh, m) != NotifySetting.Never)
-            .map((m) => decodeHashFromBase64(m))
-          : [];
         typed = {value: content as string, bead: nextBead} as TextBead;
-        [bead_ah, global_time_anchor] = await this.zomeProxy.publishTextBeadAtAndNotify({textBead: typed, creationTime, mentionees, canNotifyReply});
+        [bead_ah, global_time_anchor] = await this.zomeProxy.publishTextBeadAt({textBead: typed, creationTime});
         break;
-      case ThreadsEntryType.EntryBead:
-        const entryInfo = {
+      case ThreadsEntryType.EntryBead: {
+        const input: AddEntryAsBeadInput = {
           eh: decodeHashFromBase64(content as EntryHashB64),
           bead: nextBead,
           zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
           roleName: "rFiles", // FILES_CELL_NAME
-          creationTime,
-          author,
-          canNotifyReply,
+          originalCreationTime: creationTime,
+          originalAuthor: decodeHashFromBase64(author),
         };
-        [bead_ah, typed, global_time_anchor, bucket_ts] = await this.zomeProxy.publishEntryAsBead(entryInfo);
-        break;
+        [bead_ah, typed, global_time_anchor, bucket_ts] = await this.zomeProxy.publishEntryAsBead(input);
+      }
+      break;
       case "EntryBeadImport":
         const entryBead: EntryBead = dematerializeEntryBead(content as EntryBeadMat);
         entryBead.bead = nextBead;
@@ -983,14 +971,14 @@ export class ThreadsZvm extends ZomeViewModel {
           typeInfo: "wal",
         } as AnyBead;
         console.log("publishHrlBeadAt()", wurl, anyBead);
-        [bead_ah, global_time_anchor, bucket_ts] = await this.zomeProxy.publishAnyBead({anyBead, creationTime, canNotifyReply});
+        [bead_ah, global_time_anchor, bucket_ts] = await this.zomeProxy.publishAnyBead({anyBead, creationTime});
         typed = anyBead;
         break;
       case ThreadsEntryType.EncryptedBead:
         const encContent = content as EncryptedBeadContent;
         beadTypeEx = ThreadsEntryType.EncryptedBead;
         typed = encContent.encBead;
-        [bead_ah, global_time_anchor, bucket_ts] = await this.zomeProxy.publishEncBead({encBead: encContent.encBead, otherAgent: encContent.otherAgent, creationTime, canNotifyReply});
+        [bead_ah, global_time_anchor, bucket_ts] = await this.zomeProxy.publishEncBead({encBead: encContent.encBead, otherAgent: encContent.otherAgent, creationTime});
         break;
     }
     /** Insert in ThreadInfo */
@@ -1247,17 +1235,17 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** get ppAh of Notif */
-  async getPpFromNotification(notif: WeaveNotification): Promise<ActionHashB64> {
+  async getPpFromNotification(notif: ThreadsNotification): Promise<ActionHashB64> {
     console.log("getPpFromNotification()", notif.event);
     if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event) {
-      return encodeHashToBase64(notif.content);
+      return notif.content;
     } else {
-      const maybeBead = this._beads[encodeHashToBase64(notif.content)];
+      const maybeBead = this._beads[notif.content];
       if (maybeBead) {
         return maybeBead[0].bead.ppAh;
       }
-      const [typed, beadType, _ts, _author] = await this.fetchUnknownBead(encodeHashToBase64(notif.content));
-      const [base, _baseType] = await this.getBaseTypedBead(typed, beadType, encodeHashToBase64(notif.author)); // WARN: Assuming notif sender is also bead author
+      const [typed, beadType, _ts, _author] = await this.fetchUnknownBead(notif.content);
+      const [base, _baseType] = await this.getBaseTypedBead(typed, beadType, notif.author); // WARN: Assuming notif sender is also bead author
       return encodeHashToBase64(base.bead.ppAh);
     }
   }
@@ -1266,7 +1254,7 @@ export class ThreadsZvm extends ZomeViewModel {
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
-  storeNotification(notif: WeaveNotification, ppAh?: ActionHashB64) {
+  storeNotification(notif: ThreadsNotification, ppAh?: ActionHashB64) {
     /** make sure we have the content signaled in the notification */
     if (!ppAh) {
       this.getPpFromNotification(notif).then((ppAh) => this.fetchPp(ppAh));
@@ -1275,7 +1263,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /* */
     //console.log("storeInboxItem()", notif.event, ppAh);
-    this._inbox[encodeHashToBase64(notif.link_ah)] = [ppAh, notif];
+    this._inbox[notif.createLinkAh] = [ppAh, notif];
   }
 
 
@@ -1609,33 +1597,33 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Return true if sent synchronously */
-  async emitNotificationTip(agent: AgentPubKeyB64, notification: ThreadsNotification): Promise<boolean> {
+  async castNotificationTip(linkAh: ActionHashB64, agent: AgentPubKeyB64, notification: ThreadsNotification, extra: Uint8Array): Promise<boolean> {
+    let pp_ah = decodeHashFromBase64(notification.content);
+    if (NotifiableEvent.Mention === notification.event || NotifiableEvent.Reply === notification.event
+      || NotifiableEvent.NewBead === notification.event) {
+      const beadAh = notification.content;
+      const beadInfo = this.getBeadInfo(beadAh);
+      pp_ah = decodeHashFromBase64(beadInfo.bead.ppAh);
+    }
+    const notificationTip: ThreadsNotificationTip = {
+      //event_index: notification.eventIndex,
+      event: notification.event,
+      author: decodeHashFromBase64(notification.author),
+      timestamp: notification.timestamp,
+      content: decodeHashFromBase64(notification.content),
+      /** */
+      link_ah: decodeHashFromBase64(linkAh),
+      pp_ah,
+      data: extra,
+    }
     try {
-      await this.zomeProxy.castNotificationTip({peer: decodeHashFromBase64(agent), notification});
+      await this.zomeProxy.castNotificationTip({peer: decodeHashFromBase64(agent), notificationTip});
       return true;
     } catch (e) {
       /** Peer might not be online, use notificationZome instead */
       // FIXME
     }
     return false;
-  }
-
-
-  /** */
-  createNotificationSignal(notification: WeaveNotification, extra: Uint8Array): ThreadsNotification {
-    let pp_ah = notification.content;
-    if (NotifiableEvent.Mention === notification.event || NotifiableEvent.Reply === notification.event
-        || NotifiableEvent.NewBead === notification.event) {
-      const beadAh = encodeHashToBase64(notification.content);
-      const beadInfo = this.getBeadInfo(beadAh);
-      pp_ah = decodeHashFromBase64(beadInfo.bead.ppAh);
-    }
-    const notif: ThreadsNotification = {
-      pp_ah,
-      notification,
-      data: extra,
-    }
-    return notif;
   }
 
 
@@ -1900,7 +1888,6 @@ export class ThreadsZvm extends ZomeViewModel {
           roleName: "rFiles", // FILES_CELL_NAME
           // creationTime,
           // author,
-          canNotifyReply: false,
         };
         const [entry_bead, _creation_ts] = await this.zomeProxy.createEntryBead(entryInfo);
         return entry_bead;
@@ -1980,15 +1967,19 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Create */
     const isNew = state.Create;
-    const eventIndex = Number(link.tag)
-    const event = NotifiableEvent[eventIndex];
-    console.log("handleInboxSignal() eventIndex", eventIndex, event);
-    const notif: WeaveNotification = {
+    const decoder = new TextDecoder('utf-8');
+    const event = decoder.decode(link.tag) as NotifiableEvent;
+    console.log("handleInboxSignal() event", event, link.tag);
+    // const eventIndex = Number(link.tag)
+    // const event = getEventType(eventIndex);
+    // console.log("handleInboxSignal() eventIndex", eventIndex, event);
+    const notif: ThreadsNotification = {
+      //eventIndex,
       event,
-      author: link.author,
+      author: encodeHashToBase64(link.author),
       timestamp: link.timestamp,
-      link_ah: decodeHashFromBase64(linkAh),
-      content: link.target,
+      createLinkAh: linkAh,
+      content: encodeHashToBase64(link.target),
     };
     /** I got notified */
     if (base == this.cell.agentPubKey) {
@@ -1996,7 +1987,7 @@ export class ThreadsZvm extends ZomeViewModel {
       await this.storeNotification(notif);
       /** Publish a NotifySetting.AllMessages for this thread if non exists */
       if (NotifiableEvent.NewDmThread === event && isNew) {
-        const ppAh = encodeHashToBase64(notif.content);
+        const ppAh = notif.content;
         console.log("NewDmThread in inbox:", ppAh);
         const notifSettings = this.getPpNotifSettings(ppAh);
         const notifSetting = notifSettings[this.cell.agentPubKey];
@@ -2024,8 +2015,7 @@ export class ThreadsZvm extends ZomeViewModel {
         const beadPair = this.perspective.beads[beadAh];
         extra = encode({typed: beadPair[1], beadType: beadPair[0].beadType});
       }
-      const notifPulse = this.createNotificationSignal(notif, extra);
-      await this.emitNotificationTip(target, notifPulse);
+      await this.castNotificationTip(linkAh, target, notif, extra);
     }
   }
 
@@ -2046,6 +2036,11 @@ export class ThreadsZvm extends ZomeViewModel {
       break;
       case ThreadsLinkType.Dm:
         await this.fetchPp(target);
+        const isNew = (state as StateChangeVariantCreate).Create;
+        /** Notify peer of DmThread */
+        if (base != this.cell.agentPubKey && isNew) {
+          await this.zomeProxy.notifyPeer({ content: link.target, who: decodeHashFromBase64(base), event: NotifiableEvent.NewDmThread });
+        }
       break;
       case ThreadsLinkType.EmojiReaction: {
         if (StateChangeType.Create in state) {
@@ -2146,6 +2141,14 @@ export class ThreadsZvm extends ZomeViewModel {
           const isNew = entryInfo.state.Create;
           this.storeThread(hash, pp, entryInfo.ts, author, isNew);
           if (isNew) {
+            /** Notify Subject author */
+            if (encodeHashToBase64(pp.subject.dnaHash) == this.cell.dnaHash) {
+              //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
+                let author = await this.zomeProxy.getRecordAuthor(pp.subject.hash);
+                await this.zomeProxy.notifyPeer({ content: decodeHashFromBase64(hash), who: author, event: NotifiableEvent.Fork });
+              //}
+            }
+            /** Tip all about new Pp */
             tip = {type: "NewPp", creation_ts: entryInfo.ts, ah: hash, pp};
           }
         }
@@ -2169,28 +2172,75 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleBeadEntry(entryInfo: EntryInfo, bead: TypedBead, beadType: BeadType, isNew: boolean): Promise<TipProtocol> {
+  private async notifyPeers(notifs: (NotifyPeerInput & {ppAh: ActionHashB64})[]) {
+    /** */
+    // FIXME: notify peers with AllMessage notifSetting
+    /** Keep only notifiable peers */
+    const all = notifs
+      .filter((notif) => this.getNotifSetting(notif.ppAh, encodeHashToBase64(notif.who)) != NotifySetting.Never)
+      .map((notif) => this.zomeProxy.notifyPeer(notif));
+    await Promise.all(all);
+  }
+
+
+  /** */
+  private async handleBeadEntry(entryInfo: EntryInfo, typed: TypedBead, beadType: BeadType, isNew: boolean): Promise<TipProtocol> {
     console.log("handleBeadEntry()", beadType, encodeHashToBase64(entryInfo.hash));
     if (!isHashType(entryInfo.author, 'Agent') || !isHashType(entryInfo.hash, 'Action')) {
       console.error("Bad hash typed in EntryInfo", entryInfo);
       return;
     }
+    /** Store Bead */
     const author = encodeHashToBase64(entryInfo.author);
     const beadAh = encodeHashToBase64(entryInfo.hash);
-    const typed = materializeTypedBead(bead, beadType);
+    const typedMat = materializeTypedBead(typed, beadType);
+    await this.storeTypedBead(beadAh, typedMat, beadType, entryInfo.ts, author, isNew);
+    /** Notify / Tip if new */
     let tip: TipProtocol;
-    await this.storeTypedBead(beadAh, typed, beadType, entryInfo.ts, author, isNew);
-    /** Form Tip to broadcast */
-    let ppAh;
-    if (beadType == ThreadsEntryType.EncryptedBead) {
-      console.log("handleBeadEntry() EncryptedBead", beadAh);
-      const decBeadPair = this._decBeads[beadAh];
-      ppAh = decBeadPair[0].bead.ppAh;
-    } else {
-      ppAh = (typed as unknown as TypedBaseBeadMat).bead.ppAh;
-    }
-    const data = encode({typed, beadType});
+    let notifs: (NotifyPeerInput & {ppAh: ActionHashB64})[] = [];
     if (isNew) {
+      /** Get base info */
+      let ppAh;
+      let prevBeadAh;
+      if (beadType == ThreadsEntryType.EncryptedBead) {
+        console.log("handleBeadEntry() EncryptedBead", beadAh);
+        const decBeadPair = this._decBeads[beadAh];
+        ppAh = decBeadPair[0].bead.ppAh;
+        prevBeadAh = decBeadPair[0].bead.prevBeadAh;
+      } else {
+        const baseBead = typedMat as unknown as TypedBaseBeadMat;
+        ppAh = baseBead.bead.ppAh;
+        prevBeadAh = baseBead.bead.prevBeadAh;
+        /* Notify Mentions */
+        if (beadType == ThreadsEntryType.TextBead) {
+          const textBead = typed as TextBead;
+          const mentionees = parseMentions(textBead.value, (this._dvmParent as any).profilesZvm);
+          for (const mentionee of mentionees) {
+            notifs.push({
+              ppAh: encodeHashToBase64(textBead.bead.ppAh),
+              content: decodeHashFromBase64(beadAh),
+              who: decodeHashFromBase64(mentionee),
+              event: NotifiableEvent.Mention
+            });
+          }
+        }
+      }
+      /** Notify Reply */
+      /** Notify reply if prevBead in Bead is different from last known bead for pp and not in a DM thread */
+      if (prevBeadAh != ppAh) { // Thread's first bead has ppAh == prevBeadAh
+        //const prevBeadTuple = await this.fetchUnknownBead(prevBeadAh);
+        const lastKnownBead = this._threads.get(ppAh).getLast(1);
+        const isDmThread = this.isThreadDm(ppAh);
+        console.log("handleBeadEntry()", isDmThread);
+        const hasJumpedBead = lastKnownBead.length > 0 && lastKnownBead[0].beadAh != prevBeadAh;
+        if (hasJumpedBead && !isDmThread) {
+          let reply_author = await this.zomeProxy.getRecordAuthor(prevBeadAh);
+          notifs.push({ppAh, content: decodeHashFromBase64(beadAh), who: reply_author, event: NotifiableEvent.Reply});
+        }
+      }
+      await this.notifyPeers(notifs);
+      /** Form "NewBead" Tip to broadcast */
+      const data = encode({typed: typedMat, beadType});
       //await delay(100); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
       tip = {type: "NewBead", creation_ts: entryInfo.ts, bead_ah: beadAh, bead_type: beadType, pp_ah: ppAh, data};
     }
@@ -2253,47 +2303,54 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleNotificationTip(notifTip: ThreadsNotification, from: AgentPubKeyB64) {
-    const notif = notifTip.notification as WeaveNotification;
-    const extra: Uint8Array = notifTip.data;
-
+  private async handleNotificationTip(notifTip: ThreadsNotificationTip, from: AgentPubKeyB64) {
     let ppAh: ActionHashB64;
     /** Store received Entry */
-    if (NotifiableEvent.Mention == notif.event || NotifiableEvent.Reply == notif.event || NotifiableEvent.NewBead == notif.event) {
-      const {typed, beadType} = decode(extra) as {typed: TypedBeadMat, beadType: BeadType};
-      const beadAh = encodeHashToBase64(notif.content);
+    if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
+      const {typed, beadType} = decode(notifTip.data) as {typed: TypedBeadMat, beadType: BeadType};
+      const beadAh = encodeHashToBase64(notifTip.content);
       //ppAh = typedMat.bead.ppAh;
       // if (!notifSignal.maybePpHash) {
       //   console.error("Missing ppAh in ThreadsSignal");
       // }
       ppAh = encodeHashToBase64(notifTip.pp_ah);
-      console.log(`Received NotificationSignal of type ${JSON.stringify(notif.event)}:`, beadAh, typed);
-      await this.storeTypedBead(beadAh, typed, beadType, notif.timestamp, encodeHashToBase64(notif.author), true);
+      console.log(`Received NotificationSignal of type ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
+      await this.storeTypedBead(beadAh, typed, beadType, notifTip.timestamp, encodeHashToBase64(notifTip.author), true);
     }
     /* Set notif setting */
-    if (NotifiableEvent.NewDmThread == notif.event) {
-      ppAh = encodeHashToBase64(notif.content);
+    if (NotifiableEvent.NewDmThread == notifTip.event) {
+      ppAh = encodeHashToBase64(notifTip.content);
       /* skip if known thread */
       const dmThread = this.perspective.threads.get(ppAh);
       if (dmThread) {
         return;
       }
       /** Store thread */
-      const pp = decode(extra) as ParticipationProtocol;
-      this.storeThread(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), false);
+      const pp = decode(notifTip.data) as ParticipationProtocol;
+      this.storeThread(ppAh, pp, notifTip.timestamp, encodeHashToBase64(notifTip.author), false);
       /* Set NotifSetting */
       console.log("NewDmThread.publishNotifSetting() signal", ppAh);
       await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
     }
-    if (NotifiableEvent.Fork === notif.event) {
-      const pp = decode(extra) as ParticipationProtocol;
-      ppAh = encodeHashToBase64(notif.content);
+    if (NotifiableEvent.Fork === notifTip.event) {
+      const pp = decode(notifTip.data) as ParticipationProtocol;
+      ppAh = encodeHashToBase64(notifTip.content);
       console.log(`Received NotificationSignal of type ${NotifiableEvent.Fork}:`, pp);
-      this.storeThread(ppAh, pp, notif.timestamp, encodeHashToBase64(notif.author), false);
+      this.storeThread(ppAh, pp, notifTip.timestamp, encodeHashToBase64(notifTip.author), false);
     }
 
     /* Brutal way to make sure we have the content signaled in the notification */
     await this.probeAllLatest();
+    /** */
+    const notif: ThreadsNotification = {
+      //eventIndex: notifTip.event_index,
+      event: notifTip.event,
+      createLinkAh: encodeHashToBase64(notifTip.link_ah),
+      author: encodeHashToBase64(notifTip.author),
+      timestamp: notifTip.timestamp,
+      content: encodeHashToBase64(notifTip.content),
+    }
+    /** */
     this.storeNotification(notif, ppAh);
   }
 

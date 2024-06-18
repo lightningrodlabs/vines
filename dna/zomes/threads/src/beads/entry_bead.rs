@@ -3,7 +3,7 @@ use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::{fetch_typed_bead, index_bead};
-use crate::notifications::*;
+
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -36,7 +36,6 @@ pub struct AddEntryAsBeadInput {
     pub zome_name: String,
     pub original_creation_time: Option<Timestamp>,
     pub original_author: Option<AgentPubKey>,
-    pub can_notify_reply: bool,
 }
 
 
@@ -47,18 +46,11 @@ pub struct AddEntryAsBeadInput {
 #[feature(zits_blocking)]
 pub fn publish_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    debug!("add_any_as_bead() {:?}", input);
+    debug!("publish_entry_as_bead() {:?}", input);
     let (entry_bead, creation_time) = create_entry_bead(input.clone())?;
     let ah = create_entry(ThreadsEntry::EntryBead(entry_bead.clone()))?;
     let tp_pair = index_bead(entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
-    /// Reply
-    if input.can_notify_reply {
-        if entry_bead.bead.pp_ah != entry_bead.bead.prev_bead_ah.clone() {
-            let reply_author = get_author(&entry_bead.bead.prev_bead_ah.clone().into())?;
-            let _maybe = notify_peer(NotifyPeerInput { content: ah.clone().into(), who: reply_author.clone(), event: NotifiableEvent::Reply })?;
-        }
-    }
     ///
     Ok((ah, entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }

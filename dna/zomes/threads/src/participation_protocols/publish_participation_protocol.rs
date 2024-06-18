@@ -4,7 +4,7 @@ use zome_utils::*;
 use time_indexing::{index_item};
 use path_explorer_types::*;
 use crate::participation_protocols::*;
-use crate::notifications::*;
+
 
 /// Create a Pp off of anything
 #[hdk_extern]
@@ -54,15 +54,6 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     index_time,
     pp.subject.hash.get_raw_39())?;
   debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.hash);
-  /// Notify Subject author
-  if pp.subject.dna_hash == dna_info()?.hash {
-    if let Ok(subject_hash) = AnyDhtHash::try_from(pp.subject.hash) {
-      let maybe_author = get_author(&subject_hash);
-      if let Ok(author) = maybe_author {
-        let _maybe = notify_peer(NotifyPeerInput { content: pp_ah.clone().into(), who: author.clone(), event: NotifiableEvent::Fork })?;
-      }
-    }
-  }
   /// Done
   Ok((pp_ah, index_time))
 }

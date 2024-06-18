@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-use crate::notifications::*;
+
 
 /// Publish a Pp off of another Agent
 #[hdk_extern]
@@ -41,8 +41,6 @@ pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
     ThreadsLinkType::Dm,
     hash2tag(me),
   )?;
-  /// Notify other agent author
-  let _link_ah = notify_peer(NotifyPeerInput { content: pp_ah.clone().into(), who: other_agent.clone(), event: NotifiableEvent::NewDmThread })?.unwrap();
   /// Done
   Ok(pp_ah)
 }

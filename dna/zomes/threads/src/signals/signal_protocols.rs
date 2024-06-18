@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
 //use zome_utils::*;
 use threads_integrity::*;
-use crate::notifications::WeaveNotification;
+use crate::notifications::*;
 
 
 ///
@@ -62,16 +62,7 @@ pub enum TipProtocol {
     NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},
     EmojiReactionChange {bead_ah: ActionHashB64, author: AgentPubKeyB64, emoji: String, is_added: bool},
     ///
-    Notification { value: ThreadsNotification },
-}
-
-
-///
-#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub struct ThreadsNotification {
-    pp_ah: ActionHash,
-    notification: WeaveNotification,
-    data: SerializedBytes,
+    Notification { value: ThreadsNotificationTip },
 }
 
 

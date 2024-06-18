@@ -29,7 +29,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"fetch_many_text_bead",
 	"publish_text_bead_at",
 	"publish_many_text_bead_at",
-	"publish_text_bead_at_and_notify",
 
 
 
@@ -56,6 +55,7 @@ export const threadsFunctionNames: FunctionName[] = [
 
 	"get_record_author",
 	"get_data_type",
+	"notify_peer",
 	"probe_inbox",
 	"unpublish_notification",
 	"publish_notify_setting",

@@ -152,7 +152,6 @@ export interface AddAnyBeadInput {
   anyBead: AnyBead
   creationTime: Timestamp
   originalAuthor?: AgentPubKey
-  canNotifyReply: boolean
 }
 
 /**  */
@@ -177,7 +176,6 @@ export interface AddEntryAsBeadInput {
   zomeName: string
   originalCreationTime?: Timestamp
   originalAuthor?: AgentPubKey
-  canNotifyReply: boolean
 }
 
 export interface GetLatestBeadsInput {
@@ -205,13 +203,6 @@ export interface AddManyTextBeadAtInput {
   count: number
 }
 
-export interface AddTextAtAndNotifyInput {
-  textBead: TextBead
-  creationTime: Timestamp
-  mentionees: AgentPubKey[]
-  canNotifyReply: boolean
-}
-
 export interface DecryptBeadInput {
   encBead: EncryptedBead
   otherAgent: AgentPubKey
@@ -226,7 +217,6 @@ export interface AddEncBeadInput {
   encBead: EncryptedBead
   otherAgent: AgentPubKey
   creationTime: Timestamp
-  canNotifyReply: boolean
 }
 
 export interface CommitGlobalLogInput {
@@ -263,12 +253,15 @@ export enum NotifiableEvent {
 }
 
 /**  */
-export interface WeaveNotification {
+export interface ThreadsNotificationTip {
   event: NotifiableEvent
   author: AgentPubKey
   timestamp: Timestamp
   link_ah: ActionHash
   content: AnyLinkableHash
+  /**  */
+  pp_ah: ActionHash
+  data: Uint8Array
 }
 
 /**
@@ -302,8 +295,8 @@ export interface BroadcastTipInput {
 }
 
 /** Input to the notify call */
-export interface EmitNotificationTipInput {
-  notification: ThreadsNotification
+export interface CastNotificationTipInput {
+  notificationTip: ThreadsNotificationTip
   peer: AgentPubKey
 }
 
@@ -412,7 +405,7 @@ export type TipProtocolVariantEmojiReactionChange = {
   /**  */
 export type TipProtocolVariantNotification = {
   type: "Notification"
-  value: ThreadsNotification
+  value: ThreadsNotificationTip
 }
 export type TipProtocol =
   | TipProtocolVariantPing
@@ -423,13 +416,6 @@ export type TipProtocol =
   | TipProtocolVariantNewBead
   | TipProtocolVariantEmojiReactionChange
   | TipProtocolVariantNotification;
-
-/**  */
-export interface ThreadsNotification {
-  pp_ah: ActionHash
-  notification: WeaveNotification
-  data: Uint8Array
-}
 
 /** Bool: True if state change just happened (real-time) */
 export enum StateChangeType {

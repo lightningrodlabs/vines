@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import { DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {determineSubjectPrefix, parseMentions} from "../utils";
+import {determineSubjectPrefix} from "../utils";
 
 import {ActionHashB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
@@ -189,9 +189,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       console.error("Missing Comment thread");
       return;
     }
-    const agentsToNotify = parseMentions(inputText, this._dvm.profilesZvm);
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey, agentsToNotify);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey);
     console.log("onCreateComment() ah:", ah);
   }
 

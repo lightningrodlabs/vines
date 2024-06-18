@@ -19,7 +19,7 @@ import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
-  DM_SUBJECT_TYPE_NAME,
+  DM_SUBJECT_TYPE_NAME, NotifiableEvent,
   SEMANTIC_TOPIC_TYPE_NAME, StateChange, StateChangeType,
   ThreadsEntryType, ThreadsLinkType
 } from "./bindings/threads.types";
@@ -28,13 +28,19 @@ import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
 
 
-// export interface LinkFixed extends Link {
-//   base: AnyLinkableHash;
-// }
-
+/** */
+export function getEventType(index: number): NotifiableEvent {
+  const keys = Object.keys(NotifiableEvent);
+  if (index >= 0 && index < keys.length) {
+    const key = keys[index];
+    return NotifiableEvent[key];
+  }
+  /** */
+  throw Error("Out of bounds index for getEventType");
+}
 
 /** */
-export function getLinkType(index: number): string {
+export function getLinkType(index: number): ThreadsLinkType {
   const keys = Object.keys(ThreadsLinkType);
   if (index >= 0 && index < keys.length) {
     const key = keys[index];

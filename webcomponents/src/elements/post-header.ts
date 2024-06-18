@@ -7,7 +7,7 @@ import {sharedStyles} from "../styles";
 import {renderAvatar} from "../render";
 
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
-import {MAIN_TOPIC_HASH, parseMentions} from "../utils";
+import {MAIN_TOPIC_HASH} from "../utils";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {weClientContext} from "../contexts";
 import {consume} from "@lit/context";
@@ -68,8 +68,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
 
     const inputText = this.inputElem.value;
-    const mentionedAgents = parseMentions(inputText, this._dvm.profilesZvm);
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh, this.cell.agentPubKey, mentionedAgents);
+    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh, this.cell.agentPubKey);
     console.log("commitInput() res:", res);
 
     this.inputElem.value = "";

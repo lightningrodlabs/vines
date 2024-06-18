@@ -19,7 +19,6 @@ import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
-import {parseMentions} from "../utils";
 import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
 
 
@@ -201,9 +200,8 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onTextComment(inputText: string) {
     const commentThreadAh = await this.getCommentThread();
-    const agentsToNotify = parseMentions(inputText, this._dvm.profilesZvm);
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentPubKey, agentsToNotify);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentPubKey);
     console.log("onTextComment() ah:", ah);
   }
 

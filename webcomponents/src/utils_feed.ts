@@ -2,9 +2,10 @@
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {determineBeadName, MAIN_TOPIC_HASH} from "./utils";
-import {NotifiableEvent, WeaveNotification} from "./bindings/threads.types";
+import {NotifiableEvent} from "./bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {ThreadsNotification} from "./viewModels/threads.perspective";
 
 
 export const POST_TYPE_NAME = "Post";
@@ -37,10 +38,10 @@ export function getMainThread(dvm: ThreadsDvm): ActionHashB64 | null {
 
 
 /** Return [notifTitle, notifBody] */
-export function  composeFeedNotificationTitle(notif: WeaveNotification, threadsDvm: ThreadsDvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
+export function  composeFeedNotificationTitle(notif: ThreadsNotification, threadsDvm: ThreadsDvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
   let title: string = "";
   let content: string = "";
-  const ah = encodeHashToBase64(notif.content);
+  const ah = notif.content;
   if (NotifiableEvent.Mention === notif.event) {
     const beadPair = threadsDvm.threadsZvm.perspective.beads[ah];
     if (!beadPair) {

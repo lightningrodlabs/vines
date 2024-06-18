@@ -7,7 +7,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {determineSubjectName, MAIN_TOPIC_HASH, parseMentions} from "../../utils";
+import {determineSubjectName, MAIN_TOPIC_HASH} from "../../utils";
 import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -87,8 +87,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     /** Before */
     const [mainThreadAh, createdMainThread] = await this.beforeCreate();
     /** Create */
-    const mentionedAgents = parseMentions(content, this._dvm.profilesZvm);
-    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.agentPubKey, mentionedAgents);
+    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.agentPubKey);
     inputElem.value = "";
     /** After */
     this.afterCreate(beadAh, createdMainThread)
