@@ -14,7 +14,7 @@ import {
   EntryBead,
   GlobalLastProbeLog, NotifiableEvent, NotifySetting,
   ParticipationProtocol,
-  Subject, TextBead, ThreadsEntryType,
+  Subject, TextBead, ThreadsEntryType, ThreadsNotificationTip,
 } from "../bindings/threads.types";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {AuthorshipZvm} from "./authorship.zvm";
@@ -160,7 +160,16 @@ export interface ThreadsPerspectiveLive {
   unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]>, // Unread thread == Has "new" beads
 }
 
+export type NotificationTipPpData = {
+  pp: ParticipationProtocol,
+  creationTime: Timestamp,
+};
 
+export type NotificationTipBeadData = {
+  typed: TypedBeadMat,
+  beadType: BeadType,
+  creationTime: Timestamp,
+};
 
 /** -- PpMat -- */
 

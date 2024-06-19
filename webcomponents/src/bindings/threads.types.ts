@@ -257,11 +257,11 @@ export interface ThreadsNotificationTip {
   event: NotifiableEvent
   author: AgentPubKey
   timestamp: Timestamp
-  link_ah: ActionHash
   content: AnyLinkableHash
   /**  */
+  link_ah: ActionHash
   pp_ah: ActionHash
-  data: number[]
+  data: Uint8Array
 }
 
 /**
