@@ -57,9 +57,7 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
       } else {
         let pp_ah: ActionHash = ActionHash::from_raw_39(item_tag.custom_data).unwrap();
         let bl = BeadLink {
-          //index_time,
-          creation_time: item_tag.ts_us,
-          //creation_time: link.timestamp,
+          creation_time: item_tag.ts_us, //creation_time: link.timestamp,
           bead_ah: ActionHash::try_from(link.target).unwrap(),
           bead_type: item_tag.item_type,
           author: link.author,

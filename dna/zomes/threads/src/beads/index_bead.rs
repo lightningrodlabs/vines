@@ -18,7 +18,6 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, ts_us: Times
     ts_us,
     &vec![])?;
   //debug!("Bead indexed at thread:\n  - {} {}", path2anchor(&thread_leaf_tp.path).unwrap(), thread_leaf_tp.path_entry_hash()?);
-
   /// Index in Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;
@@ -30,7 +29,6 @@ pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, ts_us: Times
     ts_us,
     bead.pp_ah.get_raw_39())?;
   //debug!("Bead indexed at global:\n  - {}", path2anchor(&leaf_tp.path).unwrap());
-
   /// Done
   Ok((thread_leaf_tp, global_leaf_tp))
 }

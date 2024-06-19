@@ -40,9 +40,7 @@ pub fn find_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInter
     .map(|(_index_time, link)| {
       let bt: TimedItemTag = SerializedBytes::from(UnsafeBytes::from(link.tag.0)).try_into().unwrap();
       BeadLink {
-        //index_time,
-        creation_time: bt.ts_us,
-        //creation_time: link.timestamp,
+        creation_time: bt.ts_us, //creation_time: link.timestamp,
         bead_ah: ActionHash::try_from(link.target).unwrap(),
         bead_type: bt.item_type,
         author: link.author,

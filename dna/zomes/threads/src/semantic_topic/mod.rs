@@ -10,18 +10,6 @@ use hdk::prelude::*;
 use threads_integrity::*;
 
 
-// /// Get a SemanticTopic
-// #[hdk_extern]
-// pub fn fetch_topic(eh: EntryHash) -> ExternResult<SemanticTopic> {
-//   std::panic::set_hook(Box::new(zome_panic_hook));
-//   debug!("fetch_topic() {:?}", eh);
-//   let typed = get_typed_from_eh(eh)?;
-//   Ok(typed)
-// }
-
-
-
-
 ///
 pub(crate) fn determine_topic_anchor(title: String) -> ExternResult<TypedPath> {
   // conver to lowercase for path for ease of search

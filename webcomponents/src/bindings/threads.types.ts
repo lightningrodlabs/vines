@@ -355,11 +355,7 @@ export type SystemSignalProtocol =
   | SystemSignalProtocolVariantSelfCallStart
   | SystemSignalProtocolVariantSelfCallEnd;
 
-/**
- * 
- * Data sent by UI ONLY. That's why we use B64 here.
- * 
- */
+/** Used by UI ONLY. That's why we use B64 here. */
 export type TipProtocolVariantPing = {
   type: "Ping"
   from: AgentPubKeyB64
@@ -521,7 +517,7 @@ export interface ThreadLastProbeLog {
 
 /**
  * -------------------------------------------------------------------------------------------------
- * Threads Global consts
+ * Global consts
  * -------------------------------------------------------------------------------------------------
  * DNA/Zome names
  */
@@ -546,7 +542,7 @@ export const PP_ITEM_TYPE = "__protocol";
 
 /**
  * -------------------------------------------------------------------------------------------------
- * Threads zome's entry types
+ * Entry types
  * -------------------------------------------------------------------------------------------------
  */
 export enum ThreadsEntryType {
@@ -572,7 +568,7 @@ export type ThreadsEntry =
 
 /**
  * -------------------------------------------------------------------------------------------------
- * Threads zome's link types
+ * Link types
  * -------------------------------------------------------------------------------------------------
  */
 export enum ThreadsLinkType {

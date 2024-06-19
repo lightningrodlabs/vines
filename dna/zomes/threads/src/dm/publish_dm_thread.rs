@@ -32,8 +32,7 @@ pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
     me.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Dm,
-    hash2tag(other_agent.clone()),
-    // str2tag(&subject_hash_str), // Store Subject Hash in Tag
+    hash2tag(other_agent.clone()), // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
   create_link(
     other_agent.clone(),

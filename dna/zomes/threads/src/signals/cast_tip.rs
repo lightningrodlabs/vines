@@ -4,12 +4,22 @@ use zome_utils::*;
 use crate::*;
 use crate::notifications::*;
 
-// ///
-// #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-// pub struct DeliveryGossip {
-//   pub from: AgentPubKey,
-//   pub gossip: DirectGossipProtocol,
-// }
+
+/// Input to the notify call
+#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct BroadcastTipInput {
+  pub tip: TipProtocol,
+  pub peers: Vec<AgentPubKey>,
+}
+
+///
+#[hdk_extern]
+fn broadcast_tip(input: BroadcastTipInput) -> ExternResult<()> {
+  std::panic::set_hook(Box::new(zome_panic_hook));
+  debug!("Broadcasting tip {:?} to {:?}", input.tip, input.peers);
+  return broadcast_tip_inner(input.peers, input.tip);
+}
 
 
 ///
@@ -29,28 +39,6 @@ pub fn broadcast_tip_inner(destinations: Vec<AgentPubKey>, tip: TipProtocol) -> 
   trace!("calling remote recv_remote_signal() DONE");
   Ok(())
 }
-
-
-/// Input to the notify call
-#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct BroadcastTipInput {
-  pub tip: TipProtocol,
-  pub peers: Vec<AgentPubKey>,
-}
-
-///
-#[hdk_extern]
-fn broadcast_tip(input: BroadcastTipInput) -> ExternResult<()> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  // let mut peers: Vec<AgentPubKey> = vec![];
-  // for a in input.peers.clone() {
-  //     peers.push(a.into())
-  // }
-  debug!("Broadcasting tip {:?} to {:?}", input.tip, input.peers);
-  return broadcast_tip_inner(input.peers, input.tip);
-}
-
 
 
 /// Input to the notify call

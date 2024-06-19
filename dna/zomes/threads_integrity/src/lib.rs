@@ -13,7 +13,7 @@ pub use properties::*;
 use hdi::prelude::*;
 
 ///-------------------------------------------------------------------------------------------------
-/// Threads Global consts
+/// Global consts
 ///-------------------------------------------------------------------------------------------------
 
 /// DNA/Zome names
@@ -33,7 +33,7 @@ pub const PP_ITEM_TYPE: &'static str = "__protocol";
 
 
 ///-------------------------------------------------------------------------------------------------
-/// Threads zome's entry types
+/// Entry types
 ///-------------------------------------------------------------------------------------------------
 
 #[derive(Serialize, Deserialize, SerializedBytes, Clone)]
@@ -101,24 +101,8 @@ pub fn record_to_typed(record: Record) -> ExternResult<ThreadsEntry> {
 }
 
 
-
-// ///
-// pub fn into_typed(entry: Entry, app_entry_def: &AppEntryDef) -> ExternResult<ThreadsEntry> {
-//     let Entry::App(app_entry_bytes) = entry
-//       else { return Err(wasm_error!("Entry should be an AppEntry")) };
-//     let variant = entry_index_to_variant(app_entry_def.entry_index)?;
-//     for variant in ThreadsEntryTypes::iter() {
-//         let maybe = variant::try_from(entry);
-//         if let Ok(typed) = maybe {
-//             return typed;
-//         }
-//     }
-//     return Err(wasm_error!("Unknown AppEntry"));
-// }
-
-
 ///-------------------------------------------------------------------------------------------------
-/// Threads zome's link types
+/// Link types
 ///-------------------------------------------------------------------------------------------------
 
 #[hdk_link_types]

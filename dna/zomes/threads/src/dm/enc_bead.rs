@@ -2,6 +2,7 @@ use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::{EncryptedBead, BaseBeadKind};
 
+
 ///
 fn create_encrypted_bead<T>(typed_bead: T, bead_type: &str, other_agent: AgentPubKey) -> ExternResult<EncryptedBead>
   where

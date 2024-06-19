@@ -3,15 +3,8 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::*;
 
-// ///
-// #[hdk_extern]
-// fn get_global_log(_ : ()) -> ExternResult<GlobalLastProbeLog> {
-//   std::panic::set_hook(Box::new(zome_panic_hook));
-//   let (_ah, gql) = query_global_log(())?;
-//   Ok(gql)
-// }
 
-
+///
 #[hdk_extern]
 pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
@@ -37,14 +30,12 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
     .entry_type(entry_type);
   let records = query(query_args)?;
   debug!("query_global_log() updates found: {:?}", records);
-
   /// If no updated found return the create
   if records.is_empty() {
     let (ah, create, typed) = tuples[0].clone();
     emit_entry_signal(ah.clone(), &Action::Create(create), false, ThreadsEntry::GlobalLastProbeLog(typed.clone()))?;
     return Ok((ah, typed));
   }
-
   /// Grab last one (ascending order)
   let latest_record = records.last().unwrap().clone();
   let typed: GlobalLastProbeLog = get_typed_from_record(latest_record.clone())?;

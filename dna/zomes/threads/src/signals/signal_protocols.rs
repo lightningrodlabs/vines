@@ -9,7 +9,6 @@ use crate::notifications::*;
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ThreadsSignal {
-    //maybe_pp_hash: Option<ActionHashB64>, // used for filtering by PP if applicable
     pub from: AgentPubKey, // if from self, than its not a DM,
     pub pulses: Vec<ThreadsSignalProtocol>,
 }
@@ -46,9 +45,7 @@ pub enum SystemSignalProtocol {
 }
 
 
-///
-/// Data sent by UI ONLY. That's why we use B64 here.
-///
+/// Used by UI ONLY. That's why we use B64 here.
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum TipProtocol {
@@ -108,15 +105,4 @@ impl EntryInfo {
         }
     }
 }
-
-
-// #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-// pub struct LinkInfo {
-//     pub author: AgentPubKey,
-//     pub base: AnyLinkableHash,
-//     pub target: AnyLinkableHash,
-//     pub ts: Timestamp,
-//     pub link_type: LinkType,
-//     pub tag: Option<Vec<u8>>,
-// }
 

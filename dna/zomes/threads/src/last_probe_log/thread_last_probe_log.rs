@@ -5,17 +5,6 @@ use threads_integrity::*;
 use crate::*;
 
 
-// ///
-// #[hdk_extern]
-// pub fn fetch_thread_log(eh: EntryHash) -> ExternResult<ThreadLastProbeLog> {
-//   std::panic::set_hook(Box::new(zome_panic_hook));
-//   debug!("get_thread_query_log() {:?}", eh);
-//   let typed = get_typed_from_eh(eh)?;
-//   Ok(typed)
-// }
-
-
-
 /// Return ActionHash
 #[hdk_extern]
 #[feature(zits_blocking)]

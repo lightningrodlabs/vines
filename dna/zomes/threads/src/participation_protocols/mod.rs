@@ -2,7 +2,6 @@
 mod probe_pps_from_subject;
 mod publish_participation_protocol;
 
-//pub use create_participation_protocol::*;
 
 use hdi::hash_path::path::{Component};
 use hdk::hdi::prelude::DnaHash;
@@ -12,14 +11,6 @@ use zome_utils::*;
 use threads_integrity::*;
 use authorship_zapi::*;
 use crate::*;
-
-
-// ///
-// #[hdk_extern]
-// pub fn get_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
-//   let typed_pair = get_typed_and_record(&ah.into())?;
-//   Ok((typed_pair.1, typed_pair.0.action().timestamp(), typed_pair.0.action().author().to_owned()))
-// }
 
 
 /// Return original author
@@ -34,7 +25,6 @@ pub fn fetch_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestam
   let action = record.action().clone();
   /// Emit Signal
   emit_entry_signal_record(record, false)?;
-  //emit_entry_signal(record.action_address().to_owned(), action, false, ThreadsEntry::ParticipationProtocol(typed.clone()))?;
   ///
   Ok((typed, action.timestamp(), action.author().to_owned()))
 }
@@ -87,10 +77,8 @@ pub fn comp2subject<T: HashType>(comp: &Component) -> ExternResult<(DnaHash, Hol
     .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
 
   debug!("comp2subject() s = {}", s);
-
   let (dna_hash_str, subject_hash_str) = s.split_at(s.find("|").unwrap());
   let subject_hash_str = &subject_hash_str[1..]; // remove delimiter
-
   debug!("comp2subject() {} :: {}", dna_hash_str, subject_hash_str);
 
   let raw_dna_hash = holo_hash_decode_unchecked(&dna_hash_str)

@@ -72,16 +72,6 @@ pub fn query_enc_beads(_: ()) -> ExternResult<()> {
 }
 
 
-// ///
-// #[hdk_extern]
-// pub fn query_global_logs(_: ()) -> ExternResult<()> {
-//    std::panic::set_hook(Box::new(zome_panic_hook));
-//    query_all_typed::<GlobalLastProbeLog>(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap())?;
-//    /// Done
-//    Ok(())
-// }
-
-
 ///
 fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()> {
    let EntryType::App(app_entry_def) = entry_type.clone()
