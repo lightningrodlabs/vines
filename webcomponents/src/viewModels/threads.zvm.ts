@@ -2042,6 +2042,7 @@ export class ThreadsZvm extends ZomeViewModel {
         this.handleInboxSignal(linkAh, link, state, from);
       break;
       case ThreadsLinkType.Hide:
+        console.log("handleLinkSignal() hide", target);
         this.storeHidden(target, StateChangeType.Create in state);
       break;
       case ThreadsLinkType.Dm:

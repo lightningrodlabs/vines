@@ -9,6 +9,8 @@ import {threadJumpEvent} from "../../jump";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
+import {agent2eh, intoAgentPubKey} from "../../utils";
+import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 
 /**
@@ -53,7 +55,9 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let treeItems = Object.entries(this.threadsPerspective.dmAgents).map(([otherAgent, ppAh]) => {
       /** Skip if hidden */
-      const isThreadHidden = this.threadsPerspective.hiddens[ppAh]? this.threadsPerspective.hiddens[ppAh] : false;
+      const subjectEh = encodeHashToBase64(agent2eh(decodeHashFromBase64(otherAgent)));
+      //console.log("<dm-lister>.render() hide subjectEh?", subjectEh, otherAgent);
+      const isThreadHidden = this.threadsPerspective.hiddens[subjectEh]? this.threadsPerspective.hiddens[subjectEh] : false;
       if (isThreadHidden && !this.showArchived) {
         return;
       }
