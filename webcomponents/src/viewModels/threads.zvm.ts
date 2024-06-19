@@ -96,7 +96,7 @@ import {AppletId, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {decode, encode} from "@msgpack/msgpack";
 import {
-  agent2eh,
+  agent2eh, getEventType,
   getLinkType,
   getSettingType,
   intoAgentPubKey,
@@ -1977,11 +1977,13 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     /** Create */
-    const tag = link.tag.subarray(1);
     const isNew = state.Create;
-    const decoder = new TextDecoder('utf-8');
-    const event = decoder.decode(tag) as NotifiableEvent;
-    console.log("handleInboxSignal() Create", isNew, event, tag, link.tag);
+    // const tag = link.tag.subarray(1);
+    // const decoder = new TextDecoder('utf-8');
+    // const event = decoder.decode(tag) as NotifiableEvent;
+    const index = link.tag[0];
+    const event = getEventType(index);
+    console.log("handleInboxSignal() Create", isNew, event, link.tag);
     const notif: ThreadsNotification = {
       event,
       author: encodeHashToBase64(link.author),

@@ -24,8 +24,9 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
     if input.who == agent_info()?.agent_latest_pubkey {
         return Ok(());
     }
-    //let repr: u8 = input.event.into(); // let tag = LinkTag::from(vec![repr]);
-    let tag = obj2Tag(input.event)?;
+    let repr: u8 = input.event.into();
+    let tag = LinkTag::from(vec![repr]);
+    //let tag = obj2Tag(input.event)?;
     let _link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, tag)?;
     /// Done
     Ok(())
