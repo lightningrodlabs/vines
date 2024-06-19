@@ -261,7 +261,7 @@ export interface ThreadsNotificationTip {
   content: AnyLinkableHash
   /**  */
   pp_ah: ActionHash
-  data: Uint8Array
+  data: number[]
 }
 
 /**

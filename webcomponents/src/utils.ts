@@ -19,13 +19,25 @@ import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
-  DM_SUBJECT_TYPE_NAME, NotifiableEvent,
+  DM_SUBJECT_TYPE_NAME, NotifiableEvent, NotifySetting,
   SEMANTIC_TOPIC_TYPE_NAME, StateChange, StateChangeType,
   ThreadsEntryType, ThreadsLinkType
 } from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
+
+
+/** */
+export function getSettingType(index: number): NotifySetting {
+  const keys = Object.keys(NotifySetting);
+  if (index >= 0 && index < keys.length) {
+    const key = keys[index];
+    return NotifySetting[key];
+  }
+  /** */
+  throw Error("Out of bounds index for NotifySetting");
+}
 
 
 /** */
@@ -36,7 +48,7 @@ export function getEventType(index: number): NotifiableEvent {
     return NotifiableEvent[key];
   }
   /** */
-  throw Error("Out of bounds index for getEventType");
+  throw Error("Out of bounds index for NotifiableEvent");
 }
 
 /** */
@@ -214,9 +226,9 @@ export function emptyActionHash() {
   return emptyValidHash([0x84, 0x29, 0x24]);
 }
 
-export function eh2agent(eh: EntryHash): AgentPubKey {
-  const meCore = sliceCore32(eh);
-  const meDht = sliceDhtLocation(eh)
+export function intoAgentPubKey(hash: AnyLinkableHash): AgentPubKey {
+  const meCore = sliceCore32(hash);
+  const meDht = sliceDhtLocation(hash)
   return Uint8Array.from([...HASH_TYPE_PREFIX["Agent"], ...meCore, ...meDht]);
 }
 

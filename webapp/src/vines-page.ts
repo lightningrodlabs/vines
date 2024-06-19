@@ -1026,6 +1026,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.selectedThreadHash) {
       notifSetting = this._dvm.threadsZvm.getNotifSetting(this.selectedThreadHash, this.cell.agentPubKey);
     }
+    console.log("<vines-page>.render() notifSettings", notifSetting, this.selectedThreadHash);
 
     /** Group Info */
     let groupProfile: GroupProfile = {

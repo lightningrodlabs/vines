@@ -65,6 +65,7 @@ pub struct CastNotificationTipInput {
 #[hdk_extern]
 fn cast_notification_tip(input: CastNotificationTipInput) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
+  debug!("cast_notification_tip(): {:?}", input);
   /// Pre-conditions: Don't call yourself (otherwise we get concurrency issues)
   let me = agent_info()?.agent_latest_pubkey;
   if me == input.peer {

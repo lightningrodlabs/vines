@@ -20,6 +20,7 @@ pub struct NotifyPeerInput {
 #[feature(zits_blocking)]
 pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
+    debug!("notify_peer(): {:?}", input);
     // Don't notify self
     if input.who == agent_info()?.agent_latest_pubkey {
         return Ok(());
