@@ -1978,9 +1978,6 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Create */
     const isNew = state.Create;
-    // const tag = link.tag.subarray(1);
-    // const decoder = new TextDecoder('utf-8');
-    // const event = decoder.decode(tag) as NotifiableEvent;
     const index = link.tag[0];
     const event = getEventType(index);
     console.log("handleInboxSignal() Create", isNew, event, link.tag);
