@@ -100,7 +100,13 @@ export class VinesApp extends HappElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
-    super(appWs? appWs : HC_APP_PORT, appId, _adminWs? undefined : new URL(`ws://localhost:${HC_ADMIN_PORT}`));
+    const adminUrl = _adminWs
+      ? undefined
+      : HC_ADMIN_PORT
+        ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
+        : undefined;
+    console.log("adminUrl", adminUrl);
+    super(appWs? appWs : HC_APP_PORT, appId, adminUrl);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
@@ -111,7 +117,7 @@ export class VinesApp extends HappElement {
   /**  */
   static async fromWe(
     appWs: AppWebsocket,
-    adminWs: AdminWebsocket,
+    adminWs: AdminWebsocket | undefined,
     canAuthorizeZfns: boolean,
     appId: InstalledAppId,
     profilesAppId: InstalledAppId,
