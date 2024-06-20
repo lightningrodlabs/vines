@@ -26,7 +26,7 @@ mkdir submodules
 cd submodules
 
 echo \* Download Files repo: WARNING HARDCODED branch name
-git clone -b hdk-4.0 --depth 1 https://github.com/lightningrodlabs/files.git
+git clone -b hdk-3.1 --depth 1 https://github.com/lightningrodlabs/files.git
 
 echo \* Download latest install scripts
 git clone --depth 1 https://github.com/ddd-mtl/hc-prebuilt

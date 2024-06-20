@@ -2,7 +2,7 @@
   "name": "vines-dev",
   "version": "0.1.0",
   "config": {
-    "hc_version": "0.4.0-dev.4",
+    "hc_version": "0.3.1",
     "zits_version": "1.14.0",
     "bin": "bin"
   },
