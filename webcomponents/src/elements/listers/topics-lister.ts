@@ -222,7 +222,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (topicIsNew) {
         topicBadge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
       } else {
-        let notifCount = 0; // FIXME
+        let notifCount = 0; // FIXME: Get real notif count
         if (notifCount > 0) {
           topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
         } else {

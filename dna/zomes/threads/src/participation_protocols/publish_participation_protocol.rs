@@ -16,7 +16,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   let pp_ah = create_entry(pp_entry)?;
   //let pp_eh = hash_entry(pp_entry)?;
   /// Global Subjects Index
-  let subject_tp = get_subject_tp(pp.subject.applet_id, &pp.subject.type_name, pp.subject.dna_hash.clone(), pp.subject.hash.clone())?;
+  let subject_tp = get_subject_tp(pp.subject.clone())?;
   subject_tp.ensure()?;
   debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");

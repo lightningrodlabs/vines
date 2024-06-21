@@ -457,7 +457,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     }
     console.log("onHrlComment()", weaveUrlFromWal(maybeWal), maybeWal);
     const commentThreadAh = await this.getCommentThread();
-    // FIXME make sure hrl is an entryHash
+    // TODO: make sure hrl is an entryHash
     /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, commentThreadAh);
   }
 

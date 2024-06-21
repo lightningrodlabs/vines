@@ -209,7 +209,7 @@ export class InputBar extends LitElement {
     /** Enter: commit message */
     if (e.keyCode === 13) {
       if (e.shiftKey) {
-          /* FIXME add newline to input.value */
+          /* add newline to input.value?? */
       } else {
         console.log("keydown keyCode ENTER", this.inputElem.value);
         e.preventDefault();
@@ -329,7 +329,7 @@ export class InputBar extends LitElement {
       }
     }
 
-    // FIXME: refactor when to call suggestionSelected()
+    // TODO: refactor when to call suggestionSelected()
     if (this.popoverElem && isSuggesting && agentItems.length == 0) {
       this.suggestionSelected();
     }

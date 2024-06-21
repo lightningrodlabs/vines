@@ -204,7 +204,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     if (subjectIsNew) {
       subjectBadge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
     } else {
-      let notifCount = 0; // FIXME
+      let notifCount = 0; // FIXME: Get real notif count
       if (notifCount > 0) {
         subjectBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
       } else {

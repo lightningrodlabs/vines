@@ -52,11 +52,6 @@ import {
   ThreadsSignalProtocol,
   ThreadsSignalProtocolType,
   TipProtocol,
-  TipProtocolVariantEmojiReactionChange,
-  TipProtocolVariantNewBead,
-  TipProtocolVariantNewPp,
-  TipProtocolVariantNewSemanticTopic,
-  TipProtocolVariantUpdateSemanticTopic,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, LitHappSignal, prettyDate, SignalLog, SignalType, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -67,9 +62,9 @@ import {
   BaseBeadType,
   BeadInfo,
   BeadLinkMaterialized,
-  BeadType,
+  BeadType, dematerializeAnyBead,
   dematerializeEntryBead,
-  dematerializeParticipationProtocol,
+  dematerializeParticipationProtocol, dematerializeTextBead,
   dematerializeTypedBead,
   EncryptedBeadContent,
   EntryBeadMat,
@@ -133,7 +128,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** Notify subscribers */
-  /** FIXME: structuredClone() fails because of Thread class. Refactor to a state object instead */
+  /** TODO: structuredClone() fails because of Thread class. Refactor to a state object instead */
   protected notifySubscribers(): boolean {
     if (!this.hasChanged()) return false;
     //this._previousPerspective = structuredClone(this.perspective);
@@ -353,7 +348,7 @@ export class ThreadsZvm extends ZomeViewModel {
         infos.push(this.getBaseBead(ah))
       }
     }
-    //FIXME tuples.sort((a, b) => {return 1})
+    //TODO: tuples.sort((a, b) => {return 1})
     return infos;
   }
 
@@ -371,7 +366,7 @@ export class ThreadsZvm extends ZomeViewModel {
         infos.push([ah, this.getBaseBeadInfo(ah), this.getBaseBead(ah)]);
       }
     }
-    //FIXME tuples.sort((a, b) => {return 1})
+    //TODO: tuples.sort((a, b) => {return 1})
     return infos;
   }
 
@@ -1051,7 +1046,7 @@ export class ThreadsZvm extends ZomeViewModel {
       hash: decodeHashFromBase64(subjectHash),
       typeName: SEMANTIC_TOPIC_TYPE_NAME,
       appletId,
-      dnaHash: decodeHashFromBase64(this.cell.dnaHash), // FIXME: remove this useless field?
+      dnaHash: decodeHashFromBase64(this.cell.dnaHash), // TODO: remove this useless field?
     };
     const semTopicTitle = this.perspective.allSemanticTopics[subjectHash];
     const pp: ParticipationProtocol = {
@@ -2046,25 +2041,25 @@ export class ThreadsZvm extends ZomeViewModel {
       case "AnyBead":
         const anyBead = (kind as ThreadsEntryVariantAnyBead).AnyBead;
         if (StateChangeType.Create in entryInfo.state) {
-          tip = await this.handleBeadEntry(entryInfo, anyBead, ThreadsEntryType.AnyBead, entryInfo.state.Create);
+          tip = await this.handleBeadEntry(entryInfo, anyBead, ThreadsEntryType.AnyBead, entryInfo.state.Create, from);
         }
         break;
       case "EntryBead":
         const entryBead = (kind as ThreadsEntryVariantEntryBead).EntryBead;
         if (StateChangeType.Create in entryInfo.state) {
-          tip = await this.handleBeadEntry(entryInfo, entryBead, ThreadsEntryType.EntryBead, entryInfo.state.Create);
+          tip = await this.handleBeadEntry(entryInfo, entryBead, ThreadsEntryType.EntryBead, entryInfo.state.Create, from);
         }
         break;
       case "TextBead":
         const textBead = (kind as ThreadsEntryVariantTextBead).TextBead;
         if (StateChangeType.Create in entryInfo.state) {
-          tip = await this.handleBeadEntry(entryInfo, textBead, ThreadsEntryType.TextBead, entryInfo.state.Create);
+          tip = await this.handleBeadEntry(entryInfo, textBead, ThreadsEntryType.TextBead, entryInfo.state.Create, from);
         }
         break;
       case "EncryptedBead":
         const encBead = (kind as ThreadsEntryVariantEncryptedBead).EncryptedBead;
         if (StateChangeType.Create in entryInfo.state) {
-          tip = await this.handleBeadEntry(entryInfo, encBead, ThreadsEntryType.EncryptedBead, entryInfo.state.Create);
+          tip = await this.handleBeadEntry(entryInfo, encBead, ThreadsEntryType.EncryptedBead, entryInfo.state.Create, from);
         }
         break;
       case "SemanticTopic":
@@ -2237,7 +2232,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleBeadEntry(entryInfo: EntryInfo, typed: TypedBead, beadType: BeadType, isNew: boolean): Promise<TipProtocol> {
+  private async handleBeadEntry(entryInfo: EntryInfo, typed: TypedBead, beadType: BeadType, isNew: boolean, from: AgentPubKeyB64): Promise<TipProtocol> {
     console.log("handleBeadEntry()", beadType, encodeHashToBase64(entryInfo.hash));
     if (!isHashType(entryInfo.author, 'Agent') || !isHashType(entryInfo.hash, 'Action')) {
       console.error("Bad hash typed in EntryInfo", entryInfo);
@@ -2248,10 +2243,10 @@ export class ThreadsZvm extends ZomeViewModel {
     const beadAh = encodeHashToBase64(entryInfo.hash);
     const typedMat = materializeTypedBead(typed, beadType);
     await this.storeTypedBead(beadAh, typedMat, beadType, entryInfo.ts, author, isNew);
-    /** Notify / Tip if new */
+    /** Notify / Tip if new bead from this agent */
     let tip: TipProtocol;
     let notifs: NotifyPeerInput[] = [];
-    if (isNew) {
+    if (isNew && from == this.cell.agentPubKey) {
       /** Get base info */
       let ppAh: ActionHashB64;
       let prevBeadAh: ActionHashB64;
@@ -2290,10 +2285,15 @@ export class ThreadsZvm extends ZomeViewModel {
         }
       }
       await this.notifyPeers(ppAh, decodeHashFromBase64(beadAh), notifs);
-      /** Form "NewBead" Tip to broadcast */
-      const beadData: NotificationTipBeadData = {typed: typedMat, beadType, creationTime: entryInfo.ts};
-      const data = encode(beadData);
-      //FIXME: tip = {type: "Entry", entry: {}, info: entryInfo, bead_ah: beadAh, bead_type: beadType, pp_ah: ppAh, data};
+      /** Form "Entry" Tip to broadcast */
+      let bead: ThreadsEntry;
+      switch (beadType) {
+        case ThreadsEntryType.EncryptedBead: bead = {EncryptedBead: typed as EncryptedBead}; break;
+        case ThreadsEntryType.AnyBead: bead = {AnyBead: typed as AnyBead}; break;
+        case ThreadsEntryType.TextBead: bead = {TextBead: typed as TextBead}; break;
+        case ThreadsEntryType.EntryBead: bead = {EntryBead: typed as EntryBead}; break;
+      }
+      tip = {type: "Entry", entry: bead, info: entryInfo};
     }
     /** */
     return tip;
@@ -2337,7 +2337,14 @@ export class ThreadsZvm extends ZomeViewModel {
         author: decodeHashFromBase64(from),
         state: {Create: true},
       };
-      signal = {Entry: [info, typed]};
+      let bead: ThreadsEntry;
+      switch (beadType) {
+        case ThreadsEntryType.EncryptedBead: bead = {EncryptedBead: typed as EncryptedBead}; break;
+        case ThreadsEntryType.AnyBead: bead = {AnyBead: dematerializeAnyBead(typed as AnyBeadMat)}; break;
+        case ThreadsEntryType.TextBead: bead = {TextBead: dematerializeTextBead(typed as TextBeadMat)}; break;
+        case ThreadsEntryType.EntryBead: bead = {EntryBead: dematerializeEntryBead(typed as EntryBeadMat)}; break;
+      }
+      signal = {Entry: [info, bead]};
       ///*await*/ this.storeTypedBead(beadAh, typed, beadType, creationTime, encodeHashToBase64(notifTip.author), true);
     }
     if (NotifiableEvent.NewDmThread == notifTip.event || NotifiableEvent.Fork === notifTip.event) {

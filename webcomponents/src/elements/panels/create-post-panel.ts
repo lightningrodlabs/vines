@@ -131,7 +131,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     /** Before */
     const [mainThreadAh, createdMainThread] = await this.beforeCreate();
     /** Create */
-    // FIXME make sure hrl is an entryHash
+    // TODO: make sure hrl is an entryHash
     const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, mainThreadAh);
     /** After */
     this.afterCreate(beadAh, createdMainThread);

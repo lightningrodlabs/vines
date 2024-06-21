@@ -416,7 +416,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
-    // FIXME make sure hrl is an entryHash
+    // TODO: make sure hrl is an entryHash
     let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);

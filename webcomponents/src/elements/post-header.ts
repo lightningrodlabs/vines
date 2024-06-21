@@ -42,7 +42,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     /** Enter: commit message */
     if (e.keyCode === 13) {
       if (e.shiftKey) {
-        /* FIXME add newline to input.value */
+        /* Add newline to input.value? */
       } else {
         console.log("keydown keyCode ENTER", this.inputElem.value);
         e.preventDefault();

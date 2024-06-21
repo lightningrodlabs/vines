@@ -399,7 +399,7 @@ export function intoExportable(persp: ThreadsPerspectiveCore, originalsZvm: Auth
   /** allSubjects */
   const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
   Array.from(persp.allSubjects.entries()).map(([subjectAh, subject]) => {
-    originalsZvm.ascribeTarget("Subject", subjectAh, 0/*FIXME*/, null, true);
+    originalsZvm.ascribeTarget("Subject", subjectAh, 0/*TODO: get creationTime of Subject*/, null, true);
     allSubjects.set(subjectAh, subject);
   });
 

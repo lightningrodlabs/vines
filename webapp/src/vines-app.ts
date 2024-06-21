@@ -280,7 +280,7 @@ export class VinesApp extends HappElement {
     if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
       await this.hvm.probeAll();
     }
-    await this.networkInfoAll(); // FIXME: should propable store result in class field
+    await this.networkInfoAll(); // TODO: should propable store result in class field
     console.log("<vines-app>.perspectiveInitializedOnline() DONE");
     this._onlineLoaded = true;
     this._onlineLoadedProvider.setValue(true);
@@ -417,7 +417,7 @@ export class VinesApp extends HappElement {
     // }
 
     //let view = html`<slot></slot>`;
-    // FIXME: should propable store networkInfoLogs in class field
+    // TODO: should propable store networkInfoLogs in class field
     let view = html`
             <vines-page
                       .selectedThreadHash=${this._selectedThreadHash}

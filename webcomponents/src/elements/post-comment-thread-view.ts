@@ -169,7 +169,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   onLoadMore() {
     console.log("<post-comment-thread-view>.onLoadMore()");
     //this.listElem.busy = true;
-    // FIXME: Probe DHT
+    // TODO: Probe DHT
     //this.listElem.busy = false;
   }
 
