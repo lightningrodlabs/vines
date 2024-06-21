@@ -1222,7 +1222,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                           <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="dumpItem" text=${msg("Dump app logs")}></ui5-menu-item>
+                          <ui5-menu-item id="dumpItem" text=${msg("Dump Threads logs")}></ui5-menu-item>
+                          <ui5-menu-item id="dumpFilesItem" text=${msg("Dump Files logs")}></ui5-menu-item>
                           <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
                       </ui5-menu>
                     <!-- Network Health Panel -->
@@ -1568,7 +1569,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
       case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
-      case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); this._filesDvm.dumpSignalLogs(); break;
+      case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); break;
+      case "dumpFilesItem": this._filesDvm.dumpCallLogs(); this._filesDvm.dumpSignalLogs(); break;
       case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
     }
     this.waitDialogElem.close();

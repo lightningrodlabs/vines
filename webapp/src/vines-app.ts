@@ -47,7 +47,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {FilesDvm} from "@ddd-qc/files";
+import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
@@ -106,7 +106,7 @@ export class VinesApp extends HappElement {
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
     console.log("adminUrl", adminUrl);
-    super(appWs? appWs : HC_APP_PORT, appId, adminUrl);
+    super(appWs? appWs : HC_APP_PORT, appId, adminUrl, 10 * 1000);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
@@ -223,28 +223,45 @@ export class VinesApp extends HappElement {
     //   }
     // }
 
-    /** Attempt Probe EntryDefs */
-    let attempts = 5;
-    while(this._hasHolochainFailed == undefined || this._hasHolochainFailed && attempts > 0) {
-      attempts -= 1;
-      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      console.log("happInitialized(), allAppEntryTypes", allAppEntryTypes);
-      console.log(`${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
-      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
-        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-        await delay(1000);
-      } else {
-        this._hasHolochainFailed = false;
-        break;
-      }
-    }
-    if (attempts == 0 && this._hasHolochainFailed == undefined) {
-      this._hasHolochainFailed = true;
-    }
+    /** Attempt EntryDefs */
+    const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
+    const filesOk = await this.attemptFilesEntryDefs(5, 1000);
+    this._hasHolochainFailed = !threadsOk || !filesOk;
+
     /** Provide Files as context */
     //const filesContext = this.filesDvm.getContext();
     console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
     let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
+  }
+
+
+  async attemptThreadsEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
+    while(attempts > 0) {
+      attempts -= 1;
+      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
+      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+        await delay(delayMs);
+      } else {
+        // console.log("allAppEntryTypes", allAppEntryTypes)
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async attemptFilesEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
+    while(attempts > 0) {
+      attempts -= 1;
+      const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
+      if (allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+        console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
+        await delay(delayMs);
+      } else {
+        return true;
+      }
+    }
+    return false;
   }
 
 

@@ -124,7 +124,7 @@
     "@lightningrodlabs/we-applet": "0.17.0-dev.3",
     "@lightningrodlabs/we-elements": "0.6.0-dev.0",
     "@ddd-qc/cell-proxy": "=0.24.6",
-    "@ddd-qc/lit-happ": "=0.24.7",
+    "@ddd-qc/lit-happ": "=0.24.8",
     "@ddd-qc/profiles-dvm": "=0.24.1",
     "@ddd-qc/we-utils": "=0.24.2",
     "@ddd-qc/files": "=0.4.3",
