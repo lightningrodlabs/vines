@@ -46,7 +46,7 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {AssetViewInfo, WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, BaseRoleName, CloneId} from "@ddd-qc/cell-proxy";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {FilesDvm} from "@ddd-qc/files";
+import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
@@ -85,7 +85,13 @@ export class CommunityFeedApp extends HappElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
-    super(appWs? appWs : HC_APP_PORT, appId, _adminWs? undefined : new URL(`ws://localhost:${HC_ADMIN_PORT}`));
+    const adminUrl = _adminWs
+      ? undefined
+      : HC_ADMIN_PORT
+        ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
+        : undefined;
+    //console.log("adminUrl", adminUrl);
+    super(appWs? appWs : HC_APP_PORT, appId, adminUrl);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
     }
@@ -185,46 +191,43 @@ export class CommunityFeedApp extends HappElement {
   /** */
   async hvmConstructed() {
     console.log("<community-feed-app>.hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
-
-    // /** Authorize all zome calls */
-    // if (!this._adminWs && this._canAuthorizeZfns) {
-    //   this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
-    //   console.log("<community-feed-app>.hvmConstructed() connect() called", this._adminWs);
-    // }
-    // if (this._adminWs && this._canAuthorizeZfns) {
-    //   console.info("<community-feed-app> Zome call authorization start");
-    //   await this.hvm.authorizeAllZomeCalls(this._adminWs);
-    //   console.info("<community-feed-app> Zome call authorization complete");
-    // } else {
-    //   if (!this._canAuthorizeZfns) {
-    //     console.warn("No adminWebsocket provided (Zome call authorization done)")
-    //   } else {
-    //     console.log("<community-feed-app> Zome call authorization done externally")
-    //   }
-    // }
-
-    /** Attempt Probe EntryDefs */
-    let attempts = 5;
-    while(this._hasHolochainFailed == undefined || this._hasHolochainFailed && attempts > 0) {
-      attempts -= 1;
-      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      console.log("<community-feed-app> happInitialized(), allAppEntryTypes", allAppEntryTypes);
-      console.log(`<community-feed-app> ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME} entries`, allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]);
-      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
-        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-        await delay(1000);
-      } else {
-        this._hasHolochainFailed = false;
-        break;
-      }
-    }
-    if (attempts == 0 && this._hasHolochainFailed == undefined) {
-      this._hasHolochainFailed = true;
-    }
+    /** Attempt EntryDefs (triggers genesis) */
+    const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
+    const filesOk = await this.attemptFilesEntryDefs(5, 1000);
+    this._hasHolochainFailed = !threadsOk || !filesOk;
     /** Provide Files as context */
-    //const filesContext = this.filesDvm.getContext();
     console.log(`<community-feed-app>\t\tProviding context "${globaFilesContext}" | in host `, this);
     let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
+  }
+
+
+  async attemptThreadsEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
+    while(attempts > 0) {
+      attempts -= 1;
+      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
+      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+        await delay(delayMs);
+      } else {
+        // console.log("allAppEntryTypes", allAppEntryTypes)
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async attemptFilesEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
+    while(attempts > 0) {
+      attempts -= 1;
+      const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
+      if (allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+        console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
+        await delay(delayMs);
+      } else {
+        return true;
+      }
+    }
+    return false;
   }
 
 

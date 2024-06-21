@@ -2080,7 +2080,7 @@ export class ThreadsZvm extends ZomeViewModel {
         if (StateChangeType.Create in state) {
           const index = link.tag[0];
           const setting = getSettingType(index);
-          console.warn("NotifySetting CreateLink:", link.tag, setting, index);
+          //console.warn("NotifySetting CreateLink:", link.tag, setting, index);
           const peer = encodeHashToBase64(intoAgentPubKey(decodeHashFromBase64(target)));
           this.storeNotifSetting(base, peer, setting as NotifySetting);
         }

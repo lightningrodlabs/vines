@@ -17,7 +17,7 @@ export const POST_TYPE_NAME = "Post";
 export function getMainThread(dvm: ThreadsDvm): ActionHashB64 | null {
   const threads = dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
   //console.log("getMainThread()", threads, dvm);
-  if (threads.length == 0) {
+  if (!threads || threads.length == 0) {
     return null;
   }
   let ppAh = threads[0];

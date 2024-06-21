@@ -105,7 +105,7 @@ export class VinesApp extends HappElement {
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    console.log("adminUrl", adminUrl);
+    //console.log("adminUrl", adminUrl);
     super(appWs? appWs : HC_APP_PORT, appId, adminUrl, 10 * 1000);
     if (_canAuthorizeZfns == undefined) {
       this._canAuthorizeZfns = true;
@@ -223,13 +223,11 @@ export class VinesApp extends HappElement {
     //   }
     // }
 
-    /** Attempt EntryDefs */
+    /** Attempt EntryDefs (triggers genesis) */
     const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
     const filesOk = await this.attemptFilesEntryDefs(5, 1000);
     this._hasHolochainFailed = !threadsOk || !filesOk;
-
     /** Provide Files as context */
-    //const filesContext = this.filesDvm.getContext();
     console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
     let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
