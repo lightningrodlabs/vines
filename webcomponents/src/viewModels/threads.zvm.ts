@@ -2,14 +2,14 @@ import {
   ActionHash,
   ActionHashB64,
   AgentPubKey,
-  AgentPubKeyB64, AnyLinkableHash,
+  AgentPubKeyB64, AnyDhtHash, AnyLinkableHash,
   AppSignal,
   AppSignalCb,
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
-  EntryHashB64,
-  Link,
+  EntryHashB64, HASH_TYPE_PREFIX,
+  Link, sliceHashType,
   Timestamp,
 } from "@holochain/client";
 import {
@@ -1382,7 +1382,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async storeEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string): Promise<void> {
+  storeEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
     if (this.hasEmojiReaction(beadAh, agent, emoji)) {
       return;
     }
@@ -1394,7 +1394,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async unstoreEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
+  unstoreEmojiReaction(beadAh: ActionHashB64, agent: AgentPubKeyB64, emoji: string) {
     if (!this._emojiReactions[beadAh]) {
       //this._emojiReactions[beadAh] = [];
       return;
@@ -1938,11 +1938,11 @@ export class ThreadsZvm extends ZomeViewModel {
   async handleThreadsSignal(signal: ThreadsSignal): Promise<void> {
     const from = encodeHashToBase64(signal.from);
     let all = [];
-    for (const pulse of signal.pulses) {
+    for (let pulse of signal.pulses) {
       /** -- Handle Signal according to type -- */
+      /** Change tip to Entry or Link signal */
       if (ThreadsSignalProtocolType.Tip in pulse) {
-        all.push(this.handleTip(pulse.Tip as TipProtocol, from));
-        continue;
+        pulse = this.handleTip(pulse.Tip as TipProtocol, from);
       }
       if (ThreadsSignalProtocolType.Entry in pulse) {
         all.push(this.handleEntrySignal(pulse.Entry as [EntryInfo, ThreadsEntry], from));
@@ -1960,76 +1960,6 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleInboxSignal(linkAh: ActionHashB64, link: Link, state: StateChange, from: AgentPubKeyB64) {
-    const base = encodeHashToBase64(intoAgentPubKey((link as any).base));
-    const target = encodeHashToBase64(link.target);
-
-    if (StateChangeType.Update in state) {
-      console.error("Not possible to Update a link");
-      return;
-    }
-    if (StateChangeType.Delete in state) {
-      //const isNew = linkInfo.state.Delete;
-      console.log("handleInboxSignal() Delete", base, this.cell.agentPubKey);
-      if (base == this.cell.agentPubKey) {
-        await this.unstoreNotification(linkAh);
-      }
-      return;
-    }
-    /** Create */
-    const isNew = state.Create;
-    const index = link.tag[0];
-    const event = getEventType(index);
-    console.log("handleInboxSignal() Create", isNew, event, link.tag);
-    const notif: ThreadsNotification = {
-      event,
-      author: encodeHashToBase64(link.author),
-      timestamp: link.timestamp,
-      createLinkAh: linkAh,
-      content: encodeHashToBase64(link.target),
-    };
-    /** I got notified by a peer */
-    if (base == this.cell.agentPubKey) {
-      /** Store Notification */
-      this.storeNotification(notif);
-      /** Publish a NotifySetting.AllMessages for this thread if non exists */
-      if (NotifiableEvent.NewDmThread === event && isNew) {
-        const ppAh = notif.content;
-        console.log("NewDmThread in inbox:", ppAh);
-        const notifSettings = this.getPpNotifSettings(ppAh);
-        const notifSetting = notifSettings[this.cell.agentPubKey];
-        if (!notifSetting) {
-          await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
-          console.log("NewDmThread.publishNotifSetting() inbox", ppAh);
-        }
-      }
-    } else {
-      if (!isNew) {
-        return;
-      }
-      /** I notified a peer */
-      /** Tip peer that we send them a notification */
-      let extra: Uint8Array;
-      if (NotifiableEvent.NewDmThread === event || NotifiableEvent.Fork === event) {
-        console.log("Signaling new PP notification to peer", base, target);
-        const ppAh = encodeHashToBase64(link.target);
-        const thread = this._threads.get(ppAh);
-        const ppData: NotificationTipPpData = {pp: dematerializeParticipationProtocol(thread.pp), creationTime: thread.creationTime};
-        extra = encode(ppData);
-      } else {
-        /** NewBead, Mention, Reply */
-        console.log("Signaling new Bead notification to peer", base, target);
-        const beadAh = encodeHashToBase64(link.target);
-        const beadPair = this.perspective.beads[beadAh];
-        const beadData: NotificationTipBeadData = {typed: beadPair[1], beadType: beadPair[0].beadType, creationTime: beadPair[0].creationTime};
-        extra = encode(beadData);
-      }
-      await this.castNotificationTip(linkAh, base, notif, extra);
-    }
-  }
-
-
-  /** */
   private async handleLinkSignal([link, state]: [Link, StateChange], from: AgentPubKeyB64) {
     const author = encodeHashToBase64(link.author);
     const base = encodeHashToBase64((link as any).base);
@@ -2038,7 +1968,7 @@ export class ThreadsZvm extends ZomeViewModel {
     let tip: TipProtocol;
     switch(getLinkType(link.link_type)) {
       case ThreadsLinkType.Inbox:
-        this.handleInboxSignal(linkAh, link, state, from);
+        this.handleInboxLink(linkAh, link, state, from);
       break;
       case ThreadsLinkType.Hide:
         console.log("handleLinkSignal() hide", target);
@@ -2058,20 +1988,20 @@ export class ThreadsZvm extends ZomeViewModel {
           const isNew = state.Create;
           const decoder = new TextDecoder('utf-8');
           const emoji = decoder.decode(link.tag);
-          console.warn("EmojiReaction CreateLink:", link.tag, emoji);
+          //console.warn("EmojiReaction CreateLink:", link.tag, emoji);
           await this.storeEmojiReaction(base, author, emoji);
           if (isNew) {
-            tip = {type: "EmojiReactionChange", bead_ah: base, author, emoji, is_added: true};
+            tip = {type: "Link", link, state: {Create: true}};
           }
         }
         if (StateChangeType.Delete in state) {
           const isNew = state.Delete;
           const decoder = new TextDecoder('utf-8');
           const emoji = decoder.decode(link.tag);
-          console.warn("EmojiReaction DeleteLink:", link.tag, emoji);
+          //console.warn("EmojiReaction DeleteLink:", link.tag, emoji);
           await this.unstoreEmojiReaction(base, author, emoji);
           if (isNew) {
-            tip = {type: "EmojiReactionChange", bead_ah: base, author, emoji, is_added: false};
+            tip = {type: "Link", link, state: {Delete: true}};
           }
         }
       }
@@ -2143,7 +2073,7 @@ export class ThreadsZvm extends ZomeViewModel {
           const isNew = entryInfo.state.Create;
           this.storeSemanticTopic(hash, semTopic.title);
           if (isNew) {
-            tip = {type: "NewSemanticTopic", topic_eh: hash, title: semTopic.title};
+            tip = {type: "Entry", entry: {SemanticTopic: semTopic}, info: entryInfo};
           }
         }
         break;
@@ -2153,15 +2083,27 @@ export class ThreadsZvm extends ZomeViewModel {
           const isNew = entryInfo.state.Create;
           this.storeThread(hash, pp, entryInfo.ts, author, isNew);
           if (isNew) {
-            /** Notify Subject author */
-            if (encodeHashToBase64(pp.subject.dnaHash) == this.cell.dnaHash) {
-              //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
+            if (from == this.cell.agentPubKey) {
+              /** Notify Subject author */
+              if (encodeHashToBase64(pp.subject.dnaHash) == this.cell.dnaHash) {
+                //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
                 let author = await this.zomeProxy.getRecordAuthor(pp.subject.hash);
-                await this.zomeProxy.notifyPeer({ content: decodeHashFromBase64(hash), who: author, event: NotifiableEvent.Fork });
-              //}
+                await this.zomeProxy.notifyPeer({
+                  content: decodeHashFromBase64(hash),
+                  who: author,
+                  event: NotifiableEvent.Fork
+                });
+                //}
+              }
+              /** Tip all about new Pp */
+              tip = {type: "Entry", entry: {ParticipationProtocol: pp}, info: entryInfo};
+            } else {
+              if (sliceHashType(pp.subject.hash)[1] == HASH_TYPE_PREFIX["Agent"][1]) {
+                /* Set NotifSetting for new DmThread */
+                console.log("NewDmThread.publishNotifSetting() signal", hash);
+                await this.publishNotifSetting(hash, NotifySetting.AllMessages);
+              }
             }
-            /** Tip all about new Pp */
-            tip = {type: "NewPp", creation_ts: entryInfo.ts, ah: hash, pp};
           }
         }
         break;
@@ -2179,6 +2121,76 @@ export class ThreadsZvm extends ZomeViewModel {
     /** */
     if (tip) {
       await this.broadcastTip(tip);
+    }
+  }
+
+
+  /** */
+  private async handleInboxLink(linkAh: ActionHashB64, link: Link, state: StateChange, from: AgentPubKeyB64) {
+    const base = encodeHashToBase64(intoAgentPubKey((link as any).base));
+    const target = encodeHashToBase64(link.target);
+
+    if (StateChangeType.Update in state) {
+      console.error("Not possible to Update a link");
+      return;
+    }
+    if (StateChangeType.Delete in state) {
+      //const isNew = linkInfo.state.Delete;
+      console.log("handleInboxSignal() Delete", base, this.cell.agentPubKey);
+      if (base == this.cell.agentPubKey) {
+        await this.unstoreNotification(linkAh);
+      }
+      return;
+    }
+    /** Create */
+    const isNew = state.Create;
+    const index = link.tag[0];
+    const event = getEventType(index);
+    console.log("handleInboxSignal() Create", isNew, event, link.tag);
+    const notif: ThreadsNotification = {
+      event,
+      author: encodeHashToBase64(link.author),
+      timestamp: link.timestamp,
+      createLinkAh: linkAh,
+      content: encodeHashToBase64(link.target),
+    };
+    /** I got notified by a peer */
+    if (base == this.cell.agentPubKey) {
+      /** Store Notification */
+      this.storeNotification(notif);
+      /** Publish a NotifySetting.AllMessages for this thread if non exists */
+      if (NotifiableEvent.NewDmThread === event && isNew) {
+        const ppAh = notif.content;
+        console.log("NewDmThread in inbox:", ppAh);
+        const notifSettings = this.getPpNotifSettings(ppAh);
+        const notifSetting = notifSettings[this.cell.agentPubKey];
+        if (!notifSetting) {
+          await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
+          console.log("NewDmThread.publishNotifSetting() inbox", ppAh);
+        }
+      }
+    } else {
+      if (!isNew) {
+        return;
+      }
+      /** I notified a peer */
+      /** Tip peer that we send them a notification */
+      let extra: Uint8Array;
+      if (NotifiableEvent.NewDmThread === event || NotifiableEvent.Fork === event) {
+        console.log("Signaling new PP notification to peer", base, target);
+        const ppAh = encodeHashToBase64(link.target);
+        const thread = this._threads.get(ppAh);
+        const ppData: NotificationTipPpData = {pp: dematerializeParticipationProtocol(thread.pp), creationTime: thread.creationTime};
+        extra = encode(ppData);
+      } else {
+        /** NewBead, Mention, Reply */
+        console.log("Signaling new Bead notification to peer", base, target);
+        const beadAh = encodeHashToBase64(link.target);
+        const beadPair = this.perspective.beads[beadAh];
+        const beadData: NotificationTipBeadData = {typed: beadPair[1], beadType: beadPair[0].beadType, creationTime: beadPair[0].creationTime};
+        extra = encode(beadData);
+      }
+      await this.castNotificationTip(linkAh, base, notif, extra);
     }
   }
 
@@ -2281,8 +2293,7 @@ export class ThreadsZvm extends ZomeViewModel {
       /** Form "NewBead" Tip to broadcast */
       const beadData: NotificationTipBeadData = {typed: typedMat, beadType, creationTime: entryInfo.ts};
       const data = encode(beadData);
-      //await delay(100); // Wait a bit because recipients don't handle signals with async and there could be two NewBead signals.
-      tip = {type: "NewBead", creation_ts: entryInfo.ts, bead_ah: beadAh, bead_type: beadType, pp_ah: ppAh, data};
+      //FIXME: tip = {type: "Entry", entry: {}, info: entryInfo, bead_ah: beadAh, bead_type: beadType, pp_ah: ppAh, data};
     }
     /** */
     return tip;
@@ -2290,94 +2301,58 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async handleTip(tip: TipProtocol, from: AgentPubKeyB64) {
+  private handleTip(tip: TipProtocol, from: AgentPubKeyB64): ThreadsSignalProtocol {
     console.log("handleTip()", tip.type, tip);
     /* Send pong response */
     if (tip.type != "Pong") {
       console.log("PONGING ", from)
-      const pong: TipProtocol = {type: "Pong", from: this.cell.agentPubKey};
-      await this.broadcastTip(pong, [from])
+      const pong: TipProtocol = {type: "Pong"};
+      /*await*/ this.broadcastTip(pong, [from])
     }
     /* Handle signal */
     switch (tip.type) {
       case "Ping":
       case "Pong":
         break;
-      case "Notification":
-        return await this.handleNotificationTip(tip.value, from);
-      break;
-      case "UpdateSemanticTopic": {
-        const {old_topic_eh, new_topic_eh, title} = tip as TipProtocolVariantUpdateSemanticTopic;
-        this.unstoreSemanticTopic(old_topic_eh);
-        this.storeSemanticTopic(new_topic_eh, title);
-      }
-        break;
-      case "NewSemanticTopic":
-        const {topic_eh, title} = tip as TipProtocolVariantNewSemanticTopic;
-        this.storeSemanticTopic(topic_eh, title);
-        break;
-      case "NewPp": {
-        const {creation_ts, ah, pp} = tip as TipProtocolVariantNewPp;
-        ///*await */ this.threadsZvm.fetchPp(newPpAh);
-        this.storeThread(ah, pp, creation_ts, from, true);
-      }
-        break;
-      case "NewBead":
-        const {creation_ts, bead_ah, bead_type, pp_ah, data} = tip as TipProtocolVariantNewBead;
-        console.log("Signal is NewBead of type", bead_type);
-        const {typed, beadType, creationTime} = decode(data) as NotificationTipBeadData;
-        console.log("NewBead", bead_ah, typed, beadType, bead_type);
-        //const beadType = beadTypeStr as BeadType;
-         await this.storeTypedBead(bead_ah, typed, beadType, creation_ts, from, true);
-        break;
-      case "EmojiReactionChange": {
-        const {bead_ah, author, emoji, is_added} = tip as TipProtocolVariantEmojiReactionChange;
-        if (is_added) {
-          await this.storeEmojiReaction(bead_ah, author, emoji);
-        } else {
-          await this.unstoreEmojiReaction(bead_ah, author, emoji);
-        }
-      }
-        break;
+      case "Notification": return this.handleNotificationTip(tip.value, from); break;
+      case "Entry": return {Entry: [tip.info, tip.entry]};break;
+      case "Link": return {Link: [tip.link, tip.state]}; break;
     }
   }
 
 
   /** */
-  private async handleNotificationTip(notifTip: ThreadsNotificationTip, from: AgentPubKeyB64) {
+  private handleNotificationTip(notifTip: ThreadsNotificationTip, from: AgentPubKeyB64): ThreadsSignalProtocol | undefined {
     let ppAh: ActionHashB64;
+    let signal: ThreadsSignalProtocol;
     /** Store received Entry */
     if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
       const {typed, beadType, creationTime} = decode(notifTip.data) as NotificationTipBeadData;
       const beadAh = encodeHashToBase64(notifTip.content);
       ppAh = encodeHashToBase64(notifTip.pp_ah);
       console.log(`Received NotificationSignal of type ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
-      await this.storeTypedBead(beadAh, typed, beadType, creationTime, encodeHashToBase64(notifTip.author), true);
+      const info: EntryInfo = {
+        hash: notifTip.content,
+        ts: creationTime,
+        author: decodeHashFromBase64(from),
+        state: {Create: true},
+      };
+      signal = {Entry: [info, typed]};
+      ///*await*/ this.storeTypedBead(beadAh, typed, beadType, creationTime, encodeHashToBase64(notifTip.author), true);
     }
-    /* Set notif setting */
-    if (NotifiableEvent.NewDmThread == notifTip.event) {
-      ppAh = encodeHashToBase64(notifTip.content);
-      /* skip if known thread */
-      const dmThread = this.perspective.threads.get(ppAh);
-      if (dmThread) {
-        return;
-      }
-      /** Store thread */
+    if (NotifiableEvent.NewDmThread == notifTip.event || NotifiableEvent.Fork === notifTip.event) {
       const {pp, creationTime} = decode(notifTip.data) as NotificationTipPpData;
-      this.storeThread(ppAh, pp, creationTime, encodeHashToBase64(notifTip.author), false);
-      /* Set NotifSetting */
-      console.log("NewDmThread.publishNotifSetting() signal", ppAh);
-      await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
-    }
-    if (NotifiableEvent.Fork === notifTip.event) {
-      const {pp, creationTime} = decode(notifTip.data) as NotificationTipPpData;
-      ppAh = encodeHashToBase64(notifTip.content);
-      console.log(`Received NotificationSignal of type ${NotifiableEvent.Fork}:`, pp);
-      this.storeThread(ppAh, pp, creationTime, encodeHashToBase64(notifTip.author), false);
+      const info: EntryInfo = {
+        hash: notifTip.content,
+        ts: creationTime,
+        author: decodeHashFromBase64(from),
+        state: {Create: true},
+      };
+      signal = {Entry: [info, {ParticipationProtocol: pp}]};
     }
 
     /* Brutal way to make sure we have the content signaled in the notification */
-    await this.probeAllLatest();
+    //await this.probeAllLatest();
     /** */
     const notif: ThreadsNotification = {
       event: notifTip.event,
@@ -2388,6 +2363,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** */
     this.storeNotification(notif, ppAh);
+    return signal;
   }
 
 

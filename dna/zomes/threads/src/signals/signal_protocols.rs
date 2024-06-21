@@ -49,17 +49,21 @@ pub enum SystemSignalProtocol {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum TipProtocol {
-    Ping {from: AgentPubKeyB64},
-    Pong {from: AgentPubKeyB64},
+    Ping,
+    Pong,
     ///
-    UpdateSemanticTopic {old_topic_eh: EntryHashB64, new_topic_eh: EntryHashB64, title: String},
+    //UpdateSemanticTopic {old_topic_eh: EntryHashB64, new_topic_eh: EntryHashB64, title: String},
     ///
-    NewSemanticTopic { topic_eh: EntryHashB64, title: String },
-    NewPp { creation_ts: Timestamp, ah: ActionHashB64, pp: ParticipationProtocol },
-    NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},
-    EmojiReactionChange {bead_ah: ActionHashB64, author: AgentPubKeyB64, emoji: String, is_added: bool},
+    // NewSemanticTopic { topic_eh: EntryHashB64, title: String },
+    // NewPp { creation_ts: Timestamp, ah: ActionHashB64, pp: ParticipationProtocol },
+    // NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},
+    // EmojiReactionChange {bead_ah: ActionHashB64, author: AgentPubKeyB64, emoji: String, is_added: bool},
     ///
     Notification { value: ThreadsNotificationTip },
+    ///
+    Entry { info: EntryInfo, entry: ThreadsEntry },
+    Link { link: Link, state: StateChange },
+
 }
 
 

@@ -358,60 +358,36 @@ export type SystemSignalProtocol =
 /** Used by UI ONLY. That's why we use B64 here. */
 export type TipProtocolVariantPing = {
   type: "Ping"
-  from: AgentPubKeyB64
 }
 export type TipProtocolVariantPong = {
   type: "Pong"
-  from: AgentPubKeyB64
 }
-  /**  */
-export type TipProtocolVariantUpdateSemanticTopic = {
-  type: "UpdateSemanticTopic"
-  old_topic_eh: EntryHashB64
-  new_topic_eh: EntryHashB64
-  title: string
-}
-  /**  */
-export type TipProtocolVariantNewSemanticTopic = {
-  type: "NewSemanticTopic"
-  topic_eh: EntryHashB64
-  title: string
-}
-export type TipProtocolVariantNewPp = {
-  type: "NewPp"
-  creation_ts: Timestamp
-  ah: ActionHashB64
-  pp: ParticipationProtocol
-}
-export type TipProtocolVariantNewBead = {
-  type: "NewBead"
-  creation_ts: Timestamp
-  bead_ah: ActionHashB64
-  bead_type: string
-  pp_ah: ActionHashB64
-  data: Uint8Array
-}
-export type TipProtocolVariantEmojiReactionChange = {
-  type: "EmojiReactionChange"
-  bead_ah: ActionHashB64
-  author: AgentPubKeyB64
-  emoji: string
-  is_added: boolean
-}
-  /**  */
+  /**
+   * 
+   * 
+   * 
+   */
 export type TipProtocolVariantNotification = {
   type: "Notification"
   value: ThreadsNotificationTip
 }
+  /**  */
+export type TipProtocolVariantEntry = {
+  type: "Entry"
+  info: EntryInfo
+  entry: ThreadsEntry
+}
+export type TipProtocolVariantLink = {
+  type: "Link"
+  link: Link
+  state: StateChange
+}
 export type TipProtocol =
   | TipProtocolVariantPing
   | TipProtocolVariantPong
-  | TipProtocolVariantUpdateSemanticTopic
-  | TipProtocolVariantNewSemanticTopic
-  | TipProtocolVariantNewPp
-  | TipProtocolVariantNewBead
-  | TipProtocolVariantEmojiReactionChange
-  | TipProtocolVariantNotification;
+  | TipProtocolVariantNotification
+  | TipProtocolVariantEntry
+  | TipProtocolVariantLink;
 
 /** Bool: True if state change just happened (real-time) */
 export enum StateChangeType {
