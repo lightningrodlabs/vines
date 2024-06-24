@@ -47,7 +47,7 @@ pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<
   }
   //debug!("fetch_typed_bead() original author not found");
   /// Emit signal
-  emit_entry_signal_record(record, false)?;
+  emit_entry_signal(record, false)?;
   ///
   Ok(res)
 }

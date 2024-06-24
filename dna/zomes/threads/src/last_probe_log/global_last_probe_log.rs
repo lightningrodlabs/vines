@@ -10,12 +10,16 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
   std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("query_global_log()");
   let entry_type = EntryType::App(ThreadsEntryTypes::GlobalLastProbeLog.try_into().unwrap());
-  let tuples = get_all_typed_local::<GlobalLastProbeLog>(entry_type.clone())?;
-  if tuples.len() > 1 {
+  let query_args = ChainQueryFilter::default()
+    .include_entries(true)
+    .action_type(ActionType::Create)
+    .entry_type(entry_type.clone());
+  let create_records = query(query_args)?;
+  if create_records.len() > 1 {
     return zome_error!("More than one global query log create found");
   }
   /// Create First log if none was created
-  if tuples.is_empty() {
+  if create_records.is_empty() {
     let first_log = GlobalLastProbeLog {
       ts: sys_time()?,
       maybe_last_known_pp_ah: None,
@@ -32,22 +36,17 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
   debug!("query_global_log() updates found: {:?}", records);
   /// If no updated found return the create
   if records.is_empty() {
-    let (ah, create, typed) = tuples[0].clone();
-    emit_entry_signal(ah.clone(), &Action::Create(create), false, ThreadsEntry::GlobalLastProbeLog(typed.clone()))?;
-    return Ok((ah, typed));
+    let record = create_records[0].clone();
+    emit_entry_signal(record.clone(), false)?;
+    let typed = get_typed_from_record::<GlobalLastProbeLog>(record.clone())?;
+    return Ok((record.action_address().to_owned(), typed));
   }
   /// Grab last one (ascending order)
   let latest_record = records.last().unwrap().clone();
   let typed: GlobalLastProbeLog = get_typed_from_record(latest_record.clone())?;
   /// Emit signal
-  let entry_info = EntryInfo {
-    hash: AnyDhtHash::from(latest_record.action().entry_hash().unwrap().to_owned()),
-    ts: latest_record.action().timestamp(),
-    author: latest_record.action().author().to_owned(),
-    state: StateChange::Update(false),
-  };
-  let dsp = ThreadsSignalProtocol::Entry((entry_info, ThreadsEntry::GlobalLastProbeLog(typed.clone())));
-  emit_threads_signal(vec![dsp])?;
+  let pulse = EntryPulse::from_NewEntry_record(latest_record.clone(), false);
+  emit_threads_signal(vec![ThreadsSignalProtocol::Entry(pulse)])?;
   /// Done
   Ok((latest_record.action_address().to_owned(), typed))
 }

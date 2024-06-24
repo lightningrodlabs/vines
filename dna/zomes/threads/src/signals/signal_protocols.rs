@@ -1,8 +1,5 @@
 use hdk::prelude::*;
-use holo_hash::{EntryHashB64, AgentPubKeyB64, ActionHashB64};
-//use zome_utils::*;
-use threads_integrity::*;
-use crate::notifications::*;
+
 
 
 ///
@@ -16,12 +13,32 @@ pub struct ThreadsSignal {
 
 /// Data sent by UI ONLY. That's why we use B64 here.
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+//#[serde(tag = "type")]
 pub enum ThreadsSignalProtocol {
     System(SystemSignalProtocol), /// From "System"
     Tip(TipProtocol), /// From Other peer
-    Entry((EntryInfo, ThreadsEntry)), // From self
-    Link((Link, StateChange)), // From self
+    Entry(EntryPulse), // From self
+    Link(LinkPulse), // From self
 }
+
+
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub struct EntryPulse {
+    ah: ActionHash,
+    state: StateChange,
+    ts: Timestamp,
+    author: AgentPubKey,
+    eh: EntryHash,
+    def: AppEntryDef,
+    bytes: AppEntryBytes,
+}
+
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub struct LinkPulse {
+    pub link: Link,
+    pub state: StateChange,
+}
+
 
 
 #[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
@@ -38,8 +55,10 @@ pub struct TipSignal {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum SystemSignalProtocol {
-    PostCommitStart {entry_type: String},
-    PostCommitEnd {entry_type: String, succeeded: bool},
+    PostCommitNewStart {app_entry_type: String},
+    PostCommitNewEnd {app_entry_type: String, succeeded: bool},
+    PostCommitDeleteStart {app_entry_type: String},
+    PostCommitDeleteEnd {app_entry_type: String, succeeded: bool},
     SelfCallStart {zome_name: String, fn_name: String},
     SelfCallEnd {zome_name: String, fn_name: String, succeeded: bool},
 }
@@ -47,23 +66,14 @@ pub enum SystemSignalProtocol {
 
 /// Used by UI ONLY. That's why we use B64 here.
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-#[serde(tag = "type")]
+//#[serde(tag = "type")]
 pub enum TipProtocol {
-    Ping,
-    Pong,
+    Ping(AgentPubKey),
+    Pong(AgentPubKey),
+    Entry(EntryPulse),
+    Link(LinkPulse),
     ///
-    //UpdateSemanticTopic {old_topic_eh: EntryHashB64, new_topic_eh: EntryHashB64, title: String},
-    ///
-    // NewSemanticTopic { topic_eh: EntryHashB64, title: String },
-    // NewPp { creation_ts: Timestamp, ah: ActionHashB64, pp: ParticipationProtocol },
-    // NewBead {creation_ts: Timestamp,  bead_ah: ActionHashB64, bead_type: String, pp_ah: ActionHashB64, data: SerializedBytes},
-    // EmojiReactionChange {bead_ah: ActionHashB64, author: AgentPubKeyB64, emoji: String, is_added: bool},
-    ///
-    Notification { value: ThreadsNotificationTip },
-    ///
-    Entry { info: EntryInfo, entry: ThreadsEntry },
-    Link { link: Link, state: StateChange },
-
+    Notification(SerializedBytes),
 }
 
 
@@ -75,38 +85,35 @@ pub enum StateChange {
     Delete(bool),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-pub struct EntryInfo {
-    pub hash: AnyDhtHash,
-    pub ts: Timestamp,
-    pub author: AgentPubKey,
-    pub state: StateChange,
-}
 
+impl EntryPulse {
+    pub fn from_NewEntry_record(record: Record, is_new: bool) -> Self {
+        let state = match record.action() {
+            Action::Create(_) => StateChange::Create(is_new),
+            Action::Update(_) => StateChange::Update(is_new),
+            _ => panic!("Action should be a NewEntryAction"),
+        };
+        let RecordEntry::Present(Entry::App(bytes)) = record.entry().to_owned()
+          else { panic!("Record has no entry data") };
+        let Some(EntryType::App(def)) = record.action().entry_type()
+          else { panic!("Record has no entry def") };
+        //let type_variant = entry_index_to_variant(app_entry_def.entry_index).unwrap();
 
-impl EntryInfo {
-    pub fn from_action(action: &Action, is_new: bool) -> Self {
-        match action {
-            Action::Create(create) => Self {
-                hash: AnyDhtHash::from(create.entry_hash.clone()),
-                ts: create.timestamp,
-                author: create.author.clone(),
-                state: StateChange::Create(is_new),
-            },
-            Action::Update(update) => Self {
-                hash: AnyDhtHash::from(update.entry_hash.clone()),
-                ts: update.timestamp,
-                author: update.author.clone(),
-                state: StateChange::Update(is_new),
-            },
-            Action::Delete(delete) => Self {
-                hash: AnyDhtHash::from(delete.deletes_entry_address.clone()),
-                ts: delete.timestamp,
-                author: delete.author.clone(),
-                state: StateChange::Delete(is_new),
-            },
-        _ => panic!("Unhandled action type: {:?}", action),
+        Self {
+            ah: record.action_address().to_owned(),
+            eh: record.action().entry_hash().unwrap().clone(),
+            ts: record.action().timestamp(),
+            author: record.action().author().clone(),
+            state,
+            def: def.to_owned(),
+            bytes,
         }
     }
+    // pub fn from_delete_record(delete: &Delete) -> Self {
+    //     Self {
+    //         eh: AnyDhtHash::from(delete.deletes_entry_address.clone()),
+    //         ts: delete.timestamp,
+    //         author: delete.author.clone(),
+    //     }
+    // }
 }
-

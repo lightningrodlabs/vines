@@ -90,17 +90,6 @@ pub fn into_typed(entry: Entry, app_entry_def: &AppEntryDef) -> ExternResult<Thr
 }
 
 
-///
-pub fn record_to_typed(record: Record) -> ExternResult<ThreadsEntry> {
-    let RecordEntry::Present(entry) = record.entry() else {
-        return Err(wasm_error!("Entry not present"));
-    };
-    let Some(EntryType::App(app_entry_def)) = record.action().entry_type()
-      else { return Err(wasm_error!("Not an app Entry")); };
-    return into_typed(entry.to_owned(), app_entry_def);
-}
-
-
 ///-------------------------------------------------------------------------------------------------
 /// Link types
 ///-------------------------------------------------------------------------------------------------

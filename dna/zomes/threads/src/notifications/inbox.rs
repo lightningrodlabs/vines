@@ -2,7 +2,6 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
 use crate::*;
-use crate::notifications::*;
 
 
 ///
@@ -10,7 +9,7 @@ use crate::notifications::*;
 pub struct NotifyPeerInput {
     pub content: AnyLinkableHash,
     pub who: AgentPubKey,
-    pub event: NotifiableEvent,
+    pub event_index: u8,
 }
 
 
@@ -24,9 +23,7 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
     if input.who == agent_info()?.agent_latest_pubkey {
         return Ok(());
     }
-    let repr: u8 = input.event.into();
-    let tag = LinkTag::from(vec![repr]);
-    //let tag = obj2Tag(input.event)?;
+    let tag = LinkTag::from(vec![input.event_index]);
     let _link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, tag)?;
     /// Done
     Ok(())
@@ -51,7 +48,7 @@ pub fn probe_inbox(_ : ()) -> ExternResult<()> {
 #[feature(zits_blocking)]
 pub fn unpublish_notification(link_ah : ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    // FIXME: Make sure its a Inbox link
+    // TODO: Make sure its a Inbox link
     let _ = delete_link(link_ah)?;
     Ok(())
 }

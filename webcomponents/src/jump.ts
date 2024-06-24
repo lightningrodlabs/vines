@@ -1,5 +1,4 @@
-import {AnyLinkableHashB64} from "./viewModels/threads.perspective";
-import {NotifiableEvent} from "./bindings/threads.types";
+import {AnyLinkableHashB64, NotifiableEvent} from "./viewModels/threads.perspective";
 import {ActionHashB64} from "@holochain/client";
 
 export interface JumpEvent {

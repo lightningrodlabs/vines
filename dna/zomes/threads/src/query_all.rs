@@ -74,15 +74,12 @@ pub fn query_enc_beads(_: ()) -> ExternResult<()> {
 
 ///
 fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()> {
-   let EntryType::App(app_entry_def) = entry_type.clone()
-     else { return error("Must be an App Entry type") };
    let tuples = query_all_local(entry_type)?;
-  /// Emit System Signal
+   /// Emit System Signal
    let pulses = tuples.into_iter()
-     .map(|(ah, create, entry)| {
-        let typed = into_typed(entry, &app_entry_def).unwrap();
-        let info = entry_info(ah, &Action::Create(create), false, &typed);
-        return ThreadsSignalProtocol::Entry((info, typed));
+     .map(|(record, _entry)| {
+        let entry_pulse = EntryPulse::from_NewEntry_record(record, false);
+        return ThreadsSignalProtocol::Entry(entry_pulse);
      })
      .collect();
    emit_threads_signal(pulses)?;
@@ -91,7 +88,7 @@ fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()>
 
 
 /// Return vec of typed entries of given entry type found in local source chain
-fn query_all_local(entry_type: EntryType) -> ExternResult<Vec<(ActionHash, Create, Entry)>> {
+fn query_all_local(entry_type: EntryType) -> ExternResult<Vec<(Record, Entry)>> {
    /// Query type
    let query_args = ChainQueryFilter::default()
      .include_entries(true)
@@ -104,9 +101,9 @@ fn query_all_local(entry_type: EntryType) -> ExternResult<Vec<(ActionHash, Creat
       let RecordEntry::Present(entry) = record.entry() else {
          return zome_error!("Could not convert record");
       };
-      let Action::Create(create) = record.action()
-        else { panic!("Should be a create Action")};
-      entries.push((record.action_address().to_owned(), create.clone(), entry.clone()))
+      // let Action::Create(create) = record.action()
+      //   else { panic!("Should be a create Action")};
+      entries.push((record.clone(), entry.clone()))
    }
    /// Done
    Ok(entries)

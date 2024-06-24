@@ -1,8 +1,6 @@
 use hdk::prelude::*;
 use zome_utils::*;
-//use threads_integrity::*;
 use crate::*;
-use crate::notifications::*;
 
 
 /// Input to the notify call
@@ -32,11 +30,15 @@ pub fn broadcast_tip_inner(destinations: Vec<AgentPubKey>, tip: TipProtocol) -> 
   /// Signal peers
   debug!("calling remote recv_remote_signal() to {:?}", filtered);
   trace!("tip = '{:?}'", tip);
-  send_remote_signal(
+  let res = send_remote_signal(
     ExternIO::encode(pulse).unwrap(),
     filtered,
-  )?;
-  trace!("calling remote recv_remote_signal() DONE");
+  );
+  if let Err(e) = res {
+    error!("send_remote_signal() failed during broadcast_tip(): {:?}", e);
+    return error("send_remote_signal() failed during broadcast_tip()");
+  }
+  debug!("calling remote recv_remote_signal() DONE");
   Ok(())
 }
 
@@ -45,7 +47,7 @@ pub fn broadcast_tip_inner(destinations: Vec<AgentPubKey>, tip: TipProtocol) -> 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CastNotificationTipInput {
-  pub notification_tip: ThreadsNotificationTip,
+  pub notification_tip: SerializedBytes,
   pub peer: AgentPubKey,
 }
 
@@ -60,7 +62,7 @@ fn cast_notification_tip(input: CastNotificationTipInput) -> ExternResult<()> {
     return error("Can't notify self");
   }
   /// emit signal
-  let tip = TipProtocol::Notification { value: input.notification_tip };
+  let tip = TipProtocol::Notification(input.notification_tip);
   broadcast_tip_inner(vec![input.peer], tip)?;
   /// Done
   Ok(())

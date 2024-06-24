@@ -27,7 +27,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     let action_ts = get(pp_ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
     action_ts
   };
-  /// Link from Subject Path to Protocol
+  /// Link from Subject Path to PP
   create_link(
     subject_tp.path_entry_hash()?,
     pp_ah.clone(),
@@ -35,7 +35,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     LinkTag::new(pp.purpose),
     // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
-  /// Link from Subject Hash to Protocol
+  /// Link from Subject Hash to PP
   create_link(
     pp.subject.hash.clone(),
     pp_ah.clone(),

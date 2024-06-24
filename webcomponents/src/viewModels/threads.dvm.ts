@@ -23,13 +23,14 @@ import {
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
-  BeadType, EncryptedBeadContent, ThreadsNotification,
+  BeadType, EncryptedBeadContent, ThreadsNotification, ThreadsNotificationTip,
   TypedContent,
 } from "./threads.perspective";
 import {AppletId} from "@lightningrodlabs/we-applet";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
+import {getEventType} from "../utils";
 
 
 /** */
@@ -159,7 +160,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  private async handleTip(tip: TipProtocol, _from: AgentPubKeyB64) {
+  private async handleTip(tip: TipProtocol, from: AgentPubKeyB64) {
     // /* Send pong response */
     // if (tip.type != "Pong") {
     //   console.log("PONGING ", from)
@@ -167,12 +168,15 @@ export class ThreadsDvm extends DnaViewModel {
     //   this.broadcastTip(pong, [from])
     // }
     /* Handle signal */
-    switch (tip.type) {
+    const type = Object.keys(tip)[0];
+    console.log("handleTip()", type, from);
+    switch (type) {
       case "Ping":
       case "Pong":
         break;
       case "Notification": {
-        const notifTip = (tip as TipProtocolVariantNotification).value;
+        const serNotifTip = (tip as TipProtocolVariantNotification).Notification;
+        const notifTip = decode(serNotifTip) as ThreadsNotificationTip;
         const notif: ThreadsNotification = {
           //eventIndex: notifTip.event_index,
           event: notifTip.event,

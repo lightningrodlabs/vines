@@ -2,10 +2,9 @@
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {determineBeadName, MAIN_TOPIC_HASH} from "./utils";
-import {NotifiableEvent} from "./bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {ThreadsNotification} from "./viewModels/threads.perspective";
+import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
 
 
 export const POST_TYPE_NAME = "Post";

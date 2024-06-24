@@ -2,14 +2,11 @@ import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
-import {
-  NotifiableEvent,
-  } from "./bindings/threads.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {determineBeadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {ThreadsNotification} from "./viewModels/threads.perspective";
+import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
 
 
 

@@ -1,7 +1,6 @@
 use hdk::prelude::*;
 use crate::signals::*;
-use threads_integrity::*;
-
+//use zome_utils::*;
 
 ///
 pub fn emit_threads_signal(pulses: Vec<ThreadsSignalProtocol>) -> ExternResult<()> {
@@ -25,51 +24,39 @@ pub fn emit_system_signal(sys: SystemSignalProtocol) -> ExternResult<()> {
 }
 
 
+///-------------------------------------------------------------------------------------------------
+/// Entry
+///-------------------------------------------------------------------------------------------------
+
 ///
-pub fn emit_entry_signal_record(record: Record, is_new: bool) -> ExternResult<()> {
-  let typed_entry: ThreadsEntry = record_to_typed(record.clone())?;
-  return emit_entry_signal(record.action_address().to_owned(), record.action(), is_new, typed_entry);
+pub fn emit_entry_signal(record: Record, is_new: bool) -> ExternResult<()> {
+  let pulse = EntryPulse::from_NewEntry_record(record, is_new);
+  return emit_threads_signal(vec![ThreadsSignalProtocol::Entry(pulse)]);
 }
 
 
-///
-pub fn emit_entry_signal(ah: ActionHash, action: &Action, is_new: bool, typed: ThreadsEntry) -> ExternResult<()> {
-  let info = entry_info(ah, action, is_new, &typed);
-  return emit_threads_signal(vec![ThreadsSignalProtocol::Entry((info, typed))]);
-}
 
-
-///
-pub fn entry_info(ah: ActionHash, action: &Action, is_new: bool, typed: &ThreadsEntry) -> EntryInfo {
-  let mut entry_info = EntryInfo::from_action(action, is_new);
-  match typed {
-    ThreadsEntry::AnyBead(_)
-    | ThreadsEntry::EntryBead(_)
-    | ThreadsEntry::TextBead(_)
-    | ThreadsEntry::EncryptedBead(_)
-    | ThreadsEntry::ParticipationProtocol(_) => entry_info.hash = AnyDhtHash::from(ah),
-    _ => (),
-  };
-  entry_info
-}
-
+///-------------------------------------------------------------------------------------------------
+/// Link
+///-------------------------------------------------------------------------------------------------
 
 ///
 pub fn emit_link_delete_signal(delete: &DeleteLink, create: &CreateLink, is_new: bool) -> ExternResult<()> {
   let link = link_from_delete(delete, create);
-  return emit_threads_signal( vec![ThreadsSignalProtocol::Link((link, StateChange::Delete(is_new)))]);
+  let pulse = LinkPulse { link, state: StateChange::Delete(is_new)};
+  return emit_threads_signal( vec![ThreadsSignalProtocol::Link(pulse)]);
 }
 
 ///
 pub fn emit_link_create_signal(link_ah: ActionHash, create: &CreateLink, is_new: bool) -> ExternResult<()> {
   let link = link_from_create(link_ah, create);
-  return emit_threads_signal( vec![ThreadsSignalProtocol::Link((link, StateChange::Create(is_new)))]);
+  return emit_threads_signal( vec![ThreadsSignalProtocol::Link(LinkPulse {link, state: StateChange::Create(is_new)})]);
 }
 
 
 ///
 pub fn emit_link_signal(link: Link, state: StateChange) -> ExternResult<()> {
-  return emit_threads_signal(vec![ThreadsSignalProtocol::Link((link, state))]);
+  return emit_threads_signal(vec![ThreadsSignalProtocol::Link(LinkPulse {link, state})]);
 }
 
 
@@ -78,7 +65,7 @@ pub fn emit_links_signal(links: Vec<Link>) -> ExternResult<()> {
   let pulses = links
     .into_iter()
     .map(|link| {
-      ThreadsSignalProtocol::Link((link, StateChange::Create(false)))
+      ThreadsSignalProtocol::Link(LinkPulse { link, state: StateChange::Create(false)})
     })
     .collect();
   emit_threads_signal(pulses)?;

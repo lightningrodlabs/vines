@@ -1,7 +1,7 @@
 import {
   ActionHash,
   ActionHashB64, AgentPubKey,
-  AgentPubKeyB64, decodeHashFromBase64, DnaHashB64,
+  AgentPubKeyB64, AnyLinkableHash, decodeHashFromBase64, DnaHashB64,
   encodeHashToBase64,
   EntryHashB64,
   HoloHashB64,
@@ -12,9 +12,9 @@ import {Thread} from "./thread";
 import {
   AnyBead, BaseBeadKind, Bead, EncryptedBead,
   EntryBead,
-  GlobalLastProbeLog, NotifiableEvent, NotifySetting,
+  GlobalLastProbeLog, NotifySetting,
   ParticipationProtocol,
-  Subject, TextBead, ThreadsEntryType, ThreadsNotificationTip,
+  Subject, TextBead, ThreadsEntryType,
 } from "../bindings/threads.types";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {AuthorshipZvm} from "./authorship.zvm";
@@ -34,6 +34,28 @@ export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBea
 export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
 
 export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentPubKey}
+
+
+/**  */
+export enum NotifiableEvent {
+  NewBead = 'NewBead',
+  Mention = 'Mention',
+  Reply = 'Reply',
+  Fork = 'Fork',
+  NewDmThread = 'NewDmThread',
+}
+
+/**  */
+export interface ThreadsNotificationTip {
+  event: NotifiableEvent
+  author: AgentPubKey
+  timestamp: Timestamp
+  content: AnyLinkableHash
+  /**  */
+  link_ah: ActionHash
+  pp_ah: ActionHash
+  data: NotificationTipBeadData | NotificationTipPpData,
+}
 
 
 export interface ThreadsNotification {

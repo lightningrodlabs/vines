@@ -9,7 +9,7 @@ import {
 import {
   AnyBeadMat,
   AnyLinkableHashB64,
-  BeadType, EntryBeadMat, materializeTypedBead, ParticipationProtocolMat,
+  BeadType, EntryBeadMat, materializeTypedBead, NotifiableEvent, ParticipationProtocolMat,
   SubjectMat, TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.perspective";
@@ -19,13 +19,25 @@ import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
-  DM_SUBJECT_TYPE_NAME, NotifiableEvent, NotifySetting,
+  DM_SUBJECT_TYPE_NAME, NotifySetting,
   SEMANTIC_TOPIC_TYPE_NAME, StateChange, StateChangeType,
   ThreadsEntryType, ThreadsLinkType
 } from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
+
+
+/** */
+export function getEnumIndex(enumType: any, value: string): number {
+  const keys = Object.keys(enumType).filter(key => isNaN(Number(key))); // Filter out numeric keys if present
+  for (let i = 0; i < keys.length; i++) {
+    if (enumType[keys[i]] === value) {
+      return i;
+    }
+  }
+  throw Error("Value not found in enum");
+}
 
 
 /** */
@@ -61,6 +73,19 @@ export function getLinkType(index: number): ThreadsLinkType {
   /** */
   throw Error("Out of bounds index for ThreadsLinkType");
 }
+
+
+/** */
+export function getEntryType(index: number): ThreadsEntryType {
+  const keys = Object.keys(ThreadsEntryType);
+  if (index >= 0 && index < keys.length) {
+    const key = keys[index];
+    return ThreadsEntryType[key];
+  }
+  /** */
+  throw Error("Out of bounds index for ThreadsEntryType");
+}
+
 
 
 /** */
@@ -217,6 +242,10 @@ function emptyValidHash(prefix) {
   return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]);
 }
 
+
+export function emptyEntryHash() {
+  return emptyValidHash(HASH_TYPE_PREFIX["Entry"]);
+}
 
 export function emptyAgentPubKey() {
   return emptyValidHash([0x84, 0x20, 0x24]);

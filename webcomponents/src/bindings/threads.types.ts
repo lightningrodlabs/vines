@@ -240,28 +240,7 @@ export interface GetDataTypeInput {
 export interface NotifyPeerInput {
   content: AnyLinkableHash
   who: AgentPubKey
-  event: NotifiableEvent
-}
-
-/**  */
-export enum NotifiableEvent {
-	NewBead = 'NewBead',
-	Mention = 'Mention',
-	Reply = 'Reply',
-	Fork = 'Fork',
-	NewDmThread = 'NewDmThread',
-}
-
-/**  */
-export interface ThreadsNotificationTip {
-  event: NotifiableEvent
-  author: AgentPubKey
-  timestamp: Timestamp
-  content: AnyLinkableHash
-  /**  */
-  link_ah: ActionHash
-  pp_ah: ActionHash
-  data: Uint8Array
+  event_index: number
 }
 
 /**
@@ -296,7 +275,7 @@ export interface BroadcastTipInput {
 
 /** Input to the notify call */
 export interface CastNotificationTipInput {
-  notificationTip: ThreadsNotificationTip
+  notificationTip: Uint8Array
   peer: AgentPubKey
 }
 
@@ -315,10 +294,25 @@ export enum ThreadsSignalProtocolType {
 }
 export type ThreadsSignalProtocolVariantSystem = {System: SystemSignalProtocol}
 export type ThreadsSignalProtocolVariantTip = {Tip: TipProtocol}
-export type ThreadsSignalProtocolVariantEntry = {Entry: [EntryInfo, ThreadsEntry]}
-export type ThreadsSignalProtocolVariantLink = {Link: [Link, StateChange]}
+export type ThreadsSignalProtocolVariantEntry = {Entry: EntryPulse}
+export type ThreadsSignalProtocolVariantLink = {Link: LinkPulse}
 export type ThreadsSignalProtocol = 
  | ThreadsSignalProtocolVariantSystem | ThreadsSignalProtocolVariantTip | ThreadsSignalProtocolVariantEntry | ThreadsSignalProtocolVariantLink;
+
+export interface EntryPulse {
+  ah: ActionHash
+  state: StateChange
+  ts: Timestamp
+  author: AgentPubKey
+  eh: EntryHash
+  def: AppEntryDef
+  bytes: Uint8Array
+}
+
+export interface LinkPulse {
+  link: Link
+  state: StateChange
+}
 
 export interface SystemSignal {
   System: SystemSignalProtocol
@@ -329,13 +323,22 @@ export interface TipSignal {
 }
 
 /** Protocol for notifying the ViewModel (UI) of system level events */
-export type SystemSignalProtocolVariantPostCommitStart = {
-  type: "PostCommitStart"
-  entry_type: string
+export type SystemSignalProtocolVariantPostCommitNewStart = {
+  type: "PostCommitNewStart"
+  app_entry_type: string
 }
-export type SystemSignalProtocolVariantPostCommitEnd = {
-  type: "PostCommitEnd"
-  entry_type: string
+export type SystemSignalProtocolVariantPostCommitNewEnd = {
+  type: "PostCommitNewEnd"
+  app_entry_type: string
+  succeeded: boolean
+}
+export type SystemSignalProtocolVariantPostCommitDeleteStart = {
+  type: "PostCommitDeleteStart"
+  app_entry_type: string
+}
+export type SystemSignalProtocolVariantPostCommitDeleteEnd = {
+  type: "PostCommitDeleteEnd"
+  app_entry_type: string
   succeeded: boolean
 }
 export type SystemSignalProtocolVariantSelfCallStart = {
@@ -350,44 +353,28 @@ export type SystemSignalProtocolVariantSelfCallEnd = {
   succeeded: boolean
 }
 export type SystemSignalProtocol =
-  | SystemSignalProtocolVariantPostCommitStart
-  | SystemSignalProtocolVariantPostCommitEnd
+  | SystemSignalProtocolVariantPostCommitNewStart
+  | SystemSignalProtocolVariantPostCommitNewEnd
+  | SystemSignalProtocolVariantPostCommitDeleteStart
+  | SystemSignalProtocolVariantPostCommitDeleteEnd
   | SystemSignalProtocolVariantSelfCallStart
   | SystemSignalProtocolVariantSelfCallEnd;
 
 /** Used by UI ONLY. That's why we use B64 here. */
-export type TipProtocolVariantPing = {
-  type: "Ping"
+export enum TipProtocolType {
+	Ping = 'Ping',
+	Pong = 'Pong',
+	Entry = 'Entry',
+	Link = 'Link',
+	Notification = 'Notification',
 }
-export type TipProtocolVariantPong = {
-  type: "Pong"
-}
-  /**
-   * 
-   * 
-   * 
-   */
-export type TipProtocolVariantNotification = {
-  type: "Notification"
-  value: ThreadsNotificationTip
-}
-  /**  */
-export type TipProtocolVariantEntry = {
-  type: "Entry"
-  info: EntryInfo
-  entry: ThreadsEntry
-}
-export type TipProtocolVariantLink = {
-  type: "Link"
-  link: Link
-  state: StateChange
-}
-export type TipProtocol =
-  | TipProtocolVariantPing
-  | TipProtocolVariantPong
-  | TipProtocolVariantNotification
-  | TipProtocolVariantEntry
-  | TipProtocolVariantLink;
+export type TipProtocolVariantPing = {Ping: AgentPubKey}
+export type TipProtocolVariantPong = {Pong: AgentPubKey}
+export type TipProtocolVariantEntry = {Entry: EntryPulse}
+export type TipProtocolVariantLink = {Link: LinkPulse}
+export type TipProtocolVariantNotification = {Notification: Uint8Array}
+export type TipProtocol = 
+ | TipProtocolVariantPing | TipProtocolVariantPong | TipProtocolVariantEntry | TipProtocolVariantLink | TipProtocolVariantNotification;
 
 /** Bool: True if state change just happened (real-time) */
 export enum StateChangeType {
@@ -400,13 +387,6 @@ export type StateChangeVariantUpdate = {Update: boolean}
 export type StateChangeVariantDelete = {Delete: boolean}
 export type StateChange = 
  | StateChangeVariantCreate | StateChangeVariantUpdate | StateChangeVariantDelete;
-
-export interface EntryInfo {
-  hash: AnyDhtHash
-  ts: Timestamp
-  author: AgentPubKey
-  state: StateChange
-}
 
 /**  */
 export interface FindSubjectsInput {

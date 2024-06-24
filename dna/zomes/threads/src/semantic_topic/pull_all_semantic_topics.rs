@@ -16,17 +16,15 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
   debug!("pull_all_semantic_topics() {:?}", root_anchor);
   let leaf_anchors = root_anchor.walk()?;
   debug!("pull_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
-  let mut all: Vec<(EntryInfo, SemanticTopic)> = Vec::new();
+  let mut pulses = Vec::new();
   for leaf_anchor in leaf_anchors {
-    let mut sts = pull_semantic_topics(leaf_anchor.anchor)?;
-    //debug!("pull_all_semantic_topics() sts {:?}", sts);
-    all.append(&mut sts);
+    let sts = pull_semantic_topics(leaf_anchor.anchor)?;
+    for (record, _) in sts {
+      let entry_pulse = EntryPulse::from_NewEntry_record(record, false);
+      pulses.push(ThreadsSignalProtocol::Entry(entry_pulse));
+    }
   }
   /// Emit signal
-  let pulses = all
-    .into_iter()
-    .map(|(info, typed)| ThreadsSignalProtocol::Entry((info, ThreadsEntry::SemanticTopic(typed))))
-    .collect();
   emit_threads_signal(pulses)?;
   ///
   Ok(())
@@ -34,7 +32,7 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
 
 
 ///
-fn pull_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(EntryInfo, SemanticTopic)>>  {
+fn pull_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(Record, SemanticTopic)>>  {
   let path = Path::from(&leaf_anchor);
   let itemlinks = get_itemlinks(path, ThreadsLinkType::Topics.try_into_filter()?, None)?;
   debug!("pull_semantic_topics() {} leaf_links found", itemlinks.len());
@@ -44,13 +42,7 @@ fn pull_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(EntryInfo, Sem
       let eh = ll.item_hash.into_entry_hash().unwrap();
       let (record, typed) = get_typed_and_record::<SemanticTopic>(&eh.into())
         .unwrap(); // FIXME
-      let info = EntryInfo {
-        hash: record.action().entry_hash().unwrap().to_owned().into(),
-        ts: record.action().timestamp(),
-        author: record.action().author().to_owned(),
-        state: StateChange::Create(false),
-      };
-      return (info, typed);
+      return (record, typed);
       //return (eh, typed.title);
     })
     .collect();
@@ -71,7 +63,7 @@ pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(EntryHa
   let tp = determine_topic_anchor(title_filter.clone())?;
   let semantic_topics: Vec<(EntryHash, String)> = pull_semantic_topics(path2anchor(&tp.path).unwrap())?
     .into_iter()
-    .map(|(info, typed)| (EntryHash::try_from(info.hash).unwrap(), typed.title))
+    .map(|(record, typed)| (record.action().entry_hash().unwrap().to_owned(), typed.title))
     .collect();
   Ok(semantic_topics)
 }
