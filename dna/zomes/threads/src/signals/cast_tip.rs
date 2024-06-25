@@ -14,7 +14,7 @@ pub struct CastTipInput {
 #[hdk_extern]
 fn cast_tip(input: CastTipInput) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  debug!("Broadcasting tip {:?} to {:?}", input.tip, input.peers);
+  debug!("Casting tip {:?} to {:?}", input.tip, input.peers);
   /// Pre-conditions: Don't call yourself (otherwise we get concurrency issues)
   let me = agent_info()?.agent_latest_pubkey;
   let filtered = input.peers.into_iter().filter(|agent| agent != &me).collect();
@@ -28,8 +28,8 @@ fn cast_tip(input: CastTipInput) -> ExternResult<()> {
     filtered,
   );
   if let Err(e) = res {
-    error!("send_remote_signal() failed during broadcast_tip(): {:?}", e);
-    return error("send_remote_signal() failed during broadcast_tip()");
+    error!("send_remote_signal() failed during cast_tip(): {:?}", e);
+    return error("send_remote_signal() failed during cast_tip()");
   }
   debug!("calling remote recv_remote_signal() DONE");
   Ok(())
