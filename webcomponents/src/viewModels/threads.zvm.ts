@@ -8,7 +8,7 @@ import {
   decodeHashFromBase64,
   DnaHashB64,
   encodeHashToBase64,
-  EntryHashB64, fakeEntryHash, HASH_TYPE_PREFIX,
+  EntryHashB64, HASH_TYPE_PREFIX,
   Link, sliceHashType,
   Timestamp,
 } from "@holochain/client";
@@ -39,14 +39,15 @@ import {
   ThreadLastProbeLog,
   ThreadsEntryType,
   ThreadsLinkType,
-  ThreadsSignal,
-  ThreadsSignalProtocol,
-  ThreadsSignalProtocolType, ThreadsSignalProtocolVariantEntry, ThreadsSignalProtocolVariantLink,
-  TipProtocol,
+  TipProtocol, TipProtocolVariantApp,
   TipProtocolVariantEntry,
   TipProtocolVariantLink,
-  TipProtocolVariantNotification,
   TipProtocolVariantPong,
+  ZomeSignal,
+  ZomeSignalProtocol,
+  ZomeSignalProtocolType,
+  ZomeSignalProtocolVariantEntry,
+  ZomeSignalProtocolVariantLink,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {Dictionary, LitHappSignal, prettyDate, SignalLog, SignalType, ZomeViewModel} from "@ddd-qc/lit-happ";
@@ -1636,7 +1637,7 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     console.log("castNotificationTip()", notificationTip, agent/*, notification.author*/);
     const serTip = encode(notificationTip);
-    await this.broadcastTip({Notification: serTip}, [agent]);
+    await this.broadcastTip({App: serTip}, [agent]);
     return;
   }
 
@@ -1928,7 +1929,7 @@ export class ThreadsZvm extends ZomeViewModel {
       return;
     }
     console.log("ThreadsZvm.handleSignal()", signal);
-    const threadsSignal = signal.payload as ThreadsSignal;
+    const threadsSignal = signal.payload as ZomeSignal;
     //console.log("THREADS received signal", threadsSignal);
     if (!("pulses" in threadsSignal)) {
       return;
@@ -1938,23 +1939,23 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  async handleThreadsSignal(signal: ThreadsSignal): Promise<void> {
+  async handleThreadsSignal(signal: ZomeSignal): Promise<void> {
     const from = encodeHashToBase64(signal.from);
     let all = [];
     for (let pulse of signal.pulses) {
       /** -- Handle Signal according to type -- */
       /** Change tip to Entry or Link signal */
-      if (ThreadsSignalProtocolType.Tip in pulse) {
+      if (ZomeSignalProtocolType.Tip in pulse) {
         pulse = this.handleTip(pulse.Tip as TipProtocol, from);
         if (!pulse) {
           continue;
         }
       }
-      if (ThreadsSignalProtocolType.Entry in pulse) {
+      if (ZomeSignalProtocolType.Entry in pulse) {
         all.push(this.handleEntrySignal(pulse.Entry as EntryPulse, from));
         continue;
       }
-      if (ThreadsSignalProtocolType.Link in pulse) {
+      if (ZomeSignalProtocolType.Link in pulse) {
         all.push(this.handleLinkSignal(pulse.Link as LinkPulse, from));
         continue;
       }
@@ -2285,13 +2286,6 @@ export class ThreadsZvm extends ZomeViewModel {
       }
       await this.notifyPeers(ppAh, decodeHashFromBase64(beadAh), notifs);
       /** Form "Entry" Tip to broadcast */
-      // let bead: ThreadsEntry;
-      // switch (beadType) {
-      //   case ThreadsEntryType.EncryptedBead: bead = {EncryptedBead: typed as EncryptedBead}; break;
-      //   case ThreadsEntryType.AnyBead: bead = {AnyBead: typed as AnyBead}; break;
-      //   case ThreadsEntryType.TextBead: bead = {TextBead: typed as TextBead}; break;
-      //   case ThreadsEntryType.EntryBead: bead = {EntryBead: typed as EntryBead}; break;
-      // }
       tip = {Entry: entryPulse} as TipProtocolVariantEntry;
     }
     /** */
@@ -2300,7 +2294,7 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private handleTip(tip: TipProtocol, from: AgentPubKeyB64): ThreadsSignalProtocol {
+  private handleTip(tip: TipProtocol, from: AgentPubKeyB64): ZomeSignalProtocol {
     const type = Object.keys(tip)[0];
     console.log("handleTip()", type, tip);
     /* Send pong response */
@@ -2314,34 +2308,27 @@ export class ThreadsZvm extends ZomeViewModel {
       case "Ping":
       case "Pong":
         break;
-      case "Notification": {
-        const notifTip = decode((tip as TipProtocolVariantNotification).Notification) as ThreadsNotificationTip;
+      case "Entry": return {Entry: (tip as TipProtocolVariantEntry).Entry} as ZomeSignalProtocolVariantEntry; break;
+      case "Link": return {Link: (tip as TipProtocolVariantLink).Link} as ZomeSignalProtocolVariantLink; break;
+      case "App": {
+        const notifTip = decode((tip as TipProtocolVariantApp).App) as ThreadsNotificationTip;
         return this.handleNotificationTip(notifTip, from);
       }
-      break;
-      case "Entry": return {Entry: (tip as TipProtocolVariantEntry).Entry} as ThreadsSignalProtocolVariantEntry; break;
-      case "Link": return {Link: (tip as TipProtocolVariantLink).Link} as ThreadsSignalProtocolVariantLink; break;
+        break;
     }
   }
 
 
   /** */
-  private handleNotificationTip(notifTip: ThreadsNotificationTip, from: AgentPubKeyB64): ThreadsSignalProtocol | undefined {
+  private handleNotificationTip(notifTip: ThreadsNotificationTip, from: AgentPubKeyB64): ZomeSignalProtocol | undefined {
     let ppAh: ActionHashB64;
-    let signal: ThreadsSignalProtocol;
+    let signal: ZomeSignalProtocol;
     /** Store received Entry */
     if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
       const {typed, beadType, creationTime} = notifTip.data as NotificationTipBeadData;
       const beadAh = encodeHashToBase64(notifTip.content);
       ppAh = encodeHashToBase64(notifTip.pp_ah);
       console.log(`Received NotificationSignal of type ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
-      //let entry_index;
-      // switch (beadType) {
-      //   case ThreadsEntryType.AnyBead: entry_index = getEnumIndex(ThreadsEntryType, ThreadsEntryType.AnyBead); break;
-      //   case ThreadsEntryType.EntryBead: entry_index = getEnumIndex(ThreadsEntryType, ThreadsEntryType.EntryBead); break;
-      //   case ThreadsEntryType.TextBead: entry_index = getEnumIndex(ThreadsEntryType, ThreadsEntryType.TextBead); break;
-      //   case ThreadsEntryType.EncryptedBead: entry_index = getEnumIndex(ThreadsEntryType, ThreadsEntryType.EncryptedBead); break;
-      // }
       const entryPulse: EntryPulse = {
         ah: notifTip.content,
         eh: emptyEntryHash(),
@@ -2412,25 +2399,25 @@ export class ThreadsZvm extends ZomeViewModel {
       .filter((log) => log.type == SignalType.LitHapp)
       .map((log) => {
         const signal = log.payload as LitHappSignal;
-        const pulses = signal.pulses as ThreadsSignalProtocol[];
+        const pulses = signal.pulses as ZomeSignalProtocol[];
         const timestamp = prettyDate(new Date(log.ts));
         const from = encodeHashToBase64(signal.from) == this.cell.agentPubKey? "self" : encodeHashToBase64(signal.from);
         for (const pulse of pulses) {
-          if (ThreadsSignalProtocolType.Tip in pulse) {
+          if (ZomeSignalProtocolType.Tip in pulse) {
             const tip: TipProtocol = pulse.Tip;
             const subType = Object.keys(tip)[0];
-            appSignals.push({timestamp, from, type: ThreadsSignalProtocolType.Tip, subType, payload: tip});
+            appSignals.push({timestamp, from, type: ZomeSignalProtocolType.Tip, subType, payload: tip});
           }
-          if (ThreadsSignalProtocolType.Entry in pulse) {
+          if (ZomeSignalProtocolType.Entry in pulse) {
             const entryPulse = pulse.Entry;
             const entryType = getEntryType(entryPulse.def.entry_index);
             const threadsEntry = decode(entryPulse.bytes); //as ThreadsEntry;
-            appSignals.push({timestamp, from, type: ThreadsSignalProtocolType.Entry, subType: entryType, state: prettyState(entryPulse.state), payload: threadsEntry, hash: encodeHashToBase64(entryPulse.ah)});
+            appSignals.push({timestamp, from, type: ZomeSignalProtocolType.Entry, subType: entryType, state: prettyState(entryPulse.state), payload: threadsEntry, hash: encodeHashToBase64(entryPulse.ah)});
           }
-          if (ThreadsSignalProtocolType.Link in pulse) {
+          if (ZomeSignalProtocolType.Link in pulse) {
             const linkPulse = pulse.Link;
             const hash = `${encodeHashToBase64((linkPulse.link as any).base)} -> ${encodeHashToBase64(linkPulse.link.target)}`;
-            appSignals.push({timestamp, from, type: ThreadsSignalProtocolType.Link, subType: getLinkType(linkPulse.link.link_type), state: prettyState(linkPulse.state), payload: linkPulse.link.tag, hash});
+            appSignals.push({timestamp, from, type: ZomeSignalProtocolType.Link, subType: getLinkType(linkPulse.link.link_type), state: prettyState(linkPulse.state), payload: linkPulse.link.tag, hash});
           }
         }
       });

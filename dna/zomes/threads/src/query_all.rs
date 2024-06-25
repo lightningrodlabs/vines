@@ -79,10 +79,10 @@ fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()>
    let pulses = tuples.into_iter()
      .map(|(record, _entry)| {
         let entry_pulse = EntryPulse::try_from_new_record(record, false).unwrap();
-        return ThreadsSignalProtocol::Entry(entry_pulse);
+        return ZomeSignalProtocol::Entry(entry_pulse);
      })
      .collect();
-   emit_threads_signal(pulses)?;
+   emit_zome_signal(pulses)?;
    Ok(())
 }
 

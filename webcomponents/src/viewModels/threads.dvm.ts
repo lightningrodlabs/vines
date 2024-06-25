@@ -15,11 +15,11 @@ import {
   ThreadsEntryType,
   ThreadsProperties,
   VINES_DEFAULT_ROLE_NAME,
-  ThreadsSignal,
-  ThreadsSignalProtocol,
-  ThreadsSignalProtocolType,
+  ZomeSignal,
+  ZomeSignalProtocol,
+  ZomeSignalProtocolType,
   TipProtocol,
- TipProtocolVariantNotification,
+  TipProtocolVariantApp,
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
@@ -141,7 +141,7 @@ export class ThreadsDvm extends DnaViewModel {
     if (!("pulses" in (appSignal.payload as Object))) {
       return;
     }
-    const signal = appSignal.payload as ThreadsSignal;
+    const signal = appSignal.payload as ZomeSignal;
     for (const pulse of signal.pulses) {
       /*await*/ this.handleThreadsSignal(pulse, encodeHashToBase64(signal.from));
     }
@@ -149,11 +149,11 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
   /** */
-  async handleThreadsSignal(threadsSignal: ThreadsSignalProtocol, from: AgentPubKeyB64): Promise<void> {
+  async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentPubKeyB64): Promise<void> {
     /* Update agent's known presence */
     this.storePresence(from);
     /** */
-    if (ThreadsSignalProtocolType.Tip in threadsSignal) {
+    if (ZomeSignalProtocolType.Tip in threadsSignal) {
       return this.handleTip(threadsSignal.Tip as TipProtocol, from);
     }
   }
@@ -174,8 +174,8 @@ export class ThreadsDvm extends DnaViewModel {
       case "Ping":
       case "Pong":
         break;
-      case "Notification": {
-        const serNotifTip = (tip as TipProtocolVariantNotification).Notification;
+      case "App": {
+        const serNotifTip = (tip as TipProtocolVariantApp).App;
         const notifTip = decode(serNotifTip) as ThreadsNotificationTip;
         const notif: ThreadsNotification = {
           //eventIndex: notifTip.event_index,

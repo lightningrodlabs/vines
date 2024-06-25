@@ -46,7 +46,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
   let typed: GlobalLastProbeLog = get_typed_from_record(latest_record.clone())?;
   /// Emit signal
   let pulse = EntryPulse::try_from_new_record(latest_record.clone(), false)?;
-  emit_threads_signal(vec![ThreadsSignalProtocol::Entry(pulse)])?;
+  emit_zome_signal(vec![ZomeSignalProtocol::Entry(pulse)])?;
   /// Done
   Ok((latest_record.action_address().to_owned(), typed))
 }

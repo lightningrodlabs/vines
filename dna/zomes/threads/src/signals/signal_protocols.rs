@@ -4,50 +4,19 @@ use zome_utils::*;
 
 ///
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct ThreadsSignal {
-    pub from: AgentPubKey, // if from self, than its not a DM,
-    pub pulses: Vec<ThreadsSignalProtocol>,
+pub struct ZomeSignal {
+    pub from: AgentPubKey,
+    pub pulses: Vec<ZomeSignalProtocol>,
 }
 
 
-/// Data sent by UI ONLY. That's why we use B64 here.
+///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-//#[serde(tag = "type")]
-pub enum ThreadsSignalProtocol {
-    System(SystemSignalProtocol), /// From "System"
-    Tip(TipProtocol), /// From Other peer
+pub enum ZomeSignalProtocol {
+    System(SystemSignalProtocol), // From "System"
+    Tip(TipProtocol), // From Other peer
     Entry(EntryPulse), // From self
     Link(LinkPulse), // From self
-}
-
-
-#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub struct EntryPulse {
-    ah: ActionHash,
-    state: StateChange,
-    ts: Timestamp,
-    author: AgentPubKey,
-    eh: EntryHash,
-    def: AppEntryDef,
-    bytes: AppEntryBytes,
-}
-
-#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub struct LinkPulse {
-    pub link: Link,
-    pub state: StateChange,
-}
-
-
-
-#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-pub struct SystemSignal {
-    pub System: SystemSignalProtocol,
-}
-#[derive(Clone, Debug, Serialize, Deserialize, SerializedBytes)]
-pub struct TipSignal {
-    pub Tip: TipProtocol,
 }
 
 
@@ -66,14 +35,12 @@ pub enum SystemSignalProtocol {
 
 /// Used by UI ONLY. That's why we use B64 here.
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-//#[serde(tag = "type")]
 pub enum TipProtocol {
     Ping(AgentPubKey),
     Pong(AgentPubKey),
     Entry(EntryPulse),
     Link(LinkPulse),
-    ///
-    Notification(SerializedBytes),
+    App(SerializedBytes),
 }
 
 
@@ -85,6 +52,24 @@ pub enum StateChange {
     Delete(bool),
 }
 
+
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub struct LinkPulse {
+    pub link: Link,
+    pub state: StateChange,
+}
+
+
+#[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
+pub struct EntryPulse {
+    ah: ActionHash,
+    state: StateChange,
+    ts: Timestamp,
+    author: AgentPubKey,
+    eh: EntryHash,
+    def: AppEntryDef,
+    bytes: AppEntryBytes,
+}
 
 impl EntryPulse {
     ///

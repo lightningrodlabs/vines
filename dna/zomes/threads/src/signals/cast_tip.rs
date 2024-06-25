@@ -19,7 +19,7 @@ fn cast_tip(input: CastTipInput) -> ExternResult<()> {
   let me = agent_info()?.agent_latest_pubkey;
   let filtered = input.peers.into_iter().filter(|agent| agent != &me).collect();
   /// Prepare payload
-  let pulse = ThreadsSignalProtocol::Tip(input.tip.clone());
+  let pulse = ZomeSignalProtocol::Tip(input.tip.clone());
   /// Signal peers
   debug!("calling remote recv_remote_signal() to {:?}", filtered);
   trace!("tip = '{:?}'", input.tip);

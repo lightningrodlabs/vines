@@ -273,47 +273,24 @@ export interface CastTipInput {
 }
 
 /**  */
-export interface ThreadsSignal {
+export interface ZomeSignal {
   from: AgentPubKey
-  pulses: ThreadsSignalProtocol[]
+  pulses: ZomeSignalProtocol[]
 }
 
-/** Data sent by UI ONLY. That's why we use B64 here. */
-export enum ThreadsSignalProtocolType {
+/**  */
+export enum ZomeSignalProtocolType {
 	System = 'System',
 	Tip = 'Tip',
 	Entry = 'Entry',
 	Link = 'Link',
 }
-export type ThreadsSignalProtocolVariantSystem = {System: SystemSignalProtocol}
-export type ThreadsSignalProtocolVariantTip = {Tip: TipProtocol}
-export type ThreadsSignalProtocolVariantEntry = {Entry: EntryPulse}
-export type ThreadsSignalProtocolVariantLink = {Link: LinkPulse}
-export type ThreadsSignalProtocol = 
- | ThreadsSignalProtocolVariantSystem | ThreadsSignalProtocolVariantTip | ThreadsSignalProtocolVariantEntry | ThreadsSignalProtocolVariantLink;
-
-export interface EntryPulse {
-  ah: ActionHash
-  state: StateChange
-  ts: Timestamp
-  author: AgentPubKey
-  eh: EntryHash
-  def: AppEntryDef
-  bytes: Uint8Array
-}
-
-export interface LinkPulse {
-  link: Link
-  state: StateChange
-}
-
-export interface SystemSignal {
-  System: SystemSignalProtocol
-}
-
-export interface TipSignal {
-  Tip: TipProtocol
-}
+export type ZomeSignalProtocolVariantSystem = {System: SystemSignalProtocol}
+export type ZomeSignalProtocolVariantTip = {Tip: TipProtocol}
+export type ZomeSignalProtocolVariantEntry = {Entry: EntryPulse}
+export type ZomeSignalProtocolVariantLink = {Link: LinkPulse}
+export type ZomeSignalProtocol = 
+ | ZomeSignalProtocolVariantSystem | ZomeSignalProtocolVariantTip | ZomeSignalProtocolVariantEntry | ZomeSignalProtocolVariantLink;
 
 /** Protocol for notifying the ViewModel (UI) of system level events */
 export type SystemSignalProtocolVariantPostCommitNewStart = {
@@ -359,15 +336,15 @@ export enum TipProtocolType {
 	Pong = 'Pong',
 	Entry = 'Entry',
 	Link = 'Link',
-	Notification = 'Notification',
+	App = 'App',
 }
 export type TipProtocolVariantPing = {Ping: AgentPubKey}
 export type TipProtocolVariantPong = {Pong: AgentPubKey}
 export type TipProtocolVariantEntry = {Entry: EntryPulse}
 export type TipProtocolVariantLink = {Link: LinkPulse}
-export type TipProtocolVariantNotification = {Notification: Uint8Array}
+export type TipProtocolVariantApp = {App: Uint8Array}
 export type TipProtocol = 
- | TipProtocolVariantPing | TipProtocolVariantPong | TipProtocolVariantEntry | TipProtocolVariantLink | TipProtocolVariantNotification;
+ | TipProtocolVariantPing | TipProtocolVariantPong | TipProtocolVariantEntry | TipProtocolVariantLink | TipProtocolVariantApp;
 
 /** Bool: True if state change just happened (real-time) */
 export enum StateChangeType {
@@ -380,6 +357,21 @@ export type StateChangeVariantUpdate = {Update: boolean}
 export type StateChangeVariantDelete = {Delete: boolean}
 export type StateChange = 
  | StateChangeVariantCreate | StateChangeVariantUpdate | StateChangeVariantDelete;
+
+export interface LinkPulse {
+  link: Link
+  state: StateChange
+}
+
+export interface EntryPulse {
+  ah: ActionHash
+  state: StateChange
+  ts: Timestamp
+  author: AgentPubKey
+  eh: EntryHash
+  def: AppEntryDef
+  bytes: Uint8Array
+}
 
 /**  */
 export interface FindSubjectsInput {

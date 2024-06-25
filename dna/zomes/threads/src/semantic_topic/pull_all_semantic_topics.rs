@@ -21,11 +21,11 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
     let sts = pull_semantic_topics(leaf_anchor.anchor)?;
     for (record, _) in sts {
       let entry_pulse = EntryPulse::try_from_new_record(record, false)?;
-      pulses.push(ThreadsSignalProtocol::Entry(entry_pulse));
+      pulses.push(ZomeSignalProtocol::Entry(entry_pulse));
     }
   }
   /// Emit signal
-  emit_threads_signal(pulses)?;
+  emit_zome_signal(pulses)?;
   ///
   Ok(())
 }
