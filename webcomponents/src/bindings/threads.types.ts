@@ -267,16 +267,9 @@ export interface UpdateTopicInput {
   topic: SemanticTopic
 }
 
-/** Input to the notify call */
-export interface BroadcastTipInput {
+export interface CastTipInput {
   tip: TipProtocol
   peers: AgentPubKey[]
-}
-
-/** Input to the notify call */
-export interface CastNotificationTipInput {
-  notificationTip: Uint8Array
-  peer: AgentPubKey
 }
 
 /**  */

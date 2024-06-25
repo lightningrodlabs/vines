@@ -37,22 +37,12 @@ import {
   Subject,
   TextBead,
   ThreadLastProbeLog,
-  ThreadsEntry,
   ThreadsEntryType,
-  ThreadsEntryVariantAnyBead,
-  ThreadsEntryVariantEncryptedBead,
-  ThreadsEntryVariantEntryBead,
-  ThreadsEntryVariantGlobalLastProbeLog,
-  ThreadsEntryVariantParticipationProtocol,
-  ThreadsEntryVariantSemanticTopic,
-  ThreadsEntryVariantTextBead,
-  ThreadsEntryVariantThreadLastProbeLog,
   ThreadsLinkType,
   ThreadsSignal,
   ThreadsSignalProtocol,
   ThreadsSignalProtocolType, ThreadsSignalProtocolVariantEntry, ThreadsSignalProtocolVariantLink,
   TipProtocol,
-  TipProtocolType,
   TipProtocolVariantEntry,
   TipProtocolVariantLink,
   TipProtocolVariantNotification,
@@ -67,9 +57,9 @@ import {
   BaseBeadType,
   BeadInfo,
   BeadLinkMaterialized,
-  BeadType, dematerializeAnyBead,
+  BeadType,
   dematerializeEntryBead,
-  dematerializeParticipationProtocol, dematerializeTextBead,
+  dematerializeParticipationProtocol,
   dematerializeTypedBead,
   EncryptedBeadContent,
   EntryBeadMat,
@@ -107,10 +97,16 @@ import {
 } from "../utils";
 import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
-import {EntryVisibility} from "@holochain/client/lib/hdk/entry";
 
 
 //generateSearchTest();
+
+/** */
+export interface CastLog {
+  ts: Timestamp,
+  tip: TipProtocol,
+  peers: AgentPubKeyB64[],
+}
 
 
 /**
@@ -122,6 +118,8 @@ export class ThreadsZvm extends ZomeViewModel {
   get zomeProxy(): ThreadsProxy {return this._zomeProxy as ThreadsProxy;}
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
+
+  private _castLogs: CastLog[] = [];
 
   /* */
   protected hasChanged(): boolean {
@@ -1602,7 +1600,7 @@ export class ThreadsZvm extends ZomeViewModel {
     /** Skip if no recipients or sending to self only */
     const filtered = agents.filter((key) => key != this.cell.agentPubKey);
     const tipType = Object.keys(tip)[0];
-    console.log(`ThreadsZvm.broadcastTip() Sending Tip "${tipType}" to`, filtered, this.cell.agentPubKey, tip);
+    console.log(`ThreadsZvm.broadcastTip() Sending Tip "${tipType}" to`, filtered, this.cell.agentPubKey);
     //if (!agents || agents.length == 1 && agents[0] === this._cellProxy.cell.agentPubKey) {
     if (!filtered || filtered.length == 0) {
       console.log("ThreadsZvm.broadcastTip() aborted: No recipients")
@@ -1610,12 +1608,14 @@ export class ThreadsZvm extends ZomeViewModel {
     }
     /** Broadcast */
     const peers = agents.map((key) => decodeHashFromBase64(key));
-    return this.zomeProxy.broadcastTip({tip, peers});
+    await this.zomeProxy.castTip({tip, peers});
+    /** Log */
+    this._castLogs.push({ts: Date.now(), tip, peers: agents});
   }
 
 
   /** Return true if sent synchronously */
-  async castNotificationTip(linkAh: ActionHashB64, agent: AgentPubKeyB64, notification: ThreadsNotification, extra: NotificationTipBeadData | NotificationTipPpData): Promise<boolean> {
+  async castNotificationTip(linkAh: ActionHashB64, agent: AgentPubKeyB64, notification: ThreadsNotification, extra: NotificationTipBeadData | NotificationTipPpData): Promise<void> {
     let pp_ah = decodeHashFromBase64(notification.content);
     if (NotifiableEvent.Mention === notification.event || NotifiableEvent.Reply === notification.event
       || NotifiableEvent.NewBead === notification.event) {
@@ -1635,15 +1635,9 @@ export class ThreadsZvm extends ZomeViewModel {
       data: extra,
     }
     console.log("castNotificationTip()", notificationTip, agent/*, notification.author*/);
-    //try {
-    const serTip = encode(notificationTip)
-      await this.zomeProxy.castNotificationTip({peer: decodeHashFromBase64(agent), notificationTip: serTip});
-    //   return true;
-    // } catch (e) {
-    //   /** Peer might not be online, use notificationZome instead */
-    //   // FIXME
-    // }
-    return true;
+    const serTip = encode(notificationTip);
+    await this.broadcastTip({Notification: serTip}, [agent]);
+    return;
   }
 
 
@@ -2398,8 +2392,21 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  dumpCastLogs() {
+    console.warn(`Tips sent from zome "${this.zomeName}"`);
+    let appSignals: any[] = [];
+    this._castLogs.map((log) => {
+      const type = Object.keys(log.tip)[0]
+      appSignals.push({timestamp: prettyDate(new Date(log.ts)), type, payload: log.tip[type], count: log.peers.length, first: log.peers[0]});
+    });
+    console.table(appSignals);
+  }
+
+
+  /** */
   dumpSignalLogs(signalLogs: SignalLog[]) {
-    console.warn(`App signals from zome "${this.zomeName}"`);
+    this.dumpCastLogs();
+    console.warn(`Signals received from zome "${this.zomeName}"`);
     let appSignals: any[] = [];
     signalLogs
       .filter((log) => log.type == SignalType.LitHapp)
