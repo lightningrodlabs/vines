@@ -244,6 +244,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
 
+
   async decryptMyBead(encBead: EncryptedBead): Promise<BaseBeadKind> {
     return this.call('decrypt_my_bead', encBead);
   }

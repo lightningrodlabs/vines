@@ -30,6 +30,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"publish_text_bead_at",
 	"publish_many_text_bead_at",
 
+
 	"decrypt_my_bead",
 	"decrypt_bead",
 	"encrypt_bead",
