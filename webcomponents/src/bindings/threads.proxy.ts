@@ -244,8 +244,6 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
 
-
-
   async decryptMyBead(encBead: EncryptedBead): Promise<BaseBeadKind> {
     return this.call('decrypt_my_bead', encBead);
   }
@@ -423,6 +421,7 @@ export class ThreadsProxy extends ZomeProxy {
   async castTip(input: CastTipInput): Promise<void> {
     return this.call('cast_tip', input);
   }
+
 
   async findSubjectsByType(input: FindSubjectsInput): Promise<[DnaHash, AnyLinkableHash][]> {
     return this.call('find_subjects_by_type', input);

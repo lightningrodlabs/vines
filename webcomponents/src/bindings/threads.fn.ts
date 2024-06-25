@@ -30,8 +30,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"publish_text_bead_at",
 	"publish_many_text_bead_at",
 
-
-
 	"decrypt_my_bead",
 	"decrypt_bead",
 	"encrypt_bead",
@@ -78,6 +76,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"search_semantic_topics",
 	"update_semantic_topic",
 	"cast_tip",
+
 	"find_subjects_by_type",
 	"find_subjects_for_applet",
 	"find_subject_types_for_applet",

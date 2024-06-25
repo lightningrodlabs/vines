@@ -14,6 +14,9 @@ pub fn emit_zome_signal(pulses: Vec<ZomeSignalProtocol>) -> ExternResult<()> {
   return emit_signal(&signal);
 }
 
+///-------------------------------------------------------------------------------------------------
+/// System
+///-------------------------------------------------------------------------------------------------
 
 ///
 pub fn emit_system_signal(sys: SystemSignalProtocol) -> ExternResult<()> {

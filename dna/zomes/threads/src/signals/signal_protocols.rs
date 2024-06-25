@@ -14,9 +14,9 @@ pub struct ZomeSignal {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub enum ZomeSignalProtocol {
     System(SystemSignalProtocol), // From "System"
-    Tip(TipProtocol), // From Other peer
     Entry(EntryPulse), // From self
-    Link(LinkPulse), // From self
+    Link(LinkPulse),   // From self
+    Tip(TipProtocol),  // From Other peer
 }
 
 

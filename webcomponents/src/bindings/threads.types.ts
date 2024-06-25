@@ -281,16 +281,16 @@ export interface ZomeSignal {
 /**  */
 export enum ZomeSignalProtocolType {
 	System = 'System',
-	Tip = 'Tip',
 	Entry = 'Entry',
 	Link = 'Link',
+	Tip = 'Tip',
 }
 export type ZomeSignalProtocolVariantSystem = {System: SystemSignalProtocol}
-export type ZomeSignalProtocolVariantTip = {Tip: TipProtocol}
 export type ZomeSignalProtocolVariantEntry = {Entry: EntryPulse}
 export type ZomeSignalProtocolVariantLink = {Link: LinkPulse}
+export type ZomeSignalProtocolVariantTip = {Tip: TipProtocol}
 export type ZomeSignalProtocol = 
- | ZomeSignalProtocolVariantSystem | ZomeSignalProtocolVariantTip | ZomeSignalProtocolVariantEntry | ZomeSignalProtocolVariantLink;
+ | ZomeSignalProtocolVariantSystem | ZomeSignalProtocolVariantEntry | ZomeSignalProtocolVariantLink | ZomeSignalProtocolVariantTip;
 
 /** Protocol for notifying the ViewModel (UI) of system level events */
 export type SystemSignalProtocolVariantPostCommitNewStart = {
