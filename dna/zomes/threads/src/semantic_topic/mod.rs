@@ -2,6 +2,7 @@
 mod publish_semantic_topic;
 mod pull_all_semantic_topics;
 mod update_semantic_topic;
+mod delete_semantic_topic;
 
 
 use hdi::hash_path::path::DELIMITER;

@@ -56,7 +56,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
   /// Emit signals
   let pulses = hashmap.iter()
     .map(|(_ah, record)| {
-      let pulse = EntryPulse::from_NewEntry_record(record.to_owned(), false);
+      let pulse = EntryPulse::try_from_new_record(record.to_owned(), false).unwrap();
       ThreadsSignalProtocol::Entry(pulse)
     })
     .collect();

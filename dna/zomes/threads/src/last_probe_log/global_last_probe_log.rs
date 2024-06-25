@@ -37,7 +37,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
   /// If no updated found return the create
   if records.is_empty() {
     let record = create_records[0].clone();
-    emit_entry_signal(record.clone(), false)?;
+    emit_new_entry_signal(record.clone(), false)?;
     let typed = get_typed_from_record::<GlobalLastProbeLog>(record.clone())?;
     return Ok((record.action_address().to_owned(), typed));
   }
@@ -45,7 +45,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
   let latest_record = records.last().unwrap().clone();
   let typed: GlobalLastProbeLog = get_typed_from_record(latest_record.clone())?;
   /// Emit signal
-  let pulse = EntryPulse::from_NewEntry_record(latest_record.clone(), false);
+  let pulse = EntryPulse::try_from_new_record(latest_record.clone(), false)?;
   emit_threads_signal(vec![ThreadsSignalProtocol::Entry(pulse)])?;
   /// Done
   Ok((latest_record.action_address().to_owned(), typed))

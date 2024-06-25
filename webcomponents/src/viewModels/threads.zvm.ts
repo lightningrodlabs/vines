@@ -100,7 +100,7 @@ import {
   getLinkType,
   getSettingType,
   intoAgentPubKey,
-  isHashType,
+  isHashType, isHashTypeB64,
   parseMentions,
   prettyState,
   weaveUrlToWal
@@ -1292,11 +1292,17 @@ export class ThreadsZvm extends ZomeViewModel {
 
   /** */
   storeSemanticTopic(eh: EntryHashB64, title: string): void {
+    if (!isHashTypeB64(eh, 'Entry')) {
+      throw Error("Incorrect hash type");
+    }
     this._allSemanticTopics[eh] = title;
   }
 
   /** */
   unstoreSemanticTopic(eh: EntryHashB64): void {
+    if (!isHashTypeB64(eh, 'Entry')) {
+      throw Error("Incorrect hash type");
+    }
     delete this._allSemanticTopics[eh];
   }
 
@@ -2049,7 +2055,7 @@ export class ThreadsZvm extends ZomeViewModel {
     const entryType = getEntryType(pulse.def.entry_index);
     const author = encodeHashToBase64(pulse.author);
     const ah = encodeHashToBase64(pulse.ah);
-    //const eh = encodeHashToBase64(pulse.eh);
+    const eh = encodeHashToBase64(pulse.eh);
     let tip: TipProtocol;
     switch(entryType) {
       case "AnyBead":
@@ -2065,7 +2071,7 @@ export class ThreadsZvm extends ZomeViewModel {
         const semTopic = decode(pulse.bytes) as SemanticTopic;
         if (StateChangeType.Create in pulse.state) {
           const isNew = pulse.state.Create;
-          this.storeSemanticTopic(ah, semTopic.title);
+          this.storeSemanticTopic(eh, semTopic.title);
           if (isNew && from == this.cell.agentPubKey) {
             tip = {Entry: pulse} as TipProtocolVariantEntry;
           }

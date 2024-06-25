@@ -24,7 +24,7 @@ pub fn fetch_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestam
   };
   let action = record.action().clone();
   /// Emit Signal
-  emit_entry_signal(record, false)?;
+  emit_new_entry_signal(record, false)?;
   ///
   Ok((typed, action.timestamp(), action.author().to_owned()))
 }

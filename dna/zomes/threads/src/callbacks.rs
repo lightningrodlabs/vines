@@ -83,8 +83,8 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
             /// Emit System Signal
             let variant_name = format!("{:?}", type_variant);
             let _ = emit_system_signal(SystemSignalProtocol::PostCommitNewStart { app_entry_type: variant_name.clone() });
-            /// handle post_commit
-            let result = post_commit_new_app_entry(sah.clone());
+            /// Emit Entry Signal
+            let result = emit_new_entry(sah.clone());
             /// Emit System Signal
             let _ = emit_system_signal(SystemSignalProtocol::PostCommitNewEnd { app_entry_type: variant_name, succeeded: result.is_ok() });
             ///
@@ -95,25 +95,28 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
             }
          },
          /// DeleteAction
-         // Action::Delete(delete) => {
-         //    let entry = must_get_entry(delete.deletes_entry_address)?.content;
-         //    let EntryType::App(app_entry_def) = sah.action().entry_type().unwrap()
-         //      else { continue };
-         //    let type_variant = entry_index_to_variant(app_entry_def.entry_index).unwrap();
-         //    /// Emit System Signal
-         //    let variant_name = format!("{:?}", type_variant);
-         //    let _ = emit_system_signal(SystemSignalProtocol::PostCommitDeleteStart { app_entry_type: variant_name.clone() });
-         //    /// handle post_commit
-         //    let result = post_commit_delete_app_entry(ah, sah.action(), &type_variant);
-         //    /// Emit System Signal
-         //    let _ = emit_system_signal(SystemSignalProtocol::PostCommitDeleteEnd { app_entry_type: variant_name, succeeded: result.is_ok() });
-         //    ///
-         //    if let Err(e) = result {
-         //       error!("<< post_commit() failed: {:?}", e);
-         //    } else {
-         //       debug!("<< post_commit() SUCCEEDED");
-         //    }
-         // },
+         Action::Delete(delete) => {
+            let Ok(new_sah) = must_get_action(delete.deletes_address.clone())
+              else { error!("Deleted action not found."); continue; };
+            let Ok(he) = must_get_entry(delete.deletes_entry_address.clone())
+              else { error!("Deleted entry not found."); continue; };
+            let Some(EntryType::App(app_entry_def)) = new_sah.action().entry_type()
+              else { error!("Deleted action should have entry_type."); continue; };
+            let type_variant = entry_index_to_variant(app_entry_def.entry_index).unwrap();
+            /// Emit System Signal
+            let variant_name = format!("{:?}", type_variant);
+            let _ = emit_system_signal(SystemSignalProtocol::PostCommitDeleteStart { app_entry_type: variant_name.clone() });
+            /// Emit Entry Signal
+            let result = emit_delete_entry_signal(new_sah.hashed, he.content, true);
+            /// Emit System Signal
+            let _ = emit_system_signal(SystemSignalProtocol::PostCommitDeleteEnd { app_entry_type: variant_name, succeeded: result.is_ok() });
+            ///
+            if let Err(e) = result {
+               error!("<< post_commit() failed: {:?}", e);
+            } else {
+               debug!("<< post_commit() SUCCEEDED");
+            }
+         },
          ///
          _ => (),
       }
@@ -122,22 +125,13 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
 
 
 ///
-fn post_commit_new_app_entry(sah: SignedActionHashed) -> ExternResult<()> {
+fn emit_new_entry(sah: SignedActionHashed) -> ExternResult<()> {
    let Some(eh) = sah.action().entry_hash() else {
       return zome_error!("Action has no Entry");
    };
    let entry = must_get_entry(eh.to_owned())?.content;
    let record = Record::new(sah, Some(entry));
    /// Emit Signal
-   emit_entry_signal(record, true)?;
+   emit_new_entry_signal(record, true)?;
    Ok(())
 }
-
-
-// ///
-// fn post_commit_delete_app_entry(ah: ActionHash, delete: &Delete, type_variant: &ThreadsEntryTypes) -> ExternResult<()> {
-//    debug!(">> post_commit_delete_app_entry() called for a {:?}", type_variant);
-//    /// Emit Signal
-//    emit_entry_signal(ah, action, true, type_variant, bytes)?;
-//    Ok(())
-// }

@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-
+use zome_utils::*;
 
 
 ///
@@ -87,19 +87,19 @@ pub enum StateChange {
 
 
 impl EntryPulse {
-    pub fn from_NewEntry_record(record: Record, is_new: bool) -> Self {
+    ///
+    pub fn try_from_new_record(record: Record, is_new: bool) -> ExternResult<Self> {
         let state = match record.action() {
             Action::Create(_) => StateChange::Create(is_new),
             Action::Update(_) => StateChange::Update(is_new),
-            _ => panic!("Action should be a NewEntryAction"),
+            _ => return zome_error!("Unhandled Action type"),
         };
         let RecordEntry::Present(Entry::App(bytes)) = record.entry().to_owned()
-          else { panic!("Record has no entry data") };
+          else { return zome_error!("Record has no entry data") };
         let Some(EntryType::App(def)) = record.action().entry_type()
-          else { panic!("Record has no entry def") };
-        //let type_variant = entry_index_to_variant(app_entry_def.entry_index).unwrap();
+          else { return zome_error!("Record has no entry def") };
 
-        Self {
+        Ok(Self {
             ah: record.action_address().to_owned(),
             eh: record.action().entry_hash().unwrap().clone(),
             ts: record.action().timestamp(),
@@ -107,13 +107,31 @@ impl EntryPulse {
             state,
             def: def.to_owned(),
             bytes,
-        }
+        })
     }
-    // pub fn from_delete_record(delete: &Delete) -> Self {
-    //     Self {
-    //         eh: AnyDhtHash::from(delete.deletes_entry_address.clone()),
-    //         ts: delete.timestamp,
-    //         author: delete.author.clone(),
-    //     }
-    // }
+
+
+    /// Input must be the NewEntryAction that is deleted
+    pub fn try_from_delete_record(ha: ActionHashed, entry: Entry, is_new: bool) -> ExternResult<Self> {
+        let action = ha.content;
+        match action {
+            Action::Create(_) => StateChange::Create(is_new),
+            Action::Update(_) => StateChange::Update(is_new),
+            _ => return zome_error!("Unhandled Action type"),
+        };
+        let Entry::App(bytes) = entry
+          else { return zome_error!("Entry is not an App") };
+        let Some(EntryType::App(def)) = action.entry_type()
+          else { return zome_error!("Entry has no entry def") };
+
+        Ok(Self {
+            ah: ha.hash.to_owned(),
+            eh: action.entry_hash().unwrap().clone(),
+            ts: action.timestamp(),
+            author: action.author().clone(),
+            state: StateChange::Delete(is_new),
+            def: def.to_owned(),
+            bytes,
+        })
+    }
 }

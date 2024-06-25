@@ -29,11 +29,16 @@ pub fn emit_system_signal(sys: SystemSignalProtocol) -> ExternResult<()> {
 ///-------------------------------------------------------------------------------------------------
 
 ///
-pub fn emit_entry_signal(record: Record, is_new: bool) -> ExternResult<()> {
-  let pulse = EntryPulse::from_NewEntry_record(record, is_new);
+pub fn emit_new_entry_signal(record: Record, is_new: bool) -> ExternResult<()> {
+  let pulse = EntryPulse::try_from_new_record(record, is_new)?;
   return emit_threads_signal(vec![ThreadsSignalProtocol::Entry(pulse)]);
 }
 
+///
+pub fn emit_delete_entry_signal(ha: ActionHashed, entry: Entry, is_new: bool) -> ExternResult<()> {
+  let pulse = EntryPulse::try_from_delete_record(ha, entry, is_new)?;
+  return emit_threads_signal(vec![ThreadsSignalProtocol::Entry(pulse)]);
+}
 
 
 ///-------------------------------------------------------------------------------------------------

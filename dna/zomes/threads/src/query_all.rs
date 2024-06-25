@@ -78,7 +78,7 @@ fn query_all_typed<R: TryFrom<Entry>>(entry_type: EntryType) -> ExternResult<()>
    /// Emit System Signal
    let pulses = tuples.into_iter()
      .map(|(record, _entry)| {
-        let entry_pulse = EntryPulse::from_NewEntry_record(record, false);
+        let entry_pulse = EntryPulse::try_from_new_record(record, false).unwrap();
         return ThreadsSignalProtocol::Entry(entry_pulse);
      })
      .collect();

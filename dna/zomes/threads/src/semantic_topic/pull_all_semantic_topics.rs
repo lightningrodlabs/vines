@@ -20,7 +20,7 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
   for leaf_anchor in leaf_anchors {
     let sts = pull_semantic_topics(leaf_anchor.anchor)?;
     for (record, _) in sts {
-      let entry_pulse = EntryPulse::from_NewEntry_record(record, false);
+      let entry_pulse = EntryPulse::try_from_new_record(record, false)?;
       pulses.push(ThreadsSignalProtocol::Entry(entry_pulse));
     }
   }

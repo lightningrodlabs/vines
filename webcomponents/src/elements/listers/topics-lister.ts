@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionHashB64, EntryHashB64} from "@holochain/client";
+import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -255,6 +255,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                       }}"></ui5-button>
       `;
 
+      // const delButton = html`<ui5-button icon="delete" tooltip=${msg("Delete topic")}
+      //                                        design="Negative" style="border:none;background: transparent"
+      //                                        @click=${(e) => this._zvm.zomeProxy.deleteSemanticTopic(decodeHashFromBase64(topicHash))}></ui5-button>`;
+
       const topicHasUnreads = unreadSubjects.includes(topicHash);
 
       //console.log("<topics-lister>.render() threads", threads);
@@ -290,7 +294,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                 <!-- Edit not working properly -->
                 <!-- <ui5-button id=${"edit-"+topicHash} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                         style="border:none;display: none"
-                        @click="${(e) => this.onClickEditTopic(topicHash, title)}"></ui5-button>     -->            
+                        @click="${(e) => this.onClickEditTopic(topicHash, title)}"></ui5-button>     -->
                 ${topicHideBtn}                
                 ${topicCommentButton}
                 <ui5-button icon="add" tooltip=${msg("Create a new channel for this Topic")}

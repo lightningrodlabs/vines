@@ -1,10 +1,20 @@
 import {
-  ActionHashB64, AgentPubKey,
-  AgentPubKeyB64, AnyLinkableHash,
+  ActionHashB64,
+  AgentPubKey,
+  AgentPubKeyB64,
+  AnyLinkableHash,
   decodeHashFromBase64,
   dhtLocationFrom32,
-  encodeHashToBase64, EntryHash,
-  EntryHashB64, HASH_TYPE_PREFIX, sliceCore32, sliceDhtLocation, sliceHashType
+  encodeHashToBase64,
+  EntryHash,
+  EntryHashB64, ExternalHash,
+  fakeDnaHash,
+  HASH_TYPE_PREFIX,
+  HoloHashB64,
+  randomByteArray,
+  sliceCore32,
+  sliceDhtLocation,
+  sliceHashType
 } from "@holochain/client";
 import {
   AnyBeadMat,
@@ -86,6 +96,42 @@ export function getEntryType(index: number): ThreadsEntryType {
   throw Error("Out of bounds index for ThreadsEntryType");
 }
 
+
+// async function fakeValidHash<T extends Uint8Array>(
+//   prefix: number[],
+// ): Promise<Uint8Array> {
+//   let core = await randomByteArray(32);
+//   const checksum = dhtLocationFrom32(core);
+//   return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]) as T;
+// }
+//
+// export async function fakeExternalHash(): Promise<EntryHash> {
+//   return fakeValidHash<ExternalHash>([132, 47, 36]);
+// }
+//
+// console.log("DNA", encodeHashToBase64(await fakeDnaHash()))
+// console.log("External", encodeHashToBase64(await fakeExternalHash()))
+//
+
+export const HASH_TYPE_PREFIX_B64 = {
+  Agent: "uhCAk",
+  Entry: "uhCEk",
+  Dna: "uhC0k",
+  Action: "uhCkk",
+  External: "uhC8k",
+};
+
+/** */
+export function isHashTypeB64(hash: HoloHashB64, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
+  const slice = hash.slice(0, 5);
+  const prefix = HASH_TYPE_PREFIX_B64[hashType];
+  for (let i = 0; i < prefix.length; i++) {
+    if (slice[i] !== prefix[i]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 
 /** */
