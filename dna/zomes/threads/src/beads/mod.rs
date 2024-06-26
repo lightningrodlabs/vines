@@ -14,8 +14,8 @@ pub use text_bead::*;
 use hdk::prelude::*;
 use zome_utils::*;
 use authorship_zapi::get_original_author;
-use crate::*;
-//use threads_integrity::*;
+use zome_signals::*;
+
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

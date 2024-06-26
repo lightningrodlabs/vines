@@ -17,8 +17,6 @@ mod dm;
 mod notifications;
 mod query_all;
 
-pub use signals::*;
-
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 

@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-use crate::*;
+use zome_signals::*;
 
 
 /// Return ppAhs and timestamp of its index-time

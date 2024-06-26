@@ -8,6 +8,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"entry_defs", 
 	"get_zome_info", 
 	"get_dna_info",
+	"cast_tip",
+
 	"publish_any_bead",
 	"fetch_any_bead_option",
 	"fetch_any_bead",
@@ -76,8 +78,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"pull_all_semantic_topics",
 	"search_semantic_topics",
 	"update_semantic_topic",
-	"cast_tip",
-
 	"find_subjects_by_type",
 	"find_subjects_for_applet",
 	"find_subject_types_for_applet",

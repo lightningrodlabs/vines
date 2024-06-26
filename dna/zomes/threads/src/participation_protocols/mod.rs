@@ -10,7 +10,7 @@ use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_en
 use zome_utils::*;
 use threads_integrity::*;
 use authorship_zapi::*;
-use crate::*;
+use zome_signals::*;
 
 
 /// Return original author

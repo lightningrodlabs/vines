@@ -148,6 +148,112 @@ ValidationReceipt,
 /** User defined external dependencies */
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
+export interface CastTipInput {
+  tip: TipProtocol
+  peers: AgentPubKey[]
+}
+
+/**  */
+export interface ZomeSignal {
+  from: AgentPubKey
+  pulses: ZomeSignalProtocol[]
+}
+
+/**  */
+export enum ZomeSignalProtocolType {
+	System = 'System',
+	Entry = 'Entry',
+	Link = 'Link',
+	Tip = 'Tip',
+}
+export type ZomeSignalProtocolVariantSystem = {System: SystemSignalProtocol}
+export type ZomeSignalProtocolVariantEntry = {Entry: EntryPulse}
+export type ZomeSignalProtocolVariantLink = {Link: LinkPulse}
+export type ZomeSignalProtocolVariantTip = {Tip: TipProtocol}
+export type ZomeSignalProtocol = 
+ | ZomeSignalProtocolVariantSystem | ZomeSignalProtocolVariantEntry | ZomeSignalProtocolVariantLink | ZomeSignalProtocolVariantTip;
+
+/** Protocol for notifying the ViewModel (UI) of system level events */
+export type SystemSignalProtocolVariantPostCommitNewStart = {
+  type: "PostCommitNewStart"
+  app_entry_type: string
+}
+export type SystemSignalProtocolVariantPostCommitNewEnd = {
+  type: "PostCommitNewEnd"
+  app_entry_type: string
+  succeeded: boolean
+}
+export type SystemSignalProtocolVariantPostCommitDeleteStart = {
+  type: "PostCommitDeleteStart"
+  app_entry_type: string
+}
+export type SystemSignalProtocolVariantPostCommitDeleteEnd = {
+  type: "PostCommitDeleteEnd"
+  app_entry_type: string
+  succeeded: boolean
+}
+export type SystemSignalProtocolVariantSelfCallStart = {
+  type: "SelfCallStart"
+  zome_name: string
+  fn_name: string
+}
+export type SystemSignalProtocolVariantSelfCallEnd = {
+  type: "SelfCallEnd"
+  zome_name: string
+  fn_name: string
+  succeeded: boolean
+}
+export type SystemSignalProtocol =
+  | SystemSignalProtocolVariantPostCommitNewStart
+  | SystemSignalProtocolVariantPostCommitNewEnd
+  | SystemSignalProtocolVariantPostCommitDeleteStart
+  | SystemSignalProtocolVariantPostCommitDeleteEnd
+  | SystemSignalProtocolVariantSelfCallStart
+  | SystemSignalProtocolVariantSelfCallEnd;
+
+/** Used by UI ONLY. That's why we use B64 here. */
+export enum TipProtocolType {
+	Ping = 'Ping',
+	Pong = 'Pong',
+	Entry = 'Entry',
+	Link = 'Link',
+	App = 'App',
+}
+export type TipProtocolVariantPing = {Ping: AgentPubKey}
+export type TipProtocolVariantPong = {Pong: AgentPubKey}
+export type TipProtocolVariantEntry = {Entry: EntryPulse}
+export type TipProtocolVariantLink = {Link: LinkPulse}
+export type TipProtocolVariantApp = {App: Uint8Array}
+export type TipProtocol = 
+ | TipProtocolVariantPing | TipProtocolVariantPong | TipProtocolVariantEntry | TipProtocolVariantLink | TipProtocolVariantApp;
+
+/** Bool: True if state change just happened (real-time) */
+export enum StateChangeType {
+	Create = 'Create',
+	Update = 'Update',
+	Delete = 'Delete',
+}
+export type StateChangeVariantCreate = {Create: boolean}
+export type StateChangeVariantUpdate = {Update: boolean}
+export type StateChangeVariantDelete = {Delete: boolean}
+export type StateChange = 
+ | StateChangeVariantCreate | StateChangeVariantUpdate | StateChangeVariantDelete;
+
+export interface LinkPulse {
+  link: Link
+  state: StateChange
+}
+
+export interface EntryPulse {
+  ah: ActionHash
+  state: StateChange
+  ts: Timestamp
+  author: AgentPubKey
+  eh: EntryHash
+  def: AppEntryDef
+  bytes: Uint8Array
+}
+
 export interface AddAnyBeadInput {
   anyBead: AnyBead
   creationTime: Timestamp
@@ -265,112 +371,6 @@ export interface SetNotifySettingInput {
 export interface UpdateTopicInput {
   eh: EntryHash
   topic: SemanticTopic
-}
-
-export interface CastTipInput {
-  tip: TipProtocol
-  peers: AgentPubKey[]
-}
-
-/**  */
-export interface ZomeSignal {
-  from: AgentPubKey
-  pulses: ZomeSignalProtocol[]
-}
-
-/**  */
-export enum ZomeSignalProtocolType {
-	System = 'System',
-	Entry = 'Entry',
-	Link = 'Link',
-	Tip = 'Tip',
-}
-export type ZomeSignalProtocolVariantSystem = {System: SystemSignalProtocol}
-export type ZomeSignalProtocolVariantEntry = {Entry: EntryPulse}
-export type ZomeSignalProtocolVariantLink = {Link: LinkPulse}
-export type ZomeSignalProtocolVariantTip = {Tip: TipProtocol}
-export type ZomeSignalProtocol = 
- | ZomeSignalProtocolVariantSystem | ZomeSignalProtocolVariantEntry | ZomeSignalProtocolVariantLink | ZomeSignalProtocolVariantTip;
-
-/** Protocol for notifying the ViewModel (UI) of system level events */
-export type SystemSignalProtocolVariantPostCommitNewStart = {
-  type: "PostCommitNewStart"
-  app_entry_type: string
-}
-export type SystemSignalProtocolVariantPostCommitNewEnd = {
-  type: "PostCommitNewEnd"
-  app_entry_type: string
-  succeeded: boolean
-}
-export type SystemSignalProtocolVariantPostCommitDeleteStart = {
-  type: "PostCommitDeleteStart"
-  app_entry_type: string
-}
-export type SystemSignalProtocolVariantPostCommitDeleteEnd = {
-  type: "PostCommitDeleteEnd"
-  app_entry_type: string
-  succeeded: boolean
-}
-export type SystemSignalProtocolVariantSelfCallStart = {
-  type: "SelfCallStart"
-  zome_name: string
-  fn_name: string
-}
-export type SystemSignalProtocolVariantSelfCallEnd = {
-  type: "SelfCallEnd"
-  zome_name: string
-  fn_name: string
-  succeeded: boolean
-}
-export type SystemSignalProtocol =
-  | SystemSignalProtocolVariantPostCommitNewStart
-  | SystemSignalProtocolVariantPostCommitNewEnd
-  | SystemSignalProtocolVariantPostCommitDeleteStart
-  | SystemSignalProtocolVariantPostCommitDeleteEnd
-  | SystemSignalProtocolVariantSelfCallStart
-  | SystemSignalProtocolVariantSelfCallEnd;
-
-/** Used by UI ONLY. That's why we use B64 here. */
-export enum TipProtocolType {
-	Ping = 'Ping',
-	Pong = 'Pong',
-	Entry = 'Entry',
-	Link = 'Link',
-	App = 'App',
-}
-export type TipProtocolVariantPing = {Ping: AgentPubKey}
-export type TipProtocolVariantPong = {Pong: AgentPubKey}
-export type TipProtocolVariantEntry = {Entry: EntryPulse}
-export type TipProtocolVariantLink = {Link: LinkPulse}
-export type TipProtocolVariantApp = {App: Uint8Array}
-export type TipProtocol = 
- | TipProtocolVariantPing | TipProtocolVariantPong | TipProtocolVariantEntry | TipProtocolVariantLink | TipProtocolVariantApp;
-
-/** Bool: True if state change just happened (real-time) */
-export enum StateChangeType {
-	Create = 'Create',
-	Update = 'Update',
-	Delete = 'Delete',
-}
-export type StateChangeVariantCreate = {Create: boolean}
-export type StateChangeVariantUpdate = {Update: boolean}
-export type StateChangeVariantDelete = {Delete: boolean}
-export type StateChange = 
- | StateChangeVariantCreate | StateChangeVariantUpdate | StateChangeVariantDelete;
-
-export interface LinkPulse {
-  link: Link
-  state: StateChange
-}
-
-export interface EntryPulse {
-  ah: ActionHash
-  state: StateChange
-  ts: Timestamp
-  author: AgentPubKey
-  eh: EntryHash
-  def: AppEntryDef
-  bytes: Uint8Array
 }
 
 /**  */

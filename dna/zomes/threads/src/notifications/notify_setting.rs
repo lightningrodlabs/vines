@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use strum_macros::FromRepr;
 use zome_utils::*;
 use threads_integrity::*;
-use crate::*;
+use zome_signals::*;
 
 /// Notification settings are per ParticipationProtocol.
 /// Default setting is MentionsOnly (for normal threads, AllMessages for DM threads).

@@ -159,6 +159,11 @@ export class ThreadsProxy extends ZomeProxy {
   static readonly DEFAULT_ZOME_NAME = "zThreads"
   static readonly FN_NAMES = threadsFunctionNames
  
+  async castTip(input: CastTipInput): Promise<void> {
+    return this.call('cast_tip', input);
+  }
+
+
   async publishAnyBead(input: AddAnyBeadInput): Promise<[ActionHash, string, Timestamp]> {
     return this.callBlocking('publish_any_bead', input);
   }
@@ -418,11 +423,6 @@ export class ThreadsProxy extends ZomeProxy {
   async updateSemanticTopic(input: UpdateTopicInput): Promise<EntryHash> {
     return this.callBlocking('update_semantic_topic', input);
   }
-
-  async castTip(input: CastTipInput): Promise<void> {
-    return this.call('cast_tip', input);
-  }
-
 
   async findSubjectsByType(input: FindSubjectsInput): Promise<[DnaHash, AnyLinkableHash][]> {
     return this.call('find_subjects_by_type', input);

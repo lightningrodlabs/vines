@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::ThreadsLinkType;
-use crate::*;
+use zome_signals::*;
 
 
 ///

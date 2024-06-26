@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
-use crate::signals::*;
+use zome_signals::*;
 
 
 #[hdk_extern]
