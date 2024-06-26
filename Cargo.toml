@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+  "dna/zomes/signals",
   "dna/zomes/path_explorer",
   "dna/zomes/authorship_integrity",
   "dna/zomes/authorship_coordinator",

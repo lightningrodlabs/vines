@@ -23,3 +23,4 @@ path_explorer_types.workspace = true
 
 threads_integrity = { package = "threads_integrity", path = "../threads_integrity" }
 authorship_zapi = { package = "authorship_zapi", path = "../authorship_zapi" }
+zome_signals = { package = "authorship_zapi", path = "../authorship_zapi" }
