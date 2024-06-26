@@ -28,6 +28,9 @@ cd submodules
 echo \* Download Files repo: WARNING HARDCODED branch name
 git clone -b hdk-3.1 --depth 1 https://github.com/lightningrodlabs/files.git
 
+echo \* Download zome-signals repo: WARNING HARDCODED branch name
+git clone -b hdk-3.1 --depth 1 https://github.com/ddd-mtl/zome-signals.git
+
 echo \* Download latest install scripts
 git clone --depth 1 https://github.com/ddd-mtl/hc-prebuilt
 

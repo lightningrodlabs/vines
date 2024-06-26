@@ -18,9 +18,10 @@ serde.workspace = true
 hdk.workspace = true
 
 zome_utils.workspace = true
+zome_signals.workspace = true
 time_indexing.workspace = true
 path_explorer_types.workspace = true
 
 threads_integrity = { package = "threads_integrity", path = "../threads_integrity" }
 authorship_zapi = { package = "authorship_zapi", path = "../authorship_zapi" }
-zome_signals = { package = "zome_signals", path = "../signals" }
+
