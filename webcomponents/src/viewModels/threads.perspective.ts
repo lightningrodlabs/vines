@@ -1,39 +1,39 @@
+import {Timestamp} from "@holochain/client";
 import {
-  ActionHash,
-  ActionHashB64, AgentPubKey,
-  AgentPubKeyB64, AnyLinkableHash, decodeHashFromBase64, DnaHashB64,
-  encodeHashToBase64,
-  EntryHashB64,
-  HoloHashB64,
-  Timestamp
-} from "@holochain/client";
-import {Dictionary} from "@ddd-qc/lit-happ";
+  Dictionary,
+  AgentId,
+  ActionId,
+  EntryId,
+  AnyLinkableId,
+  AgentIdMap,
+  ActionIdMap,
+  EntryIdMap, DnaId, intoLinkableId
+} from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
   AnyBead, BaseBeadKind, Bead, EncryptedBead,
   EntryBead,
-  GlobalLastProbeLog, NotifySetting,
+  NotifySetting,
   ParticipationProtocol,
   Subject, TextBead, ThreadsEntryType,
 } from "../bindings/threads.types";
-import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {AuthorshipZvm} from "./authorship.zvm";
+import {WAL} from "@lightningrodlabs/we-applet";
 
 
 /** -- Should be defined in @holochain/client */
 //export declare type AnyLinkableHash = HoloHash;
-export declare type AnyLinkableHashB64 = HoloHashB64;
+//export declare type AnyLinkableHashB64 = string;
 //export const HOLOCHAIN_EPOCH = 1640995200000000;
 
 export type TypedBaseBead = EntryBead | AnyBead | TextBead;
 export type TypedBead = TypedBaseBead | EncryptedBead;
 
-export type TypedContent = string | WAL | EntryHashB64;
+export type TypedContent = string | WAL | EntryId;
 
 export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead
 export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
 
-export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentPubKey}
+export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentId}
 
 
 /**  */
@@ -47,13 +47,13 @@ export enum NotifiableEvent {
 
 /**  */
 export interface ThreadsNotificationTip {
-  event: NotifiableEvent
-  author: AgentPubKey
-  timestamp: Timestamp
-  content: AnyLinkableHash
+  event: NotifiableEvent,
+  author: AgentId,
+  timestamp: Timestamp,
+  content: AnyLinkableId,
   /**  */
-  link_ah: ActionHash
-  pp_ah: ActionHash
+  link_ah: ActionId,
+  pp_ah: ActionId,
   data: NotificationTipBeadData | NotificationTipPpData,
 }
 
@@ -61,17 +61,17 @@ export interface ThreadsNotificationTip {
 export interface ThreadsNotification {
   //eventIndex: number,
   event: NotifiableEvent,
-  createLinkAh: ActionHashB64,
-  author: AgentPubKeyB64,
+  createLinkAh: ActionId,
+  author: AgentId,
   timestamp: Timestamp,
-  content: AnyLinkableHashB64, // ppAh or beadAh depending on event
+  content: AnyLinkableId, // ppAh or beadAh depending on event
 }
 
 
 /** */
 export interface BeadInfo {
   creationTime: Timestamp,
-  author: AgentPubKeyB64,
+  author: AgentId,
   beadType: BeadType,
   bead: BeadMat,
   //name: string,
@@ -79,7 +79,7 @@ export interface BeadInfo {
 
 export interface BeadLinkMaterialized {
   creationTime: Timestamp,
-  beadAh: ActionHashB64,
+  beadAh: ActionId,
   beadType: BeadType,
 }
 
@@ -97,27 +97,27 @@ export interface BeadLinkMaterialized {
 
 
 /** */
-export interface ThreadsExportablePerspective {
+export interface ThreadsPerspectiveExportable {
   /** */
-  allAppletIds: EntryHashB64[],
+  allAppletIds: EntryId[],
   /** Store of all Subjects: hash -> Subject */
-  allSubjects: Array<[AnyLinkableHashB64, SubjectMat]>,
+  allSubjects: Array<[AnyLinkableId, SubjectMat]>,
   /** Store of all SemTopic: eh -> TopicTitle */
   allSemanticTopics: Dictionary<string>,
   hiddens: Dictionary<boolean>,
   /** ppAh -> ppMat */
-  pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]>,
+  pps: Array<[ActionId, ParticipationProtocolMat, Timestamp, AgentId]>,
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: Dictionary<[BeadInfo, TypedBeadMat]>,
 
   /** bead_ah -> [agent, emoji] */
-  emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
+  emojiReactions: Dictionary<[AgentId, string][]>
 
 
   /** AppletId -> (PathEntryHash -> subjectType) */
   appletSubjectTypes: Dictionary<Dictionary<string>>,
 
-  favorites: ActionHashB64[],
+  favorites: ActionId[],
 }
 
 
@@ -126,33 +126,33 @@ export type ThreadsPerspective = ThreadsPerspectiveCore & ThreadsPerspectiveLive
 /** */
 export interface ThreadsPerspectiveCore {
   /** */
-  allAppletIds: EntryHashB64[],
-  /** Store of all Subjects: eh -> Subject */
-  allSubjects: Map<AnyLinkableHashB64, SubjectMat>,
+  allAppletIds: EntryId[],
+  /** Store of all Subjects: hash -> Subject */
+  allSubjects: LinkableIdMap<SubjectMat>,
   /** Store of all SemTopic: eh -> TopicTitle */
-  allSemanticTopics: Dictionary<string>,
+  allSemanticTopics: LinkableIdMap<string>,
   /** Any hash -> isHidden */
   hiddens: Dictionary<boolean>,
   /** ppAh -> Thread */
-  threads: Map<ActionHashB64, Thread>,
+  threads: ActionIdMap<Thread>,
   /** beadAh -> [BeadInfo, TypedBead] */
-  beads: Dictionary<[BeadInfo, TypedBeadMat]>,
+  beads: ActionIdMap<[BeadInfo, TypedBeadMat]>,
   /** beadAh -> [agent, emoji] */
-  emojiReactions: Dictionary<[AgentPubKeyB64, string][]>
+  emojiReactions: ActionIdMap<[AgentId, string][]>
 
   /** -- DM stuff  -- */
   /** agentId -> ppAh */
-  dmAgents: Dictionary<ActionHashB64>
+  dmAgents: AgentIdMap<ActionId>
   /** encBeadAh -> [BeadInfo, TypedBead] */
-  decBeads: Dictionary<[BeadInfo, TypedBeadMat]>,
+  decBeads: ActionIdMap<[BeadInfo, TypedBaseBeadMat]>,
 
   /**  -- Applet threads  -- */
 
   /** AppletId -> PathEntryHash -> subjectType */
-  appletSubjectTypes: Dictionary<Dictionary<string>>,
+  appletSubjectTypes: EntryIdMap<EntryIdMap<string>>,
 
   /** -- Favorites -- */
-  favorites: ActionHashB64[],
+  favorites: ActionId[],
 
   /** -- New / unread -- */
   globalProbeLogTs?: Timestamp,
@@ -161,26 +161,51 @@ export interface ThreadsPerspectiveCore {
   /** linkAh -> [agent, beadAh] */
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
   /** linkAh -> (ppAh, notif) */
-  inbox: Dictionary<[ActionHashB64, ThreadsNotification]>,
+  inbox: ActionIdMap<[ActionId, ThreadsNotification]>,
   /* ppAh -> (agent -> value) */
-  notifSettings: Record<ActionHashB64, Record<AgentPubKeyB64, NotifySetting>>,
+  notifSettings: ActionIdMap<AgentIdMap<NotifySetting>>,
 }
 
 
 /** Perspective fields that are built from the Core perspective. There is no exclusif data. */
 export interface ThreadsPerspectiveLive {
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
-  threadsPerSubject: Dictionary<ActionHashB64[]>,
+  threadsPerSubject: LinkableIdMap<ActionId[]>,
   /** PathEntryHash -> subjectHash[] */
-  subjectsPerType: Dictionary<[DnaHashB64, AnyLinkableHashB64][]>,
+  subjectsPerType: EntryIdMap<[DnaId, AnyLinkableId][]>,
   /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
-  newThreads: Record<ActionHashB64, AnyLinkableHashB64>,
+  newThreads: ActionIdMap<AnyLinkableId>,
   /** Unread subject == Has at least one unread thread */
   /** ppAh -> (subjectHash, beadAh[]) */
-  unreadThreads: Dictionary<[AnyLinkableHashB64, ActionHashB64[]]>, // Unread thread == Has "new" beads
+  unreadThreads: ActionIdMap<[AnyLinkableId, ActionId[]]>, // Unread thread == Has "new" beads
 }
+
+
+/** */
+export function createThreadsPerspective(): ThreadsPerspective {
+  return {
+    allAppletIds: [],
+    allSubjects: new LinkableIdMap(), //new Array(),
+    allSemanticTopics: new LinkableIdMap(),
+    hiddens: {},
+    threads: new ActionIdMap(),
+    beads: new ActionIdMap(),
+    emojiReactions: new ActionIdMap(),
+    dmAgents: new AgentIdMap(),
+    decBeads: new ActionIdMap(),
+    appletSubjectTypes: new EntryIdMap(),
+    favorites: [],
+    inbox: new ActionIdMap(),
+    notifSettings: new ActionIdMap(),
+    threadsPerSubject: new EntryIdMap(),
+    subjectsPerType: new EntryIdMap(),
+    newThreads: new ActionIdMap(),
+    unreadThreads: new ActionIdMap(),
+  }
+}
+
 
 export type NotificationTipPpData = {
   pp: ParticipationProtocol,
@@ -223,24 +248,24 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
 /** -- Subject -- */
 
 export interface SubjectMat {
-  hash: AnyLinkableHashB64,
+  hash: AnyLinkableId,
   typeName: string,
-  dnaHash: DnaHashB64,
+  dnaHash: DnaId,
   appletId: string,
 }
 export function materializeSubject(subject: Subject): SubjectMat {
   return {
-    hash: encodeHashToBase64(subject.hash),
+    hash: intoLinkableId(subject.hash),
     typeName: subject.typeName,
-    dnaHash: encodeHashToBase64(subject.dnaHash),
+    dnaHash: new DnaId(subject.dnaHash),
     appletId: subject.appletId,
   }
 }
 export function dematerializeSubject(subject: SubjectMat): Subject {
   return {
-    hash: decodeHashFromBase64(subject.hash),
+    hash: subject.hash.hash,
     typeName: subject.typeName,
-    dnaHash: decodeHashFromBase64(subject.dnaHash),
+    dnaHash: subject.dnaHash.hash,
     appletId: subject.appletId,
   }
 }
@@ -249,19 +274,19 @@ export function dematerializeSubject(subject: SubjectMat): Subject {
 /** -- Bead -- */
 
 export interface BeadMat {
-  ppAh: ActionHashB64,
-  prevBeadAh: ActionHashB64,
+  ppAh: ActionId,
+  prevBeadAh: ActionId,
 }
 export function materializeBead(bead: Bead): BeadMat {
   return {
-    ppAh: encodeHashToBase64(bead.ppAh),
-    prevBeadAh: encodeHashToBase64(bead.prevBeadAh),
+    ppAh: new ActionId(bead.ppAh),
+    prevBeadAh: new ActionId(bead.prevBeadAh),
   }
 }
 export function dematerializeBead(bead: BeadMat): Bead {
   return {
-    ppAh: decodeHashFromBase64(bead.ppAh),
-    prevBeadAh: decodeHashFromBase64(bead.prevBeadAh),
+    ppAh: bead.ppAh.hash,
+    prevBeadAh: bead.prevBeadAh.hash,
   }
 }
 
@@ -270,7 +295,7 @@ export function dematerializeBead(bead: BeadMat): Bead {
 
 export interface EntryBeadMat {
   bead: BeadMat,
-  sourceEh: EntryHashB64,
+  sourceEh: EntryId,
   sourceType: string,
   sourceRole: string,
   sourceZome: string,
@@ -278,7 +303,7 @@ export interface EntryBeadMat {
 export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
   return {
     bead: materializeBead(bead.bead),
-    sourceEh: encodeHashToBase64(bead.sourceEh),
+    sourceEh: new EntryId(bead.sourceEh),
     sourceType: bead.sourceType,
     sourceRole: bead.sourceRole,
     sourceZome: bead.sourceZome,
@@ -287,7 +312,7 @@ export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
 export function dematerializeEntryBead(bead: EntryBeadMat): EntryBead {
   return {
     bead: dematerializeBead(bead.bead),
-    sourceEh: decodeHashFromBase64(bead.sourceEh),
+    sourceEh: bead.sourceEh.hash,
     sourceType: bead.sourceType,
     sourceRole: bead.sourceRole,
     sourceZome: bead.sourceZome,
@@ -416,43 +441,43 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
 
 
 
-/** Compact Perspective */
-export function intoExportable(persp: ThreadsPerspectiveCore, originalsZvm: AuthorshipZvm): ThreadsExportablePerspective {
-  /** allSubjects */
-  const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
-  Array.from(persp.allSubjects.entries()).map(([subjectAh, subject]) => {
-    originalsZvm.ascribeTarget("Subject", subjectAh, 0/*TODO: get creationTime of Subject*/, null, true);
-    allSubjects.set(subjectAh, subject);
-  });
-
-  /** pps */
-  const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]> = new Array();
-  Array.from(persp.threads.entries()).map(([ppAh, thread]) => {
-    originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
-    pps.push([ppAh, thread.pp, thread.creationTime, ""]);
-  });
-
-  /** beads */
-  //console.log("exportPerspective() beads", this._beads);
-  //const beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
-  Object.entries(persp.beads).map(([beadAh, [beadInfo, typed]]) => {
-    //beads[beadAh] = (typed, beadInfo.beadType); // TODO: Optimize to not store twice core bead info.
-    originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
-  });
-
-
-  /** -- Package -- */
-  let exPersp: ThreadsExportablePerspective = {
-    emojiReactions: persp.emojiReactions,
-    allAppletIds: persp.allAppletIds,
-    allSubjects: Array.from(allSubjects.entries()),
-    allSemanticTopics: persp.allSemanticTopics,
-    hiddens: persp.hiddens,
-    appletSubjectTypes: persp.appletSubjectTypes,
-    pps,
-    beads: persp.beads,
-    favorites: persp.favorites,
-  };
-
-  return exPersp;
-}
+// /** Compact Perspective */
+// export function intoExportable(persp: ThreadsPerspectiveCore, originalsZvm: AuthorshipZvm): ThreadsPerspectiveExportable {
+//   /** allSubjects */
+//   const allSubjects: Map<AnyLinkableHashB64, SubjectMat> = new Map();
+//   Array.from(persp.allSubjects.entries()).map(([subjectAh, subject]) => {
+//     originalsZvm.ascribeTarget("Subject", subjectAh, 0/*TODO: get creationTime of Subject*/, null, true);
+//     allSubjects.set(subjectAh, subject);
+//   });
+//
+//   /** pps */
+//   const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]> = new Array();
+//   Array.from(persp.threads.entries()).map(([ppAh, thread]) => {
+//     originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
+//     pps.push([ppAh, thread.pp, thread.creationTime, ""]);
+//   });
+//
+//   /** beads */
+//   //console.log("exportPerspective() beads", this._beads);
+//   //const beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
+//   Object.entries(persp.beads).map(([beadAh, [beadInfo, typed]]) => {
+//     //beads[beadAh] = (typed, beadInfo.beadType); // TODO: Optimize to not store twice core bead info.
+//     originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
+//   });
+//
+//
+//   /** -- Package -- */
+//   let exPersp: ThreadsPerspectiveExportable = {
+//     emojiReactions: persp.emojiReactions,
+//     allAppletIds: persp.allAppletIds,
+//     allSubjects: Array.from(allSubjects.entries()),
+//     allSemanticTopics: persp.allSemanticTopics,
+//     hiddens: persp.hiddens,
+//     appletSubjectTypes: persp.appletSubjectTypes,
+//     pps,
+//     beads: persp.beads,
+//     favorites: persp.favorites,
+//   };
+//
+//   return exPersp;
+// }

@@ -8,8 +8,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"entry_defs", 
 	"get_zome_info", 
 	"get_dna_info",
-	"cast_tip",
-
 	"publish_any_bead",
 	"fetch_any_bead_option",
 	"fetch_any_bead",
@@ -31,8 +29,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"fetch_many_text_bead",
 	"publish_text_bead_at",
 	"publish_many_text_bead_at",
-
-
 	"decrypt_my_bead",
 	"decrypt_bead",
 	"encrypt_bead",
@@ -52,8 +48,6 @@ export const threadsFunctionNames: FunctionName[] = [
 	"probe_latest_items",
 	"commit_thread_log",
 	"query_thread_logs",
-
-
 	"get_record_author",
 	"get_data_type",
 	"notify_peer",
@@ -86,7 +80,9 @@ export const threadsFunctionNames: FunctionName[] = [
 	"unhide_subject",
 	"probe_all_hiddens",
 	"pull_all_subjects",
-	"pull_applets",];
+	"pull_applets",
+	"cast_tip",
+];
 
 
 /** Generate tuple array of function names with given zomeName */

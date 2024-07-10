@@ -1,25 +1,6 @@
 import {
-  ActionHashB64,
-  AgentPubKey,
-  AgentPubKeyB64,
-  AnyLinkableHash,
-  decodeHashFromBase64,
-  dhtLocationFrom32,
-  encodeHashToBase64,
-  EntryHash,
-  EntryHashB64, ExternalHash,
-  fakeDnaHash,
-  HASH_TYPE_PREFIX,
-  HoloHashB64,
-  randomByteArray,
-  sliceCore32,
-  sliceDhtLocation,
-  sliceHashType
-} from "@holochain/client";
-import {
   AnyBeadMat,
-  AnyLinkableHashB64,
-  BeadType, EntryBeadMat, materializeTypedBead, NotifiableEvent, ParticipationProtocolMat,
+  BeadType, EntryBeadMat, NotifiableEvent, ParticipationProtocolMat,
   SubjectMat, TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.perspective";
@@ -30,12 +11,13 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
 import {
   DM_SUBJECT_TYPE_NAME, NotifySetting,
-  SEMANTIC_TOPIC_TYPE_NAME, StateChange, StateChangeType,
-  ThreadsEntryType, ThreadsLinkType
+  SEMANTIC_TOPIC_TYPE_NAME,
+  ThreadsEntryType,
 } from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
+import {AgentId} from "@ddd-qc/lit-happ";
 
 
 /** */
@@ -218,8 +200,8 @@ export interface CommentRequest {
 }
 
 
-/** */
-export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentPubKeyB64[] {
+/** FIXME */
+export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId[] {
   const mentions = tokenizeMentions(str);
   let mentionedAgents = profilesZvm.findProfiles(mentions);
   /** Handle special mentions */

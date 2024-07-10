@@ -190,14 +190,3 @@ export type AuthorshipEntry =
 export interface Bogus {
   value: string
 }
-
-/**
- * -------------------------------------------------------------------------------------------------
- * Zome's link types
- * -------------------------------------------------------------------------------------------------
- */
-export enum AuthorshipLinkType {
-	AuthorshipPath = 'AuthorshipPath',
-	Target = 'Target',
-	Author = 'Author',
-}

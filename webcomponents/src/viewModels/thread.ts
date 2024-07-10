@@ -1,16 +1,17 @@
-import {ActionHashB64, AgentPubKeyB64, Timestamp} from "@holochain/client";
+import {Timestamp} from "@holochain/client";
 import {TimeInterval} from "./timeInterval";
 
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
-import {Base64} from "js-base64";
+//import {Base64} from "js-base64";
 import {BeadLinkMaterialized, ParticipationProtocolMat} from "./threads.perspective";
-import {determineSubjectPrefix, ppName} from "../utils";
+import {ppName} from "../utils";
+import {AgentId} from "@ddd-qc/lit-happ";
 
-/** Importing this from holochain will cause jest to fail */
-function encodeHashToBase64(hash: Uint8Array) {
-  return `u${Base64.fromUint8Array(hash, true)}`;
-}
+// /** Importing this from holochain will cause jest to fail */
+// function encodeHashToBase64(hash: Uint8Array) {
+//   return `u${Base64.fromUint8Array(hash, true)}`;
+// }
 
 
 /** */
@@ -41,7 +42,7 @@ export class Thread {
   /* Flag if first node is the oldest node possible */
   private _hasSearchedOldestBead: boolean = false;
   /* CreationTime of the thread's PP entry */
-  private _author: AgentPubKeyB64;
+  private _author: AgentId;
   /* CreationTime of the thread's PP entry */
   private _creationTime: Timestamp;
   /* Logged last known bead */
@@ -57,7 +58,7 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentPubKeyB64) {
+  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
     console.log("New Thread() dnaOriginTime", dnaOriginTime, author);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
@@ -77,7 +78,7 @@ export class Thread {
 
   get creationTime(): Timestamp { return this._creationTime}
 
-  get author(): AgentPubKeyB64 { return this._author}
+  get author(): AgentId { return this._author}
 
   //get isHidden(): boolean { return this._isHidden}
 

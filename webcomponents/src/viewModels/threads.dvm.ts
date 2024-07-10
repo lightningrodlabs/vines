@@ -1,13 +1,17 @@
-import {delay, Dictionary, DnaViewModel} from "@ddd-qc/lit-happ";
+import {
+  ActionId,
+  ActionIdMap,
+  AgentId,
+  AgentIdMap,
+  DnaViewModel, EntryId, TipProtocol, TipProtocolVariantApp,
+  ZomeSignal,
+  ZomeSignalProtocol, ZomeSignalProtocolType
+} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {
-  ActionHashB64,
-  AgentPubKeyB64,
   AppSignal,
   AppSignalCb,
-  decodeHashFromBase64,
-  encodeHashToBase64,
-  EntryHashB64, Timestamp
+  Timestamp
 } from "@holochain/client";
 import {
   ParticipationProtocol,
@@ -15,31 +19,25 @@ import {
   ThreadsEntryType,
   ThreadsProperties,
   VINES_DEFAULT_ROLE_NAME,
-  ZomeSignal,
-  ZomeSignalProtocol,
-  ZomeSignalProtocolType,
-  TipProtocol,
-  TipProtocolVariantApp,
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
   BeadType, EncryptedBeadContent, ThreadsNotification, ThreadsNotificationTip,
   TypedContent,
 } from "./threads.perspective";
-import {AppletId} from "@lightningrodlabs/we-applet";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {decode} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
-import {getEventType} from "../utils";
 
 
 /** */
 export interface ThreadsDnaPerspective {
-  agentPresences: Record<AgentPubKeyB64, number>,
+  /* agent -> Timestamp */
+  agentPresences: AgentIdMap<number>,
   /** ppAh -> string */
-  threadInputs: Dictionary<String>,
+  threadInputs: ActionIdMap<String>,
   /** ppAh -> Timestamp */
-  initialThreadProbeLogTss: Dictionary<Timestamp>,
+  initialThreadProbeLogTss: ActionIdMap<Timestamp>,
   /** */
   initialGlobalProbeLogTs: Timestamp;
   /** */
@@ -81,22 +79,18 @@ export class ThreadsDvm extends DnaViewModel {
     return true
   }
 
-  get perspective(): ThreadsDnaPerspective {
-    return {
-      agentPresences: this._agentPresences,
-      threadInputs: this._threadInputs,
-      initialThreadProbeLogTss: this._initialThreadProbeLogTss,
-      initialGlobalProbeLogTs: this._initialGlobalProbeLogTs,
-      signaledNotifications: this._signaledNotifications,
-    }
+  private _perspective: ThreadsDnaPerspective = {
+    agentPresences: new AgentIdMap(),
+    threadInputs: new ActionIdMap(),
+    initialThreadProbeLogTss: new ActionIdMap(),
+    initialGlobalProbeLogTs:  0,
+    signaledNotifications: [],
   }
 
-  /** agentPubKey -> timestamp */
-  private _agentPresences: Record<string, number> = {};
-  private _threadInputs = {};
-  private _initialThreadProbeLogTss = {};
-  private _initialGlobalProbeLogTs: Timestamp = 0;
-  private _signaledNotifications: ThreadsNotification[] = [];
+
+  get perspective(): ThreadsDnaPerspective {
+    return this._perspective;
+  }
 
 
   /** */
@@ -114,9 +108,9 @@ export class ThreadsDvm extends DnaViewModel {
   async initializePerspectiveOnline(): Promise<void> {
     console.log("ThreadsDvm.initializePerspectiveOffline() override")
     await super.initializePerspectiveOnline();
-    this._initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
+    this._perspective.initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
-        this._initialThreadProbeLogTss[ppAh] = thread.latestProbeLogTime;
+        this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
     this._livePeers = this.profilesZvm.getAgents(); // TODO: implement real presence logic
     console.log("ThreadsDvm.initializePerspectiveOffline() override persp =", this.perspective)
@@ -124,10 +118,10 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  private storePresence(from: AgentPubKeyB64) {
+  private storePresence(from: AgentId) {
     const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
     //console.log("Updating presence of", from, currentTimeInSeconds);
-    this._agentPresences[from] = currentTimeInSeconds;
+    this._perspective.agentPresences.set(from, currentTimeInSeconds);
     this._livePeers = this.profilesZvm.getAgents(); // TODO: implement real presence logic
     this.notifySubscribers();
   }
@@ -143,13 +137,13 @@ export class ThreadsDvm extends DnaViewModel {
     }
     const signal = appSignal.payload as ZomeSignal;
     for (const pulse of signal.pulses) {
-      /*await*/ this.handleThreadsSignal(pulse, encodeHashToBase64(signal.from));
+      /*await*/ this.handleThreadsSignal(pulse, new AgentId(signal.from));
     }
     this.notifySubscribers();
   }
 
   /** */
-  async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentPubKeyB64): Promise<void> {
+  async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentId): Promise<void> {
     /* Update agent's known presence */
     this.storePresence(from);
     /** */
@@ -160,7 +154,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  private async handleTip(tip: TipProtocol, from: AgentPubKeyB64) {
+  private async handleTip(tip: TipProtocol, from: AgentId) {
     // /* Send pong response */
     // if (tip.type != "Pong") {
     //   console.log("PONGING ", from)
@@ -180,12 +174,12 @@ export class ThreadsDvm extends DnaViewModel {
         const notif: ThreadsNotification = {
           //eventIndex: notifTip.event_index,
           event: notifTip.event,
-          createLinkAh: encodeHashToBase64(notifTip.link_ah),
-          author: encodeHashToBase64(notifTip.author),
+          createLinkAh: notifTip.link_ah,
+          author: notifTip.author,
           timestamp: notifTip.timestamp,
-          content: encodeHashToBase64(notifTip.content),
+          content: notifTip.content,
         }
-        this._signaledNotifications.push(notif);
+        this._perspective.signaledNotifications.push(notif);
       }
       break;
       default:
@@ -195,7 +189,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async pingPeers(maybePpHash: ActionHashB64 | null, peers: Array<AgentPubKeyB64>) {
+  async pingPeers(maybePpHash: ActionId | null, peers: Array<AgentId>) {
     // const ping: SignalPayload = {
     //   maybePpHash: maybePpHash ? maybePpHash : undefined,
     //   from: this._cellProxy.cell.agentPubKey,
@@ -207,15 +201,15 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  allCurrentOthers(startingAgents: AgentPubKeyB64[] ): AgentPubKeyB64[] {
+  allCurrentOthers(startingAgents: AgentId[] ): AgentId[] {
     const agents = startingAgents;
     console.log("allCurrentOthers", agents)
-    console.log("allCurrentOthers", this._agentPresences)
+    console.log("allCurrentOthers", this._perspective.agentPresences)
     const currentTime: number = Math.floor(Date.now() / 1000);
     const keysB64 = agents
-      .filter((key) => key != this.cell.agentPubKey)
+      .filter((key) => key.b64 != this.cell.agentId.b64)
       .filter((key) => {
-        const lastPingTime = this._agentPresences[key];
+        const lastPingTime = this._perspective.agentPresences.get(key);
         if (!lastPingTime) return false;
         return (currentTime - lastPingTime) < 5 * 60; // 5 minutes
       });
@@ -227,7 +221,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- (un)Publish / Edit -- */
 
   /** */
-  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, prevBead?: ActionHashB64): Promise<ActionHashB64> {
+  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId): Promise<ActionId> {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
       return this.publishDm(isDmThread, beadType, content, prevBead);
@@ -237,10 +231,10 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishDm(otherAgent: AgentPubKeyB64, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionHashB64): Promise<ActionHashB64> {
-    const dmAh = this.threadsZvm.perspective.dmAgents[otherAgent];
+  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId): Promise<ActionId> {
+    const dmAh = this.threadsZvm.perspective.dmAgents.get(otherAgent);
     /** Create or grab DmThread */
-    let ppAh: ActionHashB64;
+    let ppAh: ActionId;
     if (!dmAh) {
       ppAh = await this.threadsZvm.createDmThread(otherAgent);
     } else {
@@ -250,25 +244,25 @@ export class ThreadsDvm extends DnaViewModel {
     const bead = await this.threadsZvm.createNextBead(ppAh, prevBead);
     const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
     const base = bead2base(typed, beadType);
-    const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: decodeHashFromBase64(otherAgent)});
-    let beadAh = await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent: decodeHashFromBase64(otherAgent)}, ppAh);
+    const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
+    let beadAh = await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
     return beadAh;
   }
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionHashB64, author?: AgentPubKeyB64, prevBead?: ActionHashB64): Promise<ActionHashB64> {
+  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId): Promise<ActionId> {
     /** */
     let [ah, _time_anchor, _creation_ts, _typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
     /** Erase saved input */
-    delete this._threadInputs[ppAh];
+    this._perspective.threadInputs.delete(ppAh);
     /** */
     return ah;
   }
 
 
   /** */
-  async editSemanticTopic(old_eh: EntryHashB64, title: string): Promise<EntryHashB64> {
+  async editSemanticTopic(old_eh: EntryId, title: string): Promise<EntryId> {
     let eh = await this.threadsZvm.editSemanticTopic(old_eh, title);
     //const tip: TipProtocol = {type: "UpdateSemanticTopic", old_topic_eh: old_eh, new_topic_eh: eh, title};
     //await this.broadcastTip(tip);
@@ -277,7 +271,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishCommentThread(subject: Subject, subject_name: string): Promise<ActionHashB64> {
+  async publishCommentThread(subject: Subject, subject_name: string): Promise<ActionId> {
     const pp: ParticipationProtocol = {
       purpose: "comment",
       rules: "N/A",
@@ -290,22 +284,22 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishEmoji(beadAh: ActionHashB64, emoji: string) {
-    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+  async publishEmoji(beadAh: ActionId, emoji: string) {
+    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
     if (has) {
       return;
     }
-    await this.threadsZvm.zomeProxy.publishReaction({bead_ah: decodeHashFromBase64(beadAh), emoji});
+    await this.threadsZvm.zomeProxy.publishReaction({bead_ah: beadAh.hash, emoji});
   }
 
 
   /** */
-  async unpublishEmoji(beadAh: ActionHashB64, emoji: string) {
-    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentPubKey, emoji);
+  async unpublishEmoji(beadAh: ActionId, emoji: string) {
+    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
     if (!has) {
       return;
     }
-    await this.threadsZvm.zomeProxy.unpublishReaction(decodeHashFromBase64(beadAh));
+    await this.threadsZvm.zomeProxy.unpublishReaction(beadAh.hash);
   }
 
 
