@@ -50,7 +50,8 @@ pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
 #[feature(zits_blocking)]
 pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, String)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let (target_type, record) = get_app_entry_name(ah.clone().into(), CallTargetCell::Local)?;
+    let record = get_record(AnyDhtHash::from(ah.clone()))?;
+    let (target_type, _entry) = get_app_entry_name(ah.clone().into(), CallTargetCell::Local)?;
     /// Form input & create link
     let input = AscribeTargetInput {
         target: ah.into(),

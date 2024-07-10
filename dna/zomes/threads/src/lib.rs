@@ -35,14 +35,14 @@ fn get_dna_info(_:()) -> ExternResult<DnaInfo> {
 
 #[hdk_extern]
 fn get_record_author(dh: AnyDhtHash) -> ExternResult<AgentPubKey> {
-  return zome_utils::get_author(&dh);
+  return zome_utils::get_author(dh);
 }
 
 
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct GetDataTypeInput {
-  hash: AnyLinkableHash,
+  hash: AnyDhtHash,
   role: Option<String>,
   dna: Option<DnaHash>,
 }
@@ -50,20 +50,19 @@ pub struct GetDataTypeInput {
 /// Return AppEntryName or data type name of data at hash in role or dna
 #[hdk_extern]
 fn get_data_type(input: GetDataTypeInput) -> ExternResult<String> {
-  let data_type_name = zome_utils::get_data_type(input.hash.clone())?;
-  if data_type_name == "App" {
-    let target = if let Some(role) = input.role {
-      CallTargetCell::OtherRole(role)
+  let target_cell = if let Some(role) = input.role {
+    CallTargetCell::OtherRole(role)
+  } else {
+    if let Some(dna) = input.dna {
+      let cell_id = CellId::new(dna, agent_info()?.agent_latest_pubkey);
+      CallTargetCell::OtherCell(cell_id)
     } else {
-      if let Some(dna) = input.dna {
-        let cell_id = CellId::new(dna, agent_info()?.agent_latest_pubkey);
-        CallTargetCell::OtherCell(cell_id)
-      } else {
-        CallTargetCell::Local
-      }
-    };
-    let (name, _record) = zome_utils::get_app_entry_name(input.hash.into_any_dht_hash().unwrap(), target)?;
-    return Ok(name.0.into());
-  }
-  Ok(data_type_name)
+      CallTargetCell::Local
+    }
+  };
+  // let data_entry_type = zome_utils::get_entry_type_at(input.hash.clone())?;
+  // let EntryType::App(def) = data_entry_type
+  // else { return Ok(data_entry_type) };
+  let (name, _record) = zome_utils::get_app_entry_name(input.hash, target_cell)?;
+  Ok(name.0.into())
 }

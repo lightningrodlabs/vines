@@ -17,7 +17,7 @@ use zome_signals::*;
 #[hdk_extern]
 pub fn fetch_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let (record, typed) = get_typed_and_record(&ah.clone().into())?;
+  let (record, typed) = get_typed_and_record(ah.clone().into())?;
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {
     return Ok((typed, opPair.0, opPair.1));

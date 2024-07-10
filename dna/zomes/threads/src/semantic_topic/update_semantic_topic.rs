@@ -25,7 +25,7 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<EntryHash>
     }
   }
   /// Make sure Topic does already exists
-  let (record, old) = get_typed_and_record::<SemanticTopic>(&input.eh.into())?;
+  let (record, old) = get_typed_and_record::<SemanticTopic>(input.eh.into())?;
   /// Make sure title changed
   if old.title == input.topic.title {
       return error("Topic title is same");

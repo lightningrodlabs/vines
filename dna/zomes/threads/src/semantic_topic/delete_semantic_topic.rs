@@ -11,7 +11,7 @@ use zome_utils::*;
 pub fn delete_semantic_topic(eh: EntryHash) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Make sure Topic does already exists
-  let (record, _old) = get_typed_and_record::<SemanticTopic>(&eh.into())?;
+  let (record, _old) = get_typed_and_record::<SemanticTopic>(eh.into())?;
   /// Make sure its same author
   if agent_info()?.agent_latest_pubkey != record.action().author().to_owned() {
     return error("Only original author can change topic title");

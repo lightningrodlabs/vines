@@ -40,7 +40,7 @@ fn pull_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(Record, Semant
     .into_iter()
     .map(|ll| {
       let eh = ll.item_hash.into_entry_hash().unwrap();
-      let (record, typed) = get_typed_and_record::<SemanticTopic>(&eh.into())
+      let (record, typed) = get_typed_and_record::<SemanticTopic>(eh.into())
         .unwrap(); // FIXME
       return (record, typed);
       //return (eh, typed.title);
