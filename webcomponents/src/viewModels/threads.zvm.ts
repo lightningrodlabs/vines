@@ -2191,47 +2191,6 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
-  private async notifyPeers(ppAh: ActionHashB64, content: AnyLinkableHash, notifs: NotifyPeerInput[]) {
-    console.log("notifyPeers()", ppAh, notifs);
-    /** Get latest notif settings */
-    let settings = await this.pullNotifSettings(ppAh);
-    /** Get alls & nevers */
-    let nevers = [];
-    let alls = [];
-    for (const [agent, setting, _ah] of settings) {
-      const peer = encodeHashToBase64(agent);
-      switch (setting) {
-        case NotifySetting.Never: nevers.push(peer); break;
-        case NotifySetting.AllMessages: alls.push(peer); break;
-        default: break;
-      }
-    }
-    /** Keep only notifiable peers */
-    const notifieds = [];
-    const notifies = notifs
-      .filter((notif) => !nevers.includes(encodeHashToBase64(notif.who)))
-      .map((notif) => {
-        notifieds.push(encodeHashToBase64(notif.who));
-        return this.zomeProxy.notifyPeer(notif);
-      });
-    /** notify peers with AllMessage notifSetting */
-    for (const peer of alls) {
-      if (notifieds.includes(peer)) {
-        continue;
-      }
-      const newNotif = {
-        content,
-        who: decodeHashFromBase64(peer),
-        event_index: getEnumIndex(NotifiableEvent, NotifiableEvent.NewBead),
-      }
-      notifies.push(this.zomeProxy.notifyPeer(newNotif));
-    }
-    /** */
-    await Promise.all(notifies);
-  }
-
-
-  /** */
   private async handleBeadEntry(entryPulse: EntryPulse, typed: TypedBead, beadType: BeadType, isNew: boolean, from: AgentPubKeyB64): Promise<TipProtocol> {
     console.log("handleBeadEntry()", beadType, encodeHashToBase64(entryPulse.ah), typed);
     if (!isHashType(entryPulse.author, 'Agent') || !isHashType(entryPulse.ah, 'Action') || !isHashType(entryPulse.eh, 'Entry')) {
@@ -2379,6 +2338,47 @@ export class ThreadsZvm extends ZomeViewModel {
 
 
   /** */
+  private async notifyPeers(ppAh: ActionHashB64, content: AnyLinkableHash, notifs: NotifyPeerInput[]) {
+    console.log("notifyPeers()", ppAh, notifs);
+    /** Get latest notif settings */
+    let settings = await this.pullNotifSettings(ppAh);
+    /** Get alls & nevers */
+    let nevers = [];
+    let alls = [];
+    for (const [agent, setting, _ah] of settings) {
+      const peer = encodeHashToBase64(agent);
+      switch (setting) {
+        case NotifySetting.Never: nevers.push(peer); break;
+        case NotifySetting.AllMessages: alls.push(peer); break;
+        default: break;
+      }
+    }
+    /** Keep only notifiable peers */
+    const notifieds = [];
+    const notifies = notifs
+      .filter((notif) => !nevers.includes(encodeHashToBase64(notif.who)))
+      .map((notif) => {
+        notifieds.push(encodeHashToBase64(notif.who));
+        return this.zomeProxy.notifyPeer(notif);
+      });
+    /** notify peers with AllMessage notifSetting */
+    for (const peer of alls) {
+      if (notifieds.includes(peer)) {
+        continue;
+      }
+      const newNotif = {
+        content,
+        who: decodeHashFromBase64(peer),
+        event_index: getEnumIndex(NotifiableEvent, NotifiableEvent.NewBead),
+      }
+      notifies.push(this.zomeProxy.notifyPeer(newNotif));
+    }
+    /** */
+    await Promise.all(notifies);
+  }
+
+
+  /** */
   dumpCastLogs() {
     console.warn(`Tips sent from zome "${this.zomeName}"`);
     let appSignals: any[] = [];
@@ -2398,11 +2398,10 @@ export class ThreadsZvm extends ZomeViewModel {
     signalLogs
       .filter((log) => log.type == SignalType.LitHapp)
       .map((log) => {
-        const signal = log.payload as LitHappSignal;
-        const pulses = signal.pulses as ZomeSignalProtocol[];
+        const signal = log.payload as ZomeSignal;
         const timestamp = prettyDate(new Date(log.ts));
         const from = encodeHashToBase64(signal.from) == this.cell.agentPubKey? "self" : encodeHashToBase64(signal.from);
-        for (const pulse of pulses) {
+        for (const pulse of signal.pulses) {
           if (ZomeSignalProtocolType.Tip in pulse) {
             const tip: TipProtocol = pulse.Tip;
             const subType = Object.keys(tip)[0];

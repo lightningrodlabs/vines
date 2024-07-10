@@ -97,22 +97,6 @@ export function getEntryType(index: number): ThreadsEntryType {
 }
 
 
-// async function fakeValidHash<T extends Uint8Array>(
-//   prefix: number[],
-// ): Promise<Uint8Array> {
-//   let core = await randomByteArray(32);
-//   const checksum = dhtLocationFrom32(core);
-//   return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]) as T;
-// }
-//
-// export async function fakeExternalHash(): Promise<EntryHash> {
-//   return fakeValidHash<ExternalHash>([132, 47, 36]);
-// }
-//
-// console.log("DNA", encodeHashToBase64(await fakeDnaHash()))
-// console.log("External", encodeHashToBase64(await fakeExternalHash()))
-//
-
 export const HASH_TYPE_PREFIX_B64 = {
   Agent: "uhCAk",
   Entry: "uhCEk",

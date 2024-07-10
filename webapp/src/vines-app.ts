@@ -99,17 +99,15 @@ export class VinesApp extends HappElement {
   /** -- Ctor -- */
 
   /** All arguments should be provided when constructed explicity */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, private _canAuthorizeZfns?: boolean, readonly appId?: InstalledAppId, public appletView?: AppletView) {
+  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView) {
+    /** Figure out arguments for super() */
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    //console.log("adminUrl", adminUrl);
     super(appWs? appWs : HC_APP_PORT, appId, adminUrl, 10 * 1000);
-    if (_canAuthorizeZfns == undefined) {
-      this._canAuthorizeZfns = true;
-    }
+    /** */
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
   }
 
@@ -118,7 +116,6 @@ export class VinesApp extends HappElement {
   static async fromWe(
     appWs: AppWebsocket,
     adminWs: AdminWebsocket | undefined,
-    canAuthorizeZfns: boolean,
     appId: InstalledAppId,
     profilesAppId: InstalledAppId,
     profilesBaseRoleName: BaseRoleName,
@@ -130,7 +127,7 @@ export class VinesApp extends HappElement {
     //showCommentThreadOnly?: boolean,
     appletView: AppletView,
   ) : Promise<VinesApp> {
-    const app = new VinesApp(appWs, adminWs, canAuthorizeZfns, appId, appletView);
+    const app = new VinesApp(appWs, adminWs, appId, appletView);
     /** Provide it as context */
     app._weServices = new WeServicesEx(weServices, thisAppletId);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
@@ -205,24 +202,7 @@ export class VinesApp extends HappElement {
 
   /** */
   async hvmConstructed() {
-    console.log("<vines-app>.hvmConstructed()", this._adminWs, this._canAuthorizeZfns)
-
-    // /** Authorize all zome calls */
-    // if (!this._adminWs && this._canAuthorizeZfns) {
-    //   this._adminWs = await AdminWebsocket.connect({url: new URL(`ws://localhost:${HC_ADMIN_PORT}`)});
-    //   console.log("hvmConstructed() connect() called", this._adminWs);
-    // }
-    // if (this._adminWs && this._canAuthorizeZfns) {
-    //   await this.hvm.authorizeAllZomeCalls(this._adminWs);
-    //   console.log("*** Zome call authorization complete");
-    // } else {
-    //   if (!this._canAuthorizeZfns) {
-    //     console.warn("No adminWebsocket provided (Zome call authorization done)")
-    //   } else {
-    //     console.log("Zome call authorization done externally")
-    //   }
-    // }
-
+    console.log("<vines-app>.hvmConstructed()", this._adminWs)
     /** Attempt EntryDefs (triggers genesis) */
     const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
     const filesOk = await this.attemptFilesEntryDefs(5, 1000);

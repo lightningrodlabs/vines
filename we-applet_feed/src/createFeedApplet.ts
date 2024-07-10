@@ -61,7 +61,7 @@ export async function createFeedApplet(
 
   /** Create ThreadsApp */
   const app = await CommunityFeedApp.fromWe(
-      mainAppWs, undefined, false, mainAppInfo.installed_app_id,
+      mainAppWs, undefined, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
       weServices,
       encodeHashToBase64(appletViewInfo.appletHash),

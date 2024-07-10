@@ -30,8 +30,8 @@ fn post_commit(signedActionList: Vec<SignedActionHashed>) {
    std::panic::set_hook(Box::new(zome_panic_hook));
    /// Process each Action
    for sah in signedActionList {
-      //debug!(" - {}", sah.action());
-      let ah = sah_to_ah(sah.clone());
+      // debug!(" - {}", sah.action());
+      let ah = sah.action_address().to_owned();
       match sah.action() {
          ///
          Action::DeleteLink(delete_link) => {
