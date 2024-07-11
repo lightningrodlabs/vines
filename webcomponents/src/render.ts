@@ -1,5 +1,4 @@
 import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {AgentPubKeyB64, encodeHashToBase64} from "@holochain/client";
 import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
@@ -7,25 +6,26 @@ import {determineBeadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
+import {AgentId} from "@ddd-qc/lit-happ";
 
 
 
 /** */
-export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
+export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
   const profile = loadProfile(profilesZvm, agentKey);
   return renderProfileAvatar(profile, size, classArg, slotArg);
 }
 
 
 
-export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentPubKeyB64) {
+export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId) {
   let profile = {nickname: "unknown", fields: {}} as ProfileMat;
-  const maybeAgent = profilesZvm.perspective.profiles[agentKey];
+  const maybeAgent = profilesZvm.perspective.getProfile(agentKey);
   if (maybeAgent) {
     profile = maybeAgent;
   } else {
     console.log("Profile not found for agent", agentKey, profilesZvm.perspective.profiles)
-    profilesZvm.probeProfile(agentKey)
+    profilesZvm.findProfile(agentKey)
     //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
   }
   return profile;

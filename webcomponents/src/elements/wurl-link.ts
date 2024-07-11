@@ -1,7 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionId, DnaId, intoDhtId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
@@ -69,10 +68,10 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async loadBeadInfo(beadAh: ActionHashB64, threadsZvm: ThreadsZvm): Promise<boolean> {
+  async loadBeadInfo(beadAh: ActionId, threadsZvm: ThreadsZvm): Promise<boolean> {
     const beadInfo = threadsZvm.getBaseBeadInfo(beadAh);
     if (beadInfo) {
-      let thread = threadsZvm.perspective.threads[beadInfo.bead.ppAh];
+      let thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       let name;
       if (!thread) {
         const [ppMat, _ts, _author] = await threadsZvm.fetchPp(beadInfo.bead.ppAh);
@@ -97,12 +96,12 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     try {
       const wal = weaveUrlToWal(this.wurl);
-      if (encodeHashToBase64(wal.hrl[0]) == this.cell.dnaHash) {
+      if (new DnaId(wal.hrl[0]).b64 == this.cell.dnaId.b64) {
         this._appletName = "Vines";
         /** Determine entry */
-        const hash = encodeHashToBase64(wal.hrl[1]);
+        const hash = new ActionId(wal.hrl[1]);
         //console.log("<wurl-link> loadWal() hash", hash);
-        const maybeThread = threadsZvm.perspective.threads[hash];
+        const maybeThread = threadsZvm.perspective.threads.get(hash);
         if (maybeThread) {
           this._assetName = maybeThread.name;
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
@@ -121,7 +120,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         } catch(e) {}
         /** Try Bead */
         try {
-          await threadsZvm.fetchUnknownBead(encodeHashToBase64(wal.hrl[1]));
+          await threadsZvm.fetchUnknownBead(hash);
         } catch(e) {
           //console.warn(`No bead found for wurl-link: ${e}`);
         }
@@ -159,11 +158,12 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return this.renderBadLink();
     }
 
-    const isThisDna = encodeHashToBase64(wal.hrl[0]) == this.cell.dnaHash;
+    const isThisDna = new DnaId(wal.hrl[0]).b64 == this.cell.dnaId.b64;
     let colorIdx = 6;
     if (!isThisDna && !this.weServices) {
       colorIdx = 3;
     }
+    const hash = new ActionId(wal.hrl[1])
 
     /** render valid link */
     return html`
@@ -172,11 +172,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      @click=${(e) => {
                        e.stopPropagation();
                        if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
-                         this.dispatchEvent(threadJumpEvent(encodeHashToBase64(wal.hrl[1])))
+                         this.dispatchEvent(threadJumpEvent(hash))
                          return;
                        }
                        if (this._vinesTypes == ThreadsEntryType.AnyBead) {
-                           this.dispatchEvent(beadJumpEvent(encodeHashToBase64(wal.hrl[1])))
+                           this.dispatchEvent(beadJumpEvent(hash))
                            return;
                        }                       
                        if (this.weServices) {

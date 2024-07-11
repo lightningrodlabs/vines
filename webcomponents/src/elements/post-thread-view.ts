@@ -8,7 +8,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../contexts";
-import {MAIN_TOPIC_HASH} from "../utils";
+import {MAIN_TOPIC_ID} from "../utils";
 import {getMainThread} from "../utils_feed";
 
 
@@ -160,7 +160,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.log("<post-thread-view>.loadlatestThreads()", !!this._dvm);
     const dvm = newDvm? newDvm : this._dvm;
     this._loading = true;
-    await dvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_HASH);
+    await dvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
     this._mainThreadAh = getMainThread(dvm);
     console.log("<post-thread-view>.loadlatestThreads() mainThreadAh", this._mainThreadAh);
     if (this._mainThreadAh) {
@@ -173,7 +173,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousPosts(): Promise<void> {
-    const mainThreadAh = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_HASH][0];
+    const mainThreadAh = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_ID][0];
     const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(mainThreadAh);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {

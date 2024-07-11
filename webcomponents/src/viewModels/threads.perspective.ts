@@ -4,10 +4,9 @@ import {
   AgentId,
   ActionId,
   EntryId,
-  AnyLinkableId,
   AgentIdMap,
   ActionIdMap,
-  EntryIdMap, DnaId, intoLinkableId
+  EntryIdMap, DnaId, intoLinkableId, LinkableIdMap, AnyId, LinkableId
 } from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
@@ -50,7 +49,7 @@ export interface ThreadsNotificationTip {
   event: NotifiableEvent,
   author: AgentId,
   timestamp: Timestamp,
-  content: AnyLinkableId,
+  content: LinkableId,
   /**  */
   link_ah: ActionId,
   pp_ah: ActionId,
@@ -64,7 +63,7 @@ export interface ThreadsNotification {
   createLinkAh: ActionId,
   author: AgentId,
   timestamp: Timestamp,
-  content: AnyLinkableId, // ppAh or beadAh depending on event
+  content: ActionId, // ppAh or beadAh depending on event
 }
 
 
@@ -101,7 +100,7 @@ export interface ThreadsPerspectiveExportable {
   /** */
   allAppletIds: EntryId[],
   /** Store of all Subjects: hash -> Subject */
-  allSubjects: Array<[AnyLinkableId, SubjectMat]>,
+  allSubjects: Array<[LinkableId, SubjectMat]>,
   /** Store of all SemTopic: eh -> TopicTitle */
   allSemanticTopics: Dictionary<string>,
   hiddens: Dictionary<boolean>,
@@ -172,14 +171,17 @@ export interface ThreadsPerspectiveLive {
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: LinkableIdMap<ActionId[]>,
   /** PathEntryHash -> subjectHash[] */
-  subjectsPerType: EntryIdMap<[DnaId, AnyLinkableId][]>,
+  subjectsPerType: EntryIdMap<[DnaId, LinkableId][]>,
+  /* name string -> ppAh */
+  threadsByName: Dictionary<ActionId>,
+
   /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
-  newThreads: ActionIdMap<AnyLinkableId>,
+  newThreads: ActionIdMap<LinkableId>,
   /** Unread subject == Has at least one unread thread */
   /** ppAh -> (subjectHash, beadAh[]) */
-  unreadThreads: ActionIdMap<[AnyLinkableId, ActionId[]]>, // Unread thread == Has "new" beads
+  unreadThreads: ActionIdMap<[LinkableId, ActionId[]]>, // Unread thread == Has "new" beads
 }
 
 
@@ -201,6 +203,7 @@ export function createThreadsPerspective(): ThreadsPerspective {
     notifSettings: new ActionIdMap(),
     threadsPerSubject: new EntryIdMap(),
     subjectsPerType: new EntryIdMap(),
+    threadsByName: {},
     newThreads: new ActionIdMap(),
     unreadThreads: new ActionIdMap(),
   }
@@ -248,17 +251,17 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
 /** -- Subject -- */
 
 export interface SubjectMat {
-  hash: AnyLinkableId,
+  hash: LinkableId,
   typeName: string,
   dnaHash: DnaId,
-  appletId: string,
+  appletId: EntryId,
 }
 export function materializeSubject(subject: Subject): SubjectMat {
   return {
     hash: intoLinkableId(subject.hash),
     typeName: subject.typeName,
     dnaHash: new DnaId(subject.dnaHash),
-    appletId: subject.appletId,
+    appletId: new EntryId(subject.appletId),
   }
 }
 export function dematerializeSubject(subject: SubjectMat): Subject {
@@ -266,7 +269,7 @@ export function dematerializeSubject(subject: SubjectMat): Subject {
     hash: subject.hash.hash,
     typeName: subject.typeName,
     dnaHash: subject.dnaHash.hash,
-    appletId: subject.appletId,
+    appletId: subject.appletId.b64,
   }
 }
 

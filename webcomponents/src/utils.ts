@@ -17,114 +17,115 @@ import {
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
-import {AgentId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, AnyId, DnaId, EntryId} from "@ddd-qc/lit-happ";
+import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 
+//
+// /** */
+// export function getEnumIndex(enumType: any, value: string): number {
+//   const keys = Object.keys(enumType).filter(key => isNaN(Number(key))); // Filter out numeric keys if present
+//   for (let i = 0; i < keys.length; i++) {
+//     if (enumType[keys[i]] === value) {
+//       return i;
+//     }
+//   }
+//   throw Error("Value not found in enum");
+// }
+//
+//
+// /** */
+// export function getSettingType(index: number): NotifySetting {
+//   const keys = Object.keys(NotifySetting);
+//   if (index >= 0 && index < keys.length) {
+//     const key = keys[index];
+//     return NotifySetting[key];
+//   }
+//   /** */
+//   throw Error("Out of bounds index for NotifySetting");
+// }
+//
+//
+// /** */
+// export function getEventType(index: number): NotifiableEvent {
+//   const keys = Object.keys(NotifiableEvent);
+//   if (index >= 0 && index < keys.length) {
+//     const key = keys[index];
+//     return NotifiableEvent[key];
+//   }
+//   /** */
+//   throw Error("Out of bounds index for NotifiableEvent");
+// }
+//
+// /** */
+// export function getLinkType(index: number): ThreadsLinkType {
+//   const keys = Object.keys(ThreadsLinkType);
+//   if (index >= 0 && index < keys.length) {
+//     const key = keys[index];
+//     return ThreadsLinkType[key];
+//   }
+//   /** */
+//   throw Error("Out of bounds index for ThreadsLinkType");
+// }
+//
+//
+// /** */
+// export function getEntryType(index: number): ThreadsEntryType {
+//   const keys = Object.keys(ThreadsEntryType);
+//   if (index >= 0 && index < keys.length) {
+//     const key = keys[index];
+//     return ThreadsEntryType[key];
+//   }
+//   /** */
+//   throw Error("Out of bounds index for ThreadsEntryType");
+// }
 
-/** */
-export function getEnumIndex(enumType: any, value: string): number {
-  const keys = Object.keys(enumType).filter(key => isNaN(Number(key))); // Filter out numeric keys if present
-  for (let i = 0; i < keys.length; i++) {
-    if (enumType[keys[i]] === value) {
-      return i;
-    }
-  }
-  throw Error("Value not found in enum");
-}
+//
+// export const HASH_TYPE_PREFIX_B64 = {
+//   Agent: "uhCAk",
+//   Entry: "uhCEk",
+//   Dna: "uhC0k",
+//   Action: "uhCkk",
+//   External: "uhC8k",
+// };
+//
+// /** */
+// export function isHashTypeB64(hash: HoloHashB64, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
+//   const slice = hash.slice(0, 5);
+//   const prefix = HASH_TYPE_PREFIX_B64[hashType];
+//   for (let i = 0; i < prefix.length; i++) {
+//     if (slice[i] !== prefix[i]) {
+//       return false;
+//     }
+//   }
+//   return true;
+// }
+//
+//
+// /** */
+// export function isHashType(hash: HoloHash, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
+//   const slice = sliceHashType(hash);
+//   const prefix = HASH_TYPE_PREFIX[hashType];
+//   for (let i = 0; i < prefix.length; i++) {
+//     if (slice[i] !== prefix[i]) {
+//       return false;
+//     }
+//   }
+//   return true;
+// }
 
-
-/** */
-export function getSettingType(index: number): NotifySetting {
-  const keys = Object.keys(NotifySetting);
-  if (index >= 0 && index < keys.length) {
-    const key = keys[index];
-    return NotifySetting[key];
-  }
-  /** */
-  throw Error("Out of bounds index for NotifySetting");
-}
-
-
-/** */
-export function getEventType(index: number): NotifiableEvent {
-  const keys = Object.keys(NotifiableEvent);
-  if (index >= 0 && index < keys.length) {
-    const key = keys[index];
-    return NotifiableEvent[key];
-  }
-  /** */
-  throw Error("Out of bounds index for NotifiableEvent");
-}
-
-/** */
-export function getLinkType(index: number): ThreadsLinkType {
-  const keys = Object.keys(ThreadsLinkType);
-  if (index >= 0 && index < keys.length) {
-    const key = keys[index];
-    return ThreadsLinkType[key];
-  }
-  /** */
-  throw Error("Out of bounds index for ThreadsLinkType");
-}
-
-
-/** */
-export function getEntryType(index: number): ThreadsEntryType {
-  const keys = Object.keys(ThreadsEntryType);
-  if (index >= 0 && index < keys.length) {
-    const key = keys[index];
-    return ThreadsEntryType[key];
-  }
-  /** */
-  throw Error("Out of bounds index for ThreadsEntryType");
-}
-
-
-export const HASH_TYPE_PREFIX_B64 = {
-  Agent: "uhCAk",
-  Entry: "uhCEk",
-  Dna: "uhC0k",
-  Action: "uhCkk",
-  External: "uhC8k",
-};
-
-/** */
-export function isHashTypeB64(hash: HoloHashB64, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
-  const slice = hash.slice(0, 5);
-  const prefix = HASH_TYPE_PREFIX_B64[hashType];
-  for (let i = 0; i < prefix.length; i++) {
-    if (slice[i] !== prefix[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-
-/** */
-export function isHashType(hash: HoloHash, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
-  const slice = sliceHashType(hash);
-  const prefix = HASH_TYPE_PREFIX[hashType];
-  for (let i = 0; i < prefix.length; i++) {
-    if (slice[i] !== prefix[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-
-/** */
-export function prettyState(state: StateChange): string {
-  if (StateChangeType.Create in state) {
-    return state.Create? "Create NEW" : "Create";
-  }
-  if (StateChangeType.Update in state) {
-    return state.Update? "Update NEW" : "Update";
-  }
-  if (StateChangeType.Delete in state) {
-    return state.Delete? "Delete NEW" : "Delete";
-  }
-}
+//
+// /** */
+// export function prettyState(state: StateChange): string {
+//   if (StateChangeType.Create in state) {
+//     return state.Create? "Create NEW" : "Create";
+//   }
+//   if (StateChangeType.Update in state) {
+//     return state.Update? "Update NEW" : "Update";
+//   }
+//   if (StateChangeType.Delete in state) {
+//     return state.Delete? "Delete NEW" : "Delete";
+//   }
+// }
 
 /** */
 export function type2ui5Icon(type: FileType): string {
@@ -185,25 +186,24 @@ export function timeSince(date: Date): string {
 
 /** */
 export interface EditTopicRequest {
-  topicHash: EntryHashB64,
+  topicHash: EntryId,
   subjectName: string,
 }
 
 
 /** */
 export interface CommentRequest {
-  maybeCommentThread: ActionHashB64 | null,
-  subjectHash: AnyLinkableHashB64,
+  maybeCommentThread: ActionId | null,
+  subjectHash: AnyId,
   subjectType: string,
   subjectName: string,
   viewType: string,
 }
 
 
-/** FIXME */
+/** */
 export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId[] {
   const mentions = tokenizeMentions(str);
-  let mentionedAgents = profilesZvm.findProfiles(mentions);
   /** Handle special mentions */
   let hasAll = false;
   for (const mention of mentions) {
@@ -211,8 +211,9 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
       hasAll = true;
     }
   }
-  if (hasAll) {
-    mentionedAgents = Object.keys(profilesZvm.perspective.profiles);
+  let mentionedAgents = profilesZvm.perspective.agents;
+  if (!hasAll) {
+    mentionedAgents = mentions.map((mentioned) => profilesZvm.perspective.getAgent(mentioned));
   }
   return mentionedAgents;
 }
@@ -247,40 +248,40 @@ export function weaveUrlToWal(url: string): WAL {
 }
 
 
+//
+// function emptyValidHash(prefix) {
+//   let core = new Uint8Array(32).fill(0);
+//   const checksum = dhtLocationFrom32(core);
+//   return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]);
+// }
+//
+//
+// export function emptyEntryHash() {
+//   return emptyValidHash(HASH_TYPE_PREFIX["Entry"]);
+// }
+//
+// export function emptyAgentPubKey() {
+//   return emptyValidHash([0x84, 0x20, 0x24]);
+// }
+//
+// export function emptyActionHash() {
+//   return emptyValidHash([0x84, 0x29, 0x24]);
+// }
+//
+// export function intoAgentPubKey(hash: AnyLinkableHash): AgentPubKey {
+//   const meCore = sliceCore32(hash);
+//   const meDht = sliceDhtLocation(hash)
+//   return Uint8Array.from([...HASH_TYPE_PREFIX["Agent"], ...meCore, ...meDht]);
+// }
+//
+// export function agent2eh(agent: AgentPubKey): EntryHash {
+//   const meCore = sliceCore32(agent);
+//   const meDht = sliceDhtLocation(agent)
+//   return Uint8Array.from([...HASH_TYPE_PREFIX["Entry"], ...meCore, ...meDht]);
+// }
 
-function emptyValidHash(prefix) {
-  let core = new Uint8Array(32).fill(0);
-  const checksum = dhtLocationFrom32(core);
-  return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]);
-}
 
-
-export function emptyEntryHash() {
-  return emptyValidHash(HASH_TYPE_PREFIX["Entry"]);
-}
-
-export function emptyAgentPubKey() {
-  return emptyValidHash([0x84, 0x20, 0x24]);
-}
-
-export function emptyActionHash() {
-  return emptyValidHash([0x84, 0x29, 0x24]);
-}
-
-export function intoAgentPubKey(hash: AnyLinkableHash): AgentPubKey {
-  const meCore = sliceCore32(hash);
-  const meDht = sliceDhtLocation(hash)
-  return Uint8Array.from([...HASH_TYPE_PREFIX["Agent"], ...meCore, ...meDht]);
-}
-
-export function agent2eh(agent: AgentPubKey): EntryHash {
-  const meCore = sliceCore32(agent);
-  const meDht = sliceDhtLocation(agent)
-  return Uint8Array.from([...HASH_TYPE_PREFIX["Entry"], ...meCore, ...meDht]);
-}
-
-
-export const MAIN_TOPIC_HASH = encodeHashToBase64(emptyActionHash());
+export const MAIN_TOPIC_ID: ActionId = ActionId.empty(77); // 'M'
 export const MAIN_SEMANTIC_TOPIC = "__main";
 
 
@@ -312,24 +313,26 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
-  if (subject.appletId == THIS_APPLET_ID || subject.appletId == "" || (weServices && subject.appletId == weServices.appletId)) {
+  if (subject.appletId.b64 == THIS_APPLET_ID.b64 /*|| subject.appletId == ""*/ || (weServices && subject.appletId.b64 == weServices.appletId)) {
     switch (subject.typeName) {
       /** -- special types -- */
       case SEMANTIC_TOPIC_TYPE_NAME:
-        let semTopicTitle = threadsZvm.perspective.allSemanticTopics[subject.hash];
+        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(subject.hash);
         if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
           return "{Unknown Topic}";
         }
         return semTopicTitle;
       break;
-      case PP_TYPE_NAME:
-        let thread = threadsZvm.perspective.threads[subject.hash];
+      case PP_TYPE_NAME: {
+        const ah = new ActionId(subject.hash.b64);
+        const thread = threadsZvm.perspective.threads.get(ah);
         if (!thread) {
           //thread = await threadsZvm.fetchPp(subject.hash);
           return "{Unknown Thread}";
         }
         return thread.name;
+      }
       break;
       case SUBJECT_TYPE_TYPE_NAME:
         if (weServices) {
@@ -344,20 +347,23 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
           return `{${subject.typeName}}`;
         }
       break;
-      case POST_TYPE_NAME:
-        let beadTuple = threadsZvm.perspective.beads[subject.hash];
+      case POST_TYPE_NAME: {
+        const ah = new ActionId(subject.hash.b64);
+        const beadTuple = threadsZvm.perspective.beads.get(ah);
         if (beadTuple) {
           return determineBeadName(beadTuple[0].beadType, beadTuple[1], filesDvm, weServices);
         } else {
           return `{Unknown Post}`;
         }
+      }
       break;
       /** -- bead types -- */
       case ThreadsEntryType.TextBead:
       case ThreadsEntryType.EntryBead:
       case ThreadsEntryType.AnyBead:
       case ThreadsEntryType.EncryptedBead:
-        let typedMat = threadsZvm.getBaseBead(subject.hash);
+        const ah = new ActionId(subject.hash.b64);
+        const typedMat = threadsZvm.getBaseBead(ah);
         if (!typedMat) {
           //console.log("determineSubjectName() bead not found. Fetching.", subject.hash);
           ///*const typed =*/ await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName/*, false*/);
@@ -377,13 +383,15 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
   } else {
     /** Unknown Asset */
     if (weServices) {
-      let appletInfo = weServices.cache.appletInfos[weServices.appletId];
+      let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
       if (!appletInfo) {
         return "{Unknown Applet Asset}";
       }
       //const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
-      const maybeInfo = weServices.cache.assetInfos[subject.hash];
-      if (maybeInfo) {
+      /** FIXME */
+      if (subject.hash.hashType == HoloHashType.Dna) {
+        const dnaId = new DnaId(subject.hash.b64);
+        const maybeInfo = weServices.cache.assetInfos.get(dnaId);
         return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
       } else {
         return `/${appletInfo.appletName}/{${subject.typeName}}`;
@@ -409,7 +417,7 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<unknown file>";
       }
       const fileBead = typedBead as EntryBeadMat;
-      const pprm = filesDvm.deliveryZvm.perspective.publicParcels[fileBead.sourceEh];
+      const pprm = filesDvm.deliveryZvm.perspective.publicParcels.get(fileBead.sourceEh);
       if (!pprm) {
         return "<file>";
       }

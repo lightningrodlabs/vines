@@ -7,7 +7,7 @@ import {sharedStyles} from "../styles";
 import {renderAvatar} from "../render";
 
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
-import {MAIN_TOPIC_HASH} from "../utils";
+import {MAIN_TOPIC_ID} from "../utils";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {weClientContext} from "../contexts";
 import {consume} from "@lit/context";
@@ -78,7 +78,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH]);
+    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_ID]);
 
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "S");
 

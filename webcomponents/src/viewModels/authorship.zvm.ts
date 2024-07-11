@@ -1,5 +1,13 @@
-import {AgentId, AgentIdMap, AnyLinkableId, Dictionary, EntryId, intoLinkableId, ZomeViewModel} from "@ddd-qc/lit-happ";
-import {AnyLinkableHashB64} from "./threads.perspective";
+import {
+  AgentId,
+  AgentIdMap,
+  Dictionary,
+  EntryId,
+  intoLinkableId,
+  LinkableId,
+  LinkableIdMap,
+  ZomeViewModel
+} from "@ddd-qc/lit-happ";
 import {Timestamp} from "@holochain/client";
 import {AuthorshipProxy} from "../bindings/authorship.proxy";
 
@@ -12,24 +20,24 @@ let EMPTY_AUTHOR = AgentId.empty();
 export interface AuthorshipPerspective {
   ascribedTypes: string[],
   /** typeName -> (hash -> original author)*/
-  logsByType: Dictionary<AnyLinkableId[]>,
+  logsByType: Dictionary<LinkableId[]>,
   /** hash -> original author */
-  allLogs: Record<AnyLinkableHashB64, [Timestamp, AgentId | null]>,
+  allLogs: LinkableIdMap<[Timestamp, AgentId | null]>,
 }
 
 export function createAuthorshipPerspective(): AuthorshipPerspective {
   return {
     ascribedTypes: [],
     logsByType: {},
-    allLogs: {},
+    allLogs: new LinkableIdMap(),
   }
 }
 
 
-/** TODO: Use more compact format for import/exporting of the perspective */
-export interface AuthorshipDatabase {
-  allAuthorshipLogs: AgentIdMap<[AnyLinkableHashB64, Timestamp, string][]>,
-}
+// /** TODO: Use more compact format for import/exporting of the perspective */
+// export interface AuthorshipDatabase {
+//   allAuthorshipLogs: AgentIdMap<[AnyLinkableHashB64, Timestamp, string][]>,
+// }
 
 
 
@@ -66,11 +74,11 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** -- Get: Return a stored element -- */
 
-  getAuthor(hash: AnyLinkableHashB64): [Timestamp, AgentId | null] | undefined {
-    return this._perspective.allLogs[hash];
+  getAuthor(hash: LinkableId): [Timestamp, AgentId | null] | undefined {
+    return this._perspective.allLogs.get(hash);
   }
 
-  getTypeLogs(typeName: string): AnyLinkableId[] {
+  getTypeLogs(typeName: string): LinkableId[] {
     return this._perspective.logsByType[typeName]? this._perspective.logsByType[typeName] : [];
   }
 
@@ -116,7 +124,7 @@ export class AuthorshipZvm extends ZomeViewModel {
   /** -- Store -- */
 
   /** */
-  storeAuthorshipLog(typeName: string, target: AnyLinkableId, creationTime: Timestamp, author: AgentId | null) {
+  storeAuthorshipLog(typeName: string, target: LinkableId, creationTime: Timestamp, author: AgentId | null) {
     /* _allOriginals */
     this._perspective.allLogs[target.b64] = [creationTime, author];
     /* _originalsByType */
@@ -137,7 +145,7 @@ export class AuthorshipZvm extends ZomeViewModel {
 
 
   /** */
-  async ascribeTarget(type: string, anyId: AnyLinkableId, creationTime: Timestamp, author: AgentId | null, preventZomeCall?: boolean) {
+  async ascribeTarget(type: string, anyId: LinkableId, creationTime: Timestamp, author: AgentId | null, preventZomeCall?: boolean) {
     if (!preventZomeCall) {
       await this.zomeProxy.ascribeTarget({
         target: anyId.hash,

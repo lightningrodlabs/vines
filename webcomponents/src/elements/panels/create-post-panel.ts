@@ -7,7 +7,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {determineSubjectName, MAIN_TOPIC_HASH} from "../../utils";
+import {determineSubjectName, MAIN_TOPIC_ID} from "../../utils";
 import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -43,12 +43,12 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async beforeCreate(): Promise<[ActionHashB64, boolean]> {
     this._creating = true;
     /** Create main thread if none found */
-    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_ID];
     let mainThreadAh;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
       const appletId = this.weServices? this.weServices.appletId : THIS_APPLET_ID;
-      const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_HASH, "main");
+      const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_ID, "main");
       mainThreadAh = ppAh;
       console.log("<create-post-panel>.onCreate()", mainThreadAh)
       /** Make sure agent subscribed to notifications for main thread */

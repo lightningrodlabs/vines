@@ -4,8 +4,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
@@ -35,9 +34,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash: ActionHashB64 = ''
+  @property() hash?: ActionId;
 
-  @property() prevBeadAh: ActionHashB64 = ''
+  @property() prevBeadAh?: ActionId;
 
   @property() new: boolean = false;
 
@@ -77,10 +76,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  renderContent(): [TemplateResult<1>, AgentPubKeyB64, string] {
+  renderContent(): [TemplateResult<1>, AgentId, string] {
     let content = html``;
 
-    if (this.hash == "") {
+    if (!this.hash) {
       content = html`<span>${msg("<Missing hash>")}</span>`;
       return [content, undefined, undefined];
     }
@@ -137,7 +136,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         const entryBead = typedBead as EntryBeadMat;
         console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
         const manifestEh = entryBead.sourceEh;
-        const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+        const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
         if (maybePprm) {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
@@ -158,7 +157,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderPrevBead(beadInfo: BeadInfo) {
-    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh != '';
+    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh;
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
     if (!hasFarPrev) {
       return html``;
@@ -185,7 +184,8 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
     const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
     const [content, author, date] = this.renderContent();
-    const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
+    const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author)
+    const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
     /* render item */
     return html`

@@ -1,7 +1,7 @@
 /** */
 import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
-import {determineBeadName, MAIN_TOPIC_HASH} from "./utils";
+import {determineBeadName, MAIN_TOPIC_ID} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
@@ -14,7 +14,7 @@ export const POST_TYPE_NAME = "Post";
  * This is because partitioned networks edge case where several agents create the main thread.
  */
 export function getMainThread(dvm: ThreadsDvm): ActionHashB64 | null {
-  const threads = dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+  const threads = dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_ID];
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
     return null;

@@ -1,8 +1,8 @@
-import {AnyLinkableHashB64, NotifiableEvent} from "./viewModels/threads.perspective";
-import {ActionHashB64} from "@holochain/client";
+import {NotifiableEvent} from "./viewModels/threads.perspective";
+import {ActionId} from "@ddd-qc/lit-happ";
 
 export interface JumpEvent {
-  hash: AnyLinkableHashB64,
+  hash: ActionId,
   type: JumpDestinationType,
 }
 
@@ -27,10 +27,10 @@ export function notification2JumpEvent(notif: NotifiableEvent): JumpDestinationT
 
 
 /** */
-export function beadJumpEvent(hash: ActionHashB64): CustomEvent<JumpEvent> {
+export function beadJumpEvent(hash: ActionId): CustomEvent<JumpEvent> {
   return new CustomEvent<JumpEvent>('jump', {detail: {hash, type: JumpDestinationType.Bead}, bubbles: true, composed: true});
 }
 
-export function threadJumpEvent(hash: ActionHashB64): CustomEvent<JumpEvent> {
+export function threadJumpEvent(hash: ActionId): CustomEvent<JumpEvent> {
   return new CustomEvent<JumpEvent>('jump', {detail: {hash, type: JumpDestinationType.Thread}, bubbles: true, composed: true});
 }

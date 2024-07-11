@@ -1,12 +1,12 @@
-import {AgentPubKeyB64, encodeHashToBase64, fakeAgentPubKey, Timestamp} from "@holochain/client";
-import {ProfilesPerspective} from "@ddd-qc/profiles-dvm";
-import {emptyAgentPubKey} from "./utils";
+import {Timestamp} from "@holochain/client";
+import {AgentId} from "@ddd-qc/lit-happ";
+import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
 
 
 /** */
 export interface SearchParameters {
   keywords?: string[],
-  author?: AgentPubKeyB64, // "from:"
+  author?: AgentId, // "from:"
   mentionsAgentByName?: string, //"mentions:"
   threadByName?: string, //"in:"
   appletByName?: string, // "app:"
@@ -47,7 +47,7 @@ function splitStringAtFirstColon(input: string): string[] {
 
 
 /** */
-export function parseSearchInput(input: string, profilesPerspective: ProfilesPerspective/*, threadsPerspective: ThreadsPerspective*/): SearchParameters {
+export function parseSearchInput(input: string, profilesPerspective: ProfilesAltPerspective/*, threadsPerspective: ThreadsPerspective*/): SearchParameters {
   //console.log("parseSearchInput() input", input);
   const sanitized = input.trim()//.replace(/[^a-zA-Z0-9:"\-,]/g, ' ');
   const quoted = splitSpacesExcludeQuotesDetailed(sanitized);
@@ -85,7 +85,7 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesPer
       case "from:":
         const author = subs[1];
         if (author && author != "") {
-          result.author = profilesPerspective.reversed[author] ? profilesPerspective.reversed[author] : encodeHashToBase64(emptyAgentPubKey());
+          result.author = profilesPerspective.getAgent(author) ? profilesPerspective.getAgent(author) : AgentId.empty();
         }
         break;
       case "mentions:":
@@ -198,16 +198,12 @@ function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
 
 /** ------------------------------------------- TEST -----------------------------------------------------------------*/
 
-const persp: ProfilesPerspective = {profiles: {}, reversed: {}};
-persp.reversed["alex"] = encodeHashToBase64(await fakeAgentPubKey());
-persp.reversed["bill-y"] = encodeHashToBase64(await fakeAgentPubKey());
-persp.reversed["camille"] = encodeHashToBase64(await fakeAgentPubKey());
-persp.reversed["tic tac"] = encodeHashToBase64(await fakeAgentPubKey());
+const persp: ProfilesAltPerspective = new ProfilesAltPerspective();
+await persp.generateRandomProfile("alex");
+await persp.generateRandomProfile("bill-y");
+await persp.generateRandomProfile("camille");
+await persp.generateRandomProfile("tic tac");
 
-persp.profiles[persp.reversed["alex"]] = {nickname: "alex", fields: {}};
-persp.profiles[persp.reversed["bill-y"]] = {nickname: "bill-y", fields: {}};
-persp.profiles[persp.reversed["camille"]] = {nickname: "camille", fields: {}};
-persp.profiles[persp.reversed["tic tac"]] = {nickname: "tic tac", fields: {}};
 
 /** */
 function testSeachParse(input: string, expectedOutput: SearchParameters): boolean {
@@ -234,10 +230,10 @@ export async function generateSearchTest() {
   result &&= testSeachParse("from: alex", {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('alex billy', {keywords: ["alex", "billy"], canSearchHidden: false});
 
-  result &&= testSeachParse("from:alex", {author: persp.reversed["alex"], canSearchHidden: false});
-  result &&= testSeachParse("from:jack", {author: encodeHashToBase64(emptyAgentPubKey()), canSearchHidden: false});
-  result &&= testSeachParse("from:tic tac", {author: encodeHashToBase64(emptyAgentPubKey()), keywords: ["tac"], canSearchHidden: false});
-  result &&= testSeachParse('from:"tic tac"', {author: persp.reversed["tic tac"], canSearchHidden: false});
+  result &&= testSeachParse("from:alex", {author: persp.getAgent("alex"), canSearchHidden: false});
+  result &&= testSeachParse("from:jack", {author: AgentId.empty(), canSearchHidden: false});
+  result &&= testSeachParse("from:tic tac", {author: AgentId.empty(), keywords: ["tac"], canSearchHidden: false});
+  result &&= testSeachParse('from:"tic tac"', {author: persp.getAgent("tic tac"), canSearchHidden: false});
   result &&= testSeachParse("mentions:alex", {mentionsAgentByName: "alex", canSearchHidden: false});
 
   result &&= testSeachParse('in:"#General: off-topic"', {threadByName: "#General: off-topic", canSearchHidden: false});
@@ -249,7 +245,7 @@ export async function generateSearchTest() {
   result &&= testSeachParse('before:"Tue, 06 Feb 2024 18:59:33 GMT"', {beforeTs: 1707245973000000, canSearchHidden: false});
 
   result &&= testSeachParse("before:2030-01-01 after:2020-01-01 golden from:camille mentions:bill-y lady",
-    {beforeTs: 1893456000000000, afterTs: 1577836800000000, keywords: ["golden", "lady"], mentionsAgentByName: "bill-y",  author: persp.reversed["camille"], canSearchHidden: false});
+    {beforeTs: 1893456000000000, afterTs: 1577836800000000, keywords: ["golden", "lady"], mentionsAgentByName: "bill-y",  author: persp.getAgent("camille"), canSearchHidden: false});
 
   console.log("generateSearchTest() succeeded", result);
 }
