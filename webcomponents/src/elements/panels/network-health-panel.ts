@@ -8,9 +8,8 @@ import {AppProxy} from "@ddd-qc/cell-proxy";
 import {NetworkInfo, Timestamp} from "@holochain/client";
 import {delay} from "@ddd-qc/lit-happ";
 
-
 import Switch from "@ui5/webcomponents/dist/Switch";
-import {FetchPoolInfo} from "@holochain/client/lib/types";
+
 
 /**
  * @element

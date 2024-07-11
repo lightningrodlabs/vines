@@ -5,7 +5,6 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {timeSince, truncate} from "../../utils";
-import {encodeHashToBase64} from "@holochain/client";
 import {composeNotificationTitle, renderAvatar} from "../../render";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
@@ -66,7 +65,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
       return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }
 
-    let notifsLi = Object.entries(this.threadsPerspective.inbox).map(
+    let notifsLi = Array.from(this.threadsPerspective.inbox.entries()).map(
       ([linkAh, [_ppAh, notif]]) => {
 
         /** Content */
@@ -76,7 +75,8 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
         /** Author */
         const author = notif.author;
-        const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
+        const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author)
+        const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
         /** Timestamp */
         const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds

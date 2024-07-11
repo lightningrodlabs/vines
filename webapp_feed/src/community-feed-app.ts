@@ -14,7 +14,7 @@ import {
   ZomeName,
 } from "@holochain/client";
 import {AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@lightningrodlabs/we-applet";
-import {delay, DnaViewModel, DvmDef, HappElement, HCL, HvmDef, pascal,} from "@ddd-qc/lit-happ";
+import {ActionId, delay, DnaViewModel, DvmDef, HappElement, HCL, HvmDef, pascal,} from "@ddd-qc/lit-happ";
 import {
   appProxyContext,
   cardStyleTemplate,
@@ -339,7 +339,7 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  private async onCopyThread(e: CustomEvent) {
+  private async onCopyThread(e: CustomEvent<ActionId>) {
     if (!e.detail) {
       console.warn("Invalid copy-thread event");
       return;

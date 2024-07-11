@@ -7,11 +7,11 @@ import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js"
 import "@shoelace-style/shoelace/dist/components/radio/radio.js";
 import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
 import {Profile as ProfileMat, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {AgentPubKeyB64, Timestamp} from "@holochain/client";
-import {ZomeElement} from "@ddd-qc/lit-happ";
+import {Timestamp} from "@holochain/client";
+import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 import {renderProfileAvatar, ts2day} from "../../render";
 import {toasty} from "../../toast";
-import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
+import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
 
 
 /**
@@ -25,8 +25,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
   }
 
-  @property()
-  hash: AgentPubKeyB64
+  @property() hash?: AgentId;
 
   private _profile?: ProfileMat;
   private _profileDate: Timestamp;
@@ -40,9 +39,9 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     if (!this.hash) {
       return;
     }
-    this._profile = newZvm.perspective.profiles[this.hash];
+    this._profile = newZvm.perspective.getProfile(this.hash);
     if (!this._profile) {
-      this._profile = await newZvm.probeProfile(this.hash)
+      this._profile = await newZvm.findProfile(this.hash)
       this.requestUpdate();
     }
   }
@@ -55,14 +54,14 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
   render() {
     console.log("<profile-panel>.render()", this.hash, this._profile);
 
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`<div>Missing AgentPubKey</div>`;
     }
-    this._profile = this.perspective.profiles[this.hash];
+    this._profile = this.perspective.getProfile(this.hash);
     if (!this._profile) {
       return html`<h3 style="margin:10px; color:#cc2525;">Missing Profile</h3>`;
     }
-    const timestamp = this.perspective.profileDates[this.hash];
+    const timestamp = this.perspective.getProfileTs(this.hash);
     const avatar = renderProfileAvatar(this._profile, "XL");
 
     /** */
@@ -70,7 +69,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
           <div style="background: ${this._profile.fields['color']}; width: 100%; height: 70px;"></div>
           <div style="display: flex; flex-direction:row; min-height:60px;">
               <div style="flex-grow:1;"></div>
-              ${this.hash == this.cell.agentPubKey? html`
+              ${this.hash.b64 == this.cell.agentId.b64? html`
                   <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")} style="margin-right: 5px;"
                   @click=${(e) => {
                   e.stopPropagation();
@@ -82,14 +81,14 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div style="display: flex; flex-direction:row; align-items:center;">
               <h3>${this._profile.nickname}</h3>
               <div style="flex-grow:1;"></div>
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e) => {navigator.clipboard.writeText(this.hash.b64); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
             </div>
             <hr style="width: 100%"/>
             <h5>${msg('Language')}</h5>
             <div class="info">${this._profile.fields['lang']}</div>
             <h5>${msg('Member since')}</h5>
             <div class="info">${ts2day(timestamp)}</div>
-            ${this.hash != this.cell.agentPubKey? html`<vines-input-bar
+            ${this.hash.b64 != this.cell.agentId.b64? html`<vines-input-bar
                     .profilesZvm=${this._zvm}
                     .topic=${this._profile.nickname}
             ></vines-input-bar>`:html``}

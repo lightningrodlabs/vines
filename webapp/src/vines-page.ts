@@ -982,13 +982,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
     let appletOptions = [];
     if (this.weServices) {
-      appletOptions = Object.entries(this.weServices.cache.appletInfos).map(([appletId, appletInfo]) => {
+      appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
           console.log("appletInfo", appletInfo);
           /** exclude this applet as it's handled specifically elsewhere */
-          if (this.weServices.appletId == appletId) {
+          if (this.weServices.appletId == appletId.b64) {
             return html``;
           }
-          return html`<ui5-option id=${appletId} icon="discussion">${appletInfo.appletName}</ui5-option>`;
+          return html`<ui5-option id=${appletId.b64} icon="discussion">${appletInfo.appletName}</ui5-option>`;
         }
       );
     }

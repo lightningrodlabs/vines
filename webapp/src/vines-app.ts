@@ -20,7 +20,7 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, snake, pascal, delay,
+  DnaViewModel, snake, pascal, delay, ActionId,
 } from "@ddd-qc/lit-happ";
 import {
   ThreadsDvm,
@@ -332,7 +332,7 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  private async onCopyThread(e: CustomEvent) {
+  private async onCopyThread(e: CustomEvent<ActionId>) {
     if (!e.detail) {
       console.warn("Invalid copy-thread event");
       return;

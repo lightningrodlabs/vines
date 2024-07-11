@@ -2,17 +2,15 @@ import {html, css, LitElement} from "lit";
 import { property, state, customElement } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 
-import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
-import {Dictionary} from "@ddd-qc/cell-proxy";
+import {ActionId, AgentId, AgentIdMap, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import {Profile as ProfileMat, ProfilesPerspective} from "@ddd-qc/profiles-dvm";
-import {renderAvatar, renderProfileAvatar} from "../render";
+import {Profile as ProfileMat, ProfilesAltPerspective,} from "@ddd-qc/profiles-dvm";
+import {renderProfileAvatar} from "../render";
 
 /** @element peer-list */
 @localized()
@@ -22,11 +20,11 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
-  @property() soloAgent: AgentPubKeyB64 | null  = null; // filter for a specific agent
+  @property() soloAgent: AgentId | null  = null; // filter for a specific agent
 
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  profilesPerspective!: ProfilesPerspective;
+  profilesPerspective!: ProfilesAltPerspective;
 
   @property() canShowTable: boolean = true;
 
@@ -47,12 +45,12 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  determineAgentStatus(key: AgentPubKeyB64): string {
+  determineAgentStatus(key: AgentId): string {
     // const status = "primary"; // "neutral"
-    if (key == this._dvm.profilesZvm.cell.agentPubKey) {
+    if (key.b64 == this._dvm.profilesZvm.cell.agentId.b64) {
       return "success";
     }
-    const lastPingTime: number = this.perspective.agentPresences[key];
+    const lastPingTime: number = this.perspective.agentPresences.get(key);
     const currentTime: number = Math.floor(Date.now() / 1000);
     const diff: number = currentTime - lastPingTime;
     if (diff < 30) {
@@ -66,9 +64,9 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  handleClickAvatar(agentId: AgentPubKeyB64) {
+  handleClickAvatar(agentId: AgentId) {
     console.log("Avatar clicked:", agentId)
-    this.dispatchEvent(new CustomEvent('avatar-clicked', { detail: agentId, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }));
     //console.log(e.detail)
     this.soloAgent = agentId == this.soloAgent? null : agentId;
     //this.requestUpdate();
@@ -89,7 +87,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, agent: AgentPubKeyB64) {
+  onClickComment(maybeCommentThread: ActionId | null, agent: AgentId) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
       detail: {maybeCommentThread, subjectHash: agent, subjectType: "Profile"},
       bubbles: true,
@@ -99,7 +97,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  renderList(profiles:  Dictionary<ProfileMat>) {
+  renderList(profiles:  AgentIdMap<ProfileMat>) {
 
     if (Object.keys(profiles).length === 0) {
       return html`
@@ -110,17 +108,17 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
     /** Build avatar agent list */
-    const peers = Object.entries(profiles)
-      .filter(([keyB64, _profile]) => keyB64 != this.cell.agentPubKey)
-      .map(([keyB64, profile]) => {
+    const peers = Array.from(profiles.entries())
+      .filter(([agentId, _profile]) => agentId.b64 != this.cell.agentId.b64)
+      .map(([agentId, profile]) => {
 
       return html`
         <li class="folk" style="display:flex; align-items:center" 
             @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}
         >
-          <span @click=${(e) => this.handleClickAvatar(keyB64)}>
-            ${renderProfileAvatar(this.profilesPerspective.profiles[keyB64], "S")}
-            <!--<sl-badge class="avatar-badge" type="${this.determineAgentStatus(keyB64)}" pill></sl-badge> -->
+          <span @click=${(e) => this.handleClickAvatar(agentId)}>
+            ${renderProfileAvatar(this.profilesPerspective.getProfile(agentId), "S")}
+            <!--<sl-badge class="avatar-badge" type="${this.determineAgentStatus(agentId)}" pill></sl-badge> -->
             <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
               ${profile.nickname}
             </span>
@@ -146,7 +144,9 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       </div>`;
     }
 
-    return this.renderList(this.profilesPerspective.profiles);
+    // FIXME
+    //return this.renderList(this.profilesPerspective.profiles);
+    return html`<div>FIXME</div>`;
   }
 
 

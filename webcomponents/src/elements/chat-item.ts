@@ -2,8 +2,7 @@ import {html, css, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {BeadInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
@@ -39,9 +38,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash: ActionHashB64 = ''
+  @property() hash?: ActionId;
 
-  @property() prevBeadAh: ActionHashB64 = ''
+  @property() prevBeadAh?: ActionId;
 
   @property({type: Boolean}) shortmenu: boolean = false;
 
@@ -146,7 +145,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectName?: string, subjectType?: string, viewType?: string) {
+  onClickComment(maybeCommentThread: ActionId | null, subjectName?: string, subjectType?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
       detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
       bubbles: true,
@@ -185,7 +184,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
       case "intoHrl":
-        const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+        const hrl: Hrl = [this.cell.dnaId.hash, this.hash.hash];
         const wurl = weaveUrlFromWal({hrl});
         navigator.clipboard.writeText(wurl);
         if (this.weServices) {
@@ -200,7 +199,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
 
-  async updateFavorite(beadAh: ActionHashB64, canAdd: boolean) {
+  async updateFavorite(beadAh: ActionId, canAdd: boolean) {
     if (canAdd) {
       await this._dvm.threadsZvm.addFavorite(beadAh);
       toasty("Message added to favorites");
@@ -213,7 +212,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderTopVine(beadInfo: BeadInfo) {
-    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh != '';
+    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh;
     const prevBeadInfo = this._dvm.threadsZvm.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {
       return html``;
@@ -221,7 +220,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const prevBead = this._dvm.threadsZvm.getBaseBead(beadInfo.bead.prevBeadAh);
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     if (prevBeadInfo) {
-      prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
+      prevProfile = this._dvm.profilesZvm.perspective.getProfile(prevBeadInfo.author);
     }
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
 
@@ -263,7 +262,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
     const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
@@ -298,28 +297,28 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
                        @click="${(_e) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">
           </ui5-button>`;
-      const isUnread = Object.keys(this.threadsPerspective.unreadThreads).includes(maybeCommentThread);
+      const isUnread = this.threadsPerspective.unreadThreads.has(maybeCommentThread);
       const commentLinkColor = isUnread ? "red" : "blue";
       const thread = this.threadsPerspective.threads.get(maybeCommentThread);
       const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");
       if (thread.beadLinksTree.length > 0) {
         /** Grab all authors */
-        let authors = {};
+        let authors: Record<string, number> = {};
         for (const bead of thread.beadLinksTree.values) {
           const beadInfo = this._dvm.threadsZvm.getBeadInfo(bead.beadAh);
           if (!beadInfo) {
             console.warn("Bead not found in <chat-item>.render()", bead.beadAh);
             continue;
           }
-          if (!authors[beadInfo.author]) {
-            authors[beadInfo.author] = 0;
+          if (!authors[beadInfo.author.b64]) {
+            authors[beadInfo.author.b64] = 0;
           }
-          authors[beadInfo.author] += 1;
+          authors[beadInfo.author.b64] += 1;
         }
         /** Create avatar for each author */
           //console.log("Authors' Avatar", Object.keys(authors).length);
         let avatars = Object.keys(authors).map((author) => {
-            return renderAvatar(this._dvm.profilesZvm, author, "XS");
+            return renderAvatar(this._dvm.profilesZvm, new AgentId(author), "XS");
           });
         const avatarGroup = avatars.length > 1 ? html`
             <ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>` : html`${avatars}`;
@@ -384,9 +383,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
-    const id = "chat-item__" + this.hash;
+    const id = "chat-item__" + this.hash.b64;
 
-    const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
+    const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author);
+    const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
 
     /** render all */

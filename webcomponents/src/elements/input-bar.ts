@@ -8,11 +8,11 @@ import {inputBarStyleTemplate, suggestionListTemplate} from "../styles";
 import "@ui5/webcomponents/dist/TextArea.js";
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
-import {AgentPubKeyB64} from "@holochain/client";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderAvatar} from "../render";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 import {msg} from "@lit/localize";
+import {AgentId, AgentIdMap} from "@ddd-qc/lit-happ";
 
 
 /**
@@ -220,19 +220,20 @@ export class InputBar extends LitElement {
 
 
   /** */
-  _specialProfiles: Record<AgentPubKeyB64, ProfileMat> = {
+  _specialProfiles: Record<string, ProfileMat> = {
     "__all": {nickname: "all", fields: {}},
   }
 
-  /** */
-  _dummyProfiles: Record<AgentPubKeyB64, ProfileMat> = {
-    "Alex": {nickname: "Alex", fields: {}},
-    "Billy": {nickname: "Billy", fields: {}},
-    "Camille": {nickname: "Camille", fields: {}},
-    "Dom": {nickname: "Dom", fields: {}},
-    "E": {nickname: "E", fields: {}},
-    "F": {nickname: "F", fields: {}},
-  };
+  //
+  // /** */
+  // _dummyProfiles: AgentIdMap<ProfileMat> = {
+  //   "Alex": {nickname: "Alex", fields: {}},
+  //   "Billy": {nickname: "Billy", fields: {}},
+  //   "Camille": {nickname: "Camille", fields: {}},
+  //   "Dom": {nickname: "Dom", fields: {}},
+  //   "E": {nickname: "E", fields: {}},
+  //   "F": {nickname: "F", fields: {}},
+  // };
 
 
   /** */
@@ -261,7 +262,10 @@ export class InputBar extends LitElement {
       /** Filter suggestions */
       let suggestionItems = Object.entries(this._specialProfiles);
       if (this.profilesZvm) {
-        suggestionItems = suggestionItems.concat(Object.entries(this.profilesZvm.perspective.profiles));
+        for (const agent of this.profilesZvm.perspective.agents) {
+          const profile = this.profilesZvm.perspective.getProfile(agent);
+          suggestionItems.push([agent.b64, profile])
+        }
       }
       let suggestionKeys = suggestionItems.map(([agentKey, _profile]) => agentKey);
 
@@ -313,7 +317,7 @@ export class InputBar extends LitElement {
                   e.preventDefault();
                   this.suggestionSelected(profile.nickname);
                   }}>
-              ${renderAvatar(this.profilesZvm, key, "XS", "chatAvatar", "imageContent")}
+              ${renderAvatar(this.profilesZvm, new AgentId(key), "XS", "chatAvatar", "imageContent")}
               ${profile.nickname}
           </ui5-li>`;
         });

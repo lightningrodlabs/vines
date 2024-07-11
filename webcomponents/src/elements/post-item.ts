@@ -2,8 +2,7 @@ import {html, css, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
@@ -36,8 +35,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash: ActionHashB64 = ''
-
+  @property() hash?: ActionId;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -139,7 +137,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   copyMessageLink() {
-    const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+    const hrl: Hrl = [this.cell.dnaId.hash, this.hash.hash];
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {
@@ -170,7 +168,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
 
-  async updateFavorite(beadAh: ActionHashB64, canAdd: boolean) {
+  async updateFavorite(beadAh: ActionId, canAdd: boolean) {
     if (canAdd) {
       await this._dvm.threadsZvm.addFavorite(beadAh);
       toasty("Post added to favorites");
@@ -182,7 +180,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async getCommentThread(): Promise<ActionHashB64> {
+  async getCommentThread(): Promise<ActionId> {
     let commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
     if (!commentThreadAh) {
       await this._dvm.threadsZvm.pullSubjectThreads(this.hash);
@@ -201,7 +199,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   async onTextComment(inputText: string) {
     const commentThreadAh = await this.getCommentThread();
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentPubKey);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentId);
     console.log("onTextComment() ah:", ah);
   }
 
@@ -241,10 +239,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     console.log("<post-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`<div>No post selected</div>`;
     }
-    const tuple = this.threadsPerspective.beads[this.hash];
+    const tuple = this.threadsPerspective.beads.get(this.hash);
     if (!tuple) {
       return html`<div>No posts found</div>`;
     }
@@ -267,7 +265,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     let canNotifyAll = false;
     if (commentThreadAh) {
       commentThread = this.threadsPerspective.threads.get(commentThreadAh);
-      canNotifyAll = this._dvm.threadsZvm.getNotifSetting(commentThreadAh, this.cell.agentPubKey) == NotifySetting.AllMessages;
+      canNotifyAll = this._dvm.threadsZvm.getNotifSetting(commentThreadAh, this.cell.agentId) == NotifySetting.AllMessages;
     }
     console.log("<post-item>.render() comment", canNotifyAll, commentThreadAh)
 
@@ -305,7 +303,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
-    const agentName = this._dvm.profilesZvm.perspective.profiles[beadInfo.author]? this._dvm.profilesZvm.perspective.profiles[beadInfo.author].nickname : "unknown";
+    const agentName = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author)? this._dvm.profilesZvm.perspective.getProfile(beadInfo.author).nickname : "unknown";
 
     let commentLine = "";
     if (commentThread) {
@@ -378,14 +376,14 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         </div>
         <!-- Input Row -->
         <div id="inputRow" style="display:${this._canShowComment? "flex" : "none"};">
-            ${renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "XS")}
+            ${renderAvatar(this._dvm.profilesZvm, this.cell.agentId, "XS")}
             ${this._splitObj? html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>` : html`
             <vines-input-bar id="input-bar"
                              style="flex-grow:1;"
                              background="#eee"
                              .profilesZvm=${this._dvm.profilesZvm}
                              topic="comment"
-                             .cachedInput=${this._dvm.perspective.threadInputs[this.hash]? this._dvm.perspective.threadInputs[this.hash] : ""}
+                             .cachedInput=${this._dvm.perspective.threadInputs.get(this.hash)? this._dvm.perspective.threadInputs.get(this.hash) : ""}
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
                              @input=${(e) => {e.preventDefault(); this.onTextComment(e.detail)}}
@@ -425,7 +423,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     `;
   }
 
-  private _commentAh?: ActionHashB64;
+  private _commentAh?: ActionId;
   @state() private _splitObj?: SplitObject;
 
 
@@ -437,7 +435,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       console.log("target upload file", e);
       const file = e.target.files[0];
       const commentThreadAh = await this.getCommentThread();
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.getAgents(), async (eh) => {
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
         console.log("<create-post-panel> startPublishFile callback", eh);
         let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, commentThreadAh);
         this._splitObj = undefined;

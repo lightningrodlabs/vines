@@ -1,8 +1,7 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
-import {encodeHashToBase64} from "@holochain/client";
+import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
@@ -26,9 +25,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash?: string;
+  @property() threadHash?: ActionId;
   /** Hash of bead to focus */
-  @property() beadAh: string = ''
+  @property() beadAh?: ActionId;
   /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
   @property()
   startFromBeginning: boolean = false;
@@ -119,7 +118,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     //console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
     if (this._dvm) {
-      if (this.threadHash && !this._dvm.threadsZvm.perspective.notifSettings[this.threadHash]) {
+      if (this.threadHash && !this._dvm.threadsZvm.perspective.notifSettings.get(this.threadHash)) {
         await this._dvm.threadsZvm.pullNotifSettings(this.threadHash);
       }
     }
@@ -160,8 +159,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Check if beads have comments */
   protected async loadBeadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
     for (const bl of bls) {
-      const pps = await dvm.threadsZvm.pullSubjectThreads(encodeHashToBase64(bl.beadAh));
-      for (const [ppAh, [pp, _ts, _author]] of Object.entries(pps)) {
+      const pps = await dvm.threadsZvm.pullSubjectThreads(intoLinkableId(bl.beadAh));
+      for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
         if (pp.purpose == "comment") {
           await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
           break;
@@ -267,7 +266,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       (blm) => {
         let hr = html``;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
         console.log("<chat-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime, blm.beadAh);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
@@ -297,8 +296,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
         //console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
         const chatItem = html`
-            <chat-item id=${(blm.beadAh)} .hash=${(blm.beadAh)} .prevBeadAh=${prevBeadAh}
-                       style="${blm.beadAh == this.beadAh? "background:#c4f2b07a" : ""}">
+            <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
+                       style="${blm.beadAh.b64 == this.beadAh.b64? "background:#c4f2b07a" : ""}">
             </chat-item>`;
         prevBeadAh = blm.beadAh;
         return html`${chatItem}${hr}${timeHr}`;

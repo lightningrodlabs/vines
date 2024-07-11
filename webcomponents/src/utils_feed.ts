@@ -1,10 +1,9 @@
-/** */
 import {ThreadsDvm} from "./viewModels/threads.dvm";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
 import {determineBeadName, MAIN_TOPIC_ID} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
+import {ActionId} from "@ddd-qc/lit-happ";
 
 
 export const POST_TYPE_NAME = "Post";
@@ -13,8 +12,8 @@ export const POST_TYPE_NAME = "Post";
  * Grab oldest thread about MAIN TOPIC.
  * This is because partitioned networks edge case where several agents create the main thread.
  */
-export function getMainThread(dvm: ThreadsDvm): ActionHashB64 | null {
-  const threads = dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_ID];
+export function getMainThread(dvm: ThreadsDvm): ActionId | null {
+  const threads = dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID);
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
     return null;
@@ -42,7 +41,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
   let content: string = "";
   const ah = notif.content;
   if (NotifiableEvent.Mention === notif.event) {
-    const beadPair = threadsDvm.threadsZvm.perspective.beads[ah];
+    const beadPair = threadsDvm.threadsZvm.perspective.beads.get(ah);
     if (!beadPair) {
       title = "Mentionned";
     } else {
@@ -56,7 +55,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
     }
   }
   if (NotifiableEvent.NewBead === notif.event) {
-    const beadPair = threadsDvm.threadsZvm.perspective.beads[ah];
+    const beadPair = threadsDvm.threadsZvm.perspective.beads.get(ah);
     if (beadPair) {
       const beadInfo = beadPair[0];
       const typedBead = beadPair[1];

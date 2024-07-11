@@ -1,10 +1,8 @@
 import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import { DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -40,7 +38,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash: ActionHashB64 = ''
+  @property() threadHash?: ActionId;
 
   /** Subject info */
   @property() subjectName?: string;
@@ -182,7 +180,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
       return;
     }
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentPubKey);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentId);
     console.log("onCreateComment() ah:", ah);
   }
 
@@ -197,7 +195,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
       </div>
     `;
 
-    if (this.threadHash == "") {
+    if (!this.threadHash) {
       return html `
         ${doodle_bg}
         <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
@@ -237,7 +235,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let commentItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
-      const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this.threadHash];
+      const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
       const isNew = initialProbeLogTs < beadInfo.creationTime;
       //console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
@@ -257,7 +255,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     //const subjectPrefix = determineSubjectPrefix(subjectType);
 
-    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(decodeHashFromBase64(thread.pp.subject.appletId)) : undefined;
+    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId.b64 != this.weServices.appletId? this.weServices.appletInfoCached(thread.pp.subject.appletId) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<post-comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
 

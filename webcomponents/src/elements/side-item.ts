@@ -4,7 +4,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
@@ -106,7 +106,8 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         const anyBead = typedBead as AnyBeadMat;
         if (anyBead.typeInfo === "wal" && this.weServices) {
           const wal = weaveUrlToWal(anyBead.value);
-          const id = "wal-item" + "-" + wal.hrl[1];
+          const assetHash = intoLinkableId(wal.hrl[1])
+          const id = "wal-item" + "-" + assetHash.b64;
           const maybeInfo = this.weServices.assetInfoCached(wal);
           if (!maybeInfo) {
             content = html`

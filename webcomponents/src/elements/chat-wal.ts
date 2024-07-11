@@ -1,7 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64} from "@holochain/client";
+import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
@@ -29,7 +28,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash: ActionHashB64 = '' // BeadAh
+  @property() hash?: ActionId;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -66,7 +65,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async loadHrl(hash: ActionHashB64, zvm: ThreadsZvm) {
+  async loadHrl(hash: ActionId, zvm: ThreadsZvm) {
     console.log("<chat-wal>.loadHrl()", hash);
     if (!hash) {
       return;
@@ -99,7 +98,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
 
     }
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     if (!this._appletInfo || !this._assetLocAndInfo) {

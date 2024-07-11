@@ -1,8 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64, AgentPubKeyB64} from "@holochain/client";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {Dictionary} from "@ddd-qc/cell-proxy";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
@@ -20,7 +19,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash: ActionHashB64 = ''
+  @property() hash?: ActionId;
 
 
   /** Observed perspective from zvm */
@@ -47,17 +46,17 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     //console.log("<emoji-bar>.render()", this.hash, this.threadsPerspective.emojiReactions);
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`
           <div>No item found</div>`;
     }
 
-    const reactions = this.threadsPerspective.emojiReactions[this.hash];
+    const reactions = this.threadsPerspective.emojiReactions.get(this.hash);
     if (!reactions) {
       return html``;
     }
     /** Pair vec into map */
-    let emojiMap: Dictionary<AgentPubKeyB64[]> = {}
+    let emojiMap: Dictionary<AgentId[]> = {}
     for (const [agent, emoji] of reactions) {
       if (!emojiMap[emoji]) {
         emojiMap[emoji] = [];
@@ -71,13 +70,13 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       let iReacted = false;
       let tooltip = "" + emoji + " reacted by "
       for (const key of agents) {
-        iReacted ||= key == this.cell.agentPubKey;
-        let agent = {nickname: "unknown", fields: {}} as ProfileMat;
-        const maybeAgent = this._dvm.profilesZvm.perspective.profiles[key];
+        iReacted ||= key.b64 == this.cell.agentId.b64;
+        let profile = {nickname: "unknown", fields: {}} as ProfileMat;
+        const maybeAgent = this._dvm.profilesZvm.perspective.getProfile(key);
         if (maybeAgent) {
-          agent = maybeAgent;
+          profile = maybeAgent;
         }
-        tooltip += "" + agent.nickname + ", "
+        tooltip += "" + profile.nickname + ", "
       }
       tooltip = tooltip.substring(0, tooltip.length - 2);
       return html`

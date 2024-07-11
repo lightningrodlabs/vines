@@ -96,7 +96,7 @@ export interface BeadLinkMaterialized {
 
 
 /** */
-export interface ThreadsPerspectiveExportable {
+export interface ThreadsPerspectiveSnapshot {
   /** */
   allAppletIds: EntryId[],
   /** Store of all Subjects: hash -> Subject */
@@ -129,7 +129,7 @@ export interface ThreadsPerspectiveCore {
   /** Store of all Subjects: hash -> Subject */
   allSubjects: LinkableIdMap<SubjectMat>,
   /** Store of all SemTopic: eh -> TopicTitle */
-  allSemanticTopics: LinkableIdMap<string>,
+  allSemanticTopics: EntryIdMap<string>,
   /** Any hash -> isHidden */
   hiddens: Dictionary<boolean>,
   /** ppAh -> Thread */
@@ -190,7 +190,7 @@ export function createThreadsPerspective(): ThreadsPerspective {
   return {
     allAppletIds: [],
     allSubjects: new LinkableIdMap(), //new Array(),
-    allSemanticTopics: new LinkableIdMap(),
+    allSemanticTopics: new EntryIdMap(),
     hiddens: {},
     threads: new ActionIdMap(),
     beads: new ActionIdMap(),

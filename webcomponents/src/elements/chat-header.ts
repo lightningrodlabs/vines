@@ -1,7 +1,6 @@
 import {css, html} from "lit";
 import {customElement, property} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, AgentPubKeyB64} from "@holochain/client";
+import {ActionId, AgentId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar, renderProfileAvatar} from "../render";
@@ -9,6 +8,7 @@ import {beadJumpEvent} from "../jump";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../styles";
 import {toasty} from "../toast";
+import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 
 
 /**
@@ -23,7 +23,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** Hash of thread to display */
-  @property() threadHash: ActionHashB64 = ''
+  @property() threadHash?: ActionId;
 
 
   /** */
@@ -34,14 +34,13 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-
   /* */
-  renderDmThreadHeader(otherAgent: AgentPubKeyB64) {
-    console.log("renderDmThreadHeader()", otherAgent, this.cell.dnaHash);
-    const profile = this._dvm.profilesZvm.getProfile(otherAgent);
+  renderDmThreadHeader(otherAgent: AgentId) {
+    console.log("renderDmThreadHeader()", otherAgent, this.cell.dnaId.print());
+    const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
-      e.stopPropagation(); this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+      e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
     }}></ui5-button>
     `;
     //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
@@ -52,7 +51,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <h2>
               ${profile.nickname}
               ${copyBtn}
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent} @click=${(e) => {navigator.clipboard.writeText(otherAgent); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent} @click=${(e) => {navigator.clipboard.writeText(otherAgent.b64); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
           </h2>
           <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b></div>
         </div>
@@ -63,7 +62,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     console.log("<chat-header>.render():", this.threadHash);
-    if (this.threadHash == "") {
+    if (!this.threadHash) {
       return html`
           <div>Thread hash missing</div>`;
     }
@@ -76,12 +75,17 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return this.renderDmThreadHeader(maybeDmThread);
     }
 
-    const maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.allSemanticTopics[thread.pp.subject.hash];
+    const subjectHash = thread.pp.subject.hash;
+    let maybeSemanticTopicTitle = undefined;
+    if (subjectHash.hashType == HoloHashType.Entry) {
+      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.allSemanticTopics.get(new EntryId(subjectHash.b64));
+    }
+    const subjectAh = ActionId.from(subjectHash);
     let title;
     let subText;
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
-            e.stopPropagation(); this.dispatchEvent(new CustomEvent('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+            e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
         }}></ui5-button>      
     `;
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName);
@@ -91,13 +95,13 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
-      const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
+      const subjectBead = this._dvm.threadsZvm.getBeadInfo(subjectAh);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
         title = html`Thread about <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
         subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" 
-                            @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}>
+                            @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectAh))}>
                         ${subjectName}
                       </span>`;
       } else {

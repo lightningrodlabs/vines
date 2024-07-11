@@ -4,20 +4,18 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import {ActionHashB64, AgentPubKeyB64, decodeHashFromBase64} from "@holochain/client";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {
   AnyBeadMat,
-  dematerializeAnyBead,
-  EntryBeadMat, materializeAnyBead, materializeBead, materializeTypedBead,
+  EntryBeadMat, materializeTypedBead,
   TextBeadMat,
   ThreadsPerspective,
 } from "../viewModels/threads.perspective";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {AnyBead, ThreadsEntryType} from "../bindings/threads.types";
+import {ThreadsEntryType} from "../bindings/threads.types";
 import {md} from "../markdown/md";
 import {timeSince, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
@@ -41,7 +39,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash: ActionHashB64 = ''
+  @property() hash?: ActionId;
 
   @property() new: boolean = false;
 
@@ -91,14 +89,14 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  renderContent(): [TemplateResult<1>, AgentPubKeyB64, Date] {
+  renderContent(): [TemplateResult<1>, AgentId, Date] {
     let content = html``;
 
-    if (this.hash == "") {
+    if (!this.hash) {
       content = html`<span>${msg("<Missing hash>")}</span>`;
       return [content, undefined, undefined];
     }
-    const maybePair = this._dvm.threadsZvm.perspective.beads[this.hash];
+    const maybePair = this._dvm.threadsZvm.perspective.beads.get(this.hash);
     if (!maybePair) {
       content = html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       return [content, undefined, undefined];
@@ -120,7 +118,8 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         const anyBead = typedBead as AnyBeadMat;
         if (anyBead.typeInfo === "wal" && this.weServices) {
           const wal = weaveUrlToWal(anyBead.value);
-          const id = "wal-item" + "-" + wal.hrl[1];
+          const assetHash = intoLinkableId(wal.hrl[1])
+          const id = "wal-item" + "-" + assetHash.b64;
           const maybeInfo = this.weServices.assetInfoCached(wal);
           if (!maybeInfo) {
             content = html`
@@ -150,7 +149,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         const entryBead = typedBead as EntryBeadMat;
         console.log("<post-comment-item> entryBead", entryBead, entryBead.sourceEh);
         const manifestEh = entryBead.sourceEh;
-        const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+        const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
         if (maybePprm) {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
@@ -171,7 +170,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   copyMessageLink() {
-    const hrl: Hrl = [decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(this.hash)];
+    const hrl: Hrl = [this.cell.dnaId.hash, this.hash.hash];
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {
@@ -186,7 +185,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     console.log("<post-comment-item>.render()", this.hash);
 
     const [content, author, date] = this.renderContent();
-    const agentName = this._dvm.profilesZvm.perspective.profiles[author]? this._dvm.profilesZvm.perspective.profiles[author].nickname : "unknown";
+    const agentName = this._dvm.profilesZvm.perspective.getProfile(author)? this._dvm.profilesZvm.perspective.getProfile(author).nickname : "unknown";
     const date_str = timeSince(date);
 
     /* render item */

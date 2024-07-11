@@ -1,8 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {delay, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ActionHashB64, decodeHashFromBase64} from "@holochain/client";
 import {consume} from "@lit/context";
 import {globaFilesContext} from "../contexts";
 import {FileHashB64, FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
@@ -27,7 +26,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of File bead to display */
-  @property() hash: ActionHashB64 = '' // BeadAh
+  @property() hash?: ActionId; // BeadAh
   @state() private _dataHash?: FileHashB64;
 
   @consume({ context: globaFilesContext, subscribe: true })
@@ -71,7 +70,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     try {
       const manifestEh = entryBead.sourceEh;
       console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
-      this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(decodeHashFromBase64(manifestEh));
+      this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
       console.log(`<chat-file>.loadFile() ${this.hash}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
       if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
         const mime = kind2mime(this._manifest.description.kind_info);
@@ -82,7 +81,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
             this._maybeFile = null;
             return;
         }
-        const data = await this._filesDvm.deliveryZvm.getParcelData(manifestEh);
+        const data = await this._filesDvm.deliveryZvm.fetchParcelData(manifestEh);
         console.log("<chat-file>.loadFile() data", data.length);
         this._maybeFile = this._filesDvm.data2File(this._manifest, data);
         const reader = new FileReader();
@@ -124,7 +123,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** */
   render() {
     console.log("<chat-file>.render()", this.hash, this._loading, this._manifest, this._maybeFile /*this._dataHash*/);
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`<div style="color:#c10a0a">${msg("No file selected")}</div>`;
     }
     if (this._loading) {
@@ -145,7 +144,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const manifestEh = entryBead.sourceEh;
-    const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+    const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
     if (!filePprm) {
       //return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
       return html`
@@ -153,7 +152,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh}
                   @click=${async (e) => {
                       await this._filesDvm.deliveryZvm.probeDht();
-                      const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels[manifestEh];
+                      const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
                       if (fileTuple) {
                           this.requestUpdate();
                       }

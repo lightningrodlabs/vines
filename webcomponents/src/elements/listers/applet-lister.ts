@@ -3,19 +3,17 @@ import {customElement, property, state} from "lit/decorators.js";
 import {consume} from "@lit/context";
 import {msg} from "@lit/localize";
 
-import {ActionHashB64, decodeHashFromBase64, EntryHashB64} from "@holochain/client";
-
-import {AppletId, CreatableType} from "@lightningrodlabs/we-applet";
-
-import {Dictionary} from "@ddd-qc/cell-proxy";
-import {ZomeElement} from "@ddd-qc/lit-happ";
+import {CreatableType} from "@lightningrodlabs/we-applet";
+import {ActionId, DhtId, EntryId, EntryIdMap, intoLinkableId, LinkableId, ZomeElement} from "@ddd-qc/lit-happ";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
-import {AnyLinkableHashB64, ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {CommentRequest} from "../../utils";
 import {threadJumpEvent} from "../../jump";
+import {SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID, weClientContext} from "../../contexts";
+
 
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Tree.js"
@@ -26,7 +24,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID, weClientContext} from "../../contexts";
+
 
 
 /**
@@ -40,7 +38,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
   /** ID of the applet to display threads of */
-  @property() appletId: AppletId = THIS_APPLET_ID;
+  @property() appletId: EntryId = THIS_APPLET_ID;
 
 
   @consume({ context: weClientContext, subscribe: true })
@@ -49,7 +47,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** -- State variables -- */
 
   @state() private _loading = true;
-  @state() private _isHovered: Dictionary<boolean> = {};
+  @state() private _isHovered: EntryIdMap<boolean> = new EntryIdMap();
            private _threadCreatableType?: CreatableType;
 
   /**
@@ -118,7 +116,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async openCommentThread(hash: ActionHashB64 | EntryHashB64, subjectType: string, subjectName: string): Promise<void> {
+  async openCommentThread(hash: DhtId, subjectType: string, subjectName: string): Promise<void> {
     console.log("openCommentThread()", hash);
     const attType = this.getThreadAttachmentType();
     if (!attType) {
@@ -161,7 +159,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionHashB64 | null, subjectHash: ActionHashB64, subjectType: string, subjectName: string, viewType?: string) {
+  onClickComment(maybeCommentThread: ActionId | null, subjectHash: LinkableId, subjectType: string, subjectName: string, viewType?: string) {
     const request: CommentRequest =  {
       maybeCommentThread, subjectHash, subjectType, subjectName,
       viewType: viewType? viewType : "side",
@@ -171,7 +169,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async toggleTreeItem(event: any, unreadSubjects: AnyLinkableHashB64[]) {
+  async toggleTreeItem(event: any, unreadSubjects: LinkableId[]) {
     const busyIndicator = this.shadowRoot.getElementById("busy") as BusyIndicator;
     const toggledTreeItem = event.detail.item as TreeItem ; // get the node that is toggled
     //const isTyped = !!this.root && typeof this.root == 'object';
@@ -192,7 +190,8 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** SubjectType has been toggled */
     if (event.detail.item.level == 1) {
       /** Grab children */
-      let subjects = await this._zvm.findSubjects(this.appletId, toggledTreeItem.id);
+      const itemEh = new EntryId(toggledTreeItem.id);
+      let subjects = await this._zvm.findSubjects(this.appletId, itemEh);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
         console.warn("weServices not found in <applet-lister>")
@@ -200,16 +199,16 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       /** Convert to TreeItem and append to Tree */
       for (const [dnaHash, subjectHash] of subjects) {
         /* Skip if item already exists */
-        if (currentChildren.includes(subjectHash)) {
+        if (currentChildren.includes(subjectHash.b64)) {
           continue;
         }
         let newItem = document.createElement("ui5-tree-item") as TreeItem;
-        newItem.text = subjectHash;
+        newItem.text = subjectHash.b64;
         if (this.weServices) {
           //const dnaHash = toggledTreeItem['dnaHash'];
           console.log("calling weServices.assetInfo()", dnaHash, subjectHash);
           try {
-            const assetLocInfo = await this.weServices.assetInfo({hrl: [decodeHashFromBase64(dnaHash), decodeHashFromBase64(subjectHash)], context: null});
+            const assetLocInfo = await this.weServices.assetInfo({hrl: [dnaHash.hash, subjectHash.hash], context: null});
             console.log("assetLocInfo", assetLocInfo);
             if (assetLocInfo) {
               newItem.text = assetLocInfo.assetInfo.name;
@@ -222,7 +221,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         //newItem.setAttribute("dnaHash", dnaHash);
         //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
         //newItem.setAttribute("linkIndex", ta.linkIndex.toString());
-        newItem.id = subjectHash;
+        newItem.id = subjectHash.b64;
         newItem.hasChildren = true;
         newItem.level = toggledTreeItem.level + 1;
         toggledTreeItem.appendChild(newItem);
@@ -231,25 +230,26 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** SubjectHash has been toggled */
     if (event.detail.item.level == 2) {
+      const itemHash = intoLinkableId(toggledTreeItem.id);
       /** Grab children */
-      let pps = await this._zvm.pullSubjectThreads(toggledTreeItem.id);
+      let pps = await this._zvm.pullSubjectThreads(itemHash);
 
       const tmpls = [];
       /** Convert to TreeItem and append to Tree */
-      for (const [ppAh, [pp, _ts, _author]] of Object.entries(pps)) {
+      for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
         /* Skip if item already exists */
-        if (currentChildren.includes(ppAh)) {
+        if (currentChildren.includes(ppAh.b64)) {
           continue;
         }
 
         // Simple tree-item
-        //const tmpl = html`<ui5-tree-item id=${ppAh} text=${pp.purpose} level=${toggledTreeItem.level + 1}></ui5-tree-item>`;
+        //const tmpl = html`<ui5-tree-item id=${ppAh.b64} text=${pp.purpose} level=${toggledTreeItem.level + 1}></ui5-tree-item>`;
 
 
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppAh);
         const hasUnreadComments = unreadSubjects.includes(ppAh);
-        const threadIsNew = this.perspective.newThreads[ppAh] != undefined;
-        const hasNewBeads = Object.keys(this.perspective.unreadThreads).includes(ppAh);
+        const threadIsNew = this.perspective.newThreads.has(ppAh);
+        const hasNewBeads = this.perspective.unreadThreads.has(ppAh);
 
         /** 'new' badge to display */
         let newBadge = html``;
@@ -258,7 +258,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
 
         const tmpl = html`
-          <ui5-tree-item-custom id=${ppAh} level=${toggledTreeItem.level + 1}>
+          <ui5-tree-item-custom id=${ppAh.b64} level=${toggledTreeItem.level + 1}>
             <span slot="content" style="display:flex;overflow: hidden;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}">
                 ${pp.purpose}
                 ${newBadge}
@@ -281,17 +281,17 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   render() {
     console.log("<applet-lister>.render()", this.appletId);
-    if (this.appletId == "") {
-      return html `<div>No Applet selected</div>`;
-    }
+    // if (!this.appletId) {
+    //   return html `<div>No Applet selected</div>`;
+    // }
     if (this._loading) {
       return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
-    let subjectTypes = this.perspective.appletSubjectTypes[this.appletId];
+    let subjectTypes = this.perspective.appletSubjectTypes.get(this.appletId);
     console.log("<applet-lister>.render() subjectTypes", subjectTypes);
     if (!subjectTypes) {
-      subjectTypes = {};
+      subjectTypes = new EntryIdMap();
     }
 
     // FIXME: Reset tree on update() or fix bug with subjects not under the correct update when adding new SubjectTypes live
@@ -300,24 +300,24 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const newSubjects = this._zvm.getNewSubjects();
     const unreadSubjects = this._zvm.getUnreadSubjects();
 
-    let treeItems = Object.entries(subjectTypes).map(([pathHash, subjectType]) => {
-      console.log("<applet-lister>.render() subjectType", subjectType, pathHash);
+    let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
+      console.log("<applet-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
-      const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathHash);
-      const isUnread = Object.keys(this._zvm.perspective.unreadThreads).includes(maybeCommentThread);
-      const topicIsNew = newSubjects[pathHash] != undefined;
+      const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathEh);
+      const isUnread = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
+      const topicIsNew = newSubjects.get(pathEh) != undefined;
 
       let commentButton = html``;
       if (isUnread) {
         commentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
-                                             design="Negative" class=${this._isHovered[pathHash]? "" : "transBtn"}
-                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`;
+                                             design="Negative" class=${this._isHovered.get(pathEh)? "" : "transBtn"}
+                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`;
       } else {
-        if (this._isHovered[pathHash]) {
+        if (this._isHovered.get(pathEh)) {
           commentButton = html`
               <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Thread" : "Create new Thread"}"
                           design="Transparent"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, pathHash, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`
+                          @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`
         }
       }
 
@@ -328,7 +328,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
 
       //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
-      return html`<ui5-tree-item-custom id=${pathHash} level="1" has-children>
+      return html`<ui5-tree-item-custom id=${pathEh.b64} level="1" has-children>
           <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:none;">
               <span>${subjectType}</span>
               ${commentButton}
@@ -343,9 +343,9 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
             <div style="color: grey; margin: auto;">${msg('No threads found')}</div>
-            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId || this.appletId == THIS_APPLET_ID}
+            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId.b64 || this.appletId == THIS_APPLET_ID}
                         @click=${(e) => {
-                          if (this.weServices && this.appletId != THIS_APPLET_ID) this.weServices.openAppletMain(decodeHashFromBase64(this.appletId))
+                          if (this.weServices && this.appletId != THIS_APPLET_ID) this.weServices.openAppletMain(this.appletId.hash)
                         }}>
                 ${msg('Go to applet')}
             </ui5-button>

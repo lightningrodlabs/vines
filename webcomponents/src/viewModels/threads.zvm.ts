@@ -65,7 +65,7 @@ import {
   SubjectMat,
   TextBeadMat,
   ThreadsNotification, ThreadsNotificationTip,
-  ThreadsPerspective, ThreadsPerspectiveExportable,
+  ThreadsPerspective, ThreadsPerspectiveSnapshot,
   TypedBaseBead,
   TypedBaseBeadMat,
   TypedBead,
@@ -575,15 +575,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** Get all Threads for a subject */
-  async pullSubjectThreads(subjectId: LinkableId): Promise<Dictionary<[ParticipationProtocol, Timestamp, AgentId]>> {
+  async pullSubjectThreads(subjectId: LinkableId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
     console.log("threadsZvm.pullSubjectThreads()", subjectId);
-    let res = {};
+    let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
     const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = new ActionId(pp_ah);
       const [pp, ts, author] = await this.zomeProxy.fetchPp(pp_ah);
       //this.storeThread(ppAh, pp, ts, encodeHashToBase64(author), false, false);
-      res[ppAh.b64] = [pp, ts, new AgentId(author)];
+      res.set(ppAh, [pp, ts, new AgentId(author)]);
     }
     return res;
   }
@@ -927,15 +927,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: EntryId, subjectId: LinkableId, purpose: string): Promise<[number, ActionId]> {
+  async publishThreadFromSemanticTopic(appletId: EntryId, topicEh: EntryId, purpose: string): Promise<[number, ActionId]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const subject: Subject = {
-      hash: subjectId.hash,
+      hash: topicEh.hash,
       typeName: SEMANTIC_TOPIC_TYPE_NAME,
       appletId: appletId.b64,
       dnaHash: this.cell.dnaId.hash, // TODO: remove this useless field?
     };
-    const semTopicTitle = this._perspective.allSemanticTopics.get(subjectId);
+    const semTopicTitle = this._perspective.allSemanticTopics.get(topicEh);
     const pp: ParticipationProtocol = {
       purpose,
       rules: "N/A",
@@ -1573,7 +1573,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async publishAllFromPerspective(impPersp: ThreadsPerspectiveExportable, authorshipZvm: AuthorshipZvm) {
+  async publishAllFromPerspective(impPersp: ThreadsPerspectiveSnapshot, authorshipZvm: AuthorshipZvm) {
     // /** this._allSemanticTopics */
     // for (const [_topicEh, title] of Object.entries(impPersp.allSemanticTopics)) {
     //   /* const newTopicEh = */ await this.publishSemanticTopic(title);

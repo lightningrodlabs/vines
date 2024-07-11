@@ -7,6 +7,8 @@ import {EntryId} from "@ddd-qc/lit-happ";
 //export const THIS_APPLET_ID = "__this"
 export const THIS_APPLET_ID = await EntryId.empty(118); // 'v'
 
+export const APPLET_TYPE_NAME = "AppletId";
+
 export const SUBJECT_TYPE_TYPE_NAME = "SubjectType";
 export const PP_TYPE_NAME = "ParticipationProtocol";
 

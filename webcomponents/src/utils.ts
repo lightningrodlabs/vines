@@ -17,7 +17,7 @@ import {
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {POST_TYPE_NAME} from "./utils_feed";
 import {HoloHash} from "@holochain/client/lib/types";
-import {ActionId, AgentId, AnyId, DnaId, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, AnyId, DnaId, EntryId, LinkableId} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 
 //
@@ -194,7 +194,7 @@ export interface EditTopicRequest {
 /** */
 export interface CommentRequest {
   maybeCommentThread: ActionId | null,
-  subjectHash: AnyId,
+  subjectHash: LinkableId,
   subjectType: string,
   subjectName: string,
   viewType: string,
@@ -281,7 +281,7 @@ export function weaveUrlToWal(url: string): WAL {
 // }
 
 
-export const MAIN_TOPIC_ID: ActionId = ActionId.empty(77); // 'M'
+export const MAIN_TOPIC_ID: EntryId = EntryId.empty(77); // 'M'
 export const MAIN_SEMANTIC_TOPIC = "__main";
 
 
@@ -317,7 +317,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
     switch (subject.typeName) {
       /** -- special types -- */
       case SEMANTIC_TOPIC_TYPE_NAME:
-        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(subject.hash);
+        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(new EntryId(subject.hash.b64));
         if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
           return "{Unknown Topic}";

@@ -1,7 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
-import {ZomeElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64} from "@holochain/client";
+import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {ThreadsZvm} from "../viewModels/threads.zvm";
@@ -22,7 +21,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** Hash of TextBead to display */
-  @property() hash: ActionHashB64 = ''
+  @property() hash?: ActionId;
 
 
   // /** */
@@ -48,7 +47,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   render() {
     //console.log("<chat-text>.render()", this.hash);
-    if (this.hash == "") {
+    if (!this.hash) {
       return html`<div style="color:red">No message found</div>`;
     }
 

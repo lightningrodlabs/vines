@@ -1,8 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {delay, DnaElement} from "@ddd-qc/lit-happ";
-import {ActionHashB64, encodeHashToBase64} from "@holochain/client";
+import {ActionId, delay, DnaElement, intoDhtId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
@@ -27,7 +26,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of Post to display */
-  @property() beadAh: ActionHashB64 = ''
+  @property() beadAh?: ActionId;
 
   /** */
   @property({type: Boolean})
@@ -52,7 +51,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- State variables -- */
 
   @state() private _loading = true;
-  private _mainThreadAh?: ActionHashB64;
+  private _mainThreadAh?: ActionId;
 
   /** -- Methods -- */
 
@@ -144,8 +143,8 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** Check if threads have comments */
   protected async loadThreadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
     for (const bl of bls) {
-      const pps = await dvm.threadsZvm.pullSubjectThreads(encodeHashToBase64(bl.beadAh));
-      for (const [ppAh, [pp, _ts, _author]] of Object.entries(pps)) {
+      const pps = await dvm.threadsZvm.pullSubjectThreads(intoDhtId(bl.beadAh));
+      for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
         if (pp.purpose == "comment") {
           await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
           break;
@@ -173,7 +172,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousPosts(): Promise<void> {
-    const mainThreadAh = this.threadsPerspective.threadsPerSubject[MAIN_TOPIC_ID][0];
+    const mainThreadAh = this.threadsPerspective.threadsPerSubject.get(MAIN_TOPIC_ID)[0];
     const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(mainThreadAh);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {
@@ -217,7 +216,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       .map((blm) => {
         //console.log("<post-thread-view> blm", blm, this.threadsPerspective);
         /** 'new' if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss[this._mainThreadAh];
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this._mainThreadAh);
         //console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
@@ -232,8 +231,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
           ? "#c4f2b07a"
           : isFavorite? "rgb(223, 246, 255)" : "";
         return html`
-            <post-item id=${(blm.beadAh)} 
-                       .hash=${(blm.beadAh)}
+            <post-item id=${(blm.beadAh.b64)} .hash=${(blm.beadAh)}
                        style="background: ${bg_color}"
             ></post-item>
         `;

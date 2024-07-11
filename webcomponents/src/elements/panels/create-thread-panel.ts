@@ -8,11 +8,10 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {determineSubjectName, weaveUrlToWal} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
-import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 import {materializeSubject} from "../../viewModels/threads.perspective";
 import {FilesDvm} from "@ddd-qc/files";
 
@@ -55,7 +54,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
         hash: hrlc.hrl[1],
         typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
         dnaHash: hrlc.hrl[0],
-        appletId: encodeHashToBase64(attLocInfo.appletHash),
+        appletId: new EntryId(attLocInfo.appletHash).b64,
       }
       const subject_name = determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices);
       console.log("@create event subject_name", subject_name);
@@ -67,8 +66,8 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {
-        hrl: [decodeHashFromBase64(this._dvm.cell.dnaHash), decodeHashFromBase64(ppAh)],
-        context: encodeHashToBase64(pp.subject.hash),
+        hrl: [this._dvm.cell.dnaId.hash, ppAh.hash],
+        context: pp.subject.hash,
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))
     } catch(e) {

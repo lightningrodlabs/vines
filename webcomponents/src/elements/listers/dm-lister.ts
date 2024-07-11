@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {customElement, property, state} from "lit/decorators.js";
-import {DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
@@ -9,8 +9,6 @@ import {threadJumpEvent} from "../../jump";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
-import {agent2eh, intoAgentPubKey} from "../../utils";
-import {decodeHashFromBase64, encodeHashToBase64} from "@holochain/client";
 
 
 /**
@@ -25,7 +23,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
   @property() showArchived?: string;
-  @property() selectedThreadHash?: string;
+  @property() selectedThreadHash?: ActionId;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -53,11 +51,11 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   render() {
     console.log("<dm-lister>.render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
 
-    let treeItems = Object.entries(this.threadsPerspective.dmAgents).map(([otherAgent, ppAh]) => {
+    let treeItems = Array.from(this.threadsPerspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
       /** Skip if hidden */
-      const subjectEh = encodeHashToBase64(agent2eh(decodeHashFromBase64(otherAgent)));
+      const subjectEh = EntryId.from(otherAgent);
       //console.log("<dm-lister>.render() hide subjectEh?", subjectEh, otherAgent);
-      const isThreadHidden = this.threadsPerspective.hiddens[subjectEh]? this.threadsPerspective.hiddens[subjectEh] : false;
+      const isThreadHidden = this.threadsPerspective.hiddens[subjectEh.b64]? this.threadsPerspective.hiddens[subjectEh.b64] : false;
       if (isThreadHidden && !this.showArchived) {
         return;
       }
@@ -67,18 +65,18 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
 
-      console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
+      console.log("this.selectedThreadHash", this.selectedThreadHash.short, ppAh.short, this.selectedThreadHash.b64 == ppAh.b64);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
 
       //const hasNewBeads = thread && thread.hasUnreads();
-      const maybeUnreadThread = this.threadsPerspective.unreadThreads[ppAh];
+      const maybeUnreadThread = this.threadsPerspective.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
-      const threadIsNew = Object.keys(this.threadsPerspective.newThreads).includes(ppAh);
+      const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
 
 
       /** Determine other agent's profile */
-      let otherProfile = this._dvm.profilesZvm.perspective.profiles[otherAgent];
+      let otherProfile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
       if (!otherProfile) {
         otherProfile = {nickname: msg("unknown"), fields: {lang: "en"}} as ProfileMat;
       }
@@ -123,7 +121,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
           return html`
               <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500">
-                <div id=${ppAh} class="threadItem" 
+                <div id=${ppAh.b64} class="threadItem" 
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${isSelected? "background:#DBDBDB" : ""}
@@ -134,7 +132,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
                     <ui5-button icon="copy" tooltip=${msg("Copy Channel Link")} design="Transparent"
                                 style="border:none; display:none;"
-                                @click=${(e) => {e.stopPropagation(); this.dispatchEvent(new CustomEvent('copy-thread', {detail: ppAh, bubbles: true, composed: true}))}}></ui5-button>
+                                @click=${(e) => {e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: ppAh, bubbles: true, composed: true}))}}></ui5-button>
                     ${hideShowBtn}
                 </div>
               </sl-tooltip>
