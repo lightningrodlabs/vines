@@ -229,8 +229,8 @@ export class CommunityFeedApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOffline()");
-    const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
-    console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
+    const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentId);
+    console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentId);
     /** Done */
     this.threadsDvm.dumpCallLogs();
     this._offlineLoaded = true;
@@ -257,7 +257,7 @@ export class CommunityFeedApp extends HappElement {
       console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", mainThreadAh);
       /** Make sure subscribe to notifications for main thread */
       await this.threadsDvm.threadsZvm.pullNotifSettings(mainThreadAh);
-      const notif = this.threadsDvm.threadsZvm.getNotifSetting(mainThreadAh, this.threadsDvm.cell.agentPubKey);
+      const notif = this.threadsDvm.threadsZvm.getNotifSetting(mainThreadAh, this.threadsDvm.cell.agentId);
       if (notif != NotifySetting.AllMessages) {
         await this.threadsDvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);
       }

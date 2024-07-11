@@ -4,6 +4,7 @@ export * from './styles';
 export * from './doodles';
 export * from './jump';
 export * from './toast';
+export * from './search';
 
 export * from './elements/chat-file';
 export * from './elements/chat-header';

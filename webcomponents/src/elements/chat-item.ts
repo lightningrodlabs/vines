@@ -10,7 +10,7 @@ import 'emoji-picker-element';
 import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../jump";
-import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
+import {globaFilesContext, onlineLoadedContext, weClientContext, ShowProfileEvent} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
@@ -240,7 +240,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <div id="prevAuthor"                     
                @click=${(e) => {
                   e.stopPropagation();
-                  this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: prevBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                  this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: prevBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
             @${prevProfile? prevProfile.nickname : "unknown"}
           </div>
           <div id="prevBeadName"               
@@ -353,7 +353,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         menu.showAt(btn);
                     }}></ui5-button>`;
 
-    const replyButton = /*this.cell.agentPubKey == beadInfo.author? html`` :*/
+    const replyButton = /*this.cell.agentId.b64 == beadInfo.author? html`` :*/
       html`
         <ui5-button id="reply-btn" icon="response" tooltip=${msg('Reply')} design="Transparent" style="border:none;"
                     @click=${(_e) => this.onClickReply()}></ui5-button>`;
@@ -409,7 +409,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <div id="avatarColumn" style="display: flex; flex-direction: column; width:48px;"
                     @click=${(e) => {
                       e.stopPropagation();
-                      this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
               ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
                   <div style="flex-grow:1;"></div>

@@ -16,7 +16,7 @@ import {determineBeadName, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
 import {beadJumpEvent} from "../jump";
 import {renderAvatar} from "../render";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {globaFilesContext, weClientContext, ShowProfileEvent} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 
@@ -196,7 +196,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             <div @click=${(e) => {
                 //console.log("sideItem onShowProfile clicked", beadAh);
                 e.stopPropagation();
-                this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
             }}>
                 ${renderAvatar(this._dvm.profilesZvm, author, "XS")}                
             </div>

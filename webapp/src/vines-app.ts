@@ -3,11 +3,9 @@ import { state, customElement } from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
 import {PropertyValues} from "lit/development";
 import {
-  ActionHashB64,
-  AdminWebsocket, AgentPubKeyB64,
+  AdminWebsocket,
   AppSignal,
-  AppWebsocket, decodeHashFromBase64, encodeHashToBase64,
-  EntryHashB64,
+  AppWebsocket,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
@@ -33,7 +31,6 @@ import {
   appProxyContext,
   JumpEvent,
   JumpDestinationType,
-  AnyLinkableHashB64,
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
   onlineLoadedContext,
@@ -44,7 +41,7 @@ import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {BaseRoleName, CloneId, AppProxy} from "@ddd-qc/cell-proxy";
+import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId, LinkableId} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
@@ -56,13 +53,13 @@ import "./vines-page"
 import Button from "@ui5/webcomponents/dist/Button";
 
 
-/** */
-export interface VinesAssetQuery {
-  detail: string,
-  subjectType: string,
-  subjectName: string,
-  subjectAuthor?: AgentPubKeyB64,
-}
+// /** */
+// export interface VinesAssetQuery {
+//   detail: string,
+//   subjectType: string,
+//   subjectName: string,
+//   subjectAuthor?: AgentPubKeyB64,
+// }
 
 
 /** */
@@ -78,15 +75,15 @@ export class VinesApp extends HappElement {
   @state() private _hasWeProfile = false;
   @state() private _lang?: string
 
-  @state() private _currentSpaceEh: null | EntryHashB64 = null;
+  @state() private _currentSpaceEh: null | EntryId = null;
 
   static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
-  @state() private _selectedThreadHash?: AnyLinkableHashB64;
-  @state() private _selectedBeadAh: ActionHashB64 = '';
+  @state() private _selectedThreadHash?: LinkableId;
+  @state() private _selectedBeadAh?: ActionId;
 
 
   /** -- We-applet specifics -- */
@@ -123,7 +120,7 @@ export class VinesApp extends HappElement {
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
     weServices: WeaveServices,
-    thisAppletId: AppletId,
+    thisAppletId: EntryId,
     //showCommentThreadOnly?: boolean,
     appletView: AppletView,
   ) : Promise<VinesApp> {
@@ -151,15 +148,15 @@ export class VinesApp extends HappElement {
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("createProfilesDvm() dvm", dvm);
-    await this.setupWeProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    await this.setupWeProfilesDvm(dvm as ProfilesDvm, new AgentId(profilesAppInfo.agent_pub_key));
   }
 
 
   /** */
-  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
+  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentId): Promise<void> {
     this._weProfilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent);
+    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent.b64);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
@@ -217,7 +214,7 @@ export class VinesApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
         console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -232,7 +229,7 @@ export class VinesApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-      if (allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
         console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -246,8 +243,8 @@ export class VinesApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOffline()");
-    const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentPubKey);
-    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentPubKey);
+    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.agentId);
+    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentId);
     /** Done */
     this._offlineLoaded = true;
   }
@@ -300,18 +297,18 @@ export class VinesApp extends HappElement {
     console.log("<vines-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(decodeHashFromBase64(e.detail.hash));
+        this._weServices.openAppletMain((e.detail.hash.hash));
       }
     }
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
       if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
-          this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
+          this._weServices.openAppletMain(new EntryId(this._weServices.appletId).hash);
           //this._weServices.openHrl();
         }
       } else {
         this._selectedThreadHash = e.detail.hash;
-        this._selectedBeadAh = '';
+        delete this._selectedBeadAh;
       }
     }
     if (e.detail.type == JumpDestinationType.Bead) {
@@ -337,7 +334,7 @@ export class VinesApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(e.detail)];
+    const hrl: Hrl = [this.threadsDvm.cell.dnaId.hash, e.detail.hash];
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
@@ -369,7 +366,7 @@ export class VinesApp extends HappElement {
           const btn = this.shadowRoot.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-          if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
               console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
               btn.disabled = false;
           } else {
@@ -429,7 +426,7 @@ export class VinesApp extends HappElement {
           console.log("pascal entryType", assetViewInfo.recordInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
+              const ppAh = new ActionId(assetViewInfo.wal.hrl[1]);
               console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
@@ -438,7 +435,7 @@ export class VinesApp extends HappElement {
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
+                const beadAh = new ActionId(assetViewInfo.wal.hrl[1]);
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break

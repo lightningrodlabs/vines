@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {delay, DnaElement, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {delay, DnaElement, HappBuildModeType, ActionId, ActionIdMap, EntryId, DnaId} from "@ddd-qc/lit-happ";
 
 import "@ddd-qc/path-explorer";
 
@@ -118,7 +118,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {Dictionary} from "@ddd-qc/cell-proxy";
+import {Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -127,7 +127,7 @@ import 'css-doodle';
 
 import {
   AnyBeadMat,
-  AnyLinkableHashB64, beadJumpEvent,
+  beadJumpEvent,
   ChatThreadView,
   CommentRequest, CommentThreadView,
   doodle_flowers, EditTopicRequest,
@@ -147,9 +147,6 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 import {
-  ActionHashB64,
-  decodeHashFromBase64,
-  encodeHashToBase64,
   NetworkInfo,
   Timestamp,
 } from "@holochain/client";
@@ -165,11 +162,11 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
-import {toasty} from "@vines/elements/dist/toast";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
-import {parseSearchInput} from "@vines/elements/dist/search";
+import {parseSearchInput, ShowProfileEvent, toasty} from "@vines/elements";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
+
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -226,13 +223,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  onShowProfile(e) {
+  onShowProfile(e: CustomEvent<ShowProfileEvent>) {
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
     //console.log("onShowProfile() elem", elem)
     const popover = this.shadowRoot.getElementById("profilePop") as Popover;
     const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
-    sub.hash = e.detail.agent;
+    sub.hash = e.detail.agentId;
     sub.requestUpdate();
     popover.showAt(elem);
   }
@@ -243,9 +240,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Fields -- */
 
-  @state() private _selectedCommentThreadHash: AnyLinkableHashB64 = '';
+  @state() private _selectedCommentThreadHash?: LinkableId;
            private _selectedCommentThreadSubjectName: string = '';
-  @state() private _createTopicHash: AnyLinkableHashB64 = '';
+  @state() private _createTopicHash?: LinkableId;
 
   @state() private _canShowComments = false;
   @state() private _canShowFavorites = false;
@@ -258,13 +255,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @state() private _splitObj?: SplitObject;
 
-  @state() private _replyToAh?: ActionHashB64;
+  @state() private _replyToAh?: ActionId;
 
 
-  private _threadNames: Record<ActionHashB64, string> = {};
+  private _threadNames: ActionIdMap<string> = new ActionIdMap();
 
-  @property() selectedThreadHash?: AnyLinkableHashB64;
-  @property() selectedBeadAh: ActionHashB64 = '';
+  @property() selectedThreadHash?: ActionId;
+  @property() selectedBeadAh?: ActionId;
 
   @property({type: Object})
   networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
@@ -324,8 +321,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   console.log("dvmUpdated() groupProfile", groupProfile);
     // }
     delete this.selectedThreadHash;
-    this.selectedBeadAh = '';
-    this._listerToShow = newDvm.cell.dnaHash;
+    delete this.selectedBeadAh;
+    this._listerToShow = newDvm.cell.dnaId.b64;
   }
 
 
@@ -384,8 +381,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
 
-    this._replyToAh = undefined;
-    this.selectedBeadAh = '';
+    delete this._replyToAh;
+    delete this.selectedBeadAh;
 
     // /** DEBUG */
     // if (this.weServices) {
@@ -401,8 +398,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const otherAgent = sub.hash;
     let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
     console.log("onDmTextMessage() ah", beadAh, this._dvm.threadsZvm.perspective.threads);
-    this._replyToAh = undefined;
-    this.selectedBeadAh = '';
+    delete this._replyToAh;
+    delete this.selectedBeadAh;
     //await delay(1000);
     this.dispatchEvent(beadJumpEvent(beadAh));
   }
@@ -421,8 +418,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
 
-    this._replyToAh = undefined;
-    this.selectedBeadAh = '';
+    delete this._replyToAh;
+    delete this.selectedBeadAh;
   }
 
 
@@ -547,8 +544,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
-      const author = this._dvm.profilesZvm.perspective.profiles[notif.author] ? this._dvm.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
-      const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
+      const canPopup = author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
@@ -596,7 +593,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentPubKey)) {
+      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
@@ -625,7 +622,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async pingActiveOthers() {
     //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
-    const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.getAgents());
+    const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.perspective.agents);
     await this._dvm.pingPeers(undefined, currentPeers);
     //}
   }
@@ -634,7 +631,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.b64 != this.cell.agentId.b64);
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -661,7 +658,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async showSideCommentThread(commentThreadAh: ActionHashB64, subjectName: string) {
+  async showSideCommentThread(commentThreadAh: ActionId, subjectName: string) {
     /** Save input field before switching */
     if (this._selectedCommentThreadHash && this._canShowComments) {
       const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
@@ -701,10 +698,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
-        hash: decodeHashFromBase64(request.subjectHash),
+        hash: request.subjectHash,
         typeName: request.subjectType,
         appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
-        dnaHash: decodeHashFromBase64(this.cell.dnaHash),
+        dnaHash: this.cell.dnaId,
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
@@ -724,7 +721,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const selectedOption = e.detail.selectedOption;
     console.log("onListerSelected() selectedOption", e.detail.selectedOption);
     if (selectedOption.id == "dm-option") {
-      this._listerToShow = this.cell.agentPubKey;
+      this._listerToShow = this.cell.agentId.b64;
       return;
     }
     if (selectedOption.id == "mine-option") {
@@ -732,11 +729,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     if (selectedOption.id == "topics-option") {
-      this._listerToShow = this.cell.dnaHash;
+      this._listerToShow = this.cell.dnaId.b64;
       return;
     }
     if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
-      this._listerToShow = THIS_APPLET_ID;
+      this._listerToShow = THIS_APPLET_ID.b64;
       return;
     }
     /* it's an appletId so display the applet lister */
@@ -749,7 +746,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onCreateFileMessage(ppAh: ActionHashB64) {
+  onCreateFileMessage(ppAh: ActionId) {
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {
@@ -759,15 +756,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
       //   return;
       // }
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.getAgents(),async (eh) => {
+      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
         console.log("<vines-page> startPublishFile callback", eh);
         let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
         console.log("onCreateFileMessage() ah", ah);
         //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
-        this._splitObj = undefined;
-        this._replyToAh = undefined;
-        this.selectedBeadAh = '';
+        delete this._splitObj;
+        delete this._replyToAh;
+        delete this.selectedBeadAh;
       });
       console.log("onCreateFileMessage()", this._splitObj);
     }
@@ -921,7 +918,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (this._replyToAh) {
           const beadInfo = this._dvm.threadsZvm.getBeadInfo(this._replyToAh);
           if (beadInfo) {
-            const maybeProfile = this._dvm.profilesZvm.perspective.profiles[beadInfo.author];
+            const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author);
             if (maybeProfile) {
               maybeReplyAuthorName = maybeProfile.nickname;
             }
@@ -976,7 +973,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     setLocale(lang);
 
-    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentPubKey, "S");
+    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentId, "S");
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
     //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
@@ -1024,7 +1021,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let notifSetting = NotifySetting.MentionsOnly; // default
     if (this.selectedThreadHash) {
-      notifSetting = this._dvm.threadsZvm.getNotifSetting(this.selectedThreadHash, this.cell.agentPubKey);
+      notifSetting = this._dvm.threadsZvm.getNotifSetting(this.selectedThreadHash, this.cell.agentId);
     }
     console.log("<vines-page>.render() notifSettings", notifSetting, this.selectedThreadHash);
 
@@ -1036,11 +1033,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const appletInfo = this.weServices.appletInfoCached(this.weServices.appletId);
+      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletId));
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);
-        const weGroup = this.weServices.groupProfileCached(appletInfo.groupsHashes[0]);
+        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]));
         if (weGroup) {
           groupProfile = weGroup;
         }
@@ -1067,7 +1064,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
 
     let lister= html`<applet-lister .appletId=${this._listerToShow}></applet-lister>`
-    if (this._listerToShow == this.cell.agentPubKey) {
+    if (this._listerToShow == this.cell.agentId.b64) {
       lister = html`
           <dm-lister
                   .showArchived=${this._canViewArchivedSubjects}
@@ -1079,7 +1076,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           ></dm-lister>
       `;
     }
-    if (this._listerToShow == this.cell.dnaHash) {
+    if (this._listerToShow == this.cell.dnaId.b64) {
       lister = html`
           <topics-lister 
                          .showArchivedTopics=${this._canViewArchivedSubjects}
@@ -1197,11 +1194,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;"
                          @click=${(e) => {
                              e.stopPropagation();
-                             this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: this.cell.agentPubKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                             this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                       ${avatar}
                       <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-                          <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentPubKey}>${myProfile.nickname}</abbr></div>
-                              <!-- <div style="font-size: small">${this.cell.agentPubKey}</div> -->
+                          <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentId.b64}>${myProfile.nickname}</abbr></div>
+                              <!-- <div style="font-size: small">${this.cell.agentId.b64}</div> -->
                       </div>
                     </div>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
@@ -1229,7 +1226,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
                         <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
-                            <abbr title=${this.cell.dnaHash}>${msg("Network Health")}</abbr>
+                            <abbr title=${this.cell.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <network-health-panel></network-health-panel>
@@ -1525,7 +1522,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
       const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
-      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.getAgents(),(_manifestEh) => {
+      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, (_manifestEh) => {
         toasty(msg("File successfully shared") +": " + splitObj.dataHash);
         this.requestUpdate();
       });

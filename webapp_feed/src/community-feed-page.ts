@@ -219,13 +219,13 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  onShowProfile(e) {
+  onShowProfile(e: CustomEvent<ShowProfileEvent>) {
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
     //console.log("onShowProfile() elem", elem)
     const popover = this.shadowRoot.getElementById("profilePop") as Popover;
     const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
-    sub.hash = e.detail.agent;
+    sub.hash = e.detail.agentId;
     sub.requestUpdate();
     popover.showAt(elem);
   }
@@ -390,8 +390,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
-      const author = this._dvm.profilesZvm.perspective.profiles[notif.author] ? this._dvm.profilesZvm.perspective.profiles[notif.author].nickname : "unknown";
-      const canPopup = author != this.cell.agentPubKey || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
+      const canPopup = author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeFeedNotificationTitle(notif, this._dvm, this._filesDvm, this.weServices);
@@ -436,7 +436,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentPubKey)) {
+      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
@@ -465,7 +465,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   async pingActiveOthers() {
     //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
-    const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.getAgents());
+    const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.perspective.agents);
     await this._dvm.pingPeers(undefined, currentPeers);
     //}
   }
@@ -474,7 +474,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.getAgents().filter((agentKey) => agentKey != this.cell.agentPubKey);
+    const agents = this._dvm.profilesZvm.perspective.agent.filter((agentKey) => agentKey.b64 != this.cell.agentId.b64);
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -718,7 +718,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
               <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"
                           @click=${(e) => {
                               e.stopPropagation();
-                              this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: this.cell.agentPubKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                              this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                   ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
               </ui5-avatar>              
           </div>
@@ -843,7 +843,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         return;
       }
       const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
-      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.getAgents(),(_manifestEh) => {
+      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, (_manifestEh) => {
         toasty(msg("File successfully shared") +": " + splitObj.dataHash);
         this.requestUpdate();
       });

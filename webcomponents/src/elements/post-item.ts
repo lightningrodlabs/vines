@@ -8,7 +8,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
-import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
+import {globaFilesContext, onlineLoadedContext, weClientContext, ShowProfileEvent} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
@@ -325,7 +325,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
           <div id="avatarColumn" style="width:48px;"
                   @click=${(e) => {
                     e.stopPropagation();
-                    this.dispatchEvent(new CustomEvent('show-profile', {detail: {agent: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                    this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
             ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "XS")}
           </div>
           <!-- Info column -->
