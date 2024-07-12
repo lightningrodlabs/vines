@@ -71,7 +71,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       const manifestEh = entryBead.sourceEh;
       console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
-      console.log(`<chat-file>.loadFile() ${this.hash}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
+      console.log(`<chat-file>.loadFile() ${this.hash.short}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
       if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
         const mime = kind2mime(this._manifest.description.kind_info);
         const fileType = kind2Type(this._manifest.description.kind_info);

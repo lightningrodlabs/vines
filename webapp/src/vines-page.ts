@@ -887,9 +887,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
+    let uploadState;
+    if (this._splitObj) {
+      uploadState = this._filesDvm.perspective.uploadStates[this._splitObj.dataHash];
+    }
+
+    /** */
     let centerSide = html`
         <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
         ${doodle_flowers}
@@ -919,10 +925,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         /** Check uploading state */
         let pct = 100;
-        if (this._splitObj) {
+        if (uploadState) {
           /** auto refresh since we can't observe filesDvm */
-          delay(500).then(() => {this.requestUpdate()});
-          pct = Math.ceil(this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].chunks.length / this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].splitObj.numChunks * 100)
+          delay(5000).then(() => {this.requestUpdate()});
+          pct = Math.ceil(uploadState.chunks.length / uploadState.splitObj.numChunks * 100)
         }
 
         let maybeReplyAuthorName = "unknown"
@@ -938,9 +944,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         centerSide = html`
             <chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>
-            ${this._splitObj? html`
+            ${uploadState? html`
               <div id="uploadCard">
-                <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].file.name}</div>
+                <div style="padding:5px;">Uploading ${uploadState.file.name}</div>
                 <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
               </div>
             ` : html`
