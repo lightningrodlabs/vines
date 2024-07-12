@@ -961,6 +961,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (pp === null) {
       Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
+    console.log("ThreadsZvm.fetchPp() pp", pp);
     //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
     //return this.storeThread(ppAh, pp, ts, encodeHashToBase64(author), /*isHidden ,*/ false, preventNotify);
     return [materializeParticipationProtocol(pp), ts, new AgentId(author)];

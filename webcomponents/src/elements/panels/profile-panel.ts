@@ -28,7 +28,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
   @property() hash?: AgentId;
 
   private _profile?: ProfileMat;
-  private _profileDate: Timestamp;
+  //private _profileDate: Timestamp;
 
   /**
    * In zvmUpdated() this._zvm is not already set!
@@ -81,7 +81,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div style="display: flex; flex-direction:row; align-items:center;">
               <h3>${this._profile.nickname}</h3>
               <div style="flex-grow:1;"></div>
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e) => {navigator.clipboard.writeText(this.hash.b64); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash.b64} @click=${(e) => {navigator.clipboard.writeText(this.hash.b64); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
             </div>
             <hr style="width: 100%"/>
             <h5>${msg('Language')}</h5>

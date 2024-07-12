@@ -11,6 +11,7 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import {Profile as ProfileMat, ProfilesAltPerspective,} from "@ddd-qc/profiles-dvm";
 import {renderProfileAvatar} from "../render";
+import {Timestamp} from "@holochain/client";
 
 /** @element peer-list */
 @localized()
@@ -97,31 +98,34 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  renderList(profiles:  AgentIdMap<ProfileMat>) {
-    if (profiles.size === 0) {
+  renderList(profilesPerspective: ProfilesAltPerspective) {
+    if (profilesPerspective.profiles.size === 0) {
       return html`
         <li>
             (no profiles found)
         </li>`;
     }
-    /** Build avatar agent list */
-    const peers = Array.from(profiles.entries())
-      .filter(([agentId, _profile]) => !agentId.equals(this.cell.agentId))
-      .map(([agentId, profile]) => {
+    /** Build peer list */
+    const profiles: [AgentId, ProfileMat, Timestamp][] = Array.from(profilesPerspective.profileByAgent.entries())
+      .filter(([agentId, _ah]) => !agentId.equals(this.cell.agentId))
+      .map(([agentId, ah]) => [agentId, profilesPerspective.profiles.get(ah)[0], profilesPerspective.profiles.get(ah)[1]]);
 
-      return html`
-        <li class="folk" style="display:flex; align-items:center" 
-            @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}
-        >
-          <span @click=${(e) => this.handleClickAvatar(agentId)}>
-            ${renderProfileAvatar(this.profilesPerspective.getProfile(agentId), "S")}
-            <!--<sl-badge class="avatar-badge" type="${this.determineAgentStatus(agentId)}" pill></sl-badge> -->
-            <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
-              ${profile.nickname}
+    /** render each peer */
+    const peers = profiles
+      .map(([agentId, profile, _ts]) => {
+        return html`
+          <li class="folk" style="display:flex; align-items:center" 
+              @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}
+          >
+            <span @click=${(e) => this.handleClickAvatar(agentId)}>
+              ${renderProfileAvatar(profile, "S")}
+              <!--<sl-badge class="avatar-badge" type="${this.determineAgentStatus(agentId)}" pill></sl-badge> -->
+              <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
+                ${profile.nickname}
+              </span>
             </span>
-          </span>
-        </li>`
-    })
+          </li>`
+      })
 
     /** */
     return html`
@@ -141,9 +145,8 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       </div>`;
     }
 
-    // FIXME
-    //return this.renderList(this.profilesPerspective.profiles);
-    return html`<div>FIXME</div>`;
+    return this.renderList(this.profilesPerspective);
+    //return html`<div>FIXME</div>`;
   }
 
 
