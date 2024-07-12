@@ -70,7 +70,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       let iReacted = false;
       let tooltip = "" + emoji + " reacted by "
       for (const key of agents) {
-        iReacted ||= key.b64 == this.cell.agentId.b64;
+        iReacted ||= key.equals(this.cell.agentId);
         let profile = {nickname: "unknown", fields: {}} as ProfileMat;
         const maybeAgent = this._dvm.profilesZvm.perspective.getProfile(key);
         if (maybeAgent) {

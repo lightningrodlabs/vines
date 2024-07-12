@@ -380,7 +380,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
-      const canPopup = notif.author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const canPopup = !notif.author.equals(this.cell.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeFeedNotificationTitle(notif, this._dvm, this._filesDvm, this.weServices);
@@ -463,7 +463,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.b64 != this.cell.agentId.b64);
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.equals(this.cell.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}

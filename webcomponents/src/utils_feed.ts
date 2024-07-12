@@ -60,7 +60,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
       const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       const mainThreadAh = getMainThread(threadsDvm);
       if (maybeThread) {
-        if (beadInfo.bead.ppAh == mainThreadAh) {
+        if (beadInfo.bead.ppAh.equals(mainThreadAh)) {
           title = "New post";
         } else {
           title = `New comment on post "${maybeThread.pp.subject_name}"` //maybeThread.name;

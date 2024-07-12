@@ -268,9 +268,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _replyToAh?: ActionId;
 
 
-  private _threadNames: ActionIdMap<string> = new ActionIdMap();
+  //private _threadNames: ActionIdMap<string> = new ActionIdMap();
 
-  @property() selectedThreadHash?: ActionId;
+  @property({type: ActionId}) selectedThreadHash?: ActionId;
   @property() selectedBeadAh?: ActionId;
 
   @property({type: Object})
@@ -556,7 +556,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
       const author =  maybeProfile? maybeProfile.nickname : "unknown";
-      const canPopup = notif.author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const canPopup = !notif.author.equals(this.cell.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
@@ -642,7 +642,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.b64 != this.cell.agentId.b64);
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => !agentKey.equals(this.cell.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -792,25 +792,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
-    const prevThreadHash = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
+    const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
     /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
       /** set lastProbeTime for current thread */
-      if (prevThreadHash) {
-        await this._dvm.threadsZvm.commitThreadProbeLog(prevThreadHash);
-      }
-      /** Clear notifications on prevThread */
-      const prevThreadNotifs = this._dvm.threadsZvm.getAllNotificationsForPp(prevThreadHash);
-      for (const [linkAh, _notif] of prevThreadNotifs) {
-        await this._dvm.threadsZvm.deleteNotification(linkAh);
-      }
-      /** Cache and reset input-bar */
-      const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
-      if (inputBar) {
-        this._dvm.perspective.threadInputs.set(prevThreadHash, inputBar.value);
-        inputBar.setValue("");
-        // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
+      if (maybePrevThreadId) {
+        await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
+        /** Clear notifications on prevThread */
+        const prevThreadNotifs = this._dvm.threadsZvm.getAllNotificationsForPp(maybePrevThreadId);
+        for (const [linkAh, _notif] of prevThreadNotifs) {
+          await this._dvm.threadsZvm.deleteNotification(linkAh);
+        }
+        /** Cache and reset input-bar */
+        const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
+        if (inputBar) {
+          this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
+          inputBar.setValue("");
+          // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
+        }
       }
     }
     /** Close any opened popover */
@@ -909,7 +909,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
           primaryTitle = profile? profile.nickname : "unknown";
         }
-        const maybeSemanticTopicTitle = this.threadsPerspective.allSemanticTopics.get(new EntryId(thread.pp.subject.address.b64));
+        const maybeSemanticTopicTitle = this.threadsPerspective.allSemanticTopics.get(EntryId.from(thread.pp.subject.address));
         let topic;
          if (maybeSemanticTopicTitle) {
            topic = maybeSemanticTopicTitle;
@@ -993,7 +993,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
           console.log("appletInfo", appletInfo);
           /** exclude this applet as it's handled specifically elsewhere */
-          if (this.weServices.appletId == appletId.b64) {
+          if (appletId.equals(this.weServices.appletId)) {
             return html``;
           }
           return html`<ui5-option id=${appletId.b64} icon="discussion">${appletInfo.appletName}</ui5-option>`;

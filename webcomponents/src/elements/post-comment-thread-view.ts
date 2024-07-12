@@ -255,7 +255,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     //const subjectPrefix = determineSubjectPrefix(subjectType);
 
-    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId.b64 != this.weServices.appletId? this.weServices.appletInfoCached(thread.pp.subject.appletId) : undefined;
+    const maybeAppletInfo = this.weServices && !thread.pp.subject.appletId.equals(this.weServices.appletId)? this.weServices.appletInfoCached(thread.pp.subject.appletId) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<post-comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
 

@@ -65,8 +65,8 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
 
-      console.log("this.selectedThreadHash", this.selectedThreadHash.short, ppAh.short, this.selectedThreadHash.b64 == ppAh.b64);
-      const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
+      console.log("this.selectedThreadHash", this.selectedThreadHash.short, ppAh.short, this.selectedThreadHash.equals(ppAh));
+      const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
 
       //const hasNewBeads = thread && thread.hasUnreads();
       const maybeUnreadThread = this.threadsPerspective.unreadThreads.get(ppAh);

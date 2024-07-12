@@ -69,7 +69,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
           <div style="background: ${this._profile.fields['color']}; width: 100%; height: 70px;"></div>
           <div style="display: flex; flex-direction:row; min-height:60px;">
               <div style="flex-grow:1;"></div>
-              ${this.hash.b64 == this.cell.agentId.b64? html`
+              ${this.hash.equals(this.cell.agentId)? html`
                   <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")} style="margin-right: 5px;"
                   @click=${(e) => {
                   e.stopPropagation();
@@ -88,7 +88,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div class="info">${this._profile.fields['lang']}</div>
             <h5>${msg('Member since')}</h5>
             <div class="info">${ts2day(timestamp)}</div>
-            ${this.hash.b64 != this.cell.agentId.b64? html`<vines-input-bar
+            ${!this.hash.equals(this.cell.agentId)? html`<vines-input-bar
                     .profilesZvm=${this._zvm}
                     .topic=${this._profile.nickname}
             ></vines-input-bar>`:html``}

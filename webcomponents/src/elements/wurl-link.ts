@@ -96,7 +96,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     try {
       const wal = weaveUrlToWal(this.wurl);
-      if (new DnaId(wal.hrl[0]).b64 == this.cell.dnaId.b64) {
+      if (this.cell.dnaId.equals(wal.hrl[0])) {
         this._appletName = "Vines";
         /** Determine entry */
         const hash = new ActionId(wal.hrl[1]);

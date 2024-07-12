@@ -312,7 +312,7 @@ export function determineSubjectPrefix(type: SpecialSubjectType) {
 export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
-  if (subject.appletId.b64 == THIS_APPLET_ID.b64 || (weServices && subject.appletId.b64 == weServices.appletId)) {
+  if (subject.appletId.equals(THIS_APPLET_ID) || (weServices && subject.appletId.equals(weServices.appletId))) {
     switch (subject.typeName) {
       /** -- special types -- */
       case SpecialSubjectType.Applet:

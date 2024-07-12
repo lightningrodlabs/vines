@@ -41,10 +41,10 @@ import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId, LinkableId} from "@ddd-qc/cell-proxy";
+import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FILES_DEFAULT_INTEGRITY_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
+import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
@@ -82,8 +82,8 @@ export class VinesApp extends HappElement {
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
-  @state() private _selectedThreadHash?: LinkableId;
-  @state() private _selectedBeadAh?: ActionId;
+  @state() private _maybeSelectedThreadAh?: ActionId;
+  @state() private _maybeSelectedBeadAh?: ActionId;
 
 
   /** -- We-applet specifics -- */
@@ -307,8 +307,8 @@ export class VinesApp extends HappElement {
           //this._weServices.openHrl();
         }
       } else {
-        this._selectedThreadHash = e.detail.address;
-        delete this._selectedBeadAh;
+        this._maybeSelectedThreadAh = new ActionId(e.detail.address.b64);
+        delete this._maybeSelectedBeadAh;
       }
     }
     if (e.detail.type == JumpDestinationType.Bead) {
@@ -317,8 +317,8 @@ export class VinesApp extends HappElement {
       const beadAh = new ActionId(e.detail.address.b64);
       const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(beadAh);
       if (beadInfo) {
-        this._selectedThreadHash = beadInfo.bead.ppAh;
-        this._selectedBeadAh = beadAh;
+        this._maybeSelectedThreadAh = beadInfo.bead.ppAh;
+        this._maybeSelectedBeadAh = beadAh;
       } else {
         console.warn("JumpEvent failed. Bead not found", e.detail.address);
       }
@@ -398,8 +398,8 @@ export class VinesApp extends HappElement {
     // TODO: should propable store networkInfoLogs in class field
     let view = html`
             <vines-page
-                      .selectedThreadHash=${this._selectedThreadHash}
-                      .selectedBeadAh=${this._selectedBeadAh}
+                      .selectedThreadHash=${this._maybeSelectedThreadAh}
+                      .selectedBeadAh=${this._maybeSelectedBeadAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(e) => this.networkInfoAll()}

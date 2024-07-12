@@ -158,7 +158,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderPrevBead(beadInfo: BeadInfo) {
-    const hasFarPrev = beadInfo.bead.prevBeadAh != beadInfo.bead.ppAh && beadInfo.bead.prevBeadAh != this.prevBeadAh && this.prevBeadAh;
+    const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh);
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
     if (!hasFarPrev) {
       return html``;

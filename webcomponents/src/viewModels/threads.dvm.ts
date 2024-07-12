@@ -207,7 +207,7 @@ export class ThreadsDvm extends DnaViewModel {
     console.log("allCurrentOthers", this._perspective.agentPresences)
     const currentTime: number = Math.floor(Date.now() / 1000);
     const keysB64 = agents
-      .filter((key) => key.b64 != this.cell.agentId.b64)
+      .filter((key) => !key.equals(this.cell.agentId))
       .filter((key) => {
         const lastPingTime = this._perspective.agentPresences.get(key);
         if (!lastPingTime) return false;

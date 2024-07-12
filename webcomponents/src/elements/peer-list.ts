@@ -47,7 +47,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   determineAgentStatus(key: AgentId): string {
     // const status = "primary"; // "neutral"
-    if (key.b64 == this._dvm.profilesZvm.cell.agentId.b64) {
+    if (key.equals(this._dvm.profilesZvm.cell.agentId)) {
       return "success";
     }
     const lastPingTime: number = this.perspective.agentPresences.get(key);
@@ -68,7 +68,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("Avatar clicked:", agentId)
     this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }));
     //console.log(e.detail)
-    this.soloAgent = agentId == this.soloAgent? null : agentId;
+    this.soloAgent = agentId.equals(this.soloAgent)? null : agentId;
     //this.requestUpdate();
   }
 
@@ -106,7 +106,7 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Build avatar agent list */
     const peers = Array.from(profiles.entries())
-      .filter(([agentId, _profile]) => agentId.b64 != this.cell.agentId.b64)
+      .filter(([agentId, _profile]) => !agentId.equals(this.cell.agentId))
       .map(([agentId, profile]) => {
 
       return html`

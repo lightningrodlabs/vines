@@ -81,9 +81,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       if (!thread) {
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
-      console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash == ppAh);
+      console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh, this.selectedThreadHash.equals(ppAh));
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
-      const isSelected = this.selectedThreadHash && this.selectedThreadHash == ppAh;
+      const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
       title = thread.name;
       //const hasNewBeads = thread && thread.hasUnreads();
       const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
@@ -335,7 +335,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       console.log("<my-threads-lister> appletId:", appletId);
       let appletSubLister = html``;
       let appletName = "Vines";
-      if (appletId.b64 != THIS_APPLET_ID.b64 && appletId.b64 != this.weServices.appletId) {
+      if (!appletId.equals(THIS_APPLET_ID) && !appletId.equals(this.weServices.appletId)) {
         if (!this.weServices || !this.weServices.appletInfoCached(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
           return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown applet')}</div>`;
