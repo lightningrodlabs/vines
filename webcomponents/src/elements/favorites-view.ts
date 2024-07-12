@@ -85,7 +85,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<favorites-view>.render()");
+    console.log("<favorites-view>.render()", this._dvm.threadsZvm.perspective.favorites);
 
     const doodle_bg =  html `
           <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">

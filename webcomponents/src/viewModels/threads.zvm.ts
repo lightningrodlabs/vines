@@ -1192,7 +1192,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   storeFavorite(beadAh: ActionId): void {
-    if (!this._perspective.favorites.map((ah) => ah.b64).includes(beadAh.b64)) {
+    if (this._perspective.favorites.map((ah) => ah.b64).includes(beadAh.b64)) {
       return;
     }
     this._perspective.favorites.push(beadAh);
@@ -1786,7 +1786,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         this.handleInboxLink(pulse, from);
       break;
       case ThreadsLinkType.Hide:
-        console.log("handleLinkSignal() hide", pulse.target);
+        console.log("handleLinkPulse() hide", pulse.target);
         this.storeHidden(pulse.target, StateChangeType.Create == pulse.state);
       break;
       case ThreadsLinkType.Dm: {
@@ -1838,6 +1838,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       break;
       case ThreadsLinkType.Favorite: {
+        console.log("handleLinkPulse() Favorite", pulse.target.short);
         const targetAh = new ActionId(pulse.target.b64);
         if (StateChangeType.Create == pulse.state) {
           this.storeFavorite(targetAh);

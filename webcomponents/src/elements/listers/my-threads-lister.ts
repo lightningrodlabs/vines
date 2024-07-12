@@ -303,7 +303,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
     /** concat (and dedup) */
-    const allThreads = Object.assign({}, myThreads, myBeadThreads);
+    //const allThreads = Object.assign({}, myThreads, myBeadThreads);
+    const allThreads = new ActionIdMap([...myThreads, ...myBeadThreads]);
 
     console.log("<my-threads-lister> myBeadThreads", myBeadThreads.size, myBeadThreads);
     console.log("<my-threads-lister> myThreads", myThreads.size, myThreads);

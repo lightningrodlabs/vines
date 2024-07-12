@@ -32,7 +32,7 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
     const beadAhs = this._dvm.threadsZvm.searchTextBeads(this.parameters);
 
     const matches = beadAhs.map(([beadAh, _info, _text]) => {
-      return html`<ui5-li key=${beadAh} style="height:auto">
+      return html`<ui5-li .key=${beadAh} style="height:auto">
           <chat-item .hash=${beadAh} shortmenu
                      @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}>
           </chat-item>

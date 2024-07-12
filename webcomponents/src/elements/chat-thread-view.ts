@@ -141,7 +141,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Scroll the list container to the requested bead */
     if (this.beadAh) {
       console.log("<chat-threaded-view>.updated()", this.beadAh)
-      const beadItem = this.shadowRoot.getElementById(`${this.beadAh}`);
+      const beadItem = this.shadowRoot.getElementById(`${this.beadAh.b64}`);
       if (beadItem) {
         const scrollY = beadItem.offsetTop - this.offsetTop;
         this.scrollTo({ top: scrollY, behavior: 'smooth' });
