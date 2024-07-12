@@ -362,11 +362,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
 
     /** Grab AssetInfo for all AnyBeads */
-    for (const [beadInfo, beadPair] of this.threadsPerspective.beads.entries()) {
-      if (beadInfo != ThreadsEntryType.AnyBead) {
+    for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
+      if (beadInfo.beadType != ThreadsEntryType.AnyBead) {
         continue;
       }
-      const anyBead = beadPair[1] as AnyBeadMat;
+      const anyBead = typed as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
       if (!this.weServices.assetInfoCached(wal)) {
         const maybe = await this.weServices.assetInfo(wal);

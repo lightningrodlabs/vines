@@ -5,7 +5,7 @@ import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
-import {threadJumpEvent} from "../../jump";
+import {threadJumpEvent} from "../../events";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";

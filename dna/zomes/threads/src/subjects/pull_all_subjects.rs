@@ -1,7 +1,6 @@
 use hdi::hash_path::path::Component;
 use hdk::prelude::*;
 use threads_integrity::*;
-//use zome_utils::*;
 use path_explorer_types::*;
 use zome_utils::zome_panic_hook;
 use crate::participation_protocols::comp2subject;
@@ -25,7 +24,7 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     if comps.len() == 1 {
       continue;
     }
-    debug!("Parsing leaf_anchor: '{}' | {:?}", tp.anchor, comps);
+    debug!("Parsing leaf_anchor: '{}'", tp.anchor);
     //let applet_hash = comp2hash(&comps[1])?;
     let applet_id = String::try_from(&comps[1])
         .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
@@ -33,10 +32,11 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     //let subject_hash = comp2hash(&comps[3])?;
     let (dna_hash, subject_hash) = comp2subject(&comps[3])?;
 
+    let type_name = String::try_from(&subject_type_comp).unwrap();
+    debug!("type_name: '{}' | {:?}", type_name, subject_type_comp.as_ref());
     let subject = Subject {
       address: subject_hash.clone(),
-      //hash_type: AppletSubjectType::from(subject_hash),
-      type_name: std::str::from_utf8(subject_type_comp.as_ref()).unwrap().to_string(), // FIXME
+      type_name,
       dna_hash,
       applet_id,
     };

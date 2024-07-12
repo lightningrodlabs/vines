@@ -6,14 +6,12 @@ import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspec
 import {ActionId} from "@ddd-qc/lit-happ";
 
 
-export const POST_TYPE_NAME = "Post";
-
 /**
  * Grab oldest thread about MAIN TOPIC.
  * This is because partitioned networks edge case where several agents create the main thread.
  */
 export function getMainThread(dvm: ThreadsDvm): ActionId | null {
-  const threads = dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID);
+  const threads = dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
     return null;

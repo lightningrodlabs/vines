@@ -9,8 +9,8 @@ import 'emoji-picker-element';
 
 import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {beadJumpEvent, threadJumpEvent} from "../jump";
-import {globaFilesContext, onlineLoadedContext, weClientContext, ShowProfileEvent} from "../contexts";
+import {beadJumpEvent, threadJumpEvent, ShowProfileEvent} from "../events";
+import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
@@ -220,7 +220,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const prevBead = this._dvm.threadsZvm.getBaseBead(beadInfo.bead.prevBeadAh);
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     if (prevBeadInfo) {
-      prevProfile = this._dvm.profilesZvm.perspective.getProfile(prevBeadInfo.author);
+      const maybePrevProfile = this._dvm.profilesZvm.perspective.getProfile(prevBeadInfo.author);
+      if (maybePrevProfile) {
+        prevProfile = maybePrevProfile
+      }
     }
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
 

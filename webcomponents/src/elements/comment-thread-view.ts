@@ -1,4 +1,4 @@
-import {html, PropertyValues, css} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
@@ -16,7 +16,7 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
-import {beadJumpEvent, threadJumpEvent} from "../jump";
+import {beadJumpEvent, SpecialSubjectType, threadJumpEvent} from "../events";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
@@ -259,7 +259,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
-    const subjectPrefix = determineSubjectPrefix(subjectType);
+    const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
     const maybeAppletInfo = this.weServices && thread.pp.subject.appletId.b64 != this.weServices.appletId? this.weServices.appletInfoCached(thread.pp.subject.appletId) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
@@ -327,17 +327,25 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   const wal: WAL = {hrl: [thread.pp.subject.dnaHash.hash, thread.pp.subject.address.hash], context: null};
                   /** Jump within app if subject is from Vines */
                   if (this.cell.dnaId.b64 == thread.pp.subject.dnaHash.b64) {
-                      if (thread.pp.subject.typeName == ThreadsEntryType.ParticipationProtocol) {
-                          this.dispatchEvent(threadJumpEvent(new ActionId(wal.hrl[1])))
-                          return;
-                      }
-                      if (thread.pp.subject.typeName == ThreadsEntryType.AnyBead
-                       || thread.pp.subject.typeName == ThreadsEntryType.EntryBead
-                       || thread.pp.subject.typeName == ThreadsEntryType.TextBead
-                       || thread.pp.subject.typeName == ThreadsEntryType.EncryptedBead
-                      ) {
-                          this.dispatchEvent(beadJumpEvent(new ActionId(wal.hrl[1])))
-                          return;
+                      switch(thread.pp.subject.typeName) {
+                          case SpecialSubjectType.AgentPubKey:
+                          case SpecialSubjectType.ParticipationProtocol: 
+                            this.dispatchEvent(threadJumpEvent(new ActionId(wal.hrl[1]))); 
+                            return; 
+                          break;
+                          case SpecialSubjectType.AnyBead:
+                          case SpecialSubjectType.TextBead:
+                          case SpecialSubjectType.EncryptedBead:
+                          case SpecialSubjectType.EntryBead:
+                            this.dispatchEvent(beadJumpEvent(new ActionId(wal.hrl[1]))); 
+                            return; 
+                          break;
+                          case SpecialSubjectType.Applet:
+                          case SpecialSubjectType.SubjectType:
+                          case SpecialSubjectType.SemanticTopic:
+                          case SpecialSubjectType.Post:
+                          default:
+                            break
                       }
                       return;
                   }

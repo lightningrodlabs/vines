@@ -13,7 +13,6 @@ import {
   NotifyPeerInput,
   NotifySetting,
   ParticipationProtocol,
-  SEMANTIC_TOPIC_TYPE_NAME,
   SemanticTopic,
   SetNotifySettingInput,
   Subject,
@@ -41,7 +40,6 @@ import {
   TipProtocolVariantEntry,
   dematerializeEntryPulse,
   LinkableId,
-  LinkableIdMap,
   enc64,
   getIndexByVariant,
   getVariantByIndex, TipProtocolVariantLink, dematerializeLinkPulse, EntryPulse
@@ -77,10 +75,11 @@ import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {decode, encode} from "@msgpack/msgpack";
-import {parseMentions} from "../utils";
+import {AnyIdMap, parseMentions} from "../utils";
 import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType, ThreadsUnitEnum} from "../bindings/threads.integrity";
+import {SpecialSubjectType} from "../events";
 
 
 //generateSearchTest();
@@ -151,7 +150,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   getSubject(subjectHash: LinkableId): SubjectMat | undefined {
-    return this._perspective.allSubjects.get(subjectHash);
+    return this._perspective.allSubjects.get(subjectHash.b64);
   }
 
   getSemanticTopic(eh: EntryId): string | undefined {
@@ -286,7 +285,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   getCommentThreadForSubject(subjectId: LinkableId): ActionId | null {
-    const ppAhs = this._perspective.threadsPerSubject.get(subjectId);
+    const ppAhs = this._perspective.threadsPerSubject.get(subjectId.b64);
     if (!ppAhs) {
       return null;
     }
@@ -333,23 +332,23 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** Returns SubjectHash -> OldestNewThreadTs, i.e. creationTime of Subject */
-  getNewSubjects(): LinkableIdMap<Timestamp> {
+  getNewSubjects(): AnyIdMap<Timestamp> {
     /** newSubjects: Store subject's oldest 'new' thread time for each new thread */
-    const oldestNewThreadBySubject: LinkableIdMap<Timestamp> = new LinkableIdMap();
+    const oldestNewThreadBySubject: AnyIdMap<Timestamp> = new AnyIdMap();
     for (const [ppAh, subjectId] of this._perspective.newThreads.entries()) {
       const thread = this._perspective.threads.get(ppAh);
       if (!thread) {
         console.error("Thread not found");
         continue;
       }
-      if (!oldestNewThreadBySubject.get(subjectId) || thread.creationTime < oldestNewThreadBySubject.get(subjectId)) {
-        oldestNewThreadBySubject.set(subjectId, thread.creationTime);
+      if (!oldestNewThreadBySubject.get(subjectId.b64) || thread.creationTime < oldestNewThreadBySubject.get(subjectId.b64)) {
+        oldestNewThreadBySubject.set(subjectId.b64, thread.creationTime);
       }
     }
     //console.log("oldestThreadTimeBySubject", oldestThreadTimeBySubject);
 
     /* Figure out if subjects are new: no older "none-new" threads found for this subject */
-    let newSubjects: LinkableIdMap<Timestamp> = new LinkableIdMap();
+    let newSubjects: AnyIdMap<Timestamp> = new AnyIdMap();
     for (const [subjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
       //const pairs = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
       const pairs: [ActionId, Timestamp][] = this._perspective.threadsPerSubject.get(subjectHash).map((ppAh) => {
@@ -524,8 +523,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     await this.initializePerspectiveOnline();
     /** Grab all threads of other subjects to see if there are new ones */
     let probes = []
-    for (const hash of this._perspective.allSubjects.keys()) {
-      probes.push(this.pullSubjectThreads(hash));
+    for (const subjectAdr of this._perspective.allSubjects.keys()) {
+      probes.push(this.pullSubjectThreads(intoLinkableId(subjectAdr)));
     }
     await Promise.all(probes);
 
@@ -538,7 +537,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async probeInbox() {
-    this._perspective.inbox = new ActionIdMap();
+    this._perspective.inbox.clear();
     await this.zomeProxy.probeInbox();
   }
 
@@ -559,13 +558,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** Get all Subjects from the RootAnchor */
-  async pullAllSubjects(): Promise<Map<LinkableId, SubjectMat>> {
+  async pullAllSubjects(): Promise<AnyIdMap<SubjectMat>> {
     const subjects = await this.zomeProxy.pullAllSubjects();
     for (const subject of subjects) {
       const subjectMat = materializeSubject(subject);
-      this._perspective.allSubjects.set(subjectMat.address, subjectMat);
+      this._perspective.allSubjects.set(subjectMat.address.b64, subjectMat);
     }
-    console.log("threadsZvm.probeAllSubjects()", this._perspective.allSubjects.size);
+    console.log("threadsZvm.pullAllSubjects()", this._perspective.allSubjects.size);
     this.notifySubscribers();
     return this._perspective.allSubjects;
   }
@@ -931,7 +930,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const subject: Subject = {
       address: topicEh.hash,
-      typeName: SEMANTIC_TOPIC_TYPE_NAME,
+      typeName: SpecialSubjectType.SemanticTopic,
       appletId: appletId.b64,
       dnaHash: this.cell.dnaId.hash, // TODO: remove this useless field?
     };
@@ -1235,14 +1234,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         this._perspective.newThreads.set(ppAh, ppMat.subject.address);
       }
       /** threadsPerSubject */
-      if (!this._perspective.threadsPerSubject.get(ppMat.subject.address)) {
-        this._perspective.threadsPerSubject.set(ppMat.subject.address, []);
+      if (!this._perspective.threadsPerSubject.get(ppMat.subject.address.b64)) {
+        this._perspective.threadsPerSubject.set(ppMat.subject.address.b64, []);
       }
-      this._perspective.threadsPerSubject.get(ppMat.subject.address).push(ppAh);
+      this._perspective.threadsPerSubject.get(ppMat.subject.address.b64).push(ppAh);
 
       /** All Subjects */
-      if (!this._perspective.allSubjects.get(ppMat.subject.address)) {
-        this._perspective.allSubjects.set(ppMat.subject.address, materializeSubject(pp.subject));
+      if (!this._perspective.allSubjects.get(ppMat.subject.address.b64)) {
+        this._perspective.allSubjects.set(ppMat.subject.address.b64, materializeSubject(pp.subject));
       }
     }
     //console.log("storePp()", ppMat.subjectHash, ppAh)
@@ -1780,7 +1779,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async handleLinkPulse(pulse: LinkPulseMat, from: AgentId) {
+  protected async handleLinkPulse(pulse: LinkPulseMat, from: AgentId) {
     let tip: TipProtocol;
     switch(pulse.link_type) {
       case ThreadsLinkType.Inbox:
@@ -1857,7 +1856,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
+  protected async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
+    console.log("ThreadsZvm.handleEntryPulse()", pulse, from.short)
     let tip: TipProtocol;
     const isFromSelf = from.b64 == this.cell.agentId.b64;
     switch(pulse.entryType) {
@@ -1890,11 +1890,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
               if (enc64(pp.subject.dnaHash) == this.cell.dnaId.b64) {
                 //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
                 let author = await this.zomeProxy.getRecordAuthor(pp.subject.address);
-                await this.zomeProxy.notifyPeer({
-                  content: pulse.ah.hash,
-                  who: author,
-                  event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Fork),
-                });
+                if (new AgentId(author).b64 != this.cell.agentId.b64) {
+                  await this.zomeProxy.notifyPeer({
+                    content: pulse.ah.hash,
+                    who: author,
+                    event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Fork),
+                  });
+                }
                 //}
               }
               /** Tip all about new Pp */

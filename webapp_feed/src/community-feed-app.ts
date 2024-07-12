@@ -9,7 +9,7 @@ import {
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
-import {AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@lightningrodlabs/we-applet";
+import {AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@lightningrodlabs/we-applet";
 import {
   ActionId,
   AgentId,
@@ -257,7 +257,7 @@ export class CommunityFeedApp extends HappElement {
     /** Make sure main topic and thread exists */
     this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
     this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
-    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID);
+    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
       const mainThreadAh = getMainThread(this.threadsDvm);

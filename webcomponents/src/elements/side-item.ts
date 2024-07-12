@@ -14,9 +14,9 @@ import {AnyBead, ThreadsEntryType} from "../bindings/threads.types";
 import {md} from "../markdown/md";
 import {determineBeadName, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
-import {beadJumpEvent} from "../jump";
+import {beadJumpEvent, ShowProfileEvent} from "../events";
 import {renderAvatar} from "../render";
-import {globaFilesContext, weClientContext, ShowProfileEvent} from "../contexts";
+import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 

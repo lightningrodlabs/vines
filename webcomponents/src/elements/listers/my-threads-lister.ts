@@ -4,24 +4,20 @@ import {msg} from "@lit/localize";
 import {
   ActionId,
   ActionIdMap,
-  Dictionary,
-  DnaId,
-  DnaIdMap,
-  EntryId, EntryIdMap,
+  EntryId, EntryIdMap, intoLinkableId,
   LinkableId,
-  LinkableIdMap,
   ZomeElement
 } from "@ddd-qc/lit-happ";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {SubjectMat, ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {CommentRequest} from "../../utils";
+import {AnyIdMap, CommentRequest} from "../../utils";
 import {toasty} from "../../toast";
-import {threadJumpEvent} from "../../jump";
+import {threadJumpEvent, SpecialSubjectType} from "../../events";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
-import {APPLET_TYPE_NAME, globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 
@@ -72,7 +68,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   onClickCommentAppletId(maybeCommentThread: ActionId | null, appletId: EntryId, appletName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: appletId, subjectType: APPLET_TYPE_NAME, subjectName: appletName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: appletId, subjectType: SpecialSubjectType.Applet, subjectName: appletName, viewType: "side"}, bubbles: true, composed: true }));
   }
 
 
@@ -185,7 +181,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** Render Subject */
     const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(subjectAdr);
-    const subjectIsNew = newSubjects.get(subjectAdr) != undefined;
+    const subjectIsNew = newSubjects.get(subjectAdr.b64) != undefined;
     let subjectHasUnreadComments = false;
     if (maybeCommentThread != null) {
       subjectHasUnreadComments = unreadSubjects.includes(subjectAdr);
@@ -314,8 +310,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     console.log("<my-threads-lister> allThreads", allThreads.size, allThreads);
 
     /** appletId -> (subjectHash -> ppAh[]) */
-    let allThreadsByApplet: EntryIdMap<LinkableIdMap<ActionId[]>> = new EntryIdMap();
-    const allSubjects: LinkableIdMap<SubjectMat> = new LinkableIdMap();
+    let allThreadsByApplet: EntryIdMap<AnyIdMap<ActionId[]>> = new EntryIdMap();
+    const allSubjects: AnyIdMap<SubjectMat> = new AnyIdMap();
     Array.from(allThreads.entries()).map(([ppAh, thread]) => {
       let appletId = thread.pp.subject.appletId;
       if (!appletId) {
@@ -323,13 +319,13 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         return;
       }
       if (!allThreadsByApplet.get(appletId)) {
-        allThreadsByApplet.set(appletId, new LinkableIdMap())
+        allThreadsByApplet.set(appletId, new AnyIdMap())
       }
-      if (!allThreadsByApplet.get(appletId).get(thread.pp.subject.address)) {
-        allThreadsByApplet.get(appletId).set(thread.pp.subject.address, []);
+      if (!allThreadsByApplet.get(appletId).get(thread.pp.subject.address.b64)) {
+        allThreadsByApplet.get(appletId).set(thread.pp.subject.address.b64, []);
       }
-      allThreadsByApplet.get(appletId).get(thread.pp.subject.address).push(ppAh);
-      allSubjects.set(thread.pp.subject.address, thread.pp.subject);
+      allThreadsByApplet.get(appletId).get(thread.pp.subject.address.b64).push(ppAh);
+      allSubjects.set(thread.pp.subject.address.b64, thread.pp.subject);
     });
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
 
@@ -352,7 +348,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       /** Render applet subjects */
       let subjectItems = Array.from(appletThreads.entries()).map(([subjectHash, ppAhs]) => {
         const subject = allSubjects.get(subjectHash);
-        return this.renderSubjectSubLister(subjectHash, subject, ppAhs);
+        return this.renderSubjectSubLister(intoLinkableId(subjectHash), subject, ppAhs);
       });
 
       /** Handle empty sub-tree case */

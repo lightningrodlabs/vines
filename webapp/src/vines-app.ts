@@ -10,7 +10,7 @@ import {
   ZomeName,
 } from "@holochain/client";
 import {
-  AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal,
+  AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal,
   WeaveServices,
 } from "@lightningrodlabs/we-applet";
 import {

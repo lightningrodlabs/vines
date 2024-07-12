@@ -4,7 +4,7 @@ import {ActionId, AgentId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar, renderProfileAvatar} from "../render";
-import {beadJumpEvent} from "../jump";
+import {beadJumpEvent} from "../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../styles";
 import {toasty} from "../toast";

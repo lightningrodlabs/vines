@@ -11,8 +11,8 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {CommentRequest} from "../../utils";
-import {threadJumpEvent} from "../../jump";
-import {SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {SpecialSubjectType, threadJumpEvent} from "../../events";
+import {THIS_APPLET_ID, weClientContext} from "../../contexts";
 
 
 /** @ui5/webcomponents */
@@ -305,19 +305,19 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathEh);
       const isUnread = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
-      const topicIsNew = newSubjects.get(pathEh) != undefined;
+      const topicIsNew = newSubjects.get(pathEh.b64) != undefined;
 
       let commentButton = html``;
       if (isUnread) {
         commentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" class=${this._isHovered.get(pathEh)? "" : "transBtn"}
-                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`;
+                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
       } else {
         if (this._isHovered.get(pathEh)) {
           commentButton = html`
               <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Thread" : "Create new Thread"}"
                           design="Transparent"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SUBJECT_TYPE_TYPE_NAME, subjectType)}"></ui5-button>`
+                          @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
         }
       }
 

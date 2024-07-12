@@ -1,28 +1,24 @@
 import {
   AnyBeadMat,
-  BeadType, EntryBeadMat, NotifiableEvent, ParticipationProtocolMat,
+  BeadType, EntryBeadMat, ParticipationProtocolMat,
   SubjectMat, TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.perspective";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {Hrl, WAL, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {PP_TYPE_NAME, SUBJECT_TYPE_TYPE_NAME, THIS_APPLET_ID} from "./contexts";
-import {
-  DM_SUBJECT_TYPE_NAME, NotifySetting,
-  SEMANTIC_TOPIC_TYPE_NAME,
-  ThreadsEntryType,
-} from "./bindings/threads.types";
+import {THIS_APPLET_ID} from "./contexts";
+import {ThreadsEntryType} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {POST_TYPE_NAME} from "./utils_feed";
-import {HoloHash} from "@holochain/client/lib/types";
 import {ActionId, AgentId, AnyId, DnaId, EntryId, LinkableId} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
+import {HoloHashB64} from "@holochain/client";
+import {SpecialSubjectType} from "./events";
 
-//
+
 // /** */
-// export function getEnumIndex(enumType: any, value: string): number {
+// export function getIndexByVariant(enumType: any, value: string): number {
 //   const keys = Object.keys(enumType).filter(key => isNaN(Number(key))); // Filter out numeric keys if present
 //   for (let i = 0; i < keys.length; i++) {
 //     if (enumType[keys[i]] === value) {
@@ -31,6 +27,7 @@ import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 //   }
 //   throw Error("Value not found in enum");
 // }
+
 //
 //
 // /** */
@@ -284,6 +281,7 @@ export function weaveUrlToWal(url: string): WAL {
 export const MAIN_TOPIC_ID: EntryId = EntryId.empty(77); // 'M'
 export const MAIN_SEMANTIC_TOPIC = "__main";
 
+export class AnyIdMap<T> extends Map<HoloHashB64, T> {}
 
 export function ppName(ppMat: ParticipationProtocolMat): string {
   return `${determineSubjectPrefix(ppMat.subject.typeName)} ${ppMat.subject_name}: ${ppMat.purpose}`;
@@ -291,18 +289,19 @@ export function ppName(ppMat: ParticipationProtocolMat): string {
 
 
 /** We  */
-export function determineSubjectPrefix(subjectTypeName: string) {
-    switch (subjectTypeName) {
+export function determineSubjectPrefix(type: SpecialSubjectType) {
+    switch (type) {
       /** -- special types -- */
-      case SEMANTIC_TOPIC_TYPE_NAME: return `#`; break;
-      case PP_TYPE_NAME: return `🧵`; break;
-      case SUBJECT_TYPE_TYPE_NAME: return `🧶`; break;
-      case POST_TYPE_NAME: return ``; break;
-      case DM_SUBJECT_TYPE_NAME: return "🧑"; break;
-      /** -- bead types -- */
-      case ThreadsEntryType.TextBead: return "💬"; break;
-      case ThreadsEntryType.EntryBead: return "📎"; break;
-      case ThreadsEntryType.AnyBead:return "🔗"; break;
+      case SpecialSubjectType.ParticipationProtocol: return `🧵`; break;
+      case SpecialSubjectType.SubjectType: return `🧶`; break;
+      case SpecialSubjectType.AgentPubKey: return "🧑"; break;
+      /** -- Vines types -- */
+      case SpecialSubjectType.SemanticTopic: return `#`; break;
+      case SpecialSubjectType.TextBead: return "💬"; break;
+      case SpecialSubjectType.EntryBead: return "📎"; break;
+      case SpecialSubjectType.AnyBead:return "🔗"; break;
+      /** -- Feed types -- */
+      case SpecialSubjectType.Post: return ``; break;
       /** other */
       default: return ""; break;
     }
@@ -313,18 +312,23 @@ export function determineSubjectPrefix(subjectTypeName: string) {
 export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
-  if (subject.appletId.b64 == THIS_APPLET_ID.b64 /*|| subject.appletId == ""*/ || (weServices && subject.appletId.b64 == weServices.appletId)) {
+  if (subject.appletId.b64 == THIS_APPLET_ID.b64 || (weServices && subject.appletId.b64 == weServices.appletId)) {
     switch (subject.typeName) {
       /** -- special types -- */
-      case SEMANTIC_TOPIC_TYPE_NAME:
-        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(new EntryId(subject.address.b64));
-        if (!semTopicTitle) {
-          //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
-          return "{Unknown Topic}";
+      case SpecialSubjectType.Applet:
+        if (weServices) {
+          let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
+          if (!appletInfo) {
+            return appletInfo.appletName;
+          }
         }
-        return semTopicTitle;
-      break;
-      case PP_TYPE_NAME: {
+        return `{Unknown Applet}`;
+      break
+      case SpecialSubjectType.AgentPubKey:
+        // FIXME: grab agent name in profiles
+        return `{Unknown AgentPubKey}`;
+        break
+      case SpecialSubjectType.ParticipationProtocol: {
         const ah = new ActionId(subject.address.b64);
         const thread = threadsZvm.perspective.threads.get(ah);
         if (!thread) {
@@ -334,7 +338,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
         return thread.name;
       }
       break;
-      case SUBJECT_TYPE_TYPE_NAME:
+      case SpecialSubjectType.SubjectType:
         if (weServices) {
           //let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
           let appletInfo = weServices.cache.appletInfos[weServices.appletId];
@@ -347,7 +351,8 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
           return `{${subject.typeName}}`;
         }
       break;
-      case POST_TYPE_NAME: {
+      /** -- Feed types -- */
+      case SpecialSubjectType.Post: {
         const ah = new ActionId(subject.address.b64);
         const beadTuple = threadsZvm.perspective.beads.get(ah);
         if (beadTuple) {
@@ -357,11 +362,19 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
         }
       }
       break;
-      /** -- bead types -- */
-      case ThreadsEntryType.TextBead:
-      case ThreadsEntryType.EntryBead:
-      case ThreadsEntryType.AnyBead:
-      case ThreadsEntryType.EncryptedBead:
+      /** -- Vines types -- */
+      case SpecialSubjectType.SemanticTopic:
+        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(new EntryId(subject.address.b64));
+        if (!semTopicTitle) {
+          //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
+          return "{Unknown Topic}";
+        }
+        return semTopicTitle;
+        break;
+      case SpecialSubjectType.TextBead:
+      case SpecialSubjectType.EntryBead:
+      case SpecialSubjectType.AnyBead:
+      case SpecialSubjectType.EncryptedBead:
         const ah = new ActionId(subject.address.b64);
         const typedMat = threadsZvm.getBaseBead(ah);
         if (!typedMat) {
@@ -371,7 +384,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
           //typedMat = threadsZvm.getBaseBead(subject.hash);
           return "{Unknown Message}";
         }
-        const beadName = determineBeadName(subject.typeName, typedMat, filesDvm, weServices);
+        const beadName = determineBeadName(subject.typeName as unknown as BeadType, typedMat, filesDvm, weServices);
         //console.log("determineSubjectName() beadName", beadName);
         return beadName;
       break;

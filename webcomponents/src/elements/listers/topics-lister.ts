@@ -7,8 +7,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {CommentRequest, EditTopicRequest} from "../../utils";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
-import {threadJumpEvent} from "../../jump";
-import {SEMANTIC_TOPIC_TYPE_NAME} from "../../bindings/threads.types";
+import {SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 
 
@@ -49,11 +48,11 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   onClickCommentPp(maybeCommentThread: ActionId | null, ppAh: ActionId, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: "ParticipationProtocol", subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: ppAh, subjectType: SpecialSubjectType.ParticipationProtocol, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
   /** */
   onClickCommentTopic(maybeCommentThread: ActionId | null, topicEh: EntryId, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: topicEh, subjectType: SEMANTIC_TOPIC_TYPE_NAME, subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectHash: topicEh, subjectType: SpecialSubjectType.SemanticTopic, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
   /** */
   onClickEditTopic(topicHash: EntryId, subjectName: string) {
@@ -75,7 +74,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       /** Render threads for Topic */
       //let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
       let threads = [];
-      let topicThreads = this.perspective.threadsPerSubject.get(topicEh);
+      let topicThreads = this.perspective.threadsPerSubject.get(topicEh.b64);
       if (topicThreads == undefined) {
         topicThreads = [];
         //this._zvm.pullSubjectThreads(topicHash).then(() => this.requestUpdate())
@@ -192,7 +191,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       /** Render Topic */
       const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(topicEh);
-      const topicIsNew = newSubjects.get(topicEh) != undefined;
+      const topicIsNew = newSubjects.get(topicEh.b64) != undefined;
       let topicHasUnreadComments = false;
       if (maybeCommentThread != null) {
         topicHasUnreadComments = unreadSubjects.includes(topicEh);

@@ -5,7 +5,7 @@ import "@ui5/webcomponents/dist/TextArea.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {SearchParameters} from "../../search";
-import {beadJumpEvent} from "../../jump";
+import {beadJumpEvent} from "../../events";
 
 
 /**

@@ -6,7 +6,7 @@ import {
   EntryId,
   AgentIdMap,
   ActionIdMap,
-  EntryIdMap, DnaId, intoLinkableId, LinkableIdMap, LinkableId
+  EntryIdMap, DnaId, intoLinkableId, LinkableId, getIndexByVariant
 } from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
@@ -17,6 +17,8 @@ import {
   Subject, TextBead, ThreadsEntryType,
 } from "../bindings/threads.types";
 import {WAL} from "@lightningrodlabs/we-applet";
+import {AnyIdMap} from "../utils";
+import {SpecialSubjectType} from "../events";
 
 
 /** -- Should be defined in @holochain/client */
@@ -127,7 +129,7 @@ export interface ThreadsPerspectiveCore {
   /** */
   allAppletIds: EntryId[],
   /** Store of all Subjects: hash -> Subject */
-  allSubjects: LinkableIdMap<SubjectMat>,
+  allSubjects: AnyIdMap<SubjectMat>,
   /** Store of all SemTopic: eh -> TopicTitle */
   allSemanticTopics: EntryIdMap<string>,
   /** Any hash -> isHidden */
@@ -169,7 +171,7 @@ export interface ThreadsPerspectiveCore {
 /** Perspective fields that are built from the Core perspective. There is no exclusif data. */
 export interface ThreadsPerspectiveLive {
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
-  threadsPerSubject: LinkableIdMap<ActionId[]>,
+  threadsPerSubject: AnyIdMap<ActionId[]>,
   /** PathEntryHash -> subjectHash[] */
   subjectsPerType: EntryIdMap<[DnaId, LinkableId][]>,
   /* name string -> ppAh */
@@ -189,7 +191,7 @@ export interface ThreadsPerspectiveLive {
 export function createThreadsPerspective(): ThreadsPerspective {
   return {
     allAppletIds: [],
-    allSubjects: new LinkableIdMap(), //new Array(),
+    allSubjects: new AnyIdMap(), //new Array(),
     allSemanticTopics: new EntryIdMap(),
     hiddens: {},
     threads: new ActionIdMap(),
@@ -202,7 +204,7 @@ export function createThreadsPerspective(): ThreadsPerspective {
     globalProbeLogTs: 0,
     inbox: new ActionIdMap(),
     notifSettings: new ActionIdMap(),
-    threadsPerSubject: new EntryIdMap(),
+    threadsPerSubject: new AnyIdMap(),
     subjectsPerType: new EntryIdMap(),
     threadsByName: {},
     newThreads: new ActionIdMap(),
@@ -253,14 +255,15 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
 
 export interface SubjectMat {
   address: LinkableId,
-  typeName: string,
+  typeName: SpecialSubjectType,
   dnaHash: DnaId,
   appletId: EntryId,
 }
 export function materializeSubject(subject: Subject): SubjectMat {
+  const index = getIndexByVariant(SpecialSubjectType, subject.typeName); // Make sure typeName is valid
   return {
     address: intoLinkableId(subject.address),
-    typeName: subject.typeName,
+    typeName: subject.typeName as SpecialSubjectType,
     dnaHash: new DnaId(subject.dnaHash),
     appletId: new EntryId(subject.appletId),
   }

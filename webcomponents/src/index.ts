@@ -2,7 +2,7 @@ export * from './contexts';
 export * from './utils';
 export * from './styles';
 export * from './doodles';
-export * from './jump';
+export * from './events';
 export * from './toast';
 export * from './search';
 

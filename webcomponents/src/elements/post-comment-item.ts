@@ -20,10 +20,11 @@ import {md} from "../markdown/md";
 import {timeSince, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
 import {renderAvatar} from "../render";
-import {globaFilesContext, weClientContext, ShowProfileEvent} from "../contexts";
+import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {ShowProfileEvent} from "../events";
 
 
 /**

@@ -8,7 +8,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
-import {globaFilesContext, onlineLoadedContext, weClientContext, ShowProfileEvent} from "../contexts";
+import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
@@ -19,6 +19,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
 import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
+import {ShowProfileEvent} from "../events";
 
 
 /**

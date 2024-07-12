@@ -10,7 +10,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../../contexts";
 import {FilesDvm} from "@ddd-qc/files";
-import {JumpEvent, notification2JumpEvent} from "../../jump";
+import {JumpEvent, notification2JumpEvent} from "../../events";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {composeFeedNotificationTitle} from "../../utils_feed";
 

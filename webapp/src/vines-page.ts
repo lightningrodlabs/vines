@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {delay, DnaElement, HappBuildModeType, ActionId, ActionIdMap, EntryId, DnaId} from "@ddd-qc/lit-happ";
+import {ActionId, ActionIdMap, delay, DnaElement, DnaId, EntryId, HappBuildModeType} from "@ddd-qc/lit-happ";
 
 import "@ddd-qc/path-explorer";
 
@@ -129,30 +129,42 @@ import {
   AnyBeadMat,
   beadJumpEvent,
   ChatThreadView,
-  CommentRequest, CommentThreadView,
-  doodle_flowers, EditTopicRequest,
-  globaFilesContext, InputBar, JumpDestinationType,
+  CommentRequest,
+  CommentThreadView,
+  doodle_flowers,
+  EditTopicRequest,
+  globaFilesContext,
+  InputBar,
+  JumpDestinationType,
   JumpEvent,
-  NotifySetting, onlineLoadedContext,
-  ParticipationProtocol, ProfilePanel, searchFieldStyleTemplate,
-  shellBarStyleTemplate, Subject, THIS_APPLET_ID, threadJumpEvent,
+  NotifySetting,
+  onlineLoadedContext,
+  parseSearchInput,
+  ParticipationProtocol,
+  ProfilePanel,
+  searchFieldStyleTemplate,
+  shellBarStyleTemplate,
+  ShowProfileEvent,
+  SpecialSubjectType,
+  Subject,
+  THIS_APPLET_ID,
+  threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
-  ThreadsPerspective, weaveUrlToWal,
+  ThreadsPerspective,
+  toasty,
+  weaveUrlToWal,
   weClientContext,
 } from "@vines/elements";
 
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
 
-import {
-  NetworkInfo,
-  Timestamp,
-} from "@holochain/client";
+import {NetworkInfo, Timestamp,} from "@holochain/client";
 
 import {FrameNotification, GroupProfile, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {consume, ContextProvider} from "@lit/context";
+import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
@@ -162,9 +174,7 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
-import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
-import {parseSearchInput, ShowProfileEvent, toasty} from "@vines/elements";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
 
 
@@ -998,8 +1008,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
           .map(([ppEh, pprm]) => {
             //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
-            const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests[ppEh];
-            return {ppEh, description: pprm.description, timestamp: pprm.creationTs, author: pprm.author, isLocal, isPrivate: false} as FileTableItem;
+            const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
+            const profile = this._dvm.profilesZvm.perspective.getProfile(pprm.author);
+            return {ppEh: ppEh.b64, description: pprm.description, timestamp: pprm.creationTs, author: profile, isLocal, isPrivate: false} as FileTableItem;
           });
       console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
       console.log("dFiles filesDvm cell", this._filesDvm.cell);
@@ -1106,7 +1117,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let maybeBackBtn = html``;
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
-      if (thread) {
+      if (thread && (
+        thread.pp.subject.typeName == SpecialSubjectType.EntryBead
+      || thread.pp.subject.typeName == SpecialSubjectType.TextBead
+      || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
+      || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead)) {
         const subjectAh = new ActionId(thread.pp.subject.address.b64);
         const subjectBead = this._dvm.threadsZvm.getBeadInfo(subjectAh);
         if (subjectBead) {

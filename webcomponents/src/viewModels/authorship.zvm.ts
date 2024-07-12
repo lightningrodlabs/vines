@@ -5,7 +5,7 @@ import {
   EntryId,
   intoLinkableId,
   LinkableId,
-  LinkableIdMap,
+  AnyIdMap,
   ZomeViewModel
 } from "@ddd-qc/lit-happ";
 import {Timestamp} from "@holochain/client";
@@ -22,14 +22,14 @@ export interface AuthorshipPerspective {
   /** typeName -> (hash -> original author)*/
   logsByType: Dictionary<LinkableId[]>,
   /** hash -> original author */
-  allLogs: LinkableIdMap<[Timestamp, AgentId | null]>,
+  allLogs: AnyIdMap<[Timestamp, AgentId | null]>,
 }
 
 export function createAuthorshipPerspective(): AuthorshipPerspective {
   return {
     ascribedTypes: [],
     logsByType: {},
-    allLogs: new LinkableIdMap(),
+    allLogs: new AnyIdMap(),
   }
 }
 
@@ -75,7 +75,7 @@ export class AuthorshipZvm extends ZomeViewModel {
   /** -- Get: Return a stored element -- */
 
   getAuthor(hash: LinkableId): [Timestamp, AgentId | null] | undefined {
-    return this._perspective.allLogs.get(hash);
+    return this._perspective.allLogs.get(hash.b64);
   }
 
   getTypeLogs(typeName: string): LinkableId[] {

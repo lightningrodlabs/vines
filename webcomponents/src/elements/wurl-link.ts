@@ -10,7 +10,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ppName, weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {beadJumpEvent, threadJumpEvent} from "../jump";
+import {beadJumpEvent, threadJumpEvent} from "../events";
 import {localized} from "@lit/localize";
 
 

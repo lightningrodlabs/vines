@@ -14,7 +14,8 @@ import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {materializeSubject} from "../../viewModels/threads.perspective";
-import {getMainThread, POST_TYPE_NAME} from "../../utils_feed";
+import {getMainThread} from "../../utils_feed";
+import {SpecialSubjectType} from "../../events";
 
 
 /**
@@ -42,7 +43,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async beforeCreate(): Promise<[ActionId, boolean]> {
     this._creating = true;
     /** Create main thread if none found */
-    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID);
+    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     let mainThreadAh;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
@@ -141,7 +142,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
     const subject: Subject = {
       address: beadAh.hash,
-      typeName: POST_TYPE_NAME, // ThreadsEntryType.TextBead,
+      typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
       appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
       dnaHash: this.cell.dnaId.hash,
     };
