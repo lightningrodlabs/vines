@@ -77,8 +77,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
   /** */
-  renderSubjectSubLister(subjectHash: LinkableId, subject: SubjectMat, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
-    const isSubjectHidden = this._zvm.perspective.hiddens[subjectHash.b64]? this._zvm.perspective.hiddens[subjectHash.b64] : false;
+  renderSubjectSubLister(subjectAdr: LinkableId, subject: SubjectMat, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
+    const isSubjectHidden = this._zvm.perspective.hiddens[subjectAdr.b64]? this._zvm.perspective.hiddens[subjectAdr.b64] : false;
     let title = "";
     let threads = myThreads.map((ppAh) => {
       const thread = this.perspective.threads.get(ppAh);
@@ -184,28 +184,28 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const unreadSubjects = this._zvm.getUnreadSubjects();
 
     /** Render Subject */
-    const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(subjectHash);
-    const subjectIsNew = newSubjects.get(subjectHash) != undefined;
+    const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(subjectAdr);
+    const subjectIsNew = newSubjects.get(subjectAdr) != undefined;
     let subjectHasUnreadComments = false;
     if (maybeCommentThread != null) {
-      subjectHasUnreadComments = unreadSubjects.includes(subjectHash);
+      subjectHasUnreadComments = unreadSubjects.includes(subjectAdr);
     }
 
     let subjectCommentButton = html``;
     if (subjectHasUnreadComments) {
       subjectCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" style="border:none;background: transparent"
-                                             @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`;
+                                             @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectAdr, title, subject.typeName)}"></ui5-button>`;
     } else {
       subjectCommentButton = maybeCommentThread != null
         ? html`
-                <ui5-button id=${"cmt-" + subjectHash.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
+                <ui5-button id=${"cmt-" + subjectAdr.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
                             style="border:none;display: none"
-                            @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`
+                            @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectAdr, title, subject.typeName)}"></ui5-button>`
         : html`
-                <ui5-button id=${"cmt-" + subjectHash.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Subject")} design="Transparent"
+                <ui5-button id=${"cmt-" + subjectAdr.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Subject")} design="Transparent"
                             style="border:none; padding:0px;display: none" 
-                            @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectHash, title, subject.typeName)}"></ui5-button>`;
+                            @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectAdr, title, subject.typeName)}"></ui5-button>`;
     }
 
     /** 'new', 'notif' and 'unread' badge to display */
@@ -231,22 +231,22 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     }
 
     const subjectHideBtn = this.showArchivedSubjects && isSubjectHidden ? html`
-          <ui5-button id=${"hide-" + subjectHash.b64} icon="show" tooltip="Show" design="Transparent"
+          <ui5-button id=${"hide-" + subjectAdr.b64} icon="show" tooltip="Show" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
-      await this._zvm.unhideSubject(subjectHash);
+      await this._zvm.unhideSubject(subjectAdr);
       toasty(`Unarchived Subject "${title}"`)
     }}"></ui5-button>
       ` : html`
-          <ui5-button id=${"hide-" + subjectHash.b64} icon="hide" tooltip="Hide" design="Transparent"
+          <ui5-button id=${"hide-" + subjectAdr.b64} icon="hide" tooltip="Hide" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
-      await this._zvm.hideSubject(subjectHash);
+      await this._zvm.hideSubject(subjectAdr);
       toasty(`Archived Subject "${title}"`)
     }}"></ui5-button>
       `;
 
-    const subjectHasUnreads = unreadSubjects.includes(subjectHash);
+    const subjectHasUnreads = unreadSubjects.includes(subjectAdr);
 
     if (threads.length == 0) {
       threads = [html`<div class="threadItem">
@@ -256,16 +256,16 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** render subject sub-lister */
     return html`
-          <ui5-panel id=${subjectHash.b64}
+          <ui5-panel id=${subjectAdr.b64}
                      @mouseover=${(e) => {
-                        const hide = this.shadowRoot.getElementById("hide-"+subjectHash);
-                        const cmt = this.shadowRoot.getElementById("cmt-"+subjectHash);
+                        const hide = this.shadowRoot.getElementById("hide-" + subjectAdr.b64);
+                        const cmt = this.shadowRoot.getElementById("cmt-" + subjectAdr.b64);
                         if (hide) hide.style.display = "block";
                         if (cmt) cmt.style.display = "block";
                      }}
                      @mouseout=${(e) => {
-                        const hide = this.shadowRoot.getElementById("hide-"+subjectHash);
-                        const cmt = this.shadowRoot.getElementById("cmt-"+subjectHash);
+                        const hide = this.shadowRoot.getElementById("hide-" + subjectAdr.b64);
+                        const cmt = this.shadowRoot.getElementById("cmt-" + subjectAdr.b64);
                         if (hide) hide.style.display = "none";
                         if (cmt) cmt.style.display = "none";
                      }}>
@@ -302,7 +302,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       .filter(([_ah, thread]) => thread.author.b64 == this.cell.agentId.b64)
       .map(([ah, thread]) => myThreads.set(ah, thread));
 
-    console.log("<my-threads-lister>   count beads", Object.entries(this.perspective.beads).length, myBeads.length, myBeadThreads.size);
+    console.log("<my-threads-lister>   count beads", this.perspective.beads.size, myBeads.length, myBeadThreads.size);
     console.log("<my-threads-lister> count threads", this.perspective.threads.size, myThreads.size);
 
 
@@ -325,11 +325,11 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       if (!allThreadsByApplet.get(appletId)) {
         allThreadsByApplet.set(appletId, new LinkableIdMap())
       }
-      if (!allThreadsByApplet.get(appletId).get(thread.pp.subject.hash)) {
-        allThreadsByApplet.get(appletId).set(thread.pp.subject.hash, []);
+      if (!allThreadsByApplet.get(appletId).get(thread.pp.subject.address)) {
+        allThreadsByApplet.get(appletId).set(thread.pp.subject.address, []);
       }
-      allThreadsByApplet.get(appletId).get(thread.pp.subject.hash).push(ppAh);
-      allSubjects.set(thread.pp.subject.hash, thread.pp.subject);
+      allThreadsByApplet.get(appletId).get(thread.pp.subject.address).push(ppAh);
+      allSubjects.set(thread.pp.subject.address, thread.pp.subject);
     });
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
 
@@ -393,14 +393,14 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       return html`
           <ui5-panel id=${appletId.b64}
                      @mouseover=${(e) => {
-                         const hide = this.shadowRoot.getElementById("hide-"+appletId);
-                         const cmt = this.shadowRoot.getElementById("cmt-"+appletId);
+                         const hide = this.shadowRoot.getElementById("hide-" + appletId.b64);
+                         const cmt = this.shadowRoot.getElementById("cmt-" + appletId.b64);
                          if (hide) hide.style.display = "block";
                          if (cmt) cmt.style.display = "block";
                      }}
                      @mouseout=${(e) => {
-                         const hide = this.shadowRoot.getElementById("hide-"+appletId);
-                         const cmt = this.shadowRoot.getElementById("cmt-"+appletId);
+                         const hide = this.shadowRoot.getElementById("hide-" + appletId.b64);
+                         const cmt = this.shadowRoot.getElementById("cmt-" + appletId.b64);
                          if (hide) hide.style.display = "none";
                          if (cmt) cmt.style.display = "none";
                      }}>

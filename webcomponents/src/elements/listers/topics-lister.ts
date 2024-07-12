@@ -271,17 +271,17 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
           <ui5-panel id=${topicEh.b64}
                      @mouseover=${(e) => {
-                       const hide = this.shadowRoot.getElementById("hide-"+topicEh);
-                       const cmt = this.shadowRoot.getElementById("cmt-"+topicEh);
-                       const edit = this.shadowRoot.getElementById("edit-"+topicEh);
+                       const hide = this.shadowRoot.getElementById("hide-" + topicEh.b64);
+                       const cmt = this.shadowRoot.getElementById("cmt-" + topicEh.b64);
+                       const edit = this.shadowRoot.getElementById("edit-" + topicEh.b64);
                        if (hide) hide.style.display = "block";
                        if (cmt) cmt.style.display = "block";
                        if (edit) edit.style.display = "block";
                      }}
                      @mouseout=${(e) => {
-                       const hide = this.shadowRoot.getElementById("hide-"+topicEh);
-                       const cmt = this.shadowRoot.getElementById("cmt-"+topicEh);
-                       const edit = this.shadowRoot.getElementById("edit-"+topicEh);
+                       const hide = this.shadowRoot.getElementById("hide-" + topicEh.b64);
+                       const cmt = this.shadowRoot.getElementById("cmt-" + topicEh.b64);
+                       const edit = this.shadowRoot.getElementById("edit-" + topicEh.b64);
                        if (hide) hide.style.display = "none";
                        if (cmt) cmt.style.display = "none";
                        if (edit) edit.style.display = "none";
@@ -302,7 +302,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                             @click=${async (e) => {
                               e.stopPropagation(); //console.log("topic clicked:", title);
                               await this.updateComplete;
-                              this.dispatchEvent(new CustomEvent('createThreadClicked', {detail: topicEh, bubbles: true, composed: true}));
+                              this.dispatchEvent(new CustomEvent<EntryId>('createThreadClicked', {detail: topicEh, bubbles: true, composed: true}));
                             }}>
                 </ui5-button>
             </div>
@@ -320,7 +320,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
             <div style="color: grey; margin: auto;">${msg('No topics found')}</div>
             <ui5-button design="Emphasized"
-                        @click=${(e) => this.dispatchEvent(new CustomEvent('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
+                        @click=${(e) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
                 ${msg('Create new topic')}
             </ui5-button>
           </div>

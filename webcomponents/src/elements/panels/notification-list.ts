@@ -60,8 +60,8 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<notification-list>.render()", Object.entries(this.threadsPerspective.inbox).length);
-    if (Object.entries(this.threadsPerspective.inbox).length == 0) {
+    console.log("<notification-list>.render()", this.threadsPerspective.inbox.size);
+    if (this.threadsPerspective.inbox.size == 0) {
       return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }
 
@@ -96,7 +96,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
               <span slot="footnotes">${date_str}</span>
               <ui5-notification-action text="Jump" slot="actions" @click=${(e) => {
                   this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
-                  hash: notif.content,
+                  address: notif.content,
                   type: notification2JumpEvent(notif.event),
                   }, bubbles: true, composed: true}));
               }}>

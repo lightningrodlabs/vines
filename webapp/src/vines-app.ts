@@ -297,7 +297,7 @@ export class VinesApp extends HappElement {
     console.log("<vines-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain((e.detail.hash.hash));
+        this._weServices.openAppletMain(e.detail.address.hash);
       }
     }
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
@@ -307,19 +307,20 @@ export class VinesApp extends HappElement {
           //this._weServices.openHrl();
         }
       } else {
-        this._selectedThreadHash = e.detail.hash;
+        this._selectedThreadHash = e.detail.address;
         delete this._selectedBeadAh;
       }
     }
     if (e.detail.type == JumpDestinationType.Bead) {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
-      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);
+      const beadAh = new ActionId(e.detail.address.b64);
+      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(beadAh);
       if (beadInfo) {
         this._selectedThreadHash = beadInfo.bead.ppAh;
-        this._selectedBeadAh = e.detail.hash;
+        this._selectedBeadAh = beadAh;
       } else {
-        console.warn("JumpEvent failed. Bead not found", e.detail.hash);
+        console.warn("JumpEvent failed. Bead not found", e.detail.address);
       }
     }
     if (e.detail.type == JumpDestinationType.Dm) {

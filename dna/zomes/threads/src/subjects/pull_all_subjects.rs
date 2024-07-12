@@ -34,7 +34,7 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     let (dna_hash, subject_hash) = comp2subject(&comps[3])?;
 
     let subject = Subject {
-      hash: subject_hash.clone(),
+      address: subject_hash.clone(),
       //hash_type: AppletSubjectType::from(subject_hash),
       type_name: std::str::from_utf8(subject_type_comp.as_ref()).unwrap().to_string(), // FIXME
       dna_hash,

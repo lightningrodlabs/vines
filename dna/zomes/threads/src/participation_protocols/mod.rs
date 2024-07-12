@@ -35,7 +35,7 @@ fn get_subject_tp(subject: Subject) -> ExternResult<TypedPath> {
   debug!("get_subject_tp() applet_id: {}", subject.applet_id);
   let mut tp = get_subject_type_tp(subject.applet_id, &subject.type_name)?;
   //let subject_hash_comp = hash2comp(subject_hash);
-  let subject_hash_comp = subject2comp(subject.dna_hash, subject.hash);
+  let subject_hash_comp = subject2comp(subject.dna_hash, subject.address);
   tp.path.append_component(subject_hash_comp);
   Ok(tp)
 }

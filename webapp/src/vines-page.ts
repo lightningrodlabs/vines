@@ -242,7 +242,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @state() private _selectedCommentThreadHash?: LinkableId;
            private _selectedCommentThreadSubjectName: string = '';
-  @state() private _createTopicHash?: LinkableId;
+  @state() private _createTopicHash?: EntryId;
 
   @state() private _canShowComments = false;
   @state() private _canShowFavorites = false;
@@ -343,7 +343,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onEditTopic(e) {
     const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
     const name = input.value.trim();
-    await this._dvm.editSemanticTopic(this.editTopicDialogElem.getAttribute('TopicHash'), name);
+    await this._dvm.editSemanticTopic(new EntryId(this.editTopicDialogElem.getAttribute('TopicHash')), name);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.editTopicDialogElem.close();
@@ -357,7 +357,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (name.length < 1) {
       return;
     }
-    const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.weServices? this.weServices.appletId : THIS_APPLET_ID, this._createTopicHash, name);
+    const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID, this._createTopicHash, name);
     //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
 
@@ -466,7 +466,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */
-      const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
+      const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
       if (allCount > 0) {
         this.weServices.notifyFrame([{
           title: "New content",
@@ -527,11 +527,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // }
 
     /** Grab AssetInfo for all AnyBeads */
-    for (const [beadInfo, beadPair] of Object.entries(this.threadsPerspective.beads)) {
-      if (beadInfo != ThreadsEntryType.AnyBead) {
+    for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
+      if (beadInfo.beadType != ThreadsEntryType.AnyBead) {
         continue;
       }
-      const anyBead = beadPair[1] as AnyBeadMat;
+      const anyBead = typed as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
       if (!this.weServices.assetInfoCached(wal)) {
         const maybe = await this.weServices.assetInfo(wal);
@@ -544,8 +544,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
-      const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
-      const canPopup = author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
+      const author =  maybeProfile? maybeProfile.nickname : "unknown";
+      const canPopup = notif.author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
@@ -593,7 +594,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentId)) {
+      if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
@@ -644,7 +645,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const request = e.detail;
     const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
     input.value = request.subjectName;
-    this.editTopicDialogElem.setAttribute('topicHash', request.topicHash);
+    this.editTopicDialogElem.setAttribute('topicHash', request.topicHash.b64);
     this.editTopicDialogElem.open = true;
   }
 
@@ -663,7 +664,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._selectedCommentThreadHash && this._canShowComments) {
       const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
       if (commentView) {
-        this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
+        this._dvm.perspective.threadInputs.set(new ActionId(this._selectedCommentThreadHash.b64), commentView.value);
       }
     }
     /** */
@@ -698,10 +699,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
-        hash: request.subjectHash,
+        address: request.subjectHash.hash,
         typeName: request.subjectType,
-        appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID,
-        dnaHash: this.cell.dnaId,
+        appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
+        dnaHash: this.cell.dnaId.hash,
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
@@ -797,7 +798,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** Cache and reset input-bar */
       const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
       if (inputBar) {
-        this._dvm.perspective.threadInputs[prevThreadHash] = inputBar.value;
+        this._dvm.perspective.threadInputs.set(prevThreadHash, inputBar.value);
         inputBar.setValue("");
         // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
       }
@@ -895,10 +896,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const dmThread = this._dvm.threadsZvm.isThreadDm(this.selectedThreadHash);
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
-          const profile = this._dvm.profilesZvm.getProfile(dmThread);
+          const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
           primaryTitle = profile? profile.nickname : "unknown";
         }
-        const maybeSemanticTopicTitle = this.threadsPerspective.allSemanticTopics[thread.pp.subject.hash];
+        const maybeSemanticTopicTitle = this.threadsPerspective.allSemanticTopics.get(new EntryId(thread.pp.subject.address.b64));
         let topic;
          if (maybeSemanticTopicTitle) {
            topic = maybeSemanticTopicTitle;
@@ -949,7 +950,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <vines-input-bar id="input-bar"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
-                             .cachedInput=${this.perspective.threadInputs[this.selectedThreadHash]? this.perspective.threadInputs[this.selectedThreadHash] : ""}
+                             .cachedInput=${this.perspective.threadInputs.get(this.selectedThreadHash)? this.perspective.threadInputs.get(this.selectedThreadHash) : ""}
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
                              @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
@@ -994,7 +995,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let fileTable = html``;
     if (!this._hideFiles) {
-      const publicItems = Object.entries(this._filesDvm.deliveryZvm.perspective.publicParcels)
+      const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
           .map(([ppEh, pprm]) => {
             //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
             const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests[ppEh];
@@ -1081,8 +1082,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <topics-lister 
                          .showArchivedTopics=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
-                         @createNewTopic=${(e) => this.createTopicDialogElem.show()}
-                         @createThreadClicked=${(e) => {
+                         @createNewTopic=${(e : CustomEvent<boolean>) => this.createTopicDialogElem.show()}
+                         @createThreadClicked=${(e: CustomEvent<EntryId>) => {
                              this._createTopicHash = e.detail;
                              this.createThreadDialogElem.show();
                          }}
@@ -1094,11 +1095,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <my-threads-lister 
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
-                         @createNewTopic=${(e) => this.createTopicDialogElem.show()}
-                         @createThreadClicked=${(e) => {
-        this._createTopicHash = e.detail;
-        this.createThreadDialogElem.show()
-      }}
+                         @createNewTopic=${(e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
+                         @createThreadClicked=${(e : CustomEvent<EntryId>) => {
+                          this._createTopicHash = e.detail;
+                          this.createThreadDialogElem.show()
+                        }}
           ></my-threads-lister>
       `;
     }
@@ -1106,11 +1107,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (thread) {
-        const subjectBead = this._dvm.threadsZvm.getBeadInfo(thread.pp.subject.hash);
+        const subjectAh = new ActionId(thread.pp.subject.address.b64);
+        const subjectBead = this._dvm.threadsZvm.getBeadInfo(subjectAh);
         if (subjectBead) {
           maybeBackBtn = html`
               <ui5-button icon="nav-back" slot="startButton" class="shellbtn"
-                          @click=${(_e) => this.dispatchEvent(beadJumpEvent(thread.pp.subject.hash))}></ui5-button>`;
+                          @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
         }
       }
     }
@@ -1304,7 +1306,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   <ui5-shellbar-item id="favButton" icon="favorite-list" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="cmtButton" icon="comment" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
                   <ui5-shellbar-item id="inboxButton" icon="inbox"
-                                     .count=${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? Object.keys(this._dvm.threadsZvm.perspective.inbox).length : ""}
+                                     .count=${this._dvm.threadsZvm.perspective.inbox.size? this._dvm.threadsZvm.perspective.inbox.size : ""}
                                      @click=${() => {
                                         console.log("inboxButton.click()")
                                         const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
@@ -1577,7 +1579,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async refresh(_e?: any) {
     await this._dvm.threadsZvm.probeInbox();
-    console.log("Inbox:", Object.keys(this._dvm.threadsZvm.perspective.inbox).length);
+    console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }

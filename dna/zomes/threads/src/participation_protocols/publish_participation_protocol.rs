@@ -37,7 +37,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   )?;
   /// Link from Subject Hash to PP
   create_link(
-    pp.subject.hash.clone(),
+    pp.subject.address.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Threads,
     ts2Tag(index_time), // Store index-time in Tag
@@ -52,8 +52,8 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     PP_ITEM_TYPE,
     ThreadsLinkType::TimeItem.try_into().unwrap(),
     index_time,
-    pp.subject.hash.get_raw_39())?;
-  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.hash);
+    pp.subject.address.get_raw_39())?;
+  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.address);
   /// Done
   Ok((pp_ah, index_time))
 }

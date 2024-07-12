@@ -563,7 +563,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const subjects = await this.zomeProxy.pullAllSubjects();
     for (const subject of subjects) {
       const subjectMat = materializeSubject(subject);
-      this._perspective.allSubjects.set(subjectMat.hash, subjectMat);
+      this._perspective.allSubjects.set(subjectMat.address, subjectMat);
     }
     console.log("threadsZvm.probeAllSubjects()", this._perspective.allSubjects.size);
     this.notifySubscribers();
@@ -654,7 +654,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           enc64(bl.author) == this.cell.agentId.b64) {
         return;
       }
-      const subjectHash = maybeThread.pp.subject.hash
+      const subjectHash = maybeThread.pp.subject.address
       if (!unreadThreads.get(ppAh)) {
         unreadThreads.set(ppAh, [subjectHash, []]);
       }
@@ -930,7 +930,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async publishThreadFromSemanticTopic(appletId: EntryId, topicEh: EntryId, purpose: string): Promise<[number, ActionId]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const subject: Subject = {
-      hash: topicEh.hash,
+      address: topicEh.hash,
       typeName: SEMANTIC_TOPIC_TYPE_NAME,
       appletId: appletId.b64,
       dnaHash: this.cell.dnaId.hash, // TODO: remove this useless field?
@@ -1215,7 +1215,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     let ppMat = materializeParticipationProtocol(pp);
     const thread = new Thread(ppMat, this.cell.dnaModifiers.origin_time, creationTime, author);
-    console.log(`storeThread() thread "${ppAh}" for subject "${ppMat.subject.hash}"| creationTime: ${creationTime}"`);
+    console.log(`storeThread() thread "${ppAh.short}" for subject "${ppMat.subject.address.short}"| creationTime: ${creationTime}"`);
     this._perspective.threads.set(ppAh, thread);
     /** Add already stored beads */
     for (const [beadAh, [info, _typed]] of this._perspective.beads.entries()) {
@@ -1225,24 +1225,24 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       /** DM thread */
-      const agentId = AgentId.from(ppMat.subject.hash);
+      const agentId = AgentId.from(ppMat.subject.address);
       let otherAgent = author.b64 == this.cell.agentId.b64? agentId : author;
       console.log("storeThread() dmThread", otherAgent);
       this._perspective.dmAgents.set(otherAgent, ppAh);
     } else {
       /** isNew */
       if (isNew) {
-        this._perspective.newThreads.set(ppAh, ppMat.subject.hash);
+        this._perspective.newThreads.set(ppAh, ppMat.subject.address);
       }
       /** threadsPerSubject */
-      if (!this._perspective.threadsPerSubject.get(ppMat.subject.hash)) {
-        this._perspective.threadsPerSubject.set(ppMat.subject.hash, []);
+      if (!this._perspective.threadsPerSubject.get(ppMat.subject.address)) {
+        this._perspective.threadsPerSubject.set(ppMat.subject.address, []);
       }
-      this._perspective.threadsPerSubject.get(ppMat.subject.hash).push(ppAh);
+      this._perspective.threadsPerSubject.get(ppMat.subject.address).push(ppAh);
 
       /** All Subjects */
-      if (!this._perspective.allSubjects.get(ppMat.subject.hash)) {
-        this._perspective.allSubjects.set(ppMat.subject.hash, materializeSubject(pp.subject));
+      if (!this._perspective.allSubjects.get(ppMat.subject.address)) {
+        this._perspective.allSubjects.set(ppMat.subject.address, materializeSubject(pp.subject));
       }
     }
     //console.log("storePp()", ppMat.subjectHash, ppAh)
@@ -1377,7 +1377,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (thread.pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       let other = thread.author;
       if (other.b64 == this.cell.agentId.b64) {
-        other = AgentId.from(thread.pp.subject.hash);
+        other = AgentId.from(thread.pp.subject.address);
       }
       return other;
     }
@@ -1399,7 +1399,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     thread.addItem(blMat);
     if (isNew) {
       if (!this._perspective.unreadThreads.get(ppAh)) {
-        this._perspective.unreadThreads.set(ppAh, [thread.pp.subject.hash, []]);
+        this._perspective.unreadThreads.set(ppAh, [thread.pp.subject.address, []]);
       }
       this._perspective.unreadThreads.get(ppAh)[1].push(beadAh);
     }
@@ -1857,7 +1857,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  private async handleEntrySignal(pulse: EntryPulseMat, from: AgentId) {
+  async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
     let tip: TipProtocol;
     const isFromSelf = from.b64 == this.cell.agentId.b64;
     switch(pulse.entryType) {
@@ -1889,7 +1889,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
               /** Notify Subject author */
               if (enc64(pp.subject.dnaHash) == this.cell.dnaId.b64) {
                 //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
-                let author = await this.zomeProxy.getRecordAuthor(pp.subject.hash);
+                let author = await this.zomeProxy.getRecordAuthor(pp.subject.address);
                 await this.zomeProxy.notifyPeer({
                   content: pulse.ah.hash,
                   who: author,
@@ -2046,7 +2046,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       await this.notifyPeers(ppAh, beadAh, notifs);
       /** Form "Entry" Tip to broadcast */
-      tip = {Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsUnitEnum))} as TipProtocolVariantEntry;
+      tip = {Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))} as TipProtocolVariantEntry;
     }
     /** */
     return tip;

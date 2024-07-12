@@ -51,7 +51,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const hrlc = weaveUrlToWal(wurl);
       const attLocInfo = await this.weServices.assetInfo(hrlc);
       const subject: Subject = {
-        hash: hrlc.hrl[1],
+        address: hrlc.hrl[1],
         typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
         dnaHash: hrlc.hrl[0],
         appletId: new EntryId(attLocInfo.appletHash).b64,
@@ -67,7 +67,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {
         hrl: [this._dvm.cell.dnaId.hash, ppAh.hash],
-        context: pp.subject.hash,
+        context: pp.subject.address,
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))
     } catch(e) {

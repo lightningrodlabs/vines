@@ -75,12 +75,12 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return this.renderDmThreadHeader(maybeDmThread);
     }
 
-    const subjectHash = thread.pp.subject.hash;
+    const subjectId = thread.pp.subject.address;
     let maybeSemanticTopicTitle = undefined;
-    if (subjectHash.hashType == HoloHashType.Entry) {
-      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.allSemanticTopics.get(new EntryId(subjectHash.b64));
+    if (subjectId.hashType == HoloHashType.Entry) {
+      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.allSemanticTopics.get(new EntryId(subjectId.b64));
     }
-    const subjectAh = ActionId.from(subjectHash);
+    const subjectAh = ActionId.from(subjectId);
     let title;
     let subText;
     const copyBtn = html`
@@ -94,7 +94,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       title = html`Welcome to ${thread.name} !`;
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.hash);
+      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address.print());
       const subjectBead = this._dvm.threadsZvm.getBeadInfo(subjectAh);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");

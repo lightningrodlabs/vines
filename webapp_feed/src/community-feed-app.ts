@@ -3,18 +3,25 @@ import {customElement, state} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
 import {PropertyValues} from "lit/development";
 import {
-  ActionHashB64,
   AdminWebsocket,
-  AgentPubKeyB64,
   AppSignal,
   AppWebsocket,
-  decodeHashFromBase64,
-  encodeHashToBase64,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
 import {AppletId, AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@lightningrodlabs/we-applet";
-import {ActionId, delay, DnaViewModel, DvmDef, HappElement, HCL, HvmDef, pascal,} from "@ddd-qc/lit-happ";
+import {
+  ActionId,
+  AgentId,
+  delay,
+  DnaViewModel,
+  DvmDef,
+  EntryId,
+  HappElement,
+  HCL,
+  HvmDef,
+  pascal,
+} from "@ddd-qc/lit-happ";
 import {
   appProxyContext,
   cardStyleTemplate,
@@ -23,7 +30,7 @@ import {
   globaFilesContext,
   JumpDestinationType,
   JumpEvent,
-  MAIN_TOPIC_HASH,
+  MAIN_TOPIC_ID,
   materializeSubject,
   NotifySetting,
   onlineLoadedContext,
@@ -71,7 +78,7 @@ export class CommunityFeedApp extends HappElement {
 
   static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
-  @state() private _selectedPostAh: ActionHashB64 = '';
+  @state() private _selectedPostAh?: ActionId;
 
 
   /** -- We-applet specifics -- */
@@ -106,7 +113,7 @@ export class CommunityFeedApp extends HappElement {
     profilesZomeName: ZomeName,
     profilesProxy: AppProxy,
     weServices: WeaveServices,
-    thisAppletId: AppletId,
+    thisAppletId: EntryId,
     //showCommentThreadOnly?: boolean,
     appletView: AppletView,
   ) : Promise<CommunityFeedApp> {
@@ -134,15 +141,15 @@ export class CommunityFeedApp extends HappElement {
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
     const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
     console.log("<community-feed-app> createProfilesDvm() dvm", dvm);
-    await this.setupWeProfilesDvm(dvm as ProfilesDvm, encodeHashToBase64(profilesAppInfo.agent_pub_key));
+    await this.setupWeProfilesDvm(dvm as ProfilesDvm, new AgentId(profilesAppInfo.agent_pub_key));
   }
 
 
   /** */
-  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentPubKeyB64): Promise<void> {
+  async setupWeProfilesDvm(dvm: ProfilesDvm, agent: AgentId): Promise<void> {
     this._weProfilesDvm = dvm as ProfilesDvm;
     /** Load My profile */
-    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent);
+    const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent.b64);
     if (maybeMyProfile) {
       const maybeLang = maybeMyProfile.fields['lang'];
       if (maybeLang) {
@@ -200,7 +207,7 @@ export class CommunityFeedApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
         console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -215,7 +222,7 @@ export class CommunityFeedApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-      if (allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
         console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -229,7 +236,7 @@ export class CommunityFeedApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOffline()");
-    const maybeProfile = await this.threadsDvm.profilesZvm.probeProfile(this.filesDvm.cell.agentId);
+    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.agentId);
     console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentId);
     /** Done */
     this.threadsDvm.dumpCallLogs();
@@ -248,9 +255,9 @@ export class CommunityFeedApp extends HappElement {
 
 
     /** Make sure main topic and thread exists */
-    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_HASH, MAIN_SEMANTIC_TOPIC);
-    this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_HASH);
-    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
+    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
+    this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
+    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
       const mainThreadAh = getMainThread(this.threadsDvm);
@@ -303,7 +310,7 @@ export class CommunityFeedApp extends HappElement {
     console.log("<community-feed-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(decodeHashFromBase64(e.detail.hash));
+        this._weServices.openAppletMain(e.detail.address.hash);
       }
     }
     if (e.detail.type == JumpDestinationType.Thread) {
@@ -319,16 +326,17 @@ export class CommunityFeedApp extends HappElement {
     }
     if (e.detail.type == JumpDestinationType.Bead) {
       /** Directly to post or get post from comment thread subject */
-      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(e.detail.hash);
+      const beadAh = new ActionId(e.detail.address.b64);
+      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(beadAh);
       if (beadInfo) {
         const [pp, _ts, _author] = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
         if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
-          this._selectedPostAh = e.detail.hash;
+          this._selectedPostAh = beadAh;
         } else {
-          this._selectedPostAh = pp.subject.hash;
+          this._selectedPostAh = new ActionId(pp.subject.address.b64);
         }
       } else {
-        console.warn("JumpEvent failed. Bead not found", e.detail.hash);
+        console.warn("JumpEvent failed. Bead not found", beadAh.short);
       }
       this.requestUpdate();
     }
@@ -344,7 +352,7 @@ export class CommunityFeedApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(e.detail)];
+    const hrl: Hrl = [this.threadsDvm.cell.dnaId.hash, e.detail.hash];
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
@@ -376,7 +384,7 @@ export class CommunityFeedApp extends HappElement {
           const btn = this.shadowRoot.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-          if (allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME].length == 0) {
+          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
               console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
               btn.disabled = false;
           } else {
@@ -435,7 +443,7 @@ export class CommunityFeedApp extends HappElement {
           //console.log("pascal entryType", assetViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
+              const ppAh = new ActionId(assetViewInfo.wal.hrl[1]);
               //console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
@@ -443,7 +451,7 @@ export class CommunityFeedApp extends HappElement {
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = encodeHashToBase64(assetViewInfo.wal.hrl[1]);
+                const beadAh = new ActionId(assetViewInfo.wal.hrl[1]);
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
@@ -467,10 +475,10 @@ export class CommunityFeedApp extends HappElement {
                         const hrlc = weaveUrlToWal(e.detail.wurl);
                         const attLocInfo = await this._weServices.assetInfo(hrlc);
                         const subject: Subject = {
-                            hash: hrlc.hrl[1],
+                            address: hrlc.hrl[1],
                             typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
                             dnaHash: hrlc.hrl[0],
-                            appletId: encodeHashToBase64(attLocInfo.appletHash),
+                            appletId: new EntryId(attLocInfo.appletHash).b64,
                         }
                         const subject_name = determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
                         //console.log("@create event subject_name", subject_name);                        
@@ -481,7 +489,7 @@ export class CommunityFeedApp extends HappElement {
                             subject_name,
                         };
                         const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
-                        const wal: WAL = {hrl: [decodeHashFromBase64(this.threadsDvm.cell.dnaHash), decodeHashFromBase64(ppAh)], context: encodeHashToBase64(pp.subject.hash)}
+                        const wal: WAL = {hrl: [this.threadsDvm.cell.dnaId.hash, ppAh.hash], context: pp.subject.address}
                         await creatableViewInfo.resolve(wal);
                       } catch(e) {
                           creatableViewInfo.reject(e)

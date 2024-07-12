@@ -140,7 +140,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   /** */
   private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
     const subject: Subject = {
-      hash: beadAh.hash,
+      address: beadAh.hash,
       typeName: POST_TYPE_NAME, // ThreadsEntryType.TextBead,
       appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
       dnaHash: this.cell.dnaId.hash,

@@ -1,8 +1,8 @@
 import {NotifiableEvent} from "./viewModels/threads.perspective";
-import {ActionId} from "@ddd-qc/lit-happ";
+import {ActionId, DhtId} from "@ddd-qc/lit-happ";
 
 export interface JumpEvent {
-  hash: ActionId,
+  address: DhtId,
   type: JumpDestinationType,
 }
 
@@ -27,10 +27,10 @@ export function notification2JumpEvent(notif: NotifiableEvent): JumpDestinationT
 
 
 /** */
-export function beadJumpEvent(hash: ActionId): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {hash, type: JumpDestinationType.Bead}, bubbles: true, composed: true});
+export function beadJumpEvent(ah: ActionId): CustomEvent<JumpEvent> {
+  return new CustomEvent<JumpEvent>('jump', {detail: {address: ah, type: JumpDestinationType.Bead}, bubbles: true, composed: true});
 }
 
-export function threadJumpEvent(hash: ActionId): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {hash, type: JumpDestinationType.Thread}, bubbles: true, composed: true});
+export function threadJumpEvent(ah: ActionId): CustomEvent<JumpEvent> {
+  return new CustomEvent<JumpEvent>('jump', {detail: {address: ah, type: JumpDestinationType.Thread}, bubbles: true, composed: true});
 }

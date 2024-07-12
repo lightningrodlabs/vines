@@ -18,7 +18,7 @@ pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
     rules: "privacy".to_string(),
     subject_name: "agent".to_string(),
     subject: Subject {
-      hash: other_agent.clone().into(),
+      address: other_agent.clone().into(),
       type_name: DM_SUBJECT_TYPE_NAME.to_string(),
       dna_hash: dna_info()?.hash,
       applet_id: "".to_string(),

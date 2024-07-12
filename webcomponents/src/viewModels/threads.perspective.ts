@@ -6,7 +6,7 @@ import {
   EntryId,
   AgentIdMap,
   ActionIdMap,
-  EntryIdMap, DnaId, intoLinkableId, LinkableIdMap, AnyId, LinkableId
+  EntryIdMap, DnaId, intoLinkableId, LinkableIdMap, LinkableId
 } from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
@@ -154,7 +154,7 @@ export interface ThreadsPerspectiveCore {
   favorites: ActionId[],
 
   /** -- New / unread -- */
-  globalProbeLogTs?: Timestamp,
+  globalProbeLogTs: Timestamp,
 
   /** -- Notification Inbox -- */
   /** linkAh -> [agent, beadAh] */
@@ -199,6 +199,7 @@ export function createThreadsPerspective(): ThreadsPerspective {
     decBeads: new ActionIdMap(),
     appletSubjectTypes: new EntryIdMap(),
     favorites: [],
+    globalProbeLogTs: 0,
     inbox: new ActionIdMap(),
     notifSettings: new ActionIdMap(),
     threadsPerSubject: new EntryIdMap(),
@@ -251,14 +252,14 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
 /** -- Subject -- */
 
 export interface SubjectMat {
-  hash: LinkableId,
+  address: LinkableId,
   typeName: string,
   dnaHash: DnaId,
   appletId: EntryId,
 }
 export function materializeSubject(subject: Subject): SubjectMat {
   return {
-    hash: intoLinkableId(subject.hash),
+    address: intoLinkableId(subject.address),
     typeName: subject.typeName,
     dnaHash: new DnaId(subject.dnaHash),
     appletId: new EntryId(subject.appletId),
@@ -266,7 +267,7 @@ export function materializeSubject(subject: Subject): SubjectMat {
 }
 export function dematerializeSubject(subject: SubjectMat): Subject {
   return {
-    hash: subject.hash.hash,
+    address: subject.address.hash,
     typeName: subject.typeName,
     dnaHash: subject.dnaHash.hash,
     appletId: subject.appletId.b64,
@@ -428,20 +429,6 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
   }
   return typed;
 }
-
-
-/** -- NotifiableEvent -- */
-
-/** */
-// export function event2type(event: NotifiableEvent): string {
-//   if (NotifiableEventType.Mention in event) { return NotifiableEventType.Mention }
-//   if (NotifiableEventType.Reply in event) { return NotifiableEventType.Reply }
-//   if (NotifiableEventType.NewBead in event) { return NotifiableEventType.NewBead }
-//   if (NotifiableEventType.Fork in event) { return NotifiableEventType.Fork }
-//   if (NotifiableEventType.NewDmThread in event) { return NotifiableEventType.NewDmThread }
-//   return "";
-// }
-
 
 
 // /** Compact Perspective */

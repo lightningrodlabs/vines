@@ -1,9 +1,3 @@
-import {css, html, LitElement, PropertyValues} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
-import {delay, DnaElement, HappBuildModeType} from "@ddd-qc/lit-happ";
-
-import "@ddd-qc/path-explorer";
-
 /** @ui5/webcomponents-fiori */
 import "@ui5/webcomponents-fiori/dist/Bar.js";
 import "@ui5/webcomponents-fiori/dist/NotificationListItem.js";
@@ -115,13 +109,15 @@ import "@ui5/webcomponents-icons/dist/unfavorite.js"
 import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
-/**  */
-import {Dictionary} from "@ddd-qc/cell-proxy";
-
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
+import "@ddd-qc/path-explorer";
 import 'css-doodle';
+
+import {css, html, LitElement, PropertyValues} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
+import {delay, DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, DnaId} from "@ddd-qc/lit-happ";
 
 import {
   AnyBeadMat,
@@ -131,7 +127,7 @@ import {
   JumpEvent,
   onlineLoadedContext,
   ProfilePanel, searchFieldStyleTemplate,
-  shellBarStyleTemplate,
+  shellBarStyleTemplate, ShowProfileEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
@@ -141,14 +137,7 @@ import {
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
-
-import {
-  ActionHashB64,
-  encodeHashToBase64,
-  NetworkInfo,
-  Timestamp,
-} from "@holochain/client";
-
+import {NetworkInfo, Timestamp} from "@holochain/client";
 import {FrameNotification, GroupProfile} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
 
@@ -245,7 +234,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   @state() private _splitObj?: SplitObject;
 
-  @property() selectedPostAh: ActionHashB64 = '';
+  @property() selectedPostAh?: ActionId;
 
   @property({type: Object})
   networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
@@ -337,7 +326,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */
-      const allCount = Object.keys(this._dvm.threadsZvm.perspective.unreadThreads).length + Object.keys(this._dvm.threadsZvm.perspective.newThreads).length;
+      const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
       if (allCount > 0) {
         this.weServices.notifyFrame([{
           title: "New content",
@@ -373,7 +362,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
 
     /** Grab AssetInfo for all AnyBeads */
-    for (const [beadInfo, beadPair] of Object.entries(this.threadsPerspective.beads)) {
+    for (const [beadInfo, beadPair] of this.threadsPerspective.beads.entries()) {
       if (beadInfo != ThreadsEntryType.AnyBead) {
         continue;
       }
@@ -391,7 +380,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
-      const canPopup = author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const canPopup = notif.author.b64 != this.cell.agentId.b64 || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeFeedNotificationTitle(notif, this._dvm, this._filesDvm, this.weServices);
@@ -436,7 +425,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.getProfile(this._dvm.cell.agentId)) {
+      if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
@@ -474,7 +463,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agent.filter((agentKey) => agentKey.b64 != this.cell.agentId.b64);
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.b64 != this.cell.agentId.b64);
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -576,11 +565,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const appletInfo = this.weServices.appletInfoCached(this.weServices.appletId);
+      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletId));
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);
-        const weGroup = this.weServices.groupProfileCached(appletInfo.groupsHashes[0]);
+        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]));
         if (weGroup) {
           groupProfile = weGroup;
         }
@@ -602,9 +591,9 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     }
 
     /** Get network info for this cell */
-    const sId = CellIdStr(this.cell.id);
-    const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
-    const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
+    //const sId = CellIdStr(this.cell.id);
+    //const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
+    //const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
 
 
     /** Render all */
@@ -672,8 +661,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                         popover.showAt(elem);
                       }}>
             </ui5-button>
-              ${Object.keys(this._dvm.threadsZvm.perspective.inbox).length? html`
-                  <div id="notifCount">${Object.keys(this._dvm.threadsZvm.perspective.inbox).length}</div>
+              ${this._dvm.threadsZvm.perspective.inbox.size? html`
+                  <div id="notifCount">${this._dvm.threadsZvm.perspective.inbox.size}</div>
               `: html``}
               <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
                           style="margin-top:10px;"
@@ -896,7 +885,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async refresh(_e?: any) {
     await this._dvm.threadsZvm.probeInbox();
-    console.log("Inbox:", Object.keys(this._dvm.threadsZvm.perspective.inbox).length);
+    console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }

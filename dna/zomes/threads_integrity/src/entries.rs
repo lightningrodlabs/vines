@@ -96,7 +96,7 @@ pub struct ParticipationProtocol {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subject {
-    pub hash: AnyLinkableHash,
+    pub address: AnyLinkableHash,
     pub type_name: String,
     pub dna_hash: DnaHash,
     pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)

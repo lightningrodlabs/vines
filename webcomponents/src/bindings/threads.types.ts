@@ -333,7 +333,7 @@ export interface ParticipationProtocol {
 }
 
 export interface Subject {
-  hash: AnyLinkableHash
+  address: AnyLinkableHash
   typeName: string
   dnaHash: DnaHash
   appletId: string

@@ -98,15 +98,12 @@ export class PeerList extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   renderList(profiles:  AgentIdMap<ProfileMat>) {
-
-    if (Object.keys(profiles).length === 0) {
+    if (profiles.size === 0) {
       return html`
         <li>
             (no profiles found)
         </li>`;
     }
-
-
     /** Build avatar agent list */
     const peers = Array.from(profiles.entries())
       .filter(([agentId, _profile]) => agentId.b64 != this.cell.agentId.b64)

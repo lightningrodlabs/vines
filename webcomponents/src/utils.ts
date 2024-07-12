@@ -317,18 +317,18 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
     switch (subject.typeName) {
       /** -- special types -- */
       case SEMANTIC_TOPIC_TYPE_NAME:
-        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(new EntryId(subject.hash.b64));
+        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(new EntryId(subject.address.b64));
         if (!semTopicTitle) {
-          //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
+          //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
           return "{Unknown Topic}";
         }
         return semTopicTitle;
       break;
       case PP_TYPE_NAME: {
-        const ah = new ActionId(subject.hash.b64);
+        const ah = new ActionId(subject.address.b64);
         const thread = threadsZvm.perspective.threads.get(ah);
         if (!thread) {
-          //thread = await threadsZvm.fetchPp(subject.hash);
+          //thread = await threadsZvm.fetchPp(subject.address);
           return "{Unknown Thread}";
         }
         return thread.name;
@@ -348,7 +348,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
         }
       break;
       case POST_TYPE_NAME: {
-        const ah = new ActionId(subject.hash.b64);
+        const ah = new ActionId(subject.address.b64);
         const beadTuple = threadsZvm.perspective.beads.get(ah);
         if (beadTuple) {
           return determineBeadName(beadTuple[0].beadType, beadTuple[1], filesDvm, weServices);
@@ -362,7 +362,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       case ThreadsEntryType.EntryBead:
       case ThreadsEntryType.AnyBead:
       case ThreadsEntryType.EncryptedBead:
-        const ah = new ActionId(subject.hash.b64);
+        const ah = new ActionId(subject.address.b64);
         const typedMat = threadsZvm.getBaseBead(ah);
         if (!typedMat) {
           //console.log("determineSubjectName() bead not found. Fetching.", subject.hash);
@@ -389,8 +389,8 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       }
       //const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
       /** FIXME */
-      if (subject.hash.hashType == HoloHashType.Dna) {
-        const dnaId = new DnaId(subject.hash.b64);
+      if (subject.address.hashType == HoloHashType.Dna) {
+        const dnaId = new DnaId(subject.address.b64);
         const maybeInfo = weServices.cache.assetInfos.get(dnaId);
         return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
       } else {
