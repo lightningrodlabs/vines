@@ -121,11 +121,10 @@ import {delay, DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, Dna
 
 import {
   AnyBeadMat,
-  ChatThreadView,
   CommentRequest, composeFeedNotificationTitle,
   globaFilesContext,
   JumpEvent,
-  onlineLoadedContext,
+  onlineLoadedContext, PostCreatedEvent,
   ProfilePanel, searchFieldStyleTemplate,
   shellBarStyleTemplate, ShowProfileEvent,
   ThreadsDnaPerspective,
@@ -348,18 +347,18 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   protected async updated(_changedProperties: PropertyValues) {
-    /** ??? */
-    try {
-      const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
-      const view = await chatView.updateComplete;
-      //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
-      if (!view) {
-        /** Request a new update for scrolling to work */
-        chatView.requestUpdate();
-      }
-    } catch(e) {
-      /** i.e. element not present */
-    }
+    // /** ??? */
+    // try {
+    //   const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
+    //   const view = await chatView.updateComplete;
+    //   //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
+    //   if (!view) {
+    //     /** Request a new update for scrolling to work */
+    //     chatView.requestUpdate();
+    //   }
+    // } catch(e) {
+    //   /** i.e. element not present */
+    // }
 
     /** Grab AssetInfo for all AnyBeads */
     for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
@@ -554,8 +553,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     const avatarUrl = myProfile.fields['avatar'];
     const initials = getInitials(myProfile.nickname);
 
-    const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
-    const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
+    //const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
+    //const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
     /** Group Info */
     let groupProfile: GroupProfile = {
@@ -760,8 +759,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         </ui5-dialog>
         <ui5-dialog id="create-post-dialog">
             <create-post-panel
-                    @created=${async (e) => {
-                      //console.log("@created", e.detail); 
+                    @created=${async (e: CustomEvent<PostCreatedEvent>) => {
+                      console.log("@created", e.detail); 
                       this.createPostDialogElem.close(false);
                       if (e.detail.createdMainThread) {
                         // FIXME: Find a way to refresh feed

@@ -246,7 +246,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
         const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppAh);
-        const hasUnreadComments = unreadSubjects.includes(ppAh);
+        const hasUnreadComments = unreadSubjects.map((id) => id.b64).includes(ppAh.b64);
         const threadIsNew = this.perspective.newThreads.has(ppAh);
         const hasNewBeads = this.perspective.unreadThreads.has(ppAh);
 

@@ -282,7 +282,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                     }}></ui5-button>`;
 
 
-    const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
+    const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(this.hash.b64);
     const bellButton = html`
         <ui5-button id="bell-btn" icon="bell"  tooltip=${msg("Toggle Notifications")} 
                     design=${canNotifyAll? "Emphasized" : "Transparent"}

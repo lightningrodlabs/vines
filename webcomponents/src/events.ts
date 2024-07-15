@@ -34,7 +34,7 @@ export enum SpecialSubjectType {
   EntryBead = "EntryBead",
   EncryptedBead = "EncryptedBead",
   /** Feed */
-  Post = "Thread",
+  Post = "Post",
 }
 
 

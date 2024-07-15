@@ -18,6 +18,11 @@ import {getMainThread} from "../../utils_feed";
 import {SpecialSubjectType} from "../../events";
 
 
+export interface PostCreatedEvent {
+  beadAh: ActionId,
+  createdMainThread: boolean,
+}
+
 /**
  * @element
  */
@@ -71,16 +76,18 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     const commentPpAh = await this.createCommentThread(beadAh);
     await this._dvm.threadsZvm.publishNotifSetting(commentPpAh, NotifySetting.AllMessages);
     /** */
-    this.dispatchEvent(new CustomEvent('created', {detail: {beadAh, createdMainThread}, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<PostCreatedEvent>('created', {detail: {beadAh, createdMainThread}, bubbles: true, composed: true}));
     this._creating = false;
   }
 
 
   /** */
   async onCreateText() {
+    console.debug("<create-post-panel>.onCreateText()")
     /** Check */
     const inputElem = this.shadowRoot.getElementById("contentInput") as Input;
     const content = inputElem.value.trim();
+    console.debug("<create-post-panel>.onCreateText() content", content);
     if (content.length == 0) {
       return;
     }

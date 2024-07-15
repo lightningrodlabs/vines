@@ -1,4 +1,4 @@
-import {ActionHash, AgentPubKey, Timestamp, ZomeName} from "@holochain/client";
+import {ActionHash, AgentPubKey, AgentPubKeyB64, Timestamp, ZomeName} from "@holochain/client";
 import {
   AddEntryAsBeadInput,
   AnyBead,
@@ -2116,16 +2116,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
     }
     /** Keep only notifiable peers */
-    const notifieds = [];
+    const notifieds: AgentPubKeyB64[] = [];
     const notifies = notifs
       .filter((notif) => !nevers.map((agentId) => agentId.b64).includes(enc64(notif.who)))
       .map((notif) => {
-        notifieds.push(notif.who);
+        notifieds.push(new AgentId(notif.who).b64);
         return this.zomeProxy.notifyPeer(notif);
       });
     /** notify peers with AllMessage notifSetting */
     for (const peer of alls) {
-      if (notifieds.includes(peer)) {
+      if (notifieds.includes(peer.b64)) {
         continue;
       }
       const newNotif: NotifyPeerInput = {

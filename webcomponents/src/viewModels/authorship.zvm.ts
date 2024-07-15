@@ -131,7 +131,7 @@ export class AuthorshipZvm extends ZomeViewModel {
     if (!this._perspective.logsByType[typeName]) {
       this._perspective.logsByType[typeName] = []
     }
-    if (!this._perspective.logsByType[typeName].includes(target)) {
+    if (!this._perspective.logsByType[typeName].map((id) => id.b64).includes(target.b64)) {
       this._perspective.logsByType[typeName].push(target);
     }
     /* _types */

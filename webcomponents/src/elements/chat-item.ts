@@ -366,7 +366,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button id="add-reaction-btn" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
                           @click=${(_e) => this.onClickAddEmoji()}></ui5-button>`;
 
-    const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(this.hash);
+    const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(this.hash.b64);
     const starButton = isFavorite? html`
         <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent" style="border:none;"
                     @click=${(_e) => this.updateFavorite(this.hash, false)}></ui5-button>

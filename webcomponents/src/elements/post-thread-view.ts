@@ -221,7 +221,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
         if (!passedLog && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
         }
-        const isFavorite = this._dvm.threadsZvm.perspective.favorites.includes(blm.beadAh);
+        const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(blm.beadAh.b64);
         if (this.favorites) {
           if (!isFavorite) {
             return;

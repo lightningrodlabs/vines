@@ -184,7 +184,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const subjectIsNew = newSubjects.get(subjectAdr.b64) != undefined;
     let subjectHasUnreadComments = false;
     if (maybeCommentThread != null) {
-      subjectHasUnreadComments = unreadSubjects.includes(subjectAdr);
+      subjectHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(subjectAdr.b64);
     }
 
     let subjectCommentButton = html``;
@@ -242,7 +242,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     }}"></ui5-button>
       `;
 
-    const subjectHasUnreads = unreadSubjects.includes(subjectAdr);
+    const subjectHasUnreads = unreadSubjects.map((id) => id.b64).includes(subjectAdr.b64);
 
     if (threads.length == 0) {
       threads = [html`<div class="threadItem">
@@ -366,7 +366,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(appletId);
       let appletHasUnreadComments = false;
       if (maybeCommentThread != null) {
-        appletHasUnreadComments = unreadSubjects.includes(appletId);
+        appletHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(appletId.b64);
       }
       let appletCommentBtn = html``;
       if (appletHasUnreadComments) {

@@ -193,7 +193,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const topicIsNew = newSubjects.get(topicEh.b64) != undefined;
       let topicHasUnreadComments = false;
       if (maybeCommentThread != null) {
-        topicHasUnreadComments = unreadSubjects.includes(topicEh);
+        topicHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(topicEh.b64);
       }
 
       let topicCommentButton = html``;
@@ -256,7 +256,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       //                                        design="Negative" style="border:none;background: transparent"
       //                                        @click=${(e) => this._zvm.zomeProxy.deleteSemanticTopic(decodeHashFromBase64(topicHash))}></ui5-button>`;
 
-      const topicHasUnreads = unreadSubjects.includes(topicEh);
+      const topicHasUnreads = unreadSubjects.map((id) => id.b64).includes(topicEh.b64);
 
       //console.log("<topics-lister>.render() threads", threads);
       if (threads.length == 0) {
