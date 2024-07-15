@@ -3,14 +3,23 @@ use threads_integrity::*;
 use zome_utils::*;
 
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublishDmThreadInput {
+  pub other_agent: AgentPubKey,
+  pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)
+}
+
+
+
 /// Publish a Pp off of another Agent
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
+pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let me = agent_info()?.agent_latest_pubkey;
-  if me == other_agent {
-    return error("Cannot DM self");
+  if me == input.other_agent {
+    return zome_error!("Cannot DM self");
   }
   /// Create PP
   let pp = ParticipationProtocol {
@@ -18,10 +27,10 @@ pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
     rules: "privacy".to_string(),
     subject_name: "agent".to_string(),
     subject: Subject {
-      address: other_agent.clone().into(),
+      address: input.other_agent.clone().into(),
       type_name: DM_SUBJECT_TYPE_NAME.to_string(),
       dna_hash: dna_info()?.hash,
-      applet_id: "".to_string(),
+      applet_id: input.applet_id,
     }
   };
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
@@ -32,10 +41,10 @@ pub fn publish_dm_thread(other_agent: AgentPubKey) -> ExternResult<ActionHash> {
     me.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Dm,
-    hash2tag(other_agent.clone()), // str2tag(&subject_hash_str), // Store Subject Hash in Tag
+    hash2tag(input.other_agent.clone()), // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
   create_link(
-    other_agent.clone(),
+    input.other_agent.clone(),
     pp_ah.clone(),
     ThreadsLinkType::Dm,
     hash2tag(me),

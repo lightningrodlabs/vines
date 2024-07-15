@@ -77,6 +77,7 @@ import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
+import {THIS_APPLET_ID} from "../contexts";
 
 
 //generateSearchTest();
@@ -1202,7 +1203,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   storeThread(ppAh: ActionId, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocolMat {
-    console.log(`storeThread() thread "${ppAh.short}" | creationTime: ${creationTime}"`, author.short, pp);
+    console.log(`storeThread() thread "${ppAh.short}"`, author.short, pp);
 
     /** Return already stored PP */
     if (this._perspective.threads.has(ppAh)) {
@@ -1354,7 +1355,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return pair[0];
     }
     /** Create new Thread */
-    const pp_ah = await this.zomeProxy.publishDmThread(otherAgent.hash);
+    const pp_ah = await this.zomeProxy.publishDmThread({otherAgent: otherAgent.hash, appletId: THIS_APPLET_ID.b64});
     const ppAh = new ActionId(pp_ah);
     //let ppMat = await this.fetchPp(ppAh); // trigger storage
     await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
@@ -1454,7 +1455,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     const probeLog: ThreadLastProbeLog = {
       maybeLastKnownBeadAh: thread.beadLinksTree.end.value? thread.beadLinksTree.end.value.beadAh.hash : undefined,
-      ts: thread.beadLinksTree.end.key,
+      ts: thread.beadLinksTree.end.key? thread.beadLinksTree.end.key : 0,
       ppAh: ppAh.hash,
     }
     console.log(`commitThreadProbeLog() ppAh:`,ppAh);
@@ -2104,8 +2105,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Get latest notif settings */
     let settings = await this.pullNotifSettings(ppAh);
     /** Get alls & nevers */
-    let nevers = [];
-    let alls = [];
+    let nevers: AgentId[] = [];
+    let alls: AgentId[] = [];
     for (const [agent, setting, _ah] of settings) {
       const peer = agent;
       switch (setting) {
@@ -2117,7 +2118,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Keep only notifiable peers */
     const notifieds = [];
     const notifies = notifs
-      .filter((notif) => !nevers.map((hash) => enc64(hash)).includes(enc64(notif.who)))
+      .filter((notif) => !nevers.map((agentId) => agentId.b64).includes(enc64(notif.who)))
       .map((notif) => {
         notifieds.push(notif.who);
         return this.zomeProxy.notifyPeer(notif);
@@ -2129,7 +2130,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       const newNotif: NotifyPeerInput = {
         content: content.hash,
-        who: peer,
+        who: peer.hash,
         event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.NewBead),
       }
       notifies.push(this.zomeProxy.notifyPeer(newNotif));

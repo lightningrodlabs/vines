@@ -219,6 +219,11 @@ export interface AddEncBeadInput {
   creationTime: Timestamp
 }
 
+export interface PublishDmThreadInput {
+  otherAgent: AgentPubKey
+  appletId: string
+}
+
 export interface CommitGlobalLogInput {
   maybe_ts?: Timestamp
   maybe_last_known_pp_ah?: ActionHash
