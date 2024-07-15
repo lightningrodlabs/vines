@@ -429,11 +429,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         return [];
       }
       const ppAh = this._perspective.threadsByName[parameters.threadByName]
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.bead.ppAh == ppAh);
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.bead.ppAh.equals(ppAh));
     }
     /** filter author */
     if (parameters.author) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.author == parameters.author) //
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.author.equals(parameters.author)) //
     }
     /** filter mention */
     if (parameters.mentionsAgentByName) {
@@ -648,8 +648,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           return;
         }
       }
-      if (bl.creationTime <= maybeThread.latestProbeLogTime ||
-          enc64(bl.author) == this.cell.agentId.b64) {
+      if (bl.creationTime <= maybeThread.latestProbeLogTime || this.cell.agentId.equals(bl.author)) {
         return;
       }
       const subjectHash = maybeThread.pp.subject.address
@@ -1204,7 +1203,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   storeThread(ppAh: ActionId, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocolMat {
     console.log(`storeThread() thread "${ppAh.short}"`, author.short, pp);
-
     /** Return already stored PP */
     if (this._perspective.threads.has(ppAh)) {
       return this._perspective.threads.get(ppAh).pp;
@@ -1215,14 +1213,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     this._perspective.threads.set(ppAh, thread);
     /** Add already stored beads */
     for (const [beadAh, [info, _typed]] of this._perspective.beads.entries()) {
-      if (info.bead.ppAh == ppAh) {
+      if (info.bead.ppAh.equals(ppAh)) {
         this.storeBeadInThread(beadAh, ppAh, info.creationTime, false, info.beadType);
       }
     }
     if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       /** DM thread */
       const agentId = AgentId.from(ppMat.subject.address);
-      let otherAgent = author.b64 == this.cell.agentId.b64? agentId : author;
+      let otherAgent = this.cell.agentId.equals(author)? agentId : author;
       console.log("storeThread() dmThread", otherAgent);
       this._perspective.dmAgents.set(otherAgent, ppAh);
     } else {
@@ -1253,13 +1251,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return false;
     }
     /** Look for pair */
-    const maybeAlready = Object.values(this._perspective.emojiReactions.get(beadAh)).find(([a, e]) => (agent == a && e == emoji));
+    const maybeAlready = Object.values(this._perspective.emojiReactions.get(beadAh)).find(([a, e]) => (agent.equals(a) && e == emoji));
     return maybeAlready && maybeAlready.length > 0;
   }
 
 
   /** */
   storeEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string) {
+    console.debug("storeEmojiReaction()", emoji, beadAh.short, agent.short);
     if (this.hasEmojiReaction(beadAh, agent, emoji)) {
       return;
     }
@@ -1272,11 +1271,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   unstoreEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string) {
+    console.debug("unstoreEmojiReaction()", emoji, beadAh.short, agent.short);
     if (!this._perspective.emojiReactions.get(beadAh)) {
       //this._emojiReactions[beadAh] = [];
       return;
     }
-    const filtered = this._perspective.emojiReactions.get(beadAh).filter(([a, e]) => !(agent == a && e == emoji));
+    const filtered = this._perspective.emojiReactions.get(beadAh).filter(([a, e]) => !(agent.equals(a) && e == emoji));
     if (filtered.length < this._perspective.emojiReactions.get(beadAh).length) {
       this._perspective.emojiReactions.set(beadAh, filtered);
       if (this._perspective.emojiReactions.get(beadAh).length == 0) {
@@ -1345,7 +1345,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async createDmThread(otherAgent: AgentId): Promise<ActionId> {
-    if (otherAgent.b64 == this.cell.agentId.b64) {
+    if (this.cell.agentId.equals(otherAgent)) {
       return Promise.reject("Can't DM self");
     }
     /** Give current if already exists */
@@ -1372,7 +1372,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     if (thread.pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       let other = thread.author;
-      if (other.b64 == this.cell.agentId.b64) {
+      if (this.cell.agentId.equals(other)) {
         other = AgentId.from(thread.pp.subject.address);
       }
       return other;
@@ -1382,7 +1382,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /* Store Bead in its Thread */
   private storeBeadInThread(beadAh: ActionId, ppAh: ActionId, creationTime: Timestamp, isNew: boolean, beadType: BeadType) {
-    console.log("storeBeadInThread()", beadType, beadAh, creationTime);
+    console.log("storeBeadInThread()", ppAh.short, beadType, beadAh.short, creationTime, this._perspective.threads.get(ppAh));
     const thread = this._perspective.threads.get(ppAh);
     if (!thread) {
       // await this.fetchPp(ppAh);
@@ -1406,7 +1406,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async getBaseTypedBead(typedBead: TypedBead, beadType: BeadType, author: AgentId): Promise<[TypedBaseBead, BaseBeadType]> {
     if (beadType == ThreadsEntryType.EncryptedBead) {
       let innerBead: BaseBeadKind;
-      if (author.b64 == this.cell.agentId.b64) {
+      if (author.equals(this.cell.agentId)) {
         innerBead = await this.zomeProxy.decryptMyBead(typedBead as EncryptedBead);
       } else {
         innerBead = await this.zomeProxy.decryptBead({
@@ -1803,7 +1803,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const emoji = decoder.decode(pulse.tag);
           //console.warn("EmojiReaction CreateLink:", link.tag, emoji);
           await this.storeEmojiReaction(baseAh, pulse.author, emoji);
-          if (pulse.isNew && from.b64 == this.cell.agentId.b64) {
+          if (pulse.isNew && this.cell.agentId.equals(from)) {
             const link = dematerializeLinkPulse(pulse, Object.values(ThreadsLinkType)).link;
             tip = {Link: {link, state: {Create: true}}} as TipProtocolVariantLink;
           }
@@ -1813,7 +1813,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const emoji = decoder.decode(pulse.tag);
           //console.warn("EmojiReaction DeleteLink:", link.tag, emoji);
           await this.unstoreEmojiReaction(baseAh, pulse.author, emoji);
-          if (pulse.isNew && from.b64 == this.cell.agentId.b64) {
+          if (pulse.isNew && this.cell.agentId.equals(from)) {
             const link = dematerializeLinkPulse(pulse, Object.values(ThreadsLinkType)).link;
             tip = {Link: {link, state: {Delete: true}}} as TipProtocolVariantLink;
           }
@@ -1856,7 +1856,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   protected async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
     console.log("ThreadsZvm.handleEntryPulse()", pulse, from.short);
-    const isFromSelf = from.b64 == this.cell.agentId.b64;
+    const isFromSelf = this.cell.agentId.equals(from);
     switch(pulse.entryType) {
       case ThreadsEntryType.AnyBead:
       case ThreadsEntryType.EntryBead:
@@ -1917,7 +1917,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  private async handleInboxLink(pulse: LinkPulseMat, from: AgentId) {
+  private async handleInboxLink(pulse: LinkPulseMat, _from: AgentId) {
     const base = AgentId.from(pulse.base);
 
     if (StateChangeType.Update == pulse.state) {
@@ -1927,7 +1927,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (StateChangeType.Delete == pulse.state) {
       //const isNew = linkInfo.state.Delete;
       console.log("handleInboxSignal() Delete", base, this.cell.agentId.short);
-      if (base.b64 == this.cell.agentId.b64) {
+      if (this.cell.agentId.equals(base)) {
         await this.unstoreNotification(pulse.create_link_hash);
       }
       return;
@@ -1944,7 +1944,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       content: ActionId.from(pulse.target),
     };
     /** I got notified by a peer */
-    if (base.b64 == this.cell.agentId.b64) {
+    if (this.cell.agentId.equals(base)) {
       /** Store Notification */
       const ppAh = await this.getPpFromNotification(notif);
       this.storeNotification(notif, ppAh);
@@ -1994,7 +1994,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, pulse.author, isNew);
     /** Check if need to notify */;
     let notifs: NotifyPeerInput[] = [];
-    if (isNew && from.b64 == this.cell.agentId.b64) {
+    if (isNew && this.cell.agentId.equals(from)) {
       /** Get base info */
       let ppAh: ActionId;
       let prevBeadAh: ActionId;
@@ -2022,7 +2022,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       /** Notify Reply */
       /** Notify reply if prevBead in Bead is different from last known bead for pp and not in a DM thread */
-      if (!prevBeadAh.equals(ppAh)) { // Thread's first bead has ppAh == prevBeadAh
+      if (!prevBeadAh.equals(ppAh)) { // Thread's first bead has ppAh equals prevBeadAh
         const isDmThread = this.isThreadDm(ppAh);
         const lastKnownBead = this._perspective.threads.get(ppAh).getLast(2); // new bead is already stored in thread, get the one before that
         const hasJumpedBead = lastKnownBead.length > 1 && !lastKnownBead[0].beadAh.equals(prevBeadAh);

@@ -297,7 +297,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         //console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
         const chatItem = html`
             <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
-                       style="${this.beadAh && blm.beadAh.b64 == this.beadAh.b64? "background:#c4f2b07a" : ""}">
+                       style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background:#c4f2b07a" : ""}">
             </chat-item>`;
         prevBeadAh = blm.beadAh;
         return html`${chatItem}${hr}${timeHr}`;

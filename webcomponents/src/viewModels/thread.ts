@@ -213,7 +213,7 @@ export class Thread {
     //console.log("has?", candidat.creationTime, candidat.beadAh, candidat.beadType);
     for (const bl of bls) {
       //console.log(`\t[${bl.indexTime}]`, blHash, bl.beadType);
-      if (bl.beadAh == candidat.beadAh) {
+      if (bl.beadAh.equals(candidat.beadAh)) {
         return true;
       }
     }

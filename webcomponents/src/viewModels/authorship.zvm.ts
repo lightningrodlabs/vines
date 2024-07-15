@@ -115,7 +115,7 @@ export class AuthorshipZvm extends ZomeViewModel {
     const all = await this.zomeProxy.getAllAscribedEntries();
     for (const [type, target, ts, author] of all) {
       const authorId = new AgentId(author);
-      const a = authorId.b64 == EMPTY_AUTHOR.b64? null : authorId;
+      const a = authorId.equals(EMPTY_AUTHOR)? null : authorId;
       this.storeAuthorshipLog(type, intoLinkableId(target), ts, a);
     }
   }

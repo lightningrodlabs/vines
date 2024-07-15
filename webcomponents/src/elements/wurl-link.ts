@@ -158,7 +158,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return this.renderBadLink();
     }
 
-    const isThisDna = new DnaId(wal.hrl[0]).b64 == this.cell.dnaId.b64;
+    const isThisDna = this.cell.dnaId.equals(wal.hrl[0]);
     let colorIdx = 6;
     if (!isThisDna && !this.weServices) {
       colorIdx = 3;

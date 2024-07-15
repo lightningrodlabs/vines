@@ -326,7 +326,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   /** Use subject as WAL */
                   const wal: WAL = {hrl: [thread.pp.subject.dnaHash.hash, thread.pp.subject.address.hash], context: null};
                   /** Jump within app if subject is from Vines */
-                  if (this.cell.dnaId.b64 == thread.pp.subject.dnaHash.b64) {
+                  if (this.cell.dnaId.equals(thread.pp.subject.dnaHash)) {
                       switch(thread.pp.subject.typeName) {
                           case SpecialSubjectType.AgentPubKey:
                           case SpecialSubjectType.ParticipationProtocol: 
