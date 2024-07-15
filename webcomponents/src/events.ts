@@ -1,7 +1,25 @@
 import {NotifiableEvent} from "./viewModels/threads.perspective";
-import {ActionId, DhtId} from "@ddd-qc/lit-happ";
+import {ActionId, DhtId, EntryId, LinkableId} from "@ddd-qc/lit-happ";
 import {AgentId} from "@ddd-qc/cell-proxy";
 import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads.types";
+
+
+/** */
+export interface EditTopicRequest {
+  topicHash: EntryId,
+  subjectName: string,
+}
+
+
+/** */
+export interface CommentRequest {
+  maybeCommentThread: ActionId | null,
+  subjectHash: LinkableId,
+  subjectType: string,
+  subjectName: string,
+  viewType: string,
+}
+
 
 /** */
 export enum SpecialSubjectType {

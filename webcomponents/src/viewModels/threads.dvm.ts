@@ -22,11 +22,11 @@ import {
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
-  BeadType, EncryptedBeadContent, ThreadsNotification, ThreadsNotificationTip,
+  BeadType, EncryptedBeadContent, holochainIdExtensionCodec, ThreadsNotification, ThreadsNotificationTip,
   TypedContent,
 } from "./threads.perspective";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {decode} from "@msgpack/msgpack";
+import {Decoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
 
 
@@ -58,6 +58,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
+  private _decoder = new Decoder(holochainIdExtensionCodec);
 
   /** QoL Helpers */
   get profilesZvm(): ProfilesAltZvm {
@@ -96,7 +97,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   get dnaProperties(): ThreadsProperties {
     //console.log('dnaProperties() dnaModifiers', this.cell.dnaModifiers);
-    const properties = decode(this.cell.dnaModifiers.properties as Uint8Array) as ThreadsProperties;
+    const properties = this._decoder.decode(this.cell.dnaModifiers.properties as Uint8Array) as ThreadsProperties;
     //console.log('dnaProperties() properties', properties);
     return properties;
   }
@@ -170,7 +171,8 @@ export class ThreadsDvm extends DnaViewModel {
         break;
       case "App": {
         const serNotifTip = (tip as TipProtocolVariantApp).App;
-        const notifTip = decode(serNotifTip) as ThreadsNotificationTip;
+        const notifTip = this._decoder.decode(serNotifTip) as ThreadsNotificationTip;
+        console.log("handleTip() notifTip", notifTip);
         const notif: ThreadsNotification = {
           //eventIndex: notifTip.event_index,
           event: notifTip.event,

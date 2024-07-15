@@ -10,8 +10,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {ThreadsEntryType} from "../../bindings/threads.types";
-import {CommentRequest} from "../../utils";
-import {SpecialSubjectType, threadJumpEvent} from "../../events";
+import {CommentRequest, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {THIS_APPLET_ID, weClientContext} from "../../contexts";
 
 
@@ -160,7 +159,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   onClickComment(maybeCommentThread: ActionId | null, subjectHash: LinkableId, subjectType: string, subjectName: string, viewType?: string) {
-    const request: CommentRequest =  {
+    const request: CommentRequest = {
       maybeCommentThread, subjectHash, subjectType, subjectName,
       viewType: viewType? viewType : "side",
     };

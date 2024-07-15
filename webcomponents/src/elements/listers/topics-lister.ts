@@ -4,10 +4,9 @@ import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, EntryId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {CommentRequest, EditTopicRequest} from "../../utils";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
-import {SpecialSubjectType, threadJumpEvent} from "../../events";
+import {CommentRequest, EditTopicRequest, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 
 

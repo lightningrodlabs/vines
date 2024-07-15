@@ -12,7 +12,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import {renderAvatar} from "../render";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 import {msg} from "@lit/localize";
-import {AgentId, AgentIdMap} from "@ddd-qc/lit-happ";
+import {AgentId} from "@ddd-qc/lit-happ";
 
 
 /**
@@ -23,25 +23,15 @@ export class InputBar extends LitElement {
 
   /** Properties */
 
-  @property()
-  topic: string = ''
-
-  @property()
-  cachedInput: string = ''
-
-  @property()
-  showHrlBtn?: string;
-
-  @property()
-  background?: string;
-
-  @property()
-  showFileBtn?: string;
-
-  @property({type: Object})
-  profilesZvm!: ProfilesAltZvm;
+  @property() topic: string = ''
+  @property() cachedInput: string = ''
+  @property() showHrlBtn?: string;
+  @property() background?: string;
+  @property() showFileBtn?: string;
+  @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
+
 
   /** -- Getters -- */
 
@@ -246,7 +236,7 @@ export class InputBar extends LitElement {
 
   /** */
   render() {
-    console.log("<vines-input-bar>.render()", this.cachedInput);
+    console.log("<vines-input-bar>.render()", this.cachedInput, this.profilesZvm);
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
@@ -292,8 +282,7 @@ export class InputBar extends LitElement {
       //console.log("canSelectFirst", canSelectFirst, this.suggestionListElem.getSelectedItems().length);
       /** Render agent lists for mentions */
       let i = 0;
-      agentItems = suggestionKeys
-        .map((key) => {
+      agentItems = suggestionKeys.map((key) => {
           i += 1;
           const canSelect = i == 1 && canSelectFirst || key == selectedId;
           /* Special mentions */
@@ -307,8 +296,10 @@ export class InputBar extends LitElement {
               @all
           </ui5-li>`;
           }
+          const agentId = new AgentId(key);
+          if (agentId.equals(this.profilesZvm.cell.agentId)) return html``;
           /** Grab and display profile */
-          const profile = this.profilesZvm.perspective.profiles[key];
+          const profile = this.profilesZvm.perspective.getProfile(agentId);
           //const profile = this._dummyProfiles[key];
           if (!profile) return html``;
           return html`             

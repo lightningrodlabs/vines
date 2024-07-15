@@ -554,6 +554,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
+      console.log("<vines-pages> signaledNotifications", notif.author, notif);
       const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
       const author =  maybeProfile? maybeProfile.nickname : "unknown";
       const canPopup = !notif.author.equals(this.cell.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
@@ -1599,7 +1600,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async refresh(_e?: any) {
-    await this._dvm.threadsZvm.probeInbox();
+    await this._dvm.threadsZvm.zomeProxy.probeInbox();
     console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();

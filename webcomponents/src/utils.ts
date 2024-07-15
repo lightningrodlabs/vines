@@ -11,7 +11,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
 import {ThreadsEntryType} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {ActionId, AgentId, AnyId, DnaId, EntryId, LinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaId, EntryId} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
@@ -124,6 +124,22 @@ import {SpecialSubjectType} from "./events";
 //   }
 // }
 
+
+
+/** */
+export function status2color(status: string): string {
+  switch(status) {
+    case "primary": return "rgb(14, 165, 233)"; break;
+    case "neutral": return "rgb(113, 113, 122)"; break;
+    case "success": return "rgb(34, 197, 94)"; break;
+    case "warning": return "rgb(245, 158, 11)"; break;
+    case "danger": return "rgb(239, 68, 68)"; break;
+    default: return "rgb(0, 0, 0)"; break;
+  }
+}
+
+
+
 /** */
 export function type2ui5Icon(type: FileType): string {
   switch (type) {
@@ -180,22 +196,6 @@ export function timeSince(date: Date): string {
   return Math.floor(seconds) + " seconds";
 }
 
-
-/** */
-export interface EditTopicRequest {
-  topicHash: EntryId,
-  subjectName: string,
-}
-
-
-/** */
-export interface CommentRequest {
-  maybeCommentThread: ActionId | null,
-  subjectHash: LinkableId,
-  subjectType: string,
-  subjectName: string,
-  viewType: string,
-}
 
 
 /** */

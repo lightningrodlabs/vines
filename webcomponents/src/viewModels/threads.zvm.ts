@@ -1,4 +1,4 @@
-import {ActionHash, AgentPubKey, Timestamp} from "@holochain/client";
+import {ActionHash, AgentPubKey, Timestamp, ZomeName} from "@holochain/client";
 import {
   AddEntryAsBeadInput,
   AnyBead,
@@ -25,7 +25,6 @@ import {
   ActionId,
   AgentId,
   AgentIdMap,
-  Dictionary,
   EntryId,
   EntryIdMap,
   DnaId,
@@ -37,12 +36,10 @@ import {
   ZomeSignalProtocol,
   LinkPulseMat,
   EntryPulseMat,
-  TipProtocolVariantEntry,
-  dematerializeEntryPulse,
   LinkableId,
   enc64,
   getIndexByVariant,
-  getVariantByIndex, TipProtocolVariantLink, dematerializeLinkPulse, EntryPulse, anyToB64
+  getVariantByIndex, TipProtocolVariantLink, dematerializeLinkPulse, EntryPulse, CellProxy, DnaViewModel,
 } from "@ddd-qc/lit-happ";
 import {
   base2typed,
@@ -54,7 +51,7 @@ import {
   dematerializeParticipationProtocol,
   dematerializeTypedBead,
   EncryptedBeadContent,
-  EntryBeadMat,
+  EntryBeadMat, holochainIdExtensionCodec,
   materializeBead,
   materializeParticipationProtocol,
   materializeSubject,
@@ -74,11 +71,11 @@ import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
-import {decode, encode} from "@msgpack/msgpack";
+import {Decoder, Encoder} from "@msgpack/msgpack";
 import {AnyIdMap, parseMentions} from "../utils";
 import {SearchParameters} from "../search";
 import {AuthorshipZvm} from "./authorship.zvm";
-import {ThreadsLinkType, ThreadsUnitEnum} from "../bindings/threads.integrity";
+import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
 
 
@@ -93,7 +90,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   static readonly ZOME_PROXY = ThreadsProxy;
   get zomeProxy(): ThreadsProxy {return this._zomeProxy as ThreadsProxy;}
 
+  private _encoder = new Encoder(holochainIdExtensionCodec);
+  private _decoder = new Decoder(holochainIdExtensionCodec);
 
+
+  // constructor(cellProxy: CellProxy, dvmParent: DnaViewModel, zomeName?: ZomeName) {
+  //   super(cellProxy, dvmParent, zomeName);
+  //
+  // }
 
   /** -- Perspective -- */
 
@@ -301,8 +305,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   getAllNotificationsForPp(argPpAh: ActionId): [ActionId, ThreadsNotification][] {
+    console.log("getAllNotificationsForPp()", argPpAh, this._perspective.inbox);
     let result = [];
-    for (const [linkAh, [ppAh, notif]] of Array.from(this._perspective.inbox.entries())) {
+    for (const [linkAh, [ppAh, notif]] of this._perspective.inbox.entries()) {
       if (argPpAh.equals(ppAh)) {
         result.push([linkAh, notif]);
       }
@@ -530,15 +535,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** Get last elements since last time (global probe log) */
     await this.probeAllLatest();
-    await this.probeInbox();
-    await this.pullFavorites();
-  }
-
-
-  /** */
-  async probeInbox() {
-    this._perspective.inbox.clear();
     await this.zomeProxy.probeInbox();
+    await this.pullFavorites();
   }
 
 
@@ -1147,15 +1145,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** -- Store: Cache & index a materialized entry, and notify subscribers -- */
 
   /** */
-  storeNotification(notif: ThreadsNotification, ppAh?: ActionId) {
-    /** make sure we have the content signaled in the notification */
-    if (!ppAh) {
-      this.getPpFromNotification(notif).then((ppAh) => this.fetchPp(ppAh));
-    } else {
-      /*await*/ this.fetchPp(ppAh);
-    }
-    /* */
+  storeNotification(notif: ThreadsNotification, ppAh: ActionId) {
     console.log("storeNotification()", notif.event, ppAh);
+    /** make sure we have the content signaled in the notification */
+    /*await*/ this.fetchPp(ppAh);
     this._perspective.inbox.set(notif.createLinkAh, [ppAh, notif]);
   }
 
@@ -1209,6 +1202,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   storeThread(ppAh: ActionId, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocolMat {
+    console.log(`storeThread() thread "${ppAh.short}" | creationTime: ${creationTime}"`, author.short, pp);
+
     /** Return already stored PP */
     if (this._perspective.threads.has(ppAh)) {
       return this._perspective.threads.get(ppAh).pp;
@@ -1491,7 +1486,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       data: extra,
     }
     console.log("castNotificationTip()", notificationTip, agent/*, notification.author*/);
-    const serTip = encode(notificationTip);
+    const serTip = this._encoder.encode(notificationTip);
     await this.broadcastTip({App: serTip}, [agent]);
     return;
   }
@@ -1866,19 +1861,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       case ThreadsEntryType.EntryBead:
       case ThreadsEntryType.TextBead:
       case ThreadsEntryType.EncryptedBead:
-        const encBead = decode(pulse.bytes) as TypedBead;
+        const encBead = this._decoder.decode(pulse.bytes) as TypedBead;
         if (StateChangeType.Create == pulse.state) {
           await this.handleBeadEntry(pulse, encBead, pulse.entryType, pulse.isNew, from);
         }
         break;
       case ThreadsEntryType.SemanticTopic:
-        const semTopic = decode(pulse.bytes) as SemanticTopic;
+        const semTopic = this._decoder.decode(pulse.bytes) as SemanticTopic;
         if (StateChangeType.Create == pulse.state) {
           this.storeSemanticTopic(pulse.eh, semTopic.title);
         }
         break;
       case ThreadsEntryType.ParticipationProtocol:
-        const pp= decode(pulse.bytes) as ParticipationProtocol;
+        const pp= this._decoder.decode(pulse.bytes) as ParticipationProtocol;
         if (StateChangeType.Create == pulse.state) {
           this.storeThread(pulse.ah, pp, pulse.ts, pulse.author, pulse.isNew);
           if (pulse.isNew) {
@@ -1907,12 +1902,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         break;
       case ThreadsEntryType.GlobalLastProbeLog: {
-        const globalLog = decode(pulse.bytes) as GlobalLastProbeLog;
+        const globalLog = this._decoder.decode(pulse.bytes) as GlobalLastProbeLog;
         this.storeGlobalLog(globalLog.ts);
       }
         break;
       case ThreadsEntryType.ThreadLastProbeLog: {
-        const threadLog = decode(pulse.bytes) as ThreadLastProbeLog;
+        const threadLog = this._decoder.decode(pulse.bytes) as ThreadLastProbeLog;
         this.storeThreadLog(threadLog);
       }
         break;
@@ -1950,16 +1945,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** I got notified by a peer */
     if (base.b64 == this.cell.agentId.b64) {
       /** Store Notification */
-      this.storeNotification(notif);
+      const ppAh = await this.getPpFromNotification(notif);
+      this.storeNotification(notif, ppAh);
       /** Publish a NotifySetting.AllMessages for this thread if non exists */
       if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
         const ppAh = new ActionId(notif.content.b64);
-        console.log("NewDmThread in inbox:", ppAh);
+        console.log("NewDmThread notif:", ppAh);
         const notifSettings = this.getPpNotifSettings(ppAh);
         const notifSetting = notifSettings[this.cell.agentId.b64];
         if (!notifSetting) {
           await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
-          console.log("NewDmThread.publishNotifSetting() inbox", ppAh);
+          console.log("NewDmThread.publishNotifSetting()", ppAh);
         }
       }
     } else {
@@ -1980,7 +1976,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         console.log("Signaling new Bead notification to peer", base, pulse.target);
         const beadAh = new ActionId(pulse.target.b64);
         const beadPair = this._perspective.beads.get(beadAh);
-        const beadData: NotificationTipBeadData = {typed: beadPair[1], beadType: beadPair[0].beadType, creationTime: beadPair[0].creationTime};
+        const beadData: NotificationTipBeadData = {typed: dematerializeTypedBead(beadPair[1], beadPair[0].beadType), beadType: beadPair[0].beadType, creationTime: beadPair[0].creationTime};
         extra = beadData;
       }
       await this.castNotificationTip(pulse.create_link_hash, base, notif, extra);
@@ -2042,17 +2038,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   handleAppTip(appTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
-    const notifTip = decode(appTip) as ThreadsNotificationTip;
-    let ppAh: ActionId;
+    const notifTip = this._decoder.decode(appTip) as ThreadsNotificationTip;
+    console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from);
+    let ppAh: ActionId = notifTip.pp_ah;
     let signal: ZomeSignalProtocol;
     /** Store received Entry */
     if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
       const {typed, beadType, creationTime} = notifTip.data as NotificationTipBeadData;
       const beadAh = notifTip.content;
-      ppAh = notifTip.pp_ah;
-      console.log(`Received NotificationSignal of type ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
+      console.log(`notifTip ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
       const entryPulse: EntryPulse = {
-        ah: notifTip.content.hash,
+        ah: beadAh.hash,
         eh: EntryId.empty().hash,
         ts: creationTime,
         author: from.hash,
@@ -2062,12 +2058,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           zome_index: 42,
           visibility: "Public",
         },
-        bytes: encode(typed),
+        bytes: this._encoder.encode(typed),
       };
       signal = {Entry: entryPulse};
     }
     if (NotifiableEvent.NewDmThread == notifTip.event || NotifiableEvent.Fork === notifTip.event) {
       const {pp, creationTime} = notifTip.data as NotificationTipPpData;
+      console.log(`notifTip ${JSON.stringify(notifTip.event)}:`, creationTime, pp);
       const entryPulse: EntryPulse = {
         ah: notifTip.content.hash,
         eh: EntryId.empty().hash,
@@ -2079,7 +2076,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           zome_index: 42,
           visibility: "Public",
         },
-        bytes: encode(pp),
+        bytes: this._encoder.encode(pp),
       };
       signal = {Entry: entryPulse};
     }
@@ -2091,9 +2088,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       event: notifTip.event,
       author: notifTip.author,
       timestamp: notifTip.timestamp,
-      content: ActionId.from(notifTip.content),
+      content: notifTip.content,
       createLinkAh: notifTip.link_ah,
     }
+    console.log(`handleAppTip() storeNotification:`, notif);
     /** */
     this.storeNotification(notif, ppAh);
     return signal;

@@ -884,7 +884,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   async refresh(_e?: any) {
-    await this._dvm.threadsZvm.probeInbox();
+    await this._dvm.threadsZvm.zomeProxy.probeInbox();
     console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
     // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();

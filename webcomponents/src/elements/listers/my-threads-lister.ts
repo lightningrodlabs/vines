@@ -12,9 +12,9 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {SubjectMat, ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {AnyIdMap, CommentRequest} from "../../utils";
+import {AnyIdMap} from "../../utils";
 import {toasty} from "../../toast";
-import {threadJumpEvent, SpecialSubjectType} from "../../events";
+import {threadJumpEvent, SpecialSubjectType, CommentRequest} from "../../events";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";

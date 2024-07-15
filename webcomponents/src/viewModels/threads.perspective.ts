@@ -1,4 +1,4 @@
-import {Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, EntryHashB64, Timestamp} from "@holochain/client";
 import {
   Dictionary,
   AgentId,
@@ -19,6 +19,7 @@ import {
 import {WAL} from "@lightningrodlabs/we-applet";
 import {AnyIdMap} from "../utils";
 import {SpecialSubjectType} from "../events";
+import {decode, encode, ExtensionCodec} from "@msgpack/msgpack";
 
 
 /** -- Should be defined in @holochain/client */
@@ -51,7 +52,7 @@ export interface ThreadsNotificationTip {
   event: NotifiableEvent,
   author: AgentId,
   timestamp: Timestamp,
-  content: LinkableId,
+  content: ActionId,
   /**  */
   link_ah: ActionId,
   pp_ah: ActionId,
@@ -219,7 +220,7 @@ export type NotificationTipPpData = {
 };
 
 export type NotificationTipBeadData = {
-  typed: TypedBeadMat,
+  typed: TypedBead,
   beadType: BeadType,
   creationTime: Timestamp,
 };
@@ -474,3 +475,57 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
 //
 //   return exPersp;
 // }
+
+
+
+export const holochainIdExtensionCodec = new ExtensionCodec();
+
+const AGENTID_EXT_TYPE = 0 // Any in 0-127
+holochainIdExtensionCodec.register({
+  type: AGENTID_EXT_TYPE,
+  encode: (object: unknown): Uint8Array | null => {
+    if (object instanceof AgentId) {
+      return encode(object.b64);
+    } else {
+      return null;
+    }
+  },
+  decode: (data: Uint8Array) => {
+    const b64 = decode(data) as AgentPubKeyB64;
+    return new AgentId(b64);
+  },
+});
+
+
+const ENTRYID_EXT_TYPE = 1 // Any in 0-127
+holochainIdExtensionCodec.register({
+  type: ENTRYID_EXT_TYPE,
+  encode: (object: unknown): Uint8Array | null => {
+    if (object instanceof EntryId) {
+      return encode(object.b64);
+    } else {
+      return null;
+    }
+  },
+  decode: (data: Uint8Array) => {
+    const b64 = decode(data) as EntryHashB64;
+    return new EntryId(b64);
+  },
+});
+
+
+const ACTIONID_EXT_TYPE = 2 // Any in 0-127
+holochainIdExtensionCodec.register({
+  type: ACTIONID_EXT_TYPE,
+  encode: (object: unknown): Uint8Array | null => {
+    if (object instanceof ActionId) {
+      return encode(object.b64);
+    } else {
+      return null;
+    }
+  },
+  decode: (data: Uint8Array) => {
+    const b64 = decode(data) as ActionHashB64;
+    return new ActionId(b64);
+  },
+});

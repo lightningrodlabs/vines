@@ -7,7 +7,6 @@ import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js"
 import "@shoelace-style/shoelace/dist/components/radio/radio.js";
 import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
 import {Profile as ProfileMat, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {Timestamp} from "@holochain/client";
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 import {renderProfileAvatar, ts2day} from "../../render";
 import {toasty} from "../../toast";
