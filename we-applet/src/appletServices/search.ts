@@ -1,19 +1,16 @@
-import {
-    AgentPubKeyB64,
-    AppClient,
-    decodeHashFromBase64,
-} from "@holochain/client";
+import {AppClient} from "@holochain/client";
 import {AppletHash, WAL} from "@lightningrodlabs/we-applet/dist/types";
 import {WeaveServices} from "@lightningrodlabs/we-applet/dist/api";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {FilesProxy} from "@ddd-qc/files";
 import {ParcelDescription} from "@ddd-qc/delivery";
 import {VINES_DEFAULT_ROLE_NAME} from "@vines/elements";
+import {AgentId} from "@ddd-qc/cell-proxy";
 
 /** */
 export interface VinesSearchContext {
     isPrivate: boolean
-    author: AgentPubKeyB64,
+    author: AgentId,
     description: ParcelDescription,
 }
 
@@ -32,7 +29,7 @@ export async function search(appletClient: AppClient, appletHash: AppletHash, we
         VINES_DEFAULT_ROLE_NAME);
     console.log("Vines/we-applet/search(): cellProxy", cellProxy);
     const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
-    const dnaHash = decodeHashFromBase64(proxy.cell.dnaHash);
+    //const dnaHash = decodeHashFromBase64(proxy.cell.dnaHash);
 
     /** Search PP / messages / subjects? */
     const items = [];

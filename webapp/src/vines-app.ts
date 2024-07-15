@@ -53,13 +53,13 @@ import "./vines-page"
 import Button from "@ui5/webcomponents/dist/Button";
 
 
-// /** */
-// export interface VinesAssetQuery {
-//   detail: string,
-//   subjectType: string,
-//   subjectName: string,
-//   subjectAuthor?: AgentPubKeyB64,
-// }
+/** Used by we-applet */
+export interface VinesAssetQuery {
+  detail: string,
+  subjectType: string,
+  subjectName: string,
+  subjectAuthor?: AgentId,
+}
 
 
 /** */
@@ -501,7 +501,16 @@ export class VinesApp extends HappElement {
                       await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
                     } catch(e) {
                       console.warn("Failed creating my Profile", e);
+                      return;
                     }
+                    /** Wait for perspective to update */
+                    /** TODO: add a timeout */
+                    let maybeMeProfile;
+                    do {
+                        maybeMeProfile = this.threadsDvm.profilesZvm.getMyProfile();
+                        await delay(20);
+                    } while (!maybeMeProfile)
+                    /** */
                     this.requestUpdate();
                   }}
                   @lang-selected=${(e: CustomEvent) => {

@@ -1,11 +1,11 @@
-import {AppClient, encodeHashToBase64} from "@holochain/client";
+import {AppClient} from "@holochain/client";
 import {
     materializeAnyBead,
     ThreadsEntryType,
-    ThreadsProxy, truncate, weaveUrlToWal
+    ThreadsProxy, weaveUrlToWal
 } from "@vines/elements";
 import {asCellProxy} from "@ddd-qc/we-utils";
-import {pascal} from "@ddd-qc/cell-proxy";
+import {ActionId, pascal} from "@ddd-qc/cell-proxy";
 import {devtestNames} from "../devtest";
 import {AssetInfo, WAL} from "@lightningrodlabs/we-applet";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -55,12 +55,11 @@ export async function getAssetInfo(
             const anyTuple = await threadsProxy.fetchAnyBead(wal.hrl[1]);
             const hrlBead = materializeAnyBead(anyTuple[2]);
             const wall = weaveUrlToWal(hrlBead.value);
-            const hash = encodeHashToBase64(wall.hrl[1])
-            const h = truncate(hash, 10, false);
+            const beadAh = new ActionId(wall.hrl[1])
             //const attLocInfo = weServices.getAttachableInfo(wall);
             return {
                 icon_src: wrapPathInSvg(mdiCommentBookmark),
-                name: `WAL: ${h}`
+                name: `WAL: ${beadAh.short}`
             };
         break;
         case ThreadsEntryType.EntryBead:

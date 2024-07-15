@@ -1,5 +1,5 @@
 import {
-  AppWebsocket, encodeHashToBase64,
+  AppWebsocket,
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
 
@@ -11,7 +11,7 @@ import {
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 
 import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
-import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
+import {EntryId, ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 import {VinesApp} from "@vines/app";
 
@@ -30,7 +30,6 @@ export async function createVinesApplet(
 
   console.log("createVinesApplet()         client", appletViewInfo.appletClient);
   console.log("createVinesApplet() thisAppletHash", appletViewInfo.appletHash);
-  console.log("createVinesApplet()   thisAppletId", encodeHashToBase64(appletViewInfo.appletHash));
 
   const profilesClient = appletViewInfo.profilesClient;
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
@@ -59,12 +58,12 @@ export async function createVinesApplet(
   const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
   console.log("createVinesApplet() profilesCellProxy", profilesCellProxy);
 
-  /** Create ThreadsApp */
+  /** Create VinesApp */
   const app = await VinesApp.fromWe(
-      mainAppWs, undefined, false, mainAppInfo.installed_app_id,
+      mainAppWs, undefined, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
       weServices,
-      encodeHashToBase64(appletViewInfo.appletHash),
+      new EntryId(appletViewInfo.appletHash),
       appletViewInfo.view,
       );
   /** Done */

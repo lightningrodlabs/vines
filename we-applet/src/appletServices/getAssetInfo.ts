@@ -1,4 +1,4 @@
-import {encodeHashToBase64, ZomeName, RoleName, AppClient} from "@holochain/client";
+import {encodeHashToBase64, AppClient} from "@holochain/client";
 import {
     materializeAnyBead,
     ThreadsEntryType,

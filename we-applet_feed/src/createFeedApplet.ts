@@ -1,5 +1,5 @@
 import {
-  AppWebsocket, encodeHashToBase64,
+  AppWebsocket,
 } from "@holochain/client";
 //import { msg } from "@lit/localize";
 
@@ -11,7 +11,7 @@ import {
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 
 import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
-import {ExternalAppProxy} from "@ddd-qc/cell-proxy/";
+import {EntryId, ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 import {CommunityFeedApp} from "@communityfeed/app";
 
@@ -30,7 +30,6 @@ export async function createFeedApplet(
 
   console.log("createFeedApplet()         client", appletViewInfo.appletClient);
   console.log("createFeedApplet() thisAppletHash", appletViewInfo.appletHash);
-  console.log("createFeedApplet()   thisAppletId", encodeHashToBase64(appletViewInfo.appletHash));
 
   const profilesClient = appletViewInfo.profilesClient;
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
@@ -64,7 +63,7 @@ export async function createFeedApplet(
       mainAppWs, undefined, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
       weServices,
-      encodeHashToBase64(appletViewInfo.appletHash),
+      new EntryId(appletViewInfo.appletHash),
       appletViewInfo.view,
       );
   /** Done */

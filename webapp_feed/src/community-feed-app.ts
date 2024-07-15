@@ -537,7 +537,16 @@ export class CommunityFeedApp extends HappElement {
                       await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
                     } catch(e) {
                       console.warn("Failed creating my Profile", e);
+                      return;
                     }
+                    /** Wait for perspective to update */
+                    /** TODO: add a timeout */
+                    let maybeMeProfile;
+                    do {
+                        maybeMeProfile = this.threadsDvm.profilesZvm.getMyProfile();
+                        await delay(20);
+                    } while (!maybeMeProfile)
+                    /** */                    
                     this.requestUpdate();
                   }}
                   @lang-selected=${(e: CustomEvent) => {
