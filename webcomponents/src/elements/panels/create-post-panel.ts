@@ -23,6 +23,7 @@ export interface PostCreatedEvent {
   createdMainThread: boolean,
 }
 
+
 /**
  * @element
  */
