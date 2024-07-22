@@ -73,7 +73,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       /** Render threads for Topic */
       //let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
       let threads = [];
-      let topicThreads = this.perspective.threadsPerSubject.get(topicEh.b64);
+      let topicThreads = this.perspective._threadsPerSubject.get(topicEh.b64);
       if (topicThreads == undefined) {
         topicThreads = [];
         //this._zvm.pullSubjectThreads(topicHash).then(() => this.requestUpdate())

@@ -172,7 +172,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousPosts(): Promise<void> {
-    const mainThreadAh = this.threadsPerspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64)[0];
+    const mainThreadAh = this.threadsPerspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64)[0];
     const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(mainThreadAh);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {

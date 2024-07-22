@@ -78,7 +78,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64));
+    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64));
 
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentId, "S");
 

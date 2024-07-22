@@ -11,7 +11,7 @@ import {ActionId} from "@ddd-qc/lit-happ";
  * This is because partitioned networks edge case where several agents create the main thread.
  */
 export function getMainThread(dvm: ThreadsDvm): ActionId | null {
-  const threads = dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
+  const threads = dvm.threadsZvm.perspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64);
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
     return null;
