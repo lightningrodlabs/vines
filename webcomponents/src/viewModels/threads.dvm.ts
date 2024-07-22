@@ -24,7 +24,7 @@ import {
   BaseBeadType, bead2base,
   BeadType, EncryptedBeadContent, holochainIdExtensionCodec, ThreadsNotification, ThreadsNotificationTip,
   TypedContent,
-} from "./threads.perspective";
+} from "./threads.materialize";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {Decoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
@@ -360,8 +360,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
-    await this.profilesZvm.import(JSON.stringify(profiles), canPublish);
-    await this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
+    this.profilesZvm.import(JSON.stringify(profiles), canPublish);
+    this.threadsZvm.import(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
 
     console.log("import perspective", this.authorshipZvm.perspective);
 

@@ -74,8 +74,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log("<applet-lister>.loadSubjectTypes()");
     this._loading = true;
     const zvm = newZvm? newZvm : this._zvm;
-    const subs = await zvm.pullAppletSubjectTypes(this.appletId);
-    console.log("<applet-lister>.loadSubjectTypes() subs", subs);
+    await zvm.pullAppletSubjectTypes(this.appletId);
     this._loading = false;
   }
 

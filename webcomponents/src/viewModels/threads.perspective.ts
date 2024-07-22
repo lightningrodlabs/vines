@@ -1,4 +1,4 @@
-import {ActionHashB64, AgentPubKeyB64, EntryHashB64, HoloHashB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, EntryHash, EntryHashB64, HoloHashB64, Timestamp} from "@holochain/client";
 import {
   Dictionary,
   AgentId,
@@ -17,7 +17,7 @@ import {AnyIdMap} from "../utils";
 import {
   BeadInfo,
   BeadLinkMaterialized,
-  BeadType,
+  BeadType, dematerializeParticipationProtocol,
   dematerializeTypedBead, materializeBead,
   materializeParticipationProtocol,
   materializeSubject, materializeTypedBead,
@@ -73,7 +73,7 @@ export class ThreadsPerspectiveCore {
   /** beadAh -> [BeadInfo, TypedBead] */
   protected _beads: ActionIdMap<[BeadInfo, TypedBeadMat]> = new ActionIdMap();
   /** beadAh -> [agent, emoji][] */
-  protected _emojiReactions: ActionIdMap<[AgentId, string][]> = new ActionIdMap();
+  protected _emojiReactions: ActionIdMap<AgentIdMap<string[]>> = new ActionIdMap();
 
   /** -- DM stuff  -- */
   /** agentId -> ppAh */
@@ -123,6 +123,8 @@ export class ThreadsPerspectiveCore {
   }
 
 
+  getDecBead(beadAh: ActionId): [BeadInfo, TypedBaseBeadMat] | undefined { return this._decBeads.get(beadAh)}
+
   getThread(ah: ActionId): Thread | undefined {
     return this._threads.get(ah);
   }
@@ -167,7 +169,7 @@ export class ThreadsPerspectiveCore {
   }
 
 
-  getEmojiReactions(beadAh: ActionId): [AgentId, string][] | undefined {
+  getEmojiReactions(beadAh: ActionId): AgentIdMap<string[]> | undefined {
     return this._emojiReactions.get(beadAh);
   }
 
@@ -303,8 +305,8 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
   private _threadsPerSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
   /** PathEntryHash -> subjectHash[] */
   private _subjectsPerType: EntryIdMap<[DnaId, LinkableId][]> = new EntryIdMap();
-  /* name string -> ppAh */
-  private _threadsByName: Dictionary<ActionId> = {};
+  ///* name string -> ppAh */
+  //private _threadsByName: Dictionary<ActionId> = {};
 
   /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
@@ -322,18 +324,18 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
     return this;
   }
 
-  getSubjects(pathHash: EntryId): [DnaId, LinkableId][] | undefined {
-    return this._subjectsPerType.get(pathHash);
+  getSubjects(typePathHash: EntryId): [DnaId, LinkableId][] | undefined {
+    return this._subjectsPerType.get(typePathHash);
   }
 
 
-  getPpByName(name: string): ActionId | undefined {
-    return this._threadsByName[name];
-  }
-
-  getAllThreadsByName(): [string, ActionId][] {
-    return Object.entries(this._threadsByName);
-  }
+  // getPpByName(name: string): ActionId | undefined {
+  //   return this._threadsByName[name];
+  // }
+  //
+  // getAllThreadsByName(): [string, ActionId][] {
+  //   return Object.entries(this._threadsByName);
+  // }
 
 
   /** */
@@ -401,7 +403,6 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
   }
 
 
-
   /** Return matching beadAhs */
   searchTextBeads(parameters: SearchParameters): [ActionId, BeadInfo, string][] {
     console.log("searchTextBeads()", parameters);
@@ -426,15 +427,17 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
     if (parameters.appletByName) {
       // TODO
     }
-    /** filter thread */
-    if (parameters.threadByName) {
-      /** Bail if thread does not exist */
-      const ppAh = this.getPpByName(parameters.threadByName);
-      if (!ppAh) {
-        return [];
-      }
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.bead.ppAh.equals(ppAh));
-    }
+    // /** filter thread */
+    // // FIXME
+    // if (parameters.threadByName) {
+    //   /** Bail if thread does not exist */
+    //   const ppAh = this.getPpByName(parameters.threadByName);
+    //   if (!ppAh) {
+    //     return [];
+    //   }
+    //   matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.bead.ppAh.equals(ppAh));
+    // }
+
     /** filter author */
     if (parameters.author) {
       matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.author.equals(parameters.author)) //
@@ -469,7 +472,50 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
     return matchingTextBeads;
   }
 
+
   /** -- Store -- */
+
+  storeAllNewThreads(list: [ActionId, LinkableId][]) {
+    this._newThreads.clear();
+    for (const [ah, subjectHash] of list) {
+      this._newThreads.set(ah, subjectHash)
+    }
+  }
+
+  storeAllUnreadThreads(list: ActionIdMap<[LinkableId, ActionId[]]>) {
+    this._unreadThreads.clear();
+    for (const [ah, map] of list.entries()) {
+      this._unreadThreads.set(ah, map)
+    }
+  }
+
+  /** */
+  storeSubjectsWithType(typePathHash: EntryId, subjectB64s: [DnaId, LinkableId][]) {
+    this._subjectsPerType.set(typePathHash, subjectB64s);
+  }
+
+
+  /** */
+  storeSubjectTypesForApplet(appletId: EntryId, raw: [string, EntryHash][]) {
+    let subjectTypes: EntryIdMap<string> = new EntryIdMap();
+    for (const [subjectType, pathHash] of raw) {
+      subjectTypes.set(new EntryId(pathHash), subjectType);
+    }
+    console.log("storeSubjectTypesForApplet()", appletId, subjectTypes);
+    this._appletSubjectTypes.set(appletId, subjectTypes);
+  }
+
+  /** */
+  storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
+    /** Store EncryptedBead */
+    if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
+      this._decBeads.set(beadAh, innerPair);
+    }
+    /** Store normal base Bead */
+    this._beads.set(beadAh, [beadInfo, typedBead]);
+    this.storeBeadInThread(beadAh, beadInfo.bead.ppAh, beadInfo.creationTime, isNew, beadInfo.beadType);
+  }
+
 
   /* Store Bead in its Thread */
   private storeBeadInThread(beadAh: ActionId, ppAh: ActionId, creationTime: Timestamp, isNew: boolean, beadType: BeadType) {
@@ -594,11 +640,17 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
 
   /** */
   hasEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string): boolean {
-    if (!this._emojiReactions.get(beadAh)) {
+    const beadEmojis = this._emojiReactions.get(beadAh);
+    if (!beadEmojis) {
       return false;
     }
-    /** Look for pair */
-    const maybeAlready = Object.values(this._emojiReactions.get(beadAh)).find(([a, e]) => (agent.equals(a) && e == emoji));
+    /** Look for agent */
+    const agentEmojis = beadEmojis.get(agent);
+    if (!agentEmojis) {
+      return false;
+    }
+    /** Look for emoji */
+    const maybeAlready = agentEmojis.find((e) => e == emoji);
     return maybeAlready && maybeAlready.length > 0;
   }
 
@@ -610,23 +662,38 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
       return;
     }
     if (!this._emojiReactions.get(beadAh)) {
-      this._emojiReactions.set(beadAh, []);
+      this._emojiReactions.set(beadAh, new AgentIdMap());
     }
-    this._emojiReactions.get(beadAh).push([agent, emoji]);
+    const agentEmojis = this._emojiReactions.get(beadAh).get(agent);
+    agentEmojis.push(emoji);
+    this._emojiReactions.get(beadAh).set(agent, agentEmojis);
   }
 
 
   /** */
   unstoreEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string) {
     console.debug("unstoreEmojiReaction()", emoji, beadAh.short, agent.short);
-    if (!this._emojiReactions.get(beadAh)) {
-      //this._emojiReactions[beadAh] = [];
+    const beadEmojis = this._emojiReactions.get(beadAh);
+    if (!beadEmojis) {
+      console.warn("Trying to unstore missing emoji reaction (1)");
       return;
     }
-    const filtered = this._emojiReactions.get(beadAh).filter(([a, e]) => !(agent.equals(a) && e == emoji));
-    if (filtered.length < this._emojiReactions.get(beadAh).length) {
-      this._emojiReactions.set(beadAh, filtered);
-      if (this._emojiReactions.get(beadAh).length == 0) {
+    /** Look for agent */
+    const agentEmojis = beadEmojis.get(agent);
+    if (!agentEmojis) {
+      console.warn("Trying to unstore missing emoji reaction (2)");
+      return;
+    }
+    if (!agentEmojis.includes(emoji)) {
+      console.warn("Trying to unstore missing emoji reaction (3)");
+      return;
+    }
+    const filtered = agentEmojis.filter((e) => !(e == emoji));
+    this._emojiReactions.get(beadAh).set(agent, filtered);
+    /** Delete empty maps */
+    if (this._emojiReactions.get(beadAh).get(agent).length == 0) {
+      this._emojiReactions.get(beadAh).delete(agent);
+      if (this._emojiReactions.get(beadAh).size == 0) {
         this._emojiReactions.delete(beadAh);
       }
     }
@@ -705,9 +772,9 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
 
     /** emojis */
     const emojiReactions = [];
-    for (const [beadAh, pairs] of this._emojiReactions.entries()) {
-      for (const [agent, emoji] of pairs) {
-        emojiReactions.push([beadAh.b64, agent.b64, [emoji]]);
+    for (const [beadAh, map] of this._emojiReactions.entries()) {
+      for (const [agent, emojis] of map.entries()) {
+        emojiReactions.push([beadAh.b64, agent.b64, emojis]);
       }
     }
 
@@ -727,10 +794,94 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
 
 
   /** */
-  restore(snapshot: ThreadsSnapshot) {
-    /** Clear */
+  restore(snapshot: ThreadsSnapshot, authorshipZvm: AuthorshipZvm, cell: Cell) {
+    /** this._allAppletIds */
+    this._allAppletIds = [];
+    for (const appletId of Object.values(snapshot.allAppletIds)) {
+      this._allAppletIds.push(new EntryId(appletId));
+    }
+    /** this._allSubjects */
+    this._allSubjects.clear();
+    for (const [subjectHash, subject] of Object.values(snapshot.allSubjects)) {
+      this._allSubjects.set(subjectHash, subject)
+    }
+    /** this._allSemanticTopics */
+    this._allSemanticTopics.clear();
+    for (const [topicEh, title] of Object.values(snapshot.allSemanticTopics)) {
+      this.storeSemanticTopic(new EntryId(topicEh), title);
+    }
+
+    /** this._hiddens */
+    this._hiddens = {}
     // FIXME
-    /** Store */
+
+    /** this._threads */
+    this._threads.clear();
+    this._threadsPerSubject.clear();
+    for (const [ppAhB64, ppMat, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
+      const ppAh = new ActionId(ppAhB64);
+      const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
+        ? authorshipZvm.perspective.getAuthor(ppAh)
+        : [creationTime, cell.agentId];
+      this.storeThread(cell, ppAh, dematerializeParticipationProtocol(ppMat), authorshipLog[0], authorshipLog[1], false);
+    }
+
+    /** this._beads */
+    this._beads.clear();
+    this._decBeads.clear();
+    for (const [beadAhB64, beadInfo, typedBead] of Object.values(snapshot.beads)) {
+      const beadAh = new ActionId(beadAhB64);
+      const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(beadAh) != undefined
+        ? authorshipZvm.perspective.getAuthor(beadAh)
+        : [beadInfo.creationTime, beadInfo.author];
+      beadInfo.creationTime = authorshipLog[0];
+      if (authorshipLog[1]) {
+        beadInfo.author = authorshipLog[1];
+      }
+      //this.storeTypedBead(beadAh, typedBead, beadInfo.beadType, authorshipLog[0], authorshipLog[1], true);
+      this.storeTypedBead(beadAh, beadInfo, typedBead, true);
+      // FIXME handle decBeads
+    }
+    console.log("importPerspective() beads", this._beads);
+
+
+    /** this._emojiReactions */
+    this._emojiReactions.clear();
+    for (const [beadAhB64, pairs] of Object.values(snapshot.emojiReactions)) {
+      const beadAh = new ActionId(beadAhB64);
+      if (!this._emojiReactions.get(beadAh)) {
+        this._emojiReactions.set(beadAh, new AgentIdMap());
+      }
+      for (const [agentB64, emojis] of pairs) {
+        const agent = new AgentId(agentB64);
+        this._emojiReactions.get(beadAh).set(agent, emojis);
+      }
+    }
+
+    /** this._dmAgents */
+    this._dmAgents.clear();
+    // FIXME
+
+    /** this._appletSubjectTypes */
+    this._appletSubjectTypes.clear();
+    for (const [appletId, dict] of Object.values(snapshot.appletSubjectTypes)) {
+      const appletEh = new EntryId(appletId);
+      if (!this._appletSubjectTypes.get(appletEh)) {
+        this._appletSubjectTypes.set(appletEh, new EntryIdMap());
+      }
+      for (const [pathHash, subjectType] of Object.values(dict)) {
+        this._appletSubjectTypes.get(appletEh).set(new EntryId(pathHash), subjectType);
+      }
+    }
+
+    /** this._favorites */
+    this._favorites = snapshot.favorites.map((b64) => new ActionId(b64))
+
+    /** */
+    this._globalProbeLogTs = 0;
+    this._inbox.clear();
+    this._notifSettings.clear();
+    this._subjectsPerType.clear();
     // FIXME
   }
 
