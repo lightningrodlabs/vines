@@ -312,7 +312,7 @@ export class ThreadsDvm extends DnaViewModel {
     await this.threadsZvm.probeAllInnerAsync();
     /* Probe all threads */
     let probes = []
-    for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
+    for (const [ppAh, _thread] of this.threadsZvm.perspective.threads) {
       probes.push(this.threadsZvm.pullAllBeads(ppAh));
     }
     await Promise.all(probes);
@@ -359,7 +359,7 @@ export class ThreadsDvm extends DnaViewModel {
     //const dvmPersp = external[ThreadsDvm.DEFAULT_BASE_ROLE_NAME];
 
 
-    this.authorshipZvm.importPerspective(JSON.stringify(originals));
+    this.authorshipZvm.import(JSON.stringify(originals), canPublish);
     await this.profilesZvm.import(JSON.stringify(profiles), canPublish);
     await this.threadsZvm.importPerspective(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
 
