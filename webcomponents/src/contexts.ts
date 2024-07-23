@@ -1,6 +1,6 @@
 import {createContext} from "@lit/context";
 import {FilesDvm} from "@ddd-qc/files";
-import {AgentId, AppProxy} from "@ddd-qc/cell-proxy";
+import {AppProxy} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {EntryId} from "@ddd-qc/lit-happ";
 

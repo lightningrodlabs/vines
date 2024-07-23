@@ -287,7 +287,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishEmoji(beadAh: ActionId, emoji: string) {
-    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
+    const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
     if (has) {
       return;
     }
@@ -297,7 +297,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async unpublishEmoji(beadAh: ActionId, emoji: string) {
-    const has = this.threadsZvm.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
+    const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
     if (!has) {
       return;
     }

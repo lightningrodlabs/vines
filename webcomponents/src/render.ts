@@ -5,7 +5,7 @@ import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {determineBeadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
+import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
 import {AgentId} from "@ddd-qc/lit-happ";
 
 
@@ -56,11 +56,11 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
     let content: string = "";
     const ah = notif.content;
     if (NotifiableEvent.Mention === notif.event) {
-        const beadInfo = threadsZvm.getBaseBeadInfo(ah);
+        const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         if (!beadInfo) {
             title = "Mention in thread";
         } else {
-            const typedBead = threadsZvm.getBaseBead(ah);
+            const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
                 title = "Mention in thread " + maybeThread.name;
@@ -69,11 +69,11 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         }
     }
     if (NotifiableEvent.NewBead === notif.event) {
-      const beadInfo = threadsZvm.getBaseBeadInfo(ah);
+      const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
       if (!beadInfo) {
         title = "New message in thread";
       } else {
-        const typedBead = threadsZvm.getBaseBead(ah);
+        const typedBead = threadsZvm.perspective.getBaseBead(ah);
         const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
         const dmThread = threadsZvm.isThreadDm(beadInfo.bead.ppAh);
         if (dmThread) {
@@ -88,11 +88,11 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
       }
     }
     if (NotifiableEvent.Reply === notif.event) {
-      const beadInfo = threadsZvm.getBaseBeadInfo(ah);
+      const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         if (!beadInfo) {
             title = "Reply in thread";
         } else {
-          const typedBead = threadsZvm.getBaseBead(ah);
+          const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
                 title = "Reply in thread " + maybeThread.name;

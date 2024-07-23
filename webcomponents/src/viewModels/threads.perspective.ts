@@ -18,9 +18,8 @@ import {
   BeadInfo,
   BeadLinkMaterialized,
   BeadType, dematerializeParticipationProtocol,
-  dematerializeTypedBead, materializeBead,
   materializeParticipationProtocol,
-  materializeSubject, materializeTypedBead,
+  materializeSubject,
   ParticipationProtocolMat,
   SubjectMat, TextBeadMat,
   ThreadsNotification,
@@ -82,7 +81,6 @@ export class ThreadsPerspectiveCore {
   protected _decBeads: ActionIdMap<[BeadInfo, TypedBaseBeadMat]> = new ActionIdMap();
 
   /**  -- Applet threads  -- */
-
   /** AppletId -> PathEntryHash -> subjectType */
   protected _appletSubjectTypes: EntryIdMap<EntryIdMap<string>> = new EntryIdMap();
 
@@ -102,6 +100,10 @@ export class ThreadsPerspectiveCore {
 
 
   /** -- Getters -- */
+
+  get dmAgents(): AgentIdMap<ActionId> { return this._dmAgents }
+  get hiddens(): Dictionary<boolean> { return this._hiddens }
+  get threads(): ActionIdMap<Thread> { return this._threads }
 
   get globalProbeLogTs(): Timestamp { return this._globalProbeLogTs }
 
@@ -294,6 +296,23 @@ export class ThreadsPerspectiveCore {
     return res;
   }
 
+
+
+  /** */
+  hasEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string): boolean {
+    const beadEmojis = this._emojiReactions.get(beadAh);
+    if (!beadEmojis) {
+      return false;
+    }
+    /** Look for agent */
+    const agentEmojis = beadEmojis.get(agent);
+    if (!agentEmojis) {
+      return false;
+    }
+    /** Look for emoji */
+    const maybeAlready = agentEmojis.find((e) => e == emoji);
+    return maybeAlready && maybeAlready.length > 0;
+  }
 }
 
 
@@ -324,9 +343,8 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
     return this;
   }
 
-  getSubjects(typePathHash: EntryId): [DnaId, LinkableId][] | undefined {
-    return this._subjectsPerType.get(typePathHash);
-  }
+  get threadsPerSubject() { return this._threadsPerSubject }
+  get subjectsPerType() { return this._subjectsPerType }
 
 
   // getPpByName(name: string): ActionId | undefined {
@@ -635,23 +653,6 @@ export class ThreadsPerspective extends ThreadsPerspectiveCore {
     //console.log("storePp()", ppMat.subjectHash, ppAh)
     /** Done */
     return ppMat;
-  }
-
-
-  /** */
-  hasEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string): boolean {
-    const beadEmojis = this._emojiReactions.get(beadAh);
-    if (!beadEmojis) {
-      return false;
-    }
-    /** Look for agent */
-    const agentEmojis = beadEmojis.get(agent);
-    if (!agentEmojis) {
-      return false;
-    }
-    /** Look for emoji */
-    const maybeAlready = agentEmojis.find((e) => e == emoji);
-    return maybeAlready && maybeAlready.length > 0;
   }
 
 

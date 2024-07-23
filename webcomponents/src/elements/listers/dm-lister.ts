@@ -69,7 +69,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
 
       //const hasNewBeads = thread && thread.hasUnreads();
-      const maybeUnreadThread = this.threadsPerspective.unreadThreads.get(ppAh);
+      const maybeUnreadThread = this.threadsPerspective.core.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
@@ -85,7 +85,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
       /** 'new', 'notif' or 'unread' badge to display */
       let badge = html`<ui5-badge>0</ui5-badge>`;
-      let notifCount = this._dvm.threadsZvm.getAllNotificationsForPp(ppAh).length;
+      let notifCount = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
             <ui5-badge class="notifBadge">New</ui5-badge>`;

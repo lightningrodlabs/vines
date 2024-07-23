@@ -3,7 +3,7 @@ import {
   BeadType, EntryBeadMat, ParticipationProtocolMat,
   SubjectMat, TextBeadMat,
   TypedBeadMat
-} from "./viewModels/threads.perspective";
+} from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
 import {WAL, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
@@ -330,7 +330,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
         break
       case SpecialSubjectType.ParticipationProtocol: {
         const ah = new ActionId(subject.address.b64);
-        const thread = threadsZvm.perspective.threads.get(ah);
+        const thread = threadsZvm.perspective.getThread(ah);
         if (!thread) {
           //thread = await threadsZvm.fetchPp(subject.address);
           return "{Unknown Thread}";
@@ -354,9 +354,10 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       /** -- Feed types -- */
       case SpecialSubjectType.Post: {
         const ah = new ActionId(subject.address.b64);
-        const beadTuple = threadsZvm.perspective.beads.get(ah);
-        if (beadTuple) {
-          return determineBeadName(beadTuple[0].beadType, beadTuple[1], filesDvm, weServices);
+        const beadInfo = threadsZvm.perspective.getBeadInfo(ah);
+        if (beadInfo) {
+          const typed = threadsZvm.perspective.getBead(ah);
+          return determineBeadName(beadInfo.beadType, typed, filesDvm, weServices);
         } else {
           return `{Unknown Post}`;
         }
@@ -364,7 +365,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       break;
       /** -- Vines types -- */
       case SpecialSubjectType.SemanticTopic:
-        let semTopicTitle = threadsZvm.perspective.allSemanticTopics.get(new EntryId(subject.address.b64));
+        let semTopicTitle = threadsZvm.perspective.getSemanticTopic(new EntryId(subject.address.b64));
         if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
           return "{Unknown Topic}";
@@ -376,7 +377,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       case SpecialSubjectType.AnyBead:
       case SpecialSubjectType.EncryptedBead:
         const ah = new ActionId(subject.address.b64);
-        const typedMat = threadsZvm.getBaseBead(ah);
+        const typedMat = threadsZvm.perspective.getBaseBead(ah);
         if (!typedMat) {
           //console.log("determineSubjectName() bead not found. Fetching.", subject.hash);
           ///*const typed =*/ await threadsZvm.fetchTypedBead(decodeHashFromBase64(subject.hash), subject.typeName/*, false*/);

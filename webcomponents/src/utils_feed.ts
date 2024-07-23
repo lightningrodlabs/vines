@@ -2,7 +2,7 @@ import {ThreadsDvm} from "./viewModels/threads.dvm";
 import {determineBeadName, MAIN_TOPIC_ID} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.perspective";
+import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
 import {ActionId} from "@ddd-qc/lit-happ";
 
 
@@ -11,7 +11,7 @@ import {ActionId} from "@ddd-qc/lit-happ";
  * This is because partitioned networks edge case where several agents create the main thread.
  */
 export function getMainThread(dvm: ThreadsDvm): ActionId | null {
-  const threads = dvm.threadsZvm.perspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64);
+  const threads = dvm.threadsZvm.getSubjectThreads(MAIN_TOPIC_ID.b64);
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
     return null;
@@ -21,7 +21,7 @@ export function getMainThread(dvm: ThreadsDvm): ActionId | null {
   if (threads.length > 1) {
     /* UH OH: multiple main threads. May be caused by partiionned network. Take oldest */
     for (const threadAh of threads) {
-      const thread = dvm.threadsZvm.perspective.threads.get(threadAh);
+      const thread = dvm.threadsZvm.perspective.getThread(threadAh);
       if (thread.creationTime < oldestCreationTime) {
         oldestCreationTime = thread.creationTime;
         ppAh = threadAh;
@@ -39,13 +39,12 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
   let content: string = "";
   const ah = notif.content;
   if (NotifiableEvent.Mention === notif.event) {
-    const beadPair = threadsDvm.threadsZvm.perspective.beads.get(ah);
-    if (!beadPair) {
+    const beadInfo = threadsDvm.threadsZvm.perspective.getBeadInfo(ah);
+    if (!beadInfo) {
       title = "Mentionned";
     } else {
-      const beadInfo = beadPair[0];
-      const typedBead = beadPair[1];
-      const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+      const typedBead = threadsDvm.threadsZvm.perspective.getBead(ah);
+      const maybeThread = threadsDvm.threadsZvm.perspective.getThread(beadInfo.bead.ppAh);
       if (maybeThread) {
         title = 'Mentionned in "' + maybeThread.pp.subject_name + '"';
       }
@@ -53,11 +52,10 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
     }
   }
   if (NotifiableEvent.NewBead === notif.event) {
-    const beadPair = threadsDvm.threadsZvm.perspective.beads.get(ah);
-    if (beadPair) {
-      const beadInfo = beadPair[0];
-      const typedBead = beadPair[1];
-      const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+    const beadInfo = threadsDvm.threadsZvm.perspective.getBeadInfo(ah);
+    if (beadInfo) {
+      const typedBead = threadsDvm.threadsZvm.perspective.getBead(ah);
+      const maybeThread = threadsDvm.threadsZvm.perspective.getThread(beadInfo.bead.ppAh);
       const mainThreadAh = getMainThread(threadsDvm);
       if (maybeThread) {
         if (beadInfo.bead.ppAh.equals(mainThreadAh)) {

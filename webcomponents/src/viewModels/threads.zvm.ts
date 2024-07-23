@@ -1,4 +1,4 @@
-import {ActionHash, AgentPubKey, AgentPubKeyB64, Timestamp} from "@holochain/client";
+import {ActionHash, AgentPubKey, AgentPubKeyB64, HoloHashB64, Timestamp} from "@holochain/client";
 import {
   AddEntryAsBeadInput,
   AnyBead,
@@ -24,9 +24,7 @@ import {ThreadsProxy} from "../bindings/threads.proxy";
 import {
   ActionId,
   AgentId,
-  AgentIdMap,
   EntryId,
-  EntryIdMap,
   DnaId,
   StateChangeType,
   TipProtocol,
@@ -46,7 +44,6 @@ import {
   base2typed,
   BaseBeadType,
   BeadInfo,
-  BeadLinkMaterialized,
   BeadType,
   dematerializeEntryBead,
   dematerializeParticipationProtocol,
@@ -55,10 +52,8 @@ import {
   EntryBeadMat, holochainIdExtensionCodec,
   materializeBead,
   materializeParticipationProtocol,
-  materializeSubject,
   materializeTypedBead, NotifiableEvent, NotificationTipBeadData, NotificationTipPpData,
   ParticipationProtocolMat,
-  SubjectMat,
   TextBeadMat,
   ThreadsNotification, ThreadsNotificationTip,
   TypedBaseBead,
@@ -67,13 +62,11 @@ import {
   TypedBeadMat,
   TypedContent,
 } from "./threads.materialize";
-import {Thread} from "./thread";
 import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {Decoder, Encoder} from "@msgpack/msgpack";
-import {AnyIdMap, parseMentions, weaveUrlToWal} from "../utils";
-import {SearchParameters} from "../search";
+import {parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
@@ -154,6 +147,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     return true;
   }
 
+
+
+  getSubjectThreads(any: HoloHashB64): ActionId[] {
+    const maybe = this._perspective.threadsPerSubject.get(any);
+    if (!maybe) return [];
+    return maybe;
+  }
+
+  getSubjects(typePathHash: EntryId): [DnaId, LinkableId][] | undefined {
+    return this._perspective.subjectsPerType.get(typePathHash);
+  }
 
 
   /** -- Search -- */
@@ -1105,7 +1109,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         switch(beadInfo.beadType) {
           case ThreadsEntryType.EncryptedBead: {
             const encBead = typedBead as EncryptedBead;
-            const otherAgent: AgentId = beadInfo.author.b64 != this.cell.agentId.b64? beadInfo.author : this._perspective.getThread(beadInfo.bead.ppAh).pp.subject.hash;
+            const otherAgent: AgentId = beadInfo.author.b64 != this.cell.agentId.b64
+              ? beadInfo.author
+              : new AgentId(this._perspective.getThread(beadInfo.bead.ppAh).pp.subject.address.b64);
             content = {encBead, otherAgent};
           } break;
           case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
