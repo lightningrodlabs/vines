@@ -22,12 +22,13 @@ import {
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
-  BeadType, EncryptedBeadContent, holochainIdExtensionCodec, ThreadsNotification, ThreadsNotificationTip,
+  BeadType, EncryptedBeadContent, ThreadsNotification, ThreadsNotificationTip,
   TypedContent,
 } from "./threads.materialize";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {Decoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
+import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 
 
 /** */
@@ -58,7 +59,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
-  private _decoder = new Decoder(holochainIdExtensionCodec);
+  private _decoder = new Decoder(HOLOCHAIN_ID_EXT_CODEC);
 
   /** QoL Helpers */
   get profilesZvm(): ProfilesAltZvm {
@@ -209,7 +210,7 @@ export class ThreadsDvm extends DnaViewModel {
     console.log("allCurrentOthers", this._perspective.agentPresences)
     const currentTime: number = Math.floor(Date.now() / 1000);
     const keysB64 = agents
-      .filter((key) => !key.equals(this.cell.agentId))
+      .filter((key) => !key.equals(this.cell.address.agentId))
       .filter((key) => {
         const lastPingTime = this._perspective.agentPresences.get(key);
         if (!lastPingTime) return false;
@@ -287,7 +288,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishEmoji(beadAh: ActionId, emoji: string) {
-    const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
+    const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.address.agentId, emoji);
     if (has) {
       return;
     }
@@ -297,7 +298,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async unpublishEmoji(beadAh: ActionId, emoji: string) {
-    const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.agentId, emoji);
+    const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.address.agentId, emoji);
     if (!has) {
       return;
     }

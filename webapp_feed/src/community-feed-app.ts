@@ -5,7 +5,7 @@ import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket,
   AppSignal,
-  AppWebsocket,
+  AppWebsocket, HoloHash,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
@@ -31,7 +31,6 @@ import {
   JumpDestinationType,
   JumpEvent,
   MAIN_TOPIC_ID,
-  materializeSubject,
   NotifySetting,
   onlineLoadedContext,
   ParticipationProtocol,
@@ -61,6 +60,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import Button from "@ui5/webcomponents/dist/Button";
 
 import "./community-feed-page"
+import {materializeSubject} from "@vines/elements/dist/viewModels/threads.materialize";
 
 
 /** */
@@ -236,8 +236,8 @@ export class CommunityFeedApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOffline()");
-    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.agentId);
-    console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentId);
+    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
+    console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.address.agentId);
     /** Done */
     this.threadsDvm.dumpCallLogs();
     this._offlineLoaded = true;
@@ -255,16 +255,16 @@ export class CommunityFeedApp extends HappElement {
 
 
     /** Make sure main topic and thread exists */
-    this.threadsDvm.threadsZvm.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
+    this.threadsDvm.threadsZvm.storeMainTopic();
     this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
-    const mainThreads = this.threadsDvm.threadsZvm.perspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64);
+    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
       const mainThreadAh = getMainThread(this.threadsDvm);
       console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", mainThreadAh);
       /** Make sure subscribe to notifications for main thread */
       await this.threadsDvm.threadsZvm.pullNotifSettings(mainThreadAh);
-      const notif = this.threadsDvm.threadsZvm.getNotifSetting(mainThreadAh, this.threadsDvm.cell.agentId);
+      const notif = this.threadsDvm.threadsZvm.perspective.getNotifSetting(mainThreadAh, this.threadsDvm.cell.address.agentId);
       if (notif != NotifySetting.AllMessages) {
         await this.threadsDvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);
       }
@@ -310,7 +310,7 @@ export class CommunityFeedApp extends HappElement {
     console.log("<community-feed-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(e.detail.address.hash);
+        this._weServices.openAppletMain(new HoloHash(e.detail.address.hash));
       }
     }
     if (e.detail.type == JumpDestinationType.Thread) {
@@ -327,7 +327,7 @@ export class CommunityFeedApp extends HappElement {
     if (e.detail.type == JumpDestinationType.Bead) {
       /** Directly to post or get post from comment thread subject */
       const beadAh = new ActionId(e.detail.address.b64);
-      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(beadAh);
+      const beadInfo = await this.threadsDvm.threadsZvm.perspective.getBeadInfo(beadAh);
       if (beadInfo) {
         const [pp, _ts, _author] = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
         if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
@@ -352,7 +352,7 @@ export class CommunityFeedApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = [this.threadsDvm.cell.dnaId.hash, e.detail.hash];
+    const hrl: Hrl = [this.threadsDvm.cell.address.dnaId.hash, e.detail.hash];
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
@@ -489,7 +489,7 @@ export class CommunityFeedApp extends HappElement {
                             subject_name,
                         };
                         const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
-                        const wal: WAL = {hrl: [this.threadsDvm.cell.dnaId.hash, ppAh.hash], context: pp.subject.address}
+                        const wal: WAL = {hrl: [this.threadsDvm.cell.address.dnaId.hash, ppAh.hash], context: pp.subject.address}
                         await creatableViewInfo.resolve(wal);
                       } catch(e) {
                           creatableViewInfo.reject(e)

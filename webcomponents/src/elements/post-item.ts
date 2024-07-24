@@ -95,7 +95,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     //   console.error("Thread has no beads");
     //   return;
     // }
-    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     if (!beadInfo) {
       await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
@@ -138,7 +138,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   copyMessageLink() {
-    const hrl: Hrl = [this.cell.dnaId.hash, this.hash.hash];
+    const hrl: Hrl = [this.cell.address.dnaId.hash, this.hash.hash];
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {
@@ -182,10 +182,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async getCommentThread(): Promise<ActionId> {
-    let commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    let commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
     if (!commentThreadAh) {
       await this._dvm.threadsZvm.pullSubjectThreads(this.hash);
-      commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+      commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
       if (!commentThreadAh) {
         console.error("Missing Comment thread for Post", this.hash);
         return Promise.reject("Missing comment thread for Post");
@@ -200,7 +200,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   async onTextComment(inputText: string) {
     const commentThreadAh = await this.getCommentThread();
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.agentId);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.address.agentId);
     console.log("onTextComment() ah:", ah);
   }
 
@@ -261,12 +261,12 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     }
 
     /** Determine the comment button to display depending on current comments for this message */
-    const commentThreadAh = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    const commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
     let commentThread = undefined;
     let canNotifyAll = false;
     if (commentThreadAh) {
       commentThread = this.threadsPerspective.threads.get(commentThreadAh);
-      canNotifyAll = this._dvm.threadsZvm.getNotifSetting(commentThreadAh, this.cell.agentId) == NotifySetting.AllMessages;
+      canNotifyAll = this._dvm.threadsZvm.perspective.getNotifSetting(commentThreadAh, this.cell.address.agentId) == NotifySetting.AllMessages;
     }
     console.log("<post-item>.render() comment", canNotifyAll, commentThreadAh)
 
@@ -377,7 +377,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         </div>
         <!-- Input Row -->
         <div id="inputRow" style="display:${this._canShowComment? "flex" : "none"};">
-            ${renderAvatar(this._dvm.profilesZvm, this.cell.agentId, "XS")}
+            ${renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "XS")}
             ${this._splitObj? html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>` : html`
             <vines-input-bar id="input-bar"
                              style="flex-grow:1;"

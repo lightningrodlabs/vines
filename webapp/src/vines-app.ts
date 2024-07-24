@@ -5,7 +5,7 @@ import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket,
   AppSignal,
-  AppWebsocket,
+  AppWebsocket, HoloHash,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
@@ -243,8 +243,8 @@ export class VinesApp extends HappElement {
   /** */
   async perspectiveInitializedOffline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOffline()");
-    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.agentId);
-    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.agentId);
+    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
+    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.address.agentId);
     /** Done */
     this._offlineLoaded = true;
   }
@@ -297,13 +297,13 @@ export class VinesApp extends HappElement {
     console.log("<vines-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(e.detail.address.hash);
+        this._weServices.openAppletMain(new HoloHash(e.detail.address.hash));
       }
     }
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
       if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
-          this._weServices.openAppletMain(new EntryId(this._weServices.appletId).hash);
+          /* await */ this._weServices.openAppletMain(new HoloHash(this._weServices.appletId));
           //this._weServices.openHrl();
         }
       } else {
@@ -315,7 +315,7 @@ export class VinesApp extends HappElement {
       //const tuple = await this._dvm.threadsZvm.zomeProxy.getTextMessage(decodeHashFromBase64(e.detail));
       //this._selectedThreadHash = encodeHashToBase64(tuple[2].bead.forProtocolAh);
       const beadAh = new ActionId(e.detail.address.b64);
-      const beadInfo = await this.threadsDvm.threadsZvm.getBeadInfo(beadAh);
+      const beadInfo = await this.threadsDvm.threadsZvm.perspective.getBeadInfo(beadAh);
       if (beadInfo) {
         this._maybeSelectedThreadAh = beadInfo.bead.ppAh;
         this._maybeSelectedBeadAh = beadAh;
@@ -335,7 +335,7 @@ export class VinesApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = [this.threadsDvm.cell.dnaId.hash, e.detail.hash];
+    const hrl: Hrl = [this.threadsDvm.cell.address.dnaId.hash, e.detail.hash];
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {

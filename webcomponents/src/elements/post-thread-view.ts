@@ -146,7 +146,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       const pps = await dvm.threadsZvm.pullSubjectThreads(intoDhtId(bl.beadAh));
       for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
         if (pp.purpose == "comment") {
-          await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
+          await dvm.threadsZvm.perspective.getAllBeadsOnThread(ppAh);
           break;
         }
       }
@@ -172,8 +172,8 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousPosts(): Promise<void> {
-    const mainThreadAh = this.threadsPerspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64)[0];
-    const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(mainThreadAh);
+    const mainThreadAh = this.threadsPerspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64)[0];
+    const beginningReached = this._dvm.threadsZvm.perspective.hasReachedBeginning(mainThreadAh);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {
       return;

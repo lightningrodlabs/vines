@@ -29,7 +29,7 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<search-result-panel>.render()", this.parameters);
 
-    const beadAhs = this._dvm.threadsZvm.searchTextBeads(this.parameters);
+    const beadAhs = this._dvm.threadsZvm.perspective.searchTextBeads(this.parameters);
 
     const matches = beadAhs.map(([beadAh, _info, _text]) => {
       return html`<ui5-li .key=${beadAh} style="height:auto">

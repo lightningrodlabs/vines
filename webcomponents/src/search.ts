@@ -1,6 +1,6 @@
 import {Timestamp} from "@holochain/client";
 import {AgentId} from "@ddd-qc/lit-happ";
-import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
+import {ProfilesAltPerspective, ProfilesAltPerspectiveMutable} from "@ddd-qc/profiles-dvm";
 
 
 /** */
@@ -198,7 +198,7 @@ function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
 
 /** ------------------------------------------- TEST -----------------------------------------------------------------*/
 
-const persp: ProfilesAltPerspective = new ProfilesAltPerspective();
+const persp: ProfilesAltPerspectiveMutable = new ProfilesAltPerspectiveMutable();
 await persp.generateRandomProfile("alex");
 await persp.generateRandomProfile("bill-y");
 await persp.generateRandomProfile("camille");

@@ -3,14 +3,14 @@
 import {
 WebsocketConnectionOptions,
 /** types.ts */
-HoloHash,
-AgentPubKey,
-DnaHash,
-WasmHash,
-EntryHash,
-ActionHash,
-AnyDhtHash,
-ExternalHash,
+//HoloHash,
+//AgentPubKey,
+//DnaHash,
+//WasmHash,
+//EntryHash,
+//ActionHash,
+//AnyDhtHash,
+//ExternalHash,
 KitsuneAgent,
 KitsuneSpace,
 HoloHashB64,
@@ -123,6 +123,16 @@ NetworkSeed,
 ZomeLocation,
    } from '@holochain/client';
 
+
+/// Simple Hashes
+type AgentArray = Uint8Array;
+type DnaArray = Uint8Array;
+type WasmArray = Uint8Array;
+type EntryArray = Uint8Array;
+type ActionArray = Uint8Array;
+type AnyDhtArray = Uint8Array;
+type AnyLinkableArray = Uint8Array;
+
 import {
 /** Common */
 DhtOpHashB64,
@@ -151,35 +161,35 @@ import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 export interface AddAnyBeadInput {
   anyBead: AnyBead
   creationTime: Timestamp
-  originalAuthor?: AgentPubKey
+  originalAuthor?: AgentArray
 }
 
 /**  */
 export interface AddReactionInput {
-  bead_ah: ActionHash
+  bead_ah: ActionArray
   emoji: string
-  from?: AgentPubKey
+  from?: AgentArray
 }
 
 /**  */
 export interface AddEntryBeadInput {
   entryBead: EntryBead
   creationTime: Timestamp
-  originalAuthor?: AgentPubKey
+  originalAuthor?: AgentArray
 }
 
 /**  */
 export interface AddEntryAsBeadInput {
-  eh: EntryHash
+  eh: EntryArray
   bead: Bead
   roleName: string
   zomeName: string
   originalCreationTime?: Timestamp
-  originalAuthor?: AgentPubKey
+  originalAuthor?: AgentArray
 }
 
 export interface GetLatestBeadsInput {
-  pp_ah: ActionHash
+  pp_ah: ActionArray
   begin_time?: Timestamp
   end_time?: Timestamp
   target_limit?: number
@@ -187,9 +197,9 @@ export interface GetLatestBeadsInput {
 
 export interface BeadLink {
   creationTime: Timestamp
-  beadAh: ActionHash
+  beadAh: ActionArray
   beadType: string
-  author: AgentPubKey
+  author: AgentArray
 }
 
 export interface AddTextBeadAtInput {
@@ -205,46 +215,46 @@ export interface AddManyTextBeadAtInput {
 
 export interface DecryptBeadInput {
   encBead: EncryptedBead
-  otherAgent: AgentPubKey
+  otherAgent: AgentArray
 }
 
 export interface EncryptBeadInput {
   base: BaseBeadKind
-  otherAgent: AgentPubKey
+  otherAgent: AgentArray
 }
 
 export interface AddEncBeadInput {
   encBead: EncryptedBead
-  otherAgent: AgentPubKey
+  otherAgent: AgentArray
   creationTime: Timestamp
 }
 
 export interface PublishDmThreadInput {
-  otherAgent: AgentPubKey
+  otherAgent: AgentArray
   appletId: string
 }
 
 export interface CommitGlobalLogInput {
   maybe_ts?: Timestamp
-  maybe_last_known_pp_ah?: ActionHash
+  maybe_last_known_pp_ah?: ActionArray
 }
 
 export interface ProbeAllOutput {
   searchedInterval: SweepInterval
-  newThreadsBySubject: [AnyLinkableHash, ActionHash][]
-  newBeadsByThread: [ActionHash, BeadLink][]
+  newThreadsBySubject: [AnyLinkableArray, ActionArray][]
+  newBeadsByThread: [ActionArray, BeadLink][]
 }
 
 export interface GetDataTypeInput {
-  hash: AnyDhtHash
+  hash: AnyDhtArray
   role?: string
-  dna?: DnaHash
+  dna?: DnaArray
 }
 
 /**  */
 export interface NotifyPeerInput {
-  content: AnyLinkableHash
-  who: AgentPubKey
+  content: AnyLinkableArray
+  who: AgentArray
   event_index: number
 }
 
@@ -261,14 +271,14 @@ export enum NotifySetting {
 }
 
 export interface SetNotifySettingInput {
-  pp_ah: ActionHash
+  pp_ah: ActionArray
   setting: NotifySetting
-  agent: AgentPubKey
+  agent: AgentArray
 }
 
 /** Input to the notify call */
 export interface UpdateTopicInput {
-  eh: EntryHash
+  eh: EntryArray
   topic: SemanticTopic
 }
 
@@ -291,14 +301,14 @@ export type BaseBeadKind =
 
 /** First bead: prev_bead_ah == pp_ah */
 export interface Bead {
-  ppAh: ActionHash
-  prevBeadAh: ActionHash
+  ppAh: ActionArray
+  prevBeadAh: ActionArray
 }
 
 /**  */
 export interface EntryBead {
   bead: Bead
-  sourceEh: EntryHash
+  sourceEh: EntryArray
   sourceType: string
   sourceZome: string
   sourceRole: string
@@ -338,21 +348,21 @@ export interface ParticipationProtocol {
 }
 
 export interface Subject {
-  address: AnyLinkableHash
+  address: AnyLinkableArray
   typeName: string
-  dnaHash: DnaHash
+  dnaHash: DnaArray
   appletId: string
 }
 
 export interface GlobalLastProbeLog {
   ts: Timestamp
-  maybeLastKnownPpAh?: ActionHash
+  maybeLastKnownPpAh?: ActionArray
 }
 
 export interface ThreadLastProbeLog {
   ts: Timestamp
-  ppAh: ActionHash
-  maybeLastKnownBeadAh?: ActionHash
+  ppAh: ActionArray
+  maybeLastKnownBeadAh?: ActionArray
 }
 
 /**

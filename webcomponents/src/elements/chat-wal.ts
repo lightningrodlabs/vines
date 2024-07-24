@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
-import {AnyBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
 import {AppletInfo} from "@lightningrodlabs/we-applet";
@@ -12,6 +12,7 @@ import {weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 
 import "@lightningrodlabs/we-elements/dist/elements/wal-embed.js";
+import {AnyBeadMat} from "../viewModels/threads.materialize";
 
 /**
  * @element
@@ -71,7 +72,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return;
     }
     try {
-      const anyBead = zvm.getBaseBead(hash) as AnyBeadMat;
+      const anyBead = zvm.perspective.getBaseBead(hash) as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
 
       this._assetLocAndInfo = await this.weServices.assetInfo(wal);
@@ -112,14 +113,14 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
     }
 
-    const anyBead = this._zvm.getBaseBead(this.hash) as AnyBeadMat;
+    const anyBead = this._zvm.perspective.getBaseBead(this.hash) as AnyBeadMat;
     if (!anyBead) {
       return html`
         <ui5-list id="fileList">
             <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
                     @click=${async (e) => {
                         await this._zvm.probeAllInner();
-                        const anyBead = this._zvm.getBaseBead(this.hash);
+                        const anyBead = this._zvm.perspective.getBaseBead(this.hash);
                         if (anyBead) {
                           this.requestUpdate();
                         }

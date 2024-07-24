@@ -23,6 +23,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
+import {HoloHash} from "@holochain/client";
 
 
 
@@ -244,7 +245,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         //const tmpl = html`<ui5-tree-item id=${ppAh.b64} text=${pp.purpose} level=${toggledTreeItem.level + 1}></ui5-tree-item>`;
 
 
-        const maybeCommentThread = this._zvm.getCommentThreadForSubject(ppAh);
+        const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(ppAh);
         const hasUnreadComments = unreadSubjects.map((id) => id.b64).includes(ppAh.b64);
         const threadIsNew = this.perspective.newThreads.has(ppAh);
         const hasNewBeads = this.perspective.unreadThreads.has(ppAh);
@@ -295,13 +296,13 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     // FIXME: Reset tree on update() or fix bug with subjects not under the correct update when adding new SubjectTypes live
 
     /* */
-    const newSubjects = this._zvm.getNewSubjects();
-    const unreadSubjects = this._zvm.getUnreadSubjects();
+    const newSubjects = this._zvm.perspective.getNewSubjects();
+    const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
       console.log("<applet-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
-      const maybeCommentThread = this._zvm.getCommentThreadForSubject(pathEh);
+      const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
       const isUnread = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
       const topicIsNew = newSubjects.get(pathEh.b64) != undefined;
 
@@ -343,7 +344,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             <div style="color: grey; margin: auto;">${msg('No threads found')}</div>
             <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId.b64 || this.appletId == THIS_APPLET_ID}
                         @click=${(e) => {
-                          if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this.appletId.hash)
+                          if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(new HoloHash(this.appletId.hash))
                         }}>
                 ${msg('Go to applet')}
             </ui5-button>

@@ -11,7 +11,7 @@ import {
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
-import {SubjectMat, ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {AnyIdMap} from "../../utils";
 import {toasty} from "../../toast";
 import {threadJumpEvent, SpecialSubjectType, CommentRequest} from "../../events";
@@ -20,6 +20,7 @@ import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
+import {SubjectMat} from "../../viewModels/threads.materialize";
 
 
 /**
@@ -96,7 +97,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
 
       /** Determine badge & buttons */
-      const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(ppAh);
+      const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
       let hasUnreadComments = false;
       if (maybeCommentThread != null) {
         hasUnreadComments = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
@@ -125,7 +126,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       /** 'new', 'notif' or 'unread' badge to display */
       let badge = html`
             <ui5-badge>0</ui5-badge>`;
-      let notifCount = this._zvm.getAllNotificationsForPp(ppAh).length;
+      let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
               <ui5-badge class="notifBadge">New</ui5-badge>`;
@@ -154,7 +155,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                                 class="showBtn"
                                 @click=${async (e) => {
           await this._zvm.hideSubject(ppAh);
-          toasty(`Archived Subject "${thread.pp.purpose}`);
+          toasty(`Archived Subject "${thread.pp.purpose}"`);
         }}></ui5-button>`;
 
       return html`
@@ -176,11 +177,11 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     })
 
     /* */
-    const newSubjects = this._zvm.getNewSubjects();
-    const unreadSubjects = this._zvm.getUnreadSubjects();
+    const newSubjects = this._zvm.perspective.getNewSubjects();
+    const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     /** Render Subject */
-    const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(subjectAdr);
+    const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(subjectAdr);
     const subjectIsNew = newSubjects.get(subjectAdr.b64) != undefined;
     let subjectHasUnreadComments = false;
     if (maybeCommentThread != null) {
@@ -280,7 +281,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   render() {
-    console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads, this.cell.agentId.short);
+    console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads, this.cell.address.agentId.short);
 
     // if (this._loading) {
     //   return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
@@ -288,14 +289,14 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** Grab my threads */
     const myBeads = Array.from(this.perspective.beads.values())
-      .filter(([info, _typed]) => info.author.b64 == this.cell.agentId.b64)
+      .filter(([info, _typed]) => info.author.b64 == this.cell.address.agentId.b64)
       .filter(([info, _typed]) => info.beadType != ThreadsEntryType.EncryptedBead);
     const myBeadThreads: ActionIdMap<Thread> = new ActionIdMap();
     myBeads.map(([beadInfo, _typed]) => myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)));
 
     const myThreads: ActionIdMap<Thread> = new ActionIdMap();
     Array.from(this.perspective.threads.entries())
-      .filter(([_ah, thread]) => thread.author.b64 == this.cell.agentId.b64)
+      .filter(([_ah, thread]) => thread.author.b64 == this.cell.address.agentId.b64)
       .map(([ah, thread]) => myThreads.set(ah, thread));
 
     console.log("<my-threads-lister>   count beads", this.perspective.beads.size, myBeads.length, myBeadThreads.size);
@@ -331,7 +332,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
 
     /** Render each appletId */
-    const unreadSubjects = this._zvm.getUnreadSubjects();
+    const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
     let appletSubListers = Array.from(allThreadsByApplet.entries()).map(([appletId, appletThreads]) => {
       console.log("<my-threads-lister> appletId:", appletId);
       let appletSubLister = html``;
@@ -363,7 +364,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       appletSubLister = html`${subjectItems}`;
 
       /** Render Applet */
-      const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(appletId);
+      const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(appletId);
       let appletHasUnreadComments = false;
       if (maybeCommentThread != null) {
         appletHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(appletId.b64);

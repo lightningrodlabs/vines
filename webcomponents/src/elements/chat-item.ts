@@ -4,7 +4,6 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {BeadInfo, ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar, renderProfileAvatar} from "../render";
@@ -23,6 +22,8 @@ import {toasty} from "../toast";
 import {popoverStyleTemplate} from "../styles";
 import {determineBeadName} from "../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {BeadInfo} from "../viewModels/threads.materialize";
 
 
 /**
@@ -116,7 +117,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   private async loadBead() {
-    const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
+    const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     if (!beadInfo) {
       await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
@@ -177,14 +178,14 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       case "removeFavorite": this.updateFavorite(this.hash, false); break;
       case "viewComments":
       case "createCommentThread":
-        const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-        const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
-        const typed = this._dvm.threadsZvm.getBaseBead(this.hash);
+        const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
+        const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
+        const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
         const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
       case "intoHrl":
-        const hrl: Hrl = [this.cell.dnaId.hash, this.hash.hash];
+        const hrl: Hrl = [this.cell.address.dnaId.hash, this.hash.hash];
         const wurl = weaveUrlFromWal({hrl});
         navigator.clipboard.writeText(wurl);
         if (this.weServices) {
@@ -214,11 +215,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   renderTopVine(beadInfo: BeadInfo) {
     console.log("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
     const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh)
-    const prevBeadInfo = this._dvm.threadsZvm.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
+    const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {
       return html``;
     }
-    const prevBead = this._dvm.threadsZvm.getBaseBead(beadInfo.bead.prevBeadAh);
+    const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh);
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     if (prevBeadInfo) {
       const maybePrevProfile = this._dvm.profilesZvm.perspective.getProfile(prevBeadInfo.author);
@@ -269,11 +270,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
-    const beadInfo = this._dvm.threadsZvm.getBaseBeadInfo(this.hash);
+    const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
     if (!beadInfo) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
-    const typed = this._dvm.threadsZvm.getBaseBead(this.hash);
+    const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
     /** Determine the comment button to display depending on current comments for this message */
     let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
@@ -287,7 +288,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       item = html`<chat-wal class="innerItem" .hash=${this.hash}></chat-wal>`;
     }
 
-    const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
+    const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
 
     //let isUnread = false;
     let commentThread = html``;
@@ -309,7 +310,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         /** Grab all authors */
         let authors: Record<string, number> = {};
         for (const bead of thread.beadLinksTree.values) {
-          const beadInfo = this._dvm.threadsZvm.getBeadInfo(bead.beadAh);
+          const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(bead.beadAh);
           if (!beadInfo) {
             console.warn("Bead not found in <chat-item>.render()", bead.beadAh);
             continue;

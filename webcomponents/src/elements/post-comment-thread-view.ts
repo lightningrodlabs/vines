@@ -180,7 +180,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
       return;
     }
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.agentId);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.address.agentId);
     console.log("onCreateComment() ah:", ah);
   }
 
@@ -228,7 +228,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //
     // }
 
-    const beads = this._dvm.threadsZvm.getAllBeadsOnThread(this.threadHash);
+    const beads = this._dvm.threadsZvm.perspective.getAllBeadsOnThread(this.threadHash);
 
     //console.log("<post-comment-thread-view>.render() len =", beads.length);
     //console.log("Has thread some unreads?", thread.hasUnreads());

@@ -12,8 +12,7 @@ import {
   AnyBeadMat,
   EntryBeadMat, materializeTypedBead,
   TextBeadMat,
-  ThreadsPerspective,
-} from "../viewModels/threads.perspective";
+} from "../viewModels/threads.materialize";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {md} from "../markdown/md";
@@ -25,6 +24,7 @@ import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {ShowProfileEvent} from "../events";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 
 /**
@@ -69,8 +69,8 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    let beadInfo = newDvm.threadsZvm.getBeadInfo(this.hash);
-    let typedBead = newDvm.threadsZvm.getBead(this.hash);
+    let beadInfo = newDvm.threadsZvm.perspective.getBeadInfo(this.hash);
+    let typedBead = newDvm.threadsZvm.perspective.getBead(this.hash);
     let beadType;
     /* Try loading AnyBead Asset */
     if (!beadInfo) {
@@ -171,7 +171,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   copyMessageLink() {
-    const hrl: Hrl = [this.cell.dnaId.hash, this.hash.hash];
+    const hrl: Hrl = [this.cell.address.dnaId.hash, this.hash.hash];
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {

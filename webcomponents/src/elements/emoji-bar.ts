@@ -57,11 +57,13 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
     }
     /** Pair vec into map */
     let emojiMap: Dictionary<AgentId[]> = {}
-    for (const [agent, emoji] of reactions) {
-      if (!emojiMap[emoji]) {
-        emojiMap[emoji] = [];
+    for (const [agent, emojis] of reactions) {
+      for (const emoji of emojis) {
+        if (!emojiMap[emoji]) {
+          emojiMap[emoji] = [];
+        }
+        emojiMap[emoji].push(agent);
       }
-      emojiMap[emoji].push(agent);
     }
 
 
@@ -70,7 +72,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       let iReacted = false;
       let tooltip = "" + emoji + " reacted by "
       for (const key of agents) {
-        iReacted ||= key.equals(this.cell.agentId);
+        iReacted ||= key.equals(this.cell.address.agentId);
         let profile = {nickname: "unknown", fields: {}} as ProfileMat;
         const maybeAgent = this._dvm.profilesZvm.perspective.getProfile(key);
         if (maybeAgent) {

@@ -330,7 +330,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
         break
       case SpecialSubjectType.ParticipationProtocol: {
         const ah = new ActionId(subject.address.b64);
-        const thread = threadsZvm.perspective.getThread(ah);
+        const thread = threadsZvm.perspective.threads.get(ah);
         if (!thread) {
           //thread = await threadsZvm.fetchPp(subject.address);
           return "{Unknown Thread}";
@@ -365,7 +365,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       break;
       /** -- Vines types -- */
       case SpecialSubjectType.SemanticTopic:
-        let semTopicTitle = threadsZvm.perspective.getSemanticTopic(new EntryId(subject.address.b64));
+        let semTopicTitle = threadsZvm.perspective.semanticTopics.get(new EntryId(subject.address.b64));
         if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
           return "{Unknown Topic}";

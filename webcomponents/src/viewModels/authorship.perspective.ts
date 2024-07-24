@@ -12,33 +12,48 @@ export interface AuthorshipSnapshot {
 
 
 /** */
-export class AuthorshipPerspectiveCore {
-  protected _ascribedTypes: string[] = [];
+export class AuthorshipPerspective {
+   ascribedTypes: string[] = [];
   /** typeName -> (hash -> original author) */
-  protected _logsByType: Dictionary<LinkableId[]> = {};
+  logsByType: Dictionary<LinkableId[]> = {};
   /** hash -> original author */
-  protected _allLogs: AnyIdMap<[Timestamp, AgentId | null]> = new AnyIdMap();
+  allLogs: AnyIdMap<[Timestamp, AgentId | null]> = new AnyIdMap();
 
 
   /** -- Getters -- */
 
   getAuthor(hash: LinkableId): [Timestamp, AgentId | null] | undefined {
-    return this._allLogs.get(hash.b64);
+    return this.allLogs.get(hash.b64);
   }
 
   getTypeLogs(typeName: string): LinkableId[] {
-    return this._logsByType[typeName]? this._logsByType[typeName] : [];
+    return this.logsByType[typeName]? this.logsByType[typeName] : [];
+  }
+
+  /** -- Memento -- */
+
+  /** TODO: deep copy */
+  makeSnapshot(): AuthorshipSnapshot {
+    let allAuthorshipLogs = {};
+    for (const [type, hashs] of Object.entries(this.logsByType)) {
+      allAuthorshipLogs[type] = [];
+      for (const hash of hashs) {
+        const log = this.allLogs.get(hash.b64);
+        if (log) {
+          allAuthorshipLogs[type].push(hash, log[0], log[1].b64)
+        }
+      }
+    }
+    return {allAuthorshipLogs}
   }
 }
 
 
 
 /** Live app form */
-export class AuthorshipPerspective extends AuthorshipPerspectiveCore {
+export class AuthorshipPerspectiveMutable extends AuthorshipPerspective {
 
-  /** -- Getters -- */
-
-  get core(): AuthorshipPerspectiveCore {
+  get readonly(): AuthorshipPerspective {
     return this;
   }
 
@@ -47,50 +62,35 @@ export class AuthorshipPerspective extends AuthorshipPerspectiveCore {
 
   /** */
   storeTypes(allTypes: string[]) {
-    this._ascribedTypes = allTypes;
+    this.ascribedTypes = allTypes;
   }
 
   /** */
   storeAuthorshipLog(typeName: string, target: LinkableId, creationTime: Timestamp, author: AgentId | null) {
     /* _allOriginals */
-    this._allLogs[target.b64] = [creationTime, author];
+    this.allLogs[target.b64] = [creationTime, author];
     /* _originalsByType */
-    if (!this._logsByType[typeName]) {
-      this._logsByType[typeName] = []
+    if (!this.logsByType[typeName]) {
+      this.logsByType[typeName] = []
     }
-    if (!this._logsByType[typeName].map((id) => id.b64).includes(target.b64)) {
-      this._logsByType[typeName].push(target);
+    if (!this.logsByType[typeName].map((id) => id.b64).includes(target.b64)) {
+      this.logsByType[typeName].push(target);
     }
     /* _types */
-    if (!this._ascribedTypes.includes(typeName)) {
-      this._ascribedTypes.push(typeName);
+    if (!this.ascribedTypes.includes(typeName)) {
+      this.ascribedTypes.push(typeName);
     }
   }
+
 
   /** -- Memento -- */
-
-  /** TODO: deep copy */
-  makeSnapshot(): AuthorshipSnapshot {
-    let allAuthorshipLogs = {};
-    for (const [type, hashs] of Object.entries(this._logsByType)) {
-      allAuthorshipLogs[type] = [];
-      for (const hash of hashs) {
-        const log = this._allLogs.get(hash.b64);
-        if (log) {
-          allAuthorshipLogs[type].push(hash, log[0], log[1].b64)
-        }
-      }
-    }
-    return {allAuthorshipLogs}
-  }
-
 
   /** */
   restore(snapshot: AuthorshipSnapshot) {
     /** Clear */
-    this._ascribedTypes = []
-    this._logsByType = {};
-    this._allLogs.clear();
+    this.ascribedTypes = []
+    this.logsByType = {};
+    this.allLogs.clear();
     /** Store */
     for (const [type, logs] of Object.entries(snapshot.allAuthorshipLogs)) {
       for (const [hashB64, ts, agentB64] of logs) {

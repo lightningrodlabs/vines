@@ -1,12 +1,13 @@
 import {css, html, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
-import {TextBeadMat, ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {sharedStyles} from "../styles";
 import {md} from "../markdown/md";
 import {codeStyles} from "../markdown/code-css";
+import {TextBeadMat} from "../viewModels/threads.materialize";
 
 
 /**
@@ -51,7 +52,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`<div style="color:red">No message found</div>`;
     }
 
-    const tm = this._zvm.getBaseBead(this.hash) as TextBeadMat;
+    const tm = this._zvm.perspective.getBaseBead(this.hash) as TextBeadMat;
     if (!tm) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }

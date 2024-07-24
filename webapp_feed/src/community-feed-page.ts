@@ -120,7 +120,6 @@ import {customElement, property, state} from "lit/decorators.js";
 import {delay, DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, DnaId} from "@ddd-qc/lit-happ";
 
 import {
-  AnyBeadMat,
   CommentRequest, composeFeedNotificationTitle,
   globaFilesContext,
   JumpEvent,
@@ -150,6 +149,7 @@ import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
 import {parseSearchInput} from "@vines/elements/dist/search";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
+import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -379,7 +379,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
-      const canPopup = !notif.author.equals(this.cell.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeFeedNotificationTitle(notif, this._dvm, this._filesDvm, this.weServices);
@@ -424,7 +424,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.agentId)) {
+      if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.address.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
@@ -462,7 +462,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.equals(this.cell.agentId));
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -706,7 +706,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
               <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"
                           @click=${(e) => {
                               e.stopPropagation();
-                              this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                              this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.address.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                   ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
               </ui5-avatar>              
           </div>

@@ -36,7 +36,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /* */
   renderDmThreadHeader(otherAgent: AgentId) {
-    console.log("renderDmThreadHeader()", otherAgent, this.cell.dnaId.print());
+    console.log("renderDmThreadHeader()", otherAgent, this.cell.address.dnaId.print());
     const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
@@ -78,7 +78,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const subjectId = thread.pp.subject.address;
     let maybeSemanticTopicTitle = undefined;
     if (subjectId.hashType == HoloHashType.Entry) {
-      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.allSemanticTopics.get(new EntryId(subjectId.b64));
+      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectId.b64));
     }
     const subjectAh = ActionId.from(subjectId);
     let title;
@@ -95,7 +95,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address.print());
-      const subjectBead = this._dvm.threadsZvm.getBeadInfo(subjectAh);
+      const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
         title = html`Thread about <span class="subjectName">${subjectName}</span> from ${avatarElem}`;

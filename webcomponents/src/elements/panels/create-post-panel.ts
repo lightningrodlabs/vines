@@ -13,7 +13,7 @@ import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {materializeSubject} from "../../viewModels/threads.perspective";
+import {materializeSubject} from "../../viewModels/threads.materialize";
 import {getMainThread} from "../../utils_feed";
 import {SpecialSubjectType} from "../../events";
 
@@ -49,7 +49,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async beforeCreate(): Promise<[ActionId, boolean]> {
     this._creating = true;
     /** Create main thread if none found */
-    const mainThreads = this._dvm.threadsZvm.perspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64);
+    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     let mainThreadAh;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
@@ -59,7 +59,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       console.log("<create-post-panel>.onCreate()", mainThreadAh)
       /** Make sure agent subscribed to notifications for main thread */
       await this._dvm.threadsZvm.pullNotifSettings(mainThreadAh);
-      const notif = this._dvm.threadsZvm.getNotifSetting(mainThreadAh, this._dvm.cell.agentId);
+      const notif = this._dvm.threadsZvm.perspective.getNotifSetting(mainThreadAh, this._dvm.cell.address.agentId);
       if (notif != NotifySetting.AllMessages) {
         await this._dvm.threadsZvm.publishNotifSetting(mainThreadAh, NotifySetting.AllMessages);
       }
@@ -95,7 +95,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     /** Before */
     const [mainThreadAh, createdMainThread] = await this.beforeCreate();
     /** Create */
-    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.agentId);
+    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.address.agentId);
     inputElem.value = "";
     /** After */
     this.afterCreate(beadAh, createdMainThread)
@@ -152,7 +152,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       address: beadAh.hash,
       typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
       appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
-      dnaHash: this.cell.dnaId.hash,
+      dnaHash: this.cell.address.dnaId.hash,
     };
     const subjectName = determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices);
     return this._dvm.publishCommentThread( subject, subjectName);

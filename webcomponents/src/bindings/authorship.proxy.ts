@@ -4,14 +4,14 @@ import {AUTHORSHIP_DEFAULT_COORDINATOR_ZOME_NAME, AUTHORSHIP_DEFAULT_INTEGRITY_Z
 import {
 WebsocketConnectionOptions,
 /** types.ts */
-HoloHash,
-AgentPubKey,
-DnaHash,
-WasmHash,
-EntryHash,
-ActionHash,
-AnyDhtHash,
-ExternalHash,
+//HoloHash,
+//AgentPubKey,
+//DnaHash,
+//WasmHash,
+//EntryHash,
+//ActionHash,
+//AnyDhtHash,
+//ExternalHash,
 KitsuneAgent,
 KitsuneSpace,
 HoloHashB64,
@@ -124,6 +124,16 @@ NetworkSeed,
 ZomeLocation,
    } from '@holochain/client';
 
+
+/// Simple Hashes
+type AgentArray = Uint8Array;
+type DnaArray = Uint8Array;
+type WasmArray = Uint8Array;
+type EntryArray = Uint8Array;
+type ActionArray = Uint8Array;
+type AnyDhtArray = Uint8Array;
+type AnyLinkableArray = Uint8Array;
+
 import {
 /** Common */
 DhtOpHashB64,
@@ -163,7 +173,7 @@ export class AuthorshipProxy extends ZomeProxy {
     return this.callBlocking('ascribe_target', input);
   }
 
-  async ascribeAppEntry(ah: ActionHash): Promise<[Timestamp, AgentPubKey, string]> {
+  async ascribeAppEntry(ah: ActionArray): Promise<[Timestamp, AgentArray, string]> {
     return this.callBlocking('ascribe_app_entry', ah);
   }
 
@@ -171,15 +181,15 @@ export class AuthorshipProxy extends ZomeProxy {
     return this.call('get_all_ascribed_types', null);
   }
 
-  async getAuthor(target: AnyLinkableHash): Promise<[Timestamp, AgentPubKey] | null> {
+  async getAuthor(target: AnyLinkableArray): Promise<[Timestamp, AgentArray] | null> {
     return this.call('get_author', target);
   }
 
-  async getAllAscribedEntries(): Promise<[string, AnyLinkableHash, Timestamp, AgentPubKey][]> {
+  async getAllAscribedEntries(): Promise<[string, AnyLinkableArray, Timestamp, AgentArray][]> {
     return this.call('get_all_ascribed_entries', null);
   }
 
-  async getAscribedTypeChildren(targetType: string): Promise<[AnyLinkableHash, Timestamp, AgentPubKey][]> {
+  async getAscribedTypeChildren(targetType: string): Promise<[AnyLinkableArray, Timestamp, AgentArray][]> {
     return this.call('get_ascribed_type_children', targetType);
   }
 }

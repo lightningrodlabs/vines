@@ -4,14 +4,14 @@ import {DM_SUBJECT_TYPE_NAME, GLOBAL_TIME_INDEX, PP_ITEM_TYPE, ROOT_ANCHOR_SEMAN
 import {
 WebsocketConnectionOptions,
 /** types.ts */
-HoloHash,
-AgentPubKey,
-DnaHash,
-WasmHash,
-EntryHash,
-ActionHash,
-AnyDhtHash,
-ExternalHash,
+//HoloHash,
+//AgentPubKey,
+//DnaHash,
+//WasmHash,
+//EntryHash,
+//ActionHash,
+//AnyDhtHash,
+//ExternalHash,
 KitsuneAgent,
 KitsuneSpace,
 HoloHashB64,
@@ -124,6 +124,16 @@ NetworkSeed,
 ZomeLocation,
    } from '@holochain/client';
 
+
+/// Simple Hashes
+type AgentArray = Uint8Array;
+type DnaArray = Uint8Array;
+type WasmArray = Uint8Array;
+type EntryArray = Uint8Array;
+type ActionArray = Uint8Array;
+type AnyDhtArray = Uint8Array;
+type AnyLinkableArray = Uint8Array;
+
 import {
 /** Common */
 DhtOpHashB64,
@@ -162,19 +172,19 @@ export class ThreadsProxy extends ZomeProxy {
   static readonly ENTRY_TYPES = Object.values(ThreadsUnitEnum);
   static readonly LINK_TYPES = Object.values(ThreadsLinkType);
  
-  async publishAnyBead(input: AddAnyBeadInput): Promise<[ActionHash, string, Timestamp]> {
+  async publishAnyBead(input: AddAnyBeadInput): Promise<[ActionArray, string, Timestamp]> {
     return this.callBlocking('publish_any_bead', input);
   }
 
-  async fetchAnyBeadOption(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, AnyBead] | null> {
+  async fetchAnyBeadOption(beadAh: ActionArray): Promise<[Timestamp, AgentArray, AnyBead] | null> {
     return this.call('fetch_any_bead_option', beadAh);
   }
 
-  async fetchAnyBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, AnyBead]> {
+  async fetchAnyBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, AnyBead]> {
     return this.call('fetch_any_bead', beadAh);
   }
 
-  async fetchManyAnyBeads(ahs: ActionHash[]): Promise<[Timestamp, AgentPubKey, AnyBead][]> {
+  async fetchManyAnyBeads(ahs: ActionArray[]): Promise<[Timestamp, AgentArray, AnyBead][]> {
     return this.call('fetch_many_any_beads', ahs);
   }
 
@@ -182,19 +192,19 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('publish_reaction', input);
   }
 
-  async unpublishReaction(beadAh: ActionHash): Promise<void> {
+  async unpublishReaction(beadAh: ActionArray): Promise<void> {
     return this.callBlocking('unpublish_reaction', beadAh);
   }
 
-  async pullReactions(beadAh: ActionHash): Promise<void> {
+  async pullReactions(beadAh: ActionArray): Promise<void> {
     return this.call('pull_reactions', beadAh);
   }
 
-  async publishEntryBead(input: AddEntryBeadInput): Promise<[ActionHash, EntryBead, string, Timestamp]> {
+  async publishEntryBead(input: AddEntryBeadInput): Promise<[ActionArray, EntryBead, string, Timestamp]> {
     return this.callBlocking('publish_entry_bead', input);
   }
 
-  async publishEntryAsBead(input: AddEntryAsBeadInput): Promise<[ActionHash, EntryBead, string, Timestamp]> {
+  async publishEntryAsBead(input: AddEntryAsBeadInput): Promise<[ActionArray, EntryBead, string, Timestamp]> {
     return this.callBlocking('publish_entry_as_bead', input);
   }
 
@@ -202,19 +212,19 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('create_entry_bead', input);
   }
 
-  async fetchEntryBeadOption(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EntryBead] | null> {
+  async fetchEntryBeadOption(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EntryBead] | null> {
     return this.call('fetch_entry_bead_option', beadAh);
   }
 
-  async fetchEntryBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EntryBead]> {
+  async fetchEntryBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EntryBead]> {
     return this.call('fetch_entry_bead', beadAh);
   }
 
-  async fetchManyEntryBeads(ahs: ActionHash[]): Promise<[Timestamp, AgentPubKey, EntryBead][]> {
+  async fetchManyEntryBeads(ahs: ActionArray[]): Promise<[Timestamp, AgentArray, EntryBead][]> {
     return this.call('fetch_many_entry_beads', ahs);
   }
 
-  async findBeads(ppAh: ActionHash): Promise<[SweepInterval, BeadLink[]]> {
+  async findBeads(ppAh: ActionArray): Promise<[SweepInterval, BeadLink[]]> {
     return this.call('find_beads', ppAh);
   }
 
@@ -222,27 +232,27 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('find_latest_beads', input);
   }
 
-  async publishTextBead(texto: TextBead): Promise<[ActionHash, string, Timestamp]> {
+  async publishTextBead(texto: TextBead): Promise<[ActionArray, string, Timestamp]> {
     return this.callBlocking('publish_text_bead', texto);
   }
 
-  async fetchTextBeadOption(ah: ActionHash): Promise<[Timestamp, AgentPubKey, TextBead] | null> {
+  async fetchTextBeadOption(ah: ActionArray): Promise<[Timestamp, AgentArray, TextBead] | null> {
     return this.call('fetch_text_bead_option', ah);
   }
 
-  async fetchTextBead(ah: ActionHash): Promise<[Timestamp, AgentPubKey, TextBead]> {
+  async fetchTextBead(ah: ActionArray): Promise<[Timestamp, AgentArray, TextBead]> {
     return this.call('fetch_text_bead', ah);
   }
 
-  async fetchManyTextBead(ahs: ActionHash[]): Promise<[Timestamp, AgentPubKey, TextBead][]> {
+  async fetchManyTextBead(ahs: ActionArray[]): Promise<[Timestamp, AgentArray, TextBead][]> {
     return this.call('fetch_many_text_bead', ahs);
   }
 
-  async publishTextBeadAt(input: AddTextBeadAtInput): Promise<[ActionHash, string]> {
+  async publishTextBeadAt(input: AddTextBeadAtInput): Promise<[ActionArray, string]> {
     return this.callBlocking('publish_text_bead_at', input);
   }
 
-  async publishManyTextBeadAt(input: AddManyTextBeadAtInput): Promise<[ActionHash, string, Timestamp][]> {
+  async publishManyTextBeadAt(input: AddManyTextBeadAtInput): Promise<[ActionArray, string, Timestamp][]> {
     return this.callBlocking('publish_many_text_bead_at', input);
   }
 
@@ -258,19 +268,19 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('encrypt_bead', input);
   }
 
-  async publishEncBead(input: AddEncBeadInput): Promise<[ActionHash, string, Timestamp]> {
+  async publishEncBead(input: AddEncBeadInput): Promise<[ActionArray, string, Timestamp]> {
     return this.callBlocking('publish_enc_bead', input);
   }
 
-  async fetchEncBeadOption(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EncryptedBead] | null> {
+  async fetchEncBeadOption(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EncryptedBead] | null> {
     return this.call('fetch_enc_bead_option', beadAh);
   }
 
-  async fetchEncBead(beadAh: ActionHash): Promise<[Timestamp, AgentPubKey, EncryptedBead]> {
+  async fetchEncBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EncryptedBead]> {
     return this.call('fetch_enc_bead', beadAh);
   }
 
-  async fetchManyEncBeads(ahs: ActionHash[]): Promise<[Timestamp, AgentPubKey, EncryptedBead][]> {
+  async fetchManyEncBeads(ahs: ActionArray[]): Promise<[Timestamp, AgentArray, EncryptedBead][]> {
     return this.call('fetch_many_enc_beads', ahs);
   }
 
@@ -278,23 +288,23 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('probe_dm_threads', null);
   }
 
-  async publishDmThread(input: PublishDmThreadInput): Promise<ActionHash> {
+  async publishDmThread(input: PublishDmThreadInput): Promise<ActionArray> {
     return this.callBlocking('publish_dm_thread', input);
   }
 
-  async publishFavorite(beadAh: ActionHash): Promise<ActionHash> {
+  async publishFavorite(beadAh: ActionArray): Promise<ActionArray> {
     return this.callBlocking('publish_favorite', beadAh);
   }
 
-  async unpublishFavorite(beadAh: ActionHash): Promise<void> {
+  async unpublishFavorite(beadAh: ActionArray): Promise<void> {
     return this.callBlocking('unpublish_favorite', beadAh);
   }
 
-  async probeMyFavorites(): Promise<ActionHash[]> {
+  async probeMyFavorites(): Promise<ActionArray[]> {
     return this.call('probe_my_favorites', null);
   }
 
-  async queryGlobalLog(): Promise<[ActionHash, GlobalLastProbeLog]> {
+  async queryGlobalLog(): Promise<[ActionArray, GlobalLastProbeLog]> {
     return this.call('query_global_log', null);
   }
 
@@ -314,7 +324,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('probe_latest_items', null);
   }
 
-  async commitThreadLog(tql: ThreadLastProbeLog): Promise<ActionHash> {
+  async commitThreadLog(tql: ThreadLastProbeLog): Promise<ActionArray> {
     return this.callBlocking('commit_thread_log', tql);
   }
 
@@ -322,7 +332,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('query_thread_logs', null);
   }
 
-  async getRecordAuthor(dh: AnyDhtHash): Promise<AgentPubKey> {
+  async getRecordAuthor(dh: AnyDhtArray): Promise<AgentArray> {
     return this.call('get_record_author', dh);
   }
 
@@ -338,39 +348,39 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('probe_inbox', null);
   }
 
-  async unpublishNotification(linkAh: ActionHash): Promise<void> {
+  async unpublishNotification(linkAh: ActionArray): Promise<void> {
     return this.callBlocking('unpublish_notification', linkAh);
   }
 
-  async publishNotifySetting(input: SetNotifySettingInput): Promise<ActionHash | null> {
+  async publishNotifySetting(input: SetNotifySettingInput): Promise<ActionArray | null> {
     return this.callBlocking('publish_notify_setting', input);
   }
 
-  async pullMyNotifySettings(ppAh: ActionHash): Promise<[NotifySetting, ActionHash | null]> {
+  async pullMyNotifySettings(ppAh: ActionArray): Promise<[NotifySetting, ActionArray | null]> {
     return this.call('pull_my_notify_settings', ppAh);
   }
 
-  async pullNotifySettings(pair: [ActionHash, AgentPubKey]): Promise<[NotifySetting, ActionHash | null]> {
+  async pullNotifySettings(pair: [ActionArray, AgentArray]): Promise<[NotifySetting, ActionArray | null]> {
     return this.call('pull_notify_settings', pair);
   }
 
-  async pullPpNotifySettings(ppAh: ActionHash): Promise<[AgentPubKey, NotifySetting, ActionHash][]> {
+  async pullPpNotifySettings(ppAh: ActionArray): Promise<[AgentArray, NotifySetting, ActionArray][]> {
     return this.call('pull_pp_notify_settings', ppAh);
   }
 
-  async fetchPp(ah: ActionHash): Promise<[ParticipationProtocol, Timestamp, AgentPubKey]> {
+  async fetchPp(ah: ActionArray): Promise<[ParticipationProtocol, Timestamp, AgentArray]> {
     return this.call('fetch_pp', ah);
   }
 
-  async probePpsFromSubjectHash(lh: AnyLinkableHash): Promise<[ActionHash, Timestamp][]> {
+  async probePpsFromSubjectHash(lh: AnyLinkableArray): Promise<[ActionArray, Timestamp][]> {
     return this.call('probe_pps_from_subject_hash', lh);
   }
 
-  async probePpsFromSubjectAnchor(anchor: string): Promise<[ActionHash, Timestamp][]> {
+  async probePpsFromSubjectAnchor(anchor: string): Promise<[ActionArray, Timestamp][]> {
     return this.call('probe_pps_from_subject_anchor', anchor);
   }
 
-  async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[ActionHash, Timestamp]> {
+  async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[ActionArray, Timestamp]> {
     return this.callBlocking('publish_participation_protocol', pp);
   }
 
@@ -402,7 +412,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('query_enc_beads', null);
   }
 
-  async publishSemanticTopic(semanticTopic: SemanticTopic): Promise<EntryHash> {
+  async publishSemanticTopic(semanticTopic: SemanticTopic): Promise<EntryArray> {
     return this.callBlocking('publish_semantic_topic', semanticTopic);
   }
 
@@ -410,35 +420,35 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('pull_all_semantic_topics', null);
   }
 
-  async searchSemanticTopics(titleFilter: string): Promise<[EntryHash, string][]> {
+  async searchSemanticTopics(titleFilter: string): Promise<[EntryArray, string][]> {
     return this.call('search_semantic_topics', titleFilter);
   }
 
-  async updateSemanticTopic(input: UpdateTopicInput): Promise<EntryHash> {
+  async updateSemanticTopic(input: UpdateTopicInput): Promise<EntryArray> {
     return this.callBlocking('update_semantic_topic', input);
   }
 
-  async findSubjectsByType(input: FindSubjectsInput): Promise<[DnaHash, AnyLinkableHash][]> {
+  async findSubjectsByType(input: FindSubjectsInput): Promise<[DnaArray, AnyLinkableArray][]> {
     return this.call('find_subjects_by_type', input);
   }
 
-  async findSubjectsForApplet(appletId: string): Promise<[DnaHash, AnyLinkableHash][]> {
+  async findSubjectsForApplet(appletId: string): Promise<[DnaArray, AnyLinkableArray][]> {
     return this.call('find_subjects_for_applet', appletId);
   }
 
-  async findSubjectTypesForApplet(appletId: string): Promise<[string, EntryHash][]> {
+  async findSubjectTypesForApplet(appletId: string): Promise<[string, EntryArray][]> {
     return this.call('find_subject_types_for_applet', appletId);
   }
 
-  async findHideLink(subjectHash: AnyLinkableHash): Promise<ActionHash | null> {
+  async findHideLink(subjectHash: AnyLinkableArray): Promise<ActionArray | null> {
     return this.call('find_hide_link', subjectHash);
   }
 
-  async hideSubject(subjectHash: AnyLinkableHash): Promise<ActionHash> {
+  async hideSubject(subjectHash: AnyLinkableArray): Promise<ActionArray> {
     return this.callBlocking('hide_subject', subjectHash);
   }
 
-  async unhideSubject(subjectHash: AnyLinkableHash): Promise<void> {
+  async unhideSubject(subjectHash: AnyLinkableArray): Promise<void> {
     return this.callBlocking('unhide_subject', subjectHash);
   }
 

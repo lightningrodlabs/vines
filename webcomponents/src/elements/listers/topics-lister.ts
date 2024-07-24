@@ -63,8 +63,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   render() {
-    console.log("<topics-lister>.render()", this.perspective.allSemanticTopics);
-    let treeItems = Array.from(this.perspective.allSemanticTopics.entries()).map(([topicEh, title]) => {
+    console.log("<topics-lister>.render()", this.perspective.semanticTopics);
+    let treeItems = Array.from(this.perspective.semanticTopics.entries()).map(([topicEh, title]) => {
       const isSubjectHidden = this._zvm.perspective.hiddens[topicEh.b64]? this._zvm.perspective.hiddens[topicEh.b64] : false;
       /** Skip if hidden */
       if (isSubjectHidden && !this.showArchivedTopics) {
@@ -73,7 +73,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       /** Render threads for Topic */
       //let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
       let threads = [];
-      let topicThreads = this.perspective._threadsPerSubject.get(topicEh.b64);
+      let topicThreads = this.perspective.threadsPerSubject.get(topicEh.b64);
       if (topicThreads == undefined) {
         topicThreads = [];
         //this._zvm.pullSubjectThreads(topicHash).then(() => this.requestUpdate())
@@ -102,7 +102,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           }
 
           /** Determine badge & buttons */
-          const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(ppAh);
+          const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
           let hasUnreadComments = false;
           if (maybeCommentThread != null) {
             hasUnreadComments = this.perspective.unreadThreads.has(maybeCommentThread);
@@ -130,7 +130,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
           /** 'new', 'notif' or 'unread' badge to display */
           let badge = html`<ui5-badge>0</ui5-badge>`;
-          let notifCount = this._zvm.getAllNotificationsForPp(ppAh).length;
+          let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
             badge = html`
                 <ui5-badge class="notifBadge">New</ui5-badge>`;
@@ -153,7 +153,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                             @click=${async (e) => {
                                 e.stopPropagation();
                                 await this._zvm.unhideSubject(ppAh);
-                                toasty(`Unarchived Subject "${thread.pp.purpose}"`);
+                                toasty(`Unarchived Channel "${thread.pp.purpose}"`);
                             }}></ui5-button>
             ` : html`
                       <ui5-button icon="hide" tooltip="Hide" design="Transparent"
@@ -161,7 +161,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                                   @click=${async (e) => {
                                       e.stopPropagation();
                                       await this._zvm.hideSubject(ppAh);
-                                      toasty(`Archived Subject "${thread.pp.purpose}`);
+                                      toasty(`Archived Channel "${thread.pp.purpose}"`);
                                   }}></ui5-button>`;
 
           return html`
@@ -185,11 +185,11 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           `})
       }
       /* */
-      const newSubjects = this._zvm.getNewSubjects();
-      const unreadSubjects = this._zvm.getUnreadSubjects();
+      const newSubjects = this._zvm.perspective.getNewSubjects();
+      const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
       /** Render Topic */
-      const maybeCommentThread: ActionId | null = this._zvm.getCommentThreadForSubject(topicEh);
+      const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(topicEh);
       const topicIsNew = newSubjects.get(topicEh.b64) != undefined;
       let topicHasUnreadComments = false;
       if (maybeCommentThread != null) {

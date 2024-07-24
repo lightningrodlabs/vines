@@ -162,7 +162,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       const pps = await dvm.threadsZvm.pullSubjectThreads(intoLinkableId(bl.beadAh));
       for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
         if (pp.purpose == "comment") {
-          await dvm.threadsZvm.getAllBeadsOnThread(ppAh);
+          await dvm.threadsZvm.perspective.getAllBeadsOnThread(ppAh);
           break;
         }
       }
@@ -196,7 +196,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (!this.threadHash) {
       return;
     }
-    const beginningReached = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
+    const beginningReached = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {
       //this._dvm.threadsZvm.perspective.threads[this.threadHash]
@@ -244,7 +244,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     /** chat-header */
     let maybeHeader = html``;
-    const hasReachedBeginning = this._dvm.threadsZvm.hasReachedBeginning(this.threadHash);
+    const hasReachedBeginning = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
     console.log("<chat-thread-view> begin reached", hasReachedBeginning);
     if (hasReachedBeginning) {
       maybeHeader = html`<chat-header .threadHash=${this.threadHash}></chat-header>`;

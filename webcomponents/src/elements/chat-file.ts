@@ -6,11 +6,11 @@ import {consume} from "@lit/context";
 import {globaFilesContext} from "../contexts";
 import {FileHashB64, FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
-import {EntryBeadMat} from "../viewModels/threads.perspective";
 import {ParcelManifest} from "@ddd-qc/delivery";
 import {msg} from "@lit/localize";
 import {toasty} from "../toast";
 import {sharedStyles} from "../styles";
+import {EntryBeadMat} from "../viewModels/threads.materialize";
 
 
 /**
@@ -62,7 +62,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     this._loading = true;
-    const entryBead = this._dvm.threadsZvm.getBaseBead(this.hash) as EntryBeadMat;
+    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
     if (!entryBead) {
       console.warn("<chat-file> Bead not found", this.hash);
       return;
@@ -138,7 +138,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
               </ui5-li>
           </ui5-list>`;
     }
-    const entryBead = this._dvm.threadsZvm.getBaseBead(this.hash) as EntryBeadMat;
+    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
     //console.log("<chat-file>.render() entryBead", entryBead);
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;

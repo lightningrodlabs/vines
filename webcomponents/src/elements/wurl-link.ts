@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, DnaId, intoDhtId, ZomeElement} from "@ddd-qc/lit-happ";
+import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
@@ -69,7 +69,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async loadBeadInfo(beadAh: ActionId, threadsZvm: ThreadsZvm): Promise<boolean> {
-    const beadInfo = threadsZvm.getBaseBeadInfo(beadAh);
+    const beadInfo = threadsZvm.perspective.getBaseBeadInfo(beadAh);
     if (beadInfo) {
       let thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       let name;
@@ -96,7 +96,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     try {
       const wal = weaveUrlToWal(this.wurl);
-      if (this.cell.dnaId.equals(wal.hrl[0])) {
+      if (this.cell.address.dnaId.equals(wal.hrl[0])) {
         this._appletName = "Vines";
         /** Determine entry */
         const hash = new ActionId(wal.hrl[1]);
@@ -158,7 +158,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return this.renderBadLink();
     }
 
-    const isThisDna = this.cell.dnaId.equals(wal.hrl[0]);
+    const isThisDna = this.cell.address.dnaId.equals(wal.hrl[0]);
     let colorIdx = 6;
     if (!isThisDna && !this.weServices) {
       colorIdx = 3;

@@ -297,7 +297,7 @@ export class InputBar extends LitElement {
           </ui5-li>`;
           }
           const agentId = new AgentId(key);
-          if (agentId.equals(this.profilesZvm.cell.agentId)) return html``;
+          if (agentId.equals(this.profilesZvm.cell.address.agentId)) return html``;
           /** Grab and display profile */
           const profile = this.profilesZvm.perspective.getProfile(agentId);
           //const profile = this._dummyProfiles[key];

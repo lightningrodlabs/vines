@@ -21,7 +21,7 @@ export function getMainThread(dvm: ThreadsDvm): ActionId | null {
   if (threads.length > 1) {
     /* UH OH: multiple main threads. May be caused by partiionned network. Take oldest */
     for (const threadAh of threads) {
-      const thread = dvm.threadsZvm.perspective.getThread(threadAh);
+      const thread = dvm.threadsZvm.perspective.threads.get(threadAh);
       if (thread.creationTime < oldestCreationTime) {
         oldestCreationTime = thread.creationTime;
         ppAh = threadAh;
@@ -44,7 +44,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
       title = "Mentionned";
     } else {
       const typedBead = threadsDvm.threadsZvm.perspective.getBead(ah);
-      const maybeThread = threadsDvm.threadsZvm.perspective.getThread(beadInfo.bead.ppAh);
+      const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       if (maybeThread) {
         title = 'Mentionned in "' + maybeThread.pp.subject_name + '"';
       }
@@ -55,7 +55,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
     const beadInfo = threadsDvm.threadsZvm.perspective.getBeadInfo(ah);
     if (beadInfo) {
       const typedBead = threadsDvm.threadsZvm.perspective.getBead(ah);
-      const maybeThread = threadsDvm.threadsZvm.perspective.getThread(beadInfo.bead.ppAh);
+      const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       const mainThreadAh = getMainThread(threadsDvm);
       if (maybeThread) {
         if (beadInfo.bead.ppAh.equals(mainThreadAh)) {
@@ -74,7 +74,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
     // } else {
     //   const beadInfo = beadPair[0];
     //   const typedBead = beadPair[1];
-    //   const maybeThread = threadsZvm.getThread(beadInfo.bead.ppAh);
+    //   const maybeThread = threadsZvm.threads.get(beadInfo.bead.ppAh);
     //   if (maybeThread) {
     //     title = "Reply in thread " + maybeThread.name;
     //   }
@@ -82,7 +82,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
     //}
   }
   if (NotifiableEvent.Fork === notif.event) {
-    // const maybeThread = threadsZvm.getThread(ah);
+    // const maybeThread = threadsZvm.threads.get(ah);
     // if (!maybeThread)  {
     //   title = "New thread";
     // } else {

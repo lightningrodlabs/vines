@@ -7,7 +7,7 @@ import {
 } from "@ddd-qc/lit-happ";
 import {Timestamp} from "@holochain/client";
 import {AuthorshipProxy} from "../bindings/authorship.proxy";
-import {AuthorshipPerspective, AuthorshipPerspectiveCore, AuthorshipSnapshot} from "./authorship.perspective";
+import {AuthorshipPerspectiveMutable, AuthorshipPerspective, AuthorshipSnapshot} from "./authorship.perspective";
 
 
 
@@ -25,11 +25,11 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** -- ViewModel -- */
 
-  private _perspective: AuthorshipPerspective = new AuthorshipPerspective();
+  private _perspective: AuthorshipPerspectiveMutable = new AuthorshipPerspectiveMutable();
 
   /* */
-  get perspective(): AuthorshipPerspectiveCore {
-    return this._perspective.core;
+  get perspective(): AuthorshipPerspective {
+    return this._perspective.readonly;
   }
 
   /* */

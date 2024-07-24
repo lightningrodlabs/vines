@@ -68,7 +68,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
 
     const inputText = this.inputElem.value;
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh, this.cell.agentId);
+    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh, this.cell.address.agentId);
     console.log("commitInput() res:", res);
 
     this.inputElem.value = "";
@@ -78,9 +78,9 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective._threadsPerSubject.get(MAIN_TOPIC_ID.b64));
+    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64));
 
-    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentId, "S");
+    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
     /** render all */
     return html`

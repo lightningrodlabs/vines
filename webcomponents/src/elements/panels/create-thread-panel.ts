@@ -12,7 +12,7 @@ import {DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {determineSubjectName, weaveUrlToWal} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
-import {materializeSubject} from "../../viewModels/threads.perspective";
+import {materializeSubject} from "../../viewModels/threads.materialize";
 import {FilesDvm} from "@ddd-qc/files";
 
 
@@ -66,7 +66,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {
-        hrl: [this._dvm.cell.dnaId.hash, ppAh.hash],
+        hrl: [this._dvm.cell.address.dnaId.hash, ppAh.hash],
         context: pp.subject.address,
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))

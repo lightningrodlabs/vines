@@ -69,7 +69,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
 
       //const hasNewBeads = thread && thread.hasUnreads();
-      const maybeUnreadThread = this.threadsPerspective.core.unreadThreads.get(ppAh);
+      const maybeUnreadThread = this.threadsPerspective.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);

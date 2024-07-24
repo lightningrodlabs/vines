@@ -126,7 +126,6 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import 'css-doodle';
 
 import {
-  AnyBeadMat,
   beadJumpEvent,
   ChatThreadView,
   CommentRequest,
@@ -176,6 +175,7 @@ import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
+import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -332,7 +332,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // }
     delete this.selectedThreadHash;
     delete this.selectedBeadAh;
-    this._listerToShow = newDvm.cell.dnaId.b64;
+    this._listerToShow = newDvm.cell.address.dnaId.b64;
   }
 
 
@@ -557,7 +557,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-pages> signaledNotifications", notif.author, notif);
       const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
       const author =  maybeProfile? maybeProfile.nickname : "unknown";
-      const canPopup = !notif.author.equals(this.cell.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
+      const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
@@ -605,7 +605,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     fields['color'] = color;
     fields['avatar'] = avatar;
     try {
-      if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.agentId)) {
+      if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.address.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
@@ -643,7 +643,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => !agentKey.equals(this.cell.agentId));
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => !agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -713,7 +713,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         address: request.subjectHash.hash,
         typeName: request.subjectType,
         appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
-        dnaHash: this.cell.dnaId.hash,
+        dnaHash: this.cell.address.dnaId.hash,
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
@@ -733,7 +733,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const selectedOption = e.detail.selectedOption;
     console.log("onListerSelected() selectedOption", e.detail.selectedOption);
     if (selectedOption.id == "dm-option") {
-      this._listerToShow = this.cell.agentId.b64;
+      this._listerToShow = this.cell.address.agentId.b64;
       return;
     }
     if (selectedOption.id == "mine-option") {
@@ -741,7 +741,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     if (selectedOption.id == "topics-option") {
-      this._listerToShow = this.cell.dnaId.b64;
+      this._listerToShow = this.cell.address.dnaId.b64;
       return;
     }
     if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
@@ -801,7 +801,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (maybePrevThreadId) {
         await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
         /** Clear notifications on prevThread */
-        const prevThreadNotifs = this._dvm.threadsZvm.getAllNotificationsForPp(maybePrevThreadId);
+        const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
         for (const [linkAh, _notif] of prevThreadNotifs) {
           await this._dvm.threadsZvm.deleteNotification(linkAh);
         }
@@ -916,7 +916,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
           primaryTitle = profile? profile.nickname : "unknown";
         }
-        const maybeSemanticTopicTitle = this.threadsPerspective.allSemanticTopics.get(EntryId.from(thread.pp.subject.address));
+        const maybeSemanticTopicTitle = this.threadsPerspective.semanticTopics.get(EntryId.from(thread.pp.subject.address));
         let topic;
          if (maybeSemanticTopicTitle) {
            topic = maybeSemanticTopicTitle;
@@ -934,7 +934,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         let maybeReplyAuthorName = "unknown"
         if (this._replyToAh) {
-          const beadInfo = this._dvm.threadsZvm.getBeadInfo(this._replyToAh);
+          const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this._replyToAh);
           if (beadInfo) {
             const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author);
             if (maybeProfile) {
@@ -991,7 +991,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     setLocale(lang);
 
-    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.agentId, "S");
+    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
     //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
@@ -1040,7 +1040,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let notifSetting = NotifySetting.MentionsOnly; // default
     if (this.selectedThreadHash) {
-      notifSetting = this._dvm.threadsZvm.getNotifSetting(this.selectedThreadHash, this.cell.agentId);
+      notifSetting = this._dvm.threadsZvm.perspective.getNotifSetting(this.selectedThreadHash, this.cell.address.agentId);
     }
     console.log("<vines-page>.render() notifSettings", notifSetting, this.selectedThreadHash);
 
@@ -1078,12 +1078,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** Get network info for this cell */
-    const sId = CellIdStr(this.cell.id);
+    const sId = this.cell.address.str;
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
 
     let lister= html`<applet-lister .appletId=${this._listerToShow}></applet-lister>`
-    if (this._listerToShow == this.cell.agentId.b64) {
+    if (this._listerToShow == this.cell.address.agentId.b64) {
       lister = html`
           <dm-lister
                   .showArchived=${this._canViewArchivedSubjects}
@@ -1095,7 +1095,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           ></dm-lister>
       `;
     }
-    if (this._listerToShow == this.cell.dnaId.b64) {
+    if (this._listerToShow == this.cell.address.dnaId.b64) {
       lister = html`
           <topics-lister 
                          .showArchivedTopics=${this._canViewArchivedSubjects}
@@ -1130,7 +1130,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
       || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead)) {
         const subjectAh = new ActionId(thread.pp.subject.address.b64);
-        const subjectBead = this._dvm.threadsZvm.getBeadInfo(subjectAh);
+        const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
         if (subjectBead) {
           maybeBackBtn = html`
               <ui5-button icon="nav-back" slot="startButton" class="shellbtn"
@@ -1218,11 +1218,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;"
                          @click=${(e) => {
                              e.stopPropagation();
-                             this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                             this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.address.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                       ${avatar}
                       <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-                          <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.agentId.b64}>${myProfile.nickname}</abbr></div>
-                              <!-- <div style="font-size: small">${this.cell.agentId.b64}</div> -->
+                          <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"><abbr title=${this.cell.address.agentId.b64}>${myProfile.nickname}</abbr></div>
+                              <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                       </div>
                     </div>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
@@ -1250,7 +1250,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
                         <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
-                            <abbr title=${this.cell.dnaId.b64}>${msg("Network Health")}</abbr>
+                            <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <network-health-panel></network-health-panel>
