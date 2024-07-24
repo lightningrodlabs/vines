@@ -165,7 +165,7 @@ export interface AddAnyBeadInput {
 }
 
 /**  */
-export interface AddReactionInput {
+export interface ReactionInput {
   bead_ah: ActionArray
   emoji: string
   from?: AgentArray

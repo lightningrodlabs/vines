@@ -685,6 +685,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     if (!this.emojiReactions.get(beadAh)) {
       this.emojiReactions.set(beadAh, new AgentIdMap());
     }
+    if (!this.emojiReactions.get(beadAh).get(agent)) {
+      this.emojiReactions.get(beadAh).set(agent, []);
+    }
     const agentEmojis = this.emojiReactions.get(beadAh).get(agent);
     agentEmojis.push(emoji);
     this.emojiReactions.get(beadAh).set(agent, agentEmojis);
@@ -711,6 +714,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     const filtered = agentEmojis.filter((e) => !(e == emoji));
     this.emojiReactions.get(beadAh).set(agent, filtered);
+    console.debug("unstoreEmojiReaction() set", filtered);
     /** Delete empty maps */
     if (this.emojiReactions.get(beadAh).get(agent).length == 0) {
       this.emojiReactions.get(beadAh).delete(agent);

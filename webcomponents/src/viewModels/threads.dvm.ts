@@ -302,7 +302,7 @@ export class ThreadsDvm extends DnaViewModel {
     if (!has) {
       return;
     }
-    await this.threadsZvm.zomeProxy.unpublishReaction(beadAh.hash);
+    await this.threadsZvm.zomeProxy.unpublishReaction({bead_ah: beadAh.hash, emoji});
   }
 
 
