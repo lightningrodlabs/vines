@@ -40,6 +40,7 @@ export * from './elements/listers/topics-lister';
 export * from './elements/listers/my-threads-lister';
 export * from './elements/listers/dm-lister';
 
+export * from './viewModels/threads.materialize';
 export * from './viewModels/threads.perspective';
 export * from './viewModels/threads.zvm';
 export * from './viewModels/threads.dvm';

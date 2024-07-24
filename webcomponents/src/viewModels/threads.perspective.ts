@@ -36,11 +36,11 @@ import {Cell} from "@ddd-qc/cell-proxy";
 /** */
 export interface ThreadsSnapshot {
   /** */
-  allAppletIds: EntryHashB64[],
+  appletIds: EntryHashB64[],
   /** Store of all Subjects: hash -> Subject */
-  allSubjects: [AnyLinkableHashB64, SubjectMat][],
+  subjects: [AnyLinkableHashB64, SubjectMat][],
   /** Store of all SemTopic: eh -> TopicTitle */
-  allSemanticTopics: [EntryHashB64, string][],
+  semanticTopics: [EntryHashB64, string][],
   /** */
   hiddens: AnyLinkableHashB64[],
   favorites: ActionHashB64[],
@@ -48,10 +48,8 @@ export interface ThreadsSnapshot {
   pps: [ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64][],
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: [ActionHashB64, BeadInfo, TypedBeadMat][],
-
   /** bead_ah -> [agent, emoji[]][] */
   emojiReactions: [ActionHashB64, [AgentPubKeyB64, string[]][]][],
-
   /** AppletId -> (PathEntryHash -> subjectType) */
   appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][],
 }
@@ -487,9 +485,9 @@ export class ThreadsPerspective {
 
     /** -- Done -- */
     return {
-      allSemanticTopics: Array.from(this.semanticTopics.entries()).map(([topicEh, title]) => [topicEh.b64, title]),
-      allAppletIds: this.appletIds.map((id) => id.b64),
-      allSubjects,
+      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicEh, title]) => [topicEh.b64, title]),
+      appletIds: this.appletIds.map((id) => id.b64),
+      subjects: allSubjects,
       appletSubjectTypes,
       pps,
       beads: Array.from(this.beads.entries()).map(([beadAh, [beadInfo, typed]]) => [beadAh.b64, beadInfo, typed]),
@@ -768,17 +766,17 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   restore(snapshot: ThreadsSnapshot, authorshipZvm: AuthorshipZvm, cell: Cell) {
     /** this._allAppletIds */
     this.appletIds = [];
-    for (const appletId of Object.values(snapshot.allAppletIds)) {
+    for (const appletId of Object.values(snapshot.appletIds)) {
       this.appletIds.push(new EntryId(appletId));
     }
     /** this._allSubjects */
     this.subjects.clear();
-    for (const [subjectHash, subject] of Object.values(snapshot.allSubjects)) {
+    for (const [subjectHash, subject] of Object.values(snapshot.subjects)) {
       this.subjects.set(subjectHash, subject)
     }
     /** this._allSemanticTopics */
     this.semanticTopics.clear();
-    for (const [topicEh, title] of Object.values(snapshot.allSemanticTopics)) {
+    for (const [topicEh, title] of Object.values(snapshot.semanticTopics)) {
       this.storeSemanticTopic(new EntryId(topicEh), title);
     }
 

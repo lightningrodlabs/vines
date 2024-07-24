@@ -1010,13 +1010,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async publishAllFromSnapshot(snapshot: ThreadsSnapshot, authorshipZvm: AuthorshipZvm) {
     /** this._allSemanticTopics */
-    for (const [_topicEh, title] of Object.values(snapshot.allSemanticTopics)) {
+    for (const [_topicEh, title] of Object.values(snapshot.semanticTopics)) {
       /* const newTopicEh = */ await this.publishSemanticTopic(title);
     }
     /** this._allSubjects */
     const ppAhs = snapshot.pps.map((tuple) => tuple[0]);
     const entryAsSubjects: Dictionary<ThreadsEntryType> = {};
-    for (const [subjectHash, _subject] of Object.values(snapshot.allSubjects)) {
+    for (const [subjectHash, _subject] of Object.values(snapshot.subjects)) {
       if (ppAhs.includes(subjectHash)) {
         entryAsSubjects[subjectHash] = ThreadsEntryType.ParticipationProtocol;
         continue;

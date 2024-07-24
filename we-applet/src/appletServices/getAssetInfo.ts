@@ -2,7 +2,7 @@ import {AppClient} from "@holochain/client";
 import {
     materializeAnyBead,
     ThreadsEntryType,
-    ThreadsProxy, truncate, weaveUrlToWal
+    ThreadsProxy, weaveUrlToWal
 } from "@vines/elements";
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {ActionId, pascal} from "@ddd-qc/cell-proxy";
