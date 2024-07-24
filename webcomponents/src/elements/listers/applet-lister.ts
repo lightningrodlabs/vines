@@ -23,7 +23,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {HoloHash} from "@holochain/client";
+import {EntryHashB64, HoloHash} from "@holochain/client";
 
 
 
@@ -180,7 +180,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     busyIndicator.active = true; // block the tree from the user
 
     /** Keep already existing children */
-    let currentChildren = [];
+    let currentChildren: EntryHashB64[] = [];
     for (const item of toggledTreeItem.items) {
       currentChildren.push((item as TreeItem).id);
     }
@@ -189,8 +189,8 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** SubjectType has been toggled */
     if (event.detail.item.level == 1) {
       /** Grab children */
-      const itemEh = new EntryId(toggledTreeItem.id);
-      let subjects = await this._zvm.findSubjects(this.appletId, itemEh);
+      const typePathEh = new EntryId(toggledTreeItem.id);
+      let subjects = await this._zvm.findSubjects(this.appletId, typePathEh);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
         console.warn("weServices not found in <applet-lister>")

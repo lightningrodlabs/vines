@@ -123,15 +123,15 @@ export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat)
 export interface SubjectMat {
   address: LinkableId,
   typeName: SpecialSubjectType,
-  dnaHash: DnaId,
+  dnaId: DnaId,
   appletId: EntryId,
 }
 export function materializeSubject(subject: Subject): SubjectMat {
-  const index = getIndexByVariant(SpecialSubjectType, subject.typeName); // Make sure typeName is valid
+  const _index = getIndexByVariant(SpecialSubjectType, subject.typeName); // Make sure typeName is valid
   return {
     address: intoLinkableId(subject.address),
     typeName: subject.typeName as SpecialSubjectType,
-    dnaHash: new DnaId(subject.dnaHash),
+    dnaId: new DnaId(subject.dnaHash),
     appletId: new EntryId(subject.appletId),
   }
 }
@@ -139,7 +139,7 @@ export function dematerializeSubject(subject: SubjectMat): Subject {
   return {
     address: subject.address.hash,
     typeName: subject.typeName,
-    dnaHash: subject.dnaHash.hash,
+    dnaHash: subject.dnaId.hash,
     appletId: subject.appletId.b64,
   }
 }

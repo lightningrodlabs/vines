@@ -324,24 +324,23 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** Dump perspective as JSON */
   exportPerspective(): string {
-    // //console.log("Dvm.exportPerspective()", name)
-    // const dvmExport = {};
-    // //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
-    // const tJson = this.threadsZvm.exportPerspective(this.authorshipZvm);
-    // dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
-    //
-    // const pJson = this.profilesZvm.exportPerspective(/*this.originalsZvm*/);
-    // dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
-    // //}
-    //
-    // const oJson = this.authorshipZvm.exportPerspective();
-    // dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
-    //
-    // //const dvmJson = this.exportDvmPerspective();
-    // //dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
-    //
-    // return JSON.stringify(dvmExport, null, 2);
-    return "FIXME"
+    //console.log("Dvm.exportPerspective()", name)
+    const dvmExport = {};
+    //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
+    const tJson = this.threadsZvm.export(this.authorshipZvm);
+    dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
+
+    const pJson = this.profilesZvm.export(/*this.originalsZvm*/);
+    dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
+    //}
+
+    const oJson = this.authorshipZvm.export();
+    dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
+
+    //const dvmJson = this.exportDvmPerspective();
+    //dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
+
+    return JSON.stringify(dvmExport, null, 2);
   }
 
 

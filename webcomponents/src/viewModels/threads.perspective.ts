@@ -33,25 +33,28 @@ import {SearchParameters} from "../search";
 import {Cell} from "@ddd-qc/cell-proxy";
 
 
-/** */
+/** Snapshot does not store notifications and new/unread state */
+/** TODO: store private dms */
 export interface ThreadsSnapshot {
-  /** */
-  appletIds: EntryHashB64[],
   /** Store of all Subjects: hash -> Subject */
   subjects: [AnyLinkableHashB64, SubjectMat][],
   /** Store of all SemTopic: eh -> TopicTitle */
   semanticTopics: [EntryHashB64, string][],
-  /** */
+  /** Keep only marked items */
   hiddens: AnyLinkableHashB64[],
   favorites: ActionHashB64[],
-  /** ppAh -> ppMat */
+  /** ppAh -> (ppMat, ts, author) */
   pps: [ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64][],
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: [ActionHashB64, BeadInfo, TypedBeadMat][],
-  /** bead_ah -> [agent, emoji[]][] */
+  /** bead_ah -> [agent, emojis[]][] */
   emojiReactions: [ActionHashB64, [AgentPubKeyB64, string[]][]][],
+
+  // TODO: remove deductibles
   /** AppletId -> (PathEntryHash -> subjectType) */
   appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][],
+  /** */
+  appletIds: EntryHashB64[],
 }
 
 
@@ -65,12 +68,16 @@ export class ThreadsPerspective {
   semanticTopics: EntryIdMap<string> = new EntryIdMap();
   /** Any hash -> isHidden */
   hiddens: Dictionary<boolean> = {};
+  /** */
+  favorites: ActionId[] = [];
   /** ppAh -> Thread */
   threads: ActionIdMap<Thread> = new ActionIdMap();
   /** beadAh -> [BeadInfo, TypedBead] */
   beads: ActionIdMap<[BeadInfo, TypedBeadMat]> = new ActionIdMap();
   /** beadAh -> [agent, emoji][] */
   emojiReactions: ActionIdMap<AgentIdMap<string[]>> = new ActionIdMap();
+  /** AppletId -> PathEntryHash -> subjectType */
+  appletSubjectTypes: EntryIdMap<EntryIdMap<string>> = new EntryIdMap();
 
   /** -- DM stuff  -- */
   /** agentId -> ppAh */
@@ -78,12 +85,6 @@ export class ThreadsPerspective {
   /** encBeadAh -> [BeadInfo, TypedBead] */
   decBeads: ActionIdMap<[BeadInfo, TypedBaseBeadMat]> = new ActionIdMap();
 
-  /**  -- Applet threads  -- */
-  /** AppletId -> PathEntryHash -> subjectType */
-  appletSubjectTypes: EntryIdMap<EntryIdMap<string>> = new EntryIdMap();
-
-  /** -- Favorites -- */
-  favorites: ActionId[] = [];
 
   /** -- New / unread -- */
   globalProbeLogTs: Timestamp = 0;
@@ -101,7 +102,7 @@ export class ThreadsPerspective {
 
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
-  /** PathEntryHash -> subjectHash[] */
+  /** PathEntryHash -> [DnaId, SubjectHash][] */
   subjectsPerType: EntryIdMap<[DnaId, LinkableId][]> = new EntryIdMap();
   ///* name string -> ppAh */
   //private _threadsByName: Dictionary<ActionId> = {};
@@ -110,11 +111,9 @@ export class ThreadsPerspective {
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
   newThreads: ActionIdMap<LinkableId> = new ActionIdMap();
-
   /** Unread subject == Has at least one unread thread */
   /** ppAh -> (subjectHash, beadAh[]) */
   unreadThreads: ActionIdMap<[LinkableId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
-
 
 
   /** -- Getters -- */
@@ -441,40 +440,21 @@ export class ThreadsPerspective {
   }
 
 
+  /** -- */
+
+
+
+
   /** -- Memento -- */
 
   /** TODO: deep copy */
-  makeSnapshot(originalsZvm: AuthorshipZvm): ThreadsSnapshot {
-    /** allSubjects */
-    const allSubjects: [AnyLinkableHashB64, SubjectMat][] = [];
-    Array.from(this.subjects.entries()).map(([subjectAhB64, subject]) => {
-      originalsZvm.ascribeTarget("Subject", intoLinkableId(subjectAhB64), 0/*TODO: get creationTime of Subject*/, null, true);
-      allSubjects.push([subjectAhB64, subject]);
-    });
-
-    /** pps */
-    const pps: Array<[ActionHashB64, ParticipationProtocolMat, Timestamp, AgentPubKeyB64]> = new Array();
-    Array.from(this.threads.entries()).map(([ppAh, thread]) => {
-      originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
-      pps.push([ppAh.b64, thread.pp, thread.creationTime, ""]);
-    });
-
-    /** beads */
-    //console.log("exportPerspective() beads", this._beads);
-    //const beads: Dictionary<[BeadInfo, TypedBeadMat]> = {};
-    Array.from(this.beads.entries()).map(([beadAh, [beadInfo, _typed]]) => {
-      //beads[beadAh] = (typed, beadInfo.beadType); // TODO: Optimize to not store twice core bead info.
-      originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
-    });
-
-
-    /** subject types */
+  makeSnapshot(): ThreadsSnapshot {
+    /** applet subject types */
     const appletSubjectTypes = [];
     for (const [appletEh, map] of this.appletSubjectTypes.entries()) {
       const types = Array.from(map.entries()).map(([pathEh, type]) => [pathEh.b64, type]);
       appletSubjectTypes.push(appletEh.b64, types);
     }
-
     /** emojis */
     const emojiReactions = [];
     for (const [beadAh, map] of this.emojiReactions.entries()) {
@@ -482,18 +462,17 @@ export class ThreadsPerspective {
         emojiReactions.push([beadAh.b64, agent.b64, emojis]);
       }
     }
-
     /** -- Done -- */
     return {
-      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicEh, title]) => [topicEh.b64, title]),
       appletIds: this.appletIds.map((id) => id.b64),
-      subjects: allSubjects,
-      appletSubjectTypes,
-      pps,
+      subjects: Array.from(this.subjects.entries()),
+      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicEh, title]) => [topicEh.b64, title]),
+      hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
+      favorites: this.favorites.map((id) => id.b64),
+      pps: Array.from(this.threads.entries()).map(([ppAh, thread]) => [ppAh.b64, thread.pp, thread.creationTime, thread.author.b64]),
       beads: Array.from(this.beads.entries()).map(([beadAh, [beadInfo, typed]]) => [beadAh.b64, beadInfo, typed]),
       emojiReactions,
-      hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, isHidden]) => hash),
-      favorites: this.favorites.map((id) => id.b64),
+      appletSubjectTypes,
     };
   }
 
@@ -526,8 +505,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   }
 
   /** */
-  storeSubjectsWithType(typePathHash: EntryId, subjectB64s: [DnaId, LinkableId][]) {
-    this.subjectsPerType.set(typePathHash, subjectB64s);
+  storeSubjectsWithType(typePathEh: EntryId, subjectB64s: [DnaId, LinkableId][]) {
+    this.subjectsPerType.set(typePathEh, subjectB64s);
   }
 
 
@@ -759,34 +738,65 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
   }
 
-  /** -- Memento -- */
 
+  /** -- Memento -- */
 
   /** */
   restore(snapshot: ThreadsSnapshot, authorshipZvm: AuthorshipZvm, cell: Cell) {
-    /** this._allAppletIds */
+    /** Clear Notifications */
+    this.globalProbeLogTs = 0;
+    this.inbox.clear();
+    this.notifSettings.clear();
+    this.newThreads.clear();
+    this.unreadThreads.clear();
+    /** this.appletIds */
     this.appletIds = [];
     for (const appletId of Object.values(snapshot.appletIds)) {
       this.appletIds.push(new EntryId(appletId));
     }
-    /** this._allSubjects */
-    this.subjects.clear();
-    for (const [subjectHash, subject] of Object.values(snapshot.subjects)) {
-      this.subjects.set(subjectHash, subject)
+    /** this.appletSubjectTypes */
+    this.appletSubjectTypes.clear();
+    for (const [appletId, dict] of Object.values(snapshot.appletSubjectTypes)) {
+      const appletEh = new EntryId(appletId);
+      if (!this.appletSubjectTypes.get(appletEh)) {
+        this.appletSubjectTypes.set(appletEh, new EntryIdMap());
+      }
+      for (const [pathHash, subjectType] of Object.values(dict)) {
+        this.appletSubjectTypes.get(appletEh).set(new EntryId(pathHash), subjectType);
+      }
     }
-    /** this._allSemanticTopics */
+    /** this.subjects */
+    this.subjects.clear();
+    this.subjectsPerType.clear();
+    for (const [subjectAddr, subject] of Object.values(snapshot.subjects)) {
+      this.subjects.set(subjectAddr, subject);
+      /** Figure out subjectsPerType */
+      const appletTypes = this.appletSubjectTypes.get(subject.appletId);
+      if (appletTypes) {
+        const maybe = Array.from(appletTypes.entries()).filter(([_pathEh, typeName]) => typeName == subject.typeName);
+        if (maybe) {
+          const pathEh: EntryId = maybe[0][0];
+          if (!this.subjectsPerType.get(pathEh)) {
+            this.subjectsPerType.set(pathEh, []);
+          }
+          this.subjectsPerType.get(pathEh).push([subject.dnaId, intoLinkableId(subjectAddr)]);
+        }
+      }
+    }
+    /** this.semanticTopics */
     this.semanticTopics.clear();
     for (const [topicEh, title] of Object.values(snapshot.semanticTopics)) {
       this.storeSemanticTopic(new EntryId(topicEh), title);
     }
-
-    /** this._hiddens */
+    /** this.hiddens */
     this.hiddens = {}
-    // FIXME
-
-    /** this._threads */
+    for (const anyHashB64 of Object.values(snapshot.hiddens)) {
+      this.hiddens[anyHashB64] = true;
+    }
+    /** this.threads */
     this.threads.clear();
     this.threadsPerSubject.clear();
+    this.dmAgents.clear();
     for (const [ppAhB64, ppMat, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
       const ppAh = new ActionId(ppAhB64);
       const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
@@ -794,8 +804,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         : [creationTime, cell.address.agentId];
       this.storeThread(cell, ppAh, dematerializeParticipationProtocol(ppMat), authorshipLog[0], authorshipLog[1], false);
     }
-
-    /** this._beads */
+    /** this.beads */
     this.beads.clear();
     this.decBeads.clear();
     for (const [beadAhB64, beadInfo, typedBead] of Object.values(snapshot.beads)) {
@@ -809,11 +818,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       }
       //this.storeTypedBead(beadAh, typedBead, beadInfo.beadType, authorshipLog[0], authorshipLog[1], true);
       this.storeTypedBead(beadAh, beadInfo, typedBead, true);
-      // FIXME handle decBeads
+      // TODO handle decBeads
     }
     console.log("importPerspective() beads", this.beads);
-
-
     /** this._emojiReactions */
     this.emojiReactions.clear();
     for (const [beadAhB64, pairs] of Object.values(snapshot.emojiReactions)) {
@@ -826,32 +833,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         this.emojiReactions.get(beadAh).set(agent, emojis);
       }
     }
-
-    /** this._dmAgents */
-    this.dmAgents.clear();
-    // FIXME
-
-    /** this._appletSubjectTypes */
-    this.appletSubjectTypes.clear();
-    for (const [appletId, dict] of Object.values(snapshot.appletSubjectTypes)) {
-      const appletEh = new EntryId(appletId);
-      if (!this.appletSubjectTypes.get(appletEh)) {
-        this.appletSubjectTypes.set(appletEh, new EntryIdMap());
-      }
-      for (const [pathHash, subjectType] of Object.values(dict)) {
-        this.appletSubjectTypes.get(appletEh).set(new EntryId(pathHash), subjectType);
-      }
-    }
-
-    /** this._favorites */
+    /** this.favorites */
     this.favorites = snapshot.favorites.map((b64) => new ActionId(b64))
-
-    /** */
-    this.globalProbeLogTs = 0;
-    this.inbox.clear();
-    this.notifSettings.clear();
-    this.subjectsPerType.clear();
-    // FIXME
   }
 
 }
