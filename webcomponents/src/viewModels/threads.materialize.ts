@@ -7,8 +7,8 @@ import {
   ThreadsEntryType
 } from "../bindings/threads.types";
 import {WAL} from "@lightningrodlabs/we-applet";
-import {ActionId, AgentId, AnyId, DnaId, EntryId, HolochainId, intoLinkableId} from "@ddd-qc/lit-happ";
-import {HoloHashB64, Timestamp} from "@holochain/client";
+import {ActionId, AgentId, EntryId} from "@ddd-qc/lit-happ";
+import {Timestamp} from "@holochain/client";
 
 
 /** -- Should be defined in @holochain/client */

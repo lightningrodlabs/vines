@@ -33,7 +33,7 @@ async function setupVinesMainView() {
   const appletServices: AppletServices = {
     creatables,
     getAssetInfo,
-    bindAsset,
+    bindAsset,//: async (a, b, c, d) => {},
     blockTypes: {},
     search,
   };

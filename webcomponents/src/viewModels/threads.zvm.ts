@@ -96,11 +96,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   private _decoder= new Decoder(HOLOCHAIN_ID_EXT_CODEC);
 
 
-  // constructor(cellProxy: CellProxy, dvmParent: DnaViewModel, zomeName?: ZomeName) {
-  //   super(cellProxy, dvmParent, zomeName);
-  //
-  // }
-
   /** -- Perspective -- */
 
   private _perspective: ThreadsPerspectiveMutable = new ThreadsPerspectiveMutable();
@@ -117,6 +112,20 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     let hasChanged = true; // TODO
     return hasChanged;
+  }
+
+
+  /** Notify subscribers */
+  /** TODO: structuredClone() fails because of Thread class. Refactor to a state object instead */
+  protected notifySubscribers(): boolean {
+    if (!this.hasChanged()) return false;
+    //this._previousPerspective = structuredClone(this.perspective);
+    this._previousPerspective = this.perspective;
+    for (const [host, propName] of this._providedHosts) {
+      (host as any)[propName] = this._previousPerspective;
+    }
+    this._dvmParent.zvmChanged(this);
+    return true;
   }
 
 
@@ -142,35 +151,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /** Notify subscribers */
-  /** TODO: structuredClone() fails because of Thread class. Refactor to a state object instead */
-  protected notifySubscribers(): boolean {
-    if (!this.hasChanged()) return false;
-    //this._previousPerspective = structuredClone(this.perspective);
-    this._previousPerspective = this.perspective;
-    for (const [host, propName] of this._providedHosts) {
-      (host as any)[propName] = this._previousPerspective;
-    }
-    this._dvmParent.zvmChanged(this);
-    return true;
-  }
-
-
-
-  getSubjectThreads(any: HoloHashB64): ActionId[] {
-    const maybe = this._perspective.threadsPerSubject.get(any);
-    if (!maybe) return [];
-    return maybe;
-  }
-
-  getSubjects(typePathHash: EntryId): [DnaId, LinkableId][] | undefined {
-    return this._perspective.subjectsPerType.get(typePathHash);
-  }
-
-
-  /** -- */
-
-  /** */
+  /** Store all attributions in authorship zvm */
   private storeAttributions(originalsZvm: AuthorshipZvm) {
     /** subjects */
     for (const subjectAhB64 of this._perspective.subjects.keys()) {
@@ -288,6 +269,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   storeMainTopic() {
     this._perspective.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
   }
+
 
   /** -- Probe: Query the DHT, and store the results (async) -- */
 
@@ -668,8 +650,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-
-  /** -- Fetch: Grab an entry from the DHT and store it -- */
+  /** -- Fetch -- */
 
   /** */
   async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, Timestamp, AgentId]> {
@@ -686,21 +667,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
     return [pp, ts, new AgentId(author)];
   }
-
-
-  // /** */
-  // async fetchThreadHideState(ppAh: ActionId, pp: ParticipationProtocol, author: AgentPubKeyB64): Promise<boolean> {
-  //   let hash;
-  //   if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
-  //     const other = author == this.cell.agentPubKey? pp.subject.hash : decodeHashFromBase64(author);
-  //     hash = encodeHashToBase64(agent2eh(other));
-  //   } else {
-  //     hash = ppAh;
-  //   }
-  //   const isHidden = await this.zomeProxy.findHideLink(decodeHashFromBase64(hash)) != null;
-  //   //this.storeHidden(hash, isHidden, false);
-  //   return isHidden;
-  // }
 
 
   /** */
@@ -863,7 +829,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return new ActionId(base.bead.ppAh);
     }
   }
-
 
 
   /** -- -- */
@@ -1572,7 +1537,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       signal = {Entry: entryPulse};
     }
 
-    /* Brutal way to make sure we have the content signaled in the notification */
+    ///* Brutal way to make sure we have the content signaled in the notification */
     //await this.probeAllLatest();
     /** */
     const notif: ThreadsNotification = {

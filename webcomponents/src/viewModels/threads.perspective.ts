@@ -318,6 +318,18 @@ export class ThreadsPerspective {
   }
 
 
+
+  getSubjectThreads(any: HoloHashB64): ActionId[] {
+    const maybe = this.threadsPerSubject.get(any);
+    if (!maybe) return [];
+    return maybe;
+  }
+
+  getSubjects(typePathHash: EntryId): [DnaId, LinkableId][] | undefined {
+    return this.subjectsPerType.get(typePathHash);
+  }
+
+
   /** unreadSubjects: subject has at least one unread thread */
   getUnreadSubjects(): LinkableId[] {
     let unreadSubjects = Array.from(this.unreadThreads.values()).map(([subjectId, _beads]) => subjectId);
