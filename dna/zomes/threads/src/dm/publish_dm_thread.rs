@@ -27,9 +27,9 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
     rules: "privacy".to_string(),
     subject_name: "agent".to_string(),
     subject: Subject {
-      address: input.other_agent.clone().into(),
+      address: holo_hash_encode(input.other_agent.get_raw_39()),
       type_name: DM_SUBJECT_TYPE_NAME.to_string(),
-      dna_hash: dna_info()?.hash,
+      dna_hash_b64: holo_hash_encode(dna_info()?.hash.get_raw_39()),
       applet_id: input.applet_id,
     }
   };

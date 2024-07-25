@@ -4,9 +4,7 @@ mod publish_participation_protocol;
 
 
 use hdi::hash_path::path::{Component};
-use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
-use hdk::prelude::holo_hash::{HashType, holo_hash_decode_unchecked, holo_hash_encode};
 use zome_utils::*;
 use threads_integrity::*;
 use authorship_zapi::*;
@@ -33,9 +31,9 @@ pub fn fetch_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestam
 ///
 fn get_subject_tp(subject: Subject) -> ExternResult<TypedPath> {
   debug!("get_subject_tp() applet_id: {}", subject.applet_id);
-  let mut tp = get_subject_type_tp(subject.applet_id, &subject.type_name)?;
+  let mut tp = get_subject_type_tp(subject.applet_id.clone(), &subject.type_name)?;
   //let subject_hash_comp = hash2comp(subject_hash);
-  let subject_hash_comp = subject2comp(subject.dna_hash, subject.address);
+  let subject_hash_comp = subject2comp(&subject);
   tp.path.append_component(subject_hash_comp);
   Ok(tp)
 }
@@ -61,37 +59,24 @@ pub fn get_applet_tp(applet_id: String) -> ExternResult<TypedPath> {
 
 
 ///
-pub fn subject2comp<T: HashType>(dna_hash: DnaHash, subject_hash: HoloHash<T>) -> Component {
-  debug!("subject2comp() {} | {}", dna_hash, subject_hash);
-  let subject_str = holo_hash_encode(subject_hash.get_raw_39());
-  let dna_str = holo_hash_encode(dna_hash.get_raw_39());
-  let str = format!("{}{}{}", dna_str, "|", subject_str);
-  debug!("subject2comp() {}", str);
+pub fn subject2comp(subject: &Subject) -> Component {
+  debug!("subject2comp() {} | {}", subject.dna_hash_b64, subject.address);
+  let str = format!("{}{}{}", subject.dna_hash_b64, "|", subject.address);
+  //debug!("subject2comp() {}", str);
   str.into()
 }
 
 
 ///
-pub fn comp2subject<T: HashType>(comp: &Component) -> ExternResult<(DnaHash, HoloHash<T>)> {
+pub fn comp2subject(comp: &Component) -> ExternResult<(String, String)> {
   let s = String::try_from(comp)
     .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
 
   debug!("comp2subject() s = {}", s);
-  let (dna_hash_str, subject_hash_str) = s.split_at(s.find("|").unwrap());
-  let subject_hash_str = &subject_hash_str[1..]; // remove delimiter
-  debug!("comp2subject() {} :: {}", dna_hash_str, subject_hash_str);
+  let (dna_hash_b64, subject_address) = s.split_at(s.find("|").unwrap());
+  let subject_address = &subject_address[1..]; // remove delimiter
+  debug!("comp2subject() {} :: {}", dna_hash_b64, subject_address);
 
-  let raw_dna_hash = holo_hash_decode_unchecked(&dna_hash_str)
-    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  let dna_hash = DnaHash::from_raw_39(raw_dna_hash)
-    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
 
-  let raw_subject_hash = holo_hash_decode_unchecked(&subject_hash_str)
-    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  let subject_hash = HoloHash::<T>::from_raw_39(raw_subject_hash)
-    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-
-  debug!("comp2subject() {} | {}", dna_hash, subject_hash);
-
-  Ok((dna_hash, subject_hash))
+  Ok((dna_hash_b64.to_string(), subject_address.to_string()))
 }

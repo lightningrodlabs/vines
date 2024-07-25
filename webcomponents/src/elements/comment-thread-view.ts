@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, dec64, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {determineSubjectPrefix} from "../utils";
@@ -262,7 +262,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
-    const maybeAppletInfo = this.weServices && !thread.pp.subject.appletId.equals(this.weServices.appletId)? this.weServices.appletInfoCached(thread.pp.subject.appletId) : undefined;
+    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
 
@@ -290,14 +290,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
                         icon="journey-depart"
                         style="margin-right:-5px; transform: rotate(-90deg);"
-                        @click=${(e) => this.weServices.openAppletMain(new HoloHash(thread.pp.subject.appletId.hash))}>
+                        @click=${(e) => this.weServices.openAppletMain(new HoloHash(thread.pp.subject.appletId))}>
             </ui5-button>
         `;
       } else {
         gotoAppletBtn = html`
             <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
                         style="margin-right:-5px; max-width:40px;"
-                        @click=${(e) => this.weServices.openAppletMain(new HoloHash(thread.pp.subject.appletId.hash))}>
+                        @click=${(e) => this.weServices.openAppletMain(new HoloHash(thread.pp.subject.appletId))}>
                 <img src=${maybeAppletInfo.appletIcon} alt="${appletName} Icon">
             </ui5-button>
         `;
@@ -325,9 +325,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   @click=${(_e) => {
                   console.log("<comment-thread-view> title click", thread.pp.subject);
                   /** Use subject as WAL */
-                  const wal: WAL = {hrl: [thread.pp.subject.dnaId.hash, thread.pp.subject.address.hash], context: null};
+                  const wal: WAL = {hrl: [dec64(thread.pp.subject.dnaHashB64), dec64(thread.pp.subject.address)], context: null};
                   /** Jump within app if subject is from Vines */
-                  if (this.cell.address.dnaId.equals(thread.pp.subject.dnaId)) {
+                  if (this.cell.address.dnaId.equals(thread.pp.subject.dnaHashB64)) {
                       switch(thread.pp.subject.typeName) {
                           case SpecialSubjectType.AgentPubKey:
                           case SpecialSubjectType.ParticipationProtocol: 
@@ -352,7 +352,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   }
                   /** OpenWal() if weServices is available */
                   if (this.weServices) {
-                      if (!thread.pp.subject.appletId.equals(this.weServices.appletId)) {
+                      if (thread.pp.subject.appletId != this.weServices.appletId) {
                           //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
                           this.weServices.openWal(wal);
                       }

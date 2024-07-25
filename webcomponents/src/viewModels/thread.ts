@@ -4,9 +4,10 @@ import {TimeInterval} from "./timeInterval";
 /** From https://github.com/mikolalysenko/functional-red-black-tree */
 import createRBTree, {Tree} from "functional-red-black-tree";
 //import {Base64} from "js-base64";
-import {BeadLinkMaterialized, ParticipationProtocolMat} from "./threads.materialize";
+import {BeadLinkMaterialized} from "./threads.materialize";
 import {ppName} from "../utils";
 import {AgentId} from "@ddd-qc/lit-happ";
+import {ParticipationProtocol} from "../bindings/threads.types";
 
 // /** Importing this from holochain will cause jest to fail */
 // function encodeHashToBase64(hash: Uint8Array) {
@@ -38,7 +39,7 @@ export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
 export class Thread {
 
   /* Participation Protocol */
-  private _pp: ParticipationProtocolMat;
+  private _pp: ParticipationProtocol;
   /* Flag if first node is the oldest node possible */
   private _hasSearchedOldestBead: boolean = false;
   /* CreationTime of the thread's PP entry */
@@ -58,7 +59,7 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(pp: ParticipationProtocolMat, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
+  constructor(pp: ParticipationProtocol, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
     console.log("New Thread() dnaOriginTime", dnaOriginTime, author);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
@@ -74,7 +75,7 @@ export class Thread {
 
   get name(): string { return ppName(this._pp)}
 
-  get pp(): ParticipationProtocolMat { return this._pp}
+  get pp(): ParticipationProtocol { return this._pp}
 
   get creationTime(): Timestamp { return this._creationTime}
 

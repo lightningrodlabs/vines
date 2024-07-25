@@ -18,9 +18,8 @@ import {threadJumpEvent, SpecialSubjectType, CommentRequest} from "../../events"
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
-import {ThreadsEntryType} from "../../bindings/threads.types";
+import {Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
-import {SubjectMat} from "../../viewModels/threads.materialize";
 
 
 /**
@@ -74,7 +73,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
   /** */
-  renderSubjectSubLister(subjectAdr: LinkableId, subject: SubjectMat, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
+  renderSubjectSubLister(subjectAdr: LinkableId, subject: Subject, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
     const isSubjectHidden = this._zvm.perspective.hiddens[subjectAdr.b64]? this._zvm.perspective.hiddens[subjectAdr.b64] : false;
     let title = "";
     let threads = myThreads.map((ppAh) => {
@@ -313,21 +312,22 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** appletId -> (subjectHash -> ppAh[]) */
     let allThreadsByApplet: EntryIdMap<AnyIdMap<ActionId[]>> = new EntryIdMap();
-    const allSubjects: AnyIdMap<SubjectMat> = new AnyIdMap();
+    const allSubjects: AnyIdMap<Subject> = new AnyIdMap();
     Array.from(allThreads.entries()).map(([ppAh, thread]) => {
       let appletId = thread.pp.subject.appletId;
       if (!appletId) {
         //appletId = THIS_APPLET_ID;
         return;
       }
-      if (!allThreadsByApplet.get(appletId)) {
-        allThreadsByApplet.set(appletId, new AnyIdMap())
+      const appletEh = new EntryId(appletId);
+      if (!allThreadsByApplet.get(appletEh)) {
+        allThreadsByApplet.set(appletEh, new AnyIdMap())
       }
-      if (!allThreadsByApplet.get(appletId).get(thread.pp.subject.address.b64)) {
-        allThreadsByApplet.get(appletId).set(thread.pp.subject.address.b64, []);
+      if (!allThreadsByApplet.get(appletEh).get(thread.pp.subject.address)) {
+        allThreadsByApplet.get(appletEh).set(thread.pp.subject.address, []);
       }
-      allThreadsByApplet.get(appletId).get(thread.pp.subject.address.b64).push(ppAh);
-      allSubjects.set(thread.pp.subject.address.b64, thread.pp.subject);
+      allThreadsByApplet.get(appletEh).get(thread.pp.subject.address).push(ppAh);
+      allSubjects.set(thread.pp.subject.address, thread.pp.subject);
     });
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
 

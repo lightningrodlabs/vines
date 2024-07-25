@@ -13,7 +13,6 @@ import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {materializeSubject} from "../../viewModels/threads.materialize";
 import {getMainThread} from "../../utils_feed";
 import {SpecialSubjectType} from "../../events";
 
@@ -149,12 +148,12 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   /** */
   private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
     const subject: Subject = {
-      address: beadAh.hash,
+      address: beadAh.b64,
       typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
       appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
-      dnaHash: this.cell.address.dnaId.hash,
+      dnaHashB64: this.cell.address.dnaId.b64,
     };
-    const subjectName = determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices);
+    const subjectName = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
     return this._dvm.publishCommentThread( subject, subjectName);
   }
 

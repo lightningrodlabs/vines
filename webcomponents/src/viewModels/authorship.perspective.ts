@@ -7,7 +7,7 @@ import {AnyLinkableHashB64} from "@ddd-qc/path-explorer/dist/utils";
 /**  */
 export interface AuthorshipSnapshot {
   /** type -> Hash, timestamp, Author */
-  allAuthorshipLogs: Dictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]>,
+  all: Dictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]>,
 }
 
 
@@ -34,17 +34,17 @@ export class AuthorshipPerspective {
 
   /** TODO: deep copy */
   makeSnapshot(): AuthorshipSnapshot {
-    let allAuthorshipLogs = {};
+    let all = {};
     for (const [type, hashs] of Object.entries(this.logsByType)) {
-      allAuthorshipLogs[type] = [];
+      all[type] = [];
       for (const hash of hashs) {
         const log = this.allLogs.get(hash.b64);
         if (log) {
-          allAuthorshipLogs[type].push(hash, log[0], log[1].b64)
+          all[type].push(hash, log[0], log[1].b64)
         }
       }
     }
-    return {allAuthorshipLogs}
+    return {all}
   }
 }
 
@@ -92,7 +92,7 @@ export class AuthorshipPerspectiveMutable extends AuthorshipPerspective {
     this.logsByType = {};
     this.allLogs.clear();
     /** Store */
-    for (const [type, logs] of Object.entries(snapshot.allAuthorshipLogs)) {
+    for (const [type, logs] of Object.entries(snapshot.all)) {
       for (const [hashB64, ts, agentB64] of logs) {
         this.storeAuthorshipLog(type, intoLinkableId(hashB64), ts, new AgentId(agentB64));
       }

@@ -51,17 +51,14 @@ import {
   BeadInfo,
   BeadType,
   dematerializeEntryBead,
-  dematerializeParticipationProtocol,
   dematerializeTypedBead,
   EncryptedBeadContent,
   EntryBeadMat,
   materializeBead,
-  materializeParticipationProtocol,
   materializeTypedBead,
   NotifiableEvent,
   NotificationTipBeadData,
   NotificationTipPpData,
-  ParticipationProtocolMat,
   TextBeadMat,
   ThreadsNotification,
   ThreadsNotificationTip,
@@ -391,9 +388,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (bl.creationTime <= maybeThread.latestProbeLogTime || this.cell.address.agentId.equals(bl.author)) {
         return;
       }
-      const subjectHash = maybeThread.pp.subject.address
+      const subjectAddr = intoLinkableId(maybeThread.pp.subject.address);
       if (!unreadThreads.get(ppAh)) {
-        unreadThreads.set(ppAh, [subjectHash, []]);
+        unreadThreads.set(ppAh, [subjectAddr, []]);
       }
       unreadThreads.get(ppAh)[1].push(new ActionId(bl.beadAh));
     });
@@ -653,10 +650,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async publishThreadFromSemanticTopic(appletId: EntryId, topicEh: EntryId, purpose: string): Promise<[number, ActionId]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const subject: Subject = {
-      address: topicEh.hash,
+      address: topicEh.b64,
       typeName: SpecialSubjectType.SemanticTopic,
       appletId: appletId.b64,
-      dnaHash: this.cell.address.dnaId.hash, // TODO: remove this useless field?
+      dnaHashB64: this.cell.address.dnaId.b64,
     };
     const semTopicTitle = this._perspective.semanticTopics.get(topicEh);
     const pp: ParticipationProtocol = {
@@ -675,7 +672,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** -- Fetch: Grab an entry from the DHT and store it -- */
 
   /** */
-  async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocolMat, Timestamp, AgentId]> {
+  async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, Timestamp, AgentId]> {
     const maybeThread = this._perspective.threads.get(ppAh);
     console.log("ThreadsZvm.fetchPp()", ppAh, !!maybeThread);
     if (maybeThread) {
@@ -687,7 +684,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     console.log("ThreadsZvm.fetchPp() pp", pp);
     //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
-    return [materializeParticipationProtocol(pp), ts, new AgentId(author)];
+    return [pp, ts, new AgentId(author)];
   }
 
 
@@ -901,7 +898,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (thread.pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       let other = thread.author;
       if (this.cell.address.agentId.equals(other)) {
-        other = AgentId.from(thread.pp.subject.address);
+        other = AgentId.from(intoLinkableId(thread.pp.subject.address));
       }
       return other;
     }
@@ -1036,8 +1033,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** -- Threads & Beads -- */
     const ppAhMapping: ActionIdMap<ActionId> = new ActionIdMap();
     /* Sort by creation time */
-    const sortedPps: [ActionId, ParticipationProtocolMat, Timestamp, AgentId][] = Object.values(snapshot.pps).sort(
-      ([_ppAhA, _ppMatA, creationTimeA], [_ppAhB, _ppMatB, creationTimeB]) => {
+    const sortedPps: [ActionId, ParticipationProtocol, Timestamp, AgentId][] = Object.values(snapshot.pps).sort(
+      ([_ppAhA, _ppA, creationTimeA], [_ppAhB, _ppB, creationTimeB]) => {
         return creationTimeA - creationTimeB
       }).map(([a, b, c, d]) => [new ActionId(a), b, c, new AgentId(d)])
     const beadAhMapping: ActionIdMap<ActionId> = new ActionIdMap();
@@ -1051,29 +1048,28 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     while(ppAhMapping.size != sortedPps.length && beadAhMapping.size != sortedBeads.length ) {
       const totalStart = ppAhMapping.size + beadAhMapping.size;
       /* Threads */
-      for (const [ppAh, ppMat, creationTime, _a] of Object.values(sortedPps)) {
+      for (const [ppAh, pp, creationTime, _a] of Object.values(sortedPps)) {
         if (ppAhMapping.get(ppAh)) {
           continue;
         }
         /* Grab subject mapping */
-        const maybeEntrySubject = entryAsSubjects[ppMat.subject.address.b64];
+        const maybeEntrySubject = entryAsSubjects[pp.subject.address];
         if (maybeEntrySubject) {
           if (maybeEntrySubject == ThreadsEntryType.ParticipationProtocol) {
-            const newSubjectHash = ppAhMapping.get(new ActionId(ppMat.subject.address.b64));
+            const newSubjectHash = ppAhMapping.get(new ActionId(pp.subject.address));
             if (!newSubjectHash) {
               continue;
             }
-            ppMat.subject.address = newSubjectHash;
+            pp.subject.address = newSubjectHash.b64;
           } else {
-            const newSubjectHash = beadAhMapping.get(new ActionId(ppMat.subject.address.b64));
+            const newSubjectHash = beadAhMapping.get(new ActionId(pp.subject.address));
             if (!newSubjectHash) {
               continue;
             }
-            ppMat.subject.address = newSubjectHash;
+            pp.subject.address = newSubjectHash.b64;
           }
         }
         /* publish pp */
-        const pp = dematerializeParticipationProtocol(ppMat);
         const [pp_ah, _ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         const newPpAh = new ActionId(pp_ah);
         ppAhMapping.set(ppAh, newPpAh);
@@ -1117,7 +1113,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             const encBead = typedBead as EncryptedBead;
             const otherAgent: AgentId = beadInfo.author.b64 != this.cell.address.agentId.b64
               ? beadInfo.author
-              : new AgentId(this._perspective.threads.get(beadInfo.bead.ppAh).pp.subject.address.b64);
+              : new AgentId(this._perspective.threads.get(beadInfo.bead.ppAh).pp.subject.address);
             content = {encBead, otherAgent};
           } break;
           case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
@@ -1371,9 +1367,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           if (pulse.isNew) {
             if (isFromSelf) {
               /** Notify Subject author */
-              if (this.cell.address.dnaId.equals(pp.subject.dnaHash)) {
+              if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64) {
                 //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
-                let author = await this.zomeProxy.getRecordAuthor(pp.subject.address);
+                let author = await this.zomeProxy.getRecordAuthor(intoLinkableId(pp.subject.address).hash);
                 if (!this.cell.address.agentId.equals(author)) {
                   await this.zomeProxy.notifyPeer({
                     content: pulse.ah.hash,
@@ -1463,7 +1459,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         console.log("Signaling new PP notification to peer", base, pulse.target);
         const ppAh = new ActionId(pulse.target.b64);
         const thread = this._perspective.threads.get(ppAh);
-        const ppData: NotificationTipPpData = {pp: dematerializeParticipationProtocol(thread.pp), creationTime: thread.creationTime};
+        const ppData: NotificationTipPpData = {pp: thread.pp, creationTime: thread.creationTime};
         extra = ppData;
       } else {
         /** NewBead, Mention, Reply */

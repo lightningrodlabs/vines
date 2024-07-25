@@ -1,6 +1,6 @@
 import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
@@ -255,7 +255,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     //const subjectPrefix = determineSubjectPrefix(subjectType);
 
-    const maybeAppletInfo = this.weServices && !thread.pp.subject.appletId.equals(this.weServices.appletId)? this.weServices.appletInfoCached(thread.pp.subject.appletId) : undefined;
+    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<post-comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
 

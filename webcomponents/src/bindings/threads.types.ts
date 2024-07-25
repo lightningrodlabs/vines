@@ -241,7 +241,7 @@ export interface CommitGlobalLogInput {
 
 export interface ProbeAllOutput {
   searchedInterval: SweepInterval
-  newThreadsBySubject: [AnyLinkableArray, ActionArray][]
+  newThreadsBySubject: [string, ActionArray][]
   newBeadsByThread: [ActionArray, BeadLink][]
 }
 
@@ -348,9 +348,9 @@ export interface ParticipationProtocol {
 }
 
 export interface Subject {
-  address: AnyLinkableArray
+  address: string
   typeName: string
-  dnaHash: DnaArray
+  dnaHashB64: string
   appletId: string
 }
 

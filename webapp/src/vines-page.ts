@@ -1,6 +1,15 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, ActionIdMap, delay, DnaElement, DnaId, EntryId, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {
+  ActionId,
+  delay,
+  DnaElement,
+  DnaId,
+  EntryId,
+  HappBuildModeType,
+  HoloHashType,
+  isHashTypeB64
+} from "@ddd-qc/lit-happ";
 
 import "@ddd-qc/path-explorer";
 
@@ -710,10 +719,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
-        address: request.subjectHash.hash,
+        address: request.subjectHash.b64,
         typeName: request.subjectType,
         appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
-        dnaHash: this.cell.address.dnaId.hash,
+        dnaHashB64: this.cell.address.dnaId.b64,
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
@@ -897,11 +906,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** */
-    let centerSide = html`
-        <!-- <h1 style="margin:auto;margin-top:20px;">${msg("No thread selected")}</h1> -->
-        ${doodle_flowers}
-    `;
-    let primaryTitle = "No thread selected";
+    let centerSide = html`${doodle_flowers}`;
+    let primaryTitle = msg("No thread selected");
     /** render selected thread */
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
@@ -914,16 +920,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
-          primaryTitle = profile? profile.nickname : "unknown";
+          primaryTitle = profile ? profile.nickname : "unknown";
         }
-        const maybeSemanticTopicTitle = this.threadsPerspective.semanticTopics.get(EntryId.from(thread.pp.subject.address));
-        let topic;
-         if (maybeSemanticTopicTitle) {
-           topic = maybeSemanticTopicTitle;
-         } else {
-           topic = "Reply";
-         }
-
+        /** Set input bar 'topic' */
+        let topic = msg("Reply");
+        if (isHashTypeB64(thread.pp.subject.address, HoloHashType.Entry)) {
+          const maybeSemanticTopicTitle = this.threadsPerspective.semanticTopics.get(new EntryId(thread.pp.subject.address));
+          if (maybeSemanticTopicTitle) {
+            topic = maybeSemanticTopicTitle;
+          }
+        }
         /** Check uploading state */
         let pct = 100;
         if (uploadState) {
@@ -1129,7 +1135,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       || thread.pp.subject.typeName == SpecialSubjectType.TextBead
       || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
       || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead)) {
-        const subjectAh = new ActionId(thread.pp.subject.address.b64);
+        const subjectAh = new ActionId(thread.pp.subject.address);
         const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
         if (subjectBead) {
           maybeBackBtn = html`

@@ -30,14 +30,14 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
         .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     let subject_type_comp = comps[2].clone();
     //let subject_hash = comp2hash(&comps[3])?;
-    let (dna_hash, subject_hash) = comp2subject(&comps[3])?;
+    let (dna_hash_b64, subject_address) = comp2subject(&comps[3])?;
 
     let type_name = String::try_from(&subject_type_comp).unwrap();
     debug!("type_name: '{}' | {:?}", type_name, subject_type_comp.as_ref());
     let subject = Subject {
-      address: subject_hash.clone(),
+      address: subject_address.clone(),
       type_name,
-      dna_hash,
+      dna_hash_b64,
       applet_id,
     };
     all.push(subject);

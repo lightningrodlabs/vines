@@ -13,9 +13,9 @@ import {AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} fro
 import {
   ActionId,
   AgentId,
-  delay,
+  delay, DnaId,
   DnaViewModel,
-  DvmDef,
+  DvmDef, enc64,
   EntryId,
   HappElement,
   HCL,
@@ -43,7 +43,7 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   weaveUrlToWal,
   weClientContext,
-  getMainThread, MAIN_SEMANTIC_TOPIC,
+  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {localized, msg} from '@lit/localize';
@@ -60,7 +60,6 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import Button from "@ui5/webcomponents/dist/Button";
 
 import "./community-feed-page"
-import {materializeSubject} from "@vines/elements/dist/viewModels/threads.materialize";
 
 
 /** */
@@ -333,7 +332,7 @@ export class CommunityFeedApp extends HappElement {
         if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
           this._selectedPostAh = beadAh;
         } else {
-          this._selectedPostAh = new ActionId(pp.subject.address.b64);
+          this._selectedPostAh = new ActionId(pp.subject.address);
         }
       } else {
         console.warn("JumpEvent failed. Bead not found", beadAh.short);
@@ -475,12 +474,12 @@ export class CommunityFeedApp extends HappElement {
                         const hrlc = weaveUrlToWal(e.detail.wurl);
                         const attLocInfo = await this._weServices.assetInfo(hrlc);
                         const subject: Subject = {
-                            address: hrlc.hrl[1],
-                            typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
-                            dnaHash: hrlc.hrl[0],
+                            address: enc64(hrlc.hrl[1]),
+                            typeName: SpecialSubjectType.Asset,
+                            dnaHashB64: new DnaId(hrlc.hrl[0]).b64,
                             appletId: new EntryId(attLocInfo.appletHash).b64,
                         }
-                        const subject_name = determineSubjectName(materializeSubject(subject), this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
+                        const subject_name = determineSubjectName(subject, this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
                         //console.log("@create event subject_name", subject_name);                        
                         const pp: ParticipationProtocol = {
                             purpose: e.detail.purpose,

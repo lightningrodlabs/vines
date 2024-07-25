@@ -1,4 +1,3 @@
-use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 use crate::participation_protocols::*;
 use zome_utils::{tp_children_paths, zome_panic_hook};
@@ -15,7 +14,7 @@ pub struct FindSubjectsInput {
 
 ///
 #[hdk_extern]
-pub fn find_subjects_by_type(input: FindSubjectsInput) -> ExternResult<Vec<(DnaHash, AnyLinkableHash)>> {
+pub fn find_subjects_by_type(input: FindSubjectsInput) -> ExternResult<Vec<(String, String)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let tp = get_subject_type_tp(input.applet_id, &input.subject_type)?;
   let children = tp_children_paths(&tp)?;

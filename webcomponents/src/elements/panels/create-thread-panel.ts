@@ -8,12 +8,12 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {DnaElement, EntryId} from "@ddd-qc/lit-happ";
+import {DnaElement, DnaId, enc64, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {determineSubjectName, weaveUrlToWal} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
-import {materializeSubject} from "../../viewModels/threads.materialize";
 import {FilesDvm} from "@ddd-qc/files";
+import {SpecialSubjectType} from "../../events";
 
 
 /** */
@@ -51,12 +51,12 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const hrlc = weaveUrlToWal(wurl);
       const attLocInfo = await this.weServices.assetInfo(hrlc);
       const subject: Subject = {
-        address: hrlc.hrl[1],
-        typeName: 'Asset',//attLocInfo.assetInfo.icon_src,
-        dnaHash: hrlc.hrl[0],
+        address: enc64(hrlc.hrl[1]),
+        typeName: SpecialSubjectType.Asset,
+        dnaHashB64: new DnaId(hrlc.hrl[0]).b64,
         appletId: new EntryId(attLocInfo.appletHash).b64,
       }
-      const subject_name = determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices);
+      const subject_name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
       console.log("@create event subject_name", subject_name);
       const pp: ParticipationProtocol = {
         purpose,

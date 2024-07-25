@@ -1,7 +1,7 @@
 import {
   AnyBeadMat,
-  BeadType, EntryBeadMat, ParticipationProtocolMat,
-  SubjectMat, TextBeadMat,
+  BeadType, EntryBeadMat,
+  TextBeadMat,
   TypedBeadMat
 } from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
@@ -9,121 +9,12 @@ import {WAL, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
-import {ThreadsEntryType} from "./bindings/threads.types";
+import {ParticipationProtocol, Subject, ThreadsEntryType} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {ActionId, AgentId, DnaId, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaId, EntryId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
-
-
-// /** */
-// export function getIndexByVariant(enumType: any, value: string): number {
-//   const keys = Object.keys(enumType).filter(key => isNaN(Number(key))); // Filter out numeric keys if present
-//   for (let i = 0; i < keys.length; i++) {
-//     if (enumType[keys[i]] === value) {
-//       return i;
-//     }
-//   }
-//   throw Error("Value not found in enum");
-// }
-
-//
-//
-// /** */
-// export function getSettingType(index: number): NotifySetting {
-//   const keys = Object.keys(NotifySetting);
-//   if (index >= 0 && index < keys.length) {
-//     const key = keys[index];
-//     return NotifySetting[key];
-//   }
-//   /** */
-//   throw Error("Out of bounds index for NotifySetting");
-// }
-//
-//
-// /** */
-// export function getEventType(index: number): NotifiableEvent {
-//   const keys = Object.keys(NotifiableEvent);
-//   if (index >= 0 && index < keys.length) {
-//     const key = keys[index];
-//     return NotifiableEvent[key];
-//   }
-//   /** */
-//   throw Error("Out of bounds index for NotifiableEvent");
-// }
-//
-// /** */
-// export function getLinkType(index: number): ThreadsLinkType {
-//   const keys = Object.keys(ThreadsLinkType);
-//   if (index >= 0 && index < keys.length) {
-//     const key = keys[index];
-//     return ThreadsLinkType[key];
-//   }
-//   /** */
-//   throw Error("Out of bounds index for ThreadsLinkType");
-// }
-//
-//
-// /** */
-// export function getEntryType(index: number): ThreadsEntryType {
-//   const keys = Object.keys(ThreadsEntryType);
-//   if (index >= 0 && index < keys.length) {
-//     const key = keys[index];
-//     return ThreadsEntryType[key];
-//   }
-//   /** */
-//   throw Error("Out of bounds index for ThreadsEntryType");
-// }
-
-//
-// export const HASH_TYPE_PREFIX_B64 = {
-//   Agent: "uhCAk",
-//   Entry: "uhCEk",
-//   Dna: "uhC0k",
-//   Action: "uhCkk",
-//   External: "uhC8k",
-// };
-//
-// /** */
-// export function isHashTypeB64(hash: HoloHashB64, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
-//   const slice = hash.slice(0, 5);
-//   const prefix = HASH_TYPE_PREFIX_B64[hashType];
-//   for (let i = 0; i < prefix.length; i++) {
-//     if (slice[i] !== prefix[i]) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
-//
-//
-// /** */
-// export function isHashType(hash: HoloHash, hashType: "Agent" | "Entry" | "Dna" | "Action" | "External") {
-//   const slice = sliceHashType(hash);
-//   const prefix = HASH_TYPE_PREFIX[hashType];
-//   for (let i = 0; i < prefix.length; i++) {
-//     if (slice[i] !== prefix[i]) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
-
-//
-// /** */
-// export function prettyState(state: StateChange): string {
-//   if (StateChangeType.Create in state) {
-//     return state.Create? "Create NEW" : "Create";
-//   }
-//   if (StateChangeType.Update in state) {
-//     return state.Update? "Update NEW" : "Update";
-//   }
-//   if (StateChangeType.Delete in state) {
-//     return state.Delete? "Delete NEW" : "Delete";
-//   }
-// }
-
 
 
 /** */
@@ -245,46 +136,13 @@ export function weaveUrlToWal(url: string): WAL {
 }
 
 
-//
-// function emptyValidHash(prefix) {
-//   let core = new Uint8Array(32).fill(0);
-//   const checksum = dhtLocationFrom32(core);
-//   return new Uint8Array([...prefix, ...core, ...Array.from(checksum)]);
-// }
-//
-//
-// export function emptyEntryHash() {
-//   return emptyValidHash(HASH_TYPE_PREFIX["Entry"]);
-// }
-//
-// export function emptyAgentPubKey() {
-//   return emptyValidHash([0x84, 0x20, 0x24]);
-// }
-//
-// export function emptyActionHash() {
-//   return emptyValidHash([0x84, 0x29, 0x24]);
-// }
-//
-// export function intoAgentPubKey(hash: AnyLinkableHash): AgentPubKey {
-//   const meCore = sliceCore32(hash);
-//   const meDht = sliceDhtLocation(hash)
-//   return Uint8Array.from([...HASH_TYPE_PREFIX["Agent"], ...meCore, ...meDht]);
-// }
-//
-// export function agent2eh(agent: AgentPubKey): EntryHash {
-//   const meCore = sliceCore32(agent);
-//   const meDht = sliceDhtLocation(agent)
-//   return Uint8Array.from([...HASH_TYPE_PREFIX["Entry"], ...meCore, ...meDht]);
-// }
-
-
 export const MAIN_TOPIC_ID: EntryId = EntryId.empty(77); // 'M'
 export const MAIN_SEMANTIC_TOPIC = "__main";
 
 export class AnyIdMap<T> extends Map<HoloHashB64, T> {}
 
-export function ppName(ppMat: ParticipationProtocolMat): string {
-  return `${determineSubjectPrefix(ppMat.subject.typeName)} ${ppMat.subject_name}: ${ppMat.purpose}`;
+export function ppName(pp: ParticipationProtocol): string {
+  return `${determineSubjectPrefix(pp.subject.typeName as SpecialSubjectType)} ${pp.subject_name}: ${pp.purpose}`;
 }
 
 
@@ -309,10 +167,10 @@ export function determineSubjectPrefix(type: SpecialSubjectType) {
 
 
 /** We are determining the subject name and formatting it into a thread name */
-export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
+export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
-  if (subject.appletId.equals(THIS_APPLET_ID) || (weServices && subject.appletId.equals(weServices.appletId))) {
+  if (subject.appletId == THIS_APPLET_ID.b64 || (weServices && subject.appletId == weServices.appletId)) {
     switch (subject.typeName) {
       /** -- special types -- */
       case SpecialSubjectType.Applet:
@@ -329,7 +187,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
         return `{Unknown AgentPubKey}`;
         break
       case SpecialSubjectType.ParticipationProtocol: {
-        const ah = new ActionId(subject.address.b64);
+        const ah = new ActionId(subject.address);
         const thread = threadsZvm.perspective.threads.get(ah);
         if (!thread) {
           //thread = await threadsZvm.fetchPp(subject.address);
@@ -353,7 +211,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       break;
       /** -- Feed types -- */
       case SpecialSubjectType.Post: {
-        const ah = new ActionId(subject.address.b64);
+        const ah = new ActionId(subject.address);
         const beadInfo = threadsZvm.perspective.getBeadInfo(ah);
         if (beadInfo) {
           const typed = threadsZvm.perspective.getBead(ah);
@@ -365,7 +223,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       break;
       /** -- Vines types -- */
       case SpecialSubjectType.SemanticTopic:
-        let semTopicTitle = threadsZvm.perspective.semanticTopics.get(new EntryId(subject.address.b64));
+        let semTopicTitle = threadsZvm.perspective.semanticTopics.get(new EntryId(subject.address));
         if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
           return "{Unknown Topic}";
@@ -376,7 +234,7 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       case SpecialSubjectType.EntryBead:
       case SpecialSubjectType.AnyBead:
       case SpecialSubjectType.EncryptedBead:
-        const ah = new ActionId(subject.address.b64);
+        const ah = new ActionId(subject.address);
         const typedMat = threadsZvm.perspective.getBaseBead(ah);
         if (!typedMat) {
           //console.log("determineSubjectName() bead not found. Fetching.", subject.hash);
@@ -403,8 +261,8 @@ export function determineSubjectName(subject: SubjectMat, threadsZvm: ThreadsZvm
       }
       //const hrl: Hrl = [decodeHashFromBase64(subject.dnaHash), decodeHashFromBase64(subject.hash)];
       /** FIXME */
-      if (subject.address.hashType == HoloHashType.Dna) {
-        const dnaId = new DnaId(subject.address.b64);
+      if (isHashTypeB64(subject.address, HoloHashType.Dna)) {
+        const dnaId = new DnaId(subject.address);
         const maybeInfo = weServices.cache.assetInfos.get(dnaId);
         return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
       } else {

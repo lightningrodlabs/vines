@@ -9,7 +9,7 @@ use crate::beads::{BeadLink};
 #[serde(rename_all = "camelCase")]
 pub struct ProbeAllOutput {
   pub searched_interval: SweepInterval,
-  pub new_threads_by_subject: Vec<(AnyLinkableHash, ActionHash)>,
+  pub new_threads_by_subject: Vec<(String, ActionHash)>, // SubjectHashB64
   pub new_beads_by_thread: Vec<(ActionHash, BeadLink)>,
 }
 
@@ -38,7 +38,7 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
   /// Convert links to BeadLinks
   //let me = agent_info()?.agent_initial_pubkey;
   let mut bls: Vec<(ActionHash, BeadLink)> = Vec::new();
-  let mut pps: Vec<(AnyLinkableHash, ActionHash)> = Vec::new();
+  let mut pps: Vec<(String, ActionHash)> = Vec::new();
   for (_index_time, link) in responses {
       // /// Dont count my things as 'new'
       // if link.author == me {
@@ -47,10 +47,12 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
       let item_tag: TimedItemTag = SerializedBytes::from(UnsafeBytes::from(link.tag.0)).try_into().unwrap();
       if item_tag.item_type == PP_ITEM_TYPE {
         let pp_ah: ActionHash = ActionHash::try_from(link.target).unwrap();
-        let subject_hash: AnyLinkableHash = AnyLinkableHash::from_raw_39(item_tag.custom_data).unwrap();
+        let subject_hash_b64 = String::from_utf8_lossy(&item_tag.custom_data);
+        debug!("subject_hash_b64: {}", subject_hash_b64);
+        //let subject_hash: AnyLinkableHash = AnyLinkableHash::from_raw_39(item_tag.custom_data).unwrap();
         /// Add only if after begin_time since we may have older items from the same time bucket
         if item_tag.ts_us > searched_interval.begin {
-          pps.push((subject_hash.clone(), pp_ah.clone()));
+          pps.push((subject_hash_b64.to_string(), pp_ah.clone()));
           //debug!("Thread found: {} (for subject: {:?})", pp_ah, topic_hash);
           debug!("new Thread found: {} > {}", item_tag.ts_us, searched_interval.begin);
         }

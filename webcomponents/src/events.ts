@@ -23,6 +23,7 @@ export interface CommentRequest {
 
 /** */
 export enum SpecialSubjectType {
+  Asset = "Asset",
   Applet = "Applet",
   AgentPubKey = DM_SUBJECT_TYPE_NAME,
   ParticipationProtocol = "ParticipationProtocol",

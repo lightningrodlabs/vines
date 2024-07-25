@@ -90,60 +90,62 @@ export type NotificationTipBeadData = {
 
 
 
-
-/** -- PpMat -- */
-
-/**  */
-export interface ParticipationProtocolMat {
-  purpose: string,
-  rules: string,
-  subject: SubjectMat,
-  subject_name: string,
-}
-export function materializeParticipationProtocol(pp: ParticipationProtocol): ParticipationProtocolMat {
-  return {
-    purpose: pp.purpose,
-    rules: pp.rules,
-    subject: materializeSubject(pp.subject),
-    subject_name: pp.subject_name,
-  } as ParticipationProtocolMat;
-}
-export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat): ParticipationProtocol {
-  return {
-    purpose: pp.purpose,
-    rules: pp.rules,
-    subject: dematerializeSubject(pp.subject),
-    subject_name: pp.subject_name,
-  } as ParticipationProtocol;
-}
-
-
-/** -- Subject -- */
-
-export interface SubjectMat {
-  address: LinkableId,
-  typeName: SpecialSubjectType,
-  dnaId: DnaId,
-  appletId: EntryId,
-}
-export function materializeSubject(subject: Subject): SubjectMat {
-  const _index = getIndexByVariant(SpecialSubjectType, subject.typeName); // Make sure typeName is valid
-  return {
-    address: intoLinkableId(subject.address),
-    typeName: subject.typeName as SpecialSubjectType,
-    dnaId: new DnaId(subject.dnaHash),
-    appletId: new EntryId(subject.appletId),
-  }
-}
-export function dematerializeSubject(subject: SubjectMat): Subject {
-  return {
-    address: subject.address.hash,
-    typeName: subject.typeName,
-    dnaHash: subject.dnaId.hash,
-    appletId: subject.appletId.b64,
-  }
-}
-
+//
+// /** -- PpMat -- */
+//
+// /**  */
+// export interface ParticipationProtocolMat {
+//   purpose: string,
+//   rules: string,
+//   subject: SubjectMat,
+//   subject_name: string,
+// }
+// export function materializeParticipationProtocol(pp: ParticipationProtocol): ParticipationProtocolMat {
+//   return {
+//     purpose: pp.purpose,
+//     rules: pp.rules,
+//     subject: materializeSubject(pp.subject),
+//     subject_name: pp.subject_name,
+//   } as ParticipationProtocolMat;
+// }
+// export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat): ParticipationProtocol {
+//   return {
+//     purpose: pp.purpose,
+//     rules: pp.rules,
+//     subject: dematerializeSubject(pp.subject),
+//     subject_name: pp.subject_name,
+//   } as ParticipationProtocol;
+// }
+//
+//
+// /** -- Subject -- */
+//
+// export interface SubjectMat {
+//   address: LinkableId,
+//   typeName: SpecialSubjectType,
+//   dnaId: DnaId,
+//   appletId: EntryId,
+// }
+// export function materializeSubject(subject: Subject): SubjectMat {
+//   const _index = getIndexByVariant(SpecialSubjectType, subject.typeName); // Make sure typeName is valid
+//   console.log("materializeSubject()", subject);
+//   return {
+//     address: intoLinkableId(subject.address),
+//     typeName: subject.typeName as SpecialSubjectType,
+//     dnaId: new DnaId(subject.dnaHashB64),
+//     appletId: new EntryId(subject.appletId),
+//   }
+// }
+// export function dematerializeSubject(subject: SubjectMat): Subject {
+//   console.log("dematerializeSubject()", subject);
+//   return {
+//     address: subject.address.b64,
+//     typeName: subject.typeName,
+//     dnaHashB64: subject.dnaId.b64,
+//     appletId: subject.appletId.b64,
+//   }
+// }
+//
 
 /** -- Bead -- */
 

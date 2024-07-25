@@ -428,11 +428,11 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('update_semantic_topic', input);
   }
 
-  async findSubjectsByType(input: FindSubjectsInput): Promise<[DnaArray, AnyLinkableArray][]> {
+  async findSubjectsByType(input: FindSubjectsInput): Promise<[string, string][]> {
     return this.call('find_subjects_by_type', input);
   }
 
-  async findSubjectsForApplet(appletId: string): Promise<[DnaArray, AnyLinkableArray][]> {
+  async findSubjectsForApplet(appletId: string): Promise<[string, string][]> {
     return this.call('find_subjects_for_applet', appletId);
   }
 

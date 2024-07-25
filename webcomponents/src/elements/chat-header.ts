@@ -1,10 +1,10 @@
 import {css, html} from "lit";
 import {customElement, property} from "lit/decorators.js";
-import {ActionId, AgentId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement, EntryId, getHashType, intoLinkableId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar, renderProfileAvatar} from "../render";
-import {beadJumpEvent} from "../events";
+import {beadJumpEvent, SpecialSubjectType} from "../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../styles";
 import {toasty} from "../toast";
@@ -75,12 +75,14 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return this.renderDmThreadHeader(maybeDmThread);
     }
 
-    const subjectId = thread.pp.subject.address;
+    const subjectAddr = thread.pp.subject.address;
     let maybeSemanticTopicTitle = undefined;
-    if (subjectId.hashType == HoloHashType.Entry) {
-      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectId.b64));
+    const subjectHashType = getHashType(subjectAddr);
+    if (subjectHashType == HoloHashType.Entry) {
+      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectAddr));
     }
-    const subjectAh = ActionId.from(subjectId);
+    console.log("subjectHashType", subjectHashType);
+    const subjectAh = ActionId.from(intoLinkableId(subjectAddr));
     let title;
     let subText;
     const copyBtn = html`
@@ -88,13 +90,13 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
             e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
         }}></ui5-button>      
     `;
-    const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName);
+    const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
     const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
     if (maybeSemanticTopicTitle) {
       title = html`Welcome to ${thread.name} !`;
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address.print());
+      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
