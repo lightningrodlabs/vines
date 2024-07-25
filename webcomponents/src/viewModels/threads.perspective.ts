@@ -447,17 +447,16 @@ export class ThreadsPerspective {
   /** TODO: deep copy */
   makeSnapshot(): ThreadsSnapshot {
     /** applet subject types */
-    const appletSubjectTypes = [];
+    const appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][] = [];
     for (const [appletEh, map] of this.appletSubjectTypes.entries()) {
-      const types = Array.from(map.entries()).map(([pathEh, type]) => [pathEh.b64, type]);
-      appletSubjectTypes.push(appletEh.b64, types);
+      const types: [EntryHashB64, string][] = Array.from(map.entries()).map(([pathEh, type]) => [pathEh.b64, type]);
+      appletSubjectTypes.push([appletEh.b64, types]);
     }
     /** emojis */
-    const emojiReactions = [];
+    const emojiReactions: [ActionHashB64, [AgentPubKeyB64, string[]][]][] = [];
     for (const [beadAh, map] of this.emojiReactions.entries()) {
-      for (const [agent, emojis] of map.entries()) {
-        emojiReactions.push([beadAh.b64, agent.b64, emojis]);
-      }
+      const agents: [AgentPubKeyB64, string[]][] = Array.from(map.entries()).map(([agent, emojis]) => [agent.b64, emojis]);
+      emojiReactions.push([beadAh.b64, agents]);
     }
     /** -- Done -- */
     return {
@@ -817,15 +816,17 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       this.storeTypedBead(beadAh, beadInfo, typedBead, true);
       // TODO handle decBeads
     }
-    console.log("importPerspective() beads", this.beads);
+    console.log("import() beads", this.beads);
     /** this._emojiReactions */
     this.emojiReactions.clear();
-    for (const [beadAhB64, pairs] of Object.values(snapshot.emojiReactions)) {
+    console.log("import() emojiReactions", snapshot.emojiReactions);
+    for (const [beadAhB64, pairs] of snapshot.emojiReactions) {
       const beadAh = new ActionId(beadAhB64);
       if (!this.emojiReactions.get(beadAh)) {
         this.emojiReactions.set(beadAh, new AgentIdMap());
       }
       for (const [agentB64, emojis] of pairs) {
+        console.log("import() emojiReaction", agentB64, emojis);
         const agent = new AgentId(agentB64);
         this.emojiReactions.get(beadAh).set(agent, emojis);
       }

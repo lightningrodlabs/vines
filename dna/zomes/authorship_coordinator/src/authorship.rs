@@ -10,7 +10,7 @@ pub struct AscribeTargetInput {
     pub target: AnyLinkableHash,
     pub target_type: String,
     pub creation_time: Timestamp,
-    pub maybe_original_author: Option<AgentPubKey>,
+    pub original_author: AgentPubKey,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, SerializedBytes)]
@@ -35,11 +35,10 @@ pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
     // }
     let tp = get_type_tp(input.target_type)?;
     //let mut author_target: AnyLinkableHash = Path::from(ROOT_ANCHOR_UNKNOWN_AUTHOR).typed(AuthorshipLinkType::AuthorshipPath)?.path_entry_hash()?.into();
-    let original_author = input.maybe_original_author.unwrap_or(AgentPubKey::from_raw_36(vec![0; 36]));
-    let log = AuthorshipLog::new(input.creation_time, original_author.clone());
+    let log = AuthorshipLog::new(input.creation_time, input.original_author.clone());
     let tag = obj2Tag(log)?;
     let _ah = create_link(tp.path_entry_hash()?, input.target.clone(), AuthorshipLinkType::Target, tag)?;
-    let _ah2 = create_link(input.target, original_author, AuthorshipLinkType::Author, ts2Tag(input.creation_time))?;
+    let _ah2 = create_link(input.target, input.original_author, AuthorshipLinkType::Author, ts2Tag(input.creation_time))?;
     Ok(())
 }
 
@@ -57,10 +56,10 @@ pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey
         target: ah.into(),
         target_type: target_type.to_string(),
         creation_time: record.action().timestamp(),
-        maybe_original_author: Some(record.action().author().to_owned()),
+        original_author: record.action().author().to_owned(),
     };
     let _ah = ascribe_target(input.clone());
-    Ok((input.creation_time, input.maybe_original_author.unwrap(), input.target_type))
+    Ok((input.creation_time, input.original_author, input.target_type))
 }
 
 

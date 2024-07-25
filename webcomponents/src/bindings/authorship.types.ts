@@ -160,7 +160,7 @@ export interface AscribeTargetInput {
   target: AnyLinkableArray
   target_type: string
   creation_time: Timestamp
-  maybe_original_author?: AgentArray
+  original_author: AgentArray
 }
 
 export interface AuthorshipLog {

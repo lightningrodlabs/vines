@@ -2,14 +2,13 @@ import {
   AnyBead, BaseBeadKind, Bead,
   EncryptedBead,
   EntryBead,
-  ParticipationProtocol, Subject,
+  ParticipationProtocol,
   TextBead,
   ThreadsEntryType
 } from "../bindings/threads.types";
 import {WAL} from "@lightningrodlabs/we-applet";
-import {ActionId, AgentId, DnaId, EntryId, getIndexByVariant, intoLinkableId, LinkableId} from "@ddd-qc/lit-happ";
-import {Timestamp} from "@holochain/client";
-import {SpecialSubjectType} from "../events";
+import {ActionId, AgentId, AnyId, DnaId, EntryId, HolochainId, intoLinkableId} from "@ddd-qc/lit-happ";
+import {HoloHashB64, Timestamp} from "@holochain/client";
 
 
 /** -- Should be defined in @holochain/client */
@@ -24,7 +23,6 @@ export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBea
 export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
 
 export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentId}
-
 
 
 
@@ -69,13 +67,6 @@ export interface BeadInfo {
   //name: string,
 }
 
-export interface BeadLinkMaterialized {
-  creationTime: Timestamp,
-  beadAh: ActionId,
-  beadType: BeadType,
-}
-
-
 
 export type NotificationTipPpData = {
   pp: ParticipationProtocol,
@@ -89,63 +80,12 @@ export type NotificationTipBeadData = {
 };
 
 
+export interface BeadLinkMaterialized {
+  creationTime: Timestamp,
+  beadAh: ActionId,
+  beadType: BeadType,
+}
 
-//
-// /** -- PpMat -- */
-//
-// /**  */
-// export interface ParticipationProtocolMat {
-//   purpose: string,
-//   rules: string,
-//   subject: SubjectMat,
-//   subject_name: string,
-// }
-// export function materializeParticipationProtocol(pp: ParticipationProtocol): ParticipationProtocolMat {
-//   return {
-//     purpose: pp.purpose,
-//     rules: pp.rules,
-//     subject: materializeSubject(pp.subject),
-//     subject_name: pp.subject_name,
-//   } as ParticipationProtocolMat;
-// }
-// export function dematerializeParticipationProtocol(pp: ParticipationProtocolMat): ParticipationProtocol {
-//   return {
-//     purpose: pp.purpose,
-//     rules: pp.rules,
-//     subject: dematerializeSubject(pp.subject),
-//     subject_name: pp.subject_name,
-//   } as ParticipationProtocol;
-// }
-//
-//
-// /** -- Subject -- */
-//
-// export interface SubjectMat {
-//   address: LinkableId,
-//   typeName: SpecialSubjectType,
-//   dnaId: DnaId,
-//   appletId: EntryId,
-// }
-// export function materializeSubject(subject: Subject): SubjectMat {
-//   const _index = getIndexByVariant(SpecialSubjectType, subject.typeName); // Make sure typeName is valid
-//   console.log("materializeSubject()", subject);
-//   return {
-//     address: intoLinkableId(subject.address),
-//     typeName: subject.typeName as SpecialSubjectType,
-//     dnaId: new DnaId(subject.dnaHashB64),
-//     appletId: new EntryId(subject.appletId),
-//   }
-// }
-// export function dematerializeSubject(subject: SubjectMat): Subject {
-//   console.log("dematerializeSubject()", subject);
-//   return {
-//     address: subject.address.b64,
-//     typeName: subject.typeName,
-//     dnaHashB64: subject.dnaId.b64,
-//     appletId: subject.appletId.b64,
-//   }
-// }
-//
 
 /** -- Bead -- */
 

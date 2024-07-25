@@ -1,6 +1,6 @@
 import {
   AgentId,
-  EntryId,
+  EntryId, holoIdReviver,
   intoLinkableId,
   LinkableId,
   ZomeViewModel
@@ -8,7 +8,6 @@ import {
 import {Timestamp} from "@holochain/client";
 import {AuthorshipProxy} from "../bindings/authorship.proxy";
 import {AuthorshipPerspectiveMutable, AuthorshipPerspective, AuthorshipSnapshot} from "./authorship.perspective";
-
 
 
 /**
@@ -49,7 +48,7 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** */
   import(json: string, _canPublish: boolean) {
-    const snapshot = JSON.parse(json) as AuthorshipSnapshot;
+    const snapshot = JSON.parse(json, holoIdReviver) as AuthorshipSnapshot;
     // if (canPublish) {
     // }
     this._perspective.restore(snapshot)
@@ -89,8 +88,7 @@ export class AuthorshipZvm extends ZomeViewModel {
     const all = await this.zomeProxy.getAllAscribedEntries();
     for (const [type, target, ts, author] of all) {
       const authorId = new AgentId(author);
-      const a = authorId.equals(AgentId.empty())? null : authorId;
-      this._perspective.storeAuthorshipLog(type, intoLinkableId(target), ts, a);
+      this._perspective.storeAuthorshipLog(type, intoLinkableId(target), ts, authorId);
     }
   }
 
@@ -99,13 +97,13 @@ export class AuthorshipZvm extends ZomeViewModel {
 
 
   /** */
-  async ascribeTarget(type: string, anyId: LinkableId, creationTime: Timestamp, author: AgentId | null, preventZomeCall?: boolean) {
+  async ascribeTarget(type: string, anyId: LinkableId, creationTime: Timestamp, author: AgentId, preventZomeCall?: boolean) {
     if (!preventZomeCall) {
       await this.zomeProxy.ascribeTarget({
         target: anyId.hash,
         target_type: type,
         creation_time: creationTime,
-        maybe_original_author: author == null? undefined : author.hash,
+        original_author: author.hash,
       });
     }
     this._perspective.storeAuthorshipLog(type, anyId, creationTime, author);

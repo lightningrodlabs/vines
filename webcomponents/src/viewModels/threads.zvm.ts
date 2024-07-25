@@ -33,7 +33,7 @@ import {
   EntryPulseMat,
   getIndexByVariant,
   getVariantByIndex,
-  HoloHashType,
+  HoloHashType, holoIdReviver,
   intoDhtId,
   intoLinkableId,
   LinkableId,
@@ -120,7 +120,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /** Dump perspective as JSON  (caller should call getAllPublicManifest() first) */
+  /** Dump perspective as JSON (caller should call getAllPublicManifest() first) */
   export(authorshipZvm: AuthorshipZvm): string {
     this.storeAttributions(authorshipZvm);
     const snapshot = this._perspective.makeSnapshot();
@@ -130,7 +130,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   import(json: string, canPublish: boolean, authorshipZvm: AuthorshipZvm) {
-    const snapshot = JSON.parse(json) as ThreadsSnapshot;
+    const snapshot = JSON.parse(json, holoIdReviver) as ThreadsSnapshot;
     console.log("Importing perspective", snapshot);
     if (canPublish) {
       /*await*/ this.publishAllFromSnapshot(snapshot, authorshipZvm);
@@ -174,7 +174,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   private storeAttributions(originalsZvm: AuthorshipZvm) {
     /** subjects */
     for (const subjectAhB64 of this._perspective.subjects.keys()) {
-      /*await*/ originalsZvm.ascribeTarget("Subject", intoLinkableId(subjectAhB64), 0/*TODO: get creationTime of Subject*/, null, true);
+      /*await*/ originalsZvm.ascribeTarget("Subject", intoLinkableId(subjectAhB64), 0/*TODO: get creationTime of Subject*/, AgentId.empty(), true);
     };
     /** pps */
     for (const [ppAh, thread] of this._perspective.threads.entries()) {
@@ -728,7 +728,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             type = ThreadsEntryType.EncryptedBead;
           } catch (e) {
             //console.error(e);
-            return Promise.reject(`Bead not found at hash ${beadAh} : ${e}`);
+            return Promise.reject(`Bead not found at hash ${beadAh.b64} : ${e}`);
           }
         } else {
           type = ThreadsEntryType.AnyBead;
@@ -1073,7 +1073,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [pp_ah, _ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         const newPpAh = new ActionId(pp_ah);
         ppAhMapping.set(ppAh, newPpAh);
-        const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
+        const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
           ? authorshipZvm.perspective.getAuthor(ppAh)
           : [creationTime, this.cell.address.agentId];
         /* store pp */
@@ -1126,7 +1126,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         /* Publish */
         const newPpAh = ppAhMapping.get(beadInfo.bead.ppAh);
-        console.log(`PubImp() Bead newPpAh: ${ppAhMapping.get(beadInfo.bead.ppAh)}`);
+        console.log(`PubImp() Bead newPpAh: ${ppAhMapping.get(beadInfo.bead.ppAh).short}`);
         const nextBead: Bead = {ppAh: newPpAh.hash, prevBeadAh: prevBeadAh.hash};
         const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(beadAh) != undefined
           ? authorshipZvm.perspective.getAuthor(beadAh)
@@ -1138,7 +1138,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (authorshipZvm.perspective.getAuthor(beadAh) != undefined) {
           await authorshipZvm.ascribeTarget(beadInfo.beadType, newBeadAh, beadInfo.creationTime, beadInfo.author);
         }
-        console.log(`PubImp() Bead ${beadAh} -> ${newBeadAh}`, authorshipLog[0]);
+        console.log(`PubImp() Bead ${beadAh.short} -> ${newBeadAh.short}`, authorshipLog[0]);
       }
       /* Break loop if no progress made */
       const totalEnd = ppAhMapping.size + beadAhMapping.size;

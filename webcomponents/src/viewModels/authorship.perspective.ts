@@ -1,4 +1,12 @@
-import {AgentId, AnyIdMap, Dictionary, intoLinkableId, LinkableId} from "@ddd-qc/lit-happ";
+import {
+  AgentId,
+  AnyIdMap,
+  assertAllDefined,
+  assertIsDefined,
+  Dictionary,
+  intoLinkableId,
+  LinkableId
+} from "@ddd-qc/lit-happ";
 import {AgentPubKeyB64, Timestamp} from "@holochain/client";
 import {AnyLinkableHashB64} from "@ddd-qc/path-explorer/dist/utils";
 
@@ -17,12 +25,12 @@ export class AuthorshipPerspective {
   /** typeName -> (hash -> original author) */
   logsByType: Dictionary<LinkableId[]> = {};
   /** hash -> original author */
-  allLogs: AnyIdMap<[Timestamp, AgentId | null]> = new AnyIdMap();
+  allLogs: AnyIdMap<[Timestamp, AgentId]> = new AnyIdMap();
 
 
   /** -- Getters -- */
 
-  getAuthor(hash: LinkableId): [Timestamp, AgentId | null] | undefined {
+  getAuthor(hash: LinkableId): [Timestamp, AgentId] | undefined {
     return this.allLogs.get(hash.b64);
   }
 
@@ -34,13 +42,13 @@ export class AuthorshipPerspective {
 
   /** TODO: deep copy */
   makeSnapshot(): AuthorshipSnapshot {
-    let all = {};
+    let all: Dictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]> = {};
     for (const [type, hashs] of Object.entries(this.logsByType)) {
       all[type] = [];
       for (const hash of hashs) {
         const log = this.allLogs.get(hash.b64);
         if (log) {
-          all[type].push(hash, log[0], log[1].b64)
+          all[type].push([hash.b64, log[0], log[1].b64]);
         }
       }
     }
@@ -62,13 +70,15 @@ export class AuthorshipPerspectiveMutable extends AuthorshipPerspective {
 
   /** */
   storeTypes(allTypes: string[]) {
+    assertIsDefined(allTypes);
     this.ascribedTypes = allTypes;
   }
 
   /** */
-  storeAuthorshipLog(typeName: string, target: LinkableId, creationTime: Timestamp, author: AgentId | null) {
+  storeAuthorshipLog(typeName: string, target: LinkableId, creationTime: Timestamp, author: AgentId) {
+    assertAllDefined(typeName, target, creationTime, author);
     /* _allOriginals */
-    this.allLogs[target.b64] = [creationTime, author];
+    this.allLogs.set(target.b64, [creationTime, author]);
     /* _originalsByType */
     if (!this.logsByType[typeName]) {
       this.logsByType[typeName] = []
