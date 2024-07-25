@@ -27,6 +27,7 @@ export * from './elements/post-comment-thread-view';
 export * from './elements/post-comment-item';
 export * from './utils_feed';
 
+export * from './elements/panels/confirm-dialog';
 export * from './elements/panels/create-post-panel';
 export * from './elements/panels/create-thread-panel';
 export * from './elements/panels/edit-profile';

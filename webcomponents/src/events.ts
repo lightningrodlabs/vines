@@ -39,6 +39,12 @@ export enum SpecialSubjectType {
 }
 
 
+export interface HideEvent {
+  address: DhtId, // Action = pp ; Entry = Topic
+  //type: string,
+  hide: boolean
+}
+
 export interface ShowProfileEvent {
   agentId: AgentId,
   x: number,

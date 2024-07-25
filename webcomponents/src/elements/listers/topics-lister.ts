@@ -6,7 +6,7 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
-import {CommentRequest, EditTopicRequest, SpecialSubjectType, threadJumpEvent} from "../../events";
+import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 
 
@@ -152,16 +152,14 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                             class="showBtn"
                             @click=${async (e) => {
                                 e.stopPropagation();
-                                await this._zvm.unhideSubject(ppAh);
-                                toasty(`Unarchived Channel "${thread.pp.purpose}"`);
+                                this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh}, bubbles: true, composed: true}));
                             }}></ui5-button>
             ` : html`
                       <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                   class="showBtn"
                                   @click=${async (e) => {
                                       e.stopPropagation();
-                                      await this._zvm.hideSubject(ppAh);
-                                      toasty(`Archived Channel "${thread.pp.purpose}"`);
+                                      this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh}, bubbles: true, composed: true}));
                                   }}></ui5-button>`;
 
           return html`
@@ -240,15 +238,15 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           <ui5-button id=${"hide-" + topicEh.b64} icon="show" tooltip="Show" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
-                          await this._zvm.unhideSubject(topicEh);
-                          toasty(`Unarchived Topic "${title}"`)
+                          e.stopPropagation();
+                          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: topicEh}, bubbles: true, composed: true}));
                       }}"></ui5-button>
       ` : html`
           <ui5-button id=${"hide-" + topicEh.b64} icon="hide" tooltip="Hide" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e) => {
-                          await this._zvm.hideSubject(topicEh);
-                          toasty(`Archived Topic "${title}"`)
+                          e.stopPropagation();
+                          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: topicEh}, bubbles: true, composed: true}));
                       }}"></ui5-button>
       `;
 

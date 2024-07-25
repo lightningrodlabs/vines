@@ -138,10 +138,11 @@ import {
   beadJumpEvent,
   ChatThreadView,
   CommentRequest,
-  CommentThreadView,
+  CommentThreadView, ConfirmDialog,
   doodle_flowers,
   EditTopicRequest,
   globaFilesContext,
+  HideEvent,
   InputBar,
   JumpDestinationType,
   JumpEvent,
@@ -215,6 +216,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('jump', this.onJump);
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
+    this.addEventListener('archive', this.onArchive);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -222,6 +224,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('jump', this.onJump);
     this.removeEventListener('edit-profile', this.onEditProfile);
     this.removeEventListener('show-profile', this.onShowProfile);
+    this.removeEventListener('archive', this.onArchive);
   }
 
 
@@ -241,6 +244,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return shadow;
   }
 
+
+  async onArchive(e: CustomEvent<HideEvent>) {
+
+    const dialog = this.shadowRoot.getElementById("confirm-hide-topic") as ConfirmDialog;
+    dialog.title = msg("Are you sure?");
+    this.addEventListener('confirmed', async (_f) => {
+      const type = e.detail.address.hashType == HoloHashType.Entry? "Topic" : "Channel";
+      if (e.detail.hide) {
+        await this._dvm.threadsZvm.hideSubject(e.detail.address);
+        toasty(`Archived ${type}`);
+      } else {
+        await this._dvm.threadsZvm.unhideSubject(e.detail.address);
+        toasty(`Unarchived ${type}`);
+      }
+    });
+    dialog.open();
+  }
 
   onShowProfile(e: CustomEvent<ShowProfileEvent>) {
     console.log("onShowProfile()", e.detail)
@@ -1444,6 +1464,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
             ></vines-edit-profile>
         </ui5-dialog>
+        <!-- ConfirmDialogs -->
+        <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e) => {}}></confirm-dialog>
         <!-- CreateTopicDialog -->
         <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
             <section>

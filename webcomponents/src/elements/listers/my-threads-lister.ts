@@ -226,21 +226,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
     }
 
-    const subjectHideBtn = this.showArchivedSubjects && isSubjectHidden ? html`
-          <ui5-button id=${"hide-" + subjectAdr.b64} icon="show" tooltip="Show" design="Transparent"
-                      style="border:none; padding:0px;display:none;"
-                      @click="${async (e) => {
-      await this._zvm.unhideSubject(subjectAdr);
-      toasty(`Unarchived Subject "${title}"`)
-    }}"></ui5-button>
-      ` : html`
-          <ui5-button id=${"hide-" + subjectAdr.b64} icon="hide" tooltip="Hide" design="Transparent"
-                      style="border:none; padding:0px;display:none;"
-                      @click="${async (e) => {
-      await this._zvm.hideSubject(subjectAdr);
-      toasty(`Archived Subject "${title}"`)
-    }}"></ui5-button>
-      `;
 
     const subjectHasUnreads = unreadSubjects.map((id) => id.b64).includes(subjectAdr.b64);
 
@@ -269,7 +254,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${subjectBadge} -->
-                <!-- ${subjectHideBtn} -->                
                 ${subjectCommentButton}
     </div>
       <!-- threads -->              

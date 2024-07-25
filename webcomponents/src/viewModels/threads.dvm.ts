@@ -339,8 +339,6 @@ export class ThreadsDvm extends DnaViewModel {
     const oJson = this.authorshipZvm.export();
     dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
 
-    //const dvmJson = this.exportDvmPerspective();
-    //dvmExport[ThreadsDvm.DEFAULT_BASE_ROLE_NAME] = dvmJson;
 
     return JSON.stringify(dvmExport, null, 2);
   }
@@ -358,7 +356,6 @@ export class ThreadsDvm extends DnaViewModel {
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
-    //const dvmPersp = external[ThreadsDvm.DEFAULT_BASE_ROLE_NAME];
 
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
     this.profilesZvm.import(JSON.stringify(profiles), canPublish);
