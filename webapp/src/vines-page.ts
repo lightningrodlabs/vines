@@ -246,17 +246,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   async onArchive(e: CustomEvent<HideEvent>) {
-
+    const type = e.detail.address.hashType == HoloHashType.Entry? "Topic" : "Channel";
+    const verb = e.detail.hide? "Archive" : "Unarchive";
     const dialog = this.shadowRoot.getElementById("confirm-hide-topic") as ConfirmDialog;
-    dialog.title = msg("Are you sure?");
+    dialog.title = msg(`${verb} ${type}?`);
     this.addEventListener('confirmed', async (_f) => {
-      const type = e.detail.address.hashType == HoloHashType.Entry? "Topic" : "Channel";
       if (e.detail.hide) {
         await this._dvm.threadsZvm.hideSubject(e.detail.address);
-        toasty(`Archived ${type}`);
+        toasty(`${type} archived`);
       } else {
         await this._dvm.threadsZvm.unhideSubject(e.detail.address);
-        toasty(`Unarchived ${type}`);
+        toasty(`${type} Unarchived`);
       }
     });
     dialog.open();
