@@ -172,7 +172,7 @@ import {WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
 import {NetworkInfo, Timestamp,} from "@holochain/client";
 
-import {FrameNotification, GroupProfile, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -445,15 +445,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onCreateHrlMessage() {
-    const maybeWal = await this.weServices.userSelectWal();
-    if (!maybeWal || !this.selectedThreadHash) {
+  async onCreateHrlMessage(wal: WAL) {
+    if (!wal || !this.selectedThreadHash) {
       return;
     }
-    console.log("onCreateHrlMessage()", weaveUrlFromWal(maybeWal), maybeWal);
+    console.log("onCreateHrlMessage()", weaveUrlFromWal(wal));
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // TODO: make sure hrl is an entryHash
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, maybeWal, this.selectedThreadHash, undefined, this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this.selectedThreadHash, undefined, this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
 
@@ -994,8 +993,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
                                if (e.detail.file) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);
+                               if (e.detail.wal) await this.onCreateHrlMessage(e.detail.wal);
                              }}
-                             @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
             ></vines-input-bar>`
             }
         `;

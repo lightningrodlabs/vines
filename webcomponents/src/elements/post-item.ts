@@ -10,7 +10,7 @@ import 'emoji-picker-element';
 import {renderAvatar} from "../render";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {Hrl, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
@@ -19,7 +19,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
 import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
-import {ShowProfileEvent} from "../events";
+import {ShowProfileEvent, VinesInputEvent} from "../events";
 
 
 /**
@@ -387,9 +387,12 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                              .cachedInput=${this._dvm.perspective.threadInputs.get(this.hash)? this._dvm.perspective.threadInputs.get(this.hash) : ""}
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
-                             @input=${(e) => {e.preventDefault(); this.onTextComment(e.detail)}}
-                             @upload=${(e) => {e.preventDefault(); this.onFileComment()}}
-                             @grab_hrl=${async (e) => {e.preventDefault(); this.onHrlComment()}}
+                             @input=${ async(e: CustomEvent<VinesInputEvent>) => {
+                               e.stopPropagation(); e.preventDefault(); 
+                               if (e.detail.text) await this.onTextComment(e.detail.text);
+                               if (e.detail.file) this.onFileComment(e.detail.file);
+                               if (e.detail.wal)  this.onHrlComment(e.detail.wal);
+                             }}
             ></vines-input-bar>`}
         </div>
         <!-- Popovers -->
@@ -424,40 +427,30 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     `;
   }
 
-  private _commentAh?: ActionId;
+           private _commentAh?: ActionId;
   @state() private _splitObj?: SplitObject;
 
 
   /** */
-  onFileComment() {
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = async (e:any) => {
-      console.log("target upload file", e);
-      const file = e.target.files[0];
-      const commentThreadAh = await this.getCommentThread();
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
-        console.log("<create-post-panel> startPublishFile callback", eh);
-        let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, commentThreadAh);
-        this._splitObj = undefined;
-        //this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
-      });
-      console.log("onUploadComment()", this._splitObj);
-    }
-    input.click();
+  async onFileComment(file: File) {
+    console.log("target upload file", file);
+    const commentThreadAh = await this.getCommentThread();
+    this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
+      console.log("<create-post-panel> startPublishFile callback", eh);
+      let ah = this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, commentThreadAh);
+      this._splitObj = undefined;
+      //this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
+    });
+    console.log("onUploadComment()", this._splitObj);
   }
 
 
   /** */
-  async onHrlComment() {
-    const maybeWal = await this.weServices.userSelectWal();
-    if (!maybeWal) {
-      return;
-    }
-    console.log("onHrlComment()", weaveUrlFromWal(maybeWal), maybeWal);
+  async onHrlComment(wal: WAL) {
+    console.log("onHrlComment()", weaveUrlFromWal(wal), wal);
     const commentThreadAh = await this.getCommentThread();
     // TODO: make sure hrl is an entryHash
-    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, commentThreadAh);
+    /*let ah =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, wal, commentThreadAh);
   }
 
 

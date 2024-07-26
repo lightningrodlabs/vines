@@ -1,5 +1,6 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
+import {consume} from "@lit/context";
 
 import Popover from "@ui5/webcomponents/dist/Popover";
 
@@ -14,6 +15,9 @@ import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 import {msg} from "@lit/localize";
 import {AgentId} from "@ddd-qc/lit-happ";
 import {VinesInputEvent} from "../events";
+import {weClientContext} from "../contexts";
+import {WeServicesEx} from "@ddd-qc/we-utils";
+import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 
 
 /**
@@ -33,6 +37,10 @@ export class InputBar extends LitElement {
 
   @state() private _cacheInputValue: string = "";
   @state() private _file: File = undefined;
+  @state() private _wal: WAL = undefined;
+
+  @consume({ context: weClientContext, subscribe: true })
+  weServices!: WeServicesEx;
 
 
   /** -- Getters -- */
@@ -118,14 +126,12 @@ export class InputBar extends LitElement {
 
   /** */
   private commitInput() {
-    // if (!this.inputElem.value || this.inputElem.value.length == 0) {
-    //   return;
-    // }
     console.log(`Commit input value "${this.inputElem.value}"`);
-    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value, file: this._file}, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value, file: this._file, wal: this._wal}, bubbles: true, composed: true}));
     this.inputElem.value = "";
     this._cacheInputValue = "";
     this._file = undefined;
+    this._wal = undefined;
   }
 
 
@@ -345,26 +351,39 @@ export class InputBar extends LitElement {
       `;
     }
 
+    let walElem = html``;
+    if (this._wal) {
+      walElem = html`
+          <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
+              <wurl-link wurl="${weaveUrlFromWal(this._wal)}">
+              <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
+                          @click=${(_e) => this._wal = undefined}></ui5-button>
+          </div>
+      `;
+    }
 
     /** render all */
     return html`
         ${fileElem}
+        ${walElem}
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
             ${this.showHrlBtn? html`
             <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
-                        @click=${(e) => {this.dispatchEvent(new CustomEvent('grab_hrl', {detail: null, bubbles: true, composed: true}));}}>
+                        @click=${async (e) => {
+                            this._wal = await this.weServices.userSelectWal();
+                        }}>
             </ui5-button>` : html``}
             ${this.showFileBtn? html`
             <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
-                        @click=${(e) => {
+                        @click=${(_e) => {
                           let input = document.createElement('input');
                           input.type = 'file';
                           input.onchange = (e:any) => {this._file = e.target.files[0];}
                           input.click();
                         }}>
             </ui5-button>` : html``}
-            <!--<div style="min-width:20px; min-height:20px; background:red;">${this.cachedInput}</div>-->
+            <!-- TEXT AREA -->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
                           placeholder="Message #${this.topic}, @ to mention"
                           growing
