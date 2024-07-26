@@ -419,15 +419,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
-
-    this._replyToAh = undefined;
-    this.selectedBeadAh = undefined;
-
-    // /** DEBUG */
-    // if (this.weServices) {
-    //   const entryInfo = await this.weServices.entryInfo([decodeHashFromBase64(this.cell.dnaHash), decodeHashFromBase64(ah)]);
-    //   console.log("entryInfo2", this.cell.dnaHash, entryInfo);
-    // }
+    this._replyToAh = ah;
   }
 
 
@@ -455,9 +447,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this.selectedThreadHash, undefined, this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
-
-    this._replyToAh = undefined;
-    this.selectedBeadAh = undefined;
+    //return ah;
+    this._replyToAh = ah;
   }
 
 
@@ -796,11 +787,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page> startPublishFile callback", eh);
       let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
       console.log("onCreateFileMessage() ah", ah);
-      //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
-
       this._splitObj = undefined;
-      this._replyToAh = undefined;
-      this.selectedBeadAh = undefined;
     });
     console.log("onCreateFileMessage()", this._splitObj);
   }
@@ -992,8 +979,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              @input=${async (e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
-                               if (e.detail.file) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);
                                if (e.detail.wal) await this.onCreateHrlMessage(e.detail.wal);
+                               if (e.detail.file) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);                               
+                               this._replyToAh = undefined;
+                               this.selectedBeadAh = undefined;
                              }}
             ></vines-input-bar>`
             }

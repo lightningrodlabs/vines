@@ -275,21 +275,27 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
-    /** Determine the comment button to display depending on current comments for this message */
+    /** hide if prevBead is closer than a minute and same author */
+    let hidemeta = false;
+    if (this.prevBeadAh) {
+      const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
+      const diff = beadInfo.creationTime - prevInfo.creationTime
+      hidemeta = beadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000;
+    }
     let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
+    const itemClass = hidemeta? "" : "innerItem";
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-      item = html`<chat-text class="innerItem" .hash=${this.hash}></chat-text>`;
+      item = html`<chat-text class="${itemClass}" .hash=${this.hash}></chat-text>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
-      item = html`<chat-file class="innerItem" .hash=${this.hash}></chat-file>`;
+      item = html`<chat-file class="${itemClass}" .hash=${this.hash}></chat-file>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
-      item = html`<chat-wal class="innerItem" .hash=${this.hash}></chat-wal>`;
+      item = html`<chat-wal class="${itemClass}" .hash=${this.hash}></chat-wal>`;
     }
-
+    /** Determine the comment button to display depending on current comments for this message */
     const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
-
     //let isUnread = false;
     let commentThread = html``;
     let commentButton = html`
@@ -388,8 +394,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
-    const id = "chat-item__" + this.hash.b64;
-
     const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author);
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
@@ -398,9 +402,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     return html`
       <div id="innerChatItem">
         <!-- Vine row -->
-        ${this.renderTopVine(beadInfo)}
+        ${hidemeta? html`` : this.renderTopVine(beadInfo)}
         <!-- main horizontal div (row) -->
-        <div id=${id} class="chatItem"
+        <div id=${"chat-item__" + this.hash.b64} class="chatItem"
              @mouseenter=${(e) => {
                  const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
                  const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
@@ -420,7 +424,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                       e.stopPropagation();
                       this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
                     }}>
-              ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
+              ${hidemeta? html`` : renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
                   <div style="flex-grow:1;"></div>
                   <div class="vine"></div>
@@ -429,8 +433,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <!-- message column -->
             <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto">
                 <div id="nameRow" style="display:flex; flex-direction:row;">
-                    <span id="agentName">${agentName}</span>
-                    <span class="chatDate"> ${date_str}</span>
+                    ${hidemeta? html`` : html`
+                        <span id="agentName">${agentName}</span>
+                        <span class="chatDate"> ${date_str}</span>
+                    `}
                     <span style="flex-grow: 1"></span>
                     <span id="nameEnd" style="width:10px"></span>
                 </div>
@@ -572,16 +578,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .innerItem {
-          /*margin: 10px 5px 10px 5px;*/
           margin-top: 5px;
           margin-bottom: 10px;
         }
-
+        
         .chatItem {
           display: flex;
           flex-direction: row;
           gap: 18px;
-          min-height: 55px;
+          /*min-height: 55px;*/
           margin: 0px 5px 0px 5px;
           overflow: auto;
         }

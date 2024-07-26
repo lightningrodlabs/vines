@@ -281,8 +281,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           min-width: 350px;
           max-width: 600px;
           border-radius: 10px;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px, rgba(0, 0, 0, 0.22) 0px 8px 5px;
           /*margin: 10px 5px 10px 5px;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          margin-bottom: 10px;
         }
 
         #fileLi {
@@ -306,7 +307,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           /*max-width: 440px;*/
           /*overflow: auto;*/
           /*outline: rgb(172, 172, 172) solid 1px;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 3px, rgba(0, 0, 0, 0.22) 0px 4px 6px;
 
         }
 
