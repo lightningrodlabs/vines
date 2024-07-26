@@ -27,7 +27,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of File bead to display */
   @property() hash?: ActionId; // BeadAh
-  @state() private _dataHash?: FileHashB64;
+  //@state() private _dataHash?: FileHashB64;
 
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -106,7 +106,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         this._maybeFile = null;
       }
     } catch(e) {
-      console.warn("Loading file failed:", this.hash, e);
+      console.warn("Loading file failed:", this.hash.b64, e);
       this._loading = false;
       this._maybeFile = null;
     }
@@ -133,8 +133,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`
           <ui5-list id="fileList">
               <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
-                      @click=${async (e) => this.loadFile()}>
-                  Missing File
+                      @click=${async (_e) => this.loadFile()}>
+                  ${msg('Missing File')}
               </ui5-li>
           </ui5-list>`;
     }
@@ -149,8 +149,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       //return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
       return html`
         <ui5-list id="fileList">
-          <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh}
-                  @click=${async (e) => {
+          <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh.b64}
+                  @click=${async (_e) => {
                       await this._filesDvm.deliveryZvm.probeDht();
                       const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
                       if (fileTuple) {
@@ -162,14 +162,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         </ui5-list>`;
     }
     const fileDesc = filePprm.description;
-
-
     const fileType = kind2Type(fileDesc.kind_info);
 
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(e) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty("File downloaded: " + fileDesc.name);}}>
+                  @click=${(e) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
             ${fileDesc.name}
           </ui5-li>
         </ui5-list>`;
@@ -223,7 +221,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           item = html`
                         <audio class="preview Audio" controls>
                             <source src=${this._maybeBlobUrl} type=${mime}>
-                            Your browser does not support the audio element.
+                            ${msg("Your browser does not support the audio element.")}
                         </audio>
                     `;
           break;
@@ -232,7 +230,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           item = html`
                         <video class="preview Video" controls>
                             <source src=${this._maybeBlobUrl} type=${mime}>
-                            Your browser does not support the video element.
+                            ${msg("Your browser does not support the video element.")}
                         </video>
                     `;
           break;

@@ -404,17 +404,22 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
              @mouseenter=${(e) => {
                  const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
                  const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
-                 popover.showAt(anchor);
+                 if (popover && anchor) {
+                     popover.showAt(anchor);
+                 }
               }}
              @mouseleave=${(e) => {
                const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
-               popover.close();
+                 if (popover) {
+                   popover.close();
+                 }
              }}>
             <!-- avatar column -->
             <div id="avatarColumn" style="display: flex; flex-direction: column; width:48px;"
                     @click=${(e) => {
                       e.stopPropagation();
-                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                    }}>
               ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
                   <div style="flex-grow:1;"></div>
@@ -434,9 +439,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <!-- Popovers -->
             <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
-            <ui5-popover id="emojiPopover" header-text="Add Reaction">
-                <emoji-picker id="emoji-picker" class="light"
-                              style="display: block"
+            <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
+                <emoji-picker class="light" style="display: block"
                               @emoji-click=${(event) => {
                                   const unicode = event?.detail?.unicode
                                   console.log("emoji-click: " + unicode)
@@ -450,7 +454,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                               }}></emoji-picker>
             </ui5-popover>
             <ui5-menu id="moreMenu" @item-click=${this.onMoreMenu}>
-                <ui5-menu-item id="addReaction" text=${msg("Add Reaction")} icon="feedback"></ui5-menu-item>
+                <ui5-menu-item id="addReaction" icon="feedback" text=${msg("Add Reaction")} ></ui5-menu-item>
                 ${isFavorite
                         ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>`
                         : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
@@ -459,9 +463,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
                         : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
                 }
-                <ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link"></ui5-menu-item>
-                <ui5-menu-item id="copyText" disabled text=${msg("Copy Text")} icon="copy"></ui5-menu-item>
-                <ui5-menu-item id="flagMessage" disabled text=${msg("Report Message")} icon="flag"></ui5-menu-item>
+                <ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>
+                <ui5-menu-item id="copyText" disabled icon="copy" text=${msg("Copy Text")}></ui5-menu-item>
+                <ui5-menu-item id="flagMessage" disabled icon="flag" text=${msg("Report Message")}></ui5-menu-item>
 
             </ui5-menu>
         </div>

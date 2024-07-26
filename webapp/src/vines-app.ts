@@ -82,8 +82,8 @@ export class VinesApp extends HappElement {
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
-  @state() private _maybeSelectedThreadAh?: ActionId;
-  @state() private _maybeSelectedBeadAh?: ActionId;
+  @state() private _maybeSelectedThreadAh: ActionId = undefined;
+  @state() private _maybeSelectedBeadAh: ActionId = undefined;
 
 
   /** -- We-applet specifics -- */
@@ -308,7 +308,7 @@ export class VinesApp extends HappElement {
         }
       } else {
         this._maybeSelectedThreadAh = new ActionId(e.detail.address.b64);
-        delete this._maybeSelectedBeadAh;
+        this._maybeSelectedBeadAh = undefined;
       }
     }
     if (e.detail.type == JumpDestinationType.Bead) {

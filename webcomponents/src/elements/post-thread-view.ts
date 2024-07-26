@@ -124,7 +124,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Scroll the list container to the requested bead */
     if (this.beadAh) {
       //console.log("<post-thread-view>.updated()", this.beadAh)
-      const item = this.shadowRoot.getElementById(`${this.beadAh}`);
+      const item = this.shadowRoot.getElementById(`${this.beadAh.b64}`);
       if (item) {
         const scrollY = item.offsetTop - this.offsetTop;
         this.scrollTo({ top: scrollY, behavior: 'smooth' });

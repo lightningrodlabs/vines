@@ -290,11 +290,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _listerToShow: string | null = null;
 
   @state() private _canViewArchivedSubjects = false;
-  @state() private _currentCommentRequest?: CommentRequest;
+  @state() private _currentCommentRequest: CommentRequest = undefined;
 
-  @state() private _splitObj?: SplitObject;
+  @state() private _splitObj: SplitObject = undefined;
 
-  @state() private _replyToAh?: ActionId;
+  @state() private _replyToAh: ActionId = undefined;
 
 
   //private _threadNames: ActionIdMap<string> = new ActionIdMap();
@@ -359,8 +359,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   const groupProfile = await this.weServices.groupProfile(decodeHashFromBase64(newDvm.cell.dnaHash));
     //   console.log("dvmUpdated() groupProfile", groupProfile);
     // }
-    delete this.selectedThreadHash;
-    delete this.selectedBeadAh;
+    this.selectedThreadHash = undefined;
+    this.selectedBeadAh = undefined;
     this._listerToShow = newDvm.cell.address.dnaId.b64;
   }
 
@@ -420,8 +420,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
 
-    delete this._replyToAh;
-    delete this.selectedBeadAh;
+    this._replyToAh = undefined;
+    this.selectedBeadAh = undefined;
 
     // /** DEBUG */
     // if (this.weServices) {
@@ -437,8 +437,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const otherAgent = sub.hash;
     let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
     console.log("onDmTextMessage() ah", beadAh, this._dvm.threadsZvm.perspective.threads);
-    delete this._replyToAh;
-    delete this.selectedBeadAh;
+    this._replyToAh = undefined;
+    this.selectedBeadAh = undefined;
     //await delay(1000);
     this.dispatchEvent(beadJumpEvent(beadAh));
   }
@@ -457,8 +457,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage() ah", ah);
     //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
 
-    delete this._replyToAh;
-    delete this.selectedBeadAh;
+    this._replyToAh = undefined;
+    this.selectedBeadAh = undefined;
   }
 
 
@@ -803,9 +803,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         console.log("onCreateFileMessage() ah", ah);
         //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
-        delete this._splitObj;
-        delete this._replyToAh;
-        delete this.selectedBeadAh;
+        this._splitObj = undefined;
+        this._replyToAh = undefined;
+        this.selectedBeadAh = undefined;
       });
       console.log("onCreateFileMessage()", this._splitObj);
     }
@@ -984,7 +984,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
             <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}">
-                Replying to ${maybeReplyAuthorName}
+                ${msg("Replying to")} ${maybeReplyAuthorName}
                 <div style="flex-grow: 1"></div>
                 <ui5-button icon="decline" design="Transparent"
                             style="border:none; padding:0px"
