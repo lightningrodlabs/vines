@@ -2,6 +2,14 @@ import {NotifiableEvent} from "./viewModels/threads.materialize";
 import {ActionId, DhtId, EntryId, LinkableId} from "@ddd-qc/lit-happ";
 import {AgentId} from "@ddd-qc/cell-proxy";
 import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads.types";
+import {WAL} from "@lightningrodlabs/we-applet";
+
+
+export interface VinesInputEvent {
+  text?: string,
+  file?: File,
+  wal?: WAL,
+}
 
 
 /** */

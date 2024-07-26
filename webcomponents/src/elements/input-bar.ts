@@ -13,6 +13,7 @@ import {renderAvatar} from "../render";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 import {msg} from "@lit/localize";
 import {AgentId} from "@ddd-qc/lit-happ";
+import {VinesInputEvent} from "../events";
 
 
 /**
@@ -31,6 +32,7 @@ export class InputBar extends LitElement {
   @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
+  @state() private _file: File = undefined;
 
 
   /** -- Getters -- */
@@ -116,14 +118,16 @@ export class InputBar extends LitElement {
 
   /** */
   private commitInput() {
-    if (!this.inputElem.value || this.inputElem.value.length == 0) {
-      return;
-    }
+    // if (!this.inputElem.value || this.inputElem.value.length == 0) {
+    //   return;
+    // }
     console.log(`Commit input value "${this.inputElem.value}"`);
-    this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value, file: this._file}, bubbles: true, composed: true}));
     this.inputElem.value = "";
     this._cacheInputValue = "";
+    this._file = undefined;
   }
+
 
 
   /** */
@@ -330,8 +334,21 @@ export class InputBar extends LitElement {
     }
 
 
+    let fileElem = html``;
+    if (this._file) {
+      fileElem = html`
+          <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
+              File: ${this._file.name}
+              <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
+                          @click=${(_e) => this._file = undefined}></ui5-button>
+          </div>
+      `;
+    }
+
+
     /** render all */
     return html`
+        ${fileElem}
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
             ${this.showHrlBtn? html`
@@ -340,7 +357,12 @@ export class InputBar extends LitElement {
             </ui5-button>` : html``}
             ${this.showFileBtn? html`
             <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
-                        @click=${(e) => {this.dispatchEvent(new CustomEvent('upload', {detail: null, bubbles: true, composed: true}));}}>
+                        @click=${(e) => {
+                          let input = document.createElement('input');
+                          input.type = 'file';
+                          input.onchange = (e:any) => {this._file = e.target.files[0];}
+                          input.click();
+                        }}>
             </ui5-button>` : html``}
             <!--<div style="min-width:20px; min-height:20px; background:red;">${this.cachedInput}</div>-->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
@@ -373,9 +395,9 @@ export class InputBar extends LitElement {
 
         #pop {
           /*background: #e3e3e3;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;       
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
-        
+
         #inputBar {
           width: auto;
           height: auto;
@@ -388,6 +410,18 @@ export class InputBar extends LitElement {
           width: 100%;
           border: none;
           padding: 0px;
+        }
+
+        .trash {
+          color: #ec4b7a;
+          padding: 0px;
+          margin: 0px;
+          height: 20px;
+        }
+
+        .trash:hover {
+          background-color: rgba(243, 175, 175, 0.6);
+          border-color: #ec0e0e;
         }
 
         .ui5-textarea-wrapper

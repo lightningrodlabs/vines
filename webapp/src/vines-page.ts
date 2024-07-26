@@ -162,7 +162,7 @@ import {
   ThreadsDvm,
   ThreadsEntryType,
   ThreadsPerspective,
-  toasty,
+  toasty, VinesInputEvent,
   weaveUrlToWal,
   weClientContext,
 } from "@vines/elements";
@@ -787,29 +787,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onCreateFileMessage(ppAh: ActionId) {
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = async (e:any) => {
-      console.log("target upload file", e);
-      const file = e.target.files[0];
-      // if (file.size > this._dvm.dnaProperties.maxParcelSize) {
-      //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
-      //   return;
-      // }
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
-        console.log("<vines-page> startPublishFile callback", eh);
-        let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
-        console.log("onCreateFileMessage() ah", ah);
-        //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
+  async onCreateFileMessage(ppAh: ActionId, file: File) {
+    console.log("onCreateFileMessage()", file.name);
+    // if (file.size > this._dvm.dnaProperties.maxParcelSize) {
+    //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
+    //   return;
+    // }
+    this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
+      console.log("<vines-page> startPublishFile callback", eh);
+      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
+      console.log("onCreateFileMessage() ah", ah);
+      //await this._dvm.threadsZvm.notifyIfDmThread(ppAh, ah);
 
-        this._splitObj = undefined;
-        this._replyToAh = undefined;
-        this.selectedBeadAh = undefined;
-      });
-      console.log("onCreateFileMessage()", this._splitObj);
-    }
-    input.click();
+      this._splitObj = undefined;
+      this._replyToAh = undefined;
+      this.selectedBeadAh = undefined;
+    });
+    console.log("onCreateFileMessage()", this._splitObj);
   }
 
 
@@ -996,8 +990,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              .cachedInput=${this.perspective.threadInputs.get(this.selectedThreadHash)? this.perspective.threadInputs.get(this.selectedThreadHash) : ""}
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
-                             @input=${(e) => {e.preventDefault(); this.onCreateTextMessage(e.detail)}}
-                             @upload=${(e) => {e.preventDefault(); this.onCreateFileMessage(this.selectedThreadHash)}}
+                             @input=${async (e: CustomEvent<VinesInputEvent>) => {
+                               e.stopPropagation(); e.preventDefault(); 
+                               if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
+                               if (e.detail.file) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);
+                             }}
                              @grab_hrl=${async (e) => {e.preventDefault(); this.onCreateHrlMessage()}}
             ></vines-input-bar>`
             }
@@ -1197,7 +1194,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         popover.showAt(btn);
                     }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${groupProfile.name}</div>
-                        <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>${networkInfo? networkInfo.total_network_peers : 1} Members</div>
+                        <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
+                            ${networkInfo? networkInfo.total_network_peers : 1} ${msg('Members')}
+                        </div>
                     </div>
                     <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
                                 design="Transparent" icon="navigation-down-arrow"

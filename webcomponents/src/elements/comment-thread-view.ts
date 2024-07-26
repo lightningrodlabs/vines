@@ -16,7 +16,7 @@ import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../contexts";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
-import {beadJumpEvent, SpecialSubjectType, threadJumpEvent} from "../events";
+import {beadJumpEvent, SpecialSubjectType, threadJumpEvent, VinesInputEvent} from "../events";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
@@ -183,14 +183,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  async onCreateComment(inputText: string) {
+  async onCreateComment(e: VinesInputEvent) {
     const thread = this.threadsPerspective.threads.get(this.threadHash);
     if (!thread) {
       console.error("Missing Comment thread");
       return;
     }
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, this.threadHash, this.cell.address.agentId);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash, this.cell.address.agentId);
     console.log("onCreateComment() ah:", ah);
   }
 

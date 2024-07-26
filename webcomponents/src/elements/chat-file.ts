@@ -222,7 +222,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     console.log("<chat-file>.render() type:", this._manifest.description.name, fileType, mime, !!this._file);
 
     /** this._file is set only for small files */
-    if (this._file != null) {
+    if (this._file != null && this._maybeBlobUrl) {
       switch (fileType) {
         // case FileType.Text:
         //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
