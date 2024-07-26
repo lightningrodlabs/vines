@@ -7,6 +7,7 @@ import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
 import {AgentId} from "@ddd-qc/lit-happ";
+import {beadJumpEvent, JumpEvent, threadJumpEvent} from "./events";
 
 
 
@@ -40,7 +41,7 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
     //console.log("renderAvatar()", initials, avatarUrl);
     return avatarUrl? html`
               <ui5-avatar size=${size} class=${classArg} slot=${slot}>
-                  <img src=${avatarUrl}>
+                  <img src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>
             `: html`
               <ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
@@ -51,11 +52,13 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
 
 
 /** Return [notifTitle, notifBody] */
-export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
+export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string, CustomEvent<JumpEvent>] {
     let title: string = "";
     let content: string = "";
+    let jump: CustomEvent<JumpEvent>;
     const ah = notif.content;
     if (NotifiableEvent.Mention === notif.event) {
+        jump = beadJumpEvent(ah);
         const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         if (!beadInfo) {
             title = "Mention in thread";
@@ -69,6 +72,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         }
     }
     if (NotifiableEvent.NewBead === notif.event) {
+      jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
       if (!beadInfo) {
         title = "New message in thread";
@@ -88,6 +92,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
       }
     }
     if (NotifiableEvent.Reply === notif.event) {
+      jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         if (!beadInfo) {
             title = "Reply in thread";
@@ -101,6 +106,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         }
     }
     if (NotifiableEvent.Fork === notif.event) {
+        jump = threadJumpEvent(ah);
         const maybeThread = threadsZvm.perspective.threads.get(ah);
         if (!maybeThread)  {
             title = "New thread";
@@ -115,7 +121,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
     if (NotifiableEvent.NewDmThread === notif.event) {
       title = "New DM thread";
     }
-    return [title, content];
+    return [title, content, jump];
 }
 
 

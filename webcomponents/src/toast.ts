@@ -1,5 +1,6 @@
 import Toast from "@ui5/webcomponents/dist/Toast";
-import {html} from "lit";
+import {html, LitElement, render} from "lit";
+import {JumpEvent} from "./events";
 
 
 // /** */
@@ -15,25 +16,37 @@ import {html} from "lit";
 
 
 /** Emit toast notifications */
-export function toasty(title: string, icon = 'message-success', placement = "TopCenter", duration = 3500/*, extraHtml = ""*/) {
+export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent?: LitElement/*, extraHtml = ""*/) {
+    const placement = "TopCenter";
+    const duration = 3500
+
+    /** Delete previous toast elements */
     const prevToasts = document.querySelectorAll("ui5-toast");
     console.log("prevToasts:", prevToasts.length);
-    //for (const prevToast of prevToasts) { };
-    prevToasts.forEach((prevToast) => {prevToast.remove()})
-    //         ${extraHtml}
+    prevToasts.forEach((prevToast) => {prevToast.remove()});
+
+    /** Create toast element */
     const toastElem: Toast = Object.assign(document.createElement('ui5-toast'), {
         // id
         style: "background:red;",
         placement,
         duration,
-        innerHTML: `
-        <div style="display:flex;flex-direction: row; gap:10px;margin:0px; padding:0px;white-space: pre-wrap;">
-            <ui5-icon name="${icon}"></ui5-icon>
-            <strong>${escapeHtml(title)}</strong>
-        </div>   
-      `
     }) as unknown as Toast;
 
+    /** Render innerHtml */
+    const litHtml = html`
+        <div style="display:flex; flex-direction:row; gap:10px; margin:0px; padding:0px; white-space:pre-wrap; cursor:pointer"
+             @click=${(_e) => {
+        //console.log("Toasty jump", jumpEvent, parent);
+        // FIXME: this make holochain break for some reason. Need to investigate
+        //if (jumpEvent) parent.dispatchEvent(jumpEvent);
+    }}>
+            <strong>${escapeHtml(title)}</strong>
+        </div>   
+      `;
+    render(litHtml, toastElem);
+
+    /** Add to document */
     document.body.append(toastElem);
     return toastElem.show();
 }

@@ -69,7 +69,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
       ([linkAh, [_ppAh, notif]]) => {
 
         /** Content */
-        const [notifTitle, notifBody] = this.feed
+        const [notifTitle, notifBody, _jump] = this.feed
           ? composeFeedNotificationTitle(notif, this._dvm, this.filesDvm, this.weServices)
           : composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.weServices);
 

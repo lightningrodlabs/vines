@@ -579,14 +579,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
-      const [notifTitle, notifBody] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
+      const [notifTitle, notifBody, jump] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
       let message = `from @${author}.` ;
       if (notifBody != "") {
         message = `"${notifBody}" from @${author}.`; // | ${date_str}`;
       }
       /** in-app toast */
       if (canPopup) {
-        toasty(notifTitle + " " + message);
+        toasty(notifTitle + " " + message, jump, this);
       }
       /** We Notification */
       if (this.weServices) {
