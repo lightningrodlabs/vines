@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, delay, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, delay, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {consume} from "@lit/context";
 import {globaFilesContext} from "../contexts";
@@ -26,41 +26,40 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of File bead to display */
-  @property() hash?: ActionId; // BeadAh
+  @property() hash: ActionId; // BeadAh
   //@state() private _dataHash?: FileHashB64;
 
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @state() private _loading = true;
-  @state() private _manifest?: ParcelManifest = undefined;
-           private _maybeFile: File | null = null;
-           private _maybeBlobUrl?: string = undefined;
+  @state() private _manifest: ParcelManifest = undefined;
+           private _file: File | null = null;
+           private _maybeBlobUrl: string = undefined;
+           private _canRetry = true;
 
 
   /** -- Methods -- */
 
-  /** Don't update during online loading */
+  /** */
   shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<chat-file>.shouldUpdate()", changedProperties, this.hash);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;
     }
-    /** */
-    if (changedProperties.has("hash")) {
-      /* await */ this.loadFile();
+    /** Load file when hash changed */
+    if (changedProperties.has("hash") || !this._manifest) {
+      this._canRetry = true;
+      /* await */ this.loadFileData();
     }
     return true;
   }
 
 
   /** */
-  private async loadFile() {
-    console.log("<chat-file>.loadFile()", this.hash);
-    if (!this.hash || !this._filesDvm) {
-      return;
-    }
+  private async loadFileData() {
+    console.log("<chat-file>.loadFile()", !!this._filesDvm, this.hash);
     this._loading = true;
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
     if (!entryBead) {
@@ -69,95 +68,114 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     try {
       const manifestEh = entryBead.sourceEh;
-      console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
+      console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash.short);
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
-      console.log(`<chat-file>.loadFile() ${this.hash.short}: ${this._manifest.description.size} < ${this._filesDvm.dnaProperties.maxChunkSize}?`, this._manifest, this._maybeFile);
-      if (this._manifest && this._manifest.description.size < this._filesDvm.dnaProperties.maxChunkSize) {
-        const mime = kind2mime(this._manifest.description.kind_info);
-        const fileType = kind2Type(this._manifest.description.kind_info);
-        console.log("<chat-file>.loadFile() fileType", fileType);
-        if (fileType == "Binary" || fileType == "Zip" || fileType == "Other") {
-            this._loading = false;
-            this._maybeFile = null;
-            return;
-        }
-        const data = await this._filesDvm.deliveryZvm.fetchParcelData(manifestEh);
-        console.log("<chat-file>.loadFile() data", data.length);
-        this._maybeFile = this._filesDvm.data2File(this._manifest, data);
-        const reader = new FileReader();
-        if (this._maybeBlobUrl) {
-          URL.revokeObjectURL(this._maybeBlobUrl);
-          this._maybeBlobUrl = undefined;
-        }
-        //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
-        reader.onload = (event) => {
-          console.log("FileReader onload", event, mime)
-          //this._maybeDataUrl = event.target.result;
-          const blob = new Blob([event.target.result], {type: mime});
-          this._maybeBlobUrl = URL.createObjectURL(blob);
-          console.log("FileReader blob", blob, this._maybeBlobUrl)
-          //this.requestUpdate();
-          this._loading = false;
-        };
-        //reader.readAsDataURL(this._maybeFile);
-        reader.readAsArrayBuffer(this._maybeFile);
-      } else {
+      if (!this._manifest || this._manifest.description.size > this._filesDvm.dnaProperties.maxChunkSize) {
         this._loading = false;
-        this._maybeFile = null;
+        this._file = null;
+        return;
       }
+      const fileType = kind2Type(this._manifest.description.kind_info);
+      console.log("<chat-file>.loadFile() fileType", fileType);
+      if (fileType == "Binary" || fileType == "Zip" || fileType == "Other") {
+          this._loading = false;
+          this._file = null;
+          return;
+      }
+      this._file = (await this._filesDvm.fetchFile(manifestEh))[1];
+      /** Set _maybeBlobUrl */
+      const reader = new FileReader();
+      if (this._maybeBlobUrl) {
+        URL.revokeObjectURL(this._maybeBlobUrl);
+        this._maybeBlobUrl = undefined;
+      }
+      //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
+      const mime = kind2mime(this._manifest.description.kind_info);
+      reader.onload = (event) => {
+        console.log("FileReader onload", event, mime)
+        //this._maybeDataUrl = event.target.result;
+        const blob = new Blob([event.target.result], {type: mime});
+        this._maybeBlobUrl = URL.createObjectURL(blob);
+        console.log("FileReader blob", blob, this._maybeBlobUrl)
+        //this.requestUpdate();
+        this._loading = false;
+      };
+      //reader.readAsDataURL(this._maybeFile);
+      reader.readAsArrayBuffer(this._file);
     } catch(e) {
       console.warn("Loading file failed:", this.hash.b64, e);
       this._loading = false;
-      this._maybeFile = null;
+      this._file = null;
     }
   }
 
 
+  // /** */
+  // protected /*async*/ firstUpdated(_changedProperties: PropertyValues) {
+  //   super.firstUpdated(_changedProperties);
+  //   /*await*/ this.loadFileData();
+  // }
+
+
   /** */
-  protected /*async*/ firstUpdated(_changedProperties: PropertyValues) {
-    super.firstUpdated(_changedProperties);
-    /*await*/ this.loadFile();
+  protected async probeForFileManifest(manifestEh: EntryId, delayMs?: number) {
+    console.log("probeForFile()", manifestEh.short)
+    if (delayMs) {
+      await delay(delayMs);
+    }
+    await this._filesDvm.deliveryZvm.probeDht();
+    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
+    if (fileTuple) {
+      await this.loadFileData();
+    }
+    this.requestUpdate();
   }
 
 
   /** */
   render() {
-    console.log("<chat-file>.render()", this.hash, this._loading, this._manifest, this._maybeFile /*this._dataHash*/);
+    console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file /*this._dataHash*/);
     if (!this.hash) {
-      return html`<div style="color:#c10a0a">${msg("No file selected")}</div>`;
+      return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
     }
     if (this._loading) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active></ui5-busy-indicator>`;
     }
-    if (!this._loading && !this._manifest) {
+    if (!this._manifest) {
       return html`
           <ui5-list id="fileList">
               <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
-                      @click=${async (_e) => this.loadFile()}>
-                  ${msg('Missing File')}
+                      @click=${async (e) => {
+                          e.stopPropagation(); e.preventDefault();
+                          await this.probeForFileManifest(manifestEh);
+                      }}>
+                  ${msg('Unknown File')}
               </ui5-li>
           </ui5-list>`;
     }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
     //console.log("<chat-file>.render() entryBead", entryBead);
     if (!entryBead) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
     }
     const manifestEh = entryBead.sourceEh;
     const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
     if (!filePprm) {
-      //return html`<ui5-busy-indicator size="Large" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      /** Retry once */
+      if (this._canRetry) {
+        this._canRetry = false;
+        this.probeForFileManifest(manifestEh, 1000);
+        return html`
+            <ui5-busy-indicator delay="0" size="Medium" active style="color:#f61933"></ui5-busy-indicator>`;
+      }
       return html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh.b64}
-                  @click=${async (_e) => {
-                      await this._filesDvm.deliveryZvm.probeDht();
-                      const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
-                      if (fileTuple) {
-                          this.requestUpdate();
-                      }
+                  @click=${async (e) => {
+                      e.stopPropagation(); e.preventDefault();
+                      await this.probeForFileManifest(manifestEh);
                   }}>
-            Missing File
+              ${msg('File data not found')}
           </ui5-li>
         </ui5-list>`;
     }
@@ -167,7 +185,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(e) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
+                  @click=${(_e) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
             ${fileDesc.name}
           </ui5-li>
         </ui5-list>`;
@@ -201,7 +219,10 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const mime = kind2mime(this._manifest.description.kind_info);
     //const fileType = kind2Type(this._manifest.description.kind_info);
 
-    if (this._maybeFile != null) {
+    console.log("<chat-file>.render() type:", this._manifest.description.name, fileType, mime, !!this._file);
+
+    /** this._file is set only for small files */
+    if (this._file != null) {
       switch (fileType) {
         // case FileType.Text:
         //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);

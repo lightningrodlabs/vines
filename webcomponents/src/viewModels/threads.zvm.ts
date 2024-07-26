@@ -1445,9 +1445,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const beadAh = pulse.ah;
     const typedMat = materializeTypedBead(typed, beadType);
     console.log("handleBeadEntry()", beadType, pulse.ah.short, typedMat);
-    /** Store Bead */;
+    /** Store Bead */
     await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, pulse.author, isNew);
-    /** Check if need to notify */;
+    /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
     if (isNew && this.cell.address.agentId.equals(from)) {
       /** Get base info */
