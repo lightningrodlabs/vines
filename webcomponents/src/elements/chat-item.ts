@@ -10,7 +10,7 @@ import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent, ShowProfileEvent} from "../events";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
 
@@ -24,6 +24,7 @@ import {determineBeadName} from "../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadInfo} from "../viewModels/threads.materialize";
+import {HoloHash} from "@holochain/client";
 
 
 /**
@@ -185,7 +186,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
       case "intoHrl":
-        const hrl: Hrl = [this.cell.address.dnaId.hash, this.hash.hash];
+        const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.hash);
         const wurl = weaveUrlFromWal({hrl});
         navigator.clipboard.writeText(wurl);
         if (this.weServices) {
@@ -549,6 +550,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         #prevBeadName {
           flex-grow: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         
         #prevBeadName:hover {

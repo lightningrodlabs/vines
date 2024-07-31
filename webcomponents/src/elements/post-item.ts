@@ -9,7 +9,7 @@ import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 
@@ -20,6 +20,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 import {toasty} from "../toast";
 import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
 import {ShowProfileEvent, VinesInputEvent} from "../events";
+import {HoloHash} from "@holochain/client";
 
 
 /**
@@ -138,7 +139,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   copyMessageLink() {
-    const hrl: Hrl = [this.cell.address.dnaId.hash, this.hash.hash];
+    const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.hash);
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {

@@ -4,8 +4,17 @@ import {consume} from "@lit/context";
 import {msg} from "@lit/localize";
 
 import {CreatableType} from "@lightningrodlabs/we-applet";
-import {ActionId, DhtId, EntryId, EntryIdMap, intoLinkableId, LinkableId, ZomeElement} from "@ddd-qc/lit-happ";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {
+  ActionId,
+  DhtId,
+  EntryId,
+  EntryIdMap,
+  intoDhtId,
+  intoLinkableId,
+  LinkableId,
+  ZomeElement
+} from "@ddd-qc/lit-happ";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -196,7 +205,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         console.warn("weServices not found in <applet-lister>")
       }
       /** Convert to TreeItem and append to Tree */
-      for (const [dnaHash, subjectHash] of subjects) {
+      for (const [dnaId, subjectHash] of subjects) {
         /* Skip if item already exists */
         if (currentChildren.includes(subjectHash.b64)) {
           continue;
@@ -205,9 +214,9 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         newItem.text = subjectHash.b64;
         if (this.weServices) {
           //const dnaHash = toggledTreeItem['dnaHash'];
-          console.log("calling weServices.assetInfo()", dnaHash, subjectHash);
+          console.log("calling weServices.assetInfo()", dnaId, subjectHash);
           try {
-            const assetLocInfo = await this.weServices.assetInfo({hrl: [dnaHash.hash, subjectHash.hash], context: null});
+            const assetLocInfo = await this.weServices.assetInfo({hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)), context: null});
             console.log("assetLocInfo", assetLocInfo);
             if (assetLocInfo) {
               newItem.text = assetLocInfo.assetInfo.name;

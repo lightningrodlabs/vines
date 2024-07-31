@@ -11,7 +11,8 @@ import {ppName, weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../events";
-import {localized} from "@lit/localize";
+import {localized, msg} from "@lit/localize";
+import {toasty} from "../toast";
 
 
 /**
@@ -31,7 +32,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    * Subscribe to ThreadsZvm
    */
   protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    //console.log("<wurl-link>.zvmUpdated()");
+    console.log("<wurl-link>.zvmUpdated()", !!newZvm);
     await this.loadWal(newZvm);
   }
 
@@ -47,9 +48,9 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-           private _vinesTypes?: string;
-           private _assetName?: string;
-  @state() private _appletName?: string;
+           private _vinesTypes: string = ""
+           private _assetName: string = ""
+  @state() private _appletName: string = ""
 
 
   /** Don't update during online loading */
@@ -57,10 +58,10 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //console.log("<wurl-link>.shouldUpdate()", changedProperties, this.wurl);
     const upper = super.shouldUpdate(changedProperties);
     /** */
-    if (changedProperties.has("wurl")) {
-      delete this._vinesTypes;
-      delete this._appletName;
-      delete this._assetName;
+    if (changedProperties.has("wurl") && this._zvm) {
+      this._vinesTypes = "";
+      this._appletName = "";
+      this._assetName = "";
       /* await */ this.loadWal(this._zvm);
     }
     return upper;
@@ -96,11 +97,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     try {
       const wal = weaveUrlToWal(this.wurl);
-      if (this.cell.address.dnaId.equals(wal.hrl[0])) {
+      if (this.cell.address.dnaId.equals(wal.hrl[0].bytes())) {
         this._appletName = "Vines";
         /** Determine entry */
-        const hash = new ActionId(wal.hrl[1]);
-        //console.log("<wurl-link> loadWal() hash", hash);
+        const hash = new ActionId(wal.hrl[1].bytes());
+        console.log("<wurl-link>.loadWal() hash", hash, threadsZvm);
         const maybeThread = threadsZvm.perspective.threads.get(hash);
         if (maybeThread) {
           this._assetName = maybeThread.name;
@@ -137,7 +138,19 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   renderBadLink() {
-    return html`<span style="color:#b50202">${this.wurl}</span>`;
+    return html`
+      <abbr .title=${this.wurl}>
+          <ui5-badge design="Set1" color-scheme="2" style="color:#b50202"
+          @click=${(_e) => {
+              navigator.clipboard.writeText(this.wurl);
+              if (this.weServices) {
+                  this.weServices.walToPocket(weaveUrlToWal(this.wurl));
+              }
+              toasty(("Copied WAL to clipboard"));
+          }}>
+            ${msg('Unknown HRL')}
+          </ui5-badge>
+      </abbr>`;
   }
 
 
@@ -158,12 +171,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return this.renderBadLink();
     }
 
-    const isThisDna = this.cell.address.dnaId.equals(wal.hrl[0]);
     let colorIdx = 6;
-    if (!isThisDna && !this.weServices) {
+    if (!this.cell.address.dnaId.equals(wal.hrl[0].bytes()) && !this.weServices) {
       colorIdx = 3;
     }
-    const hash = new ActionId(wal.hrl[1])
+    const hash = new ActionId(wal.hrl[1].bytes())
 
     /** render valid link */
     return html`

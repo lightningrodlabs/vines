@@ -44,7 +44,7 @@ export async function getAssetInfo(
     switch (pEntryType) {
         case ThreadsEntryType.TextBead:
             console.log("Feed/we-applet: TextBead", wal);
-            const tuple = await threadsProxy.fetchTextBead(wal.hrl[1]);
+            const tuple = await threadsProxy.fetchTextBead(wal.hrl[1].bytes());
             return {
                 icon_src: wrapPathInSvg(mdiCommentText),
                 name: tuple[2].value,
@@ -52,10 +52,10 @@ export async function getAssetInfo(
         break;
         case ThreadsEntryType.AnyBead:
             console.log("Feed/we-applet: AnyBead", wal);
-            const anyTuple = await threadsProxy.fetchAnyBead(wal.hrl[1]);
+            const anyTuple = await threadsProxy.fetchAnyBead(wal.hrl[1].bytes());
             const hrlBead = materializeAnyBead(anyTuple[2]);
             const wall = weaveUrlToWal(hrlBead.value);
-            const beadAh = new ActionId(wall.hrl[1])
+            const beadAh = new ActionId(wall.hrl[1].bytes())
             //const attLocInfo = weServices.getAttachableInfo(wall);
             return {
                 icon_src: wrapPathInSvg(mdiCommentBookmark),
@@ -67,7 +67,7 @@ export async function getAssetInfo(
             const fProxy = await asCellProxy(appletClient, undefined, mainAppInfo.installed_app_id, FILES_DEFAULT_ROLE_NAME);
             const filesProxy: FilesProxy = new FilesProxy(fProxy);
             console.log("Feed/we-applet: EntryBead filesProxy", filesProxy);
-            const fileTuple = await threadsProxy.fetchEntryBead(wal.hrl[1]);
+            const fileTuple = await threadsProxy.fetchEntryBead(wal.hrl[1].bytes());
             const manifest = await filesProxy.getFileInfo(fileTuple[2].sourceEh)
             //const fileBead = materializeEntryBead(fileTuple[2]);
             //const source = truncate(fileBead.sourceEh, 10, false);

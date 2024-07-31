@@ -6,7 +6,7 @@ import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, weClientContext} from "../../contexts";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {DnaElement, DnaId, enc64, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -14,6 +14,7 @@ import {determineSubjectName, weaveUrlToWal} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {SpecialSubjectType} from "../../events";
+import {HoloHash} from "@holochain/client";
 
 
 /** */
@@ -51,10 +52,10 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const hrlc = weaveUrlToWal(wurl);
       const attLocInfo = await this.weServices.assetInfo(hrlc);
       const subject: Subject = {
-        address: enc64(hrlc.hrl[1]),
+        address: enc64(hrlc.hrl[1].bytes()),
         typeName: SpecialSubjectType.Asset,
-        dnaHashB64: new DnaId(hrlc.hrl[0]).b64,
-        appletId: new EntryId(attLocInfo.appletHash).b64,
+        dnaHashB64: new DnaId(hrlc.hrl[0].bytes()).b64,
+        appletId: new EntryId(attLocInfo.appletHash.bytes()).b64,
       }
       const subject_name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
       console.log("@create event subject_name", subject_name);
@@ -66,7 +67,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {
-        hrl: [this._dvm.cell.address.dnaId.hash, ppAh.hash],
+        hrl: intoHrl(this._dvm.cell.address.dnaId, ppAh),
         context: pp.subject.address,
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))

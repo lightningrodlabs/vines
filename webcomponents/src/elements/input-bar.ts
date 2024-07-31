@@ -246,7 +246,7 @@ export class InputBar extends LitElement {
 
   /** */
   render() {
-    console.log("<vines-input-bar>.render()", this.cachedInput, this.profilesZvm);
+    console.log("<vines-input-bar>.render()", this.cachedInput, this._wal, this.profilesZvm);
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
@@ -355,7 +355,7 @@ export class InputBar extends LitElement {
     if (this._wal) {
       walElem = html`
           <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
-              <wurl-link wurl="${weaveUrlFromWal(this._wal)}">
+              <wurl-link wurl="${weaveUrlFromWal(this._wal)}"></wurl-link>
               <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
                           @click=${(_e) => this._wal = undefined}></ui5-button>
           </div>

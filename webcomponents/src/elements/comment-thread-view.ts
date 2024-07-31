@@ -325,20 +325,20 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   @click=${(_e) => {
                   console.log("<comment-thread-view> title click", thread.pp.subject);
                   /** Use subject as WAL */
-                  const wal: WAL = {hrl: [dec64(thread.pp.subject.dnaHashB64), dec64(thread.pp.subject.address)], context: null};
+                  const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
                   /** Jump within app if subject is from Vines */
                   if (this.cell.address.dnaId.equals(thread.pp.subject.dnaHashB64)) {
                       switch(thread.pp.subject.typeName) {
                           case SpecialSubjectType.AgentPubKey:
                           case SpecialSubjectType.ParticipationProtocol: 
-                            this.dispatchEvent(threadJumpEvent(new ActionId(wal.hrl[1]))); 
+                            this.dispatchEvent(threadJumpEvent(new ActionId(wal.hrl[1].bytes()))); 
                             return; 
                           break;
                           case SpecialSubjectType.AnyBead:
                           case SpecialSubjectType.TextBead:
                           case SpecialSubjectType.EncryptedBead:
                           case SpecialSubjectType.EntryBead:
-                            this.dispatchEvent(beadJumpEvent(new ActionId(wal.hrl[1]))); 
+                            this.dispatchEvent(beadJumpEvent(new ActionId(wal.hrl[1].bytes()))); 
                             return; 
                           break;
                           case SpecialSubjectType.Applet:

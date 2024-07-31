@@ -6,7 +6,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import {ActionId, AgentId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
 import {
   AnyBeadMat,
@@ -25,6 +25,7 @@ import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {ShowProfileEvent} from "../events";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {HoloHash} from "@holochain/client";
 
 
 /**
@@ -119,7 +120,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         const anyBead = typedBead as AnyBeadMat;
         if (anyBead.typeInfo === "wal" && this.weServices) {
           const wal = weaveUrlToWal(anyBead.value);
-          const assetHash = intoLinkableId(wal.hrl[1])
+          const assetHash = intoLinkableId(wal.hrl[1].bytes())
           const id = "wal-item" + "-" + assetHash.b64;
           const maybeInfo = this.weServices.assetInfoCached(wal);
           if (!maybeInfo) {
@@ -171,7 +172,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   copyMessageLink() {
-    const hrl: Hrl = [this.cell.address.dnaId.hash, this.hash.hash];
+    const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.hash);
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {

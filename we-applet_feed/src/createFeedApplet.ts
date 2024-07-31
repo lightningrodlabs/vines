@@ -63,7 +63,7 @@ export async function createFeedApplet(
       mainAppWs, undefined, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
       weServices,
-      new EntryId(appletViewInfo.appletHash),
+      new EntryId(appletViewInfo.appletHash.bytes()),
       appletViewInfo.view,
       );
   /** Done */

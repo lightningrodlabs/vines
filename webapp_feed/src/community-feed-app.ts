@@ -49,7 +49,7 @@ import {setLocale} from "./localization";
 import {localized, msg} from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
-import {AssetViewInfo, WeServicesEx} from "@ddd-qc/we-utils";
+import {AssetViewInfo, intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, BaseRoleName, CloneId} from "@ddd-qc/cell-proxy";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
@@ -351,7 +351,7 @@ export class CommunityFeedApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = [this.threadsDvm.cell.address.dnaId.hash, e.detail.hash];
+    const hrl: Hrl = intoHrl(this.threadsDvm.cell.address.dnaId, e.detail);
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
@@ -442,7 +442,7 @@ export class CommunityFeedApp extends HappElement {
           //console.log("pascal entryType", assetViewInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = new ActionId(assetViewInfo.wal.hrl[1]);
+              const ppAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
               //console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
@@ -450,7 +450,7 @@ export class CommunityFeedApp extends HappElement {
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = new ActionId(assetViewInfo.wal.hrl[1]);
+                const beadAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
@@ -474,10 +474,10 @@ export class CommunityFeedApp extends HappElement {
                         const hrlc = weaveUrlToWal(e.detail.wurl);
                         const attLocInfo = await this._weServices.assetInfo(hrlc);
                         const subject: Subject = {
-                            address: enc64(hrlc.hrl[1]),
+                            address: enc64(hrlc.hrl[1].bytes()),
                             typeName: SpecialSubjectType.Asset,
-                            dnaHashB64: new DnaId(hrlc.hrl[0]).b64,
-                            appletId: new EntryId(attLocInfo.appletHash).b64,
+                            dnaHashB64: new DnaId(hrlc.hrl[0].bytes()).b64,
+                            appletId: new EntryId(attLocInfo.appletHash.bytes()).b64,
                         }
                         const subject_name = determineSubjectName(subject, this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
                         //console.log("@create event subject_name", subject_name);                        
@@ -488,7 +488,7 @@ export class CommunityFeedApp extends HappElement {
                             subject_name,
                         };
                         const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
-                        const wal: WAL = {hrl: [this.threadsDvm.cell.address.dnaId.hash, ppAh.hash], context: pp.subject.address}
+                        const wal: WAL = {hrl: intoHrl(this.threadsDvm.cell.address.dnaId, ppAh), context: pp.subject.address}
                         await creatableViewInfo.resolve(wal);
                       } catch(e) {
                           creatableViewInfo.reject(e)

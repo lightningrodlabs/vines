@@ -40,7 +40,7 @@ import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
@@ -335,13 +335,13 @@ export class VinesApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = [this.threadsDvm.cell.address.dnaId.hash, e.detail.hash];
+    const hrl: Hrl = intoHrl(this.threadsDvm.cell.address.dnaId, e.detail);
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
       this._weServices.walToPocket({hrl});
     }
-    toasty(("Copied thread's WAL to clipboard"));
+    toasty(("Copied channel's WAL to clipboard"));
   }
 
 
@@ -427,7 +427,7 @@ export class VinesApp extends HappElement {
           console.log("pascal entryType", assetViewInfo.recordInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = new ActionId(assetViewInfo.wal.hrl[1]);
+              const ppAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
               console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
@@ -436,7 +436,7 @@ export class VinesApp extends HappElement {
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = new ActionId(assetViewInfo.wal.hrl[1]);
+                const beadAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break

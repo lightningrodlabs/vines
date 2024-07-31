@@ -46,6 +46,7 @@ import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/Switch.js";
 import "@ui5/webcomponents/dist/SuggestionItem.js";
 import "@ui5/webcomponents/dist/Toast.js";
+import "@ui5/webcomponents/dist/Token.js"
 import "@ui5/webcomponents/dist/Tree.js"
 import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
@@ -1067,7 +1068,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);
-        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]));
+        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0].bytes()));
         if (weGroup) {
           groupProfile = weGroup;
         }
@@ -1377,7 +1378,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this thread")}>
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this channel")}>
                     <div  style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><</ui5-radio-button>
                         <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
