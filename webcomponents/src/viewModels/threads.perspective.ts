@@ -6,7 +6,7 @@ import {
   EntryId,
   AgentIdMap,
   ActionIdMap,
-  EntryIdMap, DnaId, LinkableId, intoLinkableId,
+  EntryIdMap, DnaId, LinkableId, intoAnyId, AnyId,
 } from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
@@ -25,7 +25,6 @@ import {
   TypedBeadMat
 } from "./threads.materialize";
 import {AuthorshipZvm} from "./authorship.zvm";
-import {AnyLinkableHashB64} from "@ddd-qc/path-explorer/dist/utils";
 import {SearchParameters} from "../search";
 import {Cell} from "@ddd-qc/cell-proxy";
 
@@ -34,11 +33,11 @@ import {Cell} from "@ddd-qc/cell-proxy";
 /** TODO: store private dms */
 export interface ThreadsSnapshot {
   /** Store of all Subjects: hash -> Subject */
-  subjects: [AnyLinkableHashB64, Subject][],
+  subjects: [HoloHashB64, Subject][],
   /** Store of all SemTopic: eh -> TopicTitle */
   semanticTopics: [EntryHashB64, string][],
   /** Keep only marked items */
-  hiddens: AnyLinkableHashB64[],
+  hiddens: HoloHashB64[],
   favorites: ActionHashB64[],
   /** ppAh -> (ppMat, ts, author) */
   pps: [ActionHashB64, ParticipationProtocol, Timestamp, AgentPubKeyB64][],
@@ -100,17 +99,17 @@ export class ThreadsPerspective {
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
   /** PathEntryHash -> [DnaId, SubjectHash][] */
-  subjectsPerType: EntryIdMap<[DnaId, LinkableId][]> = new EntryIdMap();
+  subjectsPerType: EntryIdMap<[DnaId, AnyId][]> = new EntryIdMap();
   ///* name string -> ppAh */
   //private _threadsByName: Dictionary<ActionId> = {};
 
   /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
-  newThreads: ActionIdMap<LinkableId> = new ActionIdMap();
+  newThreads: ActionIdMap<AnyId> = new ActionIdMap();
   /** Unread subject == Has at least one unread thread */
   /** ppAh -> (subjectHash, beadAh[]) */
-  unreadThreads: ActionIdMap<[LinkableId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
+  unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
 
 
   /** -- Getters -- */
@@ -303,7 +302,7 @@ export class ThreadsPerspective {
   // }
 
   /** */
-  getCommentThreadForSubject(subjectId: LinkableId): ActionId | null {
+  getCommentThreadForSubject(subjectId: AnyId): ActionId | null {
     const ppAhs = this.threadsPerSubject.get(subjectId.b64);
     if (!ppAhs) {
       return null;
@@ -325,13 +324,13 @@ export class ThreadsPerspective {
     return maybe;
   }
 
-  getSubjects(typePathHash: EntryId): [DnaId, LinkableId][] | undefined {
+  getSubjects(typePathHash: EntryId): [DnaId, AnyId][] | undefined {
     return this.subjectsPerType.get(typePathHash);
   }
 
 
   /** unreadSubjects: subject has at least one unread thread */
-  getUnreadSubjects(): LinkableId[] {
+  getUnreadSubjects(): AnyId[] {
     let unreadSubjects = Array.from(this.unreadThreads.values()).map(([subjectId, _beads]) => subjectId);
     /** Dedup */
     return [...new Set(unreadSubjects)];
@@ -498,14 +497,14 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** -- Store -- */
 
-  storeAllNewThreads(list: [ActionId, LinkableId][]) {
+  storeAllNewThreads(list: [ActionId, AnyId][]) {
     this.newThreads.clear();
     for (const [ah, subjectHash] of list) {
       this.newThreads.set(ah, subjectHash)
     }
   }
 
-  storeAllUnreadThreads(list: ActionIdMap<[LinkableId, ActionId[]]>) {
+  storeAllUnreadThreads(list: ActionIdMap<[AnyId, ActionId[]]>) {
     this.unreadThreads.clear();
     for (const [ah, map] of list.entries()) {
       this.unreadThreads.set(ah, map)
@@ -513,7 +512,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   }
 
   /** */
-  storeSubjectsWithType(typePathEh: EntryId, subjectB64s: [DnaId, LinkableId][]) {
+  storeSubjectsWithType(typePathEh: EntryId, subjectB64s: [DnaId, AnyId][]) {
     this.subjectsPerType.set(typePathEh, subjectB64s);
   }
 
@@ -555,7 +554,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     thread.addItem(blMat);
     if (isNew) {
       if (!this.unreadThreads.get(ppAh)) {
-        this.unreadThreads.set(ppAh, [intoLinkableId(thread.pp.subject.address), []]);
+        this.unreadThreads.set(ppAh, [intoAnyId(thread.pp.subject.address), []]);
       }
       this.unreadThreads.get(ppAh)[1].push(beadAh);
     }
@@ -623,7 +622,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     if (this.threads.has(ppAh)) {
       return this.threads.get(ppAh).pp;
     }
-    const subjectAddr = intoLinkableId(pp.subject.address);
+    const subjectAddr = intoAnyId(pp.subject.address);
     const thread = new Thread(pp, cell.dnaModifiers.origin_time, creationTime, author);
     console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${creationTime}"`);
     this.threads.set(ppAh, thread);
@@ -635,7 +634,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       /** DM thread */
-      const agentId = AgentId.from(subjectAddr);
+      const agentId = new AgentId(subjectAddr.b64);
       let otherAgent = cell.address.agentId.equals(author)? agentId : author;
       console.log("storeThread() dmThread", otherAgent);
       this.dmAgents.set(otherAgent, ppAh);
@@ -787,7 +786,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
           if (!this.subjectsPerType.get(pathEh)) {
             this.subjectsPerType.set(pathEh, []);
           }
-          this.subjectsPerType.get(pathEh).push([new DnaId(subject.dnaHashB64), intoLinkableId(subjectAddr)]);
+          this.subjectsPerType.get(pathEh).push([new DnaId(subject.dnaHashB64), intoAnyId(subjectAddr)]);
         }
       }
     }

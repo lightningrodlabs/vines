@@ -1,6 +1,15 @@
 import {css, html} from "lit";
 import {customElement, property} from "lit/decorators.js";
-import {ActionId, AgentId, DnaElement, EntryId, getHashType, intoLinkableId, isHashTypeB64} from "@ddd-qc/lit-happ";
+import {
+  ActionId,
+  AgentId,
+  DnaElement,
+  EntryId,
+  getHashType,
+  intoAnyId,
+  intoLinkableId,
+  isHashTypeB64
+} from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar, renderProfileAvatar} from "../render";
@@ -82,7 +91,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectAddr));
     }
     console.log("subjectHashType", subjectHashType);
-    const subjectAh = ActionId.from(intoLinkableId(subjectAddr));
+    const subjectId = ActionId.from(intoAnyId(subjectAddr));
     let title;
     let subText;
     const copyBtn = html`
@@ -97,13 +106,13 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address);
-      const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
+      const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
         title = html`Thread about <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
         subText = html`This is the start of thread about chat message 
                       <span style="color:blue; cursor:pointer" 
-                            @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectAh))}>
+                            @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectId))}>
                         ${subjectName}
                       </span>`;
       } else {

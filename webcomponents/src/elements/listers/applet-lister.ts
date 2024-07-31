@@ -5,7 +5,7 @@ import {msg} from "@lit/localize";
 
 import {CreatableType} from "@lightningrodlabs/we-applet";
 import {
-  ActionId,
+  ActionId, AnyId,
   DhtId,
   EntryId,
   EntryIdMap,
@@ -167,7 +167,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionId | null, subjectHash: LinkableId, subjectType: string, subjectName: string, viewType?: string) {
+  onClickComment(maybeCommentThread: ActionId | null, subjectHash: AnyId, subjectType: string, subjectName: string, viewType?: string) {
     const request: CommentRequest = {
       maybeCommentThread, subjectHash, subjectType, subjectName,
       viewType: viewType? viewType : "side",
@@ -177,7 +177,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async toggleTreeItem(event: any, unreadSubjects: LinkableId[]) {
+  async toggleTreeItem(event: any, unreadSubjects: AnyId[]) {
     const busyIndicator = this.shadowRoot.getElementById("busy") as BusyIndicator;
     const toggledTreeItem = event.detail.item as TreeItem ; // get the node that is toggled
     //const isTyped = !!this.root && typeof this.root == 'object';

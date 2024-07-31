@@ -24,7 +24,7 @@ import {ThreadsProxy} from "../bindings/threads.proxy";
 import {
   ActionId,
   ActionIdMap,
-  AgentId,
+  AgentId, AnyId,
   dematerializeLinkPulse,
   DnaId,
   enc64,
@@ -33,7 +33,7 @@ import {
   EntryPulseMat,
   getIndexByVariant,
   getVariantByIndex,
-  HoloHashType, holoIdReviver,
+  HoloHashType, holoIdReviver, intoAnyId,
   intoDhtId,
   intoLinkableId,
   LinkableId,
@@ -253,7 +253,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Grab all threads of other subjects to see if there are new ones */
     let probes = []
     for (const [subjectAdr, _sub] of this._perspective.getAllSubjects()) {
-      probes.push(this.pullSubjectThreads(intoLinkableId(subjectAdr)));
+      probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr)));
     }
     await Promise.all(probes);
 
@@ -300,7 +300,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** Get all Threads for a subject */
-  async pullSubjectThreads(subjectId: LinkableId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
+  async pullSubjectThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
     console.log("threadsZvm.pullSubjectThreads()", subjectId);
     let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
     const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
@@ -323,13 +323,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** Get all subjects from a subjectType path */
-  async findSubjects(appletId: EntryId, typePathEh: EntryId): Promise<[DnaId, LinkableId][]> {
+  async findSubjects(appletId: EntryId, typePathEh: EntryId): Promise<[DnaId, AnyId][]> {
     if (!this._perspective.getSubjectType(appletId, typePathEh)) {
       return Promise.reject("Unknown appletId or typePathHash");
     }
     const subjectType = this._perspective.getSubjectType(appletId, typePathEh);
     const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType});
-    const subjectB64s: [DnaId, LinkableId][] = subjects.map(([dnaHash, subjectHash]) => [new DnaId(dnaHash), intoLinkableId(subjectHash)]);
+    const subjectB64s: [DnaId, AnyId][] = subjects.map(([dnaHash, subjectHash]) => [new DnaId(dnaHash), intoAnyId(subjectHash)]);
     this._perspective.storeSubjectsWithType(typePathEh, subjectB64s);
     this.notifySubscribers();
     return subjectB64s;
@@ -342,13 +342,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     await this.commitGlobalProbeLog(latest.searchedInterval.end);
 
     /* newThreads (filter out my threads) */
-    const newThreads: [ActionId, LinkableId][] = [];
+    const newThreads: [ActionId, AnyId][] = [];
     for (const [subject_hash, pp_ah] of latest.newThreadsBySubject) {
       const ppAh = new ActionId(pp_ah)
       //const _ppMat = await this.fetchPp(ppAh);
       let maybeThread = this._perspective.threads.get(ppAh);
       if (!maybeThread.author.equals(this.cell.address.agentId)) {
-        newThreads.push([ppAh, intoLinkableId(subject_hash)]);
+        newThreads.push([ppAh, intoAnyId(subject_hash)]);
       }
     }
     //console.log("probeAllLatest:     newThreads", newThreads);
@@ -863,7 +863,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (thread.pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
       let other = thread.author;
       if (this.cell.address.agentId.equals(other)) {
-        other = AgentId.from(intoLinkableId(thread.pp.subject.address));
+        other = new AgentId(intoAnyId(thread.pp.subject.address).b64);
       }
       return other;
     }
