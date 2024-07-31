@@ -128,7 +128,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
+import {AgentId, Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -426,10 +426,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onDmTextMessage(inputText: string) {
+    console.log("onDmTextMessage()", inputText, this._dvm.profilesZvm)
     const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
-    const otherAgent = sub.hash;
+    const otherAgent: AgentId = sub.hash;
+    console.log("onDmTextMessage() otherAgent", otherAgent)
     let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
-    console.log("onDmTextMessage() ah", beadAh, this._dvm.threadsZvm.perspective.threads);
+    console.log("onDmTextMessage() beadAh", beadAh, this._dvm.threadsZvm.perspective.threads);
     this._replyToAh = undefined;
     this.selectedBeadAh = undefined;
     //await delay(1000);
@@ -1432,9 +1434,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
             <profile-panel id="profilePanel" 
                            @edit-profile=${(e) => (this.shadowRoot.getElementById("profilePop") as Popover).close()}
-                           @input=${(e) => {
+                           @input=${(e: CustomEvent<VinesInputEvent>) => {
                              e.preventDefault();
-                             this.onDmTextMessage(e.detail);
+                             this.onDmTextMessage(e.detail.text);
                              const profilePopElem = this.shadowRoot.getElementById("profilePop") as Popover;
                              if (profilePopElem.isOpen()) {
                                  profilePopElem.close();

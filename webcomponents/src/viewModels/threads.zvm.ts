@@ -1,4 +1,4 @@
-import {AgentPubKeyB64, HoloHashB64, Timestamp} from "@holochain/client";
+import {AgentPubKeyB64, Timestamp} from "@holochain/client";
 import {
   AddEntryAsBeadInput,
   AnyBead,
@@ -115,18 +115,18 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /** Notify subscribers */
-  /** TODO: structuredClone() fails because of Thread class. Refactor to a state object instead */
-  protected notifySubscribers(): boolean {
-    if (!this.hasChanged()) return false;
-    //this._previousPerspective = structuredClone(this.perspective);
-    this._previousPerspective = this.perspective;
-    for (const [host, propName] of this._providedHosts) {
-      (host as any)[propName] = this._previousPerspective;
-    }
-    this._dvmParent.zvmChanged(this);
-    return true;
-  }
+  // /** Notify subscribers */
+  // /** TODO: structuredClone() fails because of Thread class. Refactor to a state object instead */
+  // protected notifySubscribers(): boolean {
+  //   if (!this.hasChanged()) return false;
+  //   //this._previousPerspective = structuredClone(this.perspective);
+  //   this._previousPerspective = this.perspective;
+  //   for (const [host, propName] of this._providedHosts) {
+  //     (host as any)[propName] = this._previousPerspective;
+  //   }
+  //   this._dvmParent.zvmChanged(this);
+  //   return true;
+  // }
 
 
   /** Dump perspective as JSON (caller should call getAllPublicManifest() first) */

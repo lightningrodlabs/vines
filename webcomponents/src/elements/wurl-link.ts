@@ -129,7 +129,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
       const assetLocAndInfo = await this.weServices.assetInfo(wal);
       this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
-      this._appletName = (await this.weServices.appletInfo(assetLocAndInfo.appletHash)).appletName;
+      this._appletName = (await this.weServices.appletInfo(assetLocAndInfo.appletHash.bytes())).appletName;
     } catch(e) {
       console.warn("Failed to load HRL", this.wurl, e);
     }

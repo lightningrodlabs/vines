@@ -74,9 +74,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     try {
       const anyBead = zvm.perspective.getBaseBead(hash) as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
-
       this._assetLocAndInfo = await this.weServices.assetInfo(wal);
-      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash);
+      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash.bytes());
     } catch(e) {
       console.warn("Failed to load HRL", hash, e);
       this._assetLocAndInfo = undefined;
@@ -92,7 +91,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (!this.weServices) {
       return html`        
           <ui5-list id="fileList">
-          <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash}>
+          <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash.b64}>
               Failed to retrieve Asset. WeServices not available.
           </ui5-li>
       </ui5-list>
@@ -105,7 +104,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (!this._appletInfo || !this._assetLocAndInfo) {
       return html`        
           <ui5-list id="fileList">
-          <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
+          <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
                   @click=${(e) => this.loadHrl(this.hash, this._zvm)}>
               Failed to retrieve Asset.
           </ui5-li>
@@ -117,7 +116,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (!anyBead) {
       return html`
         <ui5-list id="fileList">
-            <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
+            <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
                     @click=${async (e) => {
                         await this._zvm.probeAllInner();
                         const anyBead = this._zvm.perspective.getBaseBead(this.hash);
@@ -133,7 +132,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (anyBead.typeInfo != "wal") {
       return html`          
           <ui5-list id="fileList">
-          <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash}>
+          <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash.b64}>
               Error: Message not of type WAL
           </ui5-li>
       </ui5-list>

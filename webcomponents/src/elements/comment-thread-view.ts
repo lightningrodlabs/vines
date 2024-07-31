@@ -276,7 +276,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                            topic="thread"
                            .profilesZvm=${this._dvm.profilesZvm}
                            .cachedInput=${this.perspective.threadInputs.get(this.threadHash)? this.perspective.threadInputs.get(this.threadHash) : ""}
-                           @input=${(e) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
+                           @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
     }
 
     const titleTip = "Type: " + subjectType;
