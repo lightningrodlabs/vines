@@ -1154,6 +1154,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
 
+    const profileCount = this._dvm.profilesZvm.perspective.agents.length;
+
     /** Render all */
     return html`
         <div id="mainDiv" 
@@ -1186,7 +1188,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${groupProfile.name}</div>
                         <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
-                            ${networkInfo? networkInfo.total_network_peers : 1} ${msg('Members')}
+                            ${networkInfo? /*networkInfo.total_network_peers*/ profileCount : 1} ${msg('Members')}
                         </div>
                     </div>
                     <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
