@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, dec64, DnaElement, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId, dec64, DnaId, DnaElement, EntryId, intoDhtId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {determineSubjectPrefix} from "../utils";
@@ -18,13 +18,12 @@ import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
 import {beadJumpEvent, SpecialSubjectType, threadJumpEvent, VinesInputEvent} from "../events";
 import {FilesDvm} from "@ddd-qc/files";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
 import {codeStyles} from "../markdown/code-css";
 import {WAL} from "@lightningrodlabs/we-applet";
 import {InputBar} from "./input-bar";
-import {HoloHash} from "@holochain/client";
 
 
 /**
@@ -290,14 +289,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
                         icon="journey-depart"
                         style="margin-right:-5px; transform: rotate(-90deg);"
-                        @click=${(e) => this.weServices.openAppletMain(new HoloHash(thread.pp.subject.appletId))}>
+                        @click=${(e) => this.weServices.openAppletMain(dec64(thread.pp.subject.appletId))}>
             </ui5-button>
         `;
       } else {
         gotoAppletBtn = html`
             <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
                         style="margin-right:-5px; max-width:40px;"
-                        @click=${(e) => this.weServices.openAppletMain(new HoloHash(thread.pp.subject.appletId))}>
+                        @click=${(e) => this.weServices.openAppletMain(dec64(thread.pp.subject.appletId))}>
                 <img src=${maybeAppletInfo.appletIcon} alt="${appletName} Icon">
             </ui5-button>
         `;
@@ -325,20 +324,22 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   @click=${(_e) => {
                   console.log("<comment-thread-view> title click", thread.pp.subject);
                   /** Use subject as WAL */
-                  const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
+                  // const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
+                  const dhtId = intoDhtId(thread.pp.subject.address);
+                  const wal: WAL = {hrl: intoHrl(new DnaId(thread.pp.subject.dnaHashB64), dhtId), context: null};
                   /** Jump within app if subject is from Vines */
                   if (this.cell.address.dnaId.equals(thread.pp.subject.dnaHashB64)) {
                       switch(thread.pp.subject.typeName) {
                           case SpecialSubjectType.AgentPubKey:
                           case SpecialSubjectType.ParticipationProtocol: 
-                            this.dispatchEvent(threadJumpEvent(new ActionId(wal.hrl[1].bytes()))); 
+                            this.dispatchEvent(threadJumpEvent(new ActionId(dhtId.b64))); 
                             return; 
                           break;
                           case SpecialSubjectType.AnyBead:
                           case SpecialSubjectType.TextBead:
                           case SpecialSubjectType.EncryptedBead:
                           case SpecialSubjectType.EntryBead:
-                            this.dispatchEvent(beadJumpEvent(new ActionId(wal.hrl[1].bytes()))); 
+                            this.dispatchEvent(beadJumpEvent(new ActionId(dhtId.b64))); 
                             return; 
                           break;
                           case SpecialSubjectType.Applet:

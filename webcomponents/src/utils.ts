@@ -11,11 +11,17 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
 import {ParticipationProtocol, Subject, ThreadsEntryType} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {ActionId, AgentId, DnaId, EntryId, isHashTypeB64} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaId, EntryId,intoDhtId, DhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
+import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
 
+
+/** */
+export function hrl2Id(hrl: Hrl): [DnaId, DhtId] {
+  return [new DnaId(hrl[0]), intoDhtId(hrl[1])]
+}
 
 /** */
 export function status2color(status: string): string {

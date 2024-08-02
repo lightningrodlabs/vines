@@ -120,7 +120,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         const anyBead = typedBead as AnyBeadMat;
         if (anyBead.typeInfo === "wal" && this.weServices) {
           const wal = weaveUrlToWal(anyBead.value);
-          const assetHash = intoLinkableId(wal.hrl[1].bytes())
+          const assetHash = intoLinkableId(wal.hrl[1])
           const id = "wal-item" + "-" + assetHash.b64;
           const maybeInfo = this.weServices.assetInfoCached(wal);
           if (!maybeInfo) {

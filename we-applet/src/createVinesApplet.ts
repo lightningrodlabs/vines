@@ -63,7 +63,7 @@ export async function createVinesApplet(
       mainAppWs, undefined, mainAppInfo.installed_app_id,
       profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
       weServices,
-      new EntryId(appletViewInfo.appletHash.bytes()),
+      new EntryId(appletViewInfo.appletHash),
       appletViewInfo.view,
       );
   /** Done */

@@ -75,7 +75,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const anyBead = zvm.perspective.getBaseBead(hash) as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
       this._assetLocAndInfo = await this.weServices.assetInfo(wal);
-      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash.bytes());
+      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash);
     } catch(e) {
       console.warn("Failed to load HRL", hash, e);
       this._assetLocAndInfo = undefined;

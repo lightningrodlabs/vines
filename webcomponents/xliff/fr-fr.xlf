@@ -38,9 +38,6 @@
   <source>No topics found</source>
   <target>Aucun sujet trouvé</target>
 </trans-unit>
-<trans-unit id="s2584e42103e83ab1">
-  <source>No file selected</source>
-</trans-unit>
 <trans-unit id="s193ae84ccdac6277">
   <source>Copy thread to clipboard</source>
 </trans-unit>
@@ -151,6 +148,90 @@
 </trans-unit>
 <trans-unit id="s72de70d7510d1277">
   <source>Create comment thread for this Applet</source>
+</trans-unit>
+<trans-unit id="s6a039bb3d06048f3">
+  <source>No File address provided</source>
+</trans-unit>
+<trans-unit id="sce986d57cac5acf5">
+  <source>Unknown File</source>
+</trans-unit>
+<trans-unit id="s87d0868b917ad868">
+  <source>File data not found</source>
+</trans-unit>
+<trans-unit id="s04d07e476a597c0c">
+  <source>File downloaded</source>
+</trans-unit>
+<trans-unit id="s92595df611bee8c6">
+  <source>Your browser does not support the audio element.</source>
+</trans-unit>
+<trans-unit id="sc1171a6c566ac1a9">
+  <source>Your browser does not support the video element.</source>
+</trans-unit>
+<trans-unit id="sb74717eac10c73f5">
+  <source>This is the beginning of your direct message history with</source>
+</trans-unit>
+<trans-unit id="s0b7ae9543c001867">
+  <source>Reply</source>
+</trans-unit>
+<trans-unit id="s0621fbc662f668f2">
+  <source>Remove attachment</source>
+</trans-unit>
+<trans-unit id="s6c9c202aecc5b1f6">
+  <source>Attach WAL from pocket</source>
+</trans-unit>
+<trans-unit id="sf18fdd3ba5f7797a">
+  <source>Attach file</source>
+</trans-unit>
+<trans-unit id="se79638a5f87eccd7">
+  <source>Unknown HRL</source>
+</trans-unit>
+<trans-unit id="s8630af8889a7f784">
+  <source>no profiles found</source>
+</trans-unit>
+<trans-unit id="s1a86d5e8ae309e09">
+  <source>Toggle Notifications</source>
+</trans-unit>
+<trans-unit id="s2ce5b7abe8cec6d7">
+  <source>comments</source>
+</trans-unit>
+<trans-unit id="s7bdf06399a451efa">
+  <source>Whats up?</source>
+</trans-unit>
+<trans-unit id="sa84e6d88de4a8525">
+  <source>No Main Feed</source>
+</trans-unit>
+<trans-unit id="s863b1e35dc70d3b3">
+  <source>No favorites</source>
+</trans-unit>
+<trans-unit id="sd2af6dd3f25e7992">
+  <source>Feed is empty</source>
+</trans-unit>
+<trans-unit id="s3d099ab47fec57b6">
+  <source>Like</source>
+</trans-unit>
+<trans-unit id="s2df075aface0dab8">
+  <source>Share</source>
+</trans-unit>
+<trans-unit id="sb85774dc5d18ff0f">
+  <source>Confirm</source>
+</trans-unit>
+<trans-unit id="scc66beac9bca4258">
+  <source>Create a post</source>
+</trans-unit>
+<trans-unit id="s0843b2fcef33fcc8">
+  <source>Publish</source>
+</trans-unit>
+<trans-unit id="s8dfbfc57ea390f76">
+  <source>No channels found</source>
+</trans-unit>
+<trans-unit id="s498865c7bd1f3959">
+  <source>unknown</source>
+</trans-unit>
+<trans-unit id="sde5369c767e7871d">
+  <source>No DM found</source>
+</trans-unit>
+<trans-unit id="s884f957390b84459">
+  <source>Message a peer</source>
 </trans-unit>
 </body>
 </file>

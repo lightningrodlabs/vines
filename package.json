@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "config": {
     "hc_version": "0.3.1",
-    "zits_version": "1.16.0",
+    "zits_version": "1.16.2",
     "bin": "bin"
   },
   "private": true,
@@ -103,7 +103,7 @@
     "clean:all"          : "git clean -f -x -d -e .idea && rm -rf submodules"
   },
   "devDependencies": {
-    "@lightningrodlabs/we-dev-cli": "0.12.0-dev.3",
+    "@lightningrodlabs/we-dev-cli": "=0.12.0-dev.6",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
@@ -120,15 +120,15 @@
     "typescript": "~5.2.0"
   },
   "dependencies": {
-    "@holochain/client": "^0.18.0-dev.9",
-    "@lightningrodlabs/we-applet": "0.17.2-dev.0",
+    "@holochain/client": "=0.18.0-dev.4",
+    "@lightningrodlabs/we-applet": "0.17.1",
     "@lightningrodlabs/we-elements": "0.6.0-dev.0",
-    "@ddd-qc/cell-proxy": "=0.27.4",
-    "@ddd-qc/lit-happ": "=0.27.1",
-    "@ddd-qc/profiles-dvm": "=0.27.3",
-    "@ddd-qc/we-utils": "=0.27.5",
-    "@ddd-qc/files": "=0.4.8",
-    "@ddd-qc/delivery": "=0.15.8",
+    "@ddd-qc/cell-proxy": "=0.27.6",
+    "@ddd-qc/lit-happ": "=0.27.6",
+    "@ddd-qc/profiles-dvm": "=0.27.6",
+    "@ddd-qc/we-utils": "=0.27.6",
+    "@ddd-qc/files": "=0.4.9",
+    "@ddd-qc/delivery": "=0.15.9",
     "@ddd-qc/path-explorer": "0.5.0",
     "@holochain-open-dev/core-types": "0.7.0",
     "@holochain-open-dev/profiles": "^0.400.0-dev.1",

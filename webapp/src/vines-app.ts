@@ -5,7 +5,7 @@ import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket,
   AppSignal,
-  AppWebsocket, HoloHash,
+  AppWebsocket,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
@@ -34,14 +34,14 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
   onlineLoadedContext,
-  toasty,
+  toasty, hrl2Id,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId} from "@ddd-qc/cell-proxy";
+import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
@@ -297,13 +297,13 @@ export class VinesApp extends HappElement {
     console.log("<vines-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(new HoloHash(e.detail.address.hash));
+        this._weServices.openAppletMain(e.detail.address.hash);
       }
     }
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
       if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
-          /* await */ this._weServices.openAppletMain(new HoloHash(this._weServices.appletId));
+          /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletId));
           //this._weServices.openHrl();
         }
       } else {
@@ -424,10 +424,11 @@ export class VinesApp extends HappElement {
             throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.recordInfo.integrityZomeName}'.`);
           }
           const entryType = pascal(assetViewInfo.recordInfo.entryType);
+          const [_dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
           console.log("pascal entryType", assetViewInfo.recordInfo.entryType, entryType);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
+              const ppAh = new ActionId(dhtId.b64);
               console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
@@ -436,7 +437,7 @@ export class VinesApp extends HappElement {
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
+                const beadAh = new ActionId(dhtId.b64);
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break

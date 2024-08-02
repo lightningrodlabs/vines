@@ -4,10 +4,10 @@ import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
-import {WeaveUrl} from "@lightningrodlabs/we-applet";
+import {WAL, WeaveUrl} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {ppName, weaveUrlToWal} from "../utils";
+import {ppName, weaveUrlToWal, hrl2Id} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../events";
@@ -97,10 +97,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     try {
       const wal = weaveUrlToWal(this.wurl);
-      if (this.cell.address.dnaId.equals(wal.hrl[0].bytes())) {
+      const [dnaId, dhtId] = hrl2Id(wal.hrl);
+      if (this.cell.address.dnaId.equals(dnaId)) {
         this._appletName = "Vines";
         /** Determine entry */
-        const hash = new ActionId(wal.hrl[1].bytes());
+        const hash = new ActionId(dhtId.b64);
         console.log("<wurl-link>.loadWal() hash", hash, threadsZvm);
         const maybeThread = threadsZvm.perspective.threads.get(hash);
         if (maybeThread) {
@@ -129,7 +130,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
       const assetLocAndInfo = await this.weServices.assetInfo(wal);
       this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
-      this._appletName = (await this.weServices.appletInfo(assetLocAndInfo.appletHash.bytes())).appletName;
+      this._appletName = (await this.weServices.appletInfo(assetLocAndInfo.appletHash)).appletName;
     } catch(e) {
       console.warn("Failed to load HRL", this.wurl, e);
     }
@@ -161,7 +162,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       //return html`<div>Failed to retrieve Asset. WeServices not available.</div>`;
       return html``;
     }
-    let wal;
+    let wal: WAL;
     try {
       wal = weaveUrlToWal(this.wurl)
     } catch(e) {
@@ -170,12 +171,12 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (!this._assetName || !this._appletName) {
       return this.renderBadLink();
     }
-
+    const [dnaId, dhtId] = hrl2Id(wal.hrl);
     let colorIdx = 6;
-    if (!this.cell.address.dnaId.equals(wal.hrl[0].bytes()) && !this.weServices) {
+    if (!this.cell.address.dnaId.equals(dnaId) && !this.weServices) {
       colorIdx = 3;
     }
-    const hash = new ActionId(wal.hrl[1].bytes())
+    const hash = new ActionId(dhtId.b64)
 
     /** render valid link */
     return html`

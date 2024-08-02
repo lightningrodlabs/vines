@@ -353,7 +353,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             <div style="color: grey; margin: auto;">${msg('No threads found')}</div>
             <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId.b64 || this.appletId == THIS_APPLET_ID}
                         @click=${(e) => {
-                          if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(new HoloHash(this.appletId.hash))
+                          if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this.appletId.hash)
                         }}>
                 ${msg('Go to applet')}
             </ui5-button>

@@ -13,9 +13,9 @@ import {AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} fro
 import {
   ActionId,
   AgentId,
-  delay, DnaId,
+  delay,
   DnaViewModel,
-  DvmDef, enc64,
+  DvmDef,
   EntryId,
   HappElement,
   HCL,
@@ -43,7 +43,7 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   weaveUrlToWal,
   weClientContext,
-  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType,
+  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType, hrl2Id, 
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {localized, msg} from '@lit/localize';
@@ -309,7 +309,7 @@ export class CommunityFeedApp extends HappElement {
     console.log("<community-feed-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(new HoloHash(e.detail.address.hash));
+        this._weServices.openAppletMain(e.detail.address.hash);
       }
     }
     if (e.detail.type == JumpDestinationType.Thread) {
@@ -440,9 +440,10 @@ export class CommunityFeedApp extends HappElement {
           }
           const entryType = pascal(assetViewInfo.recordInfo.entryType);
           //console.log("pascal entryType", assetViewInfo.entryType, entryType);
+          const [_dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
+              const ppAh = new ActionId(dhtId.b64);
               //console.log("asset ppAh:", ppAh);
               //   const viewContext = attachableViewInfo.wal.context as AttachableThreadContext;
               view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
@@ -450,7 +451,7 @@ export class CommunityFeedApp extends HappElement {
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = new ActionId(assetViewInfo.wal.hrl[1].bytes());
+                const beadAh = new ActionId(dhtId.b64);
                 // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
@@ -471,13 +472,14 @@ export class CommunityFeedApp extends HappElement {
                     @create=${async (e: CustomEvent/*<CreatePostRequest>*/) => {
                       try {
                         //console.log("@create post event", e.detail);
-                        const hrlc = weaveUrlToWal(e.detail.wurl);
-                        const attLocInfo = await this._weServices.assetInfo(hrlc);
+                        const wal0 = weaveUrlToWal(e.detail.wurl);
+                        const [dnaId, dhtId] = hrl2Id(wal0.hrl);
+                        const attLocInfo = await this._weServices.assetInfo(wal0);
                         const subject: Subject = {
-                            address: enc64(hrlc.hrl[1].bytes()),
+                            address: dhtId.b64,
                             typeName: SpecialSubjectType.Asset,
-                            dnaHashB64: new DnaId(hrlc.hrl[0].bytes()).b64,
-                            appletId: new EntryId(attLocInfo.appletHash.bytes()).b64,
+                            dnaHashB64: dnaId.b64,
+                            appletId: new EntryId(attLocInfo.appletHash).b64,
                         }
                         const subject_name = determineSubjectName(subject, this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
                         //console.log("@create event subject_name", subject_name);                        
