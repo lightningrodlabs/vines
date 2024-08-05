@@ -4,7 +4,6 @@ import {createFeedApplet} from "./createFeedApplet";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
 import {THREADS_DEFAULT_INTEGRITY_ZOME_NAME, VINES_DEFAULT_ROLE_NAME, ThreadsEntryType} from "@vines/elements";
 import {ActionId, snake} from "@ddd-qc/cell-proxy";
-import {HoloHash} from "@holochain/client";
 
 export const devtestNames: DevTestNames = {
     installed_app_id: "VinesApplet", //"FeedApplet",
@@ -33,7 +32,7 @@ function createPpEntryRenderInfo(ppAh: ActionId, context/*: VinesAssetQuery*/): 
         integrityZomeName: THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
         entryType: snake(ThreadsEntryType.ParticipationProtocol),
     };
-    assetViewInfo.wal.hrl[1] = new HoloHash(ppAh.hash);
+    assetViewInfo.wal.hrl[1] = ppAh.hash;
     assetViewInfo.wal.context = context;
 
     return assetViewInfo;

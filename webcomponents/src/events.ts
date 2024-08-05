@@ -13,14 +13,14 @@ export interface VinesInputEvent {
 
 
 /** */
-export interface EditTopicRequest {
+export type EditTopicRequest = {
   topicHash: EntryId,
   subjectName: string,
 }
 
 
 /** */
-export interface CommentRequest {
+export type CommentRequest = {
   maybeCommentThread: ActionId | null,
   subjectHash: AnyId,
   subjectType: string,
@@ -47,20 +47,20 @@ export enum SpecialSubjectType {
 }
 
 
-export interface HideEvent {
+export type HideEvent = {
   address: DhtId, // Action = pp ; Entry = Topic
   //type: string,
   hide: boolean
 }
 
-export interface ShowProfileEvent {
+export type ShowProfileEvent = {
   agentId: AgentId,
   x: number,
   y: number,
 }
 
 
-export interface JumpEvent {
+export type JumpEvent = {
   address: DhtId,
   type: JumpDestinationType,
 }
@@ -73,6 +73,7 @@ export enum JumpDestinationType {
 }
 
 
+/** */
 export function notification2JumpEvent(notif: NotifiableEvent): JumpDestinationType {
   if (NotifiableEvent.Fork === notif) {
     return JumpDestinationType.Thread;
