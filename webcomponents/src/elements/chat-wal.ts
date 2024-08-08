@@ -13,6 +13,7 @@ import {sharedStyles} from "../styles";
 
 import "@lightningrodlabs/we-elements/dist/elements/wal-embed.js";
 import {AnyBeadMat} from "../viewModels/threads.materialize";
+import {msg} from "@lit/localize";
 
 /**
  * @element
@@ -92,7 +93,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`        
           <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash.b64}>
-              Failed to retrieve Asset. WeServices not available.
+              ${msg("Failed to retrieve Asset. WeaveServices not available.")}
           </ui5-li>
       </ui5-list>
       `;

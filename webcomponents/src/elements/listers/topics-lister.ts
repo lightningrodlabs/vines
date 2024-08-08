@@ -122,7 +122,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                               style="border:none; display:none;"
                               @click=${(e) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`
               : html`
-                  <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread")} design="Transparent"
+                  <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
                               style="border:none; display:none;"
                               @click=${(e) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`;
           }
@@ -316,7 +316,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             <div style="color: grey; margin: auto;">${msg('No topics found')}</div>
             <ui5-button design="Emphasized"
                         @click=${(e) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
-                ${msg('Create new topic')}
+                ${msg('Create new Topic')}
             </ui5-button>
           </div>
       `;

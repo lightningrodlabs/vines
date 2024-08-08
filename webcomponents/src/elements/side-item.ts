@@ -81,7 +81,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     let content = html``;
 
     if (!this.hash) {
-      content = html`<span>${msg("<Missing hash>")}</span>`;
+      content = html`<span style="color:red">missing hash</span>`;
       return [content, undefined, undefined];
     }
     const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
@@ -103,7 +103,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         content = html`<div>${parsed}</div>`;
         break;
       case ThreadsEntryType.AnyBead:
-        content = html`<div style="color: red;">${msg('<WeServices not available>')}</div>`;
+        content = html`<div style="color:red;">${msg('WeaveServices not available')}</div>`;
         const anyBead = typedBead as AnyBeadMat;
         if (anyBead.typeInfo === "wal" && this.weServices) {
           const wal = weaveUrlToWal(anyBead.value);
@@ -120,7 +120,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
                     this.requestUpdate();
                   }}>
                   <ui5-icon name="synchronize"></ui5-icon>
-                  <span>${msg('<unknown asset>')}</span>
+                  <span>${msg('Unknown Asset')}</span>
               </div>
           `;
           } else {
@@ -144,7 +144,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
                               @click=${(e) => {
             this._filesDvm.downloadFile(manifestEh);
-            toasty("File downloaded: " + desc.name);
+            toasty(msg("File downloaded") + ": " + desc.name);
           }}>
                          File: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;

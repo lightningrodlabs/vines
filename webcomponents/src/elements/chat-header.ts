@@ -48,7 +48,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     console.log("renderDmThreadHeader()", otherAgent, this.cell.address.dnaId.print());
     const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
     const copyBtn = html`
-        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
+        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy DM channel to clipboard')} @click=${(e) => {
       e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
     }}></ui5-button>
     `;
@@ -76,8 +76,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   render() {
     console.log("<chat-header>.render():", this.threadHash);
     if (!this.threadHash) {
-      return html`
-          <div>Thread hash missing</div>`;
+      return html`<div>Thread hash missing</div>`;
     }
     let thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
@@ -99,7 +98,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     let title;
     let subText;
     const copyBtn = html`
-        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')} @click=${(e) => {
+        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy channel to clipboard')} @click=${(e) => {
             e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
         }}></ui5-button>      
     `;
@@ -113,15 +112,15 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
-        title = html`Thread about <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
-        subText = html`This is the start of thread about chat message 
+        title = html`${msg("Comments about")} <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
+        subText = html`${msg("This is the start of comment thread about chat message")} 
                       <span style="color:blue; cursor:pointer" 
                             @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectId))}>
                         ${subjectName}
                       </span>`;
       } else {
-        title = html`Thread about <span class="subjectName">${subjectName}</span>`;
-        subText = msg(`This is the start of a thread about a`) + ` "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
+        title = html`${msg("Comments about")} <span class="subjectName">${subjectName}</span>`;
+        subText = msg(`This is the start of a comment thread about a`) + ` "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
       }
     }
 

@@ -4,18 +4,19 @@
 <body>
 <trans-unit id="sfe4bac25ac65cd46">
   <source>Failed to connect to Holochain Conductor and/or "CommunityFeed" cell.</source>
+  <target>Échec de la connexion avec le Holochain Conductor et/ou  la cell "Feed"</target>
 </trans-unit>
 <trans-unit id="s2c8189544e3ea679">
   <source>Retry</source>
+  <target>Réessayer</target>
 </trans-unit>
 <trans-unit id="se53719283f976f00">
   <source>Import Profile into CommunityFeed</source>
-</trans-unit>
-<trans-unit id="seef51e1596b93277">
-  <source>No thread selected</source>
+  <target>Importer le Profile dans Feed</target>
 </trans-unit>
 <trans-unit id="sf969c2297c7b8324">
   <source>Create new Topic</source>
+  <target>Créer nouveau Sujet</target>
 </trans-unit>
 <trans-unit id="sfe757acedad7705f">
   <source>Hide Archived Topics</source>
@@ -32,9 +33,6 @@
 <trans-unit id="s8641b6c3688a0cec">
   <source>Edit Profile</source>
 </trans-unit>
-<trans-unit id="sc2207707ec0a999c">
-  <source>Export Local</source>
-</trans-unit>
 <trans-unit id="s79ac7fc1e859d930">
   <source>Export All</source>
 </trans-unit>
@@ -50,38 +48,29 @@
 <trans-unit id="s305e87b103d2baa9">
   <source>Report Bug</source>
 </trans-unit>
-<trans-unit id="s6f78450c3f12077f">
-  <source>Dump app logs</source>
-</trans-unit>
-<trans-unit id="s17edb25c185ac574">
-  <source>Dump Network logs</source>
-</trans-unit>
 <trans-unit id="s5d929ff1619ac0c9">
   <source>Search</source>
 </trans-unit>
 <trans-unit id="s71bcdc9319052f6e">
   <source>SEARCH FOR</source>
 </trans-unit>
-<trans-unit id="s671f7b12e6fa2d80">
-  <source>Notifications Settings</source>
-</trans-unit>
 <trans-unit id="sfd519740f0563fef">
   <source>Search Options</source>
-</trans-unit>
-<trans-unit id="s524251a5dae81428">
-  <source>All Messages</source>
-</trans-unit>
-<trans-unit id="s64476b0885f2bfd2">
-  <source>Mentions &amp; Replies Only</source>
-</trans-unit>
-<trans-unit id="s8b97ea84af17c029">
-  <source>Never</source>
 </trans-unit>
 <trans-unit id="sd009a3da6a4ca1f5">
   <source>File successfully shared</source>
 </trans-unit>
 <trans-unit id="sfbe867ceef81dd10">
   <source>Error: File already shared to group or stored locally</source>
+</trans-unit>
+<trans-unit id="s20a500234e838dda">
+  <source>Favorites</source>
+</trans-unit>
+<trans-unit id="s5be3c6d61cd9182f">
+  <source>Notifications</source>
+</trans-unit>
+<trans-unit id="s341a587ff5fa89e9">
+  <source>Create Post</source>
 </trans-unit>
 </body>
 </file>

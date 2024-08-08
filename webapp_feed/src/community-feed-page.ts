@@ -694,13 +694,13 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                 <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
                           @item-click=${(e) => this.onSettingsMenu(e)}>
                     <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
-                    <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
+                    <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                     <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
                     <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
                     <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                     <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                    <ui5-menu-item id="dumpItem" text=${msg("Dump app logs")}></ui5-menu-item>
-                    <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
+                    <ui5-menu-item id="dumpItem" text=${"Dump app logs"}></ui5-menu-item>
+                    <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                     <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>                    
                 </ui5-menu>
               <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"

@@ -8,6 +8,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
 import {AgentId} from "@ddd-qc/lit-happ";
 import {beadJumpEvent, JumpEvent, threadJumpEvent} from "./events";
+import {msg} from "@lit/localize";
 
 
 
@@ -60,13 +61,12 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
     if (NotifiableEvent.Mention === notif.event) {
         jump = beadJumpEvent(ah);
         const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
-        if (!beadInfo) {
-            title = "Mention in thread";
-        } else {
+        title = msg("Mention");
+        if (beadInfo) {
             const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title = "Mention in thread " + maybeThread.name;
+                title += " " + maybeThread.name;
             }
             content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
         }
@@ -75,17 +75,17 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
       jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
       if (!beadInfo) {
-        title = "New message in thread";
+        title = msg("New message");
       } else {
         const typedBead = threadsZvm.perspective.getBaseBead(ah);
         const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
         const dmThread = threadsZvm.isThreadDm(beadInfo.bead.ppAh);
         if (dmThread) {
-          title = "DM received";
+          title = msg("DM received");
         }
         else {
           if (maybeThread) {
-            title = "New message in thread " + maybeThread.name;
+            title = msg("New message in") + " " + maybeThread.name;
           }
         }
         content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
@@ -95,12 +95,12 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
       jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         if (!beadInfo) {
-            title = "Reply in thread";
+            title = msg("Reply");
         } else {
           const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title = "Reply in thread " + maybeThread.name;
+                title = msg("Reply in") + " " + maybeThread.name;
             }
             content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
         }
@@ -108,18 +108,17 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
     if (NotifiableEvent.Fork === notif.event) {
         jump = threadJumpEvent(ah);
         const maybeThread = threadsZvm.perspective.threads.get(ah);
-        if (!maybeThread)  {
-            title = "New thread";
-        } else {
+        title = msg("New channel");
+        if (maybeThread)  {
             // const subjectHash = maybeThread.pp.subjectHash;
             // const subject = this.getSubject(subjectHash);
             // title = "New thread about a " + subject.typeName;
-            title = "New thread: " + maybeThread.name;
-            content = "Rules: " + maybeThread.pp.rules;
+            title += " " + maybeThread.name;
+            content = msg("Rules") + ": " + maybeThread.pp.rules;
         }
     }
     if (NotifiableEvent.NewDmThread === notif.event) {
-      title = "New DM thread";
+      title = msg("New DM channel");
     }
     return [title, content, jump];
 }

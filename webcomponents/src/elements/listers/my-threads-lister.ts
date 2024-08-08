@@ -230,7 +230,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     if (threads.length == 0) {
       threads = [html`<div class="threadItem">
-                   <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No threads found')}</span>
+                   <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No channels found')}</span>
               </div>`];
     }
 
@@ -323,7 +323,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       if (!appletId.equals(THIS_APPLET_ID) && !appletId.equals(this.weServices.appletId)) {
         if (!this.weServices || !this.weServices.appletInfoCached(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
-          return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown applet')}</div>`;
+          return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown Tool')}</div>`;
         }
         /** render other appletId threads */
         const appletInfo = this.weServices.appletInfoCached(appletId);
@@ -399,7 +399,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     if (appletSubListers.length == 0) {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-            <div style="color: grey; margin: auto;">${msg('No threads found')}</div>
+            <div style="color: grey; margin: auto;">${msg('No channels found')}</div>
           </div>
       `;
     }

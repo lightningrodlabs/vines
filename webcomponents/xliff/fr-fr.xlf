@@ -38,200 +38,305 @@
   <source>No topics found</source>
   <target>Aucun sujet trouvé</target>
 </trans-unit>
-<trans-unit id="s193ae84ccdac6277">
-  <source>Copy thread to clipboard</source>
-</trans-unit>
 <trans-unit id="sa629ace2aeae7713">
   <source>This is the start of a channel about topic</source>
-</trans-unit>
-<trans-unit id="s498e20e1db682688">
-  <source>This is the start of a thread about a</source>
-</trans-unit>
-<trans-unit id="sb263ab464e9aec92">
-  <source>Create comment Thread for this message</source>
+  <target>Ceci est le début du canal sur le sujet</target>
 </trans-unit>
 <trans-unit id="sf0f75eca7bcd71ef">
   <source>View comments on the side</source>
+  <target>Montrer lees commentaires sur le côté</target>
 </trans-unit>
 <trans-unit id="s37a9e8aec5713460">
   <source>More</source>
+  <target>Plus</target>
 </trans-unit>
 <trans-unit id="s08842be103fdee87">
   <source>Add Reaction</source>
+  <target>Ajouter Réaction</target>
 </trans-unit>
 <trans-unit id="s9e226e0a027f39a6">
   <source>Remove from favorites</source>
+  <target>Retirer des favoris</target>
 </trans-unit>
 <trans-unit id="s3f75b956f3fae9cf">
   <source>Add to favorite</source>
-</trans-unit>
-<trans-unit id="saaf2a6bd767b9a47">
-  <source>View comment Thread</source>
-</trans-unit>
-<trans-unit id="s111aca7d036f8130">
-  <source>Create comment Thread</source>
+  <target>Ajouter aux favoris</target>
 </trans-unit>
 <trans-unit id="s4d57ce331140a4c5">
   <source>Copy Message Link</source>
+  <target>Copier Lien du Message</target>
 </trans-unit>
 <trans-unit id="scbbb0fa5125d50ab">
   <source>Copy Text</source>
+  <target>Copier Texte</target>
 </trans-unit>
 <trans-unit id="s4c0ea30616384688">
   <source>Report Message</source>
+  <target>Signaler Message</target>
 </trans-unit>
 <trans-unit id="s0992a1fa8d28bc76">
   <source>No comment thread selected</source>
+  <target>Aucun fil de commentaire selection.</target>
 </trans-unit>
 <trans-unit id="s1f7698c061c208c9">
   <source>Open</source>
+  <target>Ouvrir</target>
 </trans-unit>
 <trans-unit id="s0fe8f27f468c7dea">
   <source>Open in Main View</source>
-</trans-unit>
-<trans-unit id="s69791a642dd2c590">
-  <source>Thread about</source>
-</trans-unit>
-<trans-unit id="sbcbd56897d127a0f">
-  <source>&lt;Missing hash&gt;</source>
-</trans-unit>
-<trans-unit id="sf08022cdf4373879">
-  <source>&lt;WeServices not available&gt;</source>
-</trans-unit>
-<trans-unit id="s003c74cf5c7c0053">
-  <source>&lt;unknown asset&gt;</source>
+  <target>Ouvrir dans la vu principal</target>
 </trans-unit>
 <trans-unit id="s8a0021ca40aeac3e">
   <source>comment</source>
+  <target>Commenter</target>
 </trans-unit>
 <trans-unit id="s9d8b8aa2b404c2c8">
   <source>Settings</source>
+  <target>Paramètres</target>
 </trans-unit>
 <trans-unit id="s8847d64291996459">
   <source>Member since</source>
+  <target>Membre depuis</target>
 </trans-unit>
 <trans-unit id="s904fefb3d01cb2ae">
   <source>empty</source>
+  <target>vide</target>
 </trans-unit>
 <trans-unit id="s374bd2c937d5928a">
   <source>View comments</source>
-</trans-unit>
-<trans-unit id="s6fbc203e1bf6433b">
-  <source>No threads found</source>
-</trans-unit>
-<trans-unit id="s29bf5f1326299acc">
-  <source>Go to applet</source>
+  <target>Voir commentaires</target>
 </trans-unit>
 <trans-unit id="s2903da18b84f5001">
   <source>Copy Channel Link</source>
+  <target>Copier lien vers ce canal</target>
 </trans-unit>
 <trans-unit id="sd382aebcb9973936">
   <source>Create comment thread for this Topic</source>
+  <target>Créer fil de commentaire pour ce Sujet</target>
 </trans-unit>
 <trans-unit id="s5dd970759b6e22d3">
   <source>Edit Title</source>
+  <target>Modifier Titre</target>
 </trans-unit>
 <trans-unit id="s2280dbdb07b20827">
   <source>Create a new channel for this Topic</source>
-</trans-unit>
-<trans-unit id="sb929a98fee90d584">
-  <source>Create new topic</source>
-</trans-unit>
-<trans-unit id="s1c1b4b37f66acc49">
-  <source>Create comment thread for this Subject</source>
-</trans-unit>
-<trans-unit id="s45a89d7749eba607">
-  <source>Unknown applet</source>
+  <target>Créer un nouveau canal pour ce Sujet</target>
 </trans-unit>
 <trans-unit id="s4e9e2b7b1bd42183">
   <source>No subjects found</source>
-</trans-unit>
-<trans-unit id="s72de70d7510d1277">
-  <source>Create comment thread for this Applet</source>
+  <target>Aucun sujets trouvés</target>
 </trans-unit>
 <trans-unit id="s6a039bb3d06048f3">
   <source>No File address provided</source>
+  <target>Aucune adresse de fichier fourni</target>
 </trans-unit>
 <trans-unit id="sce986d57cac5acf5">
   <source>Unknown File</source>
+  <target>Fichier inconnu</target>
 </trans-unit>
 <trans-unit id="s87d0868b917ad868">
   <source>File data not found</source>
+  <target>Données du fichier introuvable</target>
 </trans-unit>
 <trans-unit id="s04d07e476a597c0c">
   <source>File downloaded</source>
+  <target>Fichier téléchargé</target>
 </trans-unit>
 <trans-unit id="s92595df611bee8c6">
   <source>Your browser does not support the audio element.</source>
+  <target>Votre navigateur ne supporte pas cet élément audio</target>
 </trans-unit>
 <trans-unit id="sc1171a6c566ac1a9">
   <source>Your browser does not support the video element.</source>
+  <target>Votre navigateur ne supporte pas cet élément vidéo</target>
 </trans-unit>
 <trans-unit id="sb74717eac10c73f5">
   <source>This is the beginning of your direct message history with</source>
+  <target>Ceci est le début de votre historique de messages privés avec</target>
 </trans-unit>
 <trans-unit id="s0b7ae9543c001867">
   <source>Reply</source>
+  <target>Répondre</target>
 </trans-unit>
 <trans-unit id="s0621fbc662f668f2">
   <source>Remove attachment</source>
+  <target>Retirer pièce-jointe</target>
 </trans-unit>
 <trans-unit id="s6c9c202aecc5b1f6">
   <source>Attach WAL from pocket</source>
+  <target>Joindre WAL de Pocket</target>
 </trans-unit>
 <trans-unit id="sf18fdd3ba5f7797a">
   <source>Attach file</source>
+  <target>Joindre fichier</target>
 </trans-unit>
 <trans-unit id="se79638a5f87eccd7">
   <source>Unknown HRL</source>
+  <target>HRL inconnu</target>
 </trans-unit>
 <trans-unit id="s8630af8889a7f784">
   <source>no profiles found</source>
+  <target>Aucun profile trouvé</target>
 </trans-unit>
 <trans-unit id="s1a86d5e8ae309e09">
   <source>Toggle Notifications</source>
+  <target>Enclencher Notifications</target>
 </trans-unit>
 <trans-unit id="s2ce5b7abe8cec6d7">
   <source>comments</source>
+  <target>commentaires</target>
 </trans-unit>
 <trans-unit id="s7bdf06399a451efa">
   <source>Whats up?</source>
+  <target>Quoi de neuf?</target>
 </trans-unit>
 <trans-unit id="sa84e6d88de4a8525">
   <source>No Main Feed</source>
+  <target>Pas de fil principal</target>
 </trans-unit>
 <trans-unit id="s863b1e35dc70d3b3">
   <source>No favorites</source>
+  <target>Aucun favoris</target>
 </trans-unit>
 <trans-unit id="sd2af6dd3f25e7992">
   <source>Feed is empty</source>
+  <target>Fil vide</target>
 </trans-unit>
 <trans-unit id="s3d099ab47fec57b6">
   <source>Like</source>
+  <target>Réagir</target>
 </trans-unit>
 <trans-unit id="s2df075aface0dab8">
   <source>Share</source>
+  <target>Partager</target>
 </trans-unit>
 <trans-unit id="sb85774dc5d18ff0f">
   <source>Confirm</source>
+  <target>Confirmer</target>
 </trans-unit>
 <trans-unit id="scc66beac9bca4258">
   <source>Create a post</source>
+  <target>Créeer un message</target>
 </trans-unit>
 <trans-unit id="s0843b2fcef33fcc8">
   <source>Publish</source>
+  <target>Publier</target>
 </trans-unit>
 <trans-unit id="s8dfbfc57ea390f76">
   <source>No channels found</source>
+  <target>Aucun canal trouvé</target>
 </trans-unit>
 <trans-unit id="s498865c7bd1f3959">
   <source>unknown</source>
+  <target>inconnu</target>
 </trans-unit>
 <trans-unit id="sde5369c767e7871d">
   <source>No DM found</source>
+  <target>Aucun message privé trouvé</target>
 </trans-unit>
 <trans-unit id="s884f957390b84459">
   <source>Message a peer</source>
+  <target>Envoyer un message</target>
+</trans-unit>
+<trans-unit id="s22c7a36f572f4655">
+  <source>Mention</source>
+  <target>Mention</target>
+</trans-unit>
+<trans-unit id="s162d73fc5424798a">
+  <source>New message</source>
+  <target>Nouveau message</target>
+</trans-unit>
+<trans-unit id="s780cca56819f90ed">
+  <source>DM received</source>
+  <target>Messag privé recu</target>
+</trans-unit>
+<trans-unit id="saa9b1dd8d508bc61">
+  <source>New message in</source>
+  <target>Nouveau message dans</target>
+</trans-unit>
+<trans-unit id="sc59b604330a8853e">
+  <source>Reply in</source>
+  <target>Réponse dans</target>
+</trans-unit>
+<trans-unit id="sa9c860230fabd46a">
+  <source>New channel</source>
+  <target>Nouveau canal</target>
+</trans-unit>
+<trans-unit id="s26d236d09a66a620">
+  <source>Rules</source>
+  <target>Règles</target>
+</trans-unit>
+<trans-unit id="scfda43cb76c3b083">
+  <source>New DM channel</source>
+  <target>Nouveau fil de message privés</target>
+</trans-unit>
+<trans-unit id="s9bf179b8ceb0f67f">
+  <source>Copy DM channel to clipboard</source>
+  <target>Copier fil dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="s066b0439e548ef62">
+  <source>Copy channel to clipboard</source>
+  <target>Copier fil dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="s73910a76da4b2fce">
+  <source>Comments about</source>
+  <target>Commentaires sur</target>
+</trans-unit>
+<trans-unit id="s0fbc6641c107dcce">
+  <source>This is the start of comment thread about chat message</source>
+  <target>Ceci est le début du fil de commentaire au sujet du message</target>
+</trans-unit>
+<trans-unit id="s2caa864ad1f0a313">
+  <source>This is the start of a comment thread about a</source>
+  <target>Ceci est le début du fil de commentaire au sujet d'un-e</target>
+</trans-unit>
+<trans-unit id="s3d0d89e11e004a72">
+  <source>Create comment thread for this message</source>
+  <target>Créer un fil de commentaire pour ce message</target>
+</trans-unit>
+<trans-unit id="s98af717b1afa6f27">
+  <source>View comment thread</source>
+  <target>Voir fil de commentaire</target>
+</trans-unit>
+<trans-unit id="s8ee45286ff96d7be">
+  <source>Create new comment thread</source>
+  <target>Créer un nouveau fil de commentaire</target>
+</trans-unit>
+<trans-unit id="scd4110589ed93bef">
+  <source>Failed to retrieve Asset. WeaveServices not available.</source>
+  <target>Asset introuvable. WeaveServices non-disponible</target>
+</trans-unit>
+<trans-unit id="sbe524902f9abfbfd">
+  <source>Unknown Asset</source>
+  <target>Asset inconnu</target>
+</trans-unit>
+<trans-unit id="s17839aa6c281acca">
+  <source>No comment threads found</source>
+  <target>Aucun fil de commentaire trouvé</target>
+</trans-unit>
+<trans-unit id="se4b80aa1aac3e36a">
+  <source>Go to Tool</source>
+  <target>Ouvrir Outil</target>
+</trans-unit>
+<trans-unit id="sf9839d90ddaae710">
+  <source>Create comment thread</source>
+  <target>Créer fil de commentaire</target>
+</trans-unit>
+<trans-unit id="sf969c2297c7b8324">
+  <source>Create new Topic</source>
+  <target>Créer nouveau Sujet</target>
+</trans-unit>
+<trans-unit id="s46249fe17f6f2595">
+  <source>Unknown Tool</source>
+  <target>Outil inconnu</target>
+</trans-unit>
+<trans-unit id="s1255df4f4e1c2450">
+  <source>Copy comment thread link to clipboard</source>
+  <target>Copier lien vers fil de commentaire dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="sa898e62d9ad24ee3">
+  <source>WeaveServices not available</source>
+  <target>WeaveServices non-disponible</target>
 </trans-unit>
 </body>
 </file>

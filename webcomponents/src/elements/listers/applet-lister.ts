@@ -322,7 +322,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       } else {
         if (this._isHovered.get(pathEh)) {
           commentButton = html`
-              <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread?"View Thread" : "Create new Thread"}"
+              <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread? msg("View comment thread") : msg("Create new comment thread")}"
                           design="Transparent"
                           @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
         }
@@ -349,12 +349,12 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (treeItems.length == 0) {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-            <div style="color: grey; margin: auto;">${msg('No threads found')}</div>
+            <div style="color: grey; margin: auto;">${msg('No comment threads found')}</div>
             <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId.b64 || this.appletId == THIS_APPLET_ID}
                         @click=${(e) => {
                           if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this.appletId.hash)
                         }}>
-                ${msg('Go to applet')}
+                ${msg('Go to Tool')}
             </ui5-button>
           </div>
       `;

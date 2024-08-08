@@ -43,7 +43,7 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   weaveUrlToWal,
   weClientContext,
-  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType, hrl2Id, 
+  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType, hrl2Id,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {localized, msg} from '@lit/localize';
@@ -357,7 +357,7 @@ export class CommunityFeedApp extends HappElement {
     if (this._weServices) {
       this._weServices.walToPocket({hrl});
     }
-    toasty(("Copied thread's WAL to clipboard"));
+    toasty(("Copied channel's WAL to clipboard"));
   }
 
 

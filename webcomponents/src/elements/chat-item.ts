@@ -302,7 +302,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //let isUnread = false;
     let commentThread = html``;
     let commentButton = html`
-        <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread for this message")} design="Transparent" style="border:none;"
+        <ui5-button icon="sys-add" tooltip=${msg("Create comment thread for this message")} design="Transparent" style="border:none;"
                       @click="${(_e) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">                      
         </ui5-button>`;
     const hasComments = maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread);
@@ -469,8 +469,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
                 }
                 ${hasComments
-                        ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment Thread")} ></ui5-menu-item>`
-                        : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create comment Thread")}></ui5-menu-item>`
+                        ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment thread")} ></ui5-menu-item>`
+                        : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create new comment thread")}></ui5-menu-item>`
                 }
                 <ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>
                 <ui5-menu-item id="copyText" disabled icon="copy" text=${msg("Copy Text")}></ui5-menu-item>

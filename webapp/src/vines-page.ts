@@ -246,12 +246,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   async onArchive(e: CustomEvent<HideEvent>) {
-    const verb = e.detail.hide? "Archive" : "Unarchive";
+    const verb = e.detail.hide? msg("Archive") : msg("Unarchive");
     const dialog = this.shadowRoot.getElementById("confirm-hide-topic") as ConfirmDialog;
     /** DM */
     if (e.detail.address.hashType == HoloHashType.Agent) {
       const agentId = new AgentId(e.detail.address.b64)
-      dialog.title = msg(`${verb} DM channel?`);
+      dialog.title = verb + " " + msg("DM channel") + "?";
       this.addEventListener('confirmed', async (_f) => {
         if (e.detail.hide) {
           await this._dvm.threadsZvm.hideDmThread(agentId);
@@ -266,8 +266,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Topic or Channel */
     const dhtId = intoDhtId(e.detail.address.b64);
-    const type = e.detail.address.hashType == HoloHashType.Entry? "Topic" : "Channel";
-    dialog.title = msg(`${verb} ${type}?`);
+    const type = e.detail.address.hashType == HoloHashType.Entry? msg("Topic") : msg("Channel");
+    dialog.title = `${verb} ${type}?`;
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
         await this._dvm.threadsZvm.hideSubject(dhtId);
@@ -970,7 +970,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               </div>
             ` : html`
             <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
-              Thread about "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
+              ${msg("Comments about")} "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
               <ui5-button icon="delete" design="Transparent"
                           style="border:none; padding:0px"
                           @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
@@ -1234,7 +1234,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${appletOptions}
                     <!-- <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>  FIXME: disabled because not working -->
                     <ui5-option id="dm-option" icon="paper-plane">${msg('Direct Messages')}</ui5-option>
-                    <ui5-option id="mine-option" icon="bookmark">${msg('My Threads')}</ui5-option>
+                    <ui5-option id="mine-option" icon="bookmark">${msg('My Channels')}</ui5-option>
                     <ui5-option id="topics-option" icon="thing-type" selected>${msg('Topics')}</ui5-option>
                 </ui5-select>
                 ${lister}
@@ -1274,15 +1274,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
                               @item-click=${(e) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
-                        <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
+                        <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                         <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="dumpItem" text=${msg("Dump Threads logs")}></ui5-menu-item>
-                        <ui5-menu-item id="dumpFilesItem" text=${msg("Dump Files logs")}></ui5-menu-item>
-                        <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
+                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
+                        <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
+                        <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"</ui5-menu-item>
                     </ui5-menu>
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">

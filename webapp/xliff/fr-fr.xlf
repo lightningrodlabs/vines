@@ -16,87 +16,167 @@
 </trans-unit>
 <trans-unit id="sf969c2297c7b8324">
   <source>Create new Topic</source>
-</trans-unit>
-<trans-unit id="sfe757acedad7705f">
-  <source>Hide Archived Topics</source>
-</trans-unit>
-<trans-unit id="s2db3b734e400a772">
-  <source>View Archived Topics</source>
+  <target>Créer un nouveau sujet</target>
 </trans-unit>
 <trans-unit id="s9d8b8aa2b404c2c8">
   <source>Settings</source>
-</trans-unit>
-<trans-unit id="sc2207707ec0a999c">
-  <source>Export Local</source>
+  <target>Paramètres</target>
 </trans-unit>
 <trans-unit id="s79ac7fc1e859d930">
   <source>Export All</source>
+  <target>Exporter tout</target>
 </trans-unit>
 <trans-unit id="sae7541d42db412aa">
   <source>Import File</source>
+  <target>importer Fichier</target>
 </trans-unit>
 <trans-unit id="saa4526fdc34088e7">
   <source>Import &amp; commit</source>
+  <target>Importer &amp; Soumettre</target>
 </trans-unit>
 <trans-unit id="s793f79a4b17b7cf6">
   <source>Import only</source>
+  <target>Importer Seulement</target>
 </trans-unit>
 <trans-unit id="s305e87b103d2baa9">
   <source>Report Bug</source>
-</trans-unit>
-<trans-unit id="s6f78450c3f12077f">
-  <source>Dump app logs</source>
-</trans-unit>
-<trans-unit id="s17edb25c185ac574">
-  <source>Dump Network logs</source>
+  <target>Signaler un Bogue</target>
 </trans-unit>
 <trans-unit id="sf131ec2d0805ebf9">
   <source>Network Health</source>
+  <target>Santé du Réseau</target>
 </trans-unit>
 <trans-unit id="s5d929ff1619ac0c9">
   <source>Search</source>
+  <target>Recherche</target>
 </trans-unit>
 <trans-unit id="s71bcdc9319052f6e">
   <source>SEARCH FOR</source>
+  <target>RECHERCHER</target>
 </trans-unit>
 <trans-unit id="s671f7b12e6fa2d80">
   <source>Notifications Settings</source>
+  <target>Paramètres de Notifications</target>
 </trans-unit>
 <trans-unit id="s377f021907fa0685">
   <source>message contains</source>
+  <target>message contient</target>
 </trans-unit>
 <trans-unit id="sfd519740f0563fef">
   <source>Search Options</source>
+  <target>Options de Recherche</target>
 </trans-unit>
 <trans-unit id="s524251a5dae81428">
   <source>All Messages</source>
+  <target>Tout message</target>
 </trans-unit>
 <trans-unit id="s64476b0885f2bfd2">
   <source>Mentions &amp; Replies Only</source>
+  <target>Seulement les Mentions et Réponses</target>
 </trans-unit>
 <trans-unit id="s8b97ea84af17c029">
   <source>Never</source>
+  <target>Jamais</target>
 </trans-unit>
 <trans-unit id="sea38ebaa5e603b7a">
   <source>Create Topic</source>
+  <target>Créer Sujet</target>
 </trans-unit>
 <trans-unit id="sd49456694d695e7e">
   <source>Edit Topic</source>
+  <target>Modifier Sujet</target>
 </trans-unit>
 <trans-unit id="sd009a3da6a4ca1f5">
   <source>File successfully shared</source>
+  <target>Fichier partagé avec succès</target>
 </trans-unit>
 <trans-unit id="sfbe867ceef81dd10">
   <source>Error: File already shared to group or stored locally</source>
+  <target>Erreur: Fichier déjà partagé or stocké localement</target>
 </trans-unit>
 <trans-unit id="sc1e929aa05efafba">
   <source>Failed to connect to Holochain Conductor and/or "Vines" cell.</source>
+  <target>Échec de la connection au Holochain Conductor et/ou à la cell "Vines".</target>
 </trans-unit>
 <trans-unit id="s2c8189544e3ea679">
   <source>Retry</source>
+  <target>Réessayer</target>
 </trans-unit>
 <trans-unit id="sd980d545359db490">
   <source>Import Profile into Vines</source>
+  <target>Importer le Profile dans Vines</target>
+</trans-unit>
+<trans-unit id="sa0ca791d0f13f0e5">
+  <source>Archive</source>
+  <target>Archiver</target>
+</trans-unit>
+<trans-unit id="sf71a90bc017f1e80">
+  <source>Unarchive</source>
+  <target>Désarchiver</target>
+</trans-unit>
+<trans-unit id="s35e45311a57818f9">
+  <source>DM channel</source>
+  <target>Canal privé</target>
+</trans-unit>
+<trans-unit id="s11cc72e3db49fec4">
+  <source>Topic</source>
+  <target>Sujet</target>
+</trans-unit>
+<trans-unit id="s1da50951bdd7a204">
+  <source>Channel</source>
+  <target>Canal</target>
+</trans-unit>
+<trans-unit id="s0b7ae9543c001867">
+  <source>Reply</source>
+  <target>Réponse</target>
+</trans-unit>
+<trans-unit id="s73910a76da4b2fce">
+  <source>Comments about</source>
+  <target>Commentaires sur</target>
+</trans-unit>
+<trans-unit id="s8d3230f4441c5b0e">
+  <source>Replying to</source>
+  <target>Répondre à</target>
+</trans-unit>
+<trans-unit id="sf38167aac87c6032">
+  <source>Hide side panel</source>
+  <target>Cacher panneau latéral</target>
+</trans-unit>
+<trans-unit id="s71882be308cb9fdd">
+  <source>Show side panel</source>
+  <target>montrere panneau latéral</target>
+</trans-unit>
+<trans-unit id="s9f5a5f23312798f0">
+  <source>Members</source>
+  <target>Membres</target>
+</trans-unit>
+<trans-unit id="s3d63d9646e0c8c2d">
+  <source>Hide Archived items</source>
+  <target>Cacher les items archivés</target>
+</trans-unit>
+<trans-unit id="sd3be074afe707a6e">
+  <source>View Archived items</source>
+  <target>Montrer les items archivés</target>
+</trans-unit>
+<trans-unit id="sc64f7f67ac6b0f80">
+  <source>Direct Messages</source>
+  <target>Messages Directs</target>
+</trans-unit>
+<trans-unit id="s8865f02d9ebbd0f5">
+  <source>Topics</source>
+  <target>Sujets</target>
+</trans-unit>
+<trans-unit id="s274ead7abb4e71bf">
+  <source>Notification settings for this channel</source>
+  <target>Paramètres de notification pour ce canal</target>
+</trans-unit>
+<trans-unit id="s1027a21e203c37d6">
+  <source>Select a peer</source>
+  <target>Seléctionner un membre</target>
+</trans-unit>
+<trans-unit id="sb2d6cc791eab6dc9">
+  <source>My Channels</source>
+  <target>Mes Canaux</target>
 </trans-unit>
 </body>
 </file>

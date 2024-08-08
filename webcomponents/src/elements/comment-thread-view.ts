@@ -216,7 +216,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     if (!thread) {
       return html `
         ${doodle_bg}
-        <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>
+        <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Comment thread not found</div>
       `;
     }
 
@@ -317,7 +317,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         <!-- Title row -->
         <h3 style="margin:10px; color:#021133;">
           ${openInMainViewBtn}
-          <span>${msg('Thread about')}</span>
+          <span>${msg('Comments about')}</span>
           ${gotoAppletBtn}
           <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
@@ -364,7 +364,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
               ${subjectPrefix} ${subjectName}
             </span>
           </sl-tooltip>
-          <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy thread to clipboard')}
+          <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy comment thread link to clipboard')}
                       style="margin-left:5px;"
                       @click=${(e) => {
                         e.stopPropagation();
