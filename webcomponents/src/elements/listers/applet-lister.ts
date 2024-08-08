@@ -11,7 +11,6 @@ import {
   EntryIdMap,
   intoDhtId,
   intoLinkableId,
-  LinkableId,
   ZomeElement
 } from "@ddd-qc/lit-happ";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
@@ -169,7 +168,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   onClickComment(maybeCommentThread: ActionId | null, subjectHash: AnyId, subjectType: string, subjectName: string, viewType?: string) {
     const request: CommentRequest = {
-      maybeCommentThread, subjectHash, subjectType, subjectName,
+      maybeCommentThread, subjectId: subjectHash, subjectType, subjectName,
       viewType: viewType? viewType : "side",
     };
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: request, bubbles: true, composed: true }));

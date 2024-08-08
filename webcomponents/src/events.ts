@@ -22,7 +22,7 @@ export type EditTopicRequest = {
 /** */
 export type CommentRequest = {
   maybeCommentThread: ActionId | null,
-  subjectHash: AnyId,
+  subjectId: AnyId,
   subjectType: string,
   subjectName: string,
   viewType: string,

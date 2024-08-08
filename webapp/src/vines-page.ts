@@ -741,7 +741,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
-        address: request.subjectHash.b64,
+        address: request.subjectId.b64,
         typeName: request.subjectType,
         appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
         dnaHashB64: this.cell.address.dnaId.b64,
@@ -1223,8 +1223,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
                         <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
                         ${this._canViewArchivedSubjects
-                          ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived Topics")} icon="hide"></ui5-menu-item>`
-                          : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived Topics")} icon="show"></ui5-menu-item>
+                          ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived items")} icon="hide"></ui5-menu-item>`
+                          : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived items")} icon="show"></ui5-menu-item>
                         `}
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
                     </ui5-menu>

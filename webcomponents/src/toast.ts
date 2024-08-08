@@ -37,10 +37,9 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
     const litHtml = html`
         <div style="display:flex; flex-direction:row; gap:10px; margin:0px; padding:0px; white-space:pre-wrap; cursor:pointer"
              @click=${(_e) => {
-        //console.log("Toasty jump", jumpEvent, parent);
-        // FIXME: this make holochain break for some reason. Need to investigate
-        //if (jumpEvent) parent.dispatchEvent(jumpEvent);
-    }}>
+                //console.log("Toasty jump", jumpEvent, parent);
+                if (jumpEvent) parent.dispatchEvent(jumpEvent);
+            }}>
             <strong>${escapeHtml(title)}</strong>
         </div>   
       `;

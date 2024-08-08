@@ -25,7 +25,6 @@ import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {ShowProfileEvent} from "../events";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {HoloHash} from "@holochain/client";
 
 
 /**
