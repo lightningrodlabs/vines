@@ -267,7 +267,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   render() {
-    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices,);
+    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices);
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
@@ -280,8 +280,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let hidemeta = false;
     if (this.prevBeadAh) {
       const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
-      const diff = beadInfo.creationTime - prevInfo.creationTime
-      hidemeta = beadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000;
+      if (prevInfo) {
+        const diff = beadInfo.creationTime - prevInfo.creationTime;
+        hidemeta = beadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000;
+      }
     }
     let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;

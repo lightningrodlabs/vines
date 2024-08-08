@@ -251,7 +251,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.log("threadsZvm.probeAllInner()", this._perspective.getAllSubjects().length)
     await this.initializePerspectiveOnline();
     /** Grab all threads of other subjects to see if there are new ones */
-    let probes = []
+    let probes: Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>>[] = [];
     for (const [subjectAdr, _sub] of this._perspective.getAllSubjects()) {
       probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr)));
     }
@@ -324,10 +324,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Get all subjects from a subjectType path */
   async findSubjects(appletId: EntryId, typePathEh: EntryId): Promise<[DnaId, AnyId][]> {
-    if (!this._perspective.getSubjectType(appletId, typePathEh)) {
+    const subjectType = this._perspective.getSubjectType(appletId, typePathEh);
+    if (!subjectType) {
       return Promise.reject("Unknown appletId or typePathHash");
     }
-    const subjectType = this._perspective.getSubjectType(appletId, typePathEh);
     const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType});
     const subjectB64s: [DnaId, AnyId][] = subjects.map(([dnaHash, subjectHash]) => [new DnaId(dnaHash), intoAnyId(subjectHash)]);
     this._perspective.storeSubjectsWithType(typePathEh, subjectB64s);
@@ -672,10 +672,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<[TypedBead, BeadType, Timestamp, AgentId]> {
     console.log("fetchUnknownBead()", beadAh);
-    if (this._perspective.getBeadInfo(beadAh)) {
-      const beadInfo = this._perspective.getBeadInfo(beadAh);
+    const beadInfo = this._perspective.getBeadInfo(beadAh);
+    if (beadInfo) {
       const typed = this._perspective.getBead(beadAh);
-      return [dematerializeTypedBead(typed, beadInfo.beadType), beadInfo.beadType, beadInfo.creationTime, beadInfo.author];
+      return [dematerializeTypedBead(typed!, beadInfo.beadType), beadInfo.beadType, beadInfo.creationTime, beadInfo.author];
     }
     let bead_ah = beadAh.hash;
     let creationTime: Timestamp;
@@ -867,6 +867,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       return other;
     }
+    return null;
   }
 
 
@@ -1038,9 +1039,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [pp_ah, _ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         const newPpAh = new ActionId(pp_ah);
         ppAhMapping.set(ppAh, newPpAh);
-        const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
-          ? authorshipZvm.perspective.getAuthor(ppAh)
-          : [creationTime, this.cell.address.agentId];
+        let authorshipLog = authorshipZvm.perspective.getAuthor(ppAh);
+        if (!authorshipLog) {
+          authorshipLog = [creationTime, this.cell.address.agentId];
+        }
         /* store pp */
         this._perspective.storeThread(this.cell, newPpAh, pp, authorshipLog[0], authorshipLog[1], false);
         /** commit authorshipLog for new pp */
@@ -1093,9 +1095,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const newPpAh = ppAhMapping.get(beadInfo.bead.ppAh);
         console.log(`PubImp() Bead newPpAh: ${ppAhMapping.get(beadInfo.bead.ppAh).short}`);
         const nextBead: Bead = {ppAh: newPpAh.hash, prevBeadAh: prevBeadAh.hash};
-        const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(beadAh) != undefined
-          ? authorshipZvm.perspective.getAuthor(beadAh)
-          : [beadInfo.creationTime, this.cell.address.agentId];
+        let authorshipLog = authorshipZvm.perspective.getAuthor(beadAh);
+        if (!authorshipLog) {
+          authorshipLog = [beadInfo.creationTime, this.cell.address.agentId];
+        }
         const beadType = beadInfo.beadType == ThreadsEntryType.EntryBead ? "EntryBeadImport" : beadInfo.beadType as BeadType; // copy entry bead verbatim
         const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTypedBeadAt(beadType, content, nextBead, authorshipLog[0], authorshipLog[1]);
         beadAhMapping.set(beadAh, newBeadAh);
@@ -1207,7 +1210,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       || NotifiableEvent.NewBead === notification.event) {
       const beadAh = notification.content;
       const beadInfo = this._perspective.getBeadInfo(beadAh);
-      ppAh = beadInfo.bead.ppAh;
+      ppAh = beadInfo!.bead.ppAh;
     }
     const notificationTip: ThreadsNotificationTip = {
       event: notification.event,
@@ -1229,7 +1232,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   protected async handleLinkPulse(pulse: LinkPulseMat, from: AgentId) {
-    let tip: TipProtocol;
+    let tip: TipProtocol | undefined = undefined;
     switch(pulse.link_type) {
       case ThreadsLinkType.Inbox:
         this.handleInboxLink(pulse, from);
@@ -1432,7 +1435,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const beadAh = new ActionId(pulse.target.b64);
         const beadInfo = this._perspective.getBeadInfo(beadAh);
         const typed = this._perspective.getBead(beadAh);
-        const beadData: NotificationTipBeadData = {typed: dematerializeTypedBead(typed, beadInfo.beadType), beadType: beadInfo.beadType, creationTime: beadInfo.creationTime};
+        const beadData: NotificationTipBeadData = {typed: dematerializeTypedBead(typed!, beadInfo!.beadType), beadType: beadInfo!.beadType, creationTime: beadInfo!.creationTime};
         extra = beadData;
       }
       await this.castNotificationTip(pulse.create_link_hash, base, notif, extra);
@@ -1497,7 +1500,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const notifTip = this._decoder.decode(appTip) as ThreadsNotificationTip;
     console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from);
     let ppAh: ActionId = notifTip.pp_ah;
-    let signal: ZomeSignalProtocol;
+    let signal: ZomeSignalProtocol | undefined = undefined;
     /** Store received Entry */
     if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
       const {typed, beadType, creationTime} = notifTip.data as NotificationTipBeadData;

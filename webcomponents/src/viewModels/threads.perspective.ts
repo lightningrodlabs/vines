@@ -170,17 +170,17 @@ export class ThreadsPerspective {
     return maybeBead[1];
   }
 
-  getBaseBeadInfo(beadAh: ActionId): BeadInfo | undefined {
+  getBaseBeadInfo(beadAh: ActionId): BeadInfo | null {
     const maybeBead = this.beads.get(beadAh);
     if (!maybeBead) {
-      return undefined;
+      return null;
     }
     if (maybeBead[0].beadType != ThreadsEntryType.EncryptedBead) {
       return maybeBead[0];
     }
     const maybeDecBead = this.decBeads.get(beadAh);
     if (!maybeDecBead) {
-      return undefined;
+      return null;
     }
     return maybeDecBead[0];
   }

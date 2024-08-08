@@ -52,6 +52,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
     }}></ui5-button>
     `;
+    if (!profile) {
+      console.warn("No profile found");
+      return html``;
+    }
     //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
     /** render all */
     return html`
@@ -85,7 +89,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const subjectAddr = thread.pp.subject.address;
-    let maybeSemanticTopicTitle = undefined;
+    let maybeSemanticTopicTitle: string | null = null;
     const subjectHashType = getHashType(subjectAddr);
     if (subjectHashType == HoloHashType.Entry) {
       maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectAddr));

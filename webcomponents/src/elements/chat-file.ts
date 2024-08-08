@@ -33,9 +33,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   _filesDvm!: FilesDvm;
 
   @state() private _loading = true;
-  @state() private _manifest: ParcelManifest = undefined;
+  @state() private _manifest?: ParcelManifest;
            private _file: File | null = null;
-           private _maybeBlobUrl: string = undefined;
+           private _maybeBlobUrl?: string;
            private _canRetry = true;
 
 
@@ -92,8 +92,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
       const mime = kind2mime(this._manifest.description.kind_info);
       reader.onload = (event) => {
-        console.log("FileReader onload", event, mime)
-        //this._maybeDataUrl = event.target.result;
+        console.log("FileReader onload", event, mime);
+        if (event.target == null || event.target.result == null) {
+          console.warn("FileReader event is null", event);
+          this._loading = false;
+          return;
+        }
         const blob = new Blob([event.target.result], {type: mime});
         this._maybeBlobUrl = URL.createObjectURL(blob);
         console.log("FileReader blob", blob, this._maybeBlobUrl)
