@@ -48,7 +48,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
       if (maybeThread) {
         title = 'Mentionned in "' + maybeThread.pp.subject_name + '"';
       }
-      content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
+      content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
     }
   }
   if (NotifiableEvent.NewBead === notif.event) {
@@ -57,13 +57,13 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
       const typedBead = threadsDvm.threadsZvm.perspective.getBead(ah);
       const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       const mainThreadAh = getMainThread(threadsDvm);
-      if (maybeThread) {
+      if (maybeThread && mainThreadAh) {
         if (beadInfo.bead.ppAh.equals(mainThreadAh)) {
           title = "New post";
         } else {
           title = `New comment on post "${maybeThread.pp.subject_name}"` //maybeThread.name;
         }
-        content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
+        content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
       }
     }
   }

@@ -9,7 +9,7 @@
     "lib": ["es2017", "dom"],
     "strict": false,
     "esModuleInterop": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,

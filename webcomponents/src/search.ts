@@ -180,7 +180,7 @@ export function splitSpacesExcludeQuotes(string: string): string[] {
 
 /** Have ['from:', 'quoated content'] become ['from:"quoated content"'] */
 function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
-  let result = []
+  let result: string[] = []
   let i = 0;
   while(i < quotes.length) {
     const word = quotes[i].value;

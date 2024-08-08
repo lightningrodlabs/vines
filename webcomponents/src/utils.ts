@@ -107,7 +107,9 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
   }
   let mentionedAgents = profilesZvm.perspective.agents;
   if (!hasAll) {
-    mentionedAgents = mentions.map((mentioned) => profilesZvm.perspective.getAgent(mentioned));
+    mentionedAgents = mentions
+      .map((mentioned) => profilesZvm.perspective.getAgent(mentioned)!)
+      //.filter((el) => el != undefined);
   }
   return mentionedAgents;
 }
@@ -120,7 +122,7 @@ function tokenizeMentions(str: string): string[]  {
   }
 
   var re = /(?:[\w_＠@][＠@])|[＠@]([\w_]{1,15})(?=$|[^\w_])/g;
-  var tokens = { input: str, output: str, matches: [] };
+  var tokens: any = { input: str, output: str, matches: [] };
   var match;
 
   while ((match = re.exec(tokens.output))) {
@@ -182,7 +184,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       case SpecialSubjectType.Applet:
         if (weServices) {
           let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
-          if (!appletInfo) {
+          if (appletInfo) {
             return appletInfo.appletName;
           }
         }
@@ -221,7 +223,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
         const beadInfo = threadsZvm.perspective.getBeadInfo(ah);
         if (beadInfo) {
           const typed = threadsZvm.perspective.getBead(ah);
-          return determineBeadName(beadInfo.beadType, typed, filesDvm, weServices);
+          return determineBeadName(beadInfo.beadType, typed!, filesDvm, weServices);
         } else {
           return `{Unknown Post}`;
         }
@@ -270,7 +272,11 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       if (isHashTypeB64(subject.address, HoloHashType.Dna)) {
         const dnaId = new DnaId(subject.address);
         const maybeInfo = weServices.cache.assetInfos.get(dnaId);
-        return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
+        if (maybeInfo) {
+          return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
+        } else {
+          return `/${appletInfo.appletName}/UnknownAsset`;
+        }
       } else {
         return `/${appletInfo.appletName}/{${subject.typeName}}`;
       }

@@ -38,7 +38,7 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
         <div style="display:flex; flex-direction:row; gap:10px; margin:0px; padding:0px; white-space:pre-wrap; cursor:pointer"
              @click=${(_e) => {
                 //console.log("Toasty jump", jumpEvent, parent);
-                if (jumpEvent) parent.dispatchEvent(jumpEvent);
+                if (jumpEvent && parent) parent.dispatchEvent(jumpEvent);
             }}>
             <strong>${escapeHtml(title)}</strong>
         </div>   

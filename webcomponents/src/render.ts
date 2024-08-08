@@ -56,7 +56,7 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
 export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string, CustomEvent<JumpEvent>] {
     let title: string = "";
     let content: string = "";
-    let jump: CustomEvent<JumpEvent>;
+    let jump: CustomEvent<JumpEvent> | undefined = undefined;
     const ah = notif.content;
     if (NotifiableEvent.Mention === notif.event) {
         jump = beadJumpEvent(ah);
@@ -68,7 +68,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             if (maybeThread) {
                 title += " " + maybeThread.name;
             }
-            content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
+            content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
     }
     if (NotifiableEvent.NewBead === notif.event) {
@@ -88,7 +88,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             title = msg("New message in") + " " + maybeThread.name;
           }
         }
-        content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
+        content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
       }
     }
     if (NotifiableEvent.Reply === notif.event) {
@@ -102,7 +102,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             if (maybeThread) {
                 title = msg("Reply in") + " " + maybeThread.name;
             }
-            content = determineBeadName(beadInfo.beadType, typedBead, filesDvm, weServices);
+            content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
     }
     if (NotifiableEvent.Fork === notif.event) {
@@ -119,6 +119,9 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
     }
     if (NotifiableEvent.NewDmThread === notif.event) {
       title = msg("New DM channel");
+    }
+    if (!jump) {
+      throw Error("Unhandled Even type");
     }
     return [title, content, jump];
 }
