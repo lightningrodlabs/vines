@@ -126,6 +126,7 @@ shellBarStyleTemplate.innerHTML = `
     padding-left:5px !important;
   }
   
+  
   ui5-button {
     color: #464646 !important;
   }

@@ -164,7 +164,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   private async loadCommentThread() {
     console.log("<comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
     const maybePpMat = this._dvm.threadsZvm.perspective.getParticipationProtocol(this.threadHash);
-    if (maybePpMat) {
+    if (maybePpMat && this.threadHash) {
       await this._dvm.threadsZvm.pullAllBeads(this.threadHash);
       await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
       this._loading = false;

@@ -410,7 +410,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Get all beads from a thread */
   async pullAllBeads(ppAh: ActionId): Promise<BeadLink[]> {
-    console.log("pullAllBeads()", ppAh)
+    console.log("pullAllBeads()", ppAh);
     const thread = this._perspective.threads.get(ppAh);
     if (!thread) {
       console.warn("pullAllBeads() Failed. Unknown thread:", ppAh);

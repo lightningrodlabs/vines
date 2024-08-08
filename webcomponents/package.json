@@ -18,6 +18,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-html": "^7.1.0",
     "lit-analyzer": "^1.2.1",
     "watch-cli": "^0.2.3"
   },
@@ -35,7 +36,6 @@
     "@ui5/webcomponents-fiori": "=1.13.3",
     "@ui5/webcomponents-icons": "=1.13.3",
     "@shoelace-style/shoelace": "2.11.2",
-    "@weblogin/trendchart-elements": "^1.1.0",
-    "eslint-plugin-html": "^7.1.0"
+    "@weblogin/trendchart-elements": "^1.1.0"
   }
 }

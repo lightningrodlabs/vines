@@ -14,11 +14,8 @@ import {
 import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
-import "@ui5/webcomponents-fiori/dist/Bar.js";
 import "@ui5/webcomponents-fiori/dist/NotificationListItem.js";
 import "@ui5/webcomponents-fiori/dist/NotificationAction.js";
-import "@ui5/webcomponents-fiori/dist/ShellBar.js";
-import "@ui5/webcomponents-fiori/dist/ShellBarItem.js";
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents/dist/AvatarGroup.js"
@@ -57,7 +54,6 @@ import Input from "@ui5/webcomponents/dist/Input";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import RadioButton from "@ui5/webcomponents/dist/RadioButton";
-import ShellBar from "@ui5/webcomponents-fiori/dist/ShellBar";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -72,6 +68,7 @@ import "@ui5/webcomponents-icons/dist/attachment-photo.js"
 import "@ui5/webcomponents-icons/dist/attachment-video.js"
 import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
+import "@ui5/webcomponents-icons/dist/bell.js"
 import "@ui5/webcomponents-icons/dist/bookmark.js"
 import "@ui5/webcomponents-icons/dist/copy.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
@@ -102,11 +99,13 @@ import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/journey-arrive.js"
 import "@ui5/webcomponents-icons/dist/journey-depart.js"
 import "@ui5/webcomponents-icons/dist/less.js"
+import "@ui5/webcomponents-icons/dist/menu2.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
 import "@ui5/webcomponents-icons/dist/navigation-down-arrow.js"
 import "@ui5/webcomponents-icons/dist/nav-back.js"
 import "@ui5/webcomponents-icons/dist/number-sign.js"
+import "@ui5/webcomponents-icons/dist/open-command-field.js"
 import "@ui5/webcomponents-icons/dist/org-chart.js"
 import "@ui5/webcomponents-icons/dist/open-folder.js"
 import "@ui5/webcomponents-icons/dist/overflow.js"
@@ -117,6 +116,7 @@ import "@ui5/webcomponents-icons/dist/product.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/response.js"
 import "@ui5/webcomponents-icons/dist/save.js"
+import "@ui5/webcomponents-icons/dist/search.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
@@ -153,7 +153,6 @@ import {
   ParticipationProtocol,
   ProfilePanel,
   searchFieldStyleTemplate,
-  shellBarStyleTemplate,
   ShowProfileEvent,
   SpecialSubjectType,
   Subject,
@@ -289,6 +288,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowSearchResults = false;
   @state() private _canShowDebug = false;
   @state() private _listerToShow: string | null = null;
+  @state() private _canShowLeft = true;
+  @state() private _canShowSearch = false;
 
   @state() private _canViewArchivedSubjects = false;
   @state() private _currentCommentRequest: CommentRequest = undefined;
@@ -483,12 +484,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       searchField.shadowRoot.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
       this.requestUpdate();
     }
-    const shellBar = this.shadowRoot.getElementById('topicBar') as ShellBar;
-    if (shellBar) {
-      shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
-      shellBar.showSearchField = false;
-    }
-
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
       console.log("<vines-page> firstUpdated() calling pullAppletIds()", this.weServices);
@@ -534,10 +529,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     // /** Fiddle with shadow parts CSS */
-    // const shellBar = this.shadowRoot.getElementById('topicBar') as HTMLElement;
-    // if (shellBar) {
-    //   shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
-    // }
 
     //   /** Toggle notif settings switch if necessary */
     //   const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
@@ -1135,6 +1126,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           ></my-threads-lister>
       `;
     }
+
+    const toggleLeftBtn = html`
+        <ui5-button icon="menu2" class="${this._canShowLeft? "pressed" : ""}
+                    tooltip=${this._canShowLeft? msg("Hide side panel"): msg("Show side panel")}
+                    slot="startButton"
+                    style="margin-right:5px;"
+                    @click=${(e) => this._canShowLeft = !this._canShowLeft}>
+        </ui5-button>
+    `;
+
     let maybeBackBtn = html``;
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
@@ -1146,9 +1147,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const subjectAh = new ActionId(thread.pp.subject.address);
         const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
         if (subjectBead) {
-          maybeBackBtn = html`
-              <ui5-button icon="nav-back" slot="startButton" class="shellbtn"
-                          @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
+          maybeBackBtn = html`<ui5-button icon="nav-back" slot="startButton" @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
         }
       }
     }
@@ -1161,16 +1160,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <div id="mainDiv" 
              @commenting-clicked=${this.onCommentingClicked}
              @reply-clicked=${this.onReplyClicked}
-             @edit-topic-clicked=${this.onEditTopicClicked} >
-            <div id="leftSide" @contextmenu=${(e) => {
-              console.log("LeftSide contextmenu", e);
-                // e.preventDefault();
-                // const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
-                // const btn = this.shadowRoot.getElementById("groupBtn") as Button;
-                // menu.showAt(btn);
-                // //menu.style.top = e.clientY + "px";
-                // //menu.style.left = e.clientX + "px";
-            }}>
+             @edit-topic-clicked=${this.onEditTopicClicked}>
+            
+            <div id="leftSide" style="display: ${this._canShowLeft? "flex": "none"}"
+                 @contextmenu=${(e) => {
+                    console.log("LeftSide contextmenu", e);
+                  // e.preventDefault();
+                  // const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
+                  // const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                  // menu.showAt(btn);
+                  // //menu.style.top = e.clientY + "px";
+                  // //menu.style.left = e.clientX + "px";
+                }}>
                 <div id="group-div">
                     <ui5-avatar size="S" class="chatAvatar"
                                 @click=${() => {
@@ -1252,19 +1253,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                   settingsMenu.showAt(settingsBtn);
                                 }}>
                     </ui5-button>
-                      <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
-                                @item-click=${(e) => this.onSettingsMenu(e)}>
-                          <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
-                          <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
-                          <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
-                          <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
-                          <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                          <ui5-menu-item id="dumpItem" text=${msg("Dump Threads logs")}></ui5-menu-item>
-                          <ui5-menu-item id="dumpFilesItem" text=${msg("Dump Files logs")}></ui5-menu-item>
-                          <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
-                      </ui5-menu>
+                    <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
+                              @item-click=${(e) => this.onSettingsMenu(e)}>
+                        <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
+                        <ui5-menu-item id="exportItem" text=${msg("Export Local")} icon="save" starts-section></ui5-menu-item>
+                        <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
+                        <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
+                        <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
+                        <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
+                        <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
+                        <ui5-menu-item id="dumpItem" text=${msg("Dump Threads logs")}></ui5-menu-item>
+                        <ui5-menu-item id="dumpFilesItem" text=${msg("Dump Files logs")}></ui5-menu-item>
+                        <ui5-menu-item id="dumpNetworkItem" text=${msg("Dump Network logs")}></ui5-menu-item>
+                    </ui5-menu>
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
                         <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
@@ -1289,9 +1290,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </div>
             <div id="mainSide">
-              <ui5-shellbar id="topicBar" primary-title=${primaryTitle} show-search-field>
+              <div id="topicBar">
+                  ${toggleLeftBtn}
                   ${maybeBackBtn}
-                  <ui5-input id="search-field" slot="searchField" placeholder=${msg('Search')} show-clear-icon
+                  <div id="primaryTitle" style="font-size: 20px">${primaryTitle}</div>
+                  <div style="flex-grow: 1"></div>
+                  <div id="topBarBtnGroup">
+                    <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
+                             style="display: ${this._canShowSearch? "flex" : "none"}"
                              @input=${(e) => {
                                  console.log("<search-field> @input", e.keyCode, e);
                                  let searchElem = this.shadowRoot.getElementById("search-field") as Input;
@@ -1327,12 +1333,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                }
                              }}
                   ></ui5-input>
-                  ${this.selectedThreadHash === undefined ? html`` :
-                          html`<ui5-shellbar-item id="notifSettingsBtn" 
+                  <ui5-button icon="search" class="${this._canShowSearch? "pressed" : ""}" @click=${() => {this._canShowSearch = !this._canShowSearch;}}></ui5-button>
+
+                      ${this.selectedThreadHash === undefined ? html`` :
+                          html`<ui5-button id="notifSettingsBtn" 
                                            icon="bell" 
                                            tooltip=${msg('Notifications Settings')} 
                                            @click=${() => {
-                                             console.log("notifSettingsBtn.click()")
+                                             console.log("notifSettingsBtn.click()");
                                             const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
                                             if (popover.isOpen()) {
                                                 popover.close();
@@ -1341,24 +1349,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             const shellbar = this.shadowRoot.getElementById("topicBar");
                                             popover.showAt(shellbar);
                                         }}>
-                          </ui5-shellbar-item>`
-                  }                  
-                  <ui5-shellbar-item id="favButton" icon="favorite-list" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-shellbar-item>
-                  <ui5-shellbar-item id="cmtButton" icon="comment" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-shellbar-item>
-                  <ui5-shellbar-item id="inboxButton" icon="inbox"
-                                     .count=${this._dvm.threadsZvm.perspective.inbox.size? this._dvm.threadsZvm.perspective.inbox.size : ""}
-                                     @click=${() => {
-                                        console.log("inboxButton.click()")
-                                        const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
-                                        if (popover.isOpen()) {
-                                            popover.close();
-                                            return;
-                                        }
-                                        const shellbar = this.shadowRoot.getElementById("topicBar");
-                                        popover.showAt(shellbar);
-                                    }}>
-                  </ui5-shellbar-item>
-              </ui5-shellbar>
+                          </ui5-button>`
+                  }
+                    <ui5-button icon="favorite-list" class="${this._canShowFavorites? "pressed" : ""}" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
+                    <ui5-button icon="comment" class="${this._canShowComments? "pressed" : ""}" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
+                    <div class="notification-button">
+                      <ui5-button icon="inbox"
+                                         @click=${() => {
+                                            console.log("inboxButton.click()")
+                                            const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                                            if (popover.isOpen()) {
+                                                popover.close();
+                                                return;
+                                            }
+                                            const shellbar = this.shadowRoot.getElementById("topicBar");
+                                            popover.showAt(shellbar);
+                                        }}>
+                      </ui5-button>
+                      <span class="numberBadge">${this._dvm.threadsZvm.perspective.inbox.size? this._dvm.threadsZvm.perspective.inbox.size : ""}</span>
+                    </div>
+                  </div>
+              </div>
 
                 <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
                     <div class="popover-content">
@@ -1369,11 +1380,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-li>FIXME</ui5-li>
                             <hr style="color:#f4f4f4"/> -->
                             <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
-                            <ui5-li @click=${(e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(_e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
+                            <ui5-li @click=${(_e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(_e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(_e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(_e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>
@@ -1405,7 +1416,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       <favorites-view></favorites-view>
                   </div>` : html``}
                   <!-- <peer-list></peer-list> -->
-                  ${this._canShowSearchResults? html`
+                  ${this._canShowSearch && this._canShowSearchResults? html`
                   <div id="rightSide">
                       <search-result-panel .parameters=${searchParameters}></search-result-panel>
                   </div>`
@@ -1739,26 +1750,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: column;
           background: #FBFCFD;          
         }
-
-        .shellbtn {
-          color: #464646;
-        }
-        .shellbtn:hover {
-          background: #e6e6e6;
-        }
-
-        #topicBar::part(root) {
-          /*border: 1px solid dimgray;*/
-          /*color:black;*/
-          /*background: rgb(94, 120, 200);*/
-          background: white;
-          padding-left: 2px;
-          border-radius:5px;
-          /*box-shadow: rgba(30, 30, 30, 0.17) 2px 10px 10px;*/
-          box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
-        }
-
-
+        
         #favoritesSide {
           flex-direction:column;
           min-width: 350px;
@@ -1861,7 +1853,59 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
           border-radius: 20px;
         }
+
+        #topicBar {
+          background: white;
+          padding: 0px 8px 0px 2px;
+          height: 44px;
+          box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
+          display:flex;
+          flex-direction: row;
+          color: #464646;
+          align-items: center;
+          z-index: inherit;
+        }
         
+        #topicBar ui5-button {
+          color: #464646;
+          border: none;
+        }
+
+        #topicBar ui5-button.pressed {
+          /*box-shadow: inset 2px 2px 1px #7b7878, inset 2px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -3px 5px rgba(255, 255, 255, 0.5);*/
+          box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.3), inset -3px -3px 8px rgba(255, 255, 255, 0.3);
+
+        }
+
+
+        #topicBar ui5-button:hover {
+          background: #e6e6e6;
+        }
+        
+        #topBarBtnGroup {
+          display: flex;
+          flex-direction: row;
+          gap:3px;
+          align-items: center
+        }
+        
+        .numberBadge {
+          position: absolute;
+          top: 5px;
+          right: 8px;
+          background-color: red;
+          color: white;
+          border-radius: 50%;
+          padding: 2px 5px;
+          font-size: 10px;
+          font-weight: bold;
+          /*min-width: 18px;*/
+          text-align: center;
+        }
+
+        .numberBadge:empty {
+          display: none;
+        }
       `,
 
     ];
