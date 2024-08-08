@@ -7,7 +7,7 @@ import {
   DnaId,
   EntryId,
   HappBuildModeType,
-  HoloHashType,
+  HoloHashType, intoDhtId,
   isHashTypeB64
 } from "@ddd-qc/lit-happ";
 
@@ -246,16 +246,34 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   async onArchive(e: CustomEvent<HideEvent>) {
-    const type = e.detail.address.hashType == HoloHashType.Entry? "Topic" : "Channel";
     const verb = e.detail.hide? "Archive" : "Unarchive";
     const dialog = this.shadowRoot.getElementById("confirm-hide-topic") as ConfirmDialog;
+    /** DM */
+    if (e.detail.address.hashType == HoloHashType.Agent) {
+      const agentId = new AgentId(e.detail.address.b64)
+      dialog.title = msg(`${verb} DM channel?`);
+      this.addEventListener('confirmed', async (_f) => {
+        if (e.detail.hide) {
+          await this._dvm.threadsZvm.hideDmThread(agentId);
+          toasty(`DM channel archived`);
+        } else {
+          await this._dvm.threadsZvm.unhideDmThread(agentId);
+          toasty(`DM channel unarchived`);
+        }
+      });
+      dialog.open();
+      return;
+    }
+    /** Topic or Channel */
+    const dhtId = intoDhtId(e.detail.address.b64);
+    const type = e.detail.address.hashType == HoloHashType.Entry? "Topic" : "Channel";
     dialog.title = msg(`${verb} ${type}?`);
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
-        await this._dvm.threadsZvm.hideSubject(e.detail.address);
+        await this._dvm.threadsZvm.hideSubject(dhtId);
         toasty(`${type} archived`);
       } else {
-        await this._dvm.threadsZvm.unhideSubject(e.detail.address);
+        await this._dvm.threadsZvm.unhideSubject(dhtId);
         toasty(`${type} Unarchived`);
       }
     });

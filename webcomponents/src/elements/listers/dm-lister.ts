@@ -5,7 +5,7 @@ import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
-import {threadJumpEvent} from "../../events";
+import {HideEvent, threadJumpEvent} from "../../events";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
@@ -107,16 +107,18 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         class="showBtn"
                         @click=${async (e) => {
                             e.stopPropagation();
-                            await this._dvm.threadsZvm.unhideDmThread(otherAgent);
-                            toasty(`Unarchived DMs with ${otherProfile.nickname}`);
+                            this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: otherAgent}, bubbles: true, composed: true}));
+                            //await this._dvm.threadsZvm.unhideDmThread(otherAgent);
+                            //toasty(`Unarchived DMs with ${otherProfile.nickname}`);
                         }}></ui5-button>
         ` : html`
                   <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                               class="showBtn"
                               @click=${async (e) => {
                                   e.stopPropagation();
-                                  await this._dvm.threadsZvm.hideDmThread(otherAgent);
-                                  toasty(`Archived DMs with ${otherProfile.nickname}`);
+                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: otherAgent}, bubbles: true, composed: true}));
+                                  //await this._dvm.threadsZvm.hideDmThread(otherAgent);
+                                  //toasty(`Archived DMs with ${otherProfile.nickname}`);
                               }}></ui5-button>`;
 
           return html`
