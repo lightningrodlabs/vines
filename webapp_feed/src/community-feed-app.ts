@@ -357,7 +357,7 @@ export class CommunityFeedApp extends HappElement {
     if (this._weServices) {
       this._weServices.walToPocket({hrl});
     }
-    toasty(("Copied channel's WAL to clipboard"));
+    toasty(msg("Copied channel's WAL to clipboard"));
   }
 
 

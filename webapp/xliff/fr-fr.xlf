@@ -160,7 +160,7 @@
 </trans-unit>
 <trans-unit id="sc64f7f67ac6b0f80">
   <source>Direct Messages</source>
-  <target>Messages Directs</target>
+  <target>Messages Privés</target>
 </trans-unit>
 <trans-unit id="s8865f02d9ebbd0f5">
   <source>Topics</source>
@@ -177,6 +177,26 @@
 <trans-unit id="sb2d6cc791eab6dc9">
   <source>My Channels</source>
   <target>Mes Canaux</target>
+</trans-unit>
+<trans-unit id="s99f110d27e30b289">
+  <source>Title</source>
+  <target>Titre</target>
+</trans-unit>
+<trans-unit id="s564cb97445533ac4">
+  <source>Create new channel</source>
+  <target>Créer nouveau canal</target>
+</trans-unit>
+<trans-unit id="s6d9e89e9aa685f21">
+  <source>Purpose</source>
+  <target>Raison d'être</target>
+</trans-unit>
+<trans-unit id="s382a2aa3984474dd">
+  <source>Create</source>
+  <target>Créer</target>
+</trans-unit>
+<trans-unit id="s2350820794cf0edb">
+  <source>Copied channel's WAL to clipboard</source>
+  <target>WAL du canal copié dans le presse-papier</target>
 </trans-unit>
 </body>
 </file>

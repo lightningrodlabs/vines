@@ -72,6 +72,9 @@
 <trans-unit id="s341a587ff5fa89e9">
   <source>Create Post</source>
 </trans-unit>
+<trans-unit id="s2350820794cf0edb">
+  <source>Copied channel's WAL to clipboard</source>
+</trans-unit>
 </body>
 </file>
 </xliff>

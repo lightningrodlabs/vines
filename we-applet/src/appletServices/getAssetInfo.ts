@@ -1,5 +1,6 @@
 import {AppClient} from "@holochain/client";
 import {
+    hrl2Id,
     materializeAnyBead,
     ThreadsEntryType,
     ThreadsProxy, weaveUrlToWal
@@ -42,13 +43,13 @@ export async function getAssetInfo(
     const threadsProxy: ThreadsProxy = new ThreadsProxy(cellProxy);
 
     const pEntryType = pascal(recordInfo.entryType);
-    const [_dnaId, dhtId] = hrl2Id(wal.ghrl);
-    const actionId = new ActionId(dhtId);
+    const [_dnaId, dhtId] = hrl2Id(wal.hrl);
+    const actionId = new ActionId(dhtId.b64);
 
     switch (pEntryType) {
         case ThreadsEntryType.TextBead:
             console.log("Vines/we-applet: TextBead", wal);
-            const tuple = await threadsProxy.fetchTextBead(actionId);
+            const tuple = await threadsProxy.fetchTextBead(actionId.hash);
             return {
                 icon_src: wrapPathInSvg(mdiCommentText),
                 name: tuple[2].value,
@@ -56,7 +57,7 @@ export async function getAssetInfo(
         break;
         case ThreadsEntryType.AnyBead:
             console.log("Vines/we-applet: AnyBead", wal);
-            const anyTuple = await threadsProxy.fetchAnyBead(actionId);
+            const anyTuple = await threadsProxy.fetchAnyBead(actionId.hash);
             const hrlBead = materializeAnyBead(anyTuple[2]);
             const beadWal = weaveUrlToWal(hrlBead.value);
             const beadAh = new ActionId(beadWal.hrl[1]);
@@ -72,7 +73,7 @@ export async function getAssetInfo(
             const fProxy = await asCellProxy(appletClient, undefined, mainAppInfo.installed_app_id, FILES_DEFAULT_ROLE_NAME);
             const filesProxy: FilesProxy = new FilesProxy(fProxy);
             console.log("Vines/we-applet: EntryBead filesProxy", filesProxy);
-            const fileTuple = await threadsProxy.fetchEntryBead(actionId);
+            const fileTuple = await threadsProxy.fetchEntryBead(actionId.hash);
             const manifest = await filesProxy.getFileInfo(fileTuple[2].sourceEh)
             //const fileBead = materializeEntryBead(fileTuple[2]);
             //const source = truncate(fileBead.sourceEh, 10, false);
@@ -84,7 +85,7 @@ export async function getAssetInfo(
         case ThreadsEntryType.ParticipationProtocol:
             console.log("Vines/we-applet: pp info", wal);
             console.log("Vines/we-applet: getPp()", wal.hrl[1], threadsProxy);
-            const pp = await threadsProxy.fetchPp(actionId);
+            const pp = await threadsProxy.fetchPp(actionId.hash);
             console.log("Vines/we-applet: pp", pp);
             return {
                 icon_src: wrapPathInSvg(mdiCommentTextMultiple),

@@ -1491,7 +1491,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
             <section>
                 <div>
-                    <ui5-label for="topicTitleInput" required>Title:</ui5-label>
+                    <ui5-label for="topicTitleInput" required>${msg("Title")}:</ui5-label>
                     <ui5-input id="topicTitleInput" @keydown=${(e) => {
                         if (e.keyCode === 13) {
                             e.preventDefault();
@@ -1512,7 +1512,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
               <section>
                   <div>
-                      <ui5-label for="editTopicTitleInput" required>Title:</ui5-label>
+                      <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
                       <ui5-input id="editTopicTitleInput" @keydown=${(e) => {
                           if (e.keyCode === 13) {
                               e.preventDefault();
@@ -1530,10 +1530,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               </div>
           </ui5-dialog>
         <!-- CreateThreadDialog -->
-        <ui5-dialog id="create-thread-dialog" header-text="Create new channel">
+        <ui5-dialog id="create-thread-dialog" header-text=${msg("Create new channel")}>
             <section>
                 <div>
-                    <ui5-label for="threadPurposeInput" required>Purpose:</ui5-label>
+                    <ui5-label for="threadPurposeInput" required>${msg("Purpose")}:</ui5-label>
                     <ui5-input id="threadPurposeInput" 
                                @keydown=${async (e) => {
                                   if (e.keyCode === 13) {
@@ -1546,7 +1546,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <div slot="footer" style:
             "display:flex;">
             <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                        @click=${async (e) => await this.onCreateThread(e)} >Create
+                        @click=${async (e) => await this.onCreateThread(e)} >
+                ${msg("Create")}
             </ui5-button>
             <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel
             </ui5-button>

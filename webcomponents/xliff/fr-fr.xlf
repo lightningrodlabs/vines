@@ -20,7 +20,7 @@
 </trans-unit>
 <trans-unit id="sefcf950b3cc4fc3b">
   <source>Language</source>
-  <target>Langage</target>
+  <target>Langue</target>
 </trans-unit>
 <trans-unit id="sc93a9aa3e5bcbf5d">
   <source>Save Profile</source>
@@ -164,7 +164,7 @@
 </trans-unit>
 <trans-unit id="s6c9c202aecc5b1f6">
   <source>Attach WAL from pocket</source>
-  <target>Joindre WAL de Pocket</target>
+  <target>Joindre WAL à partir de Pocket</target>
 </trans-unit>
 <trans-unit id="sf18fdd3ba5f7797a">
   <source>Attach file</source>
@@ -337,6 +337,22 @@
 <trans-unit id="sa898e62d9ad24ee3">
   <source>WeaveServices not available</source>
   <target>WeaveServices non-disponible</target>
+</trans-unit>
+<trans-unit id="s003450339b5456ad">
+  <source>Copied AgentPubKey to clipboard</source>
+  <target>AgentPubKey copié dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="sfb6dab1a1aa86d7b">
+  <source>Copied Message's WAL to clipboard</source>
+  <target>WAL du message copié dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="sa2d505555b6701a8">
+  <source>Copied WAL to clipboard</source>
+  <target>Copier WAL dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="s6d9e89e9aa685f21">
+  <source>Purpose</source>
+  <target>Raison d'être</target>
 </trans-unit>
 </body>
 </file>

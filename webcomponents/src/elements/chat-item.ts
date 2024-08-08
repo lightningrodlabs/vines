@@ -192,7 +192,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         if (this.weServices) {
           this.weServices.walToPocket({hrl});
         }
-        toasty(("Copied Message's WAL to clipboard"));
+        toasty(msg("Copied Message's WAL to clipboard"));
       break;
       case "copyText": /* TODO */break;
       case "flagMessage": /* TODO */  break;

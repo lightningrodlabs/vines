@@ -147,7 +147,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
               if (this.weServices) {
                   this.weServices.walToPocket(weaveUrlToWal(this.wurl));
               }
-              toasty(("Copied WAL to clipboard"));
+              toasty(msg("Copied WAL to clipboard"));
           }}>
             ${msg('Unknown HRL')}
           </ui5-badge>
