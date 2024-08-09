@@ -33,6 +33,9 @@ export async function createVinesApplet(
 
   const profilesClient = appletViewInfo.profilesClient;
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
+  if (!mainAppInfo) {
+    throw Promise.reject("Missing Main AppInfo");
+  }
 
   /** Determine profilesAppInfo */
   const mainAppWs = appletViewInfo.appletClient as AppWebsocket;
@@ -40,6 +43,10 @@ export async function createVinesApplet(
   let profilesAppInfo = await profilesClient.client.appInfo();
   console.log("createVinesApplet() mainAppInfo", mainAppInfo);
   console.log("createVinesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+
+  if (!profilesAppInfo) {
+    throw Promise.reject("Missing Profiles AppInfo");
+  }
 
   /** Check if roleName is actually a cloneId */
   let maybeCloneId = undefined;

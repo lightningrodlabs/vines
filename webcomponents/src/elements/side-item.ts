@@ -1,5 +1,5 @@
 import {css, html, TemplateResult} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
@@ -35,7 +35,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash?: ActionId;
+  @property() hash!: ActionId;
 
   @property() prevBeadAh?: ActionId;
 
@@ -48,19 +48,19 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   threadsPerspective!: ThreadsPerspective;
 
   @consume({context: weClientContext, subscribe: true})
-  weServices: WeServicesEx;
+  weServices?: WeServicesEx;
 
   @consume({context: globaFilesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  @state() private _loading = true;
+  //@state() private _loading = true;
 
 
   /**
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     if (oldDvm) {
       oldDvm.threadsZvm.unsubscribe(this);
     }
@@ -77,7 +77,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  renderContent(): [TemplateResult<1>, AgentId, string] {
+  renderContent(): [TemplateResult<1>, AgentId | undefined, string | undefined] {
     let content = html``;
 
     if (!this.hash) {
@@ -114,9 +114,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             content = html`
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
-                   @click=${async (e) => {
+                   @click=${async (e:any) => {
                     e.stopPropagation();
-                    await this.weServices.assetInfo(wal);
+                    await this.weServices?.assetInfo(wal);
                     this.requestUpdate();
                   }}>
                   <ui5-icon name="synchronize"></ui5-icon>
@@ -126,7 +126,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           } else {
             content = html`
               <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e) => this.weServices.openWal(wal)}>
+                   @click=${(_e:any) => this.weServices?.openWal(wal)}>
                   ${maybeInfo.assetInfo.name}
               </div>
           `;
@@ -142,7 +142,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         if (maybePprm) {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                              @click=${(e) => {
+                              @click=${(_e:any) => {
             this._filesDvm.downloadFile(manifestEh);
             toasty(msg("File downloaded") + ": " + desc.name);
           }}>
@@ -173,33 +173,36 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     /** */
     return html`
       <blockquote class="reply"
-           @click=${(e) => {e.stopPropagation(); this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
-          ${determineBeadName(prevBeadInfo.beadType, prevBead, this._filesDvm, this.weServices, 200)}
+           @click=${(e:any) => {e.stopPropagation(); this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
+          ${determineBeadName(prevBeadInfo!.beadType, prevBead!, this._filesDvm, this.weServices, 200)}
       </blockquote>
     `;
   }
 
 
   /** */
-  render() {
-    console.log("<side-item>.render()", this.hash, this.deletable);
+  override render() {
+    console.log("<side-item>.override render()", this.hash, this.deletable);
 
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     const [content, author, date] = this.renderContent();
-    const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author)
+    let maybeProfile = undefined;
+    if (author) {
+      maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author);
+    }
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
     /* render item */
     return html`
     <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
-         @click=${(e) => {console.log("sideItem clicked", this.hash); e.stopPropagation(); this.dispatchEvent(beadJumpEvent(this.hash))}}>
+         @click=${(e:any) => {console.log("sideItem clicked", this.hash); e.stopPropagation(); this.dispatchEvent(beadJumpEvent(this.hash))}}>
         <div class="avatarRow">
-            <div @click=${(e) => {
+            <div @click=${(e:any) => {
                 //console.log("sideItem onShowProfile clicked", beadAh);
                 e.stopPropagation();
-                this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                if (author) this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
             }}>
-                ${renderAvatar(this._dvm.profilesZvm, author, "XS")}                
+                ${author? renderAvatar(this._dvm.profilesZvm, author, "XS") : ""}                
             </div>
             <div class="nameColumn" style="display:flex; flex-direction:column;">
                 <span class="sideAgentName">${agentName}</span>
@@ -207,9 +210,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <div style="flex-grow: 1"></div>
             ${this.deletable? html`<ui5-button icon="decline" design="Transparent"
-            @click=${(e) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
+            @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
         </div>
-        ${this.renderPrevBead(beadInfo)}
+        ${beadInfo? this.renderPrevBead(beadInfo) : ""}
         <div class="sideContentRow">
           ${content}
         </div>
@@ -218,7 +221,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       codeStyles,
       sharedStyles,

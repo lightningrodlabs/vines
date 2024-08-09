@@ -1,5 +1,5 @@
 import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {html, LitElement, TemplateResult} from "lit";
+import {html, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {determineBeadName} from "./utils";

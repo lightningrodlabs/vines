@@ -1,4 +1,4 @@
-import {css, html, LitElement, PropertyValues} from "lit";
+import {css, html, LitElement, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {consume} from "@lit/context";
 
@@ -28,16 +28,16 @@ export class InputBar extends LitElement {
 
   /** Properties */
 
-  @property() topic: string = ''
-  @property() cachedInput: string = ''
+  @property() topic: string = '';
+  @property() cachedInput: string = '';
   @property() showHrlBtn?: string;
   @property() background?: string;
   @property() showFileBtn?: string;
   @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
-  @state() private _file: File = undefined;
-  @state() private _wal: WAL = undefined;
+  @state() private _file: File | undefined = undefined;
+  @state() private _wal: WAL | undefined = undefined;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -46,15 +46,15 @@ export class InputBar extends LitElement {
   /** -- Getters -- */
 
   get inputElem(): TextArea {
-    return this.shadowRoot.getElementById("textMessageInput") as unknown as TextArea;
+    return this.shadowRoot!.getElementById("textMessageInput") as unknown as TextArea;
   }
 
   get suggestionListElem(): List {
-    return this.shadowRoot.getElementById("agent-list") as unknown as List;
+    return this.shadowRoot!.getElementById("agent-list") as unknown as List;
   }
 
   get popoverElem(): Popover {
-    return this.shadowRoot.getElementById("pop") as unknown as Popover;
+    return this.shadowRoot!.getElementById("pop") as unknown as Popover;
   }
 
 
@@ -76,33 +76,33 @@ export class InputBar extends LitElement {
   /** -- Methods -- */
 
   /** */
-  protected async firstUpdated(_changedProperties: PropertyValues) {
+  protected override async firstUpdated(_changedProperties: PropertyValues) {
     /** Fiddle with shadow parts CSS */
-    const inputBar = this.shadowRoot.getElementById('inputBar') as HTMLElement;
+    const inputBar = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
     if (inputBar) {
-      inputBar.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
+      inputBar.shadowRoot!.appendChild(inputBarStyleTemplate.content.cloneNode(true));
 
       const input = inputBar.querySelector("#textMessageInput")  as HTMLElement;
       //console.log("textMessageInput", input);
-      input.shadowRoot.appendChild(inputBarStyleTemplate.content.cloneNode(true));
+      input.shadowRoot!.appendChild(inputBarStyleTemplate.content.cloneNode(true));
 
-      const pop = this.shadowRoot.getElementById('pop') as HTMLElement;
+      const pop = this.shadowRoot!.getElementById('pop') as HTMLElement;
       const list = pop.querySelector("#agent-list") as HTMLElement;
       console.log("#agent-list", pop, list);
-      list.shadowRoot.appendChild(suggestionListTemplate.content.cloneNode(true));
+      list.shadowRoot!.appendChild(suggestionListTemplate.content.cloneNode(true));
     }
   }
 
 
   /** */
-  updated() {
+  override updated() {
     if (this.inputElem && this.inputElem.value == "" && this.cachedInput != "") {
       this.inputElem.value = this.cachedInput;
       //console.log("<vines-input-var> (jump) updated to", this.cachedInput);
       //this.requestUpdate();
     }
     if (this.background) {
-      const elem = this.shadowRoot.getElementById('inputBar') as HTMLElement;
+      const elem = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
       elem.style.background = this.background;
       elem.style.borderRadius = "20px";
     }
@@ -127,7 +127,7 @@ export class InputBar extends LitElement {
   /** */
   private commitInput() {
     console.log(`Commit input value "${this.inputElem.value}"`);
-    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value, file: this._file, wal: this._wal}, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value!, file: this._file!, wal: this._wal!}, bubbles: true, composed: true}));
     this.inputElem.value = "";
     this._cacheInputValue = "";
     this._file = undefined;
@@ -137,7 +137,7 @@ export class InputBar extends LitElement {
 
 
   /** */
-  handleSuggestingKeydown(e) {
+  handleSuggestingKeydown(e:any) {
     //console.log("Keydown keyCode", e.keyCode);
     /** Undo suggesting if '@' has been erased */
     if (e.keyCode == 8 && this.inputElem.value.substr(this.inputElem.value.length - 1) === "@") {
@@ -163,42 +163,42 @@ export class InputBar extends LitElement {
     /* UP: select previous */
     if (e.keyCode == 38) {
       if (i > 0) {
-        items[i].selected = false;
-        items[i - 1].selected = true;
+        items[i]!.selected = false;
+        items[i - 1]!.selected = true;
       }
       e.preventDefault();
     }
     /* Down: select next */
     if (e.keyCode == 40) {
       if (i < items.length - 1) {
-        items[i].selected = false;
-        items[i + 1].selected = true;
+        items[i]!.selected = false;
+        items[i + 1]!.selected = true;
       }
       e.preventDefault();
     }
     /* Home: select fist */
     if (e.keyCode == 33) {
-      items[i].selected = false;
-      items[0].selected = true;
+      items[i]!.selected = false;
+      items[0]!.selected = true;
       e.preventDefault();
     }
     /* End: select fist */
     if (e.keyCode == 34) {
-      items[i].selected = false;
-      items[items.length - 1].selected = true;
+      items[i]!.selected = false;
+      items[items.length - 1]!.selected = true;
       e.preventDefault();
     }
     /* Enter or Tab: select current */
     if (e.keyCode === 9 || e.keyCode === 13) {
-      console.log("selected item", items[i], items[i].outerText);
-      this.suggestionSelected(items[i].outerText);
+      console.log("selected item", items[i], items[i]!.outerText);
+      this.suggestionSelected(items[i]!.outerText);
       e.preventDefault();
     }
   }
 
 
   /** */
-  handleKeydown(e) {
+  handleKeydown(e:any) {
     //console.log("keydown", e);
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
@@ -237,7 +237,7 @@ export class InputBar extends LitElement {
 
 
   /** */
-  splitByWordsAndPunctuation(str): string[] {
+  splitByWordsAndPunctuation(str: string): string[] {
     const regex = /[@a-zA-ZÀ-ÖØ-öø-ÿ0-9']+|[^\w\s]/g;
     const res = str.match(regex);
     return res? res : [];
@@ -245,18 +245,18 @@ export class InputBar extends LitElement {
 
 
   /** */
-  render() {
-    console.log("<vines-input-bar>.render()", this.cachedInput, this._wal, this.profilesZvm);
+  override render() {
+    console.log("<vines-input-bar>.override render()", this.cachedInput, this._wal, this.profilesZvm);
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     const input = this.inputElem? this.inputElem.value : "";
     const endsWithWhitespace = input.length != input.trimEnd().length;
     const words = this.splitByWordsAndPunctuation(input); //input.trim().split(/\s+/);
-    const lastWord = words.length > 0 ? words[words.length - 1] : "";
+    const lastWord = words.length > 0 ? words[words.length - 1]! : "";
     const lastWordIsMention = lastWord.length > 0 && lastWord[0] == '@' && !endsWithWhitespace;
     //console.log("input words", words, lastWordIsMention);
-    let agentItems = [];
+    let agentItems: TemplateResult<1>[] = [];
     if (lastWordIsMention) {
       const filter = lastWord.slice(1);
       /** Filter suggestions */
@@ -264,7 +264,9 @@ export class InputBar extends LitElement {
       if (this.profilesZvm) {
         for (const agent of this.profilesZvm.perspective.agents) {
           const profile = this.profilesZvm.perspective.getProfile(agent);
-          suggestionItems.push([agent.b64, profile])
+          if (profile) {
+            suggestionItems.push([agent.b64, profile])
+          }
         }
       }
       let suggestionKeys = suggestionItems.map(([agentKey, _profile]) => agentKey);
@@ -276,7 +278,7 @@ export class InputBar extends LitElement {
           return index !== -1;
         })
         .map(([agentKey, _profile]) => agentKey);
-      //console.log("<vines-input-bar>.render() filtered", filtered);
+      //console.log("<vines-input-bar>.override render() filtered", filtered);
       if (filtered.length != 0) {
         suggestionKeys = filtered;
       }
@@ -285,7 +287,7 @@ export class InputBar extends LitElement {
       let lostSelected = false;
       let selectedId = "";
       if (this.suggestionListElem && this.suggestionListElem.getSelectedItems().length > 0) {
-        selectedId = this.suggestionListElem.getSelectedItems()[0].id;
+        selectedId = this.suggestionListElem.getSelectedItems()[0]!.id;
         lostSelected = !suggestionKeys.includes(selectedId);
       }
       const canSelectFirst = this.popoverElem && (!isSuggesting || lostSelected || this.suggestionListElem && this.suggestionListElem.getSelectedItems().length == 0);
@@ -299,7 +301,7 @@ export class InputBar extends LitElement {
           if (key == "__all") {
             return html`             
                 <ui5-li id=${key} style="height: 3rem; border: none;" ?selected=${canSelect}
-                @click=${(e) => {
+                @click=${(e:any) => {
                   e.preventDefault();
                   this.suggestionSelected(key);
                 }}>
@@ -314,7 +316,7 @@ export class InputBar extends LitElement {
           if (!profile) return html``;
           return html`             
           <ui5-li id=${key} style="height: 3rem; border: none;" ?selected=${canSelect}
-                @click=${(e) => {
+                @click=${(e:any) => {
                   e.preventDefault();
                   this.suggestionSelected(profile.nickname);
                   }}>
@@ -346,7 +348,7 @@ export class InputBar extends LitElement {
           <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
               File: ${this._file.name}
               <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
-                          @click=${(_e) => this._file = undefined}></ui5-button>
+                          @click=${(_e:any) => this._file = undefined}></ui5-button>
           </div>
       `;
     }
@@ -357,7 +359,7 @@ export class InputBar extends LitElement {
           <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
               <wurl-link wurl="${weaveUrlFromWal(this._wal)}"></wurl-link>
               <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
-                          @click=${(_e) => this._wal = undefined}></ui5-button>
+                          @click=${(_e:any) => this._wal = undefined}></ui5-button>
           </div>
       `;
     }
@@ -370,13 +372,13 @@ export class InputBar extends LitElement {
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
             ${this.showHrlBtn? html`
             <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
-                        @click=${async (e) => {
+                        @click=${async (_e:any) => {
                             this._wal = await this.weServices.userSelectWal();
                         }}>
             </ui5-button>` : html``}
             ${this.showFileBtn? html`
             <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
-                        @click=${(_e) => {
+                        @click=${(_e:any) => {
                           let input = document.createElement('input');
                           input.type = 'file';
                           input.onchange = (e:any) => {this._file = e.target.files[0];}
@@ -391,7 +393,7 @@ export class InputBar extends LitElement {
                           rows="1"
                           maxlength="1000"
                           @keydown=${this.handleKeydown}
-                          @input=${(_e) => this.requestUpdate()}
+                          @input=${(_e:any) => this.requestUpdate()}
             ></ui5-textarea>
             <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
         </ui5-bar>
@@ -404,7 +406,7 @@ export class InputBar extends LitElement {
   }
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         ui5-avatar {

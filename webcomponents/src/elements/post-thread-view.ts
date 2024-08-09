@@ -51,7 +51,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- State variables -- */
 
   @state() private _loading = true;
-  private _mainThreadAh?: ActionId;
+  private _mainThreadAh: ActionId | undefined = undefined;
 
   /** -- Methods -- */
 
@@ -59,7 +59,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<post-thread-view>.dvmUpdated() mainThreadAh");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -120,11 +120,11 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     /** Scroll the list container to the requested bead */
     if (this.beadAh) {
       //console.log("<post-thread-view>.updated()", this.beadAh)
-      const item = this.shadowRoot.getElementById(`${this.beadAh.b64}`);
+      const item = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
       if (item) {
         const scrollY = item.offsetTop - this.offsetTop;
         this.scrollTo({ top: scrollY, behavior: 'smooth' });
@@ -172,7 +172,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async loadPreviousPosts(): Promise<void> {
-    const mainThreadAh = this.threadsPerspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64)[0];
+    const mainThreadAh = this.threadsPerspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64)![0]!;
     const beginningReached = this._dvm.threadsZvm.perspective.hasReachedBeginning(mainThreadAh);
     console.log("loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {
@@ -186,7 +186,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onWheel(event) {
+  async onWheel(_event:any) {
     //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
     if (this.clientHeight - this.scrollHeight == this.scrollTop) {
       await this.loadPreviousPosts();
@@ -195,11 +195,11 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<post-thread-view>.render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
+  override render() {
+    console.log("<post-thread-view>.override render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
     /** If no main thread, check again in 1 min */
-    //console.log("<post-thread-view>.render() mainThreadAh", this._mainThreadAh);
+    //console.log("<post-thread-view>.override render() mainThreadAh", this._mainThreadAh);
     if (!this._mainThreadAh) {
       if (!this._loading) {
         delay(60 * 1000).then(() => {this.loadlatestThreads()});
@@ -207,7 +207,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       return html`<div>${msg('No Main Feed')}</div>`;
     }
 
-    const thread = this._dvm.threadsZvm.perspective.threads.get(this._mainThreadAh);
+    const thread = this._dvm.threadsZvm.perspective.threads.get(this._mainThreadAh)!;
 
     //const all = thread.getAll();
     let passedLog = false;
@@ -216,9 +216,9 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       .map((blm) => {
         //console.log("<post-thread-view> blm", blm, this.threadsPerspective);
         /** 'new' if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this._mainThreadAh);
+        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this._mainThreadAh!);
         //console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
-        if (!passedLog && blm.creationTime > initialProbeLogTs) {
+        if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
         }
         const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(blm.beadAh.b64);
@@ -239,7 +239,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     )
       .filter((item) => !!item);
 
-    console.log("<post-thread-view>.render() postItems", postItems.length, postItems, this.favorites);
+    console.log("<post-thread-view>.override render() postItems", postItems.length, postItems, this.favorites);
 
     if (postItems.length == 0) {
       if (this.favorites) {
@@ -258,7 +258,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

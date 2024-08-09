@@ -36,7 +36,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices: WeServicesEx;
+  weServices?: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -53,7 +53,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Getters -- */
 
   get listElem() : List {
-    return this.shadowRoot.getElementById("textList") as List;
+    return this.shadowRoot!.getElementById("textList") as List;
   }
 
 
@@ -63,7 +63,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<favorites-view>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -84,8 +84,8 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<favorites-view>.render()", this._dvm.threadsZvm.perspective.favorites);
+  override render() {
+    console.log("<favorites-view>.override render()", this._dvm.threadsZvm.perspective.favorites);
 
     const doodle_bg =  html `
           <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
@@ -104,7 +104,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
     let beadLi = this._dvm.threadsZvm.perspective.favorites
       .map((beadAh) => html`<side-item .hash=${beadAh} deletable="true" 
-                                       @deleted=${async(e) => {
+                                       @deleted=${async(_e:any) => {
                                         await this._dvm.threadsZvm.removeFavorite(beadAh);
                                         toasty("Message removed from favorites");
                                     }}></side-item>`);
@@ -133,7 +133,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

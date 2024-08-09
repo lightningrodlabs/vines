@@ -1,6 +1,6 @@
 import { html, css, LitElement } from 'lit';
 import { property, query, state, customElement } from 'lit/decorators.js';
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 
 import Input from "@ui5/webcomponents/dist/Input";
 import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
@@ -58,7 +58,7 @@ export class EditProfile extends LitElement {
    * The profile to be edited.
    */
   @property({ type: Object })
-  profile: ProfileMat | undefined;
+  profile: ProfileMat | undefined = undefined;
 
   /**
    * Label for the save profile button.
@@ -69,7 +69,7 @@ export class EditProfile extends LitElement {
   /** Dependencies */
 
   @property()
-  avatarMode: string;
+  avatarMode: string = "";
 
   @property({ type: Boolean })
   allowCancel = false;
@@ -81,7 +81,7 @@ export class EditProfile extends LitElement {
   @query('#nickname-field')
   private _nicknameField!: Input;
 
-  private _existingUsernames: { [key: string]: boolean } = {};
+  //private _existingUsernames: { [key: string]: boolean } = {};
 
   @query('#avatar-file-picker')
   private _avatarFilePicker!: HTMLInputElement;
@@ -90,17 +90,17 @@ export class EditProfile extends LitElement {
   /** -- Methods -- */
 
   /** Handle global events */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.addEventListener('keyup', this.onKeyUp);
   }
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('keyup', this.onKeyUp);
   }
 
   /** */
-  async onKeyUp(e) {
+  async onKeyUp(e:any) {
     //console.log("<edit-profile>.onKeyUp()", e.keyCode);
     if (e.keyCode === 13 && this.shouldSaveButtonBeEnabled()) {
       e.stopPropagation();
@@ -110,9 +110,9 @@ export class EditProfile extends LitElement {
 
 
   /** */
-  firstUpdated() {
+  override firstUpdated() {
     //console.log("<edit-profile>.firstUpdated()");
-    this._avatar = this.profile.fields["avatar"];
+    this._avatar = this.profile?.fields["avatar"];
   }
 
 
@@ -188,7 +188,7 @@ export class EditProfile extends LitElement {
 
   /** */
   textfieldToFieldId(field: Input): string {
-    return field.id.split('-')[2];
+    return field.id.split('-')[2]!;
   }
 
 
@@ -283,8 +283,8 @@ export class EditProfile extends LitElement {
 
 
   /** */
-  render() {
-    console.log("<edit-profile> render()", this.profile);
+  override render() {
+    console.log("<edit-profile> override render()", this.profile);
 
     return html`
       <section>
@@ -304,7 +304,7 @@ export class EditProfile extends LitElement {
                       .label=${msg('Nickname')}
                       .value=${this.profile?.nickname || ''}
                       style="margin-left: 8px;"
-                      @input=${(e) => {
+                      @input=${(_e:any) => {
                         //console.log("nickname input wtf", e)
                         if (this._nicknameField.value.length > 0) {
                             this._nicknameField.valueState = ValueState.None;
@@ -368,7 +368,7 @@ export class EditProfile extends LitElement {
   //   };
   // }
 
-  static styles = [css`
+  static override styles = [css`
 
     sl-radio {
       font-size: larger;

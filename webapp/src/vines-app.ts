@@ -18,7 +18,7 @@ import {
   HappElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, snake, pascal, delay, ActionId,
+  DnaViewModel, pascal, delay, ActionId,
 } from "@ddd-qc/lit-happ";
 import {
   ThreadsDvm,
@@ -70,20 +70,20 @@ export class VinesApp extends HappElement {
   @state() private _offlineLoaded = false;
   @state() private _onlineLoaded = false;
            private _onlineLoadedProvider?: any;
-  @state() private _hasHolochainFailed = undefined;
+  @state() private _hasHolochainFailed: boolean | undefined = undefined;
 
   @state() private _hasWeProfile = false;
-  @state() private _lang?: string
+  //@state() private _lang?: string
 
-  @state() private _currentSpaceEh: null | EntryId = null;
+  //@state() private _currentSpaceEh: null | EntryId = null;
 
-  static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
+  static override readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
   //@state() private _canShowBuildView = false;
   //@state() private _canShowDebug = false;
 
-  @state() private _maybeSelectedThreadAh: ActionId = undefined;
-  @state() private _maybeSelectedBeadAh: ActionId = undefined;
+  @state() private _maybeSelectedThreadAh: ActionId | undefined = undefined;
+  @state() private _maybeSelectedBeadAh: ActionId | undefined = undefined;
 
 
   /** -- We-applet specifics -- */
@@ -141,6 +141,9 @@ export class VinesApp extends HappElement {
                             profilesCloneId: CloneId | undefined,
                             _profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo();
+    if (!profilesAppInfo) {
+      throw Promise.reject("Missing Profiles AppInfo");
+    }
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
     console.log("createProfilesDvm() cell_infos:", cell_infos);
@@ -169,14 +172,18 @@ export class VinesApp extends HappElement {
 
 
   /** Handle global events */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
+    // @ts-ignore
     this.addEventListener('jump', this.onJump);
+    // @ts-ignore
     this.addEventListener('copy-thread', this.onCopyThread);
   }
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
+    // @ts-ignore
     this.removeEventListener('jump', this.onJump);
+    // @ts-ignore
     this.removeEventListener('copy-thread', this.onCopyThread);
   }
 
@@ -198,7 +205,7 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  async hvmConstructed() {
+  override async hvmConstructed() {
     console.log("<vines-app>.hvmConstructed()", this._adminWs)
     /** Attempt EntryDefs (triggers genesis) */
     const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
@@ -206,6 +213,7 @@ export class VinesApp extends HappElement {
     this._hasHolochainFailed = !threadsOk || !filesOk;
     /** Provide Files as context */
     console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
+    // @ts-ignore
     let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
 
@@ -229,7 +237,7 @@ export class VinesApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
+      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
         console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -241,7 +249,7 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  async perspectiveInitializedOffline(): Promise<void> {
+  override async perspectiveInitializedOffline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOffline()");
     const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
     console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.address.agentId);
@@ -251,7 +259,7 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  async perspectiveInitializedOnline(): Promise<void> {
+  override async perspectiveInitializedOnline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOnline() START", this.appletView);
 
     if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
@@ -275,17 +283,17 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     /** Fiddle with shadow parts CSS */
-    const profileCard = this.shadowRoot.getElementById('profileCard') as HTMLElement;
+    const profileCard = this.shadowRoot!.getElementById('profileCard') as HTMLElement;
     if (profileCard) {
-      profileCard.shadowRoot.appendChild(cardStyleTemplate.content.cloneNode(true));
+      profileCard.shadowRoot!.appendChild(cardStyleTemplate.content.cloneNode(true));
     }
   }
 
 
   /** */
-  async onDumpNetworkLogs(e) {
+  async onDumpNetworkLogs(_e:any) {
     console.log("onDumpNetworkLogs()")
     await this.networkInfoAll();
     this.dumpNetworkInfoLogs();
@@ -346,8 +354,8 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  render() {
-    console.log("<vines-app> render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
+  override render() {
+    console.log("<vines-app> override render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
 
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
@@ -363,8 +371,8 @@ export class VinesApp extends HappElement {
         <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};</div>
         <ui5-button id="retryBtn" design="Emphasized"
                     style="max-width:300px"
-                    @click=${async (e) => {
-          const btn = this.shadowRoot.getElementById("retryBtn") as Button;
+                    @click=${async (_e:any) => {
+          const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
           if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
@@ -402,12 +410,13 @@ export class VinesApp extends HappElement {
                       .selectedBeadAh=${this._maybeSelectedBeadAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${(e) => this.networkInfoAll()}
+                      @queryNetworkInfo=${(_e:any) => this.networkInfoAll()}
             ></vines-page>`;
     if (this.appletView) {
       console.log("appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
+          // @ts-ignore
           let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
         break;
         case "block":
@@ -418,10 +427,10 @@ export class VinesApp extends HappElement {
             throw new Error(`Threads/we-applet: Missing AssetViewInfo.recordInfo.`);
           }
           if (assetViewInfo.recordInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
-            throw new Error(`Threads/we-applet: Unknown role name '${this.appletView.recordInfo.roleName}'.`);
+            throw new Error(`Threads/we-applet: Unknown role name '${assetViewInfo.recordInfo.roleName}'.`);
           }
           if (assetViewInfo.recordInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
-            throw new Error(`Threads/we-applet: Unknown zome '${this.appletView.recordInfo.integrityZomeName}'.`);
+            throw new Error(`Threads/we-applet: Unknown zome '${assetViewInfo.recordInfo.integrityZomeName}'.`);
           }
           const entryType = pascal(assetViewInfo.recordInfo.entryType);
           const [_dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
@@ -438,7 +447,7 @@ export class VinesApp extends HappElement {
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
                 const beadAh = new ActionId(dhtId.b64);
-                // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
+                // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
             default:
@@ -459,8 +468,8 @@ export class VinesApp extends HappElement {
                         console.log("@create event", e.detail);
                         await creatableViewInfo.resolve(e.detail);
                       }}
-                    @cancel=${(_e) => creatableViewInfo.cancel()}
-                    @reject=${(e) => creatableViewInfo.reject(e.detail)}
+                    @cancel=${(_e:any) => creatableViewInfo.cancel()}
+                    @reject=${(e:any) => creatableViewInfo.reject(e.detail)}
             ></create-thread-panel>`;
           } else {
             throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)
@@ -471,6 +480,7 @@ export class VinesApp extends HappElement {
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
     } else {
+      // @ts-ignore
       let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
     }
 
@@ -495,12 +505,12 @@ export class VinesApp extends HappElement {
             <ui5-card id="profileCard">
               <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
               <vines-edit-profile
-                  .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
+                  .profile=${this._weProfilesDvm?.profilesZvm.getMyProfile()}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
                     console.log("createMyProfile()", e.detail);
                     try {
                       await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
-                    } catch(e) {
+                    } catch(e:any) {
                       console.warn("Failed creating my Profile", e);
                       return;
                     }
@@ -534,7 +544,7 @@ export class VinesApp extends HappElement {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

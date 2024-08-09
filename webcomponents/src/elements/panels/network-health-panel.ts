@@ -1,5 +1,5 @@
-import {css, html, LitElement, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {css, html, LitElement} from "lit";
+import {customElement} from "lit/decorators.js";
 import {consume} from "@lit/context";
 
 import '@weblogin/trendchart-elements';
@@ -19,21 +19,21 @@ export class NetworkHealthPanel extends LitElement {
 
 
   @consume({ context: appProxyContext, subscribe: true})
-  _appProxy: AppProxy;
+  _appProxy!: AppProxy;
 
 
 
   /* Auto update */
-  updated() {
-    const enableSwitch = this.shadowRoot.getElementById("enableSwitch") as Switch;
+  override updated() {
+    const enableSwitch = this.shadowRoot!.getElementById("enableSwitch") as Switch;
     if (enableSwitch.checked) {
       this.onQueryNetworkInfo(undefined);
     }
   }
 
   /** */
-  render() {
-    console.log("<network-health>.render()");
+  override render() {
+    console.log("<network-health>.override render()");
 
     if (!this._appProxy) {
       return html`no app proxy found via context`;
@@ -55,7 +55,7 @@ export class NetworkHealthPanel extends LitElement {
     // for (const [cellIdStr, infoPair] of Object.entries(allNetworkLogs)) {
     //     const hcls  = this._appProxy.getLocations(str2CellId(cellIdStr));
     //     const cellName = this._appProxy.getCellName(hcls[0]);
-    //     console.log("<network-health>.render() cellName", cellName);
+    //     console.log("<network-health>.override render() cellName", cellName);
     //     if (cellName == VINES_DEFAULT_ROLE_NAME) {
     //       cellLogs = infoPair;
     //       break;
@@ -76,14 +76,14 @@ export class NetworkHealthPanel extends LitElement {
     let cellLogs: [Timestamp, NetworkInfo][] = [[0, latestInfo]];
 
     if (Object.keys(allNetworkLogs).length != 0) {
-      cellLogs = Object.entries(allNetworkLogs)[0][1];
+      cellLogs = Object.entries(allNetworkLogs)[0]![1];
 
       if (cellLogs.length > 20) {
         cellLogs = cellLogs.slice(-20);
       }
       if (cellLogs.length != 0) {
         //return html`no logs found ${enableSwitch}`;
-        latestInfo = cellLogs[cellLogs.length - 1][1];
+        latestInfo = cellLogs[cellLogs.length - 1]![1];
       }
     }
     //const latestInfo = cellLogs[cellLogs.length - 1][1];
@@ -91,13 +91,13 @@ export class NetworkHealthPanel extends LitElement {
     const arcPct = (latestInfo.arc_size * 100).toFixed(0);
     const fetchKB = (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
 
-    const allFetchKBs = cellLogs.map(([ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
+    const allFetchKBs = cellLogs.map(([_ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
 
     const startingZero = allFetchKBs.length > 1? "" : "0,"
 
     //const lineValues = "[0,1,2,50,10,85,20,5,48]"; // testing values
     const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
-    //console.log("<network-health>.render()", lineValues);
+    //console.log("<network-health>.override render()", lineValues);
 
 
     /** */
@@ -145,7 +145,7 @@ export class NetworkHealthPanel extends LitElement {
 
 
   /** */
-  async onQueryNetworkInfo(e) {
+  async onQueryNetworkInfo(_e:any) {
     console.log("onQueryNetworkInfo()")
     this.dispatchEvent(new CustomEvent('queryNetworkInfo', {detail: null, bubbles: true, composed: true}));
     await delay(2000)
@@ -154,7 +154,7 @@ export class NetworkHealthPanel extends LitElement {
 
 
    /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

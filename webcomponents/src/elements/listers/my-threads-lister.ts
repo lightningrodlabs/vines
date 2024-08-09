@@ -13,7 +13,7 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {AnyIdMap} from "../../utils";
 import {toasty} from "../../toast";
-import {threadJumpEvent, SpecialSubjectType, CommentRequest} from "../../events";
+import {threadJumpEvent} from "../../events";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
@@ -45,7 +45,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
   /** */
-  protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
+  protected override async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     super.zvmUpdated(newZvm, oldZvm)
     this._loading = true;
     await newZvm.zomeProxy.queryAll();
@@ -72,8 +72,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
   /** */
-  renderSubjectSubLister(subjectId: AnyId, subject: Subject, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
-    const isSubjectHidden = this._zvm.perspective.hiddens[subjectId.b64]? this._zvm.perspective.hiddens[subjectId.b64] : false;
+  renderSubjectSubLister(subjectId: AnyId, _subject: Subject, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
+    //const isSubjectHidden = this._zvm.perspective.hiddens[subjectId.b64]? this._zvm.perspective.hiddens[subjectId.b64] : false;
     let title = "";
     let threads = myThreads.map((ppAh) => {
       const thread = this.perspective.threads.get(ppAh);
@@ -89,17 +89,17 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = this.perspective.newThreads.has(ppAh);
-      console.log("<my-threads-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
+      console.log("<my-threads-lister>.override render() thread:", thread.pp.purpose, maybeUnreadThread);
       if (!thread.pp || (isThreadHidden && !this.showArchivedSubjects) /*|| thread.pp.purpose == "comment"*/) {
         return html``;
       }
 
       /** Determine badge & buttons */
-      const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
-      let hasUnreadComments = false;
-      if (maybeCommentThread != null) {
-        hasUnreadComments = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
-      }
+      // const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
+      // let hasUnreadComments = false;
+      // if (maybeCommentThread != null) {
+      //   hasUnreadComments = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
+      // }
       //console.log("<my-threads-view> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
       let commentButton = html``;
@@ -108,17 +108,17 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       //         <ui5-button icon="comment" tooltip=${msg("View comments")}
       //                     style="border:none; display:none;"
       //                     design="Negative"
-      //                     @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
+      //                     @click="${(e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
       // } else {
       //   commentButton = maybeCommentThread != null
       //     ? html`
       //                 <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
       //                             style="border:none; display:none;"
-      //                             @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`
+      //                             @click="${(e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`
       //     : html`
       //                 <ui5-button icon="sys-add" tooltip=${msg("Create comment Thread")} design="Transparent"
       //                             style="border:none; display:none;"
-      //                             @click="${(e) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
+      //                             @click="${(e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
       // }
 
       /** 'new', 'notif' or 'unread' badge to display */
@@ -144,14 +144,14 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         html`
               <ui5-button icon="show" tooltip="Show" design="Transparent"
                           class="showBtn"
-                          @click=${async (e) => {
+                          @click=${async (_e:any) => {
           await this._zvm.unhideSubject(ppAh);
           toasty(`Unarchived Subject "${thread.pp.purpose}"`);
         }}></ui5-button>
           ` : html`
                     <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                 class="showBtn"
-                                @click=${async (e) => {
+                                @click=${async (_e:any) => {
           await this._zvm.hideSubject(ppAh);
           toasty(`Archived Subject "${thread.pp.purpose}"`);
         }}></ui5-button>`;
@@ -164,7 +164,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                        ${threadIsNew || notifCount ? "color: #359C07;" : ""}
                        ${isSelected ? "background:#DBDBDB" : ""}
                        "
-                     @click=${(e) => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                     @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                   ${badge}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
                   <!-- ${hideShowBtn} -->
@@ -179,28 +179,28 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     /** Render Subject */
-    const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(subjectId);
+    //const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(subjectId);
     const subjectIsNew = newSubjects.get(subjectId.b64) != undefined;
-    let subjectHasUnreadComments = false;
-    if (maybeCommentThread != null) {
-      subjectHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(subjectId.b64);
-    }
+    // let subjectHasUnreadComments = false;
+    // if (maybeCommentThread != null) {
+    //   subjectHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(subjectId.b64);
+    // }
 
     let subjectCommentButton = html``;
     // if (subjectHasUnreadComments) {
     //   subjectCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
     //                                          design="Negative" style="border:none;background: transparent"
-    //                                          @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectId, title, subject.typeName)}"></ui5-button>`;
+    //                                          @click="${(e:any) => this.onClickCommentSubject(maybeCommentThread, subjectId, title, subject.typeName)}"></ui5-button>`;
     // } else {
     //   subjectCommentButton = maybeCommentThread != null
     //     ? html`
     //             <ui5-button id=${"cmt-" + subjectId.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent"
     //                         style="border:none;display: none"
-    //                         @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectId, title, subject.typeName)}"></ui5-button>`
+    //                         @click="${(e:any) => this.onClickCommentSubject(maybeCommentThread, subjectId, title, subject.typeName)}"></ui5-button>`
     //     : html`
     //             <ui5-button id=${"cmt-" + subjectId.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Subject")} design="Transparent"
     //                         style="border:none; padding:0px;display: none"
-    //                         @click="${(e) => this.onClickCommentSubject(maybeCommentThread, subjectId, title, subject.typeName)}"></ui5-button>`;
+    //                         @click="${(e:any) => this.onClickCommentSubject(maybeCommentThread, subjectId, title, subject.typeName)}"></ui5-button>`;
     // }
 
     /** 'new', 'notif' and 'unread' badge to display */
@@ -216,7 +216,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         let count = 0;
         for (const myThreadAh of myThreads) {
           if (this.perspective.unreadThreads.get(myThreadAh)) {
-            count += this.perspective.unreadThreads.get(myThreadAh)[1].length;
+            count += this.perspective.unreadThreads.get(myThreadAh)![1].length;
           }
         }
         if (count > 0) {
@@ -237,15 +237,15 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** render subject sub-lister */
     return html`
           <ui5-panel id=${subjectId.b64}
-                     @mouseover=${(e) => {
-                        const hide = this.shadowRoot.getElementById("hide-" + subjectId.b64);
-                        const cmt = this.shadowRoot.getElementById("cmt-" + subjectId.b64);
+                     @mouseover=${(_e:any) => {
+                        const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
+                        const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
                         if (hide) hide.style.display = "block";
                         if (cmt) cmt.style.display = "block";
                      }}
-                     @mouseout=${(e) => {
-                        const hide = this.shadowRoot.getElementById("hide-" + subjectId.b64);
-                        const cmt = this.shadowRoot.getElementById("cmt-" + subjectId.b64);
+                     @mouseout=${(_e:any) => {
+                        const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
+                        const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
                         if (hide) hide.style.display = "none";
                         if (cmt) cmt.style.display = "none";
                      }}>
@@ -262,8 +262,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
   /** */
-  render() {
-    console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads, this.cell.address.agentId.short);
+  override render() {
+    console.log("<my-threads-lister>.override render()", this._loading, this.perspective.threads, this.cell.address.agentId.short);
 
     // if (this._loading) {
     //   return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
@@ -274,7 +274,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       .filter(([info, _typed]) => info.author.b64 == this.cell.address.agentId.b64)
       .filter(([info, _typed]) => info.beadType != ThreadsEntryType.EncryptedBead);
     const myBeadThreads: ActionIdMap<Thread> = new ActionIdMap();
-    myBeads.map(([beadInfo, _typed]) => myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)));
+    myBeads.map(([beadInfo, _typed]) => myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)!));
 
     const myThreads: ActionIdMap<Thread> = new ActionIdMap();
     Array.from(this.perspective.threads.entries())
@@ -306,10 +306,10 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       if (!allThreadsByApplet.get(appletEh)) {
         allThreadsByApplet.set(appletEh, new AnyIdMap())
       }
-      if (!allThreadsByApplet.get(appletEh).get(thread.pp.subject.address)) {
-        allThreadsByApplet.get(appletEh).set(thread.pp.subject.address, []);
+      if (!allThreadsByApplet.get(appletEh)!.get(thread.pp.subject.address)) {
+        allThreadsByApplet.get(appletEh)!.set(thread.pp.subject.address, []);
       }
-      allThreadsByApplet.get(appletEh).get(thread.pp.subject.address).push(ppAh);
+      allThreadsByApplet.get(appletEh)!.get(thread.pp.subject.address)!.push(ppAh);
       allSubjects.set(thread.pp.subject.address, thread.pp.subject);
     });
     console.log("<my-threads-lister> allThreadsByApplet", allThreadsByApplet);
@@ -327,13 +327,15 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         }
         /** render other appletId threads */
         const appletInfo = this.weServices.appletInfoCached(appletId);
-        appletName = appletInfo.appletName;
+        if (appletInfo) {
+          appletName = appletInfo.appletName;
+        }
       }
 
       /** Render applet subjects */
       let subjectItems = Array.from(appletThreads.entries()).map(([subjectHash, ppAhs]) => {
         const subject = allSubjects.get(subjectHash);
-        return this.renderSubjectSubLister(intoAnyId(subjectHash), subject, ppAhs);
+        return subject? this.renderSubjectSubLister(intoAnyId(subjectHash), subject, ppAhs) : html``;
       });
 
       /** Handle empty sub-tree case */
@@ -356,32 +358,32 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       // if (appletHasUnreadComments) {
       //   appletCommentBtn = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
       //                                        design="Negative" style="border:none; background:transparent"
-      //                                        @click="${(e) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`;
+      //                                        @click="${(e:any) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`;
       // } else {
       //   appletCommentBtn = maybeCommentThread != null
       //     ? html`
       //           <ui5-button id=${"cmt-" + appletId.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent"
       //                       style="border:none; display:none"
-      //                       @click="${(e) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`
+      //                       @click="${(e:any) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`
       //     : html`
       //           <ui5-button id=${"cmt-" + appletId.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Applet")} design="Transparent"
       //                       style="border:none; padding:0px; display:none"
-      //                       @click="${(e) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`;
+      //                       @click="${(e:any) => this.onClickCommentAppletId(maybeCommentThread, appletId, appletName)}"></ui5-button>`;
       // }
 
 
       /** render appletSubLister */
       return html`
           <ui5-panel id=${appletId.b64}
-                     @mouseover=${(e) => {
-                         const hide = this.shadowRoot.getElementById("hide-" + appletId.b64);
-                         const cmt = this.shadowRoot.getElementById("cmt-" + appletId.b64);
+                     @mouseover=${(_e:any) => {
+                         const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
+                         const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);
                          if (hide) hide.style.display = "block";
                          if (cmt) cmt.style.display = "block";
                      }}
-                     @mouseout=${(e) => {
-                         const hide = this.shadowRoot.getElementById("hide-" + appletId.b64);
-                         const cmt = this.shadowRoot.getElementById("cmt-" + appletId.b64);
+                     @mouseout=${(_e:any) => {
+                         const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
+                         const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);
                          if (hide) hide.style.display = "none";
                          if (cmt) cmt.style.display = "none";
                      }}>
@@ -416,7 +418,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

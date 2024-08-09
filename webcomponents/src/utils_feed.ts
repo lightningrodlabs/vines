@@ -10,11 +10,11 @@ import {ActionId} from "@ddd-qc/lit-happ";
  * Grab oldest thread about MAIN TOPIC.
  * This is because partitioned networks edge case where several agents create the main thread.
  */
-export function getMainThread(dvm: ThreadsDvm): ActionId | null {
+export function getMainThread(dvm: ThreadsDvm): ActionId | undefined {
   const threads = dvm.threadsZvm.perspective.getSubjectThreads(MAIN_TOPIC_ID.b64);
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
-    return null;
+    return undefined;
   }
   let ppAh = threads[0];
   let oldestCreationTime = Date.now() * 1000;
@@ -22,7 +22,7 @@ export function getMainThread(dvm: ThreadsDvm): ActionId | null {
     /* UH OH: multiple main threads. May be caused by partiionned network. Take oldest */
     for (const threadAh of threads) {
       const thread = dvm.threadsZvm.perspective.threads.get(threadAh);
-      if (thread.creationTime < oldestCreationTime) {
+      if (thread && thread.creationTime < oldestCreationTime) {
         oldestCreationTime = thread.creationTime;
         ppAh = threadAh;
       }

@@ -1,5 +1,5 @@
-import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {css, html} from "lit";
+import {property, customElement} from "lit/decorators.js";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -19,7 +19,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash?: ActionId;
+  @property() hash!: ActionId;
 
 
   /** Observed perspective from zvm */
@@ -32,7 +32,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     if (oldDvm) {
       //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
@@ -44,8 +44,8 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    //console.log("<emoji-bar>.render()", this.hash, this.threadsPerspective.emojiReactions);
+  override render() {
+    //console.log("<emoji-bar>.override render()", this.hash, this.threadsPerspective.emojiReactions);
     if (!this.hash) {
       return html`
           <div>No item found</div>`;
@@ -62,7 +62,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
         if (!emojiMap[emoji]) {
           emojiMap[emoji] = [];
         }
-        emojiMap[emoji].push(agent);
+        emojiMap[emoji]!.push(agent);
       }
     }
 
@@ -83,13 +83,13 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       tooltip = tooltip.substring(0, tooltip.length - 2);
       return html`
         <sl-tooltip content=${tooltip} placement="top">
-          <button class=${iReacted? "reacted" : ""} tooltip=${tooltip} @click=${(e) => this.onClickEmoji(emoji, iReacted)}>
+          <button class=${iReacted? "reacted" : ""} tooltip=${tooltip} @click=${(_e:any) => this.onClickEmoji(emoji, iReacted)}>
             ${emoji} ${agents.length > 1? agents.length : ""}
           </button>
         </sl-tooltip>
       `;
     });
-    //<div class="chatItem" @mouseenter=${(e) => this._isHovered = true} @mouseleave=${(e) => this._isHovered = false}>
+    //<div class="chatItem" @mouseenter=${(e:any) => this._isHovered = true} @mouseleave=${(e:any) => this._isHovered = false}>
 
 
     /** render all */
@@ -114,7 +114,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         sl-tooltip {

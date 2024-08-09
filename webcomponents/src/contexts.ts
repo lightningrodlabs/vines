@@ -5,7 +5,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {EntryId} from "@ddd-qc/lit-happ";
 
 //export const THIS_APPLET_ID = "__this"
-export const THIS_APPLET_ID = await EntryId.empty(118); // 'v'
+export const THIS_APPLET_ID = EntryId.empty(118); // 'v'
 
 export const weClientContext = createContext<WeServicesEx>('we_client');
 //export const wePerspectiveContext = createContext<WePerspective>('we_perspective');

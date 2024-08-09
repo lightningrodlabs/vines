@@ -1,5 +1,7 @@
 import emoji from './emoji'
+// @ts-ignore
 import markdownit from "markdown-it";
+// @ts-ignore
 import markdownItMark from 'markdown-it-mark';
 import markdownItHighlight from 'markdown-it-highlightjs';
 
@@ -26,6 +28,7 @@ md.linkify
   .add('weave-0.13:', 'http:')
   /** MENTION */
   .add('@', {
+    // @ts-ignore
     validate: function (text, pos, self) {
       const tail = text.slice(pos);
       if (!self.re.twitter) {
@@ -43,6 +46,7 @@ md.linkify
       }
       return 0;
     },
+    // @ts-ignore
     normalize: function (match) {
       match.url = 'agent://' + match.url.replace(/^@/, '');
     }
@@ -50,6 +54,7 @@ md.linkify
 
 
 /* Customize the rendering of URLs */
+// @ts-ignore
 md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
   const token = tokens[idx];
   const href = token.attrGet('href');
@@ -60,7 +65,7 @@ md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
     try {
       //console.log("link_open() wal", href);
       return `<wurl-link wurl="${href}">`
-    } catch(e) {}
+    } catch(e:any) {}
   }
   let classes = ""
   if (scheme == "agent:") {
@@ -74,6 +79,7 @@ md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
 //   return "";
 // }
 
+// @ts-ignore
 md.renderer.rules.link_close = function(tokens, idx, options, env, self) {
   //console.log("md.rules.link_close:", tokens, idx)
   const link_open_token = tokens[idx - 2]; // brittle: link_open seems to always be 2 tokens behind.

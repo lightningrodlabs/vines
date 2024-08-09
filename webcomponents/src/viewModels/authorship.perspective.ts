@@ -35,7 +35,7 @@ export class AuthorshipPerspective {
   }
 
   getTypeLogs(typeName: string): LinkableId[] {
-    return this.logsByType[typeName]? this.logsByType[typeName] : [];
+    return this.logsByType[typeName]? this.logsByType[typeName]! : [];
   }
 
   /** -- Memento -- */
@@ -48,7 +48,7 @@ export class AuthorshipPerspective {
       for (const hash of hashs) {
         const log = this.allLogs.get(hash.b64);
         if (log) {
-          all[type].push([hash.b64, log[0], log[1].b64]);
+          all[type]!.push([hash.b64, log[0], log[1].b64]);
         }
       }
     }
@@ -83,8 +83,8 @@ export class AuthorshipPerspectiveMutable extends AuthorshipPerspective {
     if (!this.logsByType[typeName]) {
       this.logsByType[typeName] = []
     }
-    if (!this.logsByType[typeName].map((id) => id.b64).includes(target.b64)) {
-      this.logsByType[typeName].push(target);
+    if (!this.logsByType[typeName]!.map((id) => id.b64).includes(target.b64)) {
+      this.logsByType[typeName]!.push(target);
     }
     /* _types */
     if (!this.ascribedTypes.includes(typeName)) {

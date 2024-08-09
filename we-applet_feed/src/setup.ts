@@ -16,7 +16,7 @@ export async function setupFeedApplet() {
   try {
     APPLET_VIEW = process.env.APPLET_VIEW;
     //console.log(`HAPP_ENV defined by process.ENV: "${happEnv}"`);
-  } catch (e) {
+  } catch (e:any) {
   }
   console.log("Feed we-applet setup() APPLET_VIEW", APPLET_VIEW);
   switch(APPLET_VIEW) {

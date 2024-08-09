@@ -5,7 +5,7 @@ import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket,
   AppSignal,
-  AppWebsocket, HoloHash,
+  AppWebsocket,
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
@@ -70,12 +70,12 @@ export class CommunityFeedApp extends HappElement {
   @state() private _offlineLoaded = false;
   @state() private _onlineLoaded = false;
            private _onlineLoadedProvider?: any;
-  @state() private _hasHolochainFailed = undefined;
+  @state() private _hasHolochainFailed: boolean | undefined = undefined;
 
   @state() private _hasWeProfile = false;
-  @state() private _lang?: string
+  //@state() private _lang?: string;
 
-  static readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
+  static override readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
   @state() private _selectedPostAh?: ActionId;
 
@@ -133,6 +133,9 @@ export class CommunityFeedApp extends HappElement {
                             profilesCloneId: CloneId | undefined,
                             _profilesZomeName: ZomeName): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo();
+    if (!profilesAppInfo) {
+      throw Promise.reject("Missing Profiles AppInfo");
+    }
     const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
     console.log("<community-feed-app> createProfilesDvm() cell_infos:", cell_infos);
@@ -161,14 +164,18 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** Handle global events */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
+    // @ts-ignore
     this.addEventListener('jump', this.onJump);
+    // @ts-ignore
     this.addEventListener('copy-thread', this.onCopyThread);
   }
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
+    // @ts-ignore
     this.removeEventListener('jump', this.onJump);
+    // @ts-ignore
     this.removeEventListener('copy-thread', this.onCopyThread);
   }
 
@@ -190,7 +197,7 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  async hvmConstructed() {
+  override async hvmConstructed() {
     console.log("<community-feed-app>.hvmConstructed()", this._adminWs)
     /** Attempt EntryDefs (triggers genesis) */
     const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
@@ -198,6 +205,7 @@ export class CommunityFeedApp extends HappElement {
     this._hasHolochainFailed = !threadsOk || !filesOk;
     /** Provide Files as context */
     console.log(`<community-feed-app>\t\tProviding context "${globaFilesContext}" | in host `, this);
+    // @ts-ignore
     let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
 
@@ -217,11 +225,13 @@ export class CommunityFeedApp extends HappElement {
     return false;
   }
 
+
+  /** */
   async attemptFilesEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
+      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
         console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -233,7 +243,7 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  async perspectiveInitializedOffline(): Promise<void> {
+  override async perspectiveInitializedOffline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOffline()");
     const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
     console.log("<community-feed-app> perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.address.agentId);
@@ -244,7 +254,7 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  async perspectiveInitializedOnline(): Promise<void> {
+  override async perspectiveInitializedOnline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOnline() START", this.appletView);
 
     if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
@@ -287,17 +297,17 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     /** Fiddle with shadow parts CSS */
-    const profileCard = this.shadowRoot.getElementById('profileCard') as HTMLElement;
+    const profileCard = this.shadowRoot!.getElementById('profileCard') as HTMLElement;
     if (profileCard) {
-      profileCard.shadowRoot.appendChild(cardStyleTemplate.content.cloneNode(true));
+      profileCard.shadowRoot!.appendChild(cardStyleTemplate.content.cloneNode(true));
     }
   }
 
 
   /** */
-  async onDumpNetworkLogs(e) {
+  async onDumpNetworkLogs(_e:any) {
     console.log("<community-feed-app>.onDumpNetworkLogs()")
     await this.networkInfoAll();
     this.dumpNetworkInfoLogs();
@@ -362,8 +372,8 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  render() {
-    console.log("<community-feed-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
+  override render() {
+    console.log("<community-feed-app>.override render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
 
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
@@ -379,8 +389,8 @@ export class CommunityFeedApp extends HappElement {
         <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"CommunityFeed\" cell.")};</div>
         <ui5-button id="retryBtn" design="Emphasized"
                     style="max-width:300px"
-                    @click=${async (e) => {
-          const btn = this.shadowRoot.getElementById("retryBtn") as Button;
+                    @click=${async (_e:any) => {
+          const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
           if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
@@ -417,12 +427,13 @@ export class CommunityFeedApp extends HappElement {
                       .selectedPostAh=${this._selectedPostAh}
                       .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${(e) => this.networkInfoAll()}
+                      @queryNetworkInfo=${(_e:any) => this.networkInfoAll()}
             ></community-feed-page>`;
     if (this.appletView) {
       console.log("<community-feed-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
+          // @ts-ignore
           let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
         break;
         case "block":
@@ -433,10 +444,10 @@ export class CommunityFeedApp extends HappElement {
             throw new Error(`Feed/we-applet: Missing AssetViewInfo.recordInfo.`);
           }
           if (assetViewInfo.recordInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
-            throw new Error(`Feed/we-applet: Unknown role name '${this.appletView.recordInfo.roleName}'.`);
+            throw new Error(`Feed/we-applet: Unknown role name '${assetViewInfo.recordInfo.roleName}'.`);
           }
           if (assetViewInfo.recordInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
-            throw new Error(`Feed/we-applet: Unknown zome '${this.appletView.recordInfo.integrityZomeName}'.`);
+            throw new Error(`Feed/we-applet: Unknown zome '${assetViewInfo.recordInfo.integrityZomeName}'.`);
           }
           const entryType = pascal(assetViewInfo.recordInfo.entryType);
           //console.log("pascal entryType", assetViewInfo.entryType, entryType);
@@ -452,7 +463,7 @@ export class CommunityFeedApp extends HappElement {
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
                 const beadAh = new ActionId(dhtId.b64);
-                // @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}
+                // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
               break
             default:
@@ -474,7 +485,10 @@ export class CommunityFeedApp extends HappElement {
                         //console.log("@create post event", e.detail);
                         const wal0 = weaveUrlToWal(e.detail.wurl);
                         const [dnaId, dhtId] = hrl2Id(wal0.hrl);
-                        const attLocInfo = await this._weServices.assetInfo(wal0);
+                        const attLocInfo = await this._weServices!.assetInfo(wal0);
+                        if (!attLocInfo) {
+                          throw Error("Missing assetInfo");
+                        }
                         const subject: Subject = {
                             address: dhtId.b64,
                             typeName: SpecialSubjectType.Asset,
@@ -492,11 +506,11 @@ export class CommunityFeedApp extends HappElement {
                         const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
                         const wal: WAL = {hrl: intoHrl(this.threadsDvm.cell.address.dnaId, ppAh), context: pp.subject.address}
                         await creatableViewInfo.resolve(wal);
-                      } catch(e) {
-                          creatableViewInfo.reject(e)
+                      } catch(e:any) {
+                          creatableViewInfo.reject(e);
                     }}}
-                    @cancel=${(_e) => creatableViewInfo.cancel()}
-                    @reject=${(e) => creatableViewInfo.reject(e.detail)}
+                    @cancel=${(_e:any) => creatableViewInfo.cancel()}
+                    @reject=${(e:any) => creatableViewInfo.reject(e.detail)}
             ></create-post-panel>`;
           } else {
             throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)
@@ -507,6 +521,7 @@ export class CommunityFeedApp extends HappElement {
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
     } else {
+      // @ts-ignore
       let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
     }
 
@@ -531,12 +546,12 @@ export class CommunityFeedApp extends HappElement {
             <ui5-card id="profileCard">
               <ui5-card-header title-text=${msg('Import Profile into CommunityFeed')}></ui5-card-header>
               <vines-edit-profile
-                  .profile=${this._weProfilesDvm.profilesZvm.getMyProfile()}
+                  .profile=${this._weProfilesDvm?.profilesZvm.getMyProfile()}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
                     console.log("<community-feed-app> createMyProfile()", e.detail);
                     try {
                       await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
-                    } catch(e) {
+                    } catch(e:any) {
                       console.warn("Failed creating my Profile", e);
                       return;
                     }
@@ -570,7 +585,7 @@ export class CommunityFeedApp extends HappElement {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

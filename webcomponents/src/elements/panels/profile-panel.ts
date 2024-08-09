@@ -1,6 +1,6 @@
-import { html, css, LitElement } from 'lit';
-import { property, query, state, customElement } from 'lit/decorators.js';
-import { localized, msg, str } from '@lit/localize';
+import { html, css } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { localized, msg } from '@lit/localize';
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/color-picker/color-picker.js"
@@ -24,16 +24,16 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
   }
 
-  @property() hash?: AgentId;
+  @property() hash!: AgentId;
 
-  private _profile?: ProfileMat;
+  private _profile: ProfileMat | undefined = undefined;
   //private _profileDate: Timestamp;
 
   /**
    * In zvmUpdated() this._zvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async zvmUpdated(newZvm: ProfilesAltZvm, oldZvm?: ProfilesAltZvm): Promise<void> {
+  protected override async zvmUpdated(newZvm: ProfilesAltZvm, _oldZvm?: ProfilesAltZvm): Promise<void> {
     console.log("<profile-panel>.zvmUpdated()");
     if (!this.hash) {
       return;
@@ -50,8 +50,8 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
   /** -- Methods -- */
 
   /** */
-  render() {
-    console.log("<profile-panel>.render()", this.hash, this._profile);
+  override render() {
+    console.log("<profile-panel>.override render()", this.hash, this._profile);
 
     if (!this.hash) {
       return html`<div>Missing AgentPubKey</div>`;
@@ -60,7 +60,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     if (!this._profile) {
       return html`<h3 style="margin:10px; color:#cc2525;">Missing Profile</h3>`;
     }
-    const timestamp = this.perspective.getProfileTs(this.hash);
+    const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash) : 0;
     const avatar = renderProfileAvatar(this._profile, "XL");
 
     /** */
@@ -70,7 +70,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
               <div style="flex-grow:1;"></div>
               ${this.hash.equals(this.cell.address.agentId)? html`
                   <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")} style="margin-right: 5px;"
-                  @click=${(e) => {
+                  @click=${(e:any) => {
                   e.stopPropagation();
                   this.dispatchEvent(new CustomEvent('edit-profile', { detail: null, bubbles: true, composed: true }));
               }}></ui5-button>
@@ -80,7 +80,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div style="display: flex; flex-direction:row; align-items:center;">
               <h3>${this._profile.nickname}</h3>
               <div style="flex-grow:1;"></div>
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash.b64} @click=${(e) => {navigator.clipboard.writeText(this.hash.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash.b64} @click=${(_e:any) => {navigator.clipboard.writeText(this.hash.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
             </div>
             <hr style="width: 100%"/>
             <h5>${msg('Language')}</h5>
@@ -98,7 +98,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
 
 
   /** */
-  static styles = [
+  static override styles = [
     css`
       :host {
         display: flex;

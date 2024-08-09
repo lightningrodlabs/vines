@@ -20,21 +20,21 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
 
 
   @property({type: Object})
-  parameters: SearchParameters
+  parameters!: SearchParameters;
 
 
   /** -- Methods -- */
 
   /** */
-  render() {
-    console.log("<search-result-panel>.render()", this.parameters);
+  override render() {
+    console.log("<search-result-panel>.override render()", this.parameters);
 
     const beadAhs = this._dvm.threadsZvm.perspective.searchTextBeads(this.parameters);
 
     const matches = beadAhs.map(([beadAh, _info, _text]) => {
       return html`<ui5-li .key=${beadAh} style="height:auto">
           <chat-item .hash=${beadAh} shortmenu
-                     @click=${(_e) => this.dispatchEvent(beadJumpEvent(beadAh))}>
+                     @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}>
           </chat-item>
       </ui5-li>`
     })
@@ -54,7 +54,7 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

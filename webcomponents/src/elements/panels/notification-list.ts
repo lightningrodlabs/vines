@@ -1,5 +1,5 @@
-import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {html} from "lit";
+import {property, customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
@@ -47,7 +47,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   /** -- Methods -- */
 
   /** */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<notification-list>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -59,8 +59,8 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<notification-list>.render()", this.threadsPerspective.inbox.size);
+  override render() {
+    console.log("<notification-list>.override render()", this.threadsPerspective.inbox.size);
     if (this.threadsPerspective.inbox.size == 0) {
       return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }
@@ -90,11 +90,11 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
           <ui5-li-notification 
               show-close
               title-text=${title} 
-              @close=${async (_e) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
+              @close=${async (_e:any) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
               ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
-              <ui5-notification-action text="Jump" slot="actions" @click=${(e) => {
+              <ui5-notification-action text="Jump" slot="actions" @click=${(_e:any) => {
                   this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
                   address: notif.content,
                   type: notification2JumpEvent(notif.event),

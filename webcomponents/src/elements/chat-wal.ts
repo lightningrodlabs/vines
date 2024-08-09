@@ -30,19 +30,19 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash?: ActionId;
+  @property() hash!: ActionId;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-           private _assetLocAndInfo?: AssetLocationAndInfo;
-  @state() private _appletInfo?: AppletInfo;
+           private _assetLocAndInfo: AssetLocationAndInfo | undefined = undefined;
+  @state() private _appletInfo: AppletInfo | undefined = undefined;
 
 
   /** -- Methods -- */
 
   /** Don't update during online loading */
-  shouldUpdate(changedProperties: PropertyValues<this>) {
+  override shouldUpdate(changedProperties: PropertyValues<this>) {
     console.log("<chat-wal>.shouldUpdate()", changedProperties, this.hash);
     const upper = super.shouldUpdate(changedProperties);
     /** */
@@ -60,7 +60,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    * In zvmUpdated() this._zvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
+  protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
     //console.log("<wurl-link>.zvmUpdated()");
     await this.loadHrl(this.hash, newZvm);
   }
@@ -76,8 +76,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const anyBead = zvm.perspective.getBaseBead(hash) as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
       this._assetLocAndInfo = await this.weServices.assetInfo(wal);
-      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo.appletHash);
-    } catch(e) {
+      this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo!.appletHash);
+    } catch(e:any) {
       console.warn("Failed to load HRL", hash, e);
       this._assetLocAndInfo = undefined;
       this._appletInfo = undefined;
@@ -86,8 +86,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  render() {
-    console.log("<chat-wal>.render()", this.hash, this._appletInfo);
+  override render() {
+    console.log("<chat-wal>.override render()", this.hash, this._appletInfo);
 
     if (!this.weServices) {
       return html`        
@@ -106,7 +106,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`        
           <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
-                  @click=${(e) => this.loadHrl(this.hash, this._zvm)}>
+                  @click=${(_e:any) => this.loadHrl(this.hash, this._zvm)}>
               Failed to retrieve Asset.
           </ui5-li>
       </ui5-list>
@@ -118,7 +118,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
         <ui5-list id="fileList">
             <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
-                    @click=${async (e) => {
+                    @click=${async (_e:any) => {
                         await this._zvm.probeAllInner();
                         const anyBead = this._zvm.perspective.getBaseBead(this.hash);
                         if (anyBead) {
@@ -144,7 +144,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     // return html`
     //     <ui5-list id="fileList">
     //       <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-    //               @click=${(e) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
+    //               @click=${(e:any) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
     //         ${this._assetLocAndInfo.assetInfo.name}
     //       </ui5-li>
     //     </ui5-list>
@@ -161,7 +161,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

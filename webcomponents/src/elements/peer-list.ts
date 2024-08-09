@@ -1,8 +1,8 @@
-import {html, css, LitElement} from "lit";
-import { property, state, customElement } from "lit/decorators.js";
+import {html, css} from "lit";
+import { customElement } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 
-import {ActionId, AgentId, ZomeElement} from "@ddd-qc/lit-happ";
+import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
@@ -24,8 +24,8 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
 
   /** */
-  render() {
-    console.log("<peer-list> render()", this.perspective);
+  override render() {
+    console.log("<peer-list> override render()", this.perspective);
 
     if (this.perspective.profiles.size === 0) {
       return html`<li>${msg('no profiles found')}</li>`;
@@ -48,7 +48,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       .map(([agentId, profile, _ts]) => {
         return html`
           <li class="folk" style="display:flex; align-items:center">
-            <span @click=${(e) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }))}>
+            <span @click=${(_e:any) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }))}>
               ${renderProfileAvatar(profile, "S")}
               <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
                 ${profile.nickname}
@@ -67,7 +67,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         .folks {

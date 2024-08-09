@@ -4,7 +4,7 @@ import {ActionId, delay, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {consume} from "@lit/context";
 import {globaFilesContext} from "../contexts";
-import {FileHashB64, FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
+import {FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
 import {ParcelManifest} from "@ddd-qc/delivery";
 import {msg} from "@lit/localize";
@@ -26,7 +26,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of File bead to display */
-  @property() hash: ActionId; // BeadAh
+  @property() hash!: ActionId; // BeadAh
   //@state() private _dataHash?: FileHashB64;
 
   @consume({ context: globaFilesContext, subscribe: true })
@@ -35,14 +35,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   @state() private _loading = true;
   @state() private _manifest?: ParcelManifest;
            private _file: File | null = null;
-           private _maybeBlobUrl?: string;
+           private _maybeBlobUrl: string | undefined = undefined;
            private _canRetry = true;
 
 
   /** -- Methods -- */
 
   /** */
-  shouldUpdate(changedProperties: PropertyValues<this>) {
+  override shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<chat-file>.shouldUpdate()", changedProperties, this.hash);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
@@ -106,7 +106,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       };
       //reader.readAsDataURL(this._maybeFile);
       reader.readAsArrayBuffer(this._file);
-    } catch(e) {
+    } catch(e:any) {
       console.warn("Loading file failed:", this.hash.b64, e);
       this._loading = false;
       this._file = null;
@@ -137,8 +137,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file /*this._dataHash*/);
+  override render() {
+    console.log("<chat-file>.override render()", this.hash, this._loading, !!this._manifest, !!this._file /*this._dataHash*/);
     if (!this.hash) {
       return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
     }
@@ -149,7 +149,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`
           <ui5-list id="fileList">
               <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
-                      @click=${async (e) => {
+                      @click=${async (e:any) => {
                           e.stopPropagation(); e.preventDefault();
                           await this.probeForFileManifest(manifestEh);
                       }}>
@@ -158,7 +158,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-list>`;
     }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
-    //console.log("<chat-file>.render() entryBead", entryBead);
+    //console.log("<chat-file>.override render() entryBead", entryBead);
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
     }
@@ -175,7 +175,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh.b64}
-                  @click=${async (e) => {
+                  @click=${async (e:any) => {
                       e.stopPropagation(); e.preventDefault();
                       await this.probeForFileManifest(manifestEh);
                   }}>
@@ -189,7 +189,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(_e) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
+                  @click=${(_e:any) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
             ${fileDesc.name}
           </ui5-li>
         </ui5-list>`;
@@ -214,7 +214,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     //   }
     //   if (maybeCachedData) {
     //     item = html`<img class="thumb" src=${"data:image/png;base64," + maybeCachedData}
-    //                      @click=${(e) => this._filesDvm.downloadFile(entryBead.sourceEh)}>
+    //                      @click=${(e:any) => this._filesDvm.downloadFile(entryBead.sourceEh)}>
     //     `;
     //   }
     // }
@@ -223,7 +223,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const mime = kind2mime(this._manifest.description.kind_info);
     //const fileType = kind2Type(this._manifest.description.kind_info);
 
-    console.log("<chat-file>.render() type:", this._manifest.description.name, fileType, mime, !!this._file);
+    console.log("<chat-file>.override render() type:", this._manifest.description.name, fileType, mime, !!this._file);
 
     /** this._file is set only for small files */
     if (this._file != null && this._maybeBlobUrl) {
@@ -277,7 +277,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

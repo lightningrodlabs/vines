@@ -7,8 +7,6 @@ import {
   EntryId,
   getHashType,
   intoAnyId,
-  intoLinkableId,
-  isHashTypeB64
 } from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
@@ -36,7 +34,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async getUpdateComplete(): Promise<boolean> {
+  override async getUpdateComplete(): Promise<boolean> {
     //console.log("ChatView.msg.getUpdateComplete()")
     const superOk = await super.getUpdateComplete();
     return superOk;
@@ -48,15 +46,15 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     console.log("renderDmThreadHeader()", otherAgent, this.cell.address.dnaId.print());
     const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
     const copyBtn = html`
-        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy DM channel to clipboard')} @click=${(e) => {
-      e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy DM channel to clipboard')} @click=${(e:any) => {
+      e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
     }}></ui5-button>
     `;
     if (!profile) {
       console.warn("No profile found");
       return html``;
     }
-    //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
+    //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e:any) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
     /** render all */
     return html`
         <div id="chat-header">
@@ -64,7 +62,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <h2>
               ${profile.nickname}
               ${copyBtn}
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent.b64} @click=${(e) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent.b64} @click=${(_e:any) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
           </h2>
           <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b></div>
         </div>
@@ -73,8 +71,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<chat-header>.render():", this.threadHash);
+  override render() {
+    console.log("<chat-header>.override render():", this.threadHash);
     if (!this.threadHash) {
       return html`<div>Thread hash missing</div>`;
     }
@@ -88,7 +86,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const subjectAddr = thread.pp.subject.address;
-    let maybeSemanticTopicTitle: string | null = null;
+    let maybeSemanticTopicTitle: string | undefined = undefined;
     const subjectHashType = getHashType(subjectAddr);
     if (subjectHashType == HoloHashType.Entry) {
       maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectAddr));
@@ -98,8 +96,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     let title;
     let subText;
     const copyBtn = html`
-        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy channel to clipboard')} @click=${(e) => {
-            e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+        <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy channel to clipboard')} @click=${(e:any) => {
+            e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
         }}></ui5-button>      
     `;
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
@@ -108,14 +106,14 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       title = html`Welcome to ${thread.name} !`;
       subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address);
+      console.log("<chat-header>.override render(): pp.subjectHash", thread.pp.subject.address);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
         title = html`${msg("Comments about")} <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
         subText = html`${msg("This is the start of comment thread about chat message")} 
                       <span style="color:blue; cursor:pointer" 
-                            @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectId))}>
+                            @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
                         ${subjectName}
                       </span>`;
       } else {
@@ -139,7 +137,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

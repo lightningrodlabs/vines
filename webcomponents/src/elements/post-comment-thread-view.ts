@@ -38,7 +38,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash?: ActionId;
+  @property() threadHash!: ActionId;
 
   /** Subject info */
   @property() subjectName?: string;
@@ -57,7 +57,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices: WeServicesEx;
+  weServices?: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -74,12 +74,12 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   /** -- Getters -- */
 
   get listElem() : HTMLElement {
-    return this.shadowRoot.getElementById("list-broken") as HTMLElement;
+    return this.shadowRoot!.getElementById("list-broken") as HTMLElement;
   }
 
 
   get value(): string {
-    const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
+    const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
     if (inputBar) {
       return inputBar.value;
     }
@@ -93,7 +93,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<post-comment-thread-view>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -107,7 +107,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
 
   /** FOR DEBUGGING */
-  shouldUpdate(changedProperties: PropertyValues<this>) {
+  override shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<post-comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
     if (changedProperties.has("_cell_via_context")) {
       this._cell = this._cell_via_context;
@@ -120,7 +120,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
 
   /** */
-  protected willUpdate(changedProperties: PropertyValues<this>) {
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     //console.log("<post-comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
@@ -130,17 +130,17 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   }
 
 
-  protected firstUpdated(_changedProperties: PropertyValues) {
+  protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.loadCommentThread();
   }
 
 
   /** */
-  protected updated(_changedProperties: PropertyValues) {
+  protected override updated(_changedProperties: PropertyValues) {
     super.updated(_changedProperties);
     try {
-      const scrollContainer = this.listElem.shadowRoot.children[0].children[0];
+      //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
       //console.log("<post-comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
       //this.listElem.scrollTo(0, this.listElem.scrollHeight);
       //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
@@ -148,7 +148,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
       //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
       //this.listElem.scrollTop = this.listElem.scrollHeight;
       //this.listElem.scrollIntoView(false);
-    } catch(e) {
+    } catch(e:any) {
       // element not present
     }
   }
@@ -186,8 +186,8 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
 
   /** */
-  render() {
-    console.log("<post-comment-thread-view>.render()", this.threadHash, this.subjectName);
+  override render() {
+    console.log("<post-comment-thread-view>.override render()", this.threadHash, this.subjectName);
 
     const doodle_bg =  html `
       <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
@@ -230,13 +230,13 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
     const beads = this._dvm.threadsZvm.perspective.getAllBeadsOnThread(this.threadHash);
 
-    //console.log("<post-comment-thread-view>.render() len =", beads.length);
+    //console.log("<post-comment-thread-view>.override render() len =", beads.length);
     //console.log("Has thread some unreads?", thread.hasUnreads());
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let commentItems = Object.values(beads).map(([beadAh, beadInfo, typedBead]) => {
+    let commentItems = Object.values(beads).map(([beadAh, beadInfo, _typedBead]) => {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
-      const isNew = initialProbeLogTs < beadInfo.creationTime;
+      const isNew = !!initialProbeLogTs && initialProbeLogTs < beadInfo.creationTime;
       //console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
       return html`<post-comment-item .hash=${beadAh} ?new=${isNew}></post-comment-item>`
@@ -266,7 +266,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     /** render all */
     return html`
         <!-- thread -->
-        <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
+        <div id="list" @show-profile=${(e:any) => console.log("onShowProfile div", e)}>
             ${commentItems}
         </div>
     `;
@@ -274,7 +274,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       codeStyles,
       sharedStyles,

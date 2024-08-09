@@ -1,5 +1,5 @@
 import {html, css, PropertyValues} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
@@ -24,7 +24,6 @@ import {determineBeadName} from "../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadInfo} from "../viewModels/threads.materialize";
-import {HoloHash} from "@holochain/client";
 
 
 /**
@@ -40,7 +39,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash?: ActionId;
+  @property() hash!: ActionId;
 
   @property() prevBeadAh?: ActionId;
 
@@ -51,7 +50,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   threadsPerspective!: ThreadsPerspective;
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices: WeServicesEx;
+  weServices?: WeServicesEx;
 
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -65,7 +64,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     //console.log("<chat-item>.dvmUpdated()");
     if (oldDvm) {
       //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -79,14 +78,14 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   // /** */
   // protected async updated(_changedProperties: PropertyValues) {
   //   // try {
-  //   //   const childElements = this.shadowRoot.querySelectorAll('*');
+  //   //   const childElements = this.shadowRoot!.querySelectorAll('*');
   //   //   console.log({childElements}); // This will log all child elements of the shadowRoot
   //   //   childElements.forEach(async(childElement) => {
   //   //     const chatItem = childElement as ChatMessageItem;
   //   //     await chatItem.updateComplete;
   //   //   });
   //   //   console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
-  //   // } catch(e) {
+  //   // } catch(e:any) {
   //   //   // element not present
   //   //   //this.requestUpdate();
   //   // }
@@ -98,7 +97,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   //   //console.log("ChatView.msg.getUpdateComplete()")
   //   const superOk = await super.getUpdateComplete();
   //   //const childOk = await this.chatElem.updateComplete;
-  //   // const childElements = this.shadowRoot.querySelectorAll('*');
+  //   // const childElements = this.shadowRoot!.querySelectorAll('*');
   //   // console.log("ChatView.msg children", childElements); // This will log all child elements of the shadowRoot
   //   // childElements.forEach(async(childElement) => {
   //   //   const chatItem = childElement// as ChatMessageItem;
@@ -110,7 +109,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** Probe bead and its reactions */
-  protected firstUpdated(_changedProperties: PropertyValues) {
+  protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.loadBead();
   }
@@ -127,7 +126,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected willUpdate(changedProperties: PropertyValues<this>) {
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
@@ -137,11 +136,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     /** Fiddle with shadow CSS */
-    const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
+    const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
     if (popover) {
-      popover.shadowRoot.appendChild(popoverStyleTemplate.content.cloneNode(true));
+      popover.shadowRoot!.appendChild(popoverStyleTemplate.content.cloneNode(true));
     }
   }
 
@@ -163,15 +162,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickAddEmoji() {
-    const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
-    const btn = this.shadowRoot.getElementById("buttonsPop") as HTMLElement;
+    const popover = this.shadowRoot!.getElementById("emojiPopover") as Popover;
+    const btn = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
     popover.showAt(btn);
   }
 
 
 
   /** */
-  onMoreMenu(e) {
+  onMoreMenu(e:any) {
     console.log("onMoreMenu item-click", e)
     switch (e.detail.item.id) {
       case "addReaction": this.onClickAddEmoji(); break;
@@ -180,8 +179,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       case "viewComments":
       case "createCommentThread":
         const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
-        const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
-        const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
+        const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;
+        const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
         const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
       break;
@@ -220,7 +219,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (!prevBeadInfo) {
       return html``;
     }
-    const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh);
+    const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh)!;
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     if (prevBeadInfo) {
       const maybePrevProfile = this._dvm.profilesZvm.perspective.getProfile(prevBeadInfo.author);
@@ -244,13 +243,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           </div>
           ${renderProfileAvatar(prevProfile, "XS", "replyAvatar")}
           <div id="prevAuthor"                     
-               @click=${(e) => {
+               @click=${(e:any) => {
                   e.stopPropagation();
                   this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: prevBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
             @${prevProfile? prevProfile.nickname : "unknown"}
           </div>
           <div id="prevBeadName"               
-               @click=${(e) => {e.stopPropagation();this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
+               @click=${(e:any) => {e.stopPropagation();this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
               ${determineBeadName(prevBeadInfo.beadType, prevBead, this._filesDvm, this.weServices, 200)}
           </div>
         </div>
@@ -266,8 +265,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices);
+  override render() {
+    console.log("<chat-item>.override render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices);
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
@@ -275,7 +274,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (!beadInfo) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
-    const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
+    const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
     /** hide if prevBead is closer than a minute and same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
@@ -303,17 +302,17 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip=${msg("Create comment thread for this message")} design="Transparent" style="border:none;"
-                      @click="${(_e) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">                      
+                      @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">                      
         </ui5-button>`;
     const hasComments = maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread);
     if (hasComments) {
       commentButton = html`              
           <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
-                       @click="${(_e) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">
+                       @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = this.threadsPerspective.unreadThreads.has(maybeCommentThread);
       const commentLinkColor = isUnread ? "red" : "blue";
-      const thread = this.threadsPerspective.threads.get(maybeCommentThread);
+      const thread = this.threadsPerspective.threads.get(maybeCommentThread)!;
       const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");
       if (thread.beadLinksTree.length > 0) {
         /** Grab all authors */
@@ -321,7 +320,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         for (const bead of thread.beadLinksTree.values) {
           const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(bead.beadAh);
           if (!beadInfo) {
-            console.warn("Bead not found in <chat-item>.render()", bead.beadAh);
+            console.warn("Bead not found in <chat-item>.override render()", bead.beadAh);
             continue;
           }
           if (!authors[beadInfo.author.b64]) {
@@ -339,7 +338,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         commentThread = html`
                 ${avatarGroup}
                 <span class="thread-link" style="color: ${commentLinkColor}"
-                      @click=${(_e) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
+                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " comments" : "" + thread.beadLinksTree.length + " comment"} 
             </span>
         `;
@@ -348,41 +347,41 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         commentThread = html`
                 ${threadAvatar}
                 <span class="thread-link" style="color: ${commentLinkColor}"
-                      @click=${(_e) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
+                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               view comments
             </span>
         `;
       }
     }
 
-    //console.log("<chat-item>.render() maybeCommentThread", maybeCommentThread, commentThread);
+    //console.log("<chat-item>.override render() maybeCommentThread", maybeCommentThread, commentThread);
 
     const menuButton = html`
         <ui5-button id="menu-btn" icon="overflow" tooltip=${msg('More')} design="Transparent" style="border:none;"
-                    @click=${(e) => {
+                    @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
                         //console.log("onSettingsMenu()", e);
-                        const menu = this.shadowRoot.getElementById("moreMenu") as Menu;
-                        const btn = this.shadowRoot.getElementById("menu-btn") as Button;
+                        const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
+                        const btn = this.shadowRoot!.getElementById("menu-btn") as Button;
                         menu.showAt(btn);
                     }}></ui5-button>`;
 
     const replyButton = /*this.cell.agentId.b64 == beadInfo.author? html`` :*/
       html`
         <ui5-button id="reply-btn" icon="response" tooltip=${msg('Reply')} design="Transparent" style="border:none;"
-                    @click=${(_e) => this.onClickReply()}></ui5-button>`;
+                    @click=${(_e:any) => this.onClickReply()}></ui5-button>`;
 
     const reactionButton = html`
               <ui5-button id="add-reaction-btn" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent" style="border:none;"
-                          @click=${(_e) => this.onClickAddEmoji()}></ui5-button>`;
+                          @click=${(_e:any) => this.onClickAddEmoji()}></ui5-button>`;
 
     const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(this.hash.b64);
     const starButton = isFavorite? html`
         <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent" style="border:none;"
-                    @click=${(_e) => this.updateFavorite(this.hash, false)}></ui5-button>
+                    @click=${(_e:any) => this.updateFavorite(this.hash, false)}></ui5-button>
         ` : html`
         <ui5-button id="star-btn" icon="add-favorite" tooltip=${msg("Add to favorite")} design="Transparent" style="border:none;"
-                    @click="${async (_e) => {
+                    @click="${async (_e:any) => {
                       await this.updateFavorite(this.hash, true);
                       console.log("Favorites", this._dvm.threadsZvm.perspective.favorites.length);
     }}"></ui5-button>
@@ -408,22 +407,22 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         ${hidemeta? html`` : this.renderTopVine(beadInfo)}
         <!-- main horizontal div (row) -->
         <div id=${"chat-item__" + this.hash.b64} class="chatItem"
-             @mouseenter=${(e) => {
-                 const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
-                 const anchor = this.shadowRoot.getElementById("nameEnd") as HTMLElement;
+             @mouseenter=${(_e:any) => {
+                 const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
+                 const anchor = this.shadowRoot!.getElementById("nameEnd") as HTMLElement;
                  if (popover && anchor) {
                      popover.showAt(anchor);
                  }
               }}
-             @mouseleave=${(e) => {
-               const popover = this.shadowRoot.getElementById("buttonsPop") as Popover;
+             @mouseleave=${(_e:any) => {
+               const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
                  if (popover) {
                    popover.close();
                  }
              }}>
             <!-- avatar column -->
             <div id="avatarColumn" style="display: flex; flex-direction: column; width:48px;"
-                    @click=${(e) => {
+                    @click=${(e:any) => {
                       e.stopPropagation();
                       this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
                     }}>
@@ -450,13 +449,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
             <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                 <emoji-picker class="light" style="display: block"
-                              @emoji-click=${(event) => {
+                              @emoji-click=${(event: any) => {
                                   const unicode = event?.detail?.unicode
                                   console.log("emoji-click: " + unicode)
                                   if (unicode) {
                                       this._dvm.publishEmoji(this.hash, unicode);
                                   }
-                                  const popover = this.shadowRoot.getElementById("emojiPopover") as Popover;
+                                  const popover = this.shadowRoot!.getElementById("emojiPopover") as Popover;
                                   if (popover.isOpen()) {
                                       popover.close();
                                   }
@@ -503,7 +502,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

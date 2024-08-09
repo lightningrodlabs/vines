@@ -54,8 +54,8 @@ export interface ThreadsDnaPerspective {
  */
 export class ThreadsDvm extends DnaViewModel {
 
-  static readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
-  static readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
+  static override readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
+  static override readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
@@ -108,7 +108,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Methods -- */
 
   /** Store probeLog timestamp upon first load of app */
-  async initializePerspectiveOnline(): Promise<void> {
+  override async initializePerspectiveOnline(): Promise<void> {
     console.log("ThreadsDvm.initializePerspectiveOffline() override")
     await super.initializePerspectiveOnline();
     this._perspective.initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
@@ -193,7 +193,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async pingPeers(maybePpHash: ActionId | null, peers: Array<AgentId>) {
+  async pingPeers(_maybePpHash: ActionId | null, _peers: Array<AgentId>) {
     // const ping: SignalPayload = {
     //   maybePpHash: maybePpHash ? maybePpHash : undefined,
     //   from: this._cellProxy.cell.agentPubKey,
@@ -326,7 +326,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** Dump perspective as JSON */
   exportPerspective(): string {
     //console.log("Dvm.exportPerspective()", name)
-    const dvmExport = {};
+    const dvmExport: any = {};
     //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
     const tJson = this.threadsZvm.export(this.authorshipZvm);
     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);

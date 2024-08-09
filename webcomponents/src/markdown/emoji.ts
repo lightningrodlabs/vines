@@ -1,7 +1,7 @@
 /** Copied from markdown-it-emoji v3.0.0: light data */
 
 
-export function bare_emoji_plugin (md, options) {
+export function bare_emoji_plugin (md:any, options:any) {
   const defaults = {
     defs: {},
     shortcuts: {},
@@ -20,7 +20,7 @@ export function bare_emoji_plugin (md, options) {
 };
 
 
-export default function emoji_plugin (md, options) {
+export default function emoji_plugin (md:any, options:any) {
   const defaults = {
     defs: emojies_defs,
     shortcuts: emojies_shortcuts,
@@ -33,7 +33,7 @@ export default function emoji_plugin (md, options) {
 };
 
 
-function emoji_html(tokens, idx /*, options, env */) {
+function emoji_html(tokens:any, idx:any /*, options, env */) {
   return tokens[idx].content
 };
 
@@ -43,16 +43,19 @@ function emoji_html(tokens, idx /*, options, env */) {
 // Note: In theory, it could be faster to parse :smile: in inline chain and
 // leave only shortcuts here. But, who care...
 //
+// @ts-ignore
 function emoji_replace(md, emojies, shortcuts, scanRE, replaceRE) {
   const arrayReplaceAt = md.utils.arrayReplaceAt
   const ucm = md.utils.lib.ucmicro
   const has = md.utils.has
   const ZPCc = new RegExp([ucm.Z.source, ucm.P.source, ucm.Cc.source].join('|'))
 
+  // @ts-ignore
   function splitTextToken (text, level, Token) {
     let last_pos = 0
     const nodes = []
 
+    // @ts-ignore
     text.replace(replaceRE, function (match, offset, src) {
       let emoji_name
       // Validate emoji name
@@ -95,7 +98,8 @@ function emoji_replace(md, emojies, shortcuts, scanRE, replaceRE) {
     return nodes
   }
 
-  return function emoji_replace (state) {
+  // @ts-ignore
+  return function emoji_replace(state) {
     let token
     const blockTokens = state.tokens
     let autolinkLevel = 0
@@ -128,16 +132,19 @@ function emoji_replace(md, emojies, shortcuts, scanRE, replaceRE) {
 // Convert input options to more useable format
 // and compile search regexp
 
+// @ts-ignore
 function quoteRE (str) {
   return str.replace(/[.?*+^$[\]\\(){}|-]/g, '\\$&')
 }
 
+// @ts-ignore
 export function normalize_opts (options) {
   let emojies = options.defs
 
   // Filter emojies by whitelist, if needed
   if (options.enabled.length) {
     emojies = Object.keys(emojies).reduce((acc, key) => {
+      // @ts-ignore
       if (options.enabled.indexOf(key) >= 0) acc[key] = emojies[key]
       return acc
     }, {})
@@ -149,10 +156,12 @@ export function normalize_opts (options) {
     if (!emojies[key]) return acc
 
     if (Array.isArray(options.shortcuts[key])) {
+      // @ts-ignore
       options.shortcuts[key].forEach(alias => { acc[alias] = key })
       return acc
     }
 
+    // @ts-ignore
     acc[options.shortcuts[key]] = key
     return acc
   }, {})

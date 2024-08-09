@@ -1,5 +1,5 @@
-import {css, html, LitElement, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {css, html} from "lit";
+import {state, customElement} from "lit/decorators.js";
 import {sharedStyles} from "../../styles";
 
 import Input from "@ui5/webcomponents/dist/Input";
@@ -38,7 +38,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
   _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices!: WeServicesEx;
+  weServices?: WeServicesEx;
 
   @state() private _creating = false;
 
@@ -46,18 +46,18 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
   async onCreate() {
     this._creating = true;
     try {
-      const purpose = (this.shadowRoot.getElementById("purposeInput") as Input).value;
-      const wurl = (this.shadowRoot.getElementById("wurlInput") as Input).value;
+      const purpose = (this.shadowRoot!.getElementById("purposeInput") as Input).value;
+      const wurl = (this.shadowRoot!.getElementById("wurlInput") as Input).value;
       const wal0 = weaveUrlToWal(wurl);
       const [dnaId, dhtId] = hrl2Id(wal0.hrl);
-      const attLocInfo = await this.weServices.assetInfo(wal0);
+      const attLocInfo = await this.weServices!.assetInfo(wal0);
       const subject: Subject = {
         address: dhtId.b64,
         typeName: SpecialSubjectType.Asset,
         dnaHashB64: dnaId.b64,
-        appletId: new EntryId(attLocInfo.appletHash).b64,
+        appletId: new EntryId(attLocInfo!.appletHash).b64,
       }
-      const subject_name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
+      const subject_name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices!);
       console.log("@create event subject_name", subject_name);
       const pp: ParticipationProtocol = {
         purpose,
@@ -71,7 +71,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
         context: pp.subject.address,
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))
-    } catch(e) {
+    } catch(e:any) {
       this.dispatchEvent(new CustomEvent('reject', {detail: e, bubbles: true, composed: true}))
     }
     this._creating = false;
@@ -79,8 +79,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  render() {
-
+  override render() {
     if (this._creating) {
       return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
@@ -95,21 +94,21 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
           <div>
               <ui5-label for="wurlInput" required>Subject weaveURL:</ui5-label>
               <ui5-input id="wurlInput"></ui5-input>
-              <ui5-button icon="add" @click=${async (_e) => {
-                  const maybeWal = await this.weServices.userSelectWal();
+              <ui5-button icon="add" @click=${async (_e:any) => {
+                  const maybeWal = await this.weServices?.userSelectWal();
                   if (!maybeWal) {
                       return;
                   }
-                  const input = this.shadowRoot.getElementById("wurlInput") as Input;
+                  const input = this.shadowRoot!.getElementById("wurlInput") as Input;
                   input.value = weaveUrlFromWal(maybeWal);
               }}></ui5-button>              
           </div>          
       </section>
       <div slot="footer" class="footer">
-        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(e) => this.onCreate()}>
+        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e:any) => this.onCreate()}>
             Create
         </ui5-button>
-        <ui5-button style="margin-top:5px" @click=${(e) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}>
+        <ui5-button style="margin-top:5px" @click=${(_e:any) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}>
             Cancel
         </ui5-button>
       </div>
@@ -118,7 +117,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

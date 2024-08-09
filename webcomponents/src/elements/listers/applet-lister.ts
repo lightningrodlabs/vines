@@ -31,7 +31,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {EntryHashB64, HoloHash} from "@holochain/client";
+import {EntryHashB64} from "@holochain/client";
 
 
 
@@ -62,14 +62,14 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    * In zvmUpdated() this._zvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
+  protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<applet-lister>.zvmUpdated()");
     await this.loadSubjectTypes(newZvm);
   }
 
 
   /** */
-  protected async willUpdate(changedProperties: PropertyValues<this>) {
+  protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     //console.log("<applet-lister>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
     if (changedProperties.has("appletId") && this._zvm) {
@@ -123,7 +123,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async openCommentThread(hash: DhtId, subjectType: string, subjectName: string): Promise<void> {
+  async openCommentThread(hash: DhtId, _subjectType: string, _subjectName: string): Promise<void> {
     console.log("openCommentThread()", hash);
     const attType = this.getThreadAttachmentType();
     if (!attType) {
@@ -142,7 +142,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async clickTree(event) {
+  async clickTree(event:any) {
     console.log("<applet-lister> click event:", event.detail.item);
     let type;
     switch (event.detail.item.level) {
@@ -176,8 +176,8 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  async toggleTreeItem(event: any, unreadSubjects: AnyId[]) {
-    const busyIndicator = this.shadowRoot.getElementById("busy") as BusyIndicator;
+  async toggleTreeItem(event: any, _unreadSubjects: AnyId[]) {
+    const busyIndicator = this.shadowRoot!.getElementById("busy") as BusyIndicator;
     const toggledTreeItem = event.detail.item as TreeItem ; // get the node that is toggled
     //const isTyped = !!this.root && typeof this.root == 'object';
     //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
@@ -220,7 +220,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             if (assetLocInfo) {
               newItem.text = assetLocInfo.assetInfo.name;
             }
-          } catch(e) {
+          } catch(e:any) {
             console.error("Couldn't find assetInfo:", e);
           }
         }
@@ -253,8 +253,8 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         //const tmpl = html`<ui5-tree-item id=${ppAh.b64} text=${pp.purpose} level=${toggledTreeItem.level + 1}></ui5-tree-item>`;
 
 
-        const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(ppAh);
-        const hasUnreadComments = unreadSubjects.map((id) => id.b64).includes(ppAh.b64);
+        //const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(ppAh);
+        //const hasUnreadComments = unreadSubjects.map((id) => id.b64).includes(ppAh.b64);
         const threadIsNew = this.perspective.newThreads.has(ppAh);
         const hasNewBeads = this.perspective.unreadThreads.has(ppAh);
 
@@ -286,8 +286,8 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  render() {
-    console.log("<applet-lister>.render()", this.appletId);
+  override render() {
+    console.log("<applet-lister>.override render()", this.appletId);
     // if (!this.appletId) {
     //   return html `<div>No Applet selected</div>`;
     // }
@@ -296,7 +296,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
 
     let subjectTypes = this.perspective.appletSubjectTypes.get(this.appletId);
-    console.log("<applet-lister>.render() subjectTypes", subjectTypes);
+    console.log("<applet-lister>.override render() subjectTypes", subjectTypes);
     if (!subjectTypes) {
       subjectTypes = new EntryIdMap();
     }
@@ -308,23 +308,23 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
-      console.log("<applet-lister>.render() subjectType", subjectType, pathEh);
+      console.log("<applet-lister>.override render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
-      const isUnread = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
+      const isUnread = !!maybeCommentThread && this._zvm.perspective.unreadThreads.has(maybeCommentThread);
       const topicIsNew = newSubjects.get(pathEh.b64) != undefined;
 
       let commentButton = html``;
       if (isUnread) {
         commentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" class=${this._isHovered.get(pathEh)? "" : "transBtn"}
-                                             @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
+                                             @click="${(_e:any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
       } else {
         if (this._isHovered.get(pathEh)) {
           commentButton = html`
               <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread? msg("View comment thread") : msg("Create new comment thread")}"
                           design="Transparent"
-                          @click="${(e) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
+                          @click="${(_e:any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
         }
       }
 
@@ -351,7 +351,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
             <div style="color: grey; margin: auto;">${msg('No comment threads found')}</div>
             <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId.b64 || this.appletId == THIS_APPLET_ID}
-                        @click=${(e) => {
+                        @click=${(_e:any) => {
                           if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this.appletId.hash)
                         }}>
                 ${msg('Go to Tool')}
@@ -364,10 +364,10 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
       <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
         <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text="No SubjectTypes found"
-                  @item-toggle=${(e) => this.toggleTreeItem(e, unreadSubjects)}
+                  @item-toggle=${(e:any) => this.toggleTreeItem(e, unreadSubjects)}
                   @item-click=${this.clickTree}
-                  @item-mouseover=${(e) => {this._isHovered[e.detail.item.id] = true; this.requestUpdate();}}
-                  @item-mouseout=${(e) => {this._isHovered[e.detail.item.id] = false;}}
+                  @item-mouseover=${(e:any) => {this._isHovered.set(e.detail.item.id, true); this.requestUpdate();}}
+                  @item-mouseout=${(e:any) => {this._isHovered.set(e.detail.item.id, false);}}
         >
           ${treeItems}
         </ui5-tree>
@@ -377,7 +377,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

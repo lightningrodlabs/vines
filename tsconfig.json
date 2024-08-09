@@ -1,21 +1,44 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "module": "esnext",
+    "target": "es2020",
+    "module": "es6",
+    "lib": ["es2020", "dom"],
+
     "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
     "checkJs": false,
     "allowJs": true,
-    "noEmitOnError": true,
-    "lib": ["es2017", "dom"],
-    "strict": false,
-    "esModuleInterop": true,
-    "strictNullChecks": true,
-    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmitOnError": true,
+
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "alwaysStrict": true,
+    "strictPropertyInitialization": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+
     "importHelpers": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
     "inlineSources": true,
-    "declaration": true
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "removeComments": true,
+    "skipLibCheck": true
   }
 }

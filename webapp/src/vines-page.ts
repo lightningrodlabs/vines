@@ -1,4 +1,4 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
   ActionId,
@@ -202,7 +202,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    this.addEventListener('beforeunload', (e) => {
+    this.addEventListener('beforeunload', (e:any) => {
       console.log("<vines-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
@@ -210,32 +210,40 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** Handle 'jump' event */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
+    // @ts-ignore
     this.addEventListener('popstate', this.onPopState);
+    // @ts-ignore
     this.addEventListener('jump', this.onJump);
+    // @ts-ignore
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
+    // @ts-ignore
     this.addEventListener('archive', this.onArchive);
   }
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
+    // @ts-ignore
     this.removeEventListener('popstate', this.onPopState);
+    // @ts-ignore
     this.removeEventListener('jump', this.onJump);
     this.removeEventListener('edit-profile', this.onEditProfile);
+    // @ts-ignore
     this.removeEventListener('show-profile', this.onShowProfile);
+    // @ts-ignore
     this.removeEventListener('archive', this.onArchive);
   }
 
 
   getDeepestElemAt(x: number, y: number): HTMLElement {
-    const elem = this.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+    const elem = this.shadowRoot!.elementFromPoint(x, y) as HTMLElement;
     let shadow: HTMLElement = elem;
     let shadower;
     do {
       shadower = undefined;
       if (shadow.shadowRoot) {
-        shadower = shadow.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+        shadower = shadow.shadowRoot!.elementFromPoint(x, y) as HTMLElement;
       }
       if (shadower) {
         shadow = shadower;
@@ -247,7 +255,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   async onArchive(e: CustomEvent<HideEvent>) {
     const verb = e.detail.hide? msg("Archive") : msg("Unarchive");
-    const dialog = this.shadowRoot.getElementById("confirm-hide-topic") as ConfirmDialog;
+    const dialog = this.shadowRoot!.getElementById("confirm-hide-topic") as ConfirmDialog;
     /** DM */
     if (e.detail.address.hashType == HoloHashType.Agent) {
       const agentId = new AgentId(e.detail.address.b64)
@@ -284,14 +292,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
     //console.log("onShowProfile() elem", elem)
-    const popover = this.shadowRoot.getElementById("profilePop") as Popover;
-    const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
+    const popover = this.shadowRoot!.getElementById("profilePop") as Popover;
+    const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     sub.hash = e.detail.agentId;
     sub.requestUpdate();
     popover.showAt(elem);
   }
 
-  onEditProfile(e) {
+  onEditProfile(_e:any) {
     this.profileDialogElem.show();
   }
 
@@ -312,18 +320,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canViewArchivedSubjects = false;
   @state() private _currentCommentRequest: CommentRequest = undefined;
 
-  @state() private _splitObj: SplitObject = undefined;
+  @state() private _splitObj: SplitObject | undefined = undefined;
 
-  @state() private _replyToAh: ActionId = undefined;
+  @state() private _replyToAh: ActionId | undefined = undefined;
 
 
   //private _threadNames: ActionIdMap<string> = new ActionIdMap();
 
-  @property({type: ActionId}) selectedThreadHash?: ActionId;
-  @property() selectedBeadAh?: ActionId;
+  @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
+  @property() selectedBeadAh: ActionId | undefined = undefined;
 
   @property({type: Object})
-  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
+  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
 
   //@property() appletId: AppletId;
 
@@ -343,14 +351,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Getters -- */
 
   get createTopicDialogElem(): Dialog {
-    return this.shadowRoot.getElementById("create-topic-dialog") as Dialog;
+    return this.shadowRoot!.getElementById("create-topic-dialog") as Dialog;
   }
   get editTopicDialogElem(): Dialog {
-    return this.shadowRoot.getElementById("edit-topic-dialog") as Dialog;
+    return this.shadowRoot!.getElementById("edit-topic-dialog") as Dialog;
   }
 
   get createThreadDialogElem(): Dialog {
-    return this.shadowRoot.getElementById("create-thread-dialog") as Dialog;
+    return this.shadowRoot!.getElementById("create-thread-dialog") as Dialog;
   }
 
   get profileDialogElem(): Dialog {
@@ -365,7 +373,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Update -- */
 
   /** */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<vines-page>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -388,7 +396,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Update -- */
 
   /** */
-  async onCreateTopic(e) {
+  async onCreateTopic(_e:any) {
     const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
     const name = input.value.trim();
     await this._dvm.threadsZvm.publishSemanticTopic(name);
@@ -399,10 +407,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onEditTopic(e) {
+  async onEditTopic(_e:any) {
     const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
     const name = input.value.trim();
-    await this._dvm.editSemanticTopic(new EntryId(this.editTopicDialogElem.getAttribute('TopicHash')), name);
+    const topicHash = this.editTopicDialogElem.getAttribute('TopicHash');
+    if (!topicHash) {
+      throw Promise.reject("Missing TopicHash attribute");
+    }
+    await this._dvm.editSemanticTopic(new EntryId(topicHash), name);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.editTopicDialogElem.close();
@@ -410,7 +422,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onCreateThread(e) {
+  async onCreateThread(_e:any) {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
     const name = input.value.trim();
     if (name.length < 1) {
@@ -446,7 +458,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onDmTextMessage(inputText: string) {
     console.log("onDmTextMessage()", inputText, this._dvm.profilesZvm)
-    const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
+    const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     const otherAgent: AgentId = sub.hash;
     console.log("onDmTextMessage() otherAgent", otherAgent)
     let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
@@ -489,17 +501,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** After first render only */
-  async firstUpdated() {
+  override async firstUpdated() {
     console.log("<vines-page> firstUpdated()");
 
     /** Generate test data */
     //await this._dvm.threadsZvm.generateTestData("");
 
     /** Fiddle with shadow parts CSS */
-    const searchField = this.shadowRoot.getElementById('search-field') as Input;
+    const searchField = this.shadowRoot!.getElementById('search-field') as Input;
     console.log("search-field", searchField,searchField.shadowRoot);
     if (searchField) {
-      searchField.shadowRoot.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
+      searchField.shadowRoot!.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
       this.requestUpdate();
     }
     /** Grab all AppletIds & GroupProfiles */
@@ -532,26 +544,26 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     /** ??? */
     try {
-      const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
+      const chatView = this.shadowRoot!.getElementById("chat-view") as ChatThreadView;
       const view = await chatView.updateComplete;
       //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
       if (!view) {
         /** Request a new update for scrolling to work */
         chatView.requestUpdate();
       }
-    } catch(e) {
+    } catch(e:any) {
       /** i.e. element not present */
     }
 
     // /** Fiddle with shadow parts CSS */
 
     //   /** Toggle notif settings switch if necessary */
-    //   const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
-    //   const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
-    //   const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
+    //   const allRadio = this.shadowRoot!.getElementById("notifSettingsAll") as RadioButton;
+    //   const mentionRadio = this.shadowRoot!.getElementById("notifSettingsMentions") as RadioButton;
+    //   const neverRadio = this.shadowRoot!.getElementById("notifSettingsNever") as RadioButton;
     //
     //   if (allRadio.checked) {
     //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.AllMessages);
@@ -641,7 +653,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
       }
-    } catch (e) {
+    } catch (e:any) {
       console.log("createMyProfile() failed");
       console.log(e);
     }
@@ -653,7 +665,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onSaveProfile()", profile)
     try {
       await this._dvm.profilesZvm.updateMyProfile(profile);
-    } catch(e) {
+    } catch(e:any) {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
     this.profileDialogElem.close(false);
@@ -674,7 +686,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => !agentKey.equals(this.cell.address.agentId));
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey: AgentId) => !agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -704,7 +716,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async showSideCommentThread(commentThreadAh: ActionId, subjectName: string) {
     /** Save input field before switching */
     if (this._selectedCommentThreadHash && this._canShowComments) {
-      const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
+      const commentView = this.shadowRoot!.getElementById("comment-view") as CommentThreadView;
       if (commentView) {
         this._dvm.perspective.threadInputs.set(new ActionId(this._selectedCommentThreadHash.b64), commentView.value);
       }
@@ -759,7 +771,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onListerSelected(e) {
+  onListerSelected(e:any) {
     console.log("onListerSelected()", e);
     const selectedOption = e.detail.selectedOption;
     console.log("onListerSelected() selectedOption", e.detail.selectedOption);
@@ -827,7 +839,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           await this._dvm.threadsZvm.deleteNotification(linkAh);
         }
         /** Cache and reset input-bar */
-        const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
+        const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
         if (inputBar) {
           this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
           inputBar.setValue("");
@@ -836,19 +848,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
     /** Close any opened popover */
-    const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+    const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();
     }
-    const pop = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
+    const pop = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
     if (pop.isOpen()) {
       pop.close();
     }
-    const searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+    const searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
     if (searchPopElem.isOpen()) {
       searchPopElem.close();
     }
-    const profilePopElem = this.shadowRoot.getElementById("profilePop") as Popover;
+    const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
     if (profilePopElem.isOpen()) {
       profilePopElem.close();
     }
@@ -862,9 +874,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.error("onNotifSettingsChange() failed. No thread selected")
       return;
     }
-    const allRadio = this.shadowRoot.getElementById("notifSettingsAll") as RadioButton;
-    const mentionRadio = this.shadowRoot.getElementById("notifSettingsMentions") as RadioButton;
-    const neverRadio = this.shadowRoot.getElementById("notifSettingsNever") as RadioButton;
+    const allRadio = this.shadowRoot!.getElementById("notifSettingsAll") as RadioButton;
+    const mentionRadio = this.shadowRoot!.getElementById("notifSettingsMentions") as RadioButton;
+    const neverRadio = this.shadowRoot!.getElementById("notifSettingsNever") as RadioButton;
     if (allRadio.checked) {
       this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySetting.AllMessages);
       //console.log("notifSetting checked", NotifySettingType.AllMessages);
@@ -897,7 +909,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   private addSearch(str: string) {
-    const field = this.shadowRoot.getElementById("search-field") as Input;
+    const field = this.shadowRoot!.getElementById("search-field") as Input;
     let ws = "";
     if (field.value.length > 0 && field.value[field.value.length - 1] != " ") {
       ws = " "
@@ -908,9 +920,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
-    //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
+  override render() {
+    console.log("<vines-page>.override render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    //console.log("<vines-page>.override render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     let uploadState;
     if (this._splitObj) {
@@ -924,13 +936,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (!thread) {
-        console.log("<vines-page>.render() fetchPp WARNING");
+        console.log("<vines-page>.override render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
       } else {
         primaryTitle = thread.name;
         const dmThread = this._dvm.threadsZvm.isThreadDm(this.selectedThreadHash);
         if (dmThread) {
-          console.log("<vines-page>.render() dmThread", dmThread);
+          console.log("<vines-page>.override render() dmThread", dmThread);
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
           primaryTitle = profile ? profile.nickname : "unknown";
         }
@@ -973,14 +985,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               ${msg("Comments about")} "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
               <ui5-button icon="delete" design="Transparent"
                           style="border:none; padding:0px"
-                          @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
+                          @click=${(_e:any) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
             <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}">
                 ${msg("Replying to")} ${maybeReplyAuthorName}
                 <div style="flex-grow: 1"></div>
                 <ui5-button icon="decline" design="Transparent"
                             style="border:none; padding:0px"
-                            @click=${(e) => {this._replyToAh = undefined;}}></ui5-button>
+                            @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
             <vines-input-bar id="input-bar"
                              .profilesZvm=${this._dvm.profilesZvm}
@@ -992,7 +1004,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
                                if (e.detail.wal) await this.onCreateHrlMessage(e.detail.wal);
-                               if (e.detail.file) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);                               
+                               if (e.detail.file && this.selectedThreadHash) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);                               
                                this._replyToAh = undefined;
                                this.selectedBeadAh = undefined;
                              }}
@@ -1018,12 +1030,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
     //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
-    let appletOptions = [];
+    let appletOptions: TemplateResult<1>[] = [];
     if (this.weServices) {
       appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
           console.log("appletInfo", appletInfo);
           /** exclude this applet as it's handled specifically elsewhere */
-          if (appletId.equals(this.weServices.appletId)) {
+          if (!appletInfo || appletId.equals(this.weServices.appletId)) {
             return html``;
           }
           return html`<ui5-option id=${appletId.b64} icon="discussion">${appletInfo.appletName}</ui5-option>`;
@@ -1047,8 +1059,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       fileTable = html`
         <cell-context .cell=${this._filesDvm.cell}>
             <h2>Public Files</h2>
-            <button @click=${(e) => {
-                const storeDialogElem = this.shadowRoot.querySelector("store-dialog") as StoreDialog;
+            <button @click=${(_e:any) => {
+                const storeDialogElem = this.shadowRoot!.querySelector("store-dialog") as StoreDialog;
                 storeDialogElem.open(false);
             }}>Add Public file</button>
             <store-dialog></store-dialog>        
@@ -1058,14 +1070,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       `;
     }
 
-    const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
+    const searchValue = this.shadowRoot!.getElementById("search-field")? (this.shadowRoot!.getElementById("search-field") as Input).value : "";
     const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
     let notifSetting = NotifySetting.MentionsOnly; // default
     if (this.selectedThreadHash) {
       notifSetting = this._dvm.threadsZvm.perspective.getNotifSetting(this.selectedThreadHash, this.cell.address.agentId);
     }
-    console.log("<vines-page>.render() notifSettings", notifSetting, this.selectedThreadHash);
+    console.log("<vines-page>.override render() notifSettings", notifSetting, this.selectedThreadHash);
 
     /** Group Info */
     let groupProfile: GroupProfile = {
@@ -1079,7 +1091,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);
-        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]));
+        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]!));
         if (weGroup) {
           groupProfile = weGroup;
         }
@@ -1103,7 +1115,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Get network info for this cell */
     const sId = this.cell.address.str;
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
-    const networkInfo = networkInfos.length > 0 ? networkInfos[networkInfos.length - 1][1] : null;
+    const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
     let lister= html`<applet-lister .appletId=${this._listerToShow}></applet-lister>`
     if (this._listerToShow == this.cell.address.agentId.b64) {
@@ -1111,8 +1123,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <dm-lister
                   .showArchived=${this._canViewArchivedSubjects}
                   .selectedThreadHash=${this.selectedThreadHash}
-                  @createNewDm=${(e) => {
-                      const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog;
+                  @createNewDm=${(_e:any) => {
+                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                       dialog.show();
                   }}
           ></dm-lister>
@@ -1123,7 +1135,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <topics-lister 
                          .showArchivedTopics=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
-                         @createNewTopic=${(e : CustomEvent<boolean>) => this.createTopicDialogElem.show()}
+                         @createNewTopic=${(_e : CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e: CustomEvent<EntryId>) => {
                              this._createTopicHash = e.detail;
                              this.createThreadDialogElem.show();
@@ -1136,7 +1148,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <my-threads-lister 
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
-                         @createNewTopic=${(e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
+                         @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e : CustomEvent<EntryId>) => {
                           this._createTopicHash = e.detail;
                           this.createThreadDialogElem.show()
@@ -1150,7 +1162,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     tooltip=${this._canShowLeft? msg("Hide side panel"): msg("Show side panel")}
                     slot="startButton"
                     style="margin-right:5px;"
-                    @click=${(e) => this._canShowLeft = !this._canShowLeft}>
+                    @click=${(_e:any) => this._canShowLeft = !this._canShowLeft}>
         </ui5-button>
     `;
 
@@ -1165,7 +1177,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const subjectAh = new ActionId(thread.pp.subject.address);
         const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
         if (subjectBead) {
-          maybeBackBtn = html`<ui5-button icon="nav-back" slot="startButton" @click=${(_e) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
+          maybeBackBtn = html`<ui5-button icon="nav-back" slot="startButton" @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
         }
       }
     }
@@ -1181,11 +1193,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @edit-topic-clicked=${this.onEditTopicClicked}>
             
             <div id="leftSide" style="display: ${this._canShowLeft? "flex": "none"}"
-                 @contextmenu=${(e) => {
+                 @contextmenu=${(e:any) => {
                     console.log("LeftSide contextmenu", e);
                   // e.preventDefault();
-                  // const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
-                  // const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                  // const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                  // const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
                   // menu.showAt(btn);
                   // //menu.style.top = e.clientY + "px";
                   // //menu.style.left = e.clientX + "px";
@@ -1193,16 +1205,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div id="group-div">
                     <ui5-avatar size="S" class="chatAvatar"
                                 @click=${() => {
-                        const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                        const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                        const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                        const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
                         popover.showAt(btn);
                     }}>
                         <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
                     </ui5-avatar>
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;"
                          @click=${() => {
-                        const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                        const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                        const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                        const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
                         popover.showAt(btn);
                     }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${groupProfile.name}</div>
@@ -1212,11 +1224,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                     <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
                                 design="Transparent" icon="navigation-down-arrow"
-                                @click=${(e) => {
+                                @click=${(e:any) => {
                                   e.preventDefault();
                                   //console.log("onSettingsMenu()", e);
-                                  const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
-                                  const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                                  const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                                  const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
                                   menu.showAt(btn);
                                 }}>
                     </ui5-button>
@@ -1253,7 +1265,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div id="profile-row">
                     <div id="profile-div" 
                          style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;"
-                         @click=${(e) => {
+                         @click=${(e:any) => {
                              e.stopPropagation();
                              this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.address.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                       ${avatar}
@@ -1264,15 +1276,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
-                                @click=${(e) => {
+                                @click=${(_e:any) => {
                                   //console.log("onSettingsMenu()", e);
-                                  const settingsMenu = this.shadowRoot.getElementById("settingsMenu") as Menu;
-                                  const settingsBtn = this.shadowRoot.getElementById("settingsBtn") as Button;
+                                  const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
+                                  const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
                                   settingsMenu.showAt(settingsBtn);
                                 }}>
                     </ui5-button>
                     <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
-                              @item-click=${(e) => this.onSettingsMenu(e)}>
+                              @item-click=${(e:any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                         <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
@@ -1294,7 +1306,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <div slot="footer" style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                           <div style="flex-grow: 1;"></div>
                           <ui5-button slot="footer" design="Emphasized" @click=${() => {
-                                      const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
+                                      const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
                                       if (popover.isOpen()) {
                                           popover.close();
                                       }
@@ -1316,10 +1328,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   <div id="topBarBtnGroup">
                     <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
                              style="display: ${this._canShowSearch? "flex" : "none"}"
-                             @input=${(e) => {
+                             @input=${(e:any) => {
                                  console.log("<search-field> @input", e.keyCode, e);
-                                 let searchElem = this.shadowRoot.getElementById("search-field") as Input;
-                                 let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+                                 let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                                 let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
                                  if (searchElem.value == "") {
                                    searchPopElem.close();
                                    this._canShowSearchResults = false;
@@ -1329,11 +1341,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  searchPopElem.showAt(searchElem, true);
                                  searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                              }}
-                             @keypress=${(e) => {
+                             @keypress=${(e:any) => {
                                console.log("<search-field> @keypress", e.keyCode, e);
-                               let searchElem = this.shadowRoot.getElementById("search-field") as Input;
-                               let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
-                               //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;
+                               let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                               let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
+                               //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
                                if (searchElem.value != "") {
                                  if (e.keyCode === 13) {
                                    searchPopElem.close();
@@ -1359,13 +1371,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                            tooltip=${msg('Notifications Settings')} 
                                            @click=${() => {
                                              console.log("notifSettingsBtn.click()");
-                                            const popover = this.shadowRoot.getElementById("notifSettingsPopover") as Popover;
+                                            const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
                                             if (popover.isOpen()) {
                                                 popover.close();
                                                 return;
                                             }
-                                            const shellbar = this.shadowRoot.getElementById("topicBar");
-                                            popover.showAt(shellbar);
+                                            const shellbar = this.shadowRoot!.getElementById("topicBar");
+                                            if (!shellbar) {
+                                              console.error("Missing topicBar HTML Element");
+                                            }
+                                            popover.showAt(shellbar!);
                                         }}>
                           </ui5-button>`
                   }
@@ -1375,13 +1390,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       <ui5-button icon="inbox"
                                          @click=${() => {
                                             console.log("inboxButton.click()")
-                                            const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                                            const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
                                             if (popover.isOpen()) {
                                                 popover.close();
                                                 return;
                                             }
-                                            const shellbar = this.shadowRoot.getElementById("topicBar");
-                                            popover.showAt(shellbar);
+                                            const shellbar = this.shadowRoot!.getElementById("topicBar");
+                                            popover.showAt(shellbar!);
                                         }}>
                       </ui5-button>
                       <span class="numberBadge">${this._dvm.threadsZvm.perspective.inbox.size? this._dvm.threadsZvm.perspective.inbox.size : ""}</span>
@@ -1398,11 +1413,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-li>FIXME</ui5-li>
                             <hr style="color:#f4f4f4"/> -->
                             <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <ui5-li @click=${(_e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
-                            <ui5-li @click=${(_e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(_e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(_e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
-                            <ui5-li @click=${(_e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(_e:any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
+                            <ui5-li @click=${(_e:any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(_e:any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(_e:any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(_e:any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>
@@ -1413,9 +1428,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                 <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this channel")}>
                     <div  style="flex-direction: column; display: flex">
-                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><</ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(e) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.Never) as Boolean}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><</ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.Never) as Boolean}></ui5-radio-button>
                     </div>
                 </ui5-popover>
 
@@ -1448,27 +1463,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
         </ui5-dialog>
         <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
-            <peer-list @avatar-clicked=${async (e) => {
+            <peer-list @avatar-clicked=${async (e:any) => {
                 console.log("@avatar-clicked", e.detail)
-                const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog;
+                const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                 dialog.close();
                 const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail);
                 this.dispatchEvent(threadJumpEvent(ppAh));
             }}></peer-list>
             <ui5-button 
                     style="margin-top: 10px; float: right;"
-                    @click=${(e) => {const dialog = this.shadowRoot.getElementById("pick-agent-dialog") as Dialog; dialog.close()}}>
+                    @click=${(_e:any) => {const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog; dialog.close()}}>
                 Cancel
             </ui5-button>
         </ui5-dialog>
         <!-- Profile Dialog/Popover -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
             <profile-panel id="profilePanel" 
-                           @edit-profile=${(e) => (this.shadowRoot.getElementById("profilePop") as Popover).close()}
+                           @edit-profile=${(_e:any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}
                            @input=${(e: CustomEvent<VinesInputEvent>) => {
                              e.preventDefault();
                              this.onDmTextMessage(e.detail.text);
-                             const profilePopElem = this.shadowRoot.getElementById("profilePop") as Popover;
+                             const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
                              if (profilePopElem.isOpen()) {
                                  profilePopElem.close();
                              }                             
@@ -1486,13 +1501,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ></vines-edit-profile>
         </ui5-dialog>
         <!-- ConfirmDialogs -->
-        <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e) => {}}></confirm-dialog>
+        <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e:any) => {}}></confirm-dialog>
         <!-- CreateTopicDialog -->
         <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
             <section>
                 <div>
                     <ui5-label for="topicTitleInput" required>${msg("Title")}:</ui5-label>
-                    <ui5-input id="topicTitleInput" @keydown=${(e) => {
+                    <ui5-input id="topicTitleInput" @keydown=${(e:any) => {
                         if (e.keyCode === 13) {
                             e.preventDefault();
                             this.onCreateTopic(e);
@@ -1513,7 +1528,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <section>
                   <div>
                       <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
-                      <ui5-input id="editTopicTitleInput" @keydown=${(e) => {
+                      <ui5-input id="editTopicTitleInput" @keydown=${(e:any) => {
                           if (e.keyCode === 13) {
                               e.preventDefault();
                               this.onEditTopic(e);
@@ -1535,7 +1550,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div>
                     <ui5-label for="threadPurposeInput" required>${msg("Purpose")}:</ui5-label>
                     <ui5-input id="threadPurposeInput" 
-                               @keydown=${async (e) => {
+                               @keydown=${async (e:any) => {
                                   if (e.keyCode === 13) {
                                       e.preventDefault();
                                       await this.onCreateThread(e);
@@ -1546,10 +1561,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <div slot="footer" style:
             "display:flex;">
             <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                        @click=${async (e) => await this.onCreateThread(e)} >
+                        @click=${async (e:any) => await this.onCreateThread(e)} >
                 ${msg("Create")}
             </ui5-button>
-            <ui5-button style="margin-top:5px" @click=${(e) => this.createThreadDialogElem.close(false)}>Cancel
+            <ui5-button style="margin-top:5px" @click=${(_e:any) => this.createThreadDialogElem.close(false)}>Cancel
             </ui5-button>
             </div>
         </ui5-dialog>
@@ -1571,7 +1586,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = (_e:any) => {
         const contents = reader.result as string;
         //console.log(contents);
         this._dvm.importPerspective(contents, canPublish);
@@ -1609,7 +1624,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onGroupMenu(e): Promise<void> {
+  async onGroupMenu(e:any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
       case "createTopic": this.createTopicDialogElem.show(); break;
@@ -1621,13 +1636,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onSettingsMenu(e): Promise<void> {
+  async onSettingsMenu(e:any): Promise<void> {
     console.log("item-click", e);
     this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
       case "uploadFileItem": this.openFile(); break;
       case "editProfileItem": this.profileDialogElem.show(); break;
+      // @ts-ignore
       case "exportAllItem":
         if (content == "") content = await this._dvm.exportAllPerspective();
       case "exportItem":
@@ -1652,7 +1668,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async refresh(_e?: any) {
     await this._dvm.threadsZvm.zomeProxy.probeInbox();
     console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
-    // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
+    // const mentionsList = this.shadowRoot!.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }
 
@@ -1662,7 +1678,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     toasty("All marked 'read' & cleared Inbox");
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
-    //const semTopic = this.shadowRoot.getElementById("topicusView") as SemanticTopicsView;
+    //const semTopic = this.shadowRoot!.getElementById("topicusView") as SemanticTopicsView;
     //semTopic.requestUpdate();
   }
 
@@ -1675,7 +1691,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

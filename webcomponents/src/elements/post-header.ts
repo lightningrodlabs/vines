@@ -1,5 +1,5 @@
 import {css, html} from "lit";
-import {customElement, property} from "lit/decorators.js";
+import {customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {msg} from "@lit/localize";
@@ -26,17 +26,17 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   get inputElem(): TextArea {
-    return this.shadowRoot.getElementById("textMessageInput") as unknown as TextArea;
+    return this.shadowRoot!.getElementById("textMessageInput") as unknown as TextArea;
   }
 
 
   /** */
-  handleKeydown(e) {
+  handleKeydown(e:any) {
     // //console.log("keydown", e);
     // const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     // //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     // if (isSuggesting) {
-    //   this.handleSuggestingKeydown(e);
+    //   this.handleSuggestingKeydown(e:any);
     //   return;
     // }
     /** Enter: commit message */
@@ -68,7 +68,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
 
     const inputText = this.inputElem.value;
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh, this.cell.address.agentId);
+    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh!, this.cell.address.agentId);
     console.log("commitInput() res:", res);
 
     this.inputElem.value = "";
@@ -77,8 +77,8 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64));
+  override render() {
+    console.log("<post-header>.override render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64));
 
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
@@ -86,7 +86,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id="post-header">
           ${avatar}
-          <!-- <ui5-input placeholder=${msg('Whats up?')} @click=${(e) => {}}></ui5-input> -->
+          <!-- <ui5-input placeholder=${msg('Whats up?')} @click=${(_e:any) => {}}></ui5-input> -->
           <ui5-textarea id="textMessageInput" mode="SingleSelect"
                         placeholder=${msg('Whats up?')}
                         growing
@@ -94,7 +94,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
                         rows="1"
                         maxlength="1000"
                         @keydown=${this.handleKeydown}
-                        @input=${(_e) => this.requestUpdate()}
+                        @input=${(_e:any) => this.requestUpdate()}
           ></ui5-textarea>
         </div>
     `;
@@ -102,7 +102,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

@@ -40,7 +40,6 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 import Input from "@ui5/webcomponents/dist/Input";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
-import RadioButton from "@ui5/webcomponents/dist/RadioButton";
 import ShellBar from "@ui5/webcomponents-fiori/dist/ShellBar";
 
 /** @ui5/webcomponents-icons */
@@ -115,9 +114,9 @@ import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 import "@ddd-qc/path-explorer";
 import 'css-doodle';
 
-import {css, html, LitElement, PropertyValues} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {delay, DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, DnaId} from "@ddd-qc/lit-happ";
+import {DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, DnaId} from "@ddd-qc/lit-happ";
 
 import {
   CommentRequest, composeFeedNotificationTitle,
@@ -147,9 +146,10 @@ import {setLocale} from "./localization";
 import {toasty} from "@vines/elements/dist/toast";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
-import {parseSearchInput} from "@vines/elements/dist/search";
+//import {parseSearchInput} from "@vines/elements/dist/search";
 import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
+import {AgentId} from "@ddd-qc/cell-proxy";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -166,7 +166,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    this.addEventListener('beforeunload', (e) => {
+    this.addEventListener('beforeunload', (e:any) => {
       console.log("<community-feed-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
@@ -174,29 +174,33 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** Handle 'jump' event */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
+    // @ts-ignore
     this.addEventListener('jump', this.onJump);
+    // @ts-ignore
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
   }
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
+    // @ts-ignore
     this.removeEventListener('jump', this.onJump);
     this.removeEventListener('edit-profile', this.onEditProfile);
+    // @ts-ignore
     this.removeEventListener('show-profile', this.onShowProfile);
   }
 
 
   /** */
   getDeepestElemAt(x: number, y: number): HTMLElement {
-    const elem = this.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+    const elem = this.shadowRoot!.elementFromPoint(x, y) as HTMLElement;
     let shadow: HTMLElement = elem;
     let shadower;
     do {
       shadower = undefined;
       if (shadow.shadowRoot) {
-        shadower = shadow.shadowRoot.elementFromPoint(x, y) as HTMLElement;
+        shadower = shadow.shadowRoot!.elementFromPoint(x, y) as HTMLElement;
       }
       if (shadower) {
         shadow = shadower;
@@ -211,15 +215,15 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
     //console.log("onShowProfile() elem", elem)
-    const popover = this.shadowRoot.getElementById("profilePop") as Popover;
-    const sub = this.shadowRoot.getElementById("profilePanel") as ProfilePanel;
+    const popover = this.shadowRoot!.getElementById("profilePop") as Popover;
+    const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     sub.hash = e.detail.agentId;
     sub.requestUpdate();
     popover.showAt(elem);
   }
 
   /** */
-  onEditProfile(e) {
+  onEditProfile(_e:any) {
     this.profileDialogElem.show();
   }
 
@@ -236,7 +240,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   @property() selectedPostAh?: ActionId;
 
   @property({type: Object})
-  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]>;
+  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
 
   //@property() appletId: AppletId;
 
@@ -271,7 +275,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** -- Update -- */
 
   /** */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<community-feed-page>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -297,22 +301,22 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** After first render only */
-  async firstUpdated() {
+  override async firstUpdated() {
     console.log("<community-feed-page> firstUpdated()");
 
     /** Generate test data */
     //await this._dvm.threadsZvm.generateTestData("");
 
     /** Fiddle with shadow parts CSS */
-    const searchField = this.shadowRoot.getElementById('search-field') as Input;
+    const searchField = this.shadowRoot!.getElementById('search-field') as Input;
     console.log("search-field", searchField,searchField.shadowRoot);
     if (searchField) {
-      searchField.shadowRoot.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
+      searchField.shadowRoot!.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
       this.requestUpdate();
     }
-    const shellBar = this.shadowRoot.getElementById('topicBar') as ShellBar;
+    const shellBar = this.shadowRoot!.getElementById('topicBar') as ShellBar;
     if (shellBar) {
-      shellBar.shadowRoot.appendChild(shellBarStyleTemplate.content.cloneNode(true));
+      shellBar.shadowRoot!.appendChild(shellBarStyleTemplate.content.cloneNode(true));
       shellBar.showSearchField = false;
     }
 
@@ -346,17 +350,17 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     // /** ??? */
     // try {
-    //   const chatView = this.shadowRoot.getElementById("chat-view") as ChatThreadView;
+    //   const chatView = this.shadowRoot!.getElementById("chat-view") as ChatThreadView;
     //   const view = await chatView.updateComplete;
     //   //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
     //   if (!view) {
     //     /** Request a new update for scrolling to work */
     //     chatView.requestUpdate();
     //   }
-    // } catch(e) {
+    // } catch(e:any) {
     //   /** i.e. element not present */
     // }
 
@@ -429,7 +433,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
       }
-    } catch (e) {
+    } catch (e:any) {
       console.log("createMyProfile() failed");
       console.log(e);
     }
@@ -441,7 +445,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("onSaveProfile()", profile)
     try {
       await this._dvm.profilesZvm.updateMyProfile(profile);
-    } catch(e) {
+    } catch(e:any) {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
     this.profileDialogElem.close(false);
@@ -462,7 +466,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async pingAllOthers() {
     //if (this._currentSpaceEh) {
-    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey) => agentKey.equals(this.cell.address.agentId));
+    const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey: AgentId) => agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(undefined, agents);
     //}
@@ -470,7 +474,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  async onCommentingClicked(e: CustomEvent<CommentRequest>) {
+  async onCommentingClicked(_e: CustomEvent<CommentRequest>) {
     // console.log("onCommentingClicked()", e.detail);
     // const request = e.detail;
     //
@@ -479,7 +483,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     //   this._canShowComments = true;
     //   /** Save input field before switching */
     //   if (this._selectedCommentThreadHash) {
-    //     const commentView = this.shadowRoot.getElementById("comment-view") as CommentThreadView;
+    //     const commentView = this.shadowRoot!.getElementById("comment-view") as CommentThreadView;
     //     if (commentView) {
     //       this._dvm.perspective.threadInputs[this._selectedCommentThreadHash] = commentView.value;
     //     }
@@ -501,11 +505,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<community-feed-page>.onJump()", e.detail);
     /** Close any opened popover */
-    const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+    const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
       popover.close();
     }
-    let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+    let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
     if (searchPopElem.isOpen()) {
       searchPopElem.close();
     }
@@ -526,7 +530,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   private addSearch(str: string) {
-    const field = this.shadowRoot.getElementById("search-field") as Input;
+    const field = this.shadowRoot!.getElementById("search-field") as Input;
     let ws = "";
     if (field.value.length > 0 && field.value[field.value.length - 1] != " ") {
       ws = " "
@@ -537,8 +541,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  render() {
-    console.log("<community-feed-page>.render()", this.onlineLoaded, this.selectedPostAh, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+  override render() {
+    console.log("<community-feed-page>.override render()", this.onlineLoaded, this.selectedPostAh, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     /** This agent's profile info */
     let myProfile = this._dvm.profilesZvm.getMyProfile();
@@ -553,7 +557,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     const avatarUrl = myProfile.fields['avatar'];
     const initials = getInitials(myProfile.nickname);
 
-    //const searchValue = this.shadowRoot.getElementById("search-field")? (this.shadowRoot.getElementById("search-field") as Input).value : "";
+    //const searchValue = this.shadowRoot!.getElementById("search-field")? (this.shadowRoot!.getElementById("search-field") as Input).value : "";
     //const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
     /** Group Info */
@@ -568,7 +572,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);
-        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]));
+        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]!));
         if (weGroup) {
           groupProfile = weGroup;
         }
@@ -602,18 +606,18 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
             <sl-tooltip content=${groupProfile.name} style="--show-delay: 500;">
               <ui5-avatar size="S" class="chatAvatar"
                           @click=${() => {
-                              //const popover = this.shadowRoot.getElementById("networkPopover") as Popover;
-                              //const btn = this.shadowRoot.getElementById("group-div") as HTMLElement;
+                              //const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                              //const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
                               //popover.showAt(btn);
                           }}>
                 <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
               </ui5-avatar>
             </sl-tooltip>
             <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
-                       @input=${(e) => {
+                       @input=${(e:any) => {
                           console.log("<search-field> @input", e.keyCode, e);
-                          let searchElem = this.shadowRoot.getElementById("search-field") as Input;
-                          let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
+                          let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                          let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
                           if (searchElem.value == "") {
                             searchPopElem.close();
                             this.requestUpdate(); // important
@@ -622,11 +626,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                           searchPopElem.showAt(searchElem, true);
                           searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                         }}
-                                                 @keypress=${(e) => {
+                                                 @keypress=${(e:any) => {
                           console.log("<search-field> @keypress", e.keyCode, e);
-                          let searchElem = this.shadowRoot.getElementById("search-field") as Input;
-                          let searchPopElem = this.shadowRoot.getElementById("searchPopover") as Popover;
-                          //let searchResultElem = this.shadowRoot.getElementById("search-result-panel") as Popover;
+                          let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                          let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
+                          //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
                           if (searchElem.value != "") {
                             if (e.keyCode === 13) {
                               searchPopElem.close();
@@ -651,13 +655,16 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                         style="border-radius: 30px;"
                         @click=${() => {
                         console.log("inboxButton.click()")
-                        const popover = this.shadowRoot.getElementById("notifPopover") as Popover;
+                        const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
                         if (popover.isOpen()) {
                           popover.close();
                           return;
                         }
-                        const elem = this.shadowRoot.getElementById("inboxButton");
-                        popover.showAt(elem);
+                        const elem = this.shadowRoot!.getElementById("inboxButton");
+                        if (!elem) {
+                          console.error("Missing inboxButton HTML element")
+                        }
+                        popover.showAt(elem!);
                       }}>
             </ui5-button>
               ${this._dvm.threadsZvm.perspective.inbox.size? html`
@@ -666,11 +673,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
               <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
                           style="margin-top:10px;"
                           design="Transparent" icon="navigation-down-arrow"
-                          @click=${(e) => {
+                          @click=${(e:any) => {
                             e.preventDefault();
                             //console.log("onSettingsMenu()", e);
-                            const menu = this.shadowRoot.getElementById("groupMenu") as Menu;
-                            const btn = this.shadowRoot.getElementById("groupBtn") as Button;
+                            const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                            const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
                             menu.showAt(btn);
                           }}>
               </ui5-button>
@@ -684,15 +691,15 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
               <ui5-button id="settingsBtn"
                           icon="action-settings" tooltip=${msg("Settings")}
                           style="border-radius: 30px;"
-                          @click=${(e) => {
+                          @click=${(_e:any) => {
                             //console.log("onSettingsMenu()", e);
-                            const settingsMenu = this.shadowRoot.getElementById("settingsMenu") as Menu;
-                            const settingsBtn = this.shadowRoot.getElementById("settingsBtn") as Button;
+                            const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
+                            const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
                             settingsMenu.showAt(settingsBtn);
                           }}>
               </ui5-button>
                 <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
-                          @item-click=${(e) => this.onSettingsMenu(e)}>
+                          @item-click=${(e:any) => this.onSettingsMenu(e)}>
                     <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                     <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                     <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
@@ -704,7 +711,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                     <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>                    
                 </ui5-menu>
               <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"
-                          @click=${(e) => {
+                          @click=${(e:any) => {
                               e.stopPropagation();
                               this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.address.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
                   ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
@@ -718,7 +725,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                 <post-thread-view id="feed" .beadAh=${this.selectedPostAh} .favorites=${this._canShowFavorites}>
                 ${this._splitObj? html`
                   <div id="uploadCard">
-                    <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash].file.name}</div>
+                    <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash]!.file.name}</div>
                     <ui5-progress-indicator style="width:100%;"></ui5-progress-indicator>
                   </div>
                 ` : html`
@@ -726,7 +733,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                       Thread about "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
                       <ui5-button icon="delete" design="Transparent"
                                   style="border:none; padding:0px"
-                                  @click=${(e) => {this._currentCommentRequest = undefined;}}></ui5-button>
+                                  @click=${(_e:any) => {this._currentCommentRequest = undefined;}}></ui5-button>
                     </div>`
                 }
             </div>
@@ -737,11 +744,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
               <div class="popover-content">
                   <ui5-list mode="None" separators="None">
                       <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                      <!-- <ui5-li @click=${(e) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li> -->
-                      <ui5-li @click=${(e) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
-                      <ui5-li @click=${(e) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
-                      <ui5-li @click=${(e) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
-                      <ui5-li @click=${(e) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                      <!-- <ui5-li @click=${(_e:any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li> -->
+                      <ui5-li @click=${(_e:any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                      <ui5-li @click=${(_e:any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
+                      <ui5-li @click=${(_e:any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                      <ui5-li @click=${(_e:any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
                   </ui5-list>
               </div>
           </ui5-popover>
@@ -752,7 +759,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
             
         </div>
         <!-- FAB -->
-        <ui5-button id="create-fab" icon="add" design="Emphasized" tooltip=${msg("Create Post")} @click=${(e) => this.createPostDialogElem.show()}></ui5-button>
+        <ui5-button id="create-fab" icon="add" design="Emphasized" tooltip=${msg("Create Post")} @click=${(_e:any) => this.createPostDialogElem.show()}></ui5-button>
         <!-- DIALOGS -->
         <ui5-dialog id="wait-dialog">
             <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
@@ -765,7 +772,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                       if (e.detail.createdMainThread) {
                         // FIXME: Find a way to refresh feed
                         window.location.reload();
-                        // const feed = this.shadowRoot.getElementById("feed") as LitElement;
+                        // const feed = this.shadowRoot!.getElementById("feed") as LitElement;
                         // await this._dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
                         // feed.requestUpdate();
                       }
@@ -775,7 +782,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         </ui5-dialog>
         <!-- Profile  -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
-            <profile-panel id="profilePanel" @edit-profile=${(e) => (this.shadowRoot.getElementById("profilePop") as Popover).close()}></profile-panel>
+            <profile-panel id="profilePanel" @edit-profile=${(_e:any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}></profile-panel>
         </ui5-popover>
         <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
             <vines-edit-profile
@@ -806,7 +813,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         return;
       }
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = (_e:any) => {
         const contents = reader.result as string;
         //console.log(contents);
         this._dvm.importPerspective(contents, canPublish);
@@ -844,7 +851,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  async onGroupMenu(e): Promise<void> {
+  async onGroupMenu(e:any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
       case "viewArchived": this.onShowArchiveTopicsBtn(e); break;
@@ -855,13 +862,14 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  async onSettingsMenu(e): Promise<void> {
+  async onSettingsMenu(e:any): Promise<void> {
     console.log("item-click", e);
     this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
       case "uploadFileItem": this.openFile(); break;
       case "editProfileItem": this.profileDialogElem.show(); break;
+      // @ts-ignore
       case "exportAllItem":
         if (content == "") content = await this._dvm.exportAllPerspective();
       case "exportItem":
@@ -885,7 +893,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   async refresh(_e?: any) {
     await this._dvm.threadsZvm.zomeProxy.probeInbox();
     console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
-    // const mentionsList = this.shadowRoot.getElementById("mentionsList") as MentionsList;
+    // const mentionsList = this.shadowRoot!.getElementById("mentionsList") as MentionsList;
     // mentionsList.requestUpdate();
   }
 
@@ -895,7 +903,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     toasty("All marked 'read' & cleared Inbox");
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
-    //const semTopic = this.shadowRoot.getElementById("topicusView") as SemanticTopicsView;
+    //const semTopic = this.shadowRoot!.getElementById("topicusView") as SemanticTopicsView;
     //semTopic.requestUpdate();
   }
 
@@ -908,7 +916,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

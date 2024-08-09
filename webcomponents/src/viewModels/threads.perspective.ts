@@ -21,7 +21,6 @@ import {
   TextBeadMat,
   ThreadsNotification,
   TypedBaseBeadMat,
-  TypedBead,
   TypedBeadMat
 } from "./threads.materialize";
 import {AuthorshipZvm} from "./authorship.zvm";
@@ -204,16 +203,18 @@ export class ThreadsPerspective {
 
 
   /** */
-  getMostRecentBeadsOnThread(ppAh: ActionId): [BeadInfo, TypedBead][] {
+  getMostRecentBeadsOnThread(ppAh: ActionId): [BeadInfo, TypedBaseBeadMat][] {
     const thread = this.threads.get(ppAh);
     if (!thread) {
       return [];
     }
     const beadAhs = thread.getLast(10).map((bl) => bl.beadAh);
-    let infos = [];
+    let infos: [BeadInfo, TypedBaseBeadMat][] = [];
     for (const ah of beadAhs) {
-      if (this.beads.get(ah)) {
-        infos.push(this.getBaseBead(ah))
+      const beadInfo = this.getBaseBeadInfo(ah);
+      if (beadInfo) {
+        const typedBased = this.getBaseBead(ah)!;
+        infos.push([beadInfo, typedBased])
       }
     }
     //TODO: tuples.sort((a, b) => {return 1})
@@ -222,16 +223,16 @@ export class ThreadsPerspective {
 
 
   /** */
-  getAllBeadsOnThread(ppAh: ActionId): [ActionId, BeadInfo, TypedBeadMat][] {
+  getAllBeadsOnThread(ppAh: ActionId): [ActionId, BeadInfo, TypedBaseBeadMat][] {
     const thread = this.threads.get(ppAh);
     if (!thread) {
       return [];
     }
     const beadAhs = thread.getAll().map((bl) => bl.beadAh);
-    let infos = [];
+    let infos: [ActionId, BeadInfo, TypedBaseBeadMat][] = [];
     for (const ah of beadAhs) {
       if (this.beads.get(ah)) {
-        infos.push([ah, this.getBaseBeadInfo(ah), this.getBaseBead(ah)]);
+        infos.push([ah, this.getBaseBeadInfo(ah)!, this.getBaseBead(ah)!]);
       }
     }
     //TODO: tuples.sort((a, b) => {return 1})
@@ -252,7 +253,7 @@ export class ThreadsPerspective {
   /** */
   getAllNotificationsForPp(argPpAh: ActionId): [ActionId, ThreadsNotification][] {
     console.log("getAllNotificationsForPp()", argPpAh, this.inbox);
-    let result = [];
+    let result: [ActionId, ThreadsNotification][] = [];
     for (const [linkAh, [ppAh, notif]] of this.inbox.entries()) {
       if (argPpAh.equals(ppAh)) {
         result.push([linkAh, notif]);
@@ -264,9 +265,9 @@ export class ThreadsPerspective {
 
   /** */
   getLatestThread(): [ActionId, Thread] | undefined {
-    let res = undefined;
+    let res: [ActionId, Thread] | undefined = undefined;
     this.threads.forEach((thread, ah, _map) => {
-      if (!res || thread.creationTime > res.creationTime) {
+      if (!res || thread.creationTime > res[1].creationTime) {
         res = [ah, thread];
       }
     });
@@ -287,7 +288,7 @@ export class ThreadsPerspective {
     }
     /** Look for emoji */
     const maybeAlready = agentEmojis.find((e) => e == emoji);
-    return maybeAlready && maybeAlready.length > 0;
+    return !!maybeAlready && maybeAlready.length > 0;
   }
 
 
@@ -347,7 +348,8 @@ export class ThreadsPerspective {
         console.error("Thread not found");
         continue;
       }
-      if (!oldestNewThreadBySubject.get(subjectId.b64) || thread.creationTime < oldestNewThreadBySubject.get(subjectId.b64)) {
+      const oldest = oldestNewThreadBySubject.get(subjectId.b64);
+      if (!oldest || thread.creationTime < oldest) {
         oldestNewThreadBySubject.set(subjectId.b64, thread.creationTime);
       }
     }
@@ -357,7 +359,8 @@ export class ThreadsPerspective {
     let newSubjects: AnyIdMap<Timestamp> = new AnyIdMap();
     for (const [subjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
       //const pairs = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
-      const pairs: [ActionId, Timestamp][] = this.threadsPerSubject.get(subjectHash).map((ppAh) => {
+      const threads = this.threadsPerSubject.get(subjectHash)? this.threadsPerSubject.get(subjectHash)!: [];
+      const pairs: [ActionId, Timestamp][] = threads.map((ppAh) => {
         const thread = this.threads.get(ppAh);
         if (!thread) {
           console.error("Thread not found");
@@ -415,7 +418,7 @@ export class ThreadsPerspective {
 
     /** filter author */
     if (parameters.author) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.author.equals(parameters.author)) //
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.author.equals(parameters.author!))
     }
     /** filter mention */
     if (parameters.mentionsAgentByName) {
@@ -424,11 +427,11 @@ export class ThreadsPerspective {
     }
     /** filter beforeTs */
     if (parameters.beforeTs) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.creationTime <= parameters.beforeTs);
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.creationTime <= parameters.beforeTs!);
     }
     /** filter afterTs */
     if (parameters.afterTs) {
-      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.creationTime >= parameters.afterTs);
+      matchingTextBeads = matchingTextBeads.filter(([_beadAh, beadInfo, _textLC]) => beadInfo.creationTime >= parameters.afterTs!);
     }
     /** Filter by keywords OR */
     if (parameters.keywords) {
@@ -440,6 +443,7 @@ export class ThreadsPerspective {
             return true;
           }
         }
+        return false;
       })
     }
     /** DONE */
@@ -531,6 +535,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
+      if (!innerPair) {
+        throw Error("Missong innerPair argument");
+      }
       this.decBeads.set(beadAh, innerPair);
     }
     /** Store normal base Bead */
@@ -556,7 +563,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       if (!this.unreadThreads.get(ppAh)) {
         this.unreadThreads.set(ppAh, [intoAnyId(thread.pp.subject.address), []]);
       }
-      this.unreadThreads.get(ppAh)[1].push(beadAh);
+      this.unreadThreads.get(ppAh)![1].push(beadAh);
     }
   }
 
@@ -595,7 +602,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     if (!this.notifSettings.get(ppAh)) {
       this.notifSettings.set(ppAh, new AgentIdMap());
     }
-    this.notifSettings.get(ppAh).set(agent, setting);
+    this.notifSettings.get(ppAh)!.set(agent, setting);
   }
 
 
@@ -620,7 +627,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     console.log(`storeThread() thread "${ppAh.short}"`, author.short, pp);
     /** Return already stored PP */
     if (this.threads.has(ppAh)) {
-      return this.threads.get(ppAh).pp;
+      return this.threads.get(ppAh)!.pp;
     }
     const subjectAddr = intoAnyId(pp.subject.address);
     const thread = new Thread(pp, cell.dnaModifiers.origin_time, creationTime, author);
@@ -647,7 +654,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       if (!this.threadsPerSubject.get(subjectAddr.b64)) {
         this.threadsPerSubject.set(subjectAddr.b64, []);
       }
-      this.threadsPerSubject.get(subjectAddr.b64).push(ppAh);
+      this.threadsPerSubject.get(subjectAddr.b64)!.push(ppAh);
 
       /** All Subjects */
       if (!this.subjects.get(subjectAddr.b64)) {
@@ -669,12 +676,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     if (!this.emojiReactions.get(beadAh)) {
       this.emojiReactions.set(beadAh, new AgentIdMap());
     }
-    if (!this.emojiReactions.get(beadAh).get(agent)) {
-      this.emojiReactions.get(beadAh).set(agent, []);
+    if (!this.emojiReactions.get(beadAh)!.get(agent)) {
+      this.emojiReactions.get(beadAh)!.set(agent, []);
     }
-    const agentEmojis = this.emojiReactions.get(beadAh).get(agent);
+    const agentEmojis = this.emojiReactions.get(beadAh)!.get(agent)!;
     agentEmojis.push(emoji);
-    this.emojiReactions.get(beadAh).set(agent, agentEmojis);
+    this.emojiReactions.get(beadAh)!.set(agent, agentEmojis);
   }
 
 
@@ -697,12 +704,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       return;
     }
     const filtered = agentEmojis.filter((e) => !(e == emoji));
-    this.emojiReactions.get(beadAh).set(agent, filtered);
+    this.emojiReactions.get(beadAh)!.set(agent, filtered);
     console.debug("unstoreEmojiReaction() set", filtered);
     /** Delete empty maps */
-    if (this.emojiReactions.get(beadAh).get(agent).length == 0) {
-      this.emojiReactions.get(beadAh).delete(agent);
-      if (this.emojiReactions.get(beadAh).size == 0) {
+    if (this.emojiReactions.get(beadAh)!.get(agent)!.length == 0) {
+      this.emojiReactions.get(beadAh)!.delete(agent);
+      if (this.emojiReactions.get(beadAh)!.size == 0) {
         this.emojiReactions.delete(beadAh);
       }
     }
@@ -769,7 +776,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         this.appletSubjectTypes.set(appletEh, new EntryIdMap());
       }
       for (const [pathHash, subjectType] of Object.values(dict)) {
-        this.appletSubjectTypes.get(appletEh).set(new EntryId(pathHash), subjectType);
+        this.appletSubjectTypes.get(appletEh)!.set(new EntryId(pathHash), subjectType);
       }
     }
     /** this.subjects */
@@ -782,11 +789,11 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       if (appletTypes) {
         const maybe = Array.from(appletTypes.entries()).filter(([_pathEh, typeName]) => typeName == subject.typeName);
         if (maybe) {
-          const pathEh: EntryId = maybe[0][0];
+          const pathEh: EntryId = maybe[0]![0];
           if (!this.subjectsPerType.get(pathEh)) {
             this.subjectsPerType.set(pathEh, []);
           }
-          this.subjectsPerType.get(pathEh).push([new DnaId(subject.dnaHashB64), intoAnyId(subjectAddr)]);
+          this.subjectsPerType.get(pathEh)!.push([new DnaId(subject.dnaHashB64), intoAnyId(subjectAddr)]);
         }
       }
     }
@@ -806,8 +813,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.dmAgents.clear();
     for (const [ppAhB64, ppMat, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
       const ppAh = new ActionId(ppAhB64);
-      const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
-        ? authorshipZvm.perspective.getAuthor(ppAh)
+      const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
+        ? authorshipZvm.perspective.getAuthor(ppAh)!
         : [creationTime, cell.address.agentId];
       this.storeThread(cell, ppAh, ppMat, authorshipLog[0], authorshipLog[1], false);
     }
@@ -816,8 +823,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.decBeads.clear();
     for (const [beadAhB64, beadInfo, typedBead] of Object.values(snapshot.beads)) {
       const beadAh = new ActionId(beadAhB64);
-      const authorshipLog: [Timestamp, AgentId | null] = authorshipZvm.perspective.getAuthor(beadAh) != undefined
-        ? authorshipZvm.perspective.getAuthor(beadAh)
+      const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(beadAh) != undefined
+        ? authorshipZvm.perspective.getAuthor(beadAh)!
         : [beadInfo.creationTime, beadInfo.author];
       beadInfo.creationTime = authorshipLog[0];
       if (authorshipLog[1]) {
@@ -839,7 +846,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       for (const [agentB64, emojis] of pairs) {
         console.log("import() emojiReaction", agentB64, emojis);
         const agent = new AgentId(agentB64);
-        this.emojiReactions.get(beadAh).set(agent, emojis);
+        this.emojiReactions.get(beadAh)!.set(agent, emojis);
       }
     }
     /** this.favorites */

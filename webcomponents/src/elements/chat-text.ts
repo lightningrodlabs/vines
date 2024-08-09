@@ -1,5 +1,5 @@
-import {css, html, PropertyValues} from "lit";
-import {property, state, customElement} from "lit/decorators.js";
+import {css, html} from "lit";
+import {property, customElement} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -28,7 +28,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   // /** */
   // updated() {
   //   /** Add target="_blank" to all links */
-  //   const parentElement = this.shadowRoot.getElementById('chat-text');
+  //   const parentElement = this.shadowRoot!.getElementById('chat-text');
   //   //console.log("<chat-text>.updated()", parentElement);
   //   const anchorTags = parentElement.querySelectorAll('a');
   //   //console.log("<chat-text>.updated() anchorTags ", anchorTags);
@@ -46,8 +46,8 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  render() {
-    //console.log("<chat-text>.render()", this.hash);
+  override render() {
+    //console.log("<chat-text>.override render()", this.hash);
     if (!this.hash) {
       return html`<div style="color:red">No message found</div>`;
     }
@@ -67,7 +67,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       codeStyles,
       sharedStyles,

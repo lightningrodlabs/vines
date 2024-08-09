@@ -1,4 +1,4 @@
-import {css, html, LitElement, PropertyValues} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
 import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
@@ -25,7 +25,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash?: ActionId;
+  @property() threadHash!: ActionId;
   /** Hash of bead to focus */
   @property() beadAh?: ActionId;
   /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
@@ -62,7 +62,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<chat-thread-view>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -75,7 +75,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** Don't update during loading of beads */
-  shouldUpdate(changedProperties: PropertyValues<this>) {
+  override shouldUpdate(changedProperties: PropertyValues<this>) {
     console.log("<chat-thread-view>.shouldUpdate()", changedProperties, this._loading);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
@@ -98,7 +98,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       if (!this.threadHash) {
         return false;
       }
-      const tp = changedProperties.get("threadsPerspective");
+      const tp = changedProperties.get("threadsPerspective")!;
       const newThread = JSON.stringify(tp.threads.get(this.threadHash));
       //const oldThread = this._prevThreadsPerspective? this._prevThreadsPerspective.threads.get(this.threadHash) : undefined;
       //const diff = oldThread == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
@@ -114,7 +114,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected async willUpdate(changedProperties: PropertyValues<this>) {
+  protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     //console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
     if (this._dvm) {
@@ -126,7 +126,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected async updated(_changedProperties: PropertyValues) {
+  protected override async updated(_changedProperties: PropertyValues) {
     // try {
     //   /** Scroll to bottom when chat-view finished updating (e.g. loading chat-items) */
     //   //console.log("ChatView.updated() ", this.scrollTop, this.scrollHeight, this.clientHeight)
@@ -135,13 +135,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     //     this.scrollTop = this.scrollHeight;
     //     //this._firstLoad = false;
     //   //}
-    // } catch(e) {
+    // } catch(e:any) {
     //   /** i.e. element not present */
     // }
     /** Scroll the list container to the requested bead */
     if (this.beadAh) {
       console.log("<chat-threaded-view>.updated()", this.beadAh)
-      const beadItem = this.shadowRoot.getElementById(`${this.beadAh.b64}`);
+      const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
       if (beadItem) {
         const scrollY = beadItem.offsetTop - this.offsetTop;
         this.scrollTo({ top: scrollY, behavior: 'smooth' });
@@ -212,7 +212,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onWheel(event) {
+  async onWheel(_event: any) {
     //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
     //if (this.scrollTop == 0) {
     if (this.clientHeight - this.scrollHeight == this.scrollTop) {
@@ -232,8 +232,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
+  override render() {
+    console.log("<chat-thread-view>.override render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
     /** */
     if (this.threadHash === undefined) {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
@@ -254,12 +254,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Should grab all probed messages and request probes if end is reached */
 
     const all = thread.getAll();
-    //console.log("<chat-thread-view>.render() all", all.length);
+    //console.log("<chat-thread-view>.override render() all", all.length);
     let passedLog = false;
 
     let currentDay = "";
 
-    let prevBeadAh = undefined;
+    let prevBeadAh: ActionId | undefined = undefined;
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let chatItems = Object.values(all).map(
@@ -268,7 +268,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
         console.log("<chat-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime, blm.beadAh);
-        if (!passedLog && blm.creationTime > initialProbeLogTs) {
+        if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
           const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
           passedLog = true;
           hr = html`
@@ -276,7 +276,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                   <div style="border-top: 2px solid red; flex-grow: 1; height: 0px"></div>                  
                   <div style="width: fit-content;background: red;color:white;font-size:small;padding:2px; font-weight:bold;">${beadDateStr}</div>
               </div>
-          `
+          `;
         }
 
         let timeHr = html``;
@@ -315,7 +315,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       css`
         :host {

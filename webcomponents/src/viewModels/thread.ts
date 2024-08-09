@@ -97,12 +97,12 @@ export class Thread {
     if (this.probedTimeIntervals.length == 0) {
       return null;
     }
-    let union = this.probedTimeIntervals[0][1];
+    let union: TimeInterval | null = this.probedTimeIntervals[0]![1];
     for (const [_ts, interval] of this.probedTimeIntervals) {
       if (interval.isInstant()) {
         continue;
       }
-      union = union.union(interval);
+      union = union!.union(interval);
     }
     return union;
   }
@@ -137,7 +137,7 @@ export class Thread {
   /** */
   hasUnreads(): boolean {
     if (this.latestProbeLogTime) {
-      return this.beadLinksTree.end.key && this.latestProbeLogTime < this.beadLinksTree.end.key;
+      return !!this.beadLinksTree.end.key && this.latestProbeLogTime < this.beadLinksTree.end.key;
     }
     return !!this.beadLinksTree.end.key;
   }
@@ -225,9 +225,9 @@ export class Thread {
 
   /** Get all values with same key */
   getAtKey(creationTimeUs: Timestamp): BeadLinkMaterialized[] {
-    let res = [];
+    let res: BeadLinkMaterialized[] = [];
     this._beadLinksTree.forEach(
-      ((k, v) => {res.push(v)}),
+      ((_k, v) => {res.push(v)}),
       creationTimeUs,
       creationTimeUs + 1);
     return res;

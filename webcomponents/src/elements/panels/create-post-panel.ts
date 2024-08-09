@@ -40,7 +40,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
-  @state() private _splitObj?: SplitObject;
+  @state() private _splitObj: SplitObject | undefined = undefined;
   @state() private _creating = false;
 
 
@@ -49,7 +49,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     this._creating = true;
     /** Create main thread if none found */
     const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
-    let mainThreadAh;
+    let mainThreadAh: ActionId;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
       const appletId = this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID;
@@ -64,7 +64,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       }
       createdMainThread = true;
     } else {
-      mainThreadAh = getMainThread(this._dvm);
+      mainThreadAh = getMainThread(this._dvm)!;
     }
     return [mainThreadAh, createdMainThread];
   }
@@ -85,7 +85,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   async onCreateText() {
     console.debug("<create-post-panel>.onCreateText()")
     /** Check */
-    const inputElem = this.shadowRoot.getElementById("contentInput") as Input;
+    const inputElem = this.shadowRoot!.getElementById("contentInput") as Input;
     const content = inputElem.value.trim();
     console.debug("<create-post-panel>.onCreateText() content", content);
     if (content.length == 0) {
@@ -128,7 +128,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onCreateHrl(): Promise<ActionId> {
+  async onCreateHrl() {
     /** Check */
     const maybeWal = await this.weServices.userSelectWal();
     if (!maybeWal) {
@@ -159,7 +159,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
+  override render() {
     if (this._creating || this._splitObj) {
       return html`
           <div style="flex-grow: 1"></div>
@@ -173,29 +173,29 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
           <div id="title">${msg('Create a post')}</div>
           <ui5-button icon="decline" design="Transparent" tooltip=${msg('Cancel')}
                       style="border-radius: 50%;"
-                      @click=${(e) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}></ui5-button>
+                      @click=${(_e:any) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}></ui5-button>
       </div>
       <ui5-textarea id="contentInput" placeholder=${msg('Whats up?')} growing></ui5-textarea>
       <div id="extraRow">
           ${this.weServices? html`
             <ui5-button design="Transparent" icon="add" tooltip=${msg('Attach WAL from pocket')}
-                        @click=${(e) => this.onCreateHrl()}>
+                        @click=${(_e:any) => this.onCreateHrl()}>
             </ui5-button>` : html``}
         <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
-                    @click=${(e) => this.onCreateFile()}>
+                    @click=${(_e:any) => this.onCreateFile()}>
         </ui5-button>
       </div>          
       <div class="footer">
         <ui5-button design="Emphasized" 
                     .disabled=${!!this._splitObj}
-                    @click=${(e) => this.onCreateText()}>${msg('Publish')}</ui5-button>
+                    @click=${(_e:any) => this.onCreateText()}>${msg('Publish')}</ui5-button>
       </div>
     `;
   }
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`

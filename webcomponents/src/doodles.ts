@@ -1,4 +1,4 @@
-import {css, html} from "lit";
+import {html} from "lit";
 
 export const doodle_weave = html`
   <css-doodle>

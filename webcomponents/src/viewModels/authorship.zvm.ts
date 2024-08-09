@@ -15,7 +15,7 @@ import {AuthorshipPerspectiveMutable, AuthorshipPerspective, AuthorshipSnapshot}
  */
 export class AuthorshipZvm extends ZomeViewModel {
 
-  static readonly ZOME_PROXY = AuthorshipProxy;
+  static override readonly ZOME_PROXY = AuthorshipProxy;
 
   get zomeProxy(): AuthorshipProxy {
     return this._zomeProxy as AuthorshipProxy;
@@ -58,18 +58,18 @@ export class AuthorshipZvm extends ZomeViewModel {
   /** -- Init -- */
 
   /** */
-  async initializePerspectiveOffline(): Promise<void> {
+  override async initializePerspectiveOffline(): Promise<void> {
     // N/A
   }
 
   /** */
-  async initializePerspectiveOnline(): Promise<void> {
+  override async initializePerspectiveOnline(): Promise<void> {
     await this.probeTypes();
     await this.probeAllLogs();
   }
 
   /** */
-  probeAllInner() {
+  override probeAllInner() {
     /* await */ this.initializePerspectiveOnline();
   }
 

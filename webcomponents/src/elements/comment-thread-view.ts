@@ -42,7 +42,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash?: ActionId;
+  @property() threadHash!: ActionId;
   /** Enable Input bar */
   @property() showInput: boolean = false
 
@@ -63,7 +63,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices: WeServicesEx;
+  weServices?: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -80,12 +80,12 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** -- Getters -- */
 
   get listElem() : HTMLElement {
-    return this.shadowRoot.getElementById("list-broken") as HTMLElement;
+    return this.shadowRoot!.getElementById("list-broken") as HTMLElement;
   }
 
 
   get value(): string {
-    const inputBar = this.shadowRoot.getElementById("input-bar") as InputBar;
+    const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
     if (inputBar) {
       return inputBar.value;
     }
@@ -99,7 +99,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<comment-thread-view>.dvmUpdated()");
     if (oldDvm) {
       console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
@@ -113,7 +113,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** FOR DEBUGGING */
-  shouldUpdate(changedProperties: PropertyValues<this>) {
+  override shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
     if (changedProperties.has("_cell_via_context")) {
       this._cell = this._cell_via_context;
@@ -126,7 +126,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  protected willUpdate(changedProperties: PropertyValues<this>) {
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     //console.log("<comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
@@ -136,17 +136,17 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
-  protected firstUpdated(_changedProperties: PropertyValues) {
+  protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.loadCommentThread();
   }
 
 
   /** */
-  protected updated(_changedProperties: PropertyValues) {
+  protected override updated(_changedProperties: PropertyValues) {
     super.updated(_changedProperties);
     try {
-      const scrollContainer = this.listElem.shadowRoot.children[0].children[0];
+      //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
       //console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
       //this.listElem.scrollTo(0, this.listElem.scrollHeight);
       //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
@@ -154,7 +154,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
       //this.listElem.scrollTop = this.listElem.scrollHeight;
       //this.listElem.scrollIntoView(false);
-    } catch(e) {
+    } catch(e:any) {
       // element not present
     }
   }
@@ -184,7 +184,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async onCreateComment(e: VinesInputEvent) {
     const thread = this.threadsPerspective.threads.get(this.threadHash);
-    if (!thread) {
+    if (!thread || !e.text) {
       console.error("Missing Comment thread");
       return;
     }
@@ -195,8 +195,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  render() {
-    console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
+  override render() {
+    console.log("<comment-thread-view>.override render()", this.threadHash, this.showInput, this.subjectName);
 
     const doodle_bg =  html `
       <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
@@ -230,14 +230,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     const beads = this._dvm.threadsZvm.perspective.getAllBeadsOnThread(this.threadHash);
 
-    console.log("<comment-thread-view>.render() len =", beads.length);
+    console.log("<comment-thread-view>.override render() len =", beads.length);
     console.log("Has thread some unreads?", thread.hasUnreads());
 
-    let prevBeadAh = undefined;
+    let prevBeadAh: ActionId | undefined = undefined;
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let commentItems = beads.map(([beadAh, beadInfo, _typedBead]) => {
       const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
-      const isNew = initialProbeLogTs < beadInfo.creationTime;
+      const isNew = !!initialProbeLogTs && initialProbeLogTs < beadInfo.creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
       const item = html`<side-item .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
@@ -289,14 +289,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
                         icon="journey-depart"
                         style="margin-right:-5px; transform: rotate(-90deg);"
-                        @click=${(e) => this.weServices.openAppletMain(dec64(thread.pp.subject.appletId))}>
+                        @click=${(_e:any) => this.weServices?.openAppletMain(dec64(thread.pp.subject.appletId))}>
             </ui5-button>
         `;
       } else {
         gotoAppletBtn = html`
             <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
                         style="margin-right:-5px; max-width:40px;"
-                        @click=${(e) => this.weServices.openAppletMain(dec64(thread.pp.subject.appletId))}>
+                        @click=${(_e:any) => this.weServices?.openAppletMain(dec64(thread.pp.subject.appletId))}>
                 <img src=${maybeAppletInfo.appletIcon} alt="${appletName} Icon">
             </ui5-button>
         `;
@@ -306,7 +306,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
                     icon="journey-depart"
                     style="margin-right:0px; -webkit-transform: scaleX(-1); transform: scaleX(-1);"
-                    @click=${(_e) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>
+                    @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>
         </ui5-button>
     `;
     }
@@ -321,7 +321,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           ${gotoAppletBtn}
           <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
-                  @click=${(_e) => {
+                  @click=${(_e:any) => {
                   console.log("<comment-thread-view> title click", thread.pp.subject);
                   /** Use subject as WAL */
                   // const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
@@ -366,13 +366,13 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           </sl-tooltip>
           <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy comment thread link to clipboard')}
                       style="margin-left:5px;"
-                      @click=${(e) => {
+                      @click=${(e:any) => {
                         e.stopPropagation();
                         this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
           }}></ui5-button>
         </h3>
         <!-- thread -->
-        <div id="list" @show-profile=${(e) => console.log("onShowProfile div", e)}>
+        <div id="list" @show-profile=${(e:any) => console.log("onShowProfile div", e)}>
             ${commentItems}
         </div>
         ${maybeInput}
@@ -381,7 +381,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       codeStyles,
       sharedStyles,

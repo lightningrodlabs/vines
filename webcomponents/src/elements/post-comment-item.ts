@@ -1,5 +1,5 @@
 import {css, html, TemplateResult} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
@@ -40,7 +40,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
   /** -- Properties -- */
 
   /** Hash of bead to display */
-  @property() hash?: ActionId;
+  @property() hash!: ActionId;
 
   @property() new: boolean = false;
 
@@ -51,19 +51,19 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
   threadsPerspective!: ThreadsPerspective;
 
   @consume({context: weClientContext, subscribe: true})
-  weServices: WeServicesEx;
+  weServices?: WeServicesEx;
 
   @consume({context: globaFilesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  @state() private _loading = true;
+  //@state() private _loading = true;
 
 
   /**
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<post-comment-item>.dvmUpdated()", this.hash, newDvm);
     if (oldDvm) {
       oldDvm.threadsZvm.unsubscribe(this);
@@ -90,7 +90,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  renderContent(): [TemplateResult<1>, AgentId, Date] {
+  renderContent(): [TemplateResult<1>, AgentId | undefined, Date | undefined] {
     let content = html``;
 
     if (!this.hash) {
@@ -126,8 +126,12 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
             content = html`
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
-                   @click=${async (e) => {
+                   @click=${async (e:any) => {
                     e.stopPropagation();
+                    if (!this.weServices) {
+                      console.error("WeServices missing");
+                      return;
+                    }
                     await this.weServices.assetInfo(wal);
                     this.requestUpdate();
                   }}>
@@ -138,7 +142,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           } else {
             content = html`
               <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e) => this.weServices.openWal(wal)}>
+                   @click=${(_e:any) => {if (this.weServices) this.weServices.openWal(wal)}}>
                   ${maybeInfo.assetInfo.name}
               </div>
           `;
@@ -154,7 +158,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         if (maybePprm) {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                              @click=${(e) => {
+                              @click=${(_e:any) => {
             this._filesDvm.downloadFile(manifestEh);
             toasty("File downloaded: " + desc.name);
           }}>
@@ -182,24 +186,26 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  render() {
-    console.log("<post-comment-item>.render()", this.hash);
+  override render() {
+    console.log("<post-comment-item>.override render()", this.hash);
 
     const [content, author, date] = this.renderContent();
-    const agentName = this._dvm.profilesZvm.perspective.getProfile(author)? this._dvm.profilesZvm.perspective.getProfile(author).nickname : "unknown";
-    const date_str = timeSince(date);
+    const agentName = author && this._dvm.profilesZvm.perspective.getProfile(author)? this._dvm.profilesZvm.perspective.getProfile(author)!.nickname : "unknown";
+    const date_str = date? timeSince(date) : "unknown date";
 
     /* render item */
     return html`
     <div id="sideItem">
         <div id="avatarColumn">
             <div style="cursor:pointer"
-                @click=${(e) => {
+                @click=${(e:any) => {
                     //console.log("sideItem onShowProfile clicked", beadAh);
                     e.stopPropagation();
-                    this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                    if (author) {
+                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                    }
                 }}>
-                ${renderAvatar(this._dvm.profilesZvm, author, "XS")}                
+                ${author? renderAvatar(this._dvm.profilesZvm, author, "XS") : html``}                
             </div>
         </div>
         <div id="sideContentColumn">
@@ -209,8 +215,8 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           </div>
           <div class="underRow">
               <div>${date_str}</div>
-              <div id="likeBtn" class="textBtn" @click=${(e) => this.dispatchEvent(new CustomEvent('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}))}>${msg('Like')}</div>
-              <div class="textBtn" @click=${(_e) => this.copyMessageLink()}>${msg('Share')}</div>
+              <div id="likeBtn" class="textBtn" @click=${(e:any) => this.dispatchEvent(new CustomEvent('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}))}>${msg('Like')}</div>
+              <div class="textBtn" @click=${(_e:any) => this.copyMessageLink()}>${msg('Share')}</div>
               <div style="flex-grow: 1;"></div>
               <emoji-bar .hash=${this.hash} style="margin-top:2px;"></emoji-bar>
           </div>
@@ -221,7 +227,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       codeStyles,
       sharedStyles,

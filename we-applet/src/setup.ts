@@ -14,9 +14,9 @@ export async function setupVinesApplet() {
   /** Determine appletView */
   let APPLET_VIEW = "main";
   try {
-    APPLET_VIEW = process.env.APPLET_VIEW;
+    APPLET_VIEW = process.env.APPLET_VIEW!;
     //console.log(`HAPP_ENV defined by process.ENV: "${happEnv}"`);
-  } catch (e) {
+  } catch (e:any) {
   }
   console.log("Vines we-applet setup() APPLET_VIEW", APPLET_VIEW);
   switch(APPLET_VIEW) {

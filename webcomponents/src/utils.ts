@@ -5,13 +5,13 @@ import {
   TypedBeadMat
 } from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {WAL, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlFromWal, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
-import {WeServicesEx} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
 import {ParticipationProtocol, Subject, ThreadsEntryType} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {ActionId, AgentId, DnaId, EntryId,intoDhtId, DhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaId, EntryId, intoDhtId, DhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
@@ -130,7 +130,7 @@ function tokenizeMentions(str: string): string[]  {
     var token = { name: match[1], match: match };
     tokens.matches.push(token);
   }
-  return tokens.matches.map((m) => m.name);
+  return tokens.matches.map((m:any) => m.name);
 };
 
 
@@ -207,7 +207,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       case SpecialSubjectType.SubjectType:
         if (weServices) {
           //let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
-          let appletInfo = weServices.cache.appletInfos[weServices.appletId];
+          let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
           if (!appletInfo) {
             //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
             return "{Unknown Applet}";
@@ -271,7 +271,9 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       /** FIXME */
       if (isHashTypeB64(subject.address, HoloHashType.Dna)) {
         const dnaId = new DnaId(subject.address);
-        const maybeInfo = weServices.cache.assetInfos.get(dnaId);
+        const hrl = intoHrl(dnaId, intoDhtId(subject.address));
+        const wurl = weaveUrlFromWal({hrl});
+        const maybeInfo = weServices!.cache.assetInfos[wurl];
         if (maybeInfo) {
           return `/${appletInfo.appletName}/${maybeInfo.assetInfo.name}`;
         } else {
@@ -288,7 +290,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
 
 
 /** */
-export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx, charCount: number = 60): string {
+export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, filesDvm: FilesDvm, weServices: WeServicesEx | undefined, charCount: number = 60): string {
   //console.log("determineBeadName()", typedBead);
   switch (beadType) {
     /** TextBead: text content */
@@ -335,7 +337,7 @@ export var deepDiffMapper = function () {
     VALUE_UPDATED: 'updated',
     VALUE_DELETED: 'deleted',
     VALUE_UNCHANGED: 'unchanged',
-    map: function(obj1, obj2) {
+    map: function(obj1:any, obj2:any) {
       if (this.isFunction(obj1) || this.isFunction(obj2)) {
         throw 'Invalid argument. Function given, object expected.';
       }
@@ -348,7 +350,7 @@ export var deepDiffMapper = function () {
         };
       }
 
-      var diff = {};
+      var diff: any = {};
       for (var key in obj1) {
         if (this.isFunction(obj1[key])) {
           continue;
@@ -372,7 +374,7 @@ export var deepDiffMapper = function () {
       return diff;
 
     },
-    compareValues: function (value1, value2) {
+    compareValues: function (value1:any, value2:any) {
       if (value1 === value2) {
         return this.VALUE_UNCHANGED;
       }
@@ -387,19 +389,19 @@ export var deepDiffMapper = function () {
       }
       return this.VALUE_UPDATED;
     },
-    isFunction: function (x) {
+    isFunction: function (x:any) {
       return Object.prototype.toString.call(x) === '[object Function]';
     },
-    isArray: function (x) {
+    isArray: function (x:any) {
       return Object.prototype.toString.call(x) === '[object Array]';
     },
-    isDate: function (x) {
+    isDate: function (x:any) {
       return Object.prototype.toString.call(x) === '[object Date]';
     },
-    isObject: function (x) {
+    isObject: function (x:any) {
       return Object.prototype.toString.call(x) === '[object Object]';
     },
-    isValue: function (x) {
+    isValue: function (x:any) {
       return !this.isObject(x) && !this.isArray(x);
     }
   }

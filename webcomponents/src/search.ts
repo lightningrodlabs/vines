@@ -85,33 +85,33 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesAlt
       case "from:":
         const author = subs[1];
         if (author && author != "") {
-          result.author = profilesPerspective.getAgent(author) ? profilesPerspective.getAgent(author) : AgentId.empty();
+          result.author = profilesPerspective.getAgent(author) ? profilesPerspective.getAgent(author)! : AgentId.empty();
         }
         break;
       case "mentions:":
-        const mention = subs[1];
+        const mention = subs[1]!;
         result.mentionsAgentByName = mention;
         break;
       case "before:":
-        const before = subs[1];
+        const before = subs[1]!;
         const beforeTs = Date.parse(before);
         if (!isNaN(beforeTs)) {
           result.beforeTs = beforeTs * 1000;
         }
         break;
       case "after:":
-        const after = subs[1];
+        const after = subs[1]!;
         const afterTs = Date.parse(after);
         if (!isNaN(afterTs)) {
           result.afterTs = afterTs * 1000;
         }
         break;
       case "in:":
-        const threadName = subs[1];
+        const threadName = subs[1]!;
         result.threadByName = threadName;
         break;
       case "app:":
-        const appletName = subs[1];
+        const appletName = subs[1]!;
         result.appletByName = appletName;
         break;
       //case "is:": break;
@@ -182,10 +182,10 @@ export function splitSpacesExcludeQuotes(string: string): string[] {
 function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
   let result: string[] = []
   let i = 0;
-  while(i < quotes.length) {
-    const word = quotes[i].value;
-    if (searchKeywords.includes(word) && i + 1 < quotes.length && quotes[i + 1].type != "plain") {
-      result.push(word + quotes[i + 1].value);
+  while(i < quotes.length + 1) {
+    const word = quotes[i]!.value;
+    if (searchKeywords.includes(word) && i + 1 < quotes.length && quotes[i + 1]!.type != "plain") {
+      result.push(word + quotes[i + 1]!.value);
       i += 1;
     } else {
       result.push(word);
@@ -199,10 +199,10 @@ function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
 /** ------------------------------------------- TEST -----------------------------------------------------------------*/
 
 const persp: ProfilesAltPerspectiveMutable = new ProfilesAltPerspectiveMutable();
-await persp.generateRandomProfile("alex");
-await persp.generateRandomProfile("bill-y");
-await persp.generateRandomProfile("camille");
-await persp.generateRandomProfile("tic tac");
+/*await*/ persp.generateRandomProfile("alex");
+/*await*/ persp.generateRandomProfile("bill-y");
+/*await*/ persp.generateRandomProfile("camille");
+/*await*/ persp.generateRandomProfile("tic tac");
 
 
 /** */
@@ -230,10 +230,10 @@ export async function generateSearchTest() {
   result &&= testSeachParse("from: alex", {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('alex billy', {keywords: ["alex", "billy"], canSearchHidden: false});
 
-  result &&= testSeachParse("from:alex", {author: persp.getAgent("alex"), canSearchHidden: false});
+  result &&= testSeachParse("from:alex", {author: persp.getAgent("alex")!, canSearchHidden: false});
   result &&= testSeachParse("from:jack", {author: AgentId.empty(), canSearchHidden: false});
   result &&= testSeachParse("from:tic tac", {author: AgentId.empty(), keywords: ["tac"], canSearchHidden: false});
-  result &&= testSeachParse('from:"tic tac"', {author: persp.getAgent("tic tac"), canSearchHidden: false});
+  result &&= testSeachParse('from:"tic tac"', {author: persp.getAgent("tic tac")!, canSearchHidden: false});
   result &&= testSeachParse("mentions:alex", {mentionsAgentByName: "alex", canSearchHidden: false});
 
   result &&= testSeachParse('in:"#General: off-topic"', {threadByName: "#General: off-topic", canSearchHidden: false});
@@ -245,7 +245,7 @@ export async function generateSearchTest() {
   result &&= testSeachParse('before:"Tue, 06 Feb 2024 18:59:33 GMT"', {beforeTs: 1707245973000000, canSearchHidden: false});
 
   result &&= testSeachParse("before:2030-01-01 after:2020-01-01 golden from:camille mentions:bill-y lady",
-    {beforeTs: 1893456000000000, afterTs: 1577836800000000, keywords: ["golden", "lady"], mentionsAgentByName: "bill-y",  author: persp.getAgent("camille"), canSearchHidden: false});
+    {beforeTs: 1893456000000000, afterTs: 1577836800000000, keywords: ["golden", "lady"], mentionsAgentByName: "bill-y",  author: persp.getAgent("camille")!, canSearchHidden: false});
 
   console.log("generateSearchTest() succeeded", result);
 }
@@ -256,6 +256,7 @@ function comparableObject(jsonObject: object): string {
   const sortedKeys = Object.keys(jsonObject).sort();
   const sortedObject: { [key: string]: any } = {};
   sortedKeys.forEach(key => {
+    // @ts-ignore
     sortedObject[key] = jsonObject[key];
   });
   return JSON.stringify(sortedObject, null, 2);

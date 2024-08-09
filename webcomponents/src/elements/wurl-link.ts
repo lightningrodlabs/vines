@@ -31,7 +31,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
    * In zvmUpdated() this._zvm is not already set!
    * Subscribe to ThreadsZvm
    */
-  protected async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
+  protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<wurl-link>.zvmUpdated()", !!newZvm);
     await this.loadWal(newZvm);
   }
@@ -54,7 +54,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** Don't update during online loading */
-  shouldUpdate(changedProperties: PropertyValues<this>) {
+  override shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<wurl-link>.shouldUpdate()", changedProperties, this.wurl);
     const upper = super.shouldUpdate(changedProperties);
     /** */
@@ -116,22 +116,27 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         /** Try PP */
         try {
           await threadsZvm.fetchPp(hash);
-          const thread = threadsZvm.perspective.threads.get(hash);
+          const thread = threadsZvm.perspective.threads.get(hash)!;
           this._assetName = thread.name;
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
-        } catch(e) {}
+        } catch(e:any) {}
         /** Try Bead */
         try {
           await threadsZvm.fetchUnknownBead(hash);
-        } catch(e) {
+        } catch(e:any) {
           //console.warn(`No bead found for wurl-link: ${e}`);
         }
         return;
       }
       const assetLocAndInfo = await this.weServices.assetInfo(wal);
-      this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
-      this._appletName = (await this.weServices.appletInfo(assetLocAndInfo.appletHash)).appletName;
-    } catch(e) {
+      if (assetLocAndInfo) {
+        const appletInfo = await this.weServices.appletInfo(assetLocAndInfo.appletHash);
+        if (appletInfo) {
+          this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
+          this._appletName = appletInfo.appletName;
+        }
+      }
+    } catch(e:any) {
       console.warn("Failed to load HRL", this.wurl, e);
     }
   }
@@ -142,7 +147,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
       <abbr .title=${this.wurl}>
           <ui5-badge design="Set1" color-scheme="2" style="color:#b50202"
-          @click=${(_e) => {
+          @click=${(_e:any) => {
               navigator.clipboard.writeText(this.wurl);
               if (this.weServices) {
                   this.weServices.walToPocket(weaveUrlToWal(this.wurl));
@@ -156,8 +161,8 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  render() {
-    console.log("<wurl-link>.render()", this.wurl, this._appletName);
+  override render() {
+    console.log("<wurl-link>.override render()", this.wurl, this._appletName);
     if (this.wurl == "") {
       //return html`<div>Failed to retrieve Asset. WeServices not available.</div>`;
       return html``;
@@ -165,7 +170,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     let wal: WAL;
     try {
       wal = weaveUrlToWal(this.wurl)
-    } catch(e) {
+    } catch(e:any) {
       return this.renderBadLink();
     }
     if (!this._assetName || !this._appletName) {
@@ -182,7 +187,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
         <!-- <sl-tooltip content="To ${this._appletName}"> -->
           <ui5-badge design="Set1" color-scheme=${colorIdx}  style="color:#0064D9"
-                     @click=${(e) => {
+                     @click=${(e:any) => {
                        e.stopPropagation();
                        if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
                          this.dispatchEvent(threadJumpEvent(hash))
@@ -206,7 +211,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
-  static get styles() {
+  static override get styles() {
     return [
       sharedStyles,
       css`
