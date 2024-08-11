@@ -47,10 +47,10 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const upper = super.shouldUpdate(changedProperties);
     /** */
     if (changedProperties.has("hash")) {
-      if (!changedProperties["hash"]) {
+      if (!changedProperties.get("hash")) {
         return false;
       }
-      /* await */ this.loadHrl(changedProperties["hash"], this._zvm);
+      /* await */ this.loadHrl(changedProperties.get("hash")!, this._zvm);
     }
     return upper;
   }

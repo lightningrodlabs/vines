@@ -104,7 +104,7 @@ export class CommunityFeedApp extends HappElement {
   /**  */
   static async fromWe(
     appWs: AppWebsocket,
-    adminWs: AdminWebsocket,
+    adminWs: AdminWebsocket | undefined,
     appId: InstalledAppId,
     profilesAppId: InstalledAppId,
     profilesBaseRoleName: BaseRoleName,
@@ -214,7 +214,7 @@ export class CommunityFeedApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
+      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
         console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -269,7 +269,7 @@ export class CommunityFeedApp extends HappElement {
     const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
-      const mainThreadAh = getMainThread(this.threadsDvm);
+      const mainThreadAh = getMainThread(this.threadsDvm)!;
       console.log("<community-feed-app>.perspectiveInitializedOnline() mainThreadAh", mainThreadAh);
       /** Make sure subscribe to notifications for main thread */
       await this.threadsDvm.threadsZvm.pullNotifSettings(mainThreadAh);
@@ -393,7 +393,7 @@ export class CommunityFeedApp extends HappElement {
           const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
+          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
               console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
               btn.disabled = false;
           } else {

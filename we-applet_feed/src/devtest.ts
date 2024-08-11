@@ -25,7 +25,7 @@ export async function setupFeedEntryView() {
 
 
 /** */
-function createPpEntryRenderInfo(ppAh: ActionId, context/*: VinesAssetQuery*/): AssetViewInfo {
+function createPpEntryRenderInfo(ppAh: ActionId, context: any/*: VinesAssetQuery*/): AssetViewInfo {
     const assetViewInfo = emptyEntryAppletView as AssetViewInfo;
     assetViewInfo.recordInfo = {
         roleName: VINES_DEFAULT_ROLE_NAME,

@@ -175,7 +175,7 @@ export function determineSubjectPrefix(type: SpecialSubjectType) {
 
 
 /** We are determining the subject name and formatting it into a thread name */
-export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): string {
+export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices?: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
   /** Threads Applet */
   if (subject.appletId == THIS_APPLET_ID.b64 || (weServices && subject.appletId == weServices.appletId)) {

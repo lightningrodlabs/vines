@@ -60,7 +60,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     if (!this._profile) {
       return html`<h3 style="margin:10px; color:#cc2525;">Missing Profile</h3>`;
     }
-    const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash) : 0;
+    const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash)! : 0;
     const avatar = renderProfileAvatar(this._profile, "XL");
 
     /** */

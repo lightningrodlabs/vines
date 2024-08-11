@@ -31,7 +31,10 @@ export async function getAssetInfo(
     }
 
     const mainAppInfo = await appletClient.appInfo();
-
+    if (!mainAppInfo) {
+        throw Promise.reject("Missing Main AppInfo");
+    }
+    
     const cellProxy = await asCellProxy(
       appletClient,
       undefined,

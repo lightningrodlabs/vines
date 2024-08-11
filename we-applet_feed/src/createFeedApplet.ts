@@ -33,14 +33,18 @@ export async function createFeedApplet(
 
   const profilesClient = appletViewInfo.profilesClient;
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
-
+  if (!mainAppInfo) {
+    throw Promise.reject("Missing Main AppInfo");
+}
   /** Determine profilesAppInfo */
   const mainAppWs = appletViewInfo.appletClient as AppWebsocket;
   //const mainAppWs = mainAppAgentWs.appWebsocket;
   let profilesAppInfo = await profilesClient.client.appInfo();
   console.log("createFeedApplet() mainAppInfo", mainAppInfo);
   console.log("createFeedApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
-
+  if (!profilesAppInfo) {
+    throw Promise.reject("Missing Profiles AppInfo");
+}
   /** Check if roleName is actually a cloneId */
   let maybeCloneId = undefined;
   let baseRoleName = profilesClient.roleName;

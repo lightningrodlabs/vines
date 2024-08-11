@@ -307,7 +307,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @state() private _selectedCommentThreadHash?: LinkableId;
            private _selectedCommentThreadSubjectName: string = '';
-  @state() private _createTopicHash?: EntryId;
+  @state() private _createTopicHash: EntryId | undefined = undefined;
 
   @state() private _canShowComments = false;
   @state() private _canShowFavorites = false;
@@ -318,7 +318,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowSearch = false;
 
   @state() private _canViewArchivedSubjects = false;
-  @state() private _currentCommentRequest: CommentRequest = undefined;
+  @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
 
   @state() private _splitObj: SplitObject | undefined = undefined;
 
@@ -428,7 +428,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (name.length < 1) {
       return;
     }
-    const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID, this._createTopicHash, name);
+    if (!this._createTopicHash) {
+      console.warn("Missing topic hash");
+      return;
+    }
+    const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(
+      this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID, 
+      this._createTopicHash, 
+      name,
+    );
     //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
 
@@ -637,16 +645,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("handleColorChange: " + e.target.lastValueEmitted)
     const color = e.target.lastValueEmitted;
     const profile = this._dvm.profilesZvm.getMyProfile()!;
-    await this.setMyProfile(profile.nickname, profile.fields['avatar'], color)
+    const avatar = profile.fields['avatar'];
+    await this.setMyProfile(profile.nickname, avatar, color);
   }
 
 
   /** */
-  async setMyProfile(nickname: string, avatar: string, color: string) {
+  async setMyProfile(nickname: string, avatar?: string, color?: string) {
     console.log("updateProfile() called:", nickname)
     const fields: Dictionary<string> = {};
-    fields['color'] = color;
-    fields['avatar'] = avatar;
+    if (color) fields['color'] = color;
+    if (avatar) fields['avatar'] = avatar;
     try {
       if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.address.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
@@ -678,7 +687,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
     const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.perspective.agents);
-    await this._dvm.pingPeers(undefined, currentPeers);
+    await this._dvm.pingPeers(null, currentPeers);
     //}
   }
 
@@ -688,7 +697,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //if (this._currentSpaceEh) {
     const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey: AgentId) => !agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
-    await this._dvm.pingPeers(undefined, agents);
+    await this._dvm.pingPeers(null, agents);
     //}
   }
 
@@ -1051,7 +1060,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           .map(([ppEh, pprm]) => {
             //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
             const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
-            const profile = this._dvm.profilesZvm.perspective.getProfile(pprm.author);
+            const profile = pprm.author? this._dvm.profilesZvm.perspective.getProfile(pprm.author) : undefined;
             return {ppEh: ppEh.b64, description: pprm.description, timestamp: pprm.creationTs, author: profile, isLocal, isPrivate: false} as FileTableItem;
           });
       console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
@@ -1482,6 +1491,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                            @edit-profile=${(_e:any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}
                            @input=${(e: CustomEvent<VinesInputEvent>) => {
                              e.preventDefault();
+                             if (!e.detail.text) throw Error("Missing text in input event");
                              this.onDmTextMessage(e.detail.text);
                              const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
                              if (profilePopElem.isOpen()) {

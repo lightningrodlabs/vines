@@ -222,7 +222,7 @@ export class VinesApp extends HappElement {
     while(attempts > 0) {
       attempts -= 1;
       const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
+      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
         console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
         await delay(delayMs);
       } else {
@@ -375,7 +375,7 @@ export class VinesApp extends HappElement {
           const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
           btn.disabled = true;
           const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]).length == 0) {
+          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
               console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
               btn.disabled = false;
           } else {

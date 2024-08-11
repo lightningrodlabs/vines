@@ -233,7 +233,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   @state() private _canShowFavorites = false;
 
   @state() private _canViewArchivedSubjects = false;
-  @state() private _currentCommentRequest?: CommentRequest;
+  @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
 
   @state() private _splitObj?: SplitObject;
 
@@ -382,7 +382,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
-      const author = this._dvm.profilesZvm.perspective.getProfile(notif.author) ? this._dvm.profilesZvm.perspective.getProfile(notif.author).nickname : "unknown";
+      const author = this._dvm.profilesZvm.perspective.getProfile(notif.author)? this._dvm.profilesZvm.perspective.getProfile(notif.author)!.nickname : "unknown";
       const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
@@ -422,11 +422,11 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  async setMyProfile(nickname: string, avatar: string, color: string) {
+  async setMyProfile(nickname: string, avatar?: string, color?: string) {
     console.log("updateProfile() called:", nickname)
     const fields: Dictionary<string> = {};
-    fields['color'] = color;
-    fields['avatar'] = avatar;
+    if (color) fields['color'] = color;
+    if (avatar) fields['avatar'] = avatar;
     try {
       if (this._dvm.profilesZvm.perspective.getProfile(this._dvm.cell.address.agentId)) {
         await this._dvm.profilesZvm.updateMyProfile({nickname, fields});
@@ -458,7 +458,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
     const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.perspective.agents);
-    await this._dvm.pingPeers(undefined, currentPeers);
+    await this._dvm.pingPeers(null, currentPeers);
     //}
   }
 
@@ -468,7 +468,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     //if (this._currentSpaceEh) {
     const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey: AgentId) => agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
-    await this._dvm.pingPeers(undefined, agents);
+    await this._dvm.pingPeers(null, agents);
     //}
   }
 
