@@ -6,6 +6,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {SearchParameters} from "../../search";
 import {beadJumpEvent} from "../../events";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -13,11 +14,10 @@ import {beadJumpEvent} from "../../events";
  */
 @customElement("search-result-panel")
 export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
-  /** */
+
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
-
 
   @property({type: Object})
   parameters!: SearchParameters;
@@ -27,7 +27,7 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<search-result-panel>.override render()", this.parameters);
+    console.log("<search-result-panel>.render()", this.parameters);
 
     const beadAhs = this._dvm.threadsZvm.perspective.searchTextBeads(this.parameters);
 
@@ -39,11 +39,11 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
       </ui5-li>`
     })
 
-    /** */
+    /** Render all */
     return html`
         <ui5-panel sticky-header fixed>
             <div slot="header" class="header">
-                <ui5-title>${beadAhs.length} Results for "${this.parameters.keywords}"</ui5-title>
+                <ui5-title>${beadAhs.length} ${msg("Results for")} "${this.parameters.keywords}"</ui5-title>
             </div>
             <ui5-list>
               ${matches}

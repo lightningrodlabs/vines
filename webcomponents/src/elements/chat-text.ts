@@ -20,34 +20,13 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
-
   /** Hash of TextBead to display */
-  @property() hash?: ActionId;
-
-
-  // /** */
-  // updated() {
-  //   /** Add target="_blank" to all links */
-  //   const parentElement = this.shadowRoot!.getElementById('chat-text');
-  //   //console.log("<chat-text>.updated()", parentElement);
-  //   const anchorTags = parentElement.querySelectorAll('a');
-  //   //console.log("<chat-text>.updated() anchorTags ", anchorTags);
-  //   anchorTags.forEach(function(anchorTag) {
-  //     /** Add mention class if it's a mention */
-  //     const url = new URL(anchorTag.href);
-  //     const scheme = url.protocol;
-  //     if (scheme == "agent:") {
-  //       anchorTag.classList.add("mention")
-  //     }
-  //     console.log("anchorTag", anchorTag, scheme);
-  //     anchorTag.setAttribute('target', '_blank');
-  //   });
-  // }
+  @property() hash!: ActionId;
 
 
   /** */
   override render() {
-    //console.log("<chat-text>.override render()", this.hash);
+    console.debug("<chat-text>.render()", this.hash);
     if (!this.hash) {
       return html`<div style="color:red">No message found</div>`;
     }

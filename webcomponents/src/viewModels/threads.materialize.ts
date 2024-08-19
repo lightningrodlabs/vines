@@ -185,18 +185,6 @@ export type TypedBaseBeadMat = EntryBeadMat | AnyBeadMat | TextBeadMat;
 export type TypedBeadMat = TypedBaseBeadMat | EncryptedBead;
 
 
-// /** */
-// export function determineBeadType(typedBead: TypedBeadMat | TypedBead): BeadType {
-//   if ("sourceEh" in typedBead) {
-//     return ThreadsEntryType.EntryBead;
-//   }
-//   if ("typeInfo" in typedBead) {
-//     return ThreadsEntryType.AnyBead;
-//   }
-//   return ThreadsEntryType.TextBead;
-// }
-
-
 /** */
 export function base2typed(base: BaseBeadKind): [TypedBaseBead, BaseBeadType] {
   if ("AnyBead" in base) return [base.AnyBead, ThreadsEntryType.AnyBead];

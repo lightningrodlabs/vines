@@ -199,7 +199,6 @@ console.log("<vines-page> FILES_CELL_NAME", FILES_CELL_NAME);
 @customElement("vines-page")
 export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
-  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     this.addEventListener('beforeunload', (e:any) => {
@@ -208,6 +207,73 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     });
   }
 
+  /** -- Properties -- */
+
+  @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
+  @property() selectedBeadAh: ActionId | undefined = undefined;
+
+  @property({type: Object})
+  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
+
+
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  threadsPerspective!: ThreadsPerspective;
+
+  @consume({ context: globaFilesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
+
+  @consume({ context: weClientContext, subscribe: true })
+  weServices!: WeServicesEx;
+
+  @consume({ context: onlineLoadedContext, subscribe: true })
+  onlineLoaded!: boolean;
+
+  @state() private _selectedCommentThreadHash?: LinkableId;
+           private _selectedCommentThreadSubjectName: string = '';
+  @state() private _createTopicHash: EntryId | undefined = undefined;
+
+  @state() private _canShowComments = false;
+  @state() private _canShowFavorites = false;
+  @state() private _canShowSearchResults = false;
+  @state() private _canShowDebug = false;
+  @state() private _listerToShow: string | null = null;
+  @state() private _canShowLeft = true;
+  @state() private _canShowSearch = false;
+
+  @state() private _canViewArchivedSubjects = false;
+  @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
+
+  @state() private _splitObj: SplitObject | undefined = undefined;
+
+  @state() private _replyToAh: ActionId | undefined = undefined;
+  @state() private _hideFiles = true;
+
+  private _lastKnownNotificationIndex = 0;
+
+
+  /** -- Getters -- */
+
+  get createTopicDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("create-topic-dialog") as Dialog;
+  }
+  get editTopicDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("edit-topic-dialog") as Dialog;
+  }
+
+  get createThreadDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("create-thread-dialog") as Dialog;
+  }
+
+  get profileDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
+  }
+
+  get waitDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
+  }
+
+
+  /** -- Methods -- */
 
   /** Handle 'jump' event */
   override connectedCallback() {
@@ -236,10 +302,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** */
   getDeepestElemAt(x: number, y: number): HTMLElement {
     const elem = this.shadowRoot!.elementFromPoint(x, y) as HTMLElement;
     let shadow: HTMLElement = elem;
-    let shadower;
+    let shadower: HTMLElement | undefined = undefined;
     do {
       shadower = undefined;
       if (shadow.shadowRoot) {
@@ -253,6 +320,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** */
   async onArchive(e: CustomEvent<HideEvent>) {
     const verb = e.detail.hide? msg("Archive") : msg("Unarchive");
     const dialog = this.shadowRoot!.getElementById("confirm-hide-topic") as ConfirmDialog;
@@ -263,10 +331,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this.addEventListener('confirmed', async (_f) => {
         if (e.detail.hide) {
           await this._dvm.threadsZvm.hideDmThread(agentId);
-          toasty(`DM channel archived`);
+          toasty(msg(`DM channel archived`));
         } else {
           await this._dvm.threadsZvm.unhideDmThread(agentId);
-          toasty(`DM channel unarchived`);
+          toasty(msg("DM channel unarchived"));
         }
       });
       dialog.open();
@@ -279,15 +347,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
         await this._dvm.threadsZvm.hideSubject(dhtId);
-        toasty(`${type} archived`);
+        toasty(`${type} ${msg("archived")}`);
       } else {
         await this._dvm.threadsZvm.unhideSubject(dhtId);
-        toasty(`${type} Unarchived`);
+        toasty(`${type} ${msg("Unarchived")}`);
       }
     });
     dialog.open();
   }
 
+
+  /** */
   onShowProfile(e: CustomEvent<ShowProfileEvent>) {
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
@@ -299,75 +369,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     popover.showAt(elem);
   }
 
+
+  /** */
   onEditProfile(_e:any) {
     this.profileDialogElem.show();
   }
 
-  /** -- Fields -- */
-
-  @state() private _selectedCommentThreadHash?: LinkableId;
-           private _selectedCommentThreadSubjectName: string = '';
-  @state() private _createTopicHash: EntryId | undefined = undefined;
-
-  @state() private _canShowComments = false;
-  @state() private _canShowFavorites = false;
-  @state() private _canShowSearchResults = false;
-  @state() private _canShowDebug = false;
-  @state() private _listerToShow: string | null = null;
-  @state() private _canShowLeft = true;
-  @state() private _canShowSearch = false;
-
-  @state() private _canViewArchivedSubjects = false;
-  @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
-
-  @state() private _splitObj: SplitObject | undefined = undefined;
-
-  @state() private _replyToAh: ActionId | undefined = undefined;
-
-
-  //private _threadNames: ActionIdMap<string> = new ActionIdMap();
-
-  @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
-  @property() selectedBeadAh: ActionId | undefined = undefined;
-
-  @property({type: Object})
-  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
-
-  //@property() appletId: AppletId;
-
-  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  threadsPerspective!: ThreadsPerspective;
-
-  @consume({ context: globaFilesContext, subscribe: true })
-  _filesDvm!: FilesDvm;
-
-  @consume({ context: weClientContext, subscribe: true })
-  weServices!: WeServicesEx;
-
-  @consume({ context: onlineLoadedContext, subscribe: true })
-  onlineLoaded!: boolean;
-
-
-  /** -- Getters -- */
-
-  get createTopicDialogElem(): Dialog {
-    return this.shadowRoot!.getElementById("create-topic-dialog") as Dialog;
-  }
-  get editTopicDialogElem(): Dialog {
-    return this.shadowRoot!.getElementById("edit-topic-dialog") as Dialog;
-  }
-
-  get createThreadDialogElem(): Dialog {
-    return this.shadowRoot!.getElementById("create-thread-dialog") as Dialog;
-  }
-
-  get profileDialogElem(): Dialog {
-    return this.shadowRoot!.getElementById("profile-dialog") as Dialog;
-  }
-
-  get waitDialogElem(): Dialog {
-    return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
-  }
 
 
   /** -- Update -- */
@@ -381,12 +388,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    //newDvm.probeAll();
-    // if (this.weServices) {
-    //   const appletInfo = await this.weServices.appletInfo(a)
-    //   const groupProfile = await this.weServices.groupProfile(decodeHashFromBase64(newDvm.cell.dnaHash));
-    //   console.log("dvmUpdated() groupProfile", groupProfile);
-    // }
     this.selectedThreadHash = undefined;
     this.selectedBeadAh = undefined;
     this._listerToShow = newDvm.cell.address.dnaId.b64;
@@ -433,13 +434,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(
-      this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID, 
-      this._createTopicHash, 
+      this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID,
+      this._createTopicHash,
       name,
     );
-    //console.log("onCreateThread()", tuple, tuple[1])
     input.value = "";
-
     this.dispatchEvent(threadJumpEvent(ppAh));
     this.createThreadDialogElem.close(false);
   }
@@ -459,7 +458,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
-    //this._replyToAh = ah;
   }
 
 
@@ -488,9 +486,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // TODO: make sure hrl is an entryHash
     let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this.selectedThreadHash, undefined, this._replyToAh);
     console.log("onCreateHrlMessage() ah", ah);
-    //await this._dvm.threadsZvm.notifyIfDmThread(this.selectedThreadHash, ah);
-    //return ah;
-    //this._replyToAh = ah;
   }
 
 
@@ -498,14 +493,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCreateSemanticTopic(topic: string) {
     await this._dvm.threadsZvm.publishSemanticTopic(topic);
   }
-
-
-  ///** */
-  //shouldUpdate(changedProperties: PropertyValues<this>): boolean {
-  //  const canUpdate = super.shouldUpdate(changedProperties);
-  //  console.log("<vines-page>.shouldUpdate()", /*canUpdate,*/ changedProperties, JSON.stringify(changedProperties.get("threadsPerspective")));
-  //  return canUpdate;
-  //}
 
 
   /** After first render only */
@@ -528,7 +515,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const appletIds = await this._dvm.threadsZvm.pullAppletIds();
       console.log("<vines-page> firstUpdated() appletIds", appletIds);
       for (const appletId of appletIds) {
-        /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
+        /* const _appletInfo = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */
       const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
@@ -548,8 +535,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.pingAllOthers();
   }
 
-  private _lastKnownNotificationIndex = 0;
-
 
   /** */
   protected override async updated(_changedProperties: PropertyValues) {
@@ -566,26 +551,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** i.e. element not present */
     }
 
-    // /** Fiddle with shadow parts CSS */
-
-    //   /** Toggle notif settings switch if necessary */
-    //   const allRadio = this.shadowRoot!.getElementById("notifSettingsAll") as RadioButton;
-    //   const mentionRadio = this.shadowRoot!.getElementById("notifSettingsMentions") as RadioButton;
-    //   const neverRadio = this.shadowRoot!.getElementById("notifSettingsNever") as RadioButton;
-    //
-    //   if (allRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.AllMessages);
-    //     return;
-    //   }
-    //   if (mentionRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.MentionsOnly);
-    //     return;
-    //   }
-    //   if (neverRadio.checked) {
-    //     this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySettingType.Never);
-    //     return;
-    //   }
-    // }
 
     /** Grab AssetInfo for all AnyBeads */
     for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
@@ -609,18 +574,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
       const author =  maybeProfile? maybeProfile.nickname : "unknown";
       const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
-      //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-      //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody, jump] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
-      let message = `from @${author}.` ;
+      let message = `${msg("from")} @${author}.` ;
       if (notifBody != "") {
-        message = `"${notifBody}" from @${author}.`; // | ${date_str}`;
+        message = `"${notifBody}" ${msg("from")} @${author}.`;
       }
       /** in-app toast */
       if (canPopup) {
         toasty(notifTitle + " " + message, jump, this);
       }
-      /** We Notification */
+      /** Weave Notification */
       if (this.weServices) {
         const myNotif: FrameNotification = {
           title: notifTitle,
@@ -684,21 +647,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async pingActiveOthers() {
-    //if (this._currentSpaceEh) {
     console.log("Pinging All Active");
     const currentPeers = this._dvm.allCurrentOthers(this._dvm.profilesZvm.perspective.agents);
     await this._dvm.pingPeers(null, currentPeers);
-    //}
   }
 
 
   /** */
   async pingAllOthers() {
-    //if (this._currentSpaceEh) {
     const agents = this._dvm.profilesZvm.perspective.agents.filter((agentKey: AgentId) => !agentKey.equals(this.cell.address.agentId));
     console.log("Pinging All Others", agents);
     await this._dvm.pingPeers(null, agents);
-    //}
   }
 
 
@@ -745,7 +704,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (request.viewType == "side") {
       if (!request.maybeCommentThread) {
         request.maybeCommentThread = await this.publishCommentThread(request);
-        //return;
       }
       await this.showSideCommentThread(request.maybeCommentThread, request.subjectName);
       return;
@@ -753,7 +711,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Main */
     if (!request.maybeCommentThread) {
       this._currentCommentRequest = request;
-      //this._selectedThreadSubjectName = request.subjectName;
       return;
     }
   }
@@ -772,7 +729,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         rules: "N/A",
         subject,
         subject_name: request.subjectName,
-        //subject_name: await determineSubjectName(materializeSubject(subject), this._dvm.threadsZvm, this._filesDvm, this.weServices),
     };
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
@@ -806,30 +762,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  @state() private _hideFiles = true;
-
-
   /** */
   async onCreateFileMessage(ppAh: ActionId, file: File) {
     console.log("onCreateFileMessage()", file.name);
-    // if (file.size > this._dvm.dnaProperties.maxParcelSize) {
-    //   //toastError(`File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._dvm.dnaProperties.maxParcelSize)}`)
-    //   return;
-    // }
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
-      console.log("<vines-page> startPublishFile callback", eh);
+      console.debug("<vines-page> startPublishFile callback", eh);
       let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
-      console.log("onCreateFileMessage() ah", ah);
+      console.debug("onCreateFileMessage() ah", ah);
       this._splitObj = undefined;
     });
-    console.log("onCreateFileMessage()", this._splitObj);
+    console.debug("onCreateFileMessage()", this._splitObj);
   }
 
 
-  /** */
-  async onPopState(e: CustomEvent<PopStateEvent>) {
-    console.log("onPopState()", e);
-  }
+  // /** */
+  // async onPopState(e: CustomEvent<PopStateEvent>) {
+  //   console.log("onPopState()", e);
+  // }
 
 
   /** */
@@ -930,8 +879,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-page>.override render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
-    //console.log("<vines-page>.override render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
+    console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     let uploadState;
     if (this._splitObj) {
@@ -945,13 +894,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (!thread) {
-        console.log("<vines-page>.override render() fetchPp WARNING");
+        console.log("<vines-page>.render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
       } else {
         primaryTitle = thread.name;
         const dmThread = this._dvm.threadsZvm.isThreadDm(this.selectedThreadHash);
         if (dmThread) {
-          console.log("<vines-page>.override render() dmThread", dmThread);
+          console.log("<vines-page>.render() dmThread", dmThread);
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
           primaryTitle = profile ? profile.nickname : "unknown";
         }
@@ -1058,7 +1007,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!this._hideFiles) {
       const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
           .map(([ppEh, pprm]) => {
-            //const [description, timestamp, author] = this.deliveryPerspective.publicParcels[ppEh];
             const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
             const profile = pprm.author? this._dvm.profilesZvm.perspective.getProfile(pprm.author) : undefined;
             return {ppEh: ppEh.b64, description: pprm.description, timestamp: pprm.creationTs, author: profile, isLocal, isPrivate: false} as FileTableItem;
@@ -1086,7 +1034,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.selectedThreadHash) {
       notifSetting = this._dvm.threadsZvm.perspective.getNotifSetting(this.selectedThreadHash, this.cell.address.agentId);
     }
-    console.log("<vines-page>.override render() notifSettings", notifSetting, this.selectedThreadHash);
+    console.log("<vines-page>.render() notifSettings", notifSetting, this.selectedThreadHash);
 
     /** Group Info */
     let groupProfile: GroupProfile = {
@@ -1110,13 +1058,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         groupProfile.name = this._dvm.dnaProperties.groupName;
       }
       if (this._dvm.dnaProperties.groupSvgIcon) {
-        // const svg = atob(this._dvm.dnaProperties.groupSvgIcon);
-        // console.log("dnaProperties svg", svg);
-        // const tagRegex = /^[a-zA-Z][^\s>\/]*(?:\s(?:[^=]+=(?:"[^"]*"|'[^']*'))?)*\s*\/?$/;
-        // const isValid = tagRegex.test("svg");
-        // if (isValid) {
-        //   groupProfile.icon_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
-        // }
         groupProfile.icon_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
       }
     }
@@ -1416,11 +1357,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
                     <div class="popover-content">
                         <ui5-list mode="None" separators="None">
-                            <!-- <ui5-li-groupheader class="search-group-header">${msg("message contains")}</ui5-li-groupheader>
-                            <ui5-li>Channels</ui5-li>
-                            <ui5-li>FIXME</ui5-li>
-                            <ui5-li>FIXME</ui5-li>
-                            <hr style="color:#f4f4f4"/> -->
                             <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
                             <ui5-li @click=${(_e:any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
                             <ui5-li @click=${(_e:any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
@@ -1457,7 +1393,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   <div id="favoritesSide">
                       <favorites-view></favorites-view>
                   </div>` : html``}
-                  <!-- <peer-list></peer-list> -->
                   ${this._canShowSearch && this._canShowSearchResults? html`
                   <div id="rightSide">
                       <search-result-panel .parameters=${searchParameters}></search-result-panel>
@@ -1584,7 +1519,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   private importDvm(canPublish: boolean) {
     console.log("importDvm()");
-    //console.log("<store-dialog> localOnly", localOnly, this._localOnly);
     var input = document.createElement('input');
     input.type = 'file';
     input.accept = ".json";
@@ -1661,7 +1595,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.downloadTextFile("dump_files.json", files_json);
         if (content == "") content = this._dvm.exportPerspective();
         this.downloadTextFile("dump_threads.json", content);
-        toasty(`Exported data to json in Downloads folder`);
+        toasty(msg(`Exported data to json in Downloads folder`));
         break;
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
@@ -1678,18 +1612,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async refresh(_e?: any) {
     await this._dvm.threadsZvm.zomeProxy.probeInbox();
     console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
-    // const mentionsList = this.shadowRoot!.getElementById("mentionsList") as MentionsList;
-    // mentionsList.requestUpdate();
   }
 
 
   /** */
   async onCommitBtn(_e?: any) {
-    toasty("All marked 'read' & cleared Inbox");
+    toasty(msg("All marked 'read' & cleared Inbox"));
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
-    //const semTopic = this.shadowRoot!.getElementById("topicusView") as SemanticTopicsView;
-    //semTopic.requestUpdate();
   }
 
 
@@ -1697,7 +1627,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   onShowArchiveTopicsBtn(_e?: any) {
     this._canViewArchivedSubjects = !this._canViewArchivedSubjects;
   }
-
 
 
   /** */

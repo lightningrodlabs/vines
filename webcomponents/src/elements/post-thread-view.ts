@@ -7,8 +7,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../contexts";
-import {MAIN_TOPIC_ID} from "../utils";
-import {getMainThread} from "../utils_feed";
+import {getMainThread, MAIN_TOPIC_ID} from "../utils_feed";
 
 
 /**
@@ -94,9 +93,6 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   //     }
   //     const tp = changedProperties.get("threadsPerspective");
   //     const newThread = JSON.stringify(tp.threads.get(this.threadHash));
-  //     //const oldThread = this._prevThreadsPerspective? this._prevThreadsPerspective.threads.get(this.threadHash) : undefined;
-  //     //const diff = oldThread == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
-  //     //const isEqual = this._prevThreadsPerspective == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
   //     const isEqual = this._prevThread == newThread;
   //     //console.log("<post-thread-view>.shouldUpdate() tp", isEqual, this._prevThread, newThread);
   //     this._prevThread = newThread;
@@ -161,7 +157,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     this._loading = true;
     await dvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
     this._mainThreadAh = getMainThread(dvm);
-    console.log("<post-thread-view>.loadlatestThreads() mainThreadAh", this._mainThreadAh);
+    console.debug("<post-thread-view>.loadlatestThreads() mainThreadAh", this._mainThreadAh);
     if (this._mainThreadAh) {
       await dvm.threadsZvm.pullAllBeads(this._mainThreadAh);
       await dvm.threadsZvm.commitGlobalProbeLog();
@@ -196,10 +192,10 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<post-thread-view>.override render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
+    console.log("<post-thread-view>.render()", this._loading, this._mainThreadAh, this.favorites, this.beadAh, this._dvm.threadsZvm);
 
     /** If no main thread, check again in 1 min */
-    //console.log("<post-thread-view>.override render() mainThreadAh", this._mainThreadAh);
+    console.debug("<post-thread-view>.render() mainThreadAh", this._mainThreadAh);
     if (!this._mainThreadAh) {
       if (!this._loading) {
         delay(60 * 1000).then(() => {this.loadlatestThreads()});
@@ -208,16 +204,11 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const thread = this._dvm.threadsZvm.perspective.threads.get(this._mainThreadAh)!;
-
-    //const all = thread.getAll();
     let passedLog = false;
-
     let postItems = Object.values(thread.beadLinksTree.values)
       .map((blm) => {
-        //console.log("<post-thread-view> blm", blm, this.threadsPerspective);
         /** 'new' if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this._mainThreadAh!);
-        //console.log("<post-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime);
         if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
           passedLog = true;
         }
@@ -239,7 +230,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     )
       .filter((item) => !!item);
 
-    console.log("<post-thread-view>.override render() postItems", postItems.length, postItems, this.favorites);
+    console.debug("<post-thread-view>.render() postItems", postItems.length, postItems, this.favorites);
 
     if (postItems.length == 0) {
       if (this.favorites) {
@@ -250,7 +241,6 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <!-- <post-header style="margin-top:15px;"></post-header> -->
         ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
         ${postItems.reverse()}
     `;

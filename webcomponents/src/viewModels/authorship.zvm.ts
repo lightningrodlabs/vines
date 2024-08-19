@@ -57,10 +57,10 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** -- Init -- */
 
-  /** */
-  override async initializePerspectiveOffline(): Promise<void> {
-    // N/A
-  }
+  // /** */
+  // override async initializePerspectiveOffline(): Promise<void> {
+  //   // N/A
+  // }
 
   /** */
   override async initializePerspectiveOnline(): Promise<void> {

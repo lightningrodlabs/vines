@@ -35,14 +35,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    console.log("<comment-thread-view>.ctor()", this.threadHash)
+    //console.log("<comment-thread-view>.ctor()", this.threadHash)
   }
 
 
   /** -- Properties -- */
 
   /** Hash of Thread to display */
-  @property() threadHash!: ActionId;
+  @property() threadHash?: ActionId;
   /** Enable Input bar */
   @property() showInput: boolean = false
 
@@ -95,24 +95,21 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Methods -- */
 
-  /**
-   * In dvmUpdated() this._dvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+  /** In dvmUpdated() this._dvm is not already set! */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<comment-thread-view>.dvmUpdated()");
+    /** Subscribe to ThreadsZvm */
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    newDvm.threadsZvm.pullAllBeads(this.threadHash);
+    /** */
+    if (this.threadHash) {
+      newDvm.threadsZvm.pullAllBeads(this.threadHash);
+    }
   }
 
 
-
-  /** FOR DEBUGGING */
+  /**  */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
     if (changedProperties.has("_cell_via_context")) {
@@ -128,7 +125,6 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
       this._loading = true;
       /* await */ this.loadCommentThread();
@@ -136,34 +132,36 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
-  protected override firstUpdated(_changedProperties: PropertyValues) {
-    super.firstUpdated(_changedProperties);
-    this.loadCommentThread();
-  }
+  // /** */
+  // protected override firstUpdated(_changedProperties: PropertyValues) {
+  //   super.firstUpdated(_changedProperties);
+  //   this.loadCommentThread();
+  // }
 
 
-  /** */
-  protected override updated(_changedProperties: PropertyValues) {
-    super.updated(_changedProperties);
-    try {
-      //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
-      //console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
-      //this.listElem.scrollTo(0, this.listElem.scrollHeight);
-      //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
-      //this.listElem.scrollIntoView({block: "end"});
-      //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
-      //this.listElem.scrollTop = this.listElem.scrollHeight;
-      //this.listElem.scrollIntoView(false);
-    } catch(e:any) {
-      // element not present
-    }
-  }
+  // TODO: scrolling
+  // /** */
+  // protected override updated(_changedProperties: PropertyValues) {
+  //   super.updated(_changedProperties);
+  //   try {
+  //     //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
+  //     //console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+  //     //this.listElem.scrollTo(0, this.listElem.scrollHeight);
+  //     //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
+  //     //this.listElem.scrollIntoView({block: "end"});
+  //     //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
+  //     //this.listElem.scrollTop = this.listElem.scrollHeight;
+  //     //this.listElem.scrollIntoView(false);
+  //   } catch(e:any) {
+  //     // element not present
+  //   }
+  // }
 
 
   /** */
   private async loadCommentThread() {
     console.log("<comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
-    const maybePpMat = this._dvm.threadsZvm.perspective.getParticipationProtocol(this.threadHash);
+    const maybePpMat = this._dvm.threadsZvm.perspective.getParticipationProtocol(this.threadHash!);
     if (maybePpMat && this.threadHash) {
       await this._dvm.threadsZvm.pullAllBeads(this.threadHash);
       await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
@@ -183,46 +181,46 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   async onCreateComment(e: VinesInputEvent) {
-    const thread = this.threadsPerspective.threads.get(this.threadHash);
+    const thread = this.threadsPerspective.threads.get(this.threadHash!);
     if (!thread || !e.text) {
       console.error("Missing Comment thread");
       return;
     }
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash, this.cell.address.agentId);
+    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
     console.log("onCreateComment() ah:", ah);
   }
 
 
   /** */
   override render() {
-    console.log("<comment-thread-view>.override render()", this.threadHash, this.showInput, this.subjectName);
-
+    console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
     const doodle_bg =  html `
       <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
         ${doodle_weave}
       </div>
     `;
-
+    /** No threadHash */
     if (!this.threadHash) {
-      return html `
+      return html`
         ${doodle_bg}
         <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
             ${msg('No comment thread selected')}
         </div>
       `;
     }
+    /** No thread */
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
-      return html `
+      return html`
         ${doodle_bg}
         <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Comment thread not found</div>
       `;
     }
-
+    /** Still loading */
     if (this._loading) {
       this.loadCommentThread();
-      return html `
+      return html`
         ${doodle_bg}
         <ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
       `;
@@ -230,13 +228,13 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     const beads = this._dvm.threadsZvm.perspective.getAllBeadsOnThread(this.threadHash);
 
-    console.log("<comment-thread-view>.override render() len =", beads.length);
+    console.log("<comment-thread-view>.render() len =", beads.length);
     console.log("Has thread some unreads?", thread.hasUnreads());
 
     let prevBeadAh: ActionId | undefined = undefined;
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let commentItems = beads.map(([beadAh, beadInfo, _typedBead]) => {
-      const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
+      const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash!);
       const isNew = !!initialProbeLogTs && initialProbeLogTs < beadInfo.creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
@@ -264,10 +262,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
-
-
     //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
-
     let maybeInput = html``;
     if (this.showInput) {
       maybeInput = html`
@@ -306,7 +301,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
                     icon="journey-depart"
                     style="margin-right:0px; -webkit-transform: scaleX(-1); transform: scaleX(-1);"
-                    @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(this.threadHash))}>
+                    @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(this.threadHash!))}>
         </ui5-button>
     `;
     }
@@ -368,7 +363,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                       style="margin-left:5px;"
                       @click=${(e:any) => {
                         e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash, bubbles: true, composed: true}))
+                        this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
           }}></ui5-button>
         </h3>
         <!-- thread -->

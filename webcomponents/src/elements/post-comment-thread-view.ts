@@ -91,22 +91,19 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
   /**
    * In dvmUpdated() this._dvm is not already set!
-   * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<post-comment-thread-view>.dvmUpdated()");
+    /** Subscribe to ThreadsZvm */
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+    /** */
     newDvm.threadsZvm.pullAllBeads(this.threadHash);
   }
 
 
-
-  /** FOR DEBUGGING */
+  /**  */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
     //console.log("<post-comment-thread-view>.shouldUpdate()", changedProperties, this._dvm);
     if (changedProperties.has("_cell_via_context")) {
@@ -136,22 +133,23 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   }
 
 
-  /** */
-  protected override updated(_changedProperties: PropertyValues) {
-    super.updated(_changedProperties);
-    try {
-      //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
-      //console.log("<post-comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
-      //this.listElem.scrollTo(0, this.listElem.scrollHeight);
-      //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
-      //this.listElem.scrollIntoView({block: "end"});
-      //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
-      //this.listElem.scrollTop = this.listElem.scrollHeight;
-      //this.listElem.scrollIntoView(false);
-    } catch(e:any) {
-      // element not present
-    }
-  }
+  // TODO scrolling
+  // /** */
+  // protected override updated(_changedProperties: PropertyValues) {
+  //   super.updated(_changedProperties);
+  //   try {
+  //     //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
+  //     //console.log("<post-comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+  //     //this.listElem.scrollTo(0, this.listElem.scrollHeight);
+  //     //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
+  //     //this.listElem.scrollIntoView({block: "end"});
+  //     //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
+  //     //this.listElem.scrollTop = this.listElem.scrollHeight;
+  //     //this.listElem.scrollIntoView(false);
+  //   } catch(e:any) {
+  //     // element not present
+  //   }
+  // }
 
 
   /** */
@@ -187,7 +185,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
   /** */
   override render() {
-    console.log("<post-comment-thread-view>.override render()", this.threadHash, this.subjectName);
+    console.log("<post-comment-thread-view>.render()", this.threadHash, this.subjectName);
 
     const doodle_bg =  html `
       <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
@@ -218,19 +216,9 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
       `;
     }
 
-    // if (pp.subjectType == SEMANTIC_TOPIC_TYPE_NAME) {
-    //   const topic = this._dvm.threadsZvm.getSemanticTopic(pp.subjectHash);
-    //   if (!topic) {
-    //     return html`
-    //         <div>Loading thread topic...</div>`;
-    //   }
-    // } else {
-    //
-    // }
-
     const beads = this._dvm.threadsZvm.perspective.getAllBeadsOnThread(this.threadHash);
 
-    //console.log("<post-comment-thread-view>.override render() len =", beads.length);
+    //console.log("<post-comment-thread-view>.render() len =", beads.length);
     //console.log("Has thread some unreads?", thread.hasUnreads());
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
@@ -247,21 +235,12 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
       commentItems = []
     }
 
-
     //<!--style="height: 400px" growing="Scroll" -->
     //<!-- @load-more=${this.onLoadMore}-->
-
-    //const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
-    //const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
-    //const subjectPrefix = determineSubjectPrefix(subjectType);
 
     const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<post-comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
-
-
-    //console.log("<post-comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
-
 
     /** render all */
     return html`

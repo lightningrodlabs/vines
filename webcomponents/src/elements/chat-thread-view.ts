@@ -45,31 +45,24 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-
   private _prevThread: string = ""
 
   /** -- State variables -- */
 
   @state() _loading = true;
 
-  /** for triggering an update */
-  //@state() private _commentsLoading = false;
-
 
   /** -- Methods -- */
 
-  /**
-   * In dvmUpdated() this._dvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+  /** In dvmUpdated() this._dvm is not already set */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<chat-thread-view>.dvmUpdated()");
+    console.debug("<chat-thread-view>.dvmUpdated()");
+    /** Subscribe to ThreadsZvm */
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
+    /** */
     await this.loadlatestMessages(newDvm);
   }
 
@@ -86,7 +79,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return true;
     }
     if (changedProperties.has("_loading")) {
-      //return !this._loading;
       return true;
     }
     if (changedProperties.has("threadsPerspective")) {
@@ -100,23 +92,19 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       }
       const tp = changedProperties.get("threadsPerspective")!;
       const newThread = JSON.stringify(tp.threads.get(this.threadHash));
-      //const oldThread = this._prevThreadsPerspective? this._prevThreadsPerspective.threads.get(this.threadHash) : undefined;
-      //const diff = oldThread == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
-      //const isEqual = this._prevThreadsPerspective == undefined? newThread : deepDiffMapper.map(oldThread, newThread);
       const isEqual = this._prevThread == newThread;
       //console.log("<chat-thread-view>.shouldUpdate() tp", isEqual, this._prevThread, newThread);
       this._prevThread = newThread;
       /** update only if something changed and we are not currently loading all the beads */
       return isFirstPerspective || !this._loading && !isEqual;
     }
-    return !this._loading; //return true;
+    return !this._loading;
   }
 
 
   /** */
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<chat-thread-view>.willUpdate()", changedProperties, this.threadHash);
     if (this._dvm) {
       if (this.threadHash && !this._dvm.threadsZvm.perspective.notifSettings.get(this.threadHash)) {
         await this._dvm.threadsZvm.pullNotifSettings(this.threadHash);
@@ -177,17 +165,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     const dvm = newDvm? newDvm : this._dvm;
-    //dvm.threadsZvm.probeAllBeads(this.threadHash)
     dvm.threadsZvm.pullLatestBeads(this.threadHash, undefined, undefined, 20)
       .then(async (beadLinks) => {
         this._loading = false;
-        //this._threadUiInfo[this.threadHash] = [true, ""];
         await this.loadBeadComments(beadLinks, dvm);
         await dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
-        //this._commentsLoading = false; // This is for triggering a new requestUpdate
       });
     this._loading = true;
-    //this._commentsLoading = true;
   }
 
 
@@ -233,7 +217,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-thread-view>.override render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
+    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
     /** */
     if (this.threadHash === undefined) {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
@@ -245,7 +229,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** chat-header */
     let maybeHeader = html``;
     const hasReachedBeginning = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
-    console.log("<chat-thread-view> begin reached", hasReachedBeginning);
     if (hasReachedBeginning) {
       maybeHeader = html`<chat-header .threadHash=${this.threadHash}></chat-header>`;
     }
@@ -254,11 +237,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Should grab all probed messages and request probes if end is reached */
 
     const all = thread.getAll();
-    //console.log("<chat-thread-view>.override render() all", all.length);
+
     let passedLog = false;
-
     let currentDay = "";
-
     let prevBeadAh: ActionId | undefined = undefined;
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
@@ -305,11 +286,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     );
 
 
-    /** render all */
+    /** render all (in reverse) */
     return html`
-            ${chatItems.reverse()}
-            ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
-            ${maybeHeader}
+      ${chatItems.reverse()}
+      ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
+      ${maybeHeader}
     `;
   }
 

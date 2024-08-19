@@ -21,7 +21,7 @@ export interface AuthorshipSnapshot {
 
 /** */
 export class AuthorshipPerspective {
-   ascribedTypes: string[] = [];
+  ascribedTypes: string[] = [];
   /** typeName -> (hash -> original author) */
   logsByType: Dictionary<LinkableId[]> = {};
   /** hash -> original author */
@@ -57,8 +57,7 @@ export class AuthorshipPerspective {
 }
 
 
-
-/** Live app form */
+/** */
 export class AuthorshipPerspectiveMutable extends AuthorshipPerspective {
 
   get readonly(): AuthorshipPerspective {

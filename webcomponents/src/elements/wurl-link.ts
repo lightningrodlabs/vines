@@ -27,16 +27,6 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
 
-  /**
-   * In zvmUpdated() this._zvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
-  protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
-    console.log("<wurl-link>.zvmUpdated()", !!newZvm);
-    await this.loadWal(newZvm);
-  }
-
-
   /** -- Properties -- */
 
   @property()
@@ -52,6 +42,14 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
            private _assetName: string = ""
   @state() private _appletName: string = ""
 
+
+  /** -- Methods -- */
+
+  /** In zvmUpdated() this._zvm is not already set! */
+  protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
+    console.log("<wurl-link>.zvmUpdated()", !!newZvm);
+    await this.loadWal(newZvm);
+  }
 
   /** Don't update during online loading */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
@@ -162,7 +160,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<wurl-link>.override render()", this.wurl, this._appletName);
+    console.log("<wurl-link>.render()", this.wurl, this._appletName);
     if (this.wurl == "") {
       //return html`<div>Failed to retrieve Asset. WeServices not available.</div>`;
       return html``;

@@ -373,7 +373,7 @@ export class CommunityFeedApp extends HappElement {
 
   /** */
   override render() {
-    console.log("<community-feed-app>.override render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
+    console.log("<community-feed-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
 
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {

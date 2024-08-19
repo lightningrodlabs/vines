@@ -17,10 +17,8 @@ import Switch from "@ui5/webcomponents/dist/Switch";
 @customElement("network-health-panel")
 export class NetworkHealthPanel extends LitElement {
 
-
   @consume({ context: appProxyContext, subscribe: true})
   _appProxy!: AppProxy;
-
 
 
   /* Auto update */
@@ -33,7 +31,7 @@ export class NetworkHealthPanel extends LitElement {
 
   /** */
   override render() {
-    console.log("<network-health>.override render()");
+    console.log("<network-health>.render()");
 
     if (!this._appProxy) {
       return html`no app proxy found via context`;
@@ -55,7 +53,7 @@ export class NetworkHealthPanel extends LitElement {
     // for (const [cellIdStr, infoPair] of Object.entries(allNetworkLogs)) {
     //     const hcls  = this._appProxy.getLocations(str2CellId(cellIdStr));
     //     const cellName = this._appProxy.getCellName(hcls[0]);
-    //     console.log("<network-health>.override render() cellName", cellName);
+    //     console.log("<network-health>.render() cellName", cellName);
     //     if (cellName == VINES_DEFAULT_ROLE_NAME) {
     //       cellLogs = infoPair;
     //       break;
@@ -97,7 +95,7 @@ export class NetworkHealthPanel extends LitElement {
 
     //const lineValues = "[0,1,2,50,10,85,20,5,48]"; // testing values
     const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
-    //console.log("<network-health>.override render()", lineValues);
+    //console.log("<network-health>.render()", lineValues);
 
 
     /** */

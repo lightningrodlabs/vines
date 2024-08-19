@@ -34,23 +34,18 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     if (oldDvm) {
-      //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
   }
-
 
 
   /** */
   override render() {
-    //console.log("<emoji-bar>.override render()", this.hash, this.threadsPerspective.emojiReactions);
+    //console.log("<emoji-bar>.render()", this.hash, this.threadsPerspective.emojiReactions);
     if (!this.hash) {
-      return html`
-          <div>No item found</div>`;
+      return html`<div>No item found</div>`;
     }
-
     const reactions = this.threadsPerspective.emojiReactions.get(this.hash);
     if (!reactions) {
       return html``;
@@ -65,8 +60,6 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
         emojiMap[emoji]!.push(agent);
       }
     }
-
-
     /** */
     let emojiButtons = Object.entries(emojiMap).map(([emoji, agents]) => {
       let iReacted = false;
@@ -91,14 +84,12 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
     });
     //<div class="chatItem" @mouseenter=${(e:any) => this._isHovered = true} @mouseleave=${(e:any) => this._isHovered = false}>
 
-
     /** render all */
     return html`
         <div style="display:flex; flex-direction:row; gap:5px;">
             ${emojiButtons}
         </div>
     `;
-
   }
 
 

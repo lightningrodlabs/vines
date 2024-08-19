@@ -27,12 +27,8 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
   @property() hash!: AgentId;
 
   private _profile: ProfileMat | undefined = undefined;
-  //private _profileDate: Timestamp;
 
-  /**
-   * In zvmUpdated() this._zvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+  /** In zvmUpdated() this._zvm is not already set! */
   protected override async zvmUpdated(newZvm: ProfilesAltZvm, _oldZvm?: ProfilesAltZvm): Promise<void> {
     console.log("<profile-panel>.zvmUpdated()");
     if (!this.hash) {
@@ -51,7 +47,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
 
   /** */
   override render() {
-    console.log("<profile-panel>.override render()", this.hash, this._profile);
+    console.log("<profile-panel>.render()", this.hash, this._profile);
 
     if (!this.hash) {
       return html`<div>Missing AgentPubKey</div>`;

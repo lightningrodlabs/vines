@@ -542,7 +542,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   override render() {
-    console.log("<community-feed-page>.override render()", this.onlineLoaded, this.selectedPostAh, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<community-feed-page>.render()", this.onlineLoaded, this.selectedPostAh, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
 
     /** This agent's profile info */
     let myProfile = this._dvm.profilesZvm.getMyProfile();
@@ -834,12 +834,12 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       console.log("<community-feed-page> target download file", e);
       const file = e.target.files[0];
       if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
-        toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
+        toasty(`${msg("Error: File is too big")} ${prettyFileSize(file.size)}. ${msg("Maximum file size")}: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
         return;
       }
       const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
       const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, (_manifestEh) => {
-        toasty(msg("File successfully shared") +": " + splitObj.dataHash);
+        toasty(msg("File successfully shared") + ": " + splitObj.dataHash);
         this.requestUpdate();
       });
       if (!maybeSplitObj) {
@@ -877,7 +877,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         this.downloadTextFile("dump_feed_files.json", files_json);
         if (content == "") content = this._dvm.exportPerspective();
         this.downloadTextFile("dump_feed.json", content);
-        toasty(`Exported data to json in Downloads folder`);
+        toasty(msg(`Exported data to json in Downloads folder`));
         break;
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
@@ -900,7 +900,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   async onCommitBtn(_e?: any) {
-    toasty("All marked 'read' & cleared Inbox");
+    toasty(msg("All marked 'read' & cleared Inbox"));
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
     //const semTopic = this.shadowRoot!.getElementById("topicusView") as SemanticTopicsView;

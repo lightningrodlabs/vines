@@ -1,22 +1,10 @@
-import Toast from "@ui5/webcomponents/dist/Toast";
 import {html, LitElement, render} from "lit";
 import {JumpEvent} from "./events";
+import Toast from "@ui5/webcomponents/dist/Toast";
 
 
-// /** */
-// export function toastWarning(msg: string): void {
-//     toasty("Warning", msg, "warning");
-// }
-//
-//
-// /** */
-// export function toastError(msg: string): void {
-//     toasty("Error", msg, "error");
-// }
-
-
-/** Emit toast notifications */
-export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent?: LitElement/*, extraHtml = ""*/) {
+/** Emit toast notification */
+export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent?: LitElement) {
     const placement = "TopCenter";
     const duration = 3500
 
@@ -27,7 +15,6 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
 
     /** Create toast element */
     const toastElem: Toast = Object.assign(document.createElement('ui5-toast'), {
-        // id
         style: "background:red;",
         placement,
         duration,

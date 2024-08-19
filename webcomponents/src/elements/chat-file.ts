@@ -27,7 +27,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of File bead to display */
   @property() hash!: ActionId; // BeadAh
-  //@state() private _dataHash?: FileHashB64;
 
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -42,18 +41,13 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** -- Methods -- */
 
   /** */
-  override shouldUpdate(changedProperties: PropertyValues<this>) {
-    //console.log("<chat-file>.shouldUpdate()", changedProperties, this.hash);
-    const shouldnt = !super.shouldUpdate(changedProperties);
-    if (shouldnt) {
-      return false;
-    }
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
     /** Load file when hash changed */
     if (changedProperties.has("hash") || !this._manifest) {
       this._canRetry = true;
       /* await */ this.loadFileData();
     }
-    return true;
   }
 
 
@@ -114,13 +108,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  // /** */
-  // protected /*async*/ firstUpdated(_changedProperties: PropertyValues) {
-  //   super.firstUpdated(_changedProperties);
-  //   /*await*/ this.loadFileData();
-  // }
-
-
   /** */
   protected async probeForFileManifest(manifestEh: EntryId, delayMs?: number) {
     console.log("probeForFile()", manifestEh.short)
@@ -138,7 +125,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-file>.override render()", this.hash, this._loading, !!this._manifest, !!this._file /*this._dataHash*/);
+    console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file);
     if (!this.hash) {
       return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
     }
@@ -158,7 +145,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-list>`;
     }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
-    //console.log("<chat-file>.override render() entryBead", entryBead);
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
     }
@@ -169,8 +155,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       if (this._canRetry) {
         this._canRetry = false;
         this.probeForFileManifest(manifestEh, 1000);
-        return html`
-            <ui5-busy-indicator delay="0" size="Medium" active style="color:#f61933"></ui5-busy-indicator>`;
+        return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f61933"></ui5-busy-indicator>`;
       }
       return html`
         <ui5-list id="fileList">
@@ -186,6 +171,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const fileDesc = filePprm.description;
     const fileType = kind2Type(fileDesc.kind_info);
 
+    /** Default file render (any big file) */
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
@@ -194,37 +180,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-li>
         </ui5-list>`;
 
-    // if (fileType == FileType.Image) {
-    // let maybeCachedData = undefined;
-    //   maybeCachedData = null;
-    //   if (!this._dataHash) {
-    //     console.log("File is image, dataHash not known");
-    //     this._filesDvm.getFile(manifestEh).then(([manifest, data]) => {
-    //       console.log("File is image, manifest", manifest.description.name, manifest.data_hash);
-    //       const file = this._filesDvm.data2File(manifest, data);
-    //       this._filesDvm.cacheFile(file);
-    //       this._dataHash = manifest.data_hash;
-    //       //this.requestUpdate();
-    //     });
-    //   } else {
-    //     maybeCachedData = this._filesDvm.getFileFromCache(this._dataHash);
-    //     if (!maybeCachedData) {
-    //       console.warn("File cache not found", this._dataHash);
-    //     }
-    //   }
-    //   if (maybeCachedData) {
-    //     item = html`<img class="thumb" src=${"data:image/png;base64," + maybeCachedData}
-    //                      @click=${(e:any) => this._filesDvm.downloadFile(entryBead.sourceEh)}>
-    //     `;
-    //   }
-    // }
-
-
     const mime = kind2mime(this._manifest.description.kind_info);
     //const fileType = kind2Type(this._manifest.description.kind_info);
 
-    console.log("<chat-file>.override render() type:", this._manifest.description.name, fileType, mime, !!this._file);
+    console.log("<chat-file>.render() type:", this._manifest.description.name, fileType, mime, !!this._file);
 
+    /** Specific render depending on file type */
     /** this._file is set only for small files */
     if (this._file != null && this._maybeBlobUrl) {
       switch (fileType) {
@@ -244,20 +205,20 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         //     break;
         case FileType.Audio:
           item = html`
-                        <audio class="preview Audio" controls>
-                            <source src=${this._maybeBlobUrl} type=${mime}>
-                            ${msg("Your browser does not support the audio element.")}
-                        </audio>
-                    `;
+              <audio class="preview Audio" controls>
+                  <source src=${this._maybeBlobUrl} type=${mime}>
+                  ${msg("Your browser does not support the audio element.")}
+              </audio>
+          `;
           break;
         case FileType.Video:
           //  width="440" height="320"
           item = html`
-                        <video class="preview Video" controls>
-                            <source src=${this._maybeBlobUrl} type=${mime}>
-                            ${msg("Your browser does not support the video element.")}
-                        </video>
-                    `;
+              <video class="preview Video" controls>
+                  <source src=${this._maybeBlobUrl} type=${mime}>
+                  ${msg("Your browser does not support the video element.")}
+              </video>
+          `;
           break;
         default:
           //preview = html`<div class="preview">Preview not available for this type</div>`;
@@ -266,8 +227,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
-
-    /** render all */
+    /** render item */
     return html`
         <sl-tooltip content=${fileDesc.name} style="--show-delay:1000">
             ${item}

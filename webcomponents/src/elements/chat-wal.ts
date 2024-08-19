@@ -20,12 +20,10 @@ import {msg} from "@lit/localize";
  */
 @customElement("chat-wal")
 export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
-  /** */
+
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
-    //this.loadHrl();
   }
-
 
   /** -- Properties -- */
 
@@ -35,8 +33,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-           private _assetLocAndInfo: AssetLocationAndInfo | undefined = undefined;
   @state() private _appletInfo: AppletInfo | undefined = undefined;
+           private _assetLocAndInfo: AssetLocationAndInfo | undefined = undefined;
 
 
   /** -- Methods -- */
@@ -56,12 +54,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
 
-  /**
-   * In zvmUpdated() this._zvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+  /** In zvmUpdated() this._zvm is not already set! */
   protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
-    //console.log("<wurl-link>.zvmUpdated()");
     await this.loadHrl(this.hash, newZvm);
   }
 
@@ -87,8 +81,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<chat-wal>.override render()", this.hash, this._appletInfo);
-
+    console.log("<chat-wal>.render()", this.hash, this._appletInfo);
+    /** No WeServices */
     if (!this.weServices) {
       return html`        
           <ui5-list id="fileList">
@@ -97,11 +91,12 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           </ui5-li>
       </ui5-list>
       `;
-
     }
+    /** No Hash */
     if (!this.hash) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
+    /** No asset info */
     if (!this._appletInfo || !this._assetLocAndInfo) {
       return html`        
           <ui5-list id="fileList">
@@ -112,7 +107,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       </ui5-list>
       `;
     }
-
+    /** No Bead at hash */
     const anyBead = this._zvm.perspective.getBaseBead(this.hash) as AnyBeadMat;
     if (!anyBead) {
       return html`
@@ -130,6 +125,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         </ui5-list>
       `;
     }
+    /** Wrong bead type */
     if (anyBead.typeInfo != "wal") {
       return html`          
           <ui5-list id="fileList">
@@ -140,15 +136,18 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
     }
 
-    // /** render all */
-    // return html`
-    //     <ui5-list id="fileList">
-    //       <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-    //               @click=${(e:any) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
-    //         ${this._assetLocAndInfo.assetInfo.name}
-    //       </ui5-li>
-    //     </ui5-list>
-    // `;
+    /** Not embed */
+    const canEmbed = true;
+    if (!canEmbed) {
+      return html`
+          <ui5-list id="fileList">
+              <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
+                      @click=${(_e:any) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
+                  ${this._assetLocAndInfo.assetInfo.name}
+              </ui5-li>
+          </ui5-list>
+      `;
+    }
 
     /** render all */
     return html`

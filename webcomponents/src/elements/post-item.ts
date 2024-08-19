@@ -20,6 +20,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 import {toasty} from "../toast";
 import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
 import {ShowProfileEvent, VinesInputEvent} from "../events";
+import {Thread} from "../viewModels/thread";
 
 
 /**
@@ -32,11 +33,12 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
   }
 
-
   /** -- Properties -- */
 
   /** Hash of bead to display */
   @property() hash!: ActionId;
+
+  @state() private _canShowComment = false;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -51,9 +53,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-  //@state() private _loading = true;
 
-  @state() private _canShowComment = false;
 
 
   /**
@@ -61,13 +61,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    //console.log("<post-item>.dvmUpdated()");
     if (oldDvm) {
-      //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
   }
 
 
@@ -81,20 +78,6 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   private async loadPost() {
     console.log("<post-item>.loadPost()")
-    // let thread = this.threadsPerspective.threads[this.hash];
-    // if (!thread) {
-    //   await this._dvm.threadsZvm.fetchPp(this.hash);
-    //   thread = this.threadsPerspective.threads[this.hash];
-    //   if (!thread) {
-    //     console.error("Thread not found");
-    //     return;
-    //   }
-    // }
-    // const blms = await this._dvm.threadsZvm.probeAllBeads(this.hash);
-    // if (blms.length == 0) {
-    //   console.error("Thread has no beads");
-    //   return;
-    // }
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     if (!beadInfo) {
       await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
@@ -103,16 +86,13 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     const commentThreadAh = await this.getCommentThread();
     await this._dvm.threadsZvm.pullNotifSettings(commentThreadAh);
     await this._dvm.threadsZvm.pullAllBeads(commentThreadAh); // TODO: Get links count instead as it should be faster
-    //this._loading = false;
   }
 
 
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<post-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
-      //this._loading = true;
       this.loadPost();
     }
   }
@@ -120,10 +100,6 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickComment() {
-    // const maybeCommentThread = this._dvm.threadsZvm.getCommentThreadForSubject(this.hash);
-    // const beadInfo = this._dvm.threadsZvm.getBeadInfo(this.hash);
-    // const typed = this._dvm.threadsZvm.getBead(this.hash);
-    // const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     this._canShowComment = !this._canShowComment;
   }
 
@@ -168,14 +144,14 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-
+  /** */
   async updateFavorite(beadAh: ActionId, canAdd: boolean) {
     if (canAdd) {
       await this._dvm.threadsZvm.addFavorite(beadAh);
-      toasty("Post added to favorites");
+      toasty(msg("Post added to favorites"));
     } else {
       await this._dvm.threadsZvm.removeFavorite(beadAh);
-      toasty("Post removed from favorites");
+      toasty(msg("Post removed from favorites"));
     }
   }
 
@@ -188,8 +164,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
       if (!commentThreadAh) {
         console.error("Missing Comment thread for Post", this.hash);
-        return Promise.reject("Missing comment thread for Post");
-        //commentThreadAh = await this.createCommentThread(this.hash);
+        throw Promise.reject("Missing comment thread for Post");
       }
     }
     return commentThreadAh;
@@ -199,18 +174,16 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onTextComment(inputText: string) {
     const commentThreadAh = await this.getCommentThread();
-    /** Publish */
     const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.address.agentId);
     console.log("onTextComment() ah:", ah);
   }
-
 
 
   /** */
   getDeepestElemAt(x: number, y: number): HTMLElement {
     const elem = this.shadowRoot!.elementFromPoint(x, y) as HTMLElement;
     let shadow: HTMLElement = elem;
-    let shadower;
+    let shadower: HTMLElement | undefined = undefined;
     do {
       shadower = undefined;
       if (shadow.shadowRoot) {
@@ -239,7 +212,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<post-item>.override render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
+    console.log("<post-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
     if (!this.hash) {
       return html`<div>No post selected</div>`;
     }
@@ -262,20 +235,18 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** Determine the comment button to display depending on current comments for this message */
     const commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
-    let commentThread = undefined;
+    let commentThread: Thread | undefined = undefined;
     let canNotifyAll = false;
     if (commentThreadAh) {
       commentThread = this.threadsPerspective.threads.get(commentThreadAh);
       canNotifyAll = this._dvm.threadsZvm.perspective.getNotifSetting(commentThreadAh, this.cell.address.agentId) == NotifySetting.AllMessages;
     }
-    console.log("<post-item>.override render() comment", canNotifyAll, commentThreadAh)
-
+    console.log("<post-item>.render() comment", canNotifyAll, commentThreadAh)
 
     const menuButton = html`
         <ui5-button id="menu-btn" icon="overflow" tooltip=${msg('More')} design="Transparent" style="border:none;"
                     @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
-                        //console.log("onSettingsMenu()", e);
                         const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
                         const btn = this.shadowRoot!.getElementById("menu-btn") as Button;
                         menu.showAt(btn);
@@ -439,7 +410,6 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       console.log("<create-post-panel> startPublishFile callback", eh);
       /*let ah = await */ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, commentThreadAh);
       this._splitObj = undefined;
-      //this.dispatchEvent(new CustomEvent('created', {detail: ah, bubbles: true, composed: true}));
     });
     console.log("onUploadComment()", this._splitObj);
   }

@@ -9,29 +9,6 @@ import {ppName} from "../utils";
 import {AgentId} from "@ddd-qc/lit-happ";
 import {ParticipationProtocol} from "../bindings/threads.types";
 
-// /** Importing this from holochain will cause jest to fail */
-// function encodeHashToBase64(hash: Uint8Array) {
-//   return `u${Base64.fromUint8Array(hash, true)}`;
-// }
-
-
-/** */
-export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
-  let beginning = 0;
-  let end = 0;
-  for (const ts of Object.values(tss)) {
-    if (ts < beginning) {
-      beginning = ts;
-      continue;
-    }
-    if (ts > end) {
-      end = ts;
-      continue;
-    }
-  }
-  return new TimeInterval(beginning, end);
-}
-
 
 /**
  * Holds BinaryTree of BeadLinks and probing TimeIntervals
@@ -40,27 +17,23 @@ export class Thread {
 
   /* Participation Protocol */
   private _pp: ParticipationProtocol;
-  /* Flag if first node is the oldest node possible */
-  private _hasSearchedOldestBead: boolean = false;
-  /* CreationTime of the thread's PP entry */
+  /* Author of the thread's PP entry */
   private _author: AgentId;
   /* CreationTime of the thread's PP entry */
   private _creationTime: Timestamp;
+  /* Flag if first node is the oldest node possible */
+  private _hasSearchedOldestBead: boolean = false;
   /* Logged last known bead */
   private _latestProbeLogTime: Timestamp;
-
   /* Tree of BeadLinks keyed by creation time */
   private _beadLinksTree: Tree<number, BeadLinkMaterialized>;
-
   /* Time interval of the probed beads */
   private _probedTimeIntervals: [Timestamp, TimeInterval][] = [];
-
-  //private _isHidden: boolean = false;
 
 
   /** Ctor */
   constructor(pp: ParticipationProtocol, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
-    console.log("New Thread() dnaOriginTime", dnaOriginTime, author);
+    console.debug("New Thread() dnaOriginTime", dnaOriginTime, author);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
     this._creationTime = creationTime;
@@ -110,11 +83,6 @@ export class Thread {
 
   /** -- Setters -- */
 
-  // /** */
-  // setIsHidden(isHidden: boolean): void {
-  //   this._isHidden = isHidden;
-  // }
-
   /** */
   setLatestProbeLogTime(time: Timestamp): void {
     //console.log("setLatestProbeLogTime()", time, this._latestProbeLogTime);
@@ -133,7 +101,6 @@ export class Thread {
 
   /** -- Methods -- */
 
-
   /** */
   hasUnreads(): boolean {
     if (this.latestProbeLogTime) {
@@ -141,35 +108,6 @@ export class Thread {
     }
     return !!this.beadLinksTree.end.key;
   }
-
-
-  // /**  New Items must have overlapping timeInterval with current searchInterval */
-  // addItems(newItems: BeadLink[], searchedInterval?: TimeInterval): void {
-  //   console.log("ThreadInfo.addItems()", newItems.length)
-  //   this.print();
-  //
-  //   if (!searchedInterval) {
-  //     searchedInterval = determineIntervalFromTimestamps(newItems.map((item) => item.indexTime));
-  //   }
-  //   // let union = this._searchedTimeInterval.union(searchInterval);
-  //   // if (!union) {
-  //   //   throw Error("ThreadInfo.addMessages() Failed. New message time interval do not overlap with current searchInterval")
-  //   // }
-  //
-  //   /** Don't add 'Instant' interval */
-  //   if (searchedInterval.end != searchedInterval.begin) {
-  //     this._searchedTimeIntervals.push([Date.now() * 1000, searchedInterval]); // union;
-  //   }
-  //
-  //   for (const bl of Object.values(newItems)) {
-  //     if (this.has(bl)) {
-  //       continue;
-  //     }
-  //     console.log("ThreadInfo.addItems().inserting at", bl.creationTime, encodeHashToBase64(bl.beadAh))
-  //     this._beadLinksTree = this._beadLinksTree.insert(bl.creationTime, bl);
-  //   }
-  //   console.log("ThreadInfo.addItems() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
-  // }
 
 
   /**  */
@@ -234,7 +172,6 @@ export class Thread {
   }
 
 
-
   /** TODO API */
   /** CAUTIOUS between precise time and index-bucket rounded time */
 
@@ -279,25 +216,6 @@ export class Thread {
     console.debug(`getFirst(${n}): found `, res.length, res);
     return res;
   }
-
-
-  // /** Return all items between these time values */
-  // getBetween(begin: number, end: number): BeadLinkMaterialized[] {
-  //   // tree.forEach(visitor(key,value)[, lo[, hi]])
-  //   return [];
-  // }
-  //
-  //
-  // /** Return the first n items starting from */
-  // getNext(begin: number): BeadLinkMaterialized[] {
-  //   return [];
-  // }
-  //
-  //
-  // /** Return the first n items before */
-  // getPrev(begin: number): BeadLinkMaterialized[] {
-  //   return [];
-  // }
 }
 
 

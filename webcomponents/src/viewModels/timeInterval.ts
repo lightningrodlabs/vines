@@ -87,3 +87,21 @@ export class TimeInterval {
     return new TimeInterval(this._begin, this._end + amount);
   }
 }
+
+
+/** */
+export function determineIntervalFromTimestamps(tss: number[]): TimeInterval {
+  let beginning = 0;
+  let end = 0;
+  for (const ts of Object.values(tss)) {
+    if (ts < beginning) {
+      beginning = ts;
+      continue;
+    }
+    if (ts > end) {
+      end = ts;
+      continue;
+    }
+  }
+  return new TimeInterval(beginning, end);
+}

@@ -7,13 +7,13 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {determineSubjectName, MAIN_TOPIC_ID} from "../../utils";
+import {determineSubjectName} from "../../utils";
 import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {getMainThread} from "../../utils_feed";
+import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
 import {SpecialSubjectType} from "../../events";
 
 

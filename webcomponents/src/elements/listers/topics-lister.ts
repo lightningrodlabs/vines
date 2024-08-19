@@ -15,11 +15,11 @@ import {onlineLoadedContext} from "../../contexts";
 @customElement("topics-lister")
 export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
-  /** */
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
+  /** -- Properties -- */
 
   @property() showArchivedTopics?: string;
 
@@ -29,9 +29,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   onlineLoaded!: boolean;
 
 
+  /** -- Methods -- */
+
   /** Don't update during online loading */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
-    //console.log("<topics-lister>.shouldUpdate()", changedProperties, this.onlineLoaded);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;
@@ -55,14 +56,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   onClickEditTopic(topicHash: EntryId, subjectName: string) {
     this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', { detail: {topicHash, subjectName}, bubbles: true, composed: true }));
-
   }
-
 
 
   /** */
   override render() {
-    console.log("<topics-lister>.override render()", this.perspective.semanticTopics);
+    console.log("<topics-lister>.render()", this.perspective.semanticTopics);
     let treeItems = Array.from(this.perspective.semanticTopics.entries()).map(([topicEh, title]) => {
       const isSubjectHidden = this._zvm.perspective.hiddens[topicEh.b64]? this._zvm.perspective.hiddens[topicEh.b64] : false;
       /** Skip if hidden */
@@ -70,12 +69,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         return;
       }
       /** Render threads for Topic */
-      //let threads = [html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`];
       let threads: TemplateResult<1>[] = [];
       let topicThreads = this.perspective.threadsPerSubject.get(topicEh.b64);
       if (topicThreads == undefined) {
         topicThreads = [];
-        //this._zvm.pullSubjectThreads(topicHash).then(() => this.requestUpdate())
       } else {
         topicThreads = topicThreads.sort((a, b) => {
           const nameA = this.perspective.threads.get(a)!.name;
@@ -90,16 +87,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
           const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
-          //const hasNewBeads = thread && thread.hasUnreads();
           const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
-          //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
           const threadIsNew = this.perspective.newThreads.has(ppAh);
-          //console.log("<topics-lister>.override render() thread:", thread.pp.purpose, maybeUnreadThread);
           if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return html``;
           }
-
           /** Determine badge & buttons */
           const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
           let hasUnreadComments = false;
@@ -255,7 +248,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       const topicHasUnreads = unreadSubjects.map((id) => id.b64).includes(topicEh.b64);
 
-      //console.log("<topics-lister>.override render() threads", threads);
+      //console.log("<topics-lister>.render() threads", threads);
       if (threads.length == 0) {
         threads = [html`<div class="threadItem">
                    <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No channels found')}</span>
@@ -307,7 +300,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     });
 
     treeItems = treeItems.filter((value) => value !== undefined);
-    console.log("<topics-lister>.override render() treeItems", treeItems);
+    console.log("<topics-lister>.render() treeItems", treeItems);
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {

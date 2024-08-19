@@ -1,4 +1,4 @@
-import {css, html} from "lit";
+import {css, html, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {
   ActionId,
@@ -28,17 +28,16 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
-
   /** Hash of thread to display */
   @property() threadHash?: ActionId;
 
 
-  /** */
-  override async getUpdateComplete(): Promise<boolean> {
-    //console.log("ChatView.msg.getUpdateComplete()")
-    const superOk = await super.getUpdateComplete();
-    return superOk;
-  }
+  // /** */
+  // override async getUpdateComplete(): Promise<boolean> {
+  //   //console.log("ChatView.msg.getUpdateComplete()")
+  //   const superOk = await super.getUpdateComplete();
+  //   return superOk;
+  // }
 
 
   /* */
@@ -72,7 +71,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-header>.override render():", this.threadHash);
+    console.log("<chat-header>.render():", this.threadHash);
     if (!this.threadHash) {
       return html`<div>Thread hash missing</div>`;
     }
@@ -91,10 +90,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     if (subjectHashType == HoloHashType.Entry) {
       maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectAddr));
     }
-    console.log("subjectHashType", subjectHashType);
+    console.debug("subjectHashType", subjectHashType);
     const subjectId = ActionId.from(intoAnyId(subjectAddr));
-    let title;
-    let subText;
+    let title: TemplateResult<1>;
+    let subText: TemplateResult<1>;
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy channel to clipboard')} @click=${(e:any) => {
             e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
@@ -104,9 +103,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
     if (maybeSemanticTopicTitle) {
       title = html`Welcome to ${thread.name} !`;
-      subText = msg(`This is the start of a channel about topic`) + " " + subjectName;
+      subText = html`${msg("This is the start of a channel about topic")} ${subjectName}`;
     } else {
-      console.log("<chat-header>.override render(): pp.subjectHash", thread.pp.subject.address);
+      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
@@ -118,7 +117,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
                       </span>`;
       } else {
         title = html`${msg("Comments about")} <span class="subjectName">${subjectName}</span>`;
-        subText = msg(`This is the start of a comment thread about a`) + ` "${thread.pp.subject.typeName}": ${thread.pp.purpose}`;
+        subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName}: ${thread.pp.purpose}`;
       }
     }
 
@@ -131,7 +130,6 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <!-- <div class="subtext">Purpose: ${thread.pp.purpose}</div> -->
           <div class="subtext">${msg("Rules")}: ${thread.pp.rules}</div>
         </div>
-        <!-- <hr style="margin-bottom:0px"/> -->
     `;
   }
 

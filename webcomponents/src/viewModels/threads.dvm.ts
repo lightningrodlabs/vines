@@ -325,20 +325,19 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** Dump perspective as JSON */
   exportPerspective(): string {
-    //console.log("Dvm.exportPerspective()", name)
+    console.debug("Dvm.exportPerspective()", name)
     const dvmExport: any = {};
-    //for (const [name, zvm] of Object.entries(this._zomeViewModels)) {
+
     const tJson = this.threadsZvm.export(this.authorshipZvm);
     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
 
     const pJson = this.profilesZvm.export(/*this.authorshipZvm*/);
     dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
-    //}
 
     console.log("Dvm.exportPerspective()", this.authorshipZvm.perspective);
     const oJson = this.authorshipZvm.export();
-    dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
 
+    dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);
 
     return JSON.stringify(dvmExport, null, 2);
   }
@@ -346,22 +345,20 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async importPerspective(json: string, canPublish: boolean) {
-    //console.log("Dvm.importPerspective()", json)
-
-    // for (const [_name, zvm] of Object.entries(this._zomeViewModels)) {
-    //   zvm.importPerspective();
-    // }
-
+    console.debug("Dvm.importPerspective()", json)
     const external = JSON.parse(json) as any;
-    const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
-    const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
-    const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
 
+    const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
+    console.debug("import perspective", this.authorshipZvm.perspective);
+
+    const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     this.profilesZvm.import(JSON.stringify(profiles), canPublish);
+
+    const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
     this.threadsZvm.import(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
 
-    console.log("import perspective", this.authorshipZvm.perspective);
+    /** */
     this.notifySubscribers();
   }
 }

@@ -31,60 +31,48 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-
-  @property({type: Boolean}) feed = false
-
   @consume({ context: globaFilesContext, subscribe: true })
   filesDvm!: FilesDvm;
 
-  // @consume({ context: wePerspectiveContext, subscribe: true })
-  // wePerspective!: WePerspective;
-
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
+
+  @property({type: Boolean}) feed = false
 
 
   /** -- Methods -- */
 
   /** */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<notification-list>.dvmUpdated()");
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
   }
 
 
   /** */
   override render() {
-    console.log("<notification-list>.override render()", this.threadsPerspective.inbox.size);
+    console.log("<notification-list>.render()", this.threadsPerspective.inbox.size);
     if (this.threadsPerspective.inbox.size == 0) {
       return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }
 
     let notifsLi = Array.from(this.threadsPerspective.inbox.entries()).map(
       ([linkAh, [_ppAh, notif]]) => {
-
         /** Content */
         const [notifTitle, notifBody, _jump] = this.feed
           ? composeFeedNotificationTitle(notif, this._dvm, this.filesDvm, this.weServices)
           : composeNotificationTitle(notif, this._dvm.threadsZvm, this.filesDvm, this.weServices);
-
         /** Author */
         const author = notif.author;
         const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author)
         const agentName = maybeProfile? maybeProfile.nickname : "unknown";
-
         /** Timestamp */
         const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const date_str = date.toLocaleString('en-US', {hour12: false});
         const date_str = timeSince(date) + " ago";
-
         const title = truncate(notifTitle, 120, true);
-
         /** */
         return html`
           <ui5-li-notification 

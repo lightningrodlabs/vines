@@ -19,27 +19,26 @@ export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentId, siz
 }
 
 
-
-export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId) {
+/** Get profile for agent, otherwise fetch it from DHT and return unknown Profile */
+export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): ProfileMat {
   let profile = {nickname: "unknown", fields: {}} as ProfileMat;
   const maybeAgent = profilesZvm.perspective.getProfile(agentKey);
   if (maybeAgent) {
     profile = maybeAgent;
   } else {
     console.log("Profile not found for agent", agentKey, profilesZvm.perspective.profiles)
-    profilesZvm.findProfile(agentKey)
+    /* await */ profilesZvm.findProfile(agentKey);
     //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
   }
   return profile;
 }
 
 
-/** */
+/** Render ui5-avatar with profile pic */
 export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?:string) {
     const initials = getInitials(profile.nickname);
     const avatarUrl = profile.fields['avatar'];
     const slot = slotArg? slotArg : "avatar";
-    //console.log("renderAvatar()", initials, avatarUrl);
     return avatarUrl? html`
               <ui5-avatar size=${size} class=${classArg} slot=${slot}>
                   <img src=${avatarUrl} style="object-fit: cover;">
@@ -50,15 +49,14 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
 }
 
 
-
-
-/** Return [notifTitle, notifBody] */
+/** Return [notifTitle, notifBody, jumpEvent] */
 export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string, CustomEvent<JumpEvent>] {
     let title: string = "";
     let content: string = "";
     let jump: CustomEvent<JumpEvent> | undefined = undefined;
     const ah = notif.content;
-    if (NotifiableEvent.Mention === notif.event) {
+    switch (notif.event) {
+      case NotifiableEvent.Mention: {
         jump = beadJumpEvent(ah);
         const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         title = msg("Mention");
@@ -71,7 +69,8 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
     }
-    if (NotifiableEvent.NewBead === notif.event) {
+    break;
+    case NotifiableEvent.NewBead: {
       jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
       if (!beadInfo) {
@@ -91,7 +90,8 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
       }
     }
-    if (NotifiableEvent.Reply === notif.event) {
+    break;
+    case NotifiableEvent.Reply: {
       jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
         if (!beadInfo) {
@@ -105,7 +105,8 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
     }
-    if (NotifiableEvent.Fork === notif.event) {
+    break;
+    case NotifiableEvent.Fork: {
         jump = threadJumpEvent(ah);
         const maybeThread = threadsZvm.perspective.threads.get(ah);
         title = msg("New channel");
@@ -117,13 +118,16 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             content = msg("Rules") + ": " + maybeThread.pp.rules;
         }
     }
-    if (NotifiableEvent.NewDmThread === notif.event) {
+    break;
+    case NotifiableEvent.NewDmThread: {
       title = msg("New DM channel");
     }
-    if (!jump) {
-      throw Error("Unhandled Even type");
+    break;
+    default:
+      throw Error("Unhandled Event type");
+      break;
     }
-    return [title, content, jump];
+    return [title, content, jump!];
 }
 
 

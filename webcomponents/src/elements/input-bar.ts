@@ -135,7 +135,6 @@ export class InputBar extends LitElement {
   }
 
 
-
   /** */
   handleSuggestingKeydown(e:any) {
     //console.log("Keydown keyCode", e.keyCode);
@@ -246,7 +245,7 @@ export class InputBar extends LitElement {
 
   /** */
   override render() {
-    console.log("<vines-input-bar>.override render()", this.cachedInput, this._wal, this.profilesZvm);
+    console.log("<vines-input-bar>.render()", this.cachedInput, this._wal, this.profilesZvm);
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
@@ -278,7 +277,7 @@ export class InputBar extends LitElement {
           return index !== -1;
         })
         .map(([agentKey, _profile]) => agentKey);
-      //console.log("<vines-input-bar>.override render() filtered", filtered);
+      //console.log("<vines-input-bar>.render() filtered", filtered);
       if (filtered.length != 0) {
         suggestionKeys = filtered;
       }

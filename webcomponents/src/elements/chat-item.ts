@@ -65,53 +65,36 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    //console.log("<chat-item>.dvmUpdated()");
     if (oldDvm) {
-      //console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    //console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
   }
-
-
-  // /** */
-  // protected async updated(_changedProperties: PropertyValues) {
-  //   // try {
-  //   //   const childElements = this.shadowRoot!.querySelectorAll('*');
-  //   //   console.log({childElements}); // This will log all child elements of the shadowRoot
-  //   //   childElements.forEach(async(childElement) => {
-  //   //     const chatItem = childElement as ChatMessageItem;
-  //   //     await chatItem.updateComplete;
-  //   //   });
-  //   //   console.log("ChatView.updated2() ", this.chatElem.scrollTop, this.chatElem.scrollHeight, this.chatElem.clientHeight)
-  //   // } catch(e:any) {
-  //   //   // element not present
-  //   //   //this.requestUpdate();
-  //   // }
-  // }
-  //
-  //
-  // /** */
-  // async getUpdateComplete(): Promise<boolean> {
-  //   //console.log("ChatView.msg.getUpdateComplete()")
-  //   const superOk = await super.getUpdateComplete();
-  //   //const childOk = await this.chatElem.updateComplete;
-  //   // const childElements = this.shadowRoot!.querySelectorAll('*');
-  //   // console.log("ChatView.msg children", childElements); // This will log all child elements of the shadowRoot
-  //   // childElements.forEach(async(childElement) => {
-  //   //   const chatItem = childElement// as ChatMessageItem;
-  //   //   //await chatItem.updateComplete;
-  //   //   console.log("ChatView.msg child height", /*chatItem.offsetHeight,*/ chatItem.scrollHeight, chatItem.clientHeight, chatItem);
-  //   // });
-  //   return superOk /*&& childOk*/;
-  // }
 
 
   /** Probe bead and its reactions */
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.loadBead();
+  }
+
+
+  /** */
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
+    if (this._dvm && (changedProperties.has("hash"))) {
+      this.loadBead();
+    }
+  }
+
+  /** */
+  protected override async updated(_changedProperties: PropertyValues) {
+    /** Fiddle with shadow CSS */
+    const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
+    if (popover) {
+      popover.shadowRoot!.appendChild(popoverStyleTemplate.content.cloneNode(true));
+    }
   }
 
 
@@ -126,26 +109,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  protected override willUpdate(changedProperties: PropertyValues<this>) {
-    super.willUpdate(changedProperties);
-    //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
-    if (this._dvm && (changedProperties.has("hash"))) {
-      this.loadBead();
-    }
-  }
-
-
-  /** */
-  protected override async updated(_changedProperties: PropertyValues) {
-    /** Fiddle with shadow CSS */
-    const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
-    if (popover) {
-      popover.shadowRoot!.appendChild(popoverStyleTemplate.content.cloneNode(true));
-    }
-  }
-
-
-  /** */
   onClickComment(maybeCommentThread: ActionId | null, subjectName?: string, subjectType?: string, viewType?: string) {
     this.dispatchEvent(new CustomEvent('commenting-clicked', {
       detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
@@ -153,7 +116,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       composed: true,
     }));
   }
-
 
   /** */
   onClickReply() {
@@ -168,10 +130,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-
   /** */
   onMoreMenu(e:any) {
-    console.log("onMoreMenu item-click", e)
+    console.debug("onMoreMenu item-click", e)
     switch (e.detail.item.id) {
       case "addReaction": this.onClickAddEmoji(); break;
       case "addFavorite": this.updateFavorite(this.hash, true); break;
@@ -194,19 +155,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         toasty(msg("Copied Message's WAL to clipboard"));
       break;
       case "copyText": /* TODO */break;
-      case "flagMessage": /* TODO */  break;
+      case "flagMessage": /* TODO */ break;
     }
   }
 
 
-
+  /** */
   async updateFavorite(beadAh: ActionId, canAdd: boolean) {
     if (canAdd) {
       await this._dvm.threadsZvm.addFavorite(beadAh);
-      toasty("Message added to favorites");
+      toasty(msg("Message added to favorites"));
     } else {
       await this._dvm.threadsZvm.removeFavorite(beadAh);
-      toasty("Message removed from favorites");
+      toasty(msg("Message removed from favorites"));
     }
   }
 
@@ -266,7 +227,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-item>.override render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices);
+    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices);
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
@@ -298,7 +259,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     /** Determine the comment button to display depending on current comments for this message */
     const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
-    //let isUnread = false;
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip=${msg("Create comment thread for this message")} design="Transparent" style="border:none;"
@@ -320,7 +280,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         for (const bead of thread.beadLinksTree.values) {
           const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(bead.beadAh);
           if (!beadInfo) {
-            console.warn("Bead not found in <chat-item>.override render()", bead.beadAh);
+            console.warn("Bead not found in <chat-item>.render()", bead.beadAh);
             continue;
           }
           if (!authors[beadInfo.author.b64]) {
@@ -354,7 +314,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
-    //console.log("<chat-item>.override render() maybeCommentThread", maybeCommentThread, commentThread);
+    //console.log("<chat-item>.render() maybeCommentThread", maybeCommentThread, commentThread);
 
     const menuButton = html`
         <ui5-button id="menu-btn" icon="overflow" tooltip=${msg('More')} design="Transparent" style="border:none;"

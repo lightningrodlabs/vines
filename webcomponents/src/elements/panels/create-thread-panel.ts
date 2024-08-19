@@ -16,14 +16,6 @@ import {FilesDvm} from "@ddd-qc/files";
 import {SpecialSubjectType} from "../../events";
 
 
-/** */
-export interface CreateThreadRequest {
-  purpose: string,
-  rules: string,
-  wurl: string,
-}
-
-
 /**
  * @element
  */
@@ -34,6 +26,8 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
+  /** -- Properties -- */
+
   @consume({ context: globaFilesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
@@ -41,6 +35,9 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
   weServices?: WeServicesEx;
 
   @state() private _creating = false;
+
+
+  /** -- Methods -- */
 
   /** */
   async onCreate() {
@@ -83,8 +80,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
     if (this._creating) {
       return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
-
-    /** */
+    /** Render all */
     return html`
       <section>
           <div>
@@ -106,10 +102,10 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       </section>
       <div slot="footer" class="footer">
         <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e:any) => this.onCreate()}>
-            Create
+            ${msg("Create")}
         </ui5-button>
         <ui5-button style="margin-top:5px" @click=${(_e:any) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}>
-            Cancel
+            ${msg("Cancel")}
         </ui5-button>
       </div>
     `;

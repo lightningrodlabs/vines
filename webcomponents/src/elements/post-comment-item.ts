@@ -56,19 +56,16 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({context: globaFilesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  //@state() private _loading = true;
 
-
-  /**
-   * In dvmUpdated() this._dvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+  /** In dvmUpdated() this._dvm is not already set! */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.log("<post-comment-item>.dvmUpdated()", this.hash, newDvm);
+    /** Subscribe to ThreadsZvm */
     if (oldDvm) {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+    /** */
     let beadInfo = newDvm.threadsZvm.perspective.getBeadInfo(this.hash);
     let typedBead = newDvm.threadsZvm.perspective.getBead(this.hash);
     let beadType;
@@ -92,7 +89,6 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   renderContent(): [TemplateResult<1>, AgentId | undefined, Date | undefined] {
     let content = html``;
-
     if (!this.hash) {
       content = html`<span style="color:red">missing hash</span>`;
       return [content, undefined, undefined];
@@ -102,10 +98,9 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       content = html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       return [content, undefined, undefined];
     }
-
+    /** */
     const [beadInfo, typedBead] = maybePair;
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-
     switch(beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
         const tm = typedBead as TextBeadMat;
@@ -141,7 +136,8 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           `;
           } else {
             content = html`
-              <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
+              <div .id=${id} 
+                   style="color:#8a0cb7; cursor:pointer; overflow: auto;"
                    @click=${(_e:any) => {if (this.weServices) this.weServices.openWal(wal)}}>
                   ${maybeInfo.assetInfo.name}
               </div>
@@ -159,10 +155,10 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
                               @click=${(_e:any) => {
-            this._filesDvm.downloadFile(manifestEh);
-            toasty("File downloaded: " + desc.name);
-          }}>
-                         File: ${desc.name} (${prettyFileSize(desc.size)})
+                                this._filesDvm.downloadFile(manifestEh);
+                                toasty(`${msg("File downloaded")}: ${desc.name}`);
+                          }}>
+                            ${msg("File")}: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;
         }
         break;
@@ -187,13 +183,13 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<post-comment-item>.override render()", this.hash);
+    console.log("<post-comment-item>.render()", this.hash);
 
     const [content, author, date] = this.renderContent();
     const agentName = author && this._dvm.profilesZvm.perspective.getProfile(author)? this._dvm.profilesZvm.perspective.getProfile(author)!.nickname : "unknown";
     const date_str = date? timeSince(date) : "unknown date";
 
-    /* render item */
+    /* render all */
     return html`
     <div id="sideItem">
         <div id="avatarColumn">
@@ -205,13 +201,13 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
                       this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
                     }
                 }}>
-                ${author? renderAvatar(this._dvm.profilesZvm, author, "XS") : html``}                
+                ${author? renderAvatar(this._dvm.profilesZvm, author, "XS") : html``}
             </div>
         </div>
         <div id="sideContentColumn">
           <div class="nameColumn" style="display:flex; flex-direction:column;">
               <span class="sideAgentName" style="font-size: 0.8em">${agentName}</span>
-              ${content}              
+              ${content}
           </div>
           <div class="underRow">
               <div>${date_str}</div>
@@ -232,7 +228,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
       codeStyles,
       sharedStyles,
       css`
-        
+
         .textBtn {
           font-weight: bold;
         }
@@ -247,27 +243,27 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           /*padding: 5px;*/
           /*gap:5px;*/
         }
-        
+
         #avatarColumn {
           padding-top: 8px;
         }
-        
+
         .nameColumn {
           background: #eee;
           border-radius: 10px;
           padding-top: 2px;
           padding-bottom: 8px;
-          padding-left: 8px;          
+          padding-left: 8px;
         }
         #sideContentColumn {
           display: flex;
           flex-direction: column;
           flex-grow: 1;
-          padding: 5px;          
+          padding: 5px;
         }
-        
+
         .underRow {
-          display: flex; 
+          display: flex;
           flex-direction: row;
           gap: 15px;
           font-size: 0.75em;

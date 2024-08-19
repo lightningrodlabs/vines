@@ -14,6 +14,7 @@ import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 
+
 /** Crop the image and return a base64 bytes string of its content */
 export function resizeAndExport(img: HTMLImageElement) {
   const MAX_WIDTH = 300;
@@ -54,19 +55,13 @@ export function resizeAndExport(img: HTMLImageElement) {
 @customElement("vines-edit-profile")
 export class EditProfile extends LitElement {
 
-  /**
-   * The profile to be edited.
-   */
+  /** The profile to be edited. */
   @property({ type: Object })
   profile: ProfileMat | undefined = undefined;
 
-  /**
-   * Label for the save profile button.
-   */
+  /** Label for the save profile button. */
   @property({ type: String, attribute: 'save-profile-label' })
   saveProfileLabel: string | undefined;
-
-  /** Dependencies */
 
   @property()
   avatarMode: string = "";
@@ -76,12 +71,9 @@ export class EditProfile extends LitElement {
 
   @state() private _avatar: string | undefined;
 
-  /** Private properties */
 
   @query('#nickname-field')
   private _nicknameField!: Input;
-
-  //private _existingUsernames: { [key: string]: boolean } = {};
 
   @query('#avatar-file-picker')
   private _avatarFilePicker!: HTMLInputElement;
@@ -98,6 +90,7 @@ export class EditProfile extends LitElement {
     super.disconnectedCallback();
     this.removeEventListener('keyup', this.onKeyUp);
   }
+
 
   /** */
   async onKeyUp(e:any) {
@@ -174,14 +167,12 @@ export class EditProfile extends LitElement {
 
   /** */
   shouldSaveButtonBeEnabled() {
-    //console.log("shouldSaveButtonBeEnabled() this._nicknameField", this._nicknameField);
-    if (!this._nicknameField || !this._nicknameField.value) return false;
-    //if (!this._nicknameField.validity.valid) return false;
-    if (this.avatarMode === 'avatar-required' && !this._avatar)
+    if (!this._nicknameField || !this._nicknameField.value) {
       return false;
-    // if (Object.values(this.getAdditionalTextFields()).find(t => !t.validity.valid)) {
-    //   return false;
-    // }
+    }
+    if (this.avatarMode === 'avatar-required' && !this._avatar) {
+      return false;
+    }
     return true;
   }
 
@@ -195,22 +186,18 @@ export class EditProfile extends LitElement {
   /** */
   getAdditionalFieldsValues(): Record<string, string> {
     const textfields = this.getAdditionalTextFields();
-
     const values: Record<string, string> = {};
     for (const [id, textfield] of Object.entries(textfields)) {
       values[id] = textfield.value;
     }
-
     return values;
   }
 
 
   /** */
   getAdditionalTextFields(): Record<string, Input> {
-    const textfields = Array.from(
-      this.shadowRoot!.querySelectorAll('mwc-textfield')
-    ).filter(f => f.id !== 'nickname-field') as Input[];
-
+    const textfields = Array.from(this.shadowRoot!.querySelectorAll('mwc-textfield'))
+      .filter(f => f.id !== 'nickname-field') as Input[];
     const fields: Record<string, Input> = {};
     for (const field of textfields) {
       const id = this.textfieldToFieldId(field);
@@ -244,7 +231,6 @@ export class EditProfile extends LitElement {
     console.log({colorPicker});
     fields['color'] = colorPicker.value? colorPicker.value : "";
 
-
     const profile: ProfileMat = {
       fields,
       nickname,
@@ -273,7 +259,6 @@ export class EditProfile extends LitElement {
 
   /** */
   async handleLangChange(_e: any) {
-    //console.log({langChangeEvent: e});
     const langRadioGroup = this.shadowRoot!.getElementById("langRadioGroup") as any;
     console.log({langRadioGroup});
     const lang = langRadioGroup.value;
@@ -284,7 +269,7 @@ export class EditProfile extends LitElement {
 
   /** */
   override render() {
-    console.log("<edit-profile> override render()", this.profile);
+    console.log("<edit-profile>.render()", this.profile);
 
     return html`
       <section>
@@ -305,7 +290,6 @@ export class EditProfile extends LitElement {
                       .value=${this.profile?.nickname || ''}
                       style="margin-left: 8px;"
                       @input=${(_e:any) => {
-                        //console.log("nickname input wtf", e)
                         if (this._nicknameField.value.length > 0) {
                             this._nicknameField.valueState = ValueState.None;
                         } else {
@@ -321,7 +305,7 @@ export class EditProfile extends LitElement {
           <div class="row" style="justify-content: center; margin-bottom: 18px; align-self: start;" >
               <span style="font-size:18px;padding-right:10px;padding-top:5px;">${msg('Color')}:</span>
               <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format='rgb'
-                               value=${this.profile?.fields['color']}></sl-color-picker>
+                               .value=${this.profile?.fields['color']}></sl-color-picker>
           </div>
 
             <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
@@ -346,8 +330,7 @@ export class EditProfile extends LitElement {
                 style="flex:1; margin-top:15px;"
                 @click=${() => this.fireCancel()}
               >${msg("Cancel")}</ui5-button>
-              `
-              : html``
+              ` : html``
             }
           </div>
       
@@ -356,18 +339,7 @@ export class EditProfile extends LitElement {
   }
 
 
-  // /**
-  //  * @ignore
-  //  */
-  // static get scopedElements() {
-  //   return {
-  //     'sl-radio-group': SlRadioGroup,
-  //     'sl-radio': SlRadio,
-  //     'sl-avatar': SlAvatar,
-  //     'sl-color-picker': SlColorPicker,
-  //   };
-  // }
-
+  /** */
   static override styles = [css`
 
     sl-radio {

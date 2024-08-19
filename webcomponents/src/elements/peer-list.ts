@@ -25,7 +25,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
   /** */
   override render() {
-    console.log("<peer-list> override render()", this.perspective);
+    console.log("<peer-list>.render()", this.perspective);
 
     if (this.perspective.profiles.size === 0) {
       return html`<li>${msg('no profiles found')}</li>`;

@@ -19,6 +19,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {FilesDvm} from "@ddd-qc/files";
 import {toasty} from "../toast";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -27,7 +28,6 @@ import {toasty} from "../toast";
 @customElement("favorites-view")
 export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
-  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
@@ -64,38 +64,26 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<favorites-view>.dvmUpdated()");
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name);
-    //this.loadFavorites(newDvm);
   }
-
-
-  // /** */
-  // loadFavorites(newDvm?: ThreadsDvm) {
-  //   this._loading = true;
-  //   const dvm = newDvm? newDvm : this._dvm;
-  //   dvm.threadsZvm.pullFavorites().then(() => this._loading = false);
-  // }
 
 
   /** */
   override render() {
-    console.log("<favorites-view>.override render()", this._dvm.threadsZvm.perspective.favorites);
+    console.log("<favorites-view>.render()", this._dvm.threadsZvm.perspective.favorites);
 
-    const doodle_bg =  html `
+    const doodle_bg =  html`
           <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
           </div>
     `;
 
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
-      return html `
+      return html`
           ${doodle_bg}
-          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">No favorites</div>
+          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">${msg("No favorites")}</div>
       `;
     }
 
@@ -106,22 +94,18 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
       .map((beadAh) => html`<side-item .hash=${beadAh} deletable="true" 
                                        @deleted=${async(_e:any) => {
                                         await this._dvm.threadsZvm.removeFavorite(beadAh);
-                                        toasty("Message removed from favorites");
+                                        toasty(msg("Message removed from favorites"));
                                     }}></side-item>`);
 
     /** Different UI if no message found for thread */
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
       beadLi = [html`
             <ui5-li style="background: ${bg_color};">
-                "No favorites found"                     
+                ${msg("No favorites found")}                     
             </ui5-li>`]
     }
-
-
-
-    const title = `Favorites`;
-
     /** render all */
+    const title = msg("Favorites");
     return html`
         ${doodle_bg}
         <h3 style="margin: 10px;font-size: 25px; color: #021133;">${title}</h3>

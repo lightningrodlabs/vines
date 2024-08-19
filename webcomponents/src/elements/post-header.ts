@@ -7,12 +7,11 @@ import {sharedStyles} from "../styles";
 import {renderAvatar} from "../render";
 
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
-import {MAIN_TOPIC_ID} from "../utils";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {weClientContext} from "../contexts";
 import {consume} from "@lit/context";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {getMainThread} from "../utils_feed";
+import {getMainThread, MAIN_TOPIC_ID} from "../utils_feed";
 
 
 /**
@@ -57,31 +56,19 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!this.inputElem.value || this.inputElem.value.length == 0) {
       return;
     }
-    // const threads = this._dvm.threadsZvm.perspective.threadsPerSubject[MAIN_TOPIC_HASH];
-    // if (!threads || threads.length == 0) {
-    //   return;
-    // }
-    // const mainThreadAh = threads[0];
     const mainThreadAh = getMainThread(this._dvm);
-
     console.log(`commitInput() value "${this.inputElem.value}"`, mainThreadAh);
-    //this.dispatchEvent(new CustomEvent('input', {detail: this.inputElem.value, bubbles: true, composed: true}));
-
     const inputText = this.inputElem.value;
     let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh!, this.cell.address.agentId);
     console.log("commitInput() res:", res);
-
     this.inputElem.value = "";
-    //this._cacheInputValue = "";
   }
 
 
   /** */
   override render() {
-    console.log("<post-header>.override render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64));
-
+    console.log("<post-header>.render() mainThreadContext", this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64));
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
-
     /** render all */
     return html`
         <div id="post-header">

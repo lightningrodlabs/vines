@@ -72,13 +72,14 @@ import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {Decoder, Encoder} from "@msgpack/msgpack";
-import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID, parseMentions, weaveUrlToWal} from "../utils";
+import {parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
 import {THIS_APPLET_ID} from "../contexts";
 import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
 import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
+import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 
 
 //generateSearchTest();
@@ -113,20 +114,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     let hasChanged = true; // TODO
     return hasChanged;
   }
-
-
-  // /** Notify subscribers */
-  // /** TODO: structuredClone() fails because of Thread class. Refactor to a state object instead */
-  // protected notifySubscribers(): boolean {
-  //   if (!this.hasChanged()) return false;
-  //   //this._previousPerspective = structuredClone(this.perspective);
-  //   this._previousPerspective = this.perspective;
-  //   for (const [host, propName] of this._providedHosts) {
-  //     (host as any)[propName] = this._previousPerspective;
-  //   }
-  //   this._dvmParent.zvmChanged(this);
-  //   return true;
-  // }
 
 
   /** Dump perspective as JSON (caller should call getAllPublicManifest() first) */
@@ -222,21 +209,21 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Query all entries from local source-chain */
   override async initializePerspectiveOffline(): Promise<void> {
-    console.log("threadsZvm.initializePerspectiveOffline() START");
+    console.debug("threadsZvm.initializePerspectiveOffline() START");
     await this.zomeProxy.queryAll();
-    console.log("threadsZvm.initializePerspectiveOffline() END");
+    console.debug("threadsZvm.initializePerspectiveOffline() END");
   }
 
 
   /** */
   override async initializePerspectiveOnline(): Promise<void> {
-    console.log("threadsZvm.initializePerspectiveOnline() START");
+    console.debug("threadsZvm.initializePerspectiveOnline() START");
     await this.zomeProxy.probeAllHiddens();
     await this.zomeProxy.pullAllSemanticTopics();
     await this.pullAppletIds();
     await this.pullAllSubjects();
     await this.zomeProxy.probeDmThreads();
-    console.log("threadsZvm.initializePerspectiveOnline() END");
+    console.debug("threadsZvm.initializePerspectiveOnline() END");
   }
 
 
@@ -248,7 +235,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async probeAllInnerAsync() {
-    console.log("threadsZvm.probeAllInner()", this._perspective.getAllSubjects().length)
+    console.debug("threadsZvm.probeAllInner()", this._perspective.getAllSubjects().length)
     await this.initializePerspectiveOnline();
     /** Grab all threads of other subjects to see if there are new ones */
     let probes: Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>>[] = [];
@@ -266,6 +253,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** -- */
 
+  /** Feed specific */
   storeMainTopic() {
     this._perspective.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
   }
@@ -326,7 +314,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async findSubjects(appletId: EntryId, typePathEh: EntryId): Promise<[DnaId, AnyId][]> {
     const subjectType = this._perspective.getSubjectType(appletId, typePathEh);
     if (!subjectType) {
-      return Promise.reject("Unknown appletId or typePathHash");
+      throw Promise.reject("Unknown appletId or typePathHash");
     }
     const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType});
     const subjectB64s: [DnaId, AnyId][] = subjects.map(([dnaHash, subjectHash]) => [new DnaId(dnaHash), intoAnyId(subjectHash)]);
@@ -458,13 +446,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Try to get older beads from the currently known oldest bead of a thread */
   async probePreviousBeads(ppAh: ActionId, limit: number): Promise<BeadLink[]> {
-    // if (this.reachedBeginning(ppAh)) {
-    //   return [];
-    // }
     const thread = this._perspective.threads.get(ppAh);
     console.log("probePreviousBeads", ppAh, thread);
     if (!thread) {
-      return Promise.reject("No Thread data found for given ParticipationProtocol");
+      throw Promise.reject("No Thread data found for given ParticipationProtocol");
     }
     // const oldestTime = thread.beadLinksTree.begin.key;
     const oldestTime = thread.probedUnion? thread.probedUnion.begin : undefined;
@@ -481,9 +466,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (!thread) {
       // await this.fetchPp(ppAh);
       // thread = this._threads.get(ppAh);
-      if (!thread) {
-        return Promise.reject("Unknown thread: " + ppAh);
-      }
+      //if (!thread) {
+      throw Promise.reject("Unknown thread: " + ppAh);
+      //}
     }
     if (!prevBeadAh) {
       const lastKnownBeadOnThread = thread.getLast(1);
@@ -661,7 +646,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     const [pp, ts, author] = await this.zomeProxy.fetchPp(ppAh.hash);
     if (pp === null) {
-      Promise.reject("ParticipationProtocol not found at " + ppAh)
+      throw Promise.reject("ParticipationProtocol not found at " + ppAh)
     }
     console.log("ThreadsZvm.fetchPp() pp", pp);
     //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
@@ -673,10 +658,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<[TypedBead, BeadType, Timestamp, AgentId]> {
     console.log("fetchUnknownBead()", beadAh);
     const beadInfo = this._perspective.getBeadInfo(beadAh);
+    /** Return info if bead already stored */
     if (beadInfo) {
       const typed = this._perspective.getBead(beadAh);
       return [dematerializeTypedBead(typed!, beadInfo.beadType), beadInfo.beadType, beadInfo.creationTime, beadInfo.author];
     }
+    /** */
     let bead_ah = beadAh.hash;
     let creationTime: Timestamp;
     let author: Uint8Array;
@@ -694,7 +681,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             type = ThreadsEntryType.EncryptedBead;
           } catch (e:any) {
             //console.error(e:any);
-            return Promise.reject(`Bead not found at hash ${beadAh.b64} : ${e}`);
+            throw Promise.reject(`Bead not found at hash ${beadAh.b64} : ${e}`);
           }
         } else {
           type = ThreadsEntryType.AnyBead;
@@ -708,8 +695,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       type = ThreadsEntryType.TextBead;
       [creationTime, author, typed] = textTuple;
     }
-    //const ts = alternateCreationTime? alternateCreationTime : creationTime;
-    //await this.storeTypedBead(beadAh, materializeTypedBead(typed, type), type, ts, encodeHashToBase64(author), canNotify, false);
     return [typed, type, creationTime, new AgentId(author)];
   }
 
@@ -719,9 +704,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (this._perspective.getBeadInfo(beadAh)) {
       return;
     }
-    // let creationTime: Timestamp;
-    // let author: AgentPubKey;
-    // let typed: TypedBead;
     try {
       switch (beadType) {
         case ThreadsEntryType.TextBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchTextBead(beadAh.hash); break;
@@ -729,12 +711,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         case ThreadsEntryType.AnyBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchAnyBead(beadAh.hash); break;
         case ThreadsEntryType.EncryptedBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchEncBead(beadAh.hash); break;
       }
-      //const ts = alternateCreationTime? alternateCreationTime : creationTime;
-      //await this.storeTypedBead(encodeHashToBase64(beadAh), materializeTypedBead(typed, beadType), beadType, ts, encodeHashToBase64(author), canNotify, false);
-      //return typed;
     } catch(e:any) {
       console.error(e);
-      Promise.reject("Bead not found at " + beadAh.short);
+      throw Promise.reject("Bead not found at " + beadAh.short);
     }
   }
 
@@ -836,7 +815,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async createDmThread(otherAgent: AgentId): Promise<ActionId> {
     if (this.cell.address.agentId.equals(otherAgent)) {
-      return Promise.reject("Can't DM self");
+      throw Promise.reject("Can't DM self");
     }
     /** Give current if already exists */
     const maybePpAh = this._perspective.dmAgents.get(otherAgent);
@@ -1164,7 +1143,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /** */
+  /** Form TypedBasedBead from content and bead */
   async content2Typed(bead: Bead, content: TypedContent, beadType: BaseBeadType): Promise<TypedBaseBead> {
     switch (beadType) {
       case ThreadsEntryType.TextBead:
@@ -1371,7 +1350,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   private async handleInboxLink(pulse: LinkPulseMat, _from: AgentId) {
     const base = AgentId.from(pulse.base);
-
+    /** */
     if (StateChangeType.Update == pulse.state) {
       console.error("Not possible to Update a link");
       return;

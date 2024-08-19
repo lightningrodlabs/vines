@@ -31,6 +31,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
+  /** -- Properties -- */
+
   @property() showArchivedSubjects?: string;
 
   @property() selectedThreadHash?: ActionId;
@@ -44,36 +46,19 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   @state() private _loading = false;
 
 
+  /** -- Methods -- */
+
   /** */
   protected override async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     super.zvmUpdated(newZvm, oldZvm)
     this._loading = true;
     await newZvm.zomeProxy.queryAll();
-    //await newZvm.queryThreads();
-    //await newZvm.queryBeads();
     this._loading = false;
   }
 
 
-  // /** */
-  // onClickCommentPp(maybeCommentThread: ActionId | null, ppAh: ActionId, subjectName: string) {
-  //   this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: ppAh, subjectType: ThreadsEntryType.ParticipationProtocol, subjectName, viewType: "side"}, bubbles: true, composed: true }));
-  // }
-  //
-  // /** */
-  // onClickCommentSubject(maybeCommentThread: ActionId | null, subjectId: AnyId, subjectName: string, subjectType: string) {
-  //   this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId, subjectType, subjectName, viewType: "side"}, bubbles: true, composed: true }));
-  // }
-  //
-  // /** */
-  // onClickCommentAppletId(maybeCommentThread: ActionId | null, appletId: EntryId, appletName: string) {
-  //   this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: appletId, subjectType: SpecialSubjectType.Applet, subjectName: appletName, viewType: "side"}, bubbles: true, composed: true }));
-  // }
-
-
   /** */
   renderSubjectSubLister(subjectId: AnyId, _subject: Subject, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
-    //const isSubjectHidden = this._zvm.perspective.hiddens[subjectId.b64]? this._zvm.perspective.hiddens[subjectId.b64] : false;
     let title = "";
     let threads = myThreads.map((ppAh) => {
       const thread = this.perspective.threads.get(ppAh);
@@ -84,12 +69,10 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
       title = thread.name;
-      //const hasNewBeads = thread && thread.hasUnreads();
       const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
-      //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = this.perspective.newThreads.has(ppAh);
-      console.log("<my-threads-lister>.override render() thread:", thread.pp.purpose, maybeUnreadThread);
+      console.log("<my-threads-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
       if (!thread.pp || (isThreadHidden && !this.showArchivedSubjects) /*|| thread.pp.purpose == "comment"*/) {
         return html``;
       }
@@ -146,14 +129,14 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                           class="showBtn"
                           @click=${async (_e:any) => {
           await this._zvm.unhideSubject(ppAh);
-          toasty(`Unarchived Subject "${thread.pp.purpose}"`);
+          toasty(`${msg("Unarchived Subject")} "${thread.pp.purpose}"`);
         }}></ui5-button>
           ` : html`
                     <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                 class="showBtn"
                                 @click=${async (_e:any) => {
           await this._zvm.hideSubject(ppAh);
-          toasty(`Archived Subject "${thread.pp.purpose}"`);
+          toasty(`${msg("Archived Subject")} "${thread.pp.purpose}"`);
         }}></ui5-button>`;
 
       return html`
@@ -225,7 +208,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
     }
 
-
     const subjectHasUnreads = unreadSubjects.map((id) => id.b64).includes(subjectId.b64);
 
     if (threads.length == 0) {
@@ -263,12 +245,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   override render() {
-    console.log("<my-threads-lister>.override render()", this._loading, this.perspective.threads, this.cell.address.agentId.short);
-
-    // if (this._loading) {
-    //   return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
-    // }
-
+    console.log("<my-threads-lister>.render()", this._loading, this.perspective.threads, this.cell.address.agentId.short);
     /** Grab my threads */
     const myBeads = Array.from(this.perspective.beads.values())
       .filter(([info, _typed]) => info.author.b64 == this.cell.address.agentId.b64)
@@ -283,7 +260,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     console.log("<my-threads-lister>   count beads", this.perspective.beads.size, myBeads.length, myBeadThreads.size);
     console.log("<my-threads-lister> count threads", this.perspective.threads.size, myThreads.size);
-
 
     /** concat (and dedup) */
     //const allThreads = Object.assign({}, myThreads, myBeadThreads);

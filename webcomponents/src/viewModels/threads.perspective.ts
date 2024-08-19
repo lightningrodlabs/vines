@@ -294,14 +294,6 @@ export class ThreadsPerspective {
 
   /** -- Getters -- */
 
-  // getPpByName(name: string): ActionId | undefined {
-  //   return this._threadsByName[name];
-  // }
-  //
-  // getAllThreadsByName(): [string, ActionId][] {
-  //   return Object.entries(this._threadsByName);
-  // }
-
   /** */
   getCommentThreadForSubject(subjectId: AnyId): ActionId | null {
     const ppAhs = this.threadsPerSubject.get(subjectId.b64);
@@ -318,13 +310,15 @@ export class ThreadsPerspective {
   }
 
 
-
+  /** */
   getSubjectThreads(any: HoloHashB64): ActionId[] {
     const maybe = this.threadsPerSubject.get(any);
     if (!maybe) return [];
     return maybe;
   }
 
+
+  /** */
   getSubjects(typePathHash: EntryId): [DnaId, AnyId][] | undefined {
     return this.subjectsPerType.get(typePathHash);
   }
@@ -454,9 +448,6 @@ export class ThreadsPerspective {
 
   /** -- */
 
-
-
-
   /** -- Memento -- */
 
   /** TODO: deep copy */
@@ -486,7 +477,6 @@ export class ThreadsPerspective {
       appletSubjectTypes,
     };
   }
-
 }
 
 
@@ -501,6 +491,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** -- Store -- */
 
+  /** */
   storeAllNewThreads(list: [ActionId, AnyId][]) {
     this.newThreads.clear();
     for (const [ah, subjectHash] of list) {
@@ -508,6 +499,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
   }
 
+
+  /** */
   storeAllUnreadThreads(list: ActionIdMap<[AnyId, ActionId[]]>) {
     this.unreadThreads.clear();
     for (const [ah, map] of list.entries()) {
@@ -530,6 +523,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     console.log("storeSubjectTypesForApplet()", appletId, subjectTypes);
     this.appletSubjectTypes.set(appletId, subjectTypes);
   }
+
 
   /** */
   storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {

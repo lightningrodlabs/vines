@@ -48,20 +48,18 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** ID of the applet to display threads of */
   @property() appletId: EntryId = THIS_APPLET_ID;
 
-
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-  /** -- State variables -- */
 
   @state() private _loading = true;
   @state() private _isHovered: EntryIdMap<boolean> = new EntryIdMap();
            private _threadCreatableType?: CreatableType;
 
-  /**
-   * In zvmUpdated() this._zvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+
+  /** -- Methods -- */
+
+  /** In zvmUpdated() this._zvm is not already set! */
   protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<applet-lister>.zvmUpdated()");
     await this.loadSubjectTypes(newZvm);
@@ -86,9 +84,6 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     await zvm.pullAppletSubjectTypes(this.appletId);
     this._loading = false;
   }
-
-
-
 
 
   /** Search for Vines attachmentType in based on _appInfoMap */
@@ -287,7 +282,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<applet-lister>.override render()", this.appletId);
+    console.log("<applet-lister>.render()", this.appletId);
     // if (!this.appletId) {
     //   return html `<div>No Applet selected</div>`;
     // }
@@ -296,7 +291,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
 
     let subjectTypes = this.perspective.appletSubjectTypes.get(this.appletId);
-    console.log("<applet-lister>.override render() subjectTypes", subjectTypes);
+    console.log("<applet-lister>.render() subjectTypes", subjectTypes);
     if (!subjectTypes) {
       subjectTypes = new EntryIdMap();
     }
@@ -308,7 +303,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
-      console.log("<applet-lister>.override render() subjectType", subjectType, pathEh);
+      console.log("<applet-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
       const isUnread = !!maybeCommentThread && this._zvm.perspective.unreadThreads.has(maybeCommentThread);

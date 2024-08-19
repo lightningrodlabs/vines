@@ -178,6 +178,7 @@ export function splitSpacesExcludeQuotes(string: string): string[] {
   return splitSpacesExcludeQuotesDetailed(string).map((details) => details.value);
 }
 
+
 /** Have ['from:', 'quoated content'] become ['from:"quoated content"'] */
 function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
   console.log("quotes", quotes);

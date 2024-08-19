@@ -15,10 +15,11 @@ import {renderProfileAvatar} from "../../render";
 @customElement("dm-lister")
 export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
-  /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
+
+  /** -- Properties -- */
 
   @property() showArchived?: string;
   @property() selectedThreadHash?: ActionId;
@@ -35,24 +36,21 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<dm-lister>.dvmUpdated()");
     if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
   }
 
 
   /** */
   override render() {
-    console.log("<dm-lister>.override render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
+    console.log("<dm-lister>.render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
 
     let treeItems = Array.from(this.threadsPerspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
       /** Skip if hidden */
       const subjectEh = EntryId.from(otherAgent);
-      //console.log("<dm-lister>.override render() hide subjectEh?", subjectEh, otherAgent);
+      //console.log("<dm-lister>.render() hide subjectEh?", subjectEh, otherAgent);
       const isThreadHidden = this.threadsPerspective.hiddens[subjectEh.b64]? this.threadsPerspective.hiddens[subjectEh.b64] : false;
       if (isThreadHidden && !this.showArchived) {
         return;
@@ -62,17 +60,11 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (!maybe) {
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
-
       console.log("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-
-      //const hasNewBeads = thread && thread.hasUnreads();
       const maybeUnreadThread = this.threadsPerspective.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
-      //console.log("hasUnreads() thread", ppAh, thread.latestSearchLogTime);
       const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
-
-
       /** Determine other agent's profile */
       let otherProfile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
       if (!otherProfile) {
@@ -106,8 +98,6 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         @click=${async (e:any) => {
                             e.stopPropagation();
                             this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: otherAgent}, bubbles: true, composed: true}));
-                            //await this._dvm.threadsZvm.unhideDmThread(otherAgent);
-                            //toasty(`Unarchived DMs with ${otherProfile.nickname}`);
                         }}></ui5-button>
         ` : html`
                   <ui5-button icon="hide" tooltip="Hide" design="Transparent"
@@ -115,8 +105,6 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @click=${async (e:any) => {
                                   e.stopPropagation();
                                   this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: otherAgent}, bubbles: true, composed: true}));
-                                  //await this._dvm.threadsZvm.hideDmThread(otherAgent);
-                                  //toasty(`Archived DMs with ${otherProfile.nickname}`);
                               }}></ui5-button>`;
 
           return html`
@@ -139,7 +127,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           `});
 
     treeItems = treeItems.filter((value) => value !== undefined);
-    console.log("<dm-lister>.override render() treeItems", treeItems);
+    console.log("<dm-lister>.render() treeItems", treeItems);
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {

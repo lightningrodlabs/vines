@@ -20,6 +20,7 @@ import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
 /**
@@ -53,14 +54,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({context: globaFilesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  //@state() private _loading = true;
 
-
-  /**
-   * In dvmUpdated() this._dvm is not already set!
-   * Subscribe to ThreadsZvm
-   */
+  /** In dvmUpdated() this._dvm is not already set! */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    /** Subscribe to ThreadsZvm */
     if (oldDvm) {
       oldDvm.threadsZvm.unsubscribe(this);
     }
@@ -79,7 +76,6 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   renderContent(): [TemplateResult<1>, AgentId | undefined, string | undefined] {
     let content = html``;
-
     if (!this.hash) {
       content = html`<span style="color:red">missing hash</span>`;
       return [content, undefined, undefined];
@@ -89,11 +85,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       content = html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       return [content, undefined, undefined];
     }
-
     const typedBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
-
     switch(beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
         const tm = typedBead as TextBeadMat;
@@ -143,10 +137,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
                               @click=${(_e:any) => {
-            this._filesDvm.downloadFile(manifestEh);
-            toasty(msg("File downloaded") + ": " + desc.name);
-          }}>
-                         File: ${desc.name} (${prettyFileSize(desc.size)})
+                              this._filesDvm.downloadFile(manifestEh);
+                              toasty(msg("File downloaded") + ": " + desc.name);
+                          }}>
+                         ${msg("File")}: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;
         }
         break;
@@ -160,16 +154,11 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   renderPrevBead(beadInfo: BeadInfo) {
     const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh);
-    //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
     if (!hasFarPrev) {
       return html``;
     }
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh);
-    // let prevProfile: ProfileMat;
-    // if (prevBeadInfo) {
-    //   prevProfile = this._dvm.profilesZvm.perspective.profiles[prevBeadInfo.author];
-    // }
     /** */
     return html`
       <blockquote class="reply"
@@ -182,23 +171,20 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<side-item>.override render()", this.hash, this.deletable);
-
+    console.log("<side-item>.render()", this.hash, this.deletable);
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     const [content, author, date] = this.renderContent();
-    let maybeProfile = undefined;
+    let maybeProfile: Profile | undefined = undefined;
     if (author) {
       maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author);
     }
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
-
     /* render item */
     return html`
     <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
          @click=${(e:any) => {console.log("sideItem clicked", this.hash); e.stopPropagation(); this.dispatchEvent(beadJumpEvent(this.hash))}}>
         <div class="avatarRow">
             <div @click=${(e:any) => {
-                //console.log("sideItem onShowProfile clicked", beadAh);
                 e.stopPropagation();
                 if (author) this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
             }}>
