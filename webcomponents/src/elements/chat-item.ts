@@ -8,7 +8,7 @@ import 'emoji-picker-element';
 
 import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {beadJumpEvent, threadJumpEvent, ShowProfileEvent} from "../events";
+import {beadJumpEvent, threadJumpEvent, ShowProfileEvent, CommentRequest} from "../events";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
@@ -109,9 +109,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionId | null, subjectName?: string, subjectType?: string, viewType?: string) {
-    this.dispatchEvent(new CustomEvent('commenting-clicked', {
-      detail: {maybeCommentThread, subjectHash: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
+  onClickComment(maybeCommentThread: ActionId | null, subjectName: string, subjectType: string, viewType?: string) {
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
+      detail: {maybeCommentThread, subjectId: this.hash, subjectType, subjectName, viewType: viewType? viewType : "side"},
       bubbles: true,
       composed: true,
     }));
@@ -119,7 +119,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   onClickReply() {
-    this.dispatchEvent(new CustomEvent('reply-clicked', {detail: this.hash, bubbles: true, composed: true,}));
+    this.dispatchEvent(new CustomEvent<ActionId>('reply-clicked', {detail: this.hash, bubbles: true, composed: true,}));
   }
 
   /** */

@@ -75,6 +75,18 @@
 <trans-unit id="s2350820794cf0edb">
   <source>Copied channel's WAL to clipboard</source>
 </trans-unit>
+<trans-unit id="s887d37bc9abe7b9f">
+  <source>Error: File is too big</source>
+</trans-unit>
+<trans-unit id="s934c46a8b971e64e">
+  <source>Maximum file size</source>
+</trans-unit>
+<trans-unit id="s4bb34a44e1191df5">
+  <source>Exported data to json in Downloads folder</source>
+</trans-unit>
+<trans-unit id="s0bb93a1206db465c">
+  <source>All marked 'read' &amp; cleared Inbox</source>
+</trans-unit>
 </body>
 </file>
 </xliff>

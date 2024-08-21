@@ -562,7 +562,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
     /** Group Info */
     let groupProfile: GroupProfile = {
-      name: "CommunityFeed",
+      name: "Feed",
       icon_src: "icon.png",
     };
 

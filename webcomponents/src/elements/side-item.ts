@@ -196,7 +196,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <div style="flex-grow: 1"></div>
             ${this.deletable? html`<ui5-button icon="decline" design="Transparent"
-            @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
+            @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent<boolean>('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
         </div>
         ${beadInfo? this.renderPrevBead(beadInfo) : ""}
         <div class="sideContentRow">

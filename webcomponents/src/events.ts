@@ -4,6 +4,11 @@ import {AgentId} from "@ddd-qc/cell-proxy";
 import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads.types";
 import {WAL} from "@lightningrodlabs/we-applet";
 
+export type ShowEmojiEvent = {
+  bead: ActionId,
+  x: number,
+  y: number,
+}
 
 export interface VinesInputEvent {
   text?: string,

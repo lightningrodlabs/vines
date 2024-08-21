@@ -26,7 +26,7 @@ export class ConfirmDialog extends LitElement {
             <div class="footer">
                 <ui5-button style="margin-top:5px" design="Emphasized" 
                             @click=${(_e:any) => {
-                                this.dispatchEvent(new CustomEvent('confirmed', {detail: true, bubbles: true, composed: true}));
+                                this.dispatchEvent(new CustomEvent<boolean>('confirmed', {detail: true, bubbles: true, composed: true}));
                                 const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
                                 dialog.close(false);
                             }}>

@@ -69,7 +69,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))
     } catch(e:any) {
-      this.dispatchEvent(new CustomEvent('reject', {detail: e, bubbles: true, composed: true}))
+      this.dispatchEvent(new CustomEvent<any>('reject', {detail: e, bubbles: true, composed: true}))
     }
     this._creating = false;
   }

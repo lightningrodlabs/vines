@@ -263,7 +263,7 @@ export class EditProfile extends LitElement {
     console.log({langRadioGroup});
     const lang = langRadioGroup.value;
     console.log("handleLangChange: lang =", lang);
-    this.dispatchEvent(new CustomEvent('lang-selected', { detail: lang, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<string>('lang-selected', { detail: lang, bubbles: true, composed: true }));
   }
 
 

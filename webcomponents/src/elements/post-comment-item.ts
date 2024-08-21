@@ -23,7 +23,7 @@ import {globaFilesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
-import {ShowProfileEvent} from "../events";
+import {ShowEmojiEvent, ShowProfileEvent} from "../events";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 
 
@@ -211,7 +211,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           </div>
           <div class="underRow">
               <div>${date_str}</div>
-              <div id="likeBtn" class="textBtn" @click=${(e:any) => this.dispatchEvent(new CustomEvent('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}))}>${msg('Like')}</div>
+              <div id="likeBtn" class="textBtn" @click=${(e:any) => this.dispatchEvent(new CustomEvent<ShowEmojiEvent>('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}))}>${msg('Like')}</div>
               <div class="textBtn" @click=${(_e:any) => this.copyMessageLink()}>${msg('Share')}</div>
               <div style="flex-grow: 1;"></div>
               <emoji-bar .hash=${this.hash} style="margin-top:2px;"></emoji-bar>

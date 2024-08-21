@@ -217,7 +217,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
+    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm, this._renderCount);
+    this._renderCount += 1;
+
     /** */
     if (this.threadHash === undefined) {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
@@ -288,12 +290,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all (in reverse) */
     return html`
+      <!-- <div>${this._renderCount}</div> -->
       ${chatItems.reverse()}
       ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
       ${maybeHeader}
     `;
   }
 
+  private _renderCount = 0;
 
   /** */
   static override get styles() {

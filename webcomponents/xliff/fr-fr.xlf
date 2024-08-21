@@ -354,6 +354,50 @@
   <source>Purpose</source>
   <target>Raison d'être</target>
 </trans-unit>
+<trans-unit id="s0c26ad411955878a">
+  <source>Message added to favorites</source>
+  <target>Message ajouté aux favoris</target>
+</trans-unit>
+<trans-unit id="sd5cebf2dae9ada75">
+  <source>Message removed from favorites</source>
+  <target>Message retiré des favoris</target>
+</trans-unit>
+<trans-unit id="s4b60729034e68523">
+  <source>No favorites found</source>
+  <target>Aucun favoris trouvés</target>
+</trans-unit>
+<trans-unit id="s20a500234e838dda">
+  <source>Favorites</source>
+  <target>Favoris</target>
+</trans-unit>
+<trans-unit id="sd1f81284eeb7b503">
+  <source>File</source>
+  <target>Fichier</target>
+</trans-unit>
+<trans-unit id="sb1892eeeccd481f3">
+  <source>Post added to favorites</source>
+  <target>Post ajouter aux favoris</target>
+</trans-unit>
+<trans-unit id="s6fd05a2cb92783d0">
+  <source>Post removed from favorites</source>
+  <target>Post retiré des favoris</target>
+</trans-unit>
+<trans-unit id="s382a2aa3984474dd">
+  <source>Create</source>
+  <target>Créer</target>
+</trans-unit>
+<trans-unit id="sd1abd74f5334d59a">
+  <source>Results for</source>
+  <target>Résultats pour</target>
+</trans-unit>
+<trans-unit id="sc1d32c9ff0fecbac">
+  <source>Unarchived Subject</source>
+  <target>Sujet désarchivvé</target>
+</trans-unit>
+<trans-unit id="sb5b855617d92fba3">
+  <source>Archived Subject</source>
+  <target>Sujet Archivé</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

@@ -435,7 +435,7 @@ export class VinesApp extends HappElement {
                         await creatableViewInfo.resolve(e.detail);
                       }}
                     @cancel=${(_e:any) => creatableViewInfo.cancel()}
-                    @reject=${(e:any) => creatableViewInfo.reject(e.detail)}
+                    @reject=${(e: CustomEvent<any>) => creatableViewInfo.reject(e.detail)}
             ></create-thread-panel>`;
           } else {
             throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)

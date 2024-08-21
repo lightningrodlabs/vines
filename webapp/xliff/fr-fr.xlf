@@ -31,8 +31,8 @@
   <target>importer Fichier</target>
 </trans-unit>
 <trans-unit id="saa4526fdc34088e7">
-  <source>Import &amp; commit</source>
-  <target>Importer &amp; Soumettre</target>
+  <source>Import & commit</source>
+  <target>Importer & Soumettre</target>
 </trans-unit>
 <trans-unit id="s793f79a4b17b7cf6">
   <source>Import only</source>
@@ -58,10 +58,6 @@
   <source>Notifications Settings</source>
   <target>Paramètres de Notifications</target>
 </trans-unit>
-<trans-unit id="s377f021907fa0685">
-  <source>message contains</source>
-  <target>message contient</target>
-</trans-unit>
 <trans-unit id="sfd519740f0563fef">
   <source>Search Options</source>
   <target>Options de Recherche</target>
@@ -71,7 +67,7 @@
   <target>Tout message</target>
 </trans-unit>
 <trans-unit id="s64476b0885f2bfd2">
-  <source>Mentions &amp; Replies Only</source>
+  <source>Mentions & Replies Only</source>
   <target>Seulement les Mentions et Réponses</target>
 </trans-unit>
 <trans-unit id="s8b97ea84af17c029">
@@ -197,6 +193,34 @@
 <trans-unit id="s2350820794cf0edb">
   <source>Copied channel's WAL to clipboard</source>
   <target>WAL du canal copié dans le presse-papier</target>
+</trans-unit>
+<trans-unit id="s06aa213afe598b85">
+  <source>DM channel archived</source>
+  <target>Canal de message privé archivé</target>
+</trans-unit>
+<trans-unit id="sfa717ce31133b962">
+  <source>DM channel unarchived</source>
+  <target>Canal de message privé désarchivé</target>
+</trans-unit>
+<trans-unit id="se17417fb33768153">
+  <source>archived</source>
+  <target>Archivé</target>
+</trans-unit>
+<trans-unit id="s6142d3768b017d6c">
+  <source>Unarchived</source>
+  <target>Désarchivé</target>
+</trans-unit>
+<trans-unit id="s7f845078d7a5c0b5">
+  <source>from</source>
+  <target>de</target>
+</trans-unit>
+<trans-unit id="s4bb34a44e1191df5">
+  <source>Exported data to json in Downloads folder</source>
+  <target>Exporter les données dans le dossier Téléchargés en JSON</target>
+</trans-unit>
+<trans-unit id="s0bb93a1206db465c">
+  <source>All marked 'read' & cleared Inbox</source>
+  <target>Tout à été marqué comme 'lu' et l'Inbox vidé</target>
 </trans-unit>
 </body>
 </file>

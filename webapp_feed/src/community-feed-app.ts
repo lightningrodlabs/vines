@@ -386,7 +386,7 @@ export class CommunityFeedApp extends HappElement {
     if(this._hasHolochainFailed) {
       return html`
       <div style="display: flex; flex-direction: column">
-        <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"CommunityFeed\" cell.")};</div>
+        <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Feed\" cell.")};</div>
         <ui5-button id="retryBtn" design="Emphasized"
                     style="max-width:300px"
                     @click=${async (_e:any) => {
@@ -544,7 +544,7 @@ export class CommunityFeedApp extends HappElement {
                                                               style="padding-left: 5px;padding-top: 5px;"/> Community Feed</h1>
           <div style="align-items: center; z-index:1;">
             <ui5-card id="profileCard">
-              <ui5-card-header title-text=${msg('Import Profile into CommunityFeed')}></ui5-card-header>
+              <ui5-card-header title-text=${msg('Import Profile into Feed')}></ui5-card-header>
               <vines-edit-profile
                   .profile=${this._weProfilesDvm?.profilesZvm.getMyProfile()}
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {

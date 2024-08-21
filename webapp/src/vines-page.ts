@@ -673,7 +673,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onReplyClicked(e: CustomEvent) {
+  async onReplyClicked(e: CustomEvent<ActionId>) {
     console.log("onReplyClicked()", e.detail);
     const beadAh = e.detail;
     this._replyToAh = beadAh;
@@ -1206,7 +1206,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
                                 @click=${async () => {
                     await this.updateComplete;
-                    this.dispatchEvent(new CustomEvent('debug', {detail: true, bubbles: true, composed: true}));
+                    this.dispatchEvent(new CustomEvent<boolean>('debug', {detail: true, bubbles: true, composed: true}));
                 }}
                     ></ui5-button>
                     <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
