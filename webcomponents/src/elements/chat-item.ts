@@ -60,6 +60,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   onlineLoaded!: boolean;
 
 
+  private _renderCount = 0;
+
+
+  /** -- Methods -- */
+
   /**
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
@@ -227,7 +232,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices);
+    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
+    this._renderCount += 1;
+
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }

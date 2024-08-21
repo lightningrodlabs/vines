@@ -13,6 +13,8 @@ import {sharedStyles} from "../styles";
 import {EntryBeadMat} from "../viewModels/threads.materialize";
 
 
+let instanceCount = 0;
+
 /**
  * @element
  */
@@ -21,6 +23,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
+    instanceCount += 1;
+    //console.debug("ChatFile.instanceCount", instanceCount);
   }
 
   /** -- Properties -- */
@@ -125,7 +129,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file);
+    console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file, this._renderCount);
+    this._renderCount += 1;
+
     if (!this.hash) {
       return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
     }
@@ -221,7 +227,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           `;
           break;
         default:
-          //preview = html`<div class="preview">Preview not available for this type</div>`;
+          //item = html`<div class="preview">Preview not available for this type</div>`;
           item = html`<embed class="preview ${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
           break;
       }
@@ -230,10 +236,13 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     /** render item */
     return html`
         <sl-tooltip content=${fileDesc.name} style="--show-delay:1000">
+            <!--<div>${this._renderCount}</div>-->
             ${item}
         </sl-tooltip>
     `;
   }
+
+  private _renderCount = 0;
 
 
   /** */

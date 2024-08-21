@@ -1,7 +1,7 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, ActionIdMap, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
@@ -105,6 +105,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
+    /** Fetch notifSetting for current thread */
     if (this._dvm) {
       if (this.threadHash && !this._dvm.threadsZvm.perspective.notifSettings.get(this.threadHash)) {
         await this._dvm.threadsZvm.pullNotifSettings(this.threadHash);
@@ -228,6 +229,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (!thread) {
       return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
+
     /** chat-header */
     let maybeHeader = html``;
     const hasReachedBeginning = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
@@ -247,6 +249,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let chatItems = Object.values(all).map(
       (blm) => {
+
         let hr = html``;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
@@ -277,12 +280,17 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         `;
         }
 
-        //console.log("<chat-thread-view> blm.beadType ", blm.beadType, this.beadAh, this.beadAh == blm.beadType);
-        const chatItem = html`
-            <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
-                       style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background:#c4f2b07a" : ""}">
-            </chat-item>`;
+        let chatItem = this._chatItems.get(blm.beadAh);
+        if (!chatItem) {
+          //console.log("<chat-thread-view> instanceCount create", blm.beadAh.short);
+          chatItem = html`
+              <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
+                         style="${this.beadAh && blm.beadAh.equals(this.beadAh) ? "background:#c4f2b07a" : ""}">
+              </chat-item>`;
+          this._chatItems.set(blm.beadAh, chatItem);
+        }
         prevBeadAh = blm.beadAh;
+        /** Render chatItem */
         return html`${chatItem}${hr}${timeHr}`;
       }
     );
@@ -298,6 +306,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
   private _renderCount = 0;
+
+  private _chatItems: ActionIdMap<TemplateResult<1>> = new ActionIdMap<TemplateResult<1>>();
+
 
   /** */
   static override get styles() {
