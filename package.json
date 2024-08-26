@@ -123,7 +123,7 @@
     "@holochain/client": "=0.18.0-dev.4",
     "@lightningrodlabs/we-applet": "0.17.1",
     "@lightningrodlabs/we-elements": "0.6.0-dev.0",
-    "@ddd-qc/cell-proxy": "=0.28.0",
+    "@ddd-qc/cell-proxy": "=0.28.1",
     "@ddd-qc/lit-happ": "=0.28.0",
     "@ddd-qc/profiles-dvm": "=0.28.0",
     "@ddd-qc/we-utils": "=0.28.0",

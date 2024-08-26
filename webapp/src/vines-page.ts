@@ -120,6 +120,7 @@ import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/response.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/search.js"
+import "@ui5/webcomponents-icons/dist/share-2.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
@@ -1241,13 +1242,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                       </div>
                     </div>
+                    <ui5-button id="shareBtn" style="margin-top:10px;"
+                                design="Transparent" icon="share-2" tooltip=${msg("Share Network")}
+                                @click=${(_e:any) => {
+                                    const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                                    const btn = this.shadowRoot!.getElementById("shareBtn") as HTMLElement;
+                                    popover.showAt(btn);
+                                }}>
+                    </ui5-button>                    
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
                                 @click=${(_e:any) => {
-                                  //console.log("onSettingsMenu()", e);
-                                  const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
-                                  const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
-                                  settingsMenu.showAt(settingsBtn);
+                                    const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
+                                    const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
+                                    settingsMenu.showAt(settingsBtn);
                                 }}>
                     </ui5-button>
                     <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
@@ -1278,7 +1286,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                           popover.close();
                                       }
                                   }}
-                          >Close</ui5-button>
+                          >${msg('Close')}</ui5-button>
+                        </div>
+                    </ui5-popover>
+                    <!-- Share Network -->
+                    <ui5-popover id="shareNetworkPopover">
+                        <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
+                            ${msg("Share Network")}
+                            <div style="flex-grow: 1;"></div>
+                        </div>
+                        <div>${msg('Share this code with a peer to grant them access to this Network')} (<b>${this.cell.name})</b></div>
+                        <ui5-textarea .value=${this.cell.shareCode}></ui5-textarea>
+                        <div slot="footer" style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
+                            <div style="flex-grow: 1;"></div>
+                            <ui5-button slot="footer" design="Emphasized" @click=${() => {
+                                navigator.clipboard.writeText(this.cell.shareCode);
+                                toasty(msg("Copied share code to clipboard"));
+                                const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                                if (popover.isOpen()) {
+                                    popover.close();
+                                }
+                            }}
+                            >${msg('Copy Joining Code')}</ui5-button>
                         </div>
                     </ui5-popover>
                   <!-- <ui5-button style="margin-top:10px;"
