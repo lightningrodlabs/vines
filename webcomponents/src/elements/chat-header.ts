@@ -102,7 +102,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
     const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
     if (maybeSemanticTopicTitle) {
-      title = html`Welcome to ${thread.name} !`;
+      title = html`${msg("Welcome to")} ${thread.name} !`;
       subText = html`${msg("This is the start of a channel about topic")} ${subjectName}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address);

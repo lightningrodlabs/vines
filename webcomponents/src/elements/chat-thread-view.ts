@@ -223,7 +223,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** */
     if (this.threadHash === undefined) {
-      return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No thread selected")}</div>`;
+      return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No channel selected")}</div>`;
     }
     const thread = this.threadsPerspective.threads.get(this.threadHash);
     if (!thread) {

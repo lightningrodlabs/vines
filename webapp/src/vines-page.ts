@@ -39,6 +39,8 @@ import "@ui5/webcomponents/dist/Popover.js";
 import "@ui5/webcomponents/dist/ProgressIndicator.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
 import "@ui5/webcomponents/dist/Select.js";
+import "@ui5/webcomponents/dist/SegmentedButton.js";
+import "@ui5/webcomponents/dist/SegmentedButtonItem.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/Switch.js";
 import "@ui5/webcomponents/dist/SuggestionItem.js";
@@ -54,6 +56,7 @@ import Input from "@ui5/webcomponents/dist/Input";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import RadioButton from "@ui5/webcomponents/dist/RadioButton";
+import SegmentedButtonItem from "@ui5/webcomponents/dist/SegmentedButtonItem";
 
 /** @ui5/webcomponents-icons */
 //import "@ui5/webcomponents-icons/dist/allIcons-static.js";
@@ -502,6 +505,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Generate test data */
     //await this._dvm.threadsZvm.generateTestData("");
 
+    /** Select Topics */
+    const topicsBtn = this.shadowRoot!.getElementById("topics-option") as SegmentedButtonItem;
+    if (topicsBtn) {
+      topicsBtn.pressed = true;
+    }
+
     /** Fiddle with shadow parts CSS */
     const searchField = this.shadowRoot!.getElementById('search-field') as Input;
     console.log("search-field", searchField,searchField.shadowRoot);
@@ -738,8 +747,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   onListerSelected(e:any) {
     console.log("onListerSelected()", e);
-    const selectedOption = e.detail.selectedOption;
-    console.log("onListerSelected() selectedOption", e.detail.selectedOption);
+    const selectedOption = e.detail.selectedItem;
+    console.log("onListerSelected() selectedOption", selectedOption);
     if (selectedOption.id == "dm-option") {
       this._listerToShow = this.cell.address.agentId.b64;
       return;
@@ -889,7 +898,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** */
     let centerSide = html`${doodle_flowers}`;
-    let primaryTitle = msg("No thread selected");
+    let primaryTitle = msg("No channel selected");
     /** render selected thread */
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
@@ -1192,13 +1201,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-menu>
                 </div>
 
+                <ui5-segmented-button @selection-change=${this.onListerSelected} style="margin:auto;">
+                    <ui5-segmented-button-item id="topics-option">${msg('Topics')}</ui5-segmented-button-item>
+                    <ui5-segmented-button-item id="mine-option">${msg('My')}</ui5-segmented-button-item>
+                    <ui5-segmented-button-item id="dm-option">${msg('DMs')}</ui5-segmented-button-item>
+                </ui5-segmented-button>
+
+                <!-- <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>  FIXME: disabled because not working -->
+                <!--
                 <ui5-select id="lister-select" @change=${this.onListerSelected}>
-                    ${appletOptions}
-                    <!-- <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>  FIXME: disabled because not working -->
+                    ${appletOptions}                    
                     <ui5-option id="dm-option" icon="paper-plane">${msg('Direct Messages')}</ui5-option>
                     <ui5-option id="mine-option" icon="bookmark">${msg('My Channels')}</ui5-option>
                     <ui5-option id="topics-option" icon="thing-type" selected>${msg('Topics')}</ui5-option>
                 </ui5-select>
+                -->
                 ${lister}
 
                     <!--
@@ -1239,7 +1256,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
-                        <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
+                        <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")} icon="open-folder" ></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                         <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
                         <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
@@ -1374,7 +1391,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this channel")}>
                     <div  style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><</ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions & Replies Only")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions and Replies Only")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
                         <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.Never) as Boolean}></ui5-radio-button>
                     </div>
                 </ui5-popover>
@@ -1617,7 +1634,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCommitBtn(_e?: any) {
-    toasty(msg("All marked 'read' & cleared Inbox"));
+    toasty(msg("All marked 'read' and cleared Inbox"));
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
   }

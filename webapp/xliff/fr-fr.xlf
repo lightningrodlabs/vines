@@ -10,10 +10,6 @@
   <source>Edit Profile</source>
   <target>Editer Profile</target>
 </trans-unit>
-<trans-unit id="seef51e1596b93277">
-  <source>No thread selected</source>
-  <target>Aucun fil selectionné</target>
-</trans-unit>
 <trans-unit id="sf969c2297c7b8324">
   <source>Create new Topic</source>
   <target>Créer un nouveau sujet</target>
@@ -29,10 +25,6 @@
 <trans-unit id="sae7541d42db412aa">
   <source>Import File</source>
   <target>importer Fichier</target>
-</trans-unit>
-<trans-unit id="saa4526fdc34088e7">
-  <source>Import & commit</source>
-  <target>Importer & Soumettre</target>
 </trans-unit>
 <trans-unit id="s793f79a4b17b7cf6">
   <source>Import only</source>
@@ -65,10 +57,6 @@
 <trans-unit id="s524251a5dae81428">
   <source>All Messages</source>
   <target>Tout message</target>
-</trans-unit>
-<trans-unit id="s64476b0885f2bfd2">
-  <source>Mentions & Replies Only</source>
-  <target>Seulement les Mentions et Réponses</target>
 </trans-unit>
 <trans-unit id="s8b97ea84af17c029">
   <source>Never</source>
@@ -218,9 +206,29 @@
   <source>Exported data to json in Downloads folder</source>
   <target>Exporter les données dans le dossier Téléchargés en JSON</target>
 </trans-unit>
-<trans-unit id="s0bb93a1206db465c">
-  <source>All marked 'read' & cleared Inbox</source>
-  <target>Tout à été marqué comme 'lu' et l'Inbox vidé</target>
+<trans-unit id="s977abeeea3e2041a">
+  <source>No channel selected</source>
+  <target>Aucun canal séléctionné</target>
+</trans-unit>
+<trans-unit id="s09164307b5acf2f3">
+  <source>My</source>
+  <target>Mes</target>
+</trans-unit>
+<trans-unit id="se051571991d5184b">
+  <source>DMs</source>
+  <target>DMs</target>
+</trans-unit>
+<trans-unit id="s78b9eec9a8e079fe">
+  <source>Import and commit</source>
+  <target>Importer et soumettre</target>
+</trans-unit>
+<trans-unit id="s7dab4014eea86707">
+  <source>Mentions and Replies Only</source>
+  <target>Mentions et réponses seulement</target>
+</trans-unit>
+<trans-unit id="s8933f1bb82275307">
+  <source>All marked 'read' and cleared Inbox</source>
+  <target>Marqué tout comme 'lu' et vider la Inbox</target>
 </trans-unit>
 </body>
 </file>

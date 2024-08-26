@@ -703,7 +703,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                     <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                     <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                     <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
-                    <ui5-menu-item id="importCommitItem" text=${msg("Import & commit")} icon="open-folder" ></ui5-menu-item>
+                    <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")} icon="open-folder" ></ui5-menu-item>
                     <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
                     <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
                     <ui5-menu-item id="dumpItem" text=${"Dump app logs"}></ui5-menu-item>
@@ -900,7 +900,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   async onCommitBtn(_e?: any) {
-    toasty(msg("All marked 'read' & cleared Inbox"));
+    toasty(msg("All marked 'read' and cleared Inbox"));
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
     //const semTopic = this.shadowRoot!.getElementById("topicusView") as SemanticTopicsView;

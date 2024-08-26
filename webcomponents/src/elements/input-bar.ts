@@ -386,7 +386,7 @@ export class InputBar extends LitElement {
             </ui5-button>` : html``}
             <!-- TEXT AREA -->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
-                          placeholder="Message #${this.topic}, @ to mention"
+                          placeholder=${`${msg("Message")} #${this.topic}, @ ${msg("to mention")}`}
                           growing
                           growing-max-lines="3"
                           rows="1"

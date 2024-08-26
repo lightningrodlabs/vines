@@ -30,10 +30,6 @@
   <source>Cancel</source>
   <target>Annuler</target>
 </trans-unit>
-<trans-unit id="seef51e1596b93277">
-  <source>No thread selected</source>
-  <target>Aucun fil selectionné</target>
-</trans-unit>
 <trans-unit id="s2b3859261c42db06">
   <source>No topics found</source>
   <target>Aucun sujet trouvé</target>
@@ -397,6 +393,22 @@
 <trans-unit id="sb5b855617d92fba3">
   <source>Archived Subject</source>
   <target>Sujet Archivé</target>
+</trans-unit>
+<trans-unit id="s1fa96bca92224298">
+  <source>Welcome to</source>
+  <target>Bienvenue à</target>
+</trans-unit>
+<trans-unit id="s977abeeea3e2041a">
+  <source>No channel selected</source>
+  <target>Aucun canal séléctionné</target>
+</trans-unit>
+<trans-unit id="s79e8cc71a5975b04">
+  <source>Message</source>
+  <target>Envoyer sur</target>
+</trans-unit>
+<trans-unit id="s829d60d437d50c76">
+  <source>to mention</source>
+  <target>pour mentionner</target>
 </trans-unit>
 </body>
 </file>

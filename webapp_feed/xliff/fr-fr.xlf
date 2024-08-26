@@ -2,17 +2,9 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
 <file target-language="fr-fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
-<trans-unit id="sfe4bac25ac65cd46">
-  <source>Failed to connect to Holochain Conductor and/or "CommunityFeed" cell.</source>
-  <target>Échec de la connexion avec le Holochain Conductor et/ou  la cell "Feed"</target>
-</trans-unit>
 <trans-unit id="s2c8189544e3ea679">
   <source>Retry</source>
   <target>Réessayer</target>
-</trans-unit>
-<trans-unit id="se53719283f976f00">
-  <source>Import Profile into CommunityFeed</source>
-  <target>Importer le Profile dans Feed</target>
 </trans-unit>
 <trans-unit id="sf969c2297c7b8324">
   <source>Create new Topic</source>
@@ -38,9 +30,6 @@
 </trans-unit>
 <trans-unit id="sae7541d42db412aa">
   <source>Import File</source>
-</trans-unit>
-<trans-unit id="saa4526fdc34088e7">
-  <source>Import &amp; commit</source>
 </trans-unit>
 <trans-unit id="s793f79a4b17b7cf6">
   <source>Import only</source>
@@ -84,8 +73,17 @@
 <trans-unit id="s4bb34a44e1191df5">
   <source>Exported data to json in Downloads folder</source>
 </trans-unit>
-<trans-unit id="s0bb93a1206db465c">
-  <source>All marked 'read' &amp; cleared Inbox</source>
+<trans-unit id="s20e56c0e5b78aac3">
+  <source>Failed to connect to Holochain Conductor and/or "Feed" cell.</source>
+</trans-unit>
+<trans-unit id="s606f35dca1ea736f">
+  <source>Import Profile into Feed</source>
+</trans-unit>
+<trans-unit id="s78b9eec9a8e079fe">
+  <source>Import and commit</source>
+</trans-unit>
+<trans-unit id="s8933f1bb82275307">
+  <source>All marked 'read' and cleared Inbox</source>
 </trans-unit>
 </body>
 </file>
