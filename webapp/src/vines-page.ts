@@ -1,4 +1,4 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
+import {css, html, PropertyValues/*, TemplateResult*/} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
   ActionId,
@@ -758,6 +758,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this._listerToShow = null;
       return;
     }
+    if (selectedOption.id == "tools-option") {
+      this._listerToShow = "__applet__";
+      return;
+    }
     if (selectedOption.id == "topics-option") {
       this._listerToShow = this.cell.address.dnaId.b64;
       return;
@@ -996,23 +1000,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
-    //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
-    //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
-    let appletOptions: TemplateResult<1>[] = [];
-    if (this.weServices) {
-      appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
-          console.log("appletInfo", appletInfo);
-          /** exclude this applet as it's handled specifically elsewhere */
-          if (!appletInfo || appletId.equals(this.weServices.appletId)) {
-            return html``;
-          }
-          return html`<ui5-option id=${appletId.b64} icon="discussion">${appletInfo.appletName}</ui5-option>`;
-        }
-      );
-    }
-    console.log("appletOptions", appletOptions);
-
-
     let fileTable = html``;
     if (!this._hideFiles) {
       const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
@@ -1077,7 +1064,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
-    let lister= html`<applet-lister .appletId=${this._listerToShow}></applet-lister>`
+    let lister= html`<applet-lister></applet-lister>`
     if (this._listerToShow == this.cell.address.agentId.b64) {
       lister = html`
           <dm-lister
@@ -1204,19 +1191,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                 <ui5-segmented-button @selection-change=${this.onListerSelected} style="margin:auto;">
                     <ui5-segmented-button-item id="topics-option">${msg('Topics')}</ui5-segmented-button-item>
+                    <ui5-segmented-button-item id="tools-option">${msg('Tools')}</ui5-segmented-button-item>
                     <ui5-segmented-button-item id="mine-option">${msg('My')}</ui5-segmented-button-item>
                     <ui5-segmented-button-item id="dm-option">${msg('DMs')}</ui5-segmented-button-item>
                 </ui5-segmented-button>
 
-                <!-- <ui5-option id="this-app-option" icon="discussion">Vines</ui5-option>  FIXME: disabled because not working -->
-                <!--
-                <ui5-select id="lister-select" @change=${this.onListerSelected}>
-                    ${appletOptions}                    
-                    <ui5-option id="dm-option" icon="paper-plane">${msg('Direct Messages')}</ui5-option>
-                    <ui5-option id="mine-option" icon="bookmark">${msg('My Channels')}</ui5-option>
-                    <ui5-option id="topics-option" icon="thing-type" selected>${msg('Topics')}</ui5-option>
-                </ui5-select>
-                -->
                 ${lister}
 
                     <!--

@@ -1,5 +1,5 @@
-import {css, html, PropertyValues, render} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {css, html, PropertyValues, render, TemplateResult} from "lit";
+import {customElement, state} from "lit/decorators.js";
 import {consume} from "@lit/context";
 import {msg} from "@lit/localize";
 
@@ -46,7 +46,9 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
   /** ID of the applet to display threads of */
-  @property() appletId: EntryId = THIS_APPLET_ID;
+  //@property() appletId: EntryId = THIS_APPLET_ID;
+   @state() _appletId: EntryId = THIS_APPLET_ID;
+
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -70,7 +72,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     //console.log("<applet-lister>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
-    if (changedProperties.has("appletId") && this._zvm) {
+    if (changedProperties.has("_appletId") && this._zvm) {
       /*await */ this.loadSubjectTypes();
     }
   }
@@ -81,7 +83,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     console.log("<applet-lister>.loadSubjectTypes()");
     this._loading = true;
     const zvm = newZvm? newZvm : this._zvm;
-    await zvm.pullAppletSubjectTypes(this.appletId);
+    await zvm.pullAppletSubjectTypes(this._appletId);
     this._loading = false;
   }
 
@@ -193,7 +195,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (event.detail.item.level == 1) {
       /** Grab children */
       const typePathEh = new EntryId(toggledTreeItem.id);
-      let subjects = await this._zvm.findSubjects(this.appletId, typePathEh);
+      let subjects = await this._zvm.findSubjects(this._appletId, typePathEh);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
         console.warn("weServices not found in <applet-lister>")
@@ -282,7 +284,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<applet-lister>.render()", this.appletId);
+    console.log("<applet-lister>.render()", this._appletId);
     // if (!this.appletId) {
     //   return html `<div>No Applet selected</div>`;
     // }
@@ -290,7 +292,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
-    let subjectTypes = this.perspective.appletSubjectTypes.get(this.appletId);
+    let subjectTypes = this.perspective.appletSubjectTypes.get(this._appletId);
     console.log("<applet-lister>.render() subjectTypes", subjectTypes);
     if (!subjectTypes) {
       subjectTypes = new EntryIdMap();
@@ -340,14 +342,36 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     });
     //console.log({treeItems})
 
+
+    //console.log("this._appletInfos", JSON.parse(JSON.stringify(this._appletInfos)));
+    //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
+    let appletOptions: TemplateResult<1>[] = [];
+    if (this.weServices) {
+      appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
+          console.log("appletInfo", appletInfo);
+          /** exclude this applet as it's handled specifically elsewhere */
+          if (!appletInfo || appletId.equals(this.weServices.appletId)) {
+            return html``;
+          }
+          return html`<ui5-option id=${appletId.b64} icon="discussion">${appletInfo.appletName}</ui5-option>`;
+        }
+      );
+    }
+    console.log("appletOptions", appletOptions);
+
+
+    
     /** Handle empty tree case */
     if (treeItems.length == 0) {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
+              <ui5-select id="lister-select" @change=${(e:any) => {console.log("applet-lister change", e);}}>
+                  ${appletOptions}
+              </ui5-select>
             <div style="color: grey; margin: auto;">${msg('No comment threads found')}</div>
-            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this.appletId.b64 || this.appletId == THIS_APPLET_ID}
+            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this._appletId.b64 || this._appletId == THIS_APPLET_ID}
                         @click=${(_e:any) => {
-                          if (this.weServices && !this.appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this.appletId.hash)
+                          if (this.weServices && !this._appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this._appletId.hash)
                         }}>
                 ${msg('Go to Tool')}
             </ui5-button>
@@ -355,9 +379,13 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       `;
     }
 
+
     /** render all */
     return html`
       <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
+        <ui5-select id="lister-select" @change=${(e:any) => {console.log("applet-lister change", e);}}>
+            ${appletOptions}
+        </ui5-select>
         <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text="No SubjectTypes found"
                   @item-toggle=${(e:any) => this.toggleTreeItem(e, unreadSubjects)}
                   @item-click=${this.clickTree}
