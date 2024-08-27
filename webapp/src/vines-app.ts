@@ -92,7 +92,7 @@ export class VinesApp extends HappElement {
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    super(appWs? appWs : HC_APP_PORT, appId, adminUrl, 10 * 1000);
+    super(appWs? appWs : HC_APP_PORT, appId, adminUrl, 20 * 1000);
     /** */
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
   }

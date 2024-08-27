@@ -145,7 +145,7 @@ import {
   CommentRequest,
   CommentThreadView, ConfirmDialog,
   doodle_flowers,
-  EditTopicRequest,
+  EditTopicRequest, getThisAppletId,
   globaFilesContext,
   HideEvent,
   InputBar,
@@ -460,7 +460,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.error("No thread selected");
       return;
     }
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh, this.weServices);
     console.log("onCreateTextMessage() ah", ah, this._replyToAh);
   }
 
@@ -471,7 +471,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     const otherAgent: AgentId = sub.hash;
     console.log("onDmTextMessage() otherAgent", otherAgent)
-    let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText);
+    let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     console.log("onDmTextMessage() beadAh", beadAh, this._dvm.threadsZvm.perspective.threads);
     this._replyToAh = undefined;
     this.selectedBeadAh = undefined;
@@ -488,7 +488,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateHrlMessage()", weaveUrlFromWal(wal));
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // TODO: make sure hrl is an entryHash
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this.selectedThreadHash, undefined, this._replyToAh);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this.selectedThreadHash, undefined, this._replyToAh, this.weServices);
     console.log("onCreateHrlMessage() ah", ah);
   }
 
@@ -731,7 +731,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const subject: Subject = {
         address: request.subjectId.b64,
         typeName: request.subjectType,
-        appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
+        appletId: getThisAppletId(this.weServices),
         dnaHashB64: this.cell.address.dnaId.b64,
     };
     const pp: ParticipationProtocol = {
@@ -759,17 +759,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     if (selectedOption.id == "tools-option") {
-      this._listerToShow = "__applet__";
+      this._listerToShow = "__tools__";
       return;
     }
     if (selectedOption.id == "topics-option") {
       this._listerToShow = this.cell.address.dnaId.b64;
       return;
     }
-    if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
-      this._listerToShow = THIS_APPLET_ID.b64;
-      return;
-    }
+    // if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
+    //   this._listerToShow = THIS_APPLET_ID.b64;
+    //   return;
+    // }
     /* it's an appletId so display the applet lister */
     this._listerToShow = selectedOption.id;
     this.requestUpdate();
@@ -781,7 +781,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateFileMessage()", file.name);
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
       console.debug("<vines-page> startPublishFile callback", eh);
-      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh);
+      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh, this.weServices);
       console.debug("onCreateFileMessage() ah", ah);
       this._splitObj = undefined;
     });
@@ -1436,7 +1436,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 console.log("@avatar-clicked", e.detail)
                 const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                 dialog.close();
-                const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail);
+                const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
                 this.dispatchEvent(threadJumpEvent(ppAh));
             }}></peer-list>
             <ui5-button 

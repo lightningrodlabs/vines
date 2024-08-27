@@ -7,7 +7,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {determineSubjectName} from "../../utils";
+import {determineSubjectName, getThisAppletId} from "../../utils";
 import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -150,7 +150,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     const subject: Subject = {
       address: beadAh.b64,
       typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
-      appletId: this.weServices? this.weServices.appletId : THIS_APPLET_ID.b64,
+      appletId: getThisAppletId(this.weServices),
       dnaHashB64: this.cell.address.dnaId.b64,
     };
     const subjectName = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);

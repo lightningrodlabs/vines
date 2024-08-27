@@ -47,6 +47,22 @@ export function resizeAndExport(img: HTMLImageElement) {
 }
 
 
+function getRandomHexColor(): string {
+  // Generate a random integer between 0 and 255 for each color component (R, G, B)
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+
+  // Convert each component to a two-digit hexadecimal string
+  const rHex = r.toString(16).padStart(2, '0');
+  const gHex = g.toString(16).padStart(2, '0');
+  const bHex = b.toString(16).padStart(2, '0');
+
+  // Combine the hexadecimal components into one string with a '#' prefix
+  return `#${rHex}${gHex}${bHex}`;
+}
+
+
 /**
  * @element edit-profile
  * @fires save-profile - Fired when the save profile button is clicked
@@ -304,13 +320,13 @@ export class EditProfile extends LitElement {
 
           <div class="row" style="justify-content: center; margin-bottom: 18px; align-self: start;" >
               <span style="font-size:18px;padding-right:10px;padding-top:5px;">${msg('Color')}:</span>
-              <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format='rgb'
-                               .value=${this.profile?.fields['color']}></sl-color-picker>
+              <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format="hex"
+                               .value=${this.profile && this.profile.fields['color']? this.profile.fields['color'] : getRandomHexColor() }></sl-color-picker>
           </div>
 
             <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
                 <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
-                <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile?.fields['lang']}>
+                <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
                     <sl-radio value="en">🇬🇧</sl-radio>
                     <sl-radio value="fr-fr">🇫🇷</sl-radio>
                 </sl-radio-group>

@@ -72,14 +72,14 @@ import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {Decoder, Encoder} from "@msgpack/msgpack";
-import {parseMentions, weaveUrlToWal} from "../utils";
+import {getThisAppletId, parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
-import {THIS_APPLET_ID} from "../contexts";
 import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
 import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 //generateSearchTest();
@@ -813,7 +813,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** -- -- */
 
   /** */
-  async createDmThread(otherAgent: AgentId): Promise<ActionId> {
+  async createDmThread(otherAgent: AgentId, weServices?: WeServicesEx): Promise<ActionId> {
     if (this.cell.address.agentId.equals(otherAgent)) {
       throw Promise.reject("Can't DM self");
     }
@@ -824,7 +824,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return maybePpAh;
     }
     /** Create new Thread */
-    const pp_ah = await this.zomeProxy.publishDmThread({otherAgent: otherAgent.hash, appletId: THIS_APPLET_ID.b64});
+    const pp_ah = await this.zomeProxy.publishDmThread({otherAgent: otherAgent.hash, appletId: getThisAppletId(weServices)});
     const ppAh = new ActionId(pp_ah);
     //let ppMat = await this.fetchPp(ppAh); // trigger storage
     await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);

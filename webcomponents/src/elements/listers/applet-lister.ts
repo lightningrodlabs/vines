@@ -31,7 +31,7 @@ import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
-import {EntryHashB64} from "@holochain/client";
+import {ActionHashB64, EntryHashB64} from "@holochain/client";
 
 
 
@@ -156,7 +156,10 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     if (type == ThreadsEntryType.ParticipationProtocol) {
       await this.updateComplete;
-      this.dispatchEvent(threadJumpEvent(event.detail.item.id));
+      const b64 = event.detail.item.id as ActionHashB64;
+      const jump = threadJumpEvent(new ActionId(b64));
+      console.log("<applet-lister> click event: jump", jump.detail);
+      this.dispatchEvent(jump);
     }
 
   }
@@ -258,11 +261,11 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         /** 'new' badge to display */
         let newBadge = html``;
         if (threadIsNew) {
-          newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
+          newBadge = html`<ui5-badge color-scheme="3" style="margin-left:3px; color:brown;">${msg("new")}</ui5-badge>`;
         }
 
         const tmpl = html`
-          <ui5-tree-item-custom id=${ppAh.b64} level=${toggledTreeItem.level + 1}>
+          <ui5-tree-item-custom id=${ppAh.b64} level=${toggledTreeItem.level + 1} style="cursor: pointer">
             <span slot="content" style="display:flex;overflow: hidden;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}">
                 ${pp.purpose}
                 ${newBadge}
@@ -353,29 +356,39 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           if (!appletInfo || appletId.equals(this.weServices.appletId)) {
             return html``;
           }
-          return html`<ui5-option id=${appletId.b64} icon="discussion">${appletInfo.appletName}</ui5-option>`;
+          return html`<ui5-option id=${appletId.b64}>${appletInfo.appletName}</ui5-option>`;
         }
       );
     }
+    appletOptions.push(html`<ui5-option id="__VINES__">Vines</ui5-option>`);
+    //appletOptions.push(html`<ui5-option id="__VINES2__">Vines2</ui5-option>`);
     console.log("appletOptions", appletOptions);
 
 
-    
+    let inner = html`
+        <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text=${msg("No SubjectTypes found")}
+                  style="max-width:260px;"
+                  @item-toggle=${(e:any) => this.toggleTreeItem(e, unreadSubjects)}
+                  @item-click=${this.clickTree}
+                  @item-mouseover=${(e:any) => {this._isHovered.set(e.detail.item.id, true); this.requestUpdate();}}
+                  @item-mouseout=${(e:any) => {this._isHovered.set(e.detail.item.id, false);}}
+        >
+          ${treeItems}
+        </ui5-tree>      
+    `;
+
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      return html`
-          <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-              <ui5-select id="lister-select" @change=${(e:any) => {console.log("applet-lister change", e);}}>
-                  ${appletOptions}
-              </ui5-select>
+      inner = html`
             <div style="color: grey; margin: auto;">${msg('No comment threads found')}</div>
-            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this._appletId.b64 || this._appletId == THIS_APPLET_ID}
+            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this._appletId.b64 || this._appletId.b64 == THIS_APPLET_ID.b64}
                         @click=${(_e:any) => {
-                          if (this.weServices && !this._appletId.equals(THIS_APPLET_ID)) this.weServices.openAppletMain(this._appletId.hash)
+                          if (this.weServices && !this._appletId.equals(THIS_APPLET_ID)) {
+                            this.weServices.openAppletMain(this._appletId.hash);
+                          }
                         }}>
                 ${msg('Go to Tool')}
             </ui5-button>
-          </div>
       `;
     }
 
@@ -383,17 +396,12 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render all */
     return html`
       <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
-        <ui5-select id="lister-select" @change=${(e:any) => {console.log("applet-lister change", e);}}>
-            ${appletOptions}
-        </ui5-select>
-        <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text="No SubjectTypes found"
-                  @item-toggle=${(e:any) => this.toggleTreeItem(e, unreadSubjects)}
-                  @item-click=${this.clickTree}
-                  @item-mouseover=${(e:any) => {this._isHovered.set(e.detail.item.id, true); this.requestUpdate();}}
-                  @item-mouseout=${(e:any) => {this._isHovered.set(e.detail.item.id, false);}}
-        >
-          ${treeItems}
-        </ui5-tree>
+        <div style="display:flex; flex-direction:column; gap:10px; padding:5px; width:100%">
+          <ui5-select id="lister-select" style="margin:auto" @change=${(e:any) => {console.log("applet-lister change", e); this._appletId = e.detail.selectedOption.id}}>
+              ${appletOptions}
+          </ui5-select>
+          ${inner}
+        </div>
       </ui5-busy-indicator>
     `
   }

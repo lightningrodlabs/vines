@@ -125,7 +125,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
             badge = html`
-                <ui5-badge class="notifBadge">New</ui5-badge>`;
+                <ui5-badge class="notifBadge">${msg("new")}</ui5-badge>`;
           } else {
             if (notifCount > 0) {
               badge = html`

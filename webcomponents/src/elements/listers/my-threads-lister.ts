@@ -147,7 +147,10 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                        ${threadIsNew || notifCount ? "color: #359C07;" : ""}
                        ${isSelected ? "background:#DBDBDB" : ""}
                        "
-                     @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                     @click=${(_e:any) => {
+                        const jump = threadJumpEvent(ppAh);
+                        this.dispatchEvent(jump);
+                     }}>
                   ${badge}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
                   <!-- ${hideShowBtn} -->
@@ -391,6 +394,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** render all */
     return html`${appletSubListers}`
   }
+
 
 
   /** */

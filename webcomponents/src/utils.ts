@@ -5,7 +5,7 @@ import {
   TypedBeadMat
 } from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {WAL, weaveUrlFromWal, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
+import {AppletId, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
@@ -172,11 +172,19 @@ export function determineSubjectPrefix(type: SpecialSubjectType) {
 }
 
 
+/** */
+export function getThisAppletId(weServices?: WeServicesEx): AppletId {
+  if (weServices) weServices.appletId;
+  return THIS_APPLET_ID.b64;
+}
+
+
 /** We are determining the subject name and formatting it into a thread name */
 export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices?: WeServicesEx): string {
   console.log("determineSubjectName()", subject);
+  const thisAppletId = getThisAppletId(weServices);
   /** Threads Applet */
-  if (subject.appletId == THIS_APPLET_ID.b64 || (weServices && subject.appletId == weServices.appletId)) {
+  if (subject.appletId == thisAppletId) {
     switch (subject.typeName) {
       /** -- special types -- */
       case SpecialSubjectType.Applet:

@@ -29,6 +29,7 @@ import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {Decoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 /** */
@@ -225,22 +226,22 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- (un)Publish / Edit -- */
 
   /** */
-  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId): Promise<ActionId> {
+  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx): Promise<ActionId> {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
-      return this.publishDm(isDmThread, beadType, content, prevBead);
+      return this.publishDm(isDmThread, beadType, content, prevBead, weServices);
     }
     return this.publishTypedBead(beadType, content, ppAh, author, prevBead);
   }
 
 
   /** */
-  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId): Promise<ActionId> {
+  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx): Promise<ActionId> {
     const dmAh = this.threadsZvm.perspective.dmAgents.get(otherAgent);
     /** Create or grab DmThread */
     let ppAh: ActionId;
     if (!dmAh) {
-      ppAh = await this.threadsZvm.createDmThread(otherAgent);
+      ppAh = await this.threadsZvm.createDmThread(otherAgent, weServices);
     } else {
       ppAh = dmAh;
     }
