@@ -24,10 +24,20 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     if comps.len() == 1 {
       continue;
     }
+    if comps.len() != 4 {
+      error!("Bad number of components in path. Expected 3. Got: {}", comps.len());
+      // DEBUG ERROR
+      // for comp in comps {
+      //   let str = String::try_from(&comp)
+      //     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+      //   error!("comp = {}", str);
+      // }
+      continue;
+    }
     debug!("Parsing leaf_anchor: '{}'", tp.anchor);
     //let applet_hash = comp2hash(&comps[1])?;
     let applet_id = String::try_from(&comps[1])
-        .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+        .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     let subject_type_comp = comps[2].clone();
     //let subject_hash = comp2hash(&comps[3])?;
     let (dna_hash_b64, subject_address) = comp2subject(&comps[3])?;

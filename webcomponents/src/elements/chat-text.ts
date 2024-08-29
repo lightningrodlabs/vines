@@ -26,7 +26,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.debug("<chat-text>.render()", this.hash);
+    //console.debug("<chat-text>.render()", this.hash);
     if (!this.hash) {
       return html`<div style="color:red">No message found</div>`;
     }

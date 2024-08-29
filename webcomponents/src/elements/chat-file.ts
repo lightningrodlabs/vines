@@ -289,7 +289,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           max-width: 350px !important;
         }
 
-        .Image,
+        .Image {
+        }
         .Video {
           /*height: 300px;*/
           /*width: 440px;*/

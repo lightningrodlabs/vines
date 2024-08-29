@@ -11,7 +11,7 @@ import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent, ShowProfileEvent, CommentRequest} from "../events";
 import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {Hrl, weaveUrlFromWal, weaveUrlToWAL} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
@@ -23,7 +23,7 @@ import {popoverStyleTemplate} from "../styles";
 import {determineBeadName} from "../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {BeadInfo} from "../viewModels/threads.materialize";
+import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat} from "../viewModels/threads.materialize";
 
 
 /**
@@ -159,7 +159,28 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
         toasty(msg("Copied Message's WAL to clipboard"));
       break;
-      case "copyText": /* TODO */break;
+      case "downloadItem": {
+        const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;
+        if (beadInfo.beadType == ThreadsEntryType.TextBead) {
+          const tm = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as TextBeadMat;
+          navigator.clipboard.writeText(tm.value);
+          toasty(msg("Copied Text to clipboard"));
+        }
+        if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
+          const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
+          this._filesDvm.downloadFile(entryBead.sourceEh);
+        }
+        if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
+          const anyBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as AnyBeadMat;
+          const wal = weaveUrlToWAL(anyBead.value);
+          navigator.clipboard.writeText(anyBead.value);
+          if (this.weServices) {
+            this.weServices.walToPocket(wal);
+          }
+          toasty(msg("Copied WAL Link to clipboard"));
+        }
+      }
+        break;
       case "flagMessage": /* TODO */ break;
     }
   }
@@ -254,15 +275,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
+    let downloadItem = html``;
     const itemClass = hidemeta? "" : "innerItem";
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
       item = html`<chat-text class="${itemClass}" .hash=${this.hash}></chat-text>`;
+      downloadItem = html`<ui5-menu-item id="downloadItem" icon="copy" text=${msg("Copy Text")}></ui5-menu-item>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
       item = html`<chat-file class="${itemClass}" .hash=${this.hash}></chat-file>`;
+      downloadItem = html`<ui5-menu-item id="downloadItem" icon="download" text=${msg("Download File")}></ui5-menu-item>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
       item = html`<chat-wal class="${itemClass}" .hash=${this.hash}></chat-wal>`;
+      downloadItem = html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
     }
     /** Determine the comment button to display depending on current comments for this message */
     const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
@@ -439,7 +464,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create new comment thread")}></ui5-menu-item>`
                 }
                 <ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>
-                <ui5-menu-item id="copyText" disabled icon="copy" text=${msg("Copy Text")}></ui5-menu-item>
+                ${downloadItem}
                 <ui5-menu-item id="flagMessage" disabled icon="flag" text=${msg("Report Message")}></ui5-menu-item>
 
             </ui5-menu>
