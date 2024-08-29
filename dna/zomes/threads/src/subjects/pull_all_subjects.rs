@@ -25,7 +25,7 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
       continue;
     }
     if comps.len() != 4 {
-      error!("Bad number of components in path. Expected 3. Got: {}", comps.len());
+      error!("Bad number of components in path. Expected 4. Got: {}", comps.len());
       // DEBUG ERROR
       // for comp in comps {
       //   let str = String::try_from(&comp)
