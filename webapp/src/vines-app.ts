@@ -14,7 +14,7 @@ import {
 } from "@lightningrodlabs/we-applet";
 import {
   HCL,
-  HappElement,
+  HappMultiElement,
   HvmDef,
   DvmDef,
   DnaViewModel, pascal, delay, ActionId,
@@ -74,7 +74,7 @@ export type AppletGroup = {
 /** */
 @localized()
 @customElement("vines-app")
-export class VinesApp extends HappElement {
+export class VinesApp extends HappMultiElement {
 
   static override readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
@@ -105,7 +105,8 @@ export class VinesApp extends HappElement {
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    super(mainGroup? mainGroup.appWs : HC_APP_PORT, mainGroup? mainGroup.appId : undefined, adminUrl, 20 * 1000);
+    const wtf: [number | AppWebsocket, InstalledAppId | undefined] = [mainGroup? mainGroup.appWs : HC_APP_PORT, mainGroup? mainGroup.appId : undefined];
+    super([wtf], adminUrl, 20 * 1000);
     /** */
     if (mainGroup) {
       this.appId = mainGroup.appId;
@@ -188,17 +189,19 @@ export class VinesApp extends HappElement {
 
   /** -- Getters -- */
 
-  get threadsDvm(): ThreadsDvm { return this.hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)! as ThreadsDvm }
+  threadsDvm(idx: number): ThreadsDvm { return this.hvms[idx]![1].getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)! as ThreadsDvm }
 
-  get filesDvm(): FilesDvm { return this.hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm }
+  filesDvm(idx: number): FilesDvm { return this.hvms[idx]![1].getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm }
 
 
   /** -- Methods -- */
 
   /** */
   handleSignal(sig: AppSignal) {
-    console.log("<vines-app>.handleSignal()")
-    this.appProxy.onSignal(sig);
+    console.log("<vines-app>.handleSignal()");
+    for (const [appProxy, _hvm] of this.hvms) {
+      appProxy.onSignal(sig);
+    }
   }
 
 
@@ -215,43 +218,53 @@ export class VinesApp extends HappElement {
     /*let _filesProvider =*/ new ContextProvider(this, globaFilesContext, this.filesDvm);
   }
 
-  /** */
+
+  /**  */
   async attemptThreadsEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
-    while(attempts > 0) {
-      attempts -= 1;
-      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-        await delay(delayMs);
-      } else {
-        // console.log("allAppEntryTypes", allAppEntryTypes)
-        return true;
+    for (let i = 0; i < this.hvms.length; i+= 1) {
+      while (attempts > 0) {
+        attempts -= 1;
+        const allAppEntryTypes = await this.threadsDvm(i).fetchAllEntryDefs();
+        if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
+          console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+          await delay(delayMs);
+        } else {
+          // console.log("allAppEntryTypes", allAppEntryTypes)
+          break;
+        }
       }
+      if (attempts == 0) return false;
     }
-    return false;
+    return true;
   }
+
 
   /** */
   async attemptFilesEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
-    while(attempts > 0) {
-      attempts -= 1;
-      const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-        console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
-        await delay(delayMs);
-      } else {
-        return true;
+    for (let i = 0; i < this.hvms.length; i+= 1) {
+      while (attempts > 0) {
+        attempts -= 1;
+        const allAppEntryTypes = await this.filesDvm(i).fetchAllEntryDefs();
+        if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
+          console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
+          await delay(delayMs);
+        } else {
+          break;
+        }
       }
+      if (attempts == 0) return false;
     }
-    return false;
+    return true;
   }
 
 
   /** */
   override async perspectiveInitializedOffline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOffline()");
-    const maybeProfile = await this.threadsDvm.profilesZvm.findProfile(this.filesDvm.cell.address.agentId);
-    console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm.cell.address.agentId);
+    for (let i = 0; i < this.hvms.length; i+= 1) {
+      const maybeProfile = await this.threadsDvm(i).profilesZvm.findProfile(this.filesDvm(i).cell.address.agentId);
+      console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm(i).cell.address.agentId);
+    }
     /** Done */
     this._offlineLoaded = true;
   }
@@ -261,10 +274,12 @@ export class VinesApp extends HappElement {
   override async perspectiveInitializedOnline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOnline() START", this.appletView);
 
-    if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
-      await this.hvm.probeAll();
+    for (let i = 0; i < this.hvms.length; i+= 1) {
+      if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
+        await this.hvms[i]![1].probeAll();
+      }
     }
-    await this.networkInfoAll(); // TODO: should propable store result in class field
+    //await this.networkInfoAll(); // TODO: should propable store result in class field
     console.log("<vines-app>.perspectiveInitializedOnline() DONE");
     this._onlineLoaded = true;
     this._onlineLoadedProvider.setValue(true);
@@ -284,8 +299,8 @@ export class VinesApp extends HappElement {
   /** */
   async onDumpNetworkLogs(_e:any) {
     console.log("onDumpNetworkLogs()")
-    await this.networkInfoAll();
-    this.dumpNetworkInfoLogs();
+    //await this.networkInfoAll();
+    //this.dumpNetworkInfoLogs();
   }
 
 
@@ -309,7 +324,7 @@ export class VinesApp extends HappElement {
     }
     if (e.detail.type == JumpDestinationType.Bead) {
       const beadAh = new ActionId(e.detail.address.b64);
-      const beadInfo = await this.threadsDvm.threadsZvm.perspective.getBeadInfo(beadAh);
+      const beadInfo = await this.threadsDvm(0).threadsZvm.perspective.getBeadInfo(beadAh); // FIXME 0
       if (beadInfo) {
         this._maybeSelectedThreadAh = beadInfo.bead.ppAh;
         this._maybeSelectedBeadAh = beadAh;
@@ -329,7 +344,7 @@ export class VinesApp extends HappElement {
       console.warn("Invalid copy-thread event");
       return;
     }
-    const hrl: Hrl = intoHrl(this.threadsDvm.cell.address.dnaId, e.detail);
+    const hrl: Hrl = intoHrl(this.threadsDvm(0).cell.address.dnaId, e.detail); // FIXME 0
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
@@ -341,7 +356,7 @@ export class VinesApp extends HappElement {
 
   /** */
   override render() {
-    console.log("<vines-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.threadsDvm.cell.print());
+    console.log("<vines-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
       return html `
@@ -359,7 +374,7 @@ export class VinesApp extends HappElement {
                     @click=${async (_e:any) => {
           const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
           btn.disabled = true;
-          const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
+          const allAppEntryTypes = await this.threadsDvm(0).fetchAllEntryDefs(); // FIXME 0
           if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
               console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
               btn.disabled = false;
@@ -385,9 +400,9 @@ export class VinesApp extends HappElement {
             <vines-page
                       .selectedThreadHash=${this._maybeSelectedThreadAh}
                       .selectedBeadAh=${this._maybeSelectedBeadAh}
-                      .networkInfoLogs=${this.appProxy.networkInfoLogs} 
+                      .networkInfoLogs=${this.hvms[0]![0].networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${(_e:any) => this.networkInfoAll()}
+                      @queryNetworkInfo=${(_e:any) => {}/*this.networkInfoAll()*/}
             ></vines-page>`;
     if (this.appletView) {
       console.log("appletView", this.appletView);
@@ -468,8 +483,9 @@ export class VinesApp extends HappElement {
     `;
 
     /** Import profile from Moss */
+    const profilesZvm = this.threadsDvm(0).profilesZvm; // FIXME
     let guardedView = view;
-    const maybeMyProfile = this.threadsDvm.profilesZvm.getMyProfile();
+    const maybeMyProfile = profilesZvm.getMyProfile();
     console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = html`
@@ -487,7 +503,7 @@ export class VinesApp extends HappElement {
                   @save-profile=${async (e: CustomEvent<ProfileMat>) => {
                     console.log("createMyProfile()", e.detail);
                     try {
-                      await this.threadsDvm.profilesZvm.createMyProfile(e.detail);
+                      await profilesZvm.createMyProfile(e.detail);
                     } catch(e:any) {
                       console.warn("Failed creating my Profile", e);
                       return;
@@ -496,7 +512,7 @@ export class VinesApp extends HappElement {
                     /** TODO: add a timeout */
                     let maybeMeProfile: Profile | undefined = undefined;
                     do {
-                        maybeMeProfile = this.threadsDvm.profilesZvm.getMyProfile();
+                        maybeMeProfile = profilesZvm.getMyProfile();
                         await delay(20);
                     } while (!maybeMeProfile)
                     /** */
@@ -512,9 +528,9 @@ export class VinesApp extends HappElement {
         </div>`;
     }
 
-    /** Render all */
+    /** Render all FIXME */
     return html`
-        <cell-context .cell=${this.threadsDvm.cell}>
+        <cell-context .cell=${this.threadsDvm(0).cell}>
           ${guardedView}
         </cell-context>
     `;
