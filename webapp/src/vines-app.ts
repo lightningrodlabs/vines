@@ -7,7 +7,6 @@ import {
   AppSignal,
   AppWebsocket,
   InstalledAppId,
-  ZomeName,
 } from "@holochain/client";
 import {
   AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal,
@@ -41,7 +40,7 @@ import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {BaseRoleName, CloneId, AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
+import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
@@ -103,10 +102,7 @@ export class VinesApp extends HappElement {
     appWs: AppWebsocket,
     adminWs: AdminWebsocket | undefined,
     appId: InstalledAppId,
-    profilesAppId: InstalledAppId,
-    profilesBaseRoleName: BaseRoleName,
-    profilesCloneId: CloneId | undefined,
-    profilesZomeName: ZomeName,
+    profilesHcl: HCL,
     profilesProxy: AppProxy,
     weServices: WeaveServices,
     thisAppletId: EntryId,
@@ -120,24 +116,22 @@ export class VinesApp extends HappElement {
     /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.fromWe()", profilesProxy);
-    await app.createWeProfilesDvm(profilesProxy, profilesAppId, profilesBaseRoleName, profilesCloneId, profilesZomeName);
+    await app.createWeProfilesDvm(profilesProxy, profilesHcl);
     return app;
   }
 
 
   /** Create a Profiles DVM out of a different happ */
-  async createWeProfilesDvm(profilesProxy: AppProxy, profilesAppId: InstalledAppId, profilesBaseRoleName: BaseRoleName,
-                            profilesCloneId: CloneId | undefined,
-                            _profilesZomeName: ZomeName): Promise<void> {
+  async createWeProfilesDvm(profilesProxy: AppProxy, profilesHcl: HCL): Promise<void> {
     const profilesAppInfo = await profilesProxy.appInfo();
     if (!profilesAppInfo) {
       throw Promise.reject("Missing Profiles AppInfo");
     }
-    const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesBaseRoleName, isClonable: false};
+    const profilesDef: DvmDef = {ctor: ProfilesDvm, baseRoleName: profilesHcl.baseRoleName, isClonable: false};
     const cell_infos = Object.values(profilesAppInfo.cell_info);
     console.log("createProfilesDvm() cell_infos:", cell_infos);
     /** Create Profiles DVM */
-    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
+    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, profilesHcl);
     console.log("createProfilesDvm() dvm", dvm);
     await this.setupWeProfilesDvm(dvm as ProfilesDvm, new AgentId(profilesAppInfo.agent_pub_key));
   }

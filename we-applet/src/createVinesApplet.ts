@@ -23,52 +23,52 @@ export async function createVinesApplet(
 ): Promise<VinesApp> {
 
   if (renderInfo.type =="cross-applet-view") {
+    //const crossViewInfo = renderInfo as unknown as CrossViewInfo;
     throw Error("cross-applet-view not implemented by Vines");
   }
 
   const appletViewInfo = renderInfo as unknown as AppletViewInfo;
-
   console.log("createVinesApplet()         client", appletViewInfo.appletClient);
   console.log("createVinesApplet() thisAppletHash", appletViewInfo.appletHash);
 
-  const profilesClient = appletViewInfo.profilesClient;
+  /** -- main AppWs -- */
+  const mainAppWs = appletViewInfo.appletClient as AppWebsocket;
+
+  /** -- main App ID -- */
   const mainAppInfo = await appletViewInfo.appletClient.appInfo();
   if (!mainAppInfo) {
     throw Promise.reject("Missing Main AppInfo");
   }
-
-  /** Determine profilesAppInfo */
-  const mainAppWs = appletViewInfo.appletClient as AppWebsocket;
-  //const mainAppWs = mainAppAgentWs.appWebsocket;
-  let profilesAppInfo = await profilesClient.client.appInfo();
   console.log("createVinesApplet() mainAppInfo", mainAppInfo);
-  console.log("createVinesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
+  const main_app_id = mainAppInfo.installed_app_id;
 
+  /** -- ProfilesClient -- */
+  const profilesClient = appletViewInfo.profilesClient;
+  const profilesAppInfo = await profilesClient.client.appInfo();
+  console.log("createVinesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
   if (!profilesAppInfo) {
     throw Promise.reject("Missing Profiles AppInfo");
   }
-
-  /** Check if roleName is actually a cloneId */
+  /* Check if roleName is actually a cloneId */
   let maybeCloneId = undefined;
-  let baseRoleName = profilesClient.roleName;
+  let profilesBaseRoleName = profilesClient.roleName;
   const maybeBaseRoleName = destructureCloneId(profilesClient.roleName);
   if (maybeBaseRoleName) {
-    baseRoleName = maybeBaseRoleName[0];
+    profilesBaseRoleName = maybeBaseRoleName[0];
     maybeCloneId = profilesClient.roleName;
   }
-
-  /** Determine profilesCellProxy */
-  const hcl = new HCL(profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId);
+  const profilesHcl = new HCL(profilesAppInfo.installed_app_id, profilesBaseRoleName, maybeCloneId);
+  /* Create profilesCellProxy */
   const profilesApi = new ProfilesApi(profilesClient);
   const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
-  await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, baseRoleName);
-  const profilesCellProxy = await profilesAppProxy.createCellProxy(hcl);
+  await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, profilesBaseRoleName);
+  const profilesCellProxy = await profilesAppProxy.createCellProxy(profilesHcl);
   console.log("createVinesApplet() profilesCellProxy", profilesCellProxy);
 
-  /** Create VinesApp */
+  /** -- Create VinesApp -- */
   const app = await VinesApp.fromWe(
-      mainAppWs, undefined, mainAppInfo.installed_app_id,
-      profilesAppInfo.installed_app_id, baseRoleName, maybeCloneId, profilesClient.zomeName, profilesAppProxy,
+      mainAppWs, undefined, main_app_id,
+      profilesHcl, profilesAppProxy,
       weServices,
       new EntryId(appletViewInfo.appletHash),
       appletViewInfo.view,
