@@ -353,7 +353,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
           console.log("appletInfo", appletInfo);
           /** exclude this applet as it's handled specifically elsewhere */
-          if (!appletInfo || appletId.equals(this.weServices.appletId)) {
+          if (!appletInfo || appletId.equals(this.weServices.appletIds[0]!)) {
             return html``;
           }
           return html`<ui5-option id=${appletId.b64}>${appletInfo.appletName}</ui5-option>`;
@@ -381,7 +381,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (treeItems.length == 0) {
       inner = html`
             <div style="color: grey; margin: auto;">${msg('No comment threads found')}</div>
-            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletId == this._appletId.b64 || this._appletId.b64 == THIS_APPLET_ID.b64}
+            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletIds[0]! == this._appletId.b64 || this._appletId.b64 == THIS_APPLET_ID.b64}
                         @click=${(_e:any) => {
                           if (this.weServices && !this._appletId.equals(THIS_APPLET_ID)) {
                             this.weServices.openAppletMain(this._appletId.hash);

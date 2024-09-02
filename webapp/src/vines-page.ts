@@ -438,7 +438,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(
-      this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID,
+      this.weServices? new EntryId(this.weServices.appletIds[0]!) : THIS_APPLET_ID,
       this._createTopicHash,
       name,
     );
@@ -1041,7 +1041,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletId));
+      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletIds[0]!));
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);

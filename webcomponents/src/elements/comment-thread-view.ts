@@ -259,7 +259,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
-    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletId? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
+    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
     const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
     console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
     //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
@@ -348,7 +348,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   }
                   /** OpenWal() if weServices is available */
                   if (this.weServices) {
-                      if (thread.pp.subject.appletId != this.weServices.appletId) {
+                      if (thread.pp.subject.appletId != this.weServices.appletIds[0]!) {
                           //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
                           this.weServices.openWal(wal);
                       }

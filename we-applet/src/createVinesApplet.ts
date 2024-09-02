@@ -10,40 +10,76 @@ import {
 
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 
-import {AppletViewInfo, ProfilesApi} from "@ddd-qc/we-utils";
+import {AppletViewInfo, ProfilesApi, CrossViewInfo} from "@ddd-qc/we-utils";
 import {EntryId, ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
-import {VinesApp} from "@vines/app";
+import {AppletGroup, VinesApp} from "@vines/app";
+import {ProfilesClient} from "@holochain-open-dev/profiles";
 
 
 /** */
-export async function createVinesApplet(
-  renderInfo: RenderInfo,
-  weServices: WeaveServices,
-): Promise<VinesApp> {
+export async function createVinesApplet(renderInfo: RenderInfo, weServices: WeaveServices): Promise<VinesApp> {
+  let appletGroups: AppletGroup[] = [];
+  /** cross-applet-view */
+  if (renderInfo.type == "cross-applet-view") {
+    const crossViewInfo = renderInfo as unknown as CrossViewInfo;
+    //throw Error("cross-applet-view not implemented by Vines");
+    console.log("createVinesApplet()         crossViewInfo", crossViewInfo);
+    for (const [appletHash, appletClients] of crossViewInfo.applets.entries()) {
+      const appWs = appletClients.appletClient as AppWebsocket;
+      const [profilesHcl, profilesAppProxy] = await createProfilesCellProxy(appletClients.profilesClient);
+      const appletGroup: AppletGroup = {
+        appWs,
+        appId: await getAppId(appWs),
+        appletId: new EntryId(appletHash),
+        profilesHcl,
+        profilesAppProxy,
+        appletView: crossViewInfo.view,
+      }
+      appletGroups.push(appletGroup);
+    }
 
-  if (renderInfo.type =="cross-applet-view") {
-    //const crossViewInfo = renderInfo as unknown as CrossViewInfo;
-    throw Error("cross-applet-view not implemented by Vines");
+  } else {
+    /** applet-view */
+    const appletViewInfo = renderInfo as unknown as AppletViewInfo;
+    console.log("createVinesApplet()         client", appletViewInfo.appletClient);
+    console.log("createVinesApplet() thisAppletHash", appletViewInfo.appletHash);
+
+    const appWs = appletViewInfo.appletClient as AppWebsocket;
+    const [profilesHcl, profilesAppProxy] = await createProfilesCellProxy(appletViewInfo.profilesClient);
+
+    const appletGroup: AppletGroup = {
+      appWs,
+      appId: await getAppId(appWs),
+      appletId: new EntryId(appletViewInfo.appletHash),
+      profilesHcl,
+      profilesAppProxy,
+      appletView: appletViewInfo.view,
+    }
+    appletGroups = [appletGroup];
   }
 
-  const appletViewInfo = renderInfo as unknown as AppletViewInfo;
-  console.log("createVinesApplet()         client", appletViewInfo.appletClient);
-  console.log("createVinesApplet() thisAppletHash", appletViewInfo.appletHash);
+  /** -- Create VinesApp -- */
+  const app = await VinesApp.fromWe(weServices, undefined, appletGroups);
+  return app;
+}
 
-  /** -- main AppWs -- */
-  const mainAppWs = appletViewInfo.appletClient as AppWebsocket;
 
-  /** -- main App ID -- */
-  const mainAppInfo = await appletViewInfo.appletClient.appInfo();
+/** -- main App ID -- */
+export async function getAppId(appWs: AppWebsocket) {
+  const mainAppInfo = await appWs.appInfo();
   if (!mainAppInfo) {
     throw Promise.reject("Missing Main AppInfo");
   }
   console.log("createVinesApplet() mainAppInfo", mainAppInfo);
-  const main_app_id = mainAppInfo.installed_app_id;
+  return mainAppInfo.installed_app_id;
+}
 
+
+
+/** */
+export async function createProfilesCellProxy(profilesClient: ProfilesClient): Promise<[HCL, ExternalAppProxy]> {
   /** -- ProfilesClient -- */
-  const profilesClient = appletViewInfo.profilesClient;
   const profilesAppInfo = await profilesClient.client.appInfo();
   console.log("createVinesApplet() profilesAppInfo", profilesAppInfo, profilesClient.roleName);
   if (!profilesAppInfo) {
@@ -65,14 +101,6 @@ export async function createVinesApplet(
   const profilesCellProxy = await profilesAppProxy.createCellProxy(profilesHcl);
   console.log("createVinesApplet() profilesCellProxy", profilesCellProxy);
 
-  /** -- Create VinesApp -- */
-  const app = await VinesApp.fromWe(
-      mainAppWs, undefined, main_app_id,
-      profilesHcl, profilesAppProxy,
-      weServices,
-      new EntryId(appletViewInfo.appletHash),
-      appletViewInfo.view,
-      );
-  /** Done */
-  return app;
+  return [profilesHcl, profilesAppProxy];
 }
+

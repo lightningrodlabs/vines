@@ -118,7 +118,7 @@ export class CommunityFeedApp extends HappElement {
   ) : Promise<CommunityFeedApp> {
     const app = new CommunityFeedApp(appWs, adminWs, appId, appletView);
     /** Provide it as context */
-    app._weServices = new WeServicesEx(weServices, thisAppletId);
+    app._weServices = new WeServicesEx(weServices, [thisAppletId]);
     console.log(`<community-feed-app> \t\tProviding context "${weClientContext}" | in host `, app);
     /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */

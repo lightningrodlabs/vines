@@ -174,7 +174,7 @@ export function determineSubjectPrefix(type: SpecialSubjectType) {
 
 /** */
 export function getThisAppletId(weServices?: WeServicesEx): AppletId {
-  if (weServices) weServices.appletId;
+  if (weServices) weServices.appletIds[0];
   return THIS_APPLET_ID.b64;
 }
 
@@ -189,7 +189,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       /** -- special types -- */
       case SpecialSubjectType.Applet:
         if (weServices) {
-          let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
+          let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletIds[0]!));
           if (appletInfo) {
             return appletInfo.appletName;
           }
@@ -213,7 +213,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       case SpecialSubjectType.SubjectType:
         if (weServices) {
           //let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
-          let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
+          let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletIds[0]!));
           if (!appletInfo) {
             //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.hash))).title;
             return "{Unknown Applet}";
@@ -269,7 +269,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
   } else {
     /** Unknown Asset */
     if (weServices) {
-      let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletId));
+      let appletInfo = weServices.cache.appletInfos.get(new EntryId(weServices.appletIds[0]!));
       if (!appletInfo) {
         return "{Unknown Applet Asset}";
       }

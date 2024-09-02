@@ -52,7 +52,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     let mainThreadAh: ActionId;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
-      const appletId = this.weServices? new EntryId(this.weServices.appletId) : THIS_APPLET_ID;
+      const appletId = this.weServices? new EntryId(this.weServices.appletIds[0]!) : THIS_APPLET_ID;
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_ID, "main");
       mainThreadAh = ppAh;
       console.log("<create-post-panel>.onCreate()", mainThreadAh)

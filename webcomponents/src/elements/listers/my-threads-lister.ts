@@ -299,7 +299,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       console.log("<my-threads-lister> appletId:", appletId);
       let appletSubLister = html``;
       let appletName = "Vines";
-      if (!appletId.equals(THIS_APPLET_ID) && !appletId.equals(this.weServices.appletId)) {
+      if (!appletId.equals(THIS_APPLET_ID) && !appletId.equals(this.weServices.appletIds[0]!)) {
         if (!this.weServices || !this.weServices.appletInfoCached(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
           return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown Tool')}</div>`;

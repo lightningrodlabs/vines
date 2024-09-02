@@ -50,6 +50,7 @@ import {Profile, Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings
 import "./vines-page"
 
 import Button from "@ui5/webcomponents/dist/Button";
+//import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
 
 
 /** Used by we-applet */
@@ -58,6 +59,15 @@ export interface VinesAssetQuery {
   subjectType: string,
   subjectName: string,
   subjectAuthor?: AgentId,
+}
+
+export type AppletGroup = {
+  appId: InstalledAppId,
+  appletId: EntryId,
+  appWs: AppWebsocket,
+  profilesHcl: HCL,
+  profilesAppProxy: AppProxy,
+  appletView: AppletView,
 }
 
 
@@ -83,40 +93,46 @@ export class VinesApp extends HappElement {
 
   /** -- Constructor -- */
 
+  public readonly appId?: InstalledAppId;
+  public readonly appletView?: AppletView;
+
   /** All arguments should be provided when constructed explicity */
-  constructor(appWs?: AppWebsocket, private _adminWs?: AdminWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView) {
+  constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[]/*appWs?: AppWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView*/) {
+    const mainGroup = appletGroups? appletGroups[0] : undefined;
     /** Figure out arguments for super() */
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    super(appWs? appWs : HC_APP_PORT, appId, adminUrl, 20 * 1000);
+    super(mainGroup? mainGroup.appWs : HC_APP_PORT, mainGroup? mainGroup.appId : undefined, adminUrl, 20 * 1000);
     /** */
+    if (mainGroup) {
+      this.appId = mainGroup.appId;
+      this.appletView = mainGroup.appletView;
+    }
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
   }
 
 
   /**  */
   static async fromWe(
-    appWs: AppWebsocket,
-    adminWs: AdminWebsocket | undefined,
-    appId: InstalledAppId,
-    profilesHcl: HCL,
-    profilesProxy: AppProxy,
     weServices: WeaveServices,
-    thisAppletId: EntryId,
-    //showCommentThreadOnly?: boolean,
-    appletView: AppletView,
+    adminWs: AdminWebsocket | undefined,
+    appletGroups: AppletGroup[],
   ) : Promise<VinesApp> {
-    const app = new VinesApp(appWs, adminWs, appId, appletView);
+    if (appletGroups.length == 0) {
+      throw Error("Needs at lest one appletGroup");
+    }
+    const app = new VinesApp(adminWs, appletGroups);
     /** Provide it as context */
-    app._weServices = new WeServicesEx(weServices, thisAppletId);
+    const appletIds = appletGroups.map((group) => group.appletId);
+    app._weServices = new WeServicesEx(weServices, appletIds);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
-    console.log("<thread-app>.fromWe()", profilesProxy);
-    await app.createWeProfilesDvm(profilesProxy, profilesHcl);
+    console.log("<thread-app>.fromWe()", appletGroups[0]);
+    await app.createWeProfilesDvm(appletGroups[0]!.profilesAppProxy, appletGroups[0]!.profilesHcl);
     return app;
   }
 
@@ -284,7 +300,7 @@ export class VinesApp extends HappElement {
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
       if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
-          /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletId));
+          /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
         }
       } else {
         this._maybeSelectedThreadAh = new ActionId(e.detail.address.b64);

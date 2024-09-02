@@ -568,7 +568,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
-      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletId));
+      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletIds[0]!));
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
         console.log("get groupProfile", appletInfo.groupsHashes[0]);
