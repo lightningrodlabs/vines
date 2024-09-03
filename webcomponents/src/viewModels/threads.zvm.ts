@@ -294,8 +294,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = new ActionId(pp_ah);
-      const [pp, ts, author] = await this.zomeProxy.fetchPp(pp_ah);
-      res.set(ppAh, [pp, ts, new AgentId(author)]);
+      const maybe = await this.zomeProxy.fetchPp(pp_ah);
+      if (maybe) {
+        const [pp, ts, author] = maybe;
+        res.set(ppAh, [pp, ts, new AgentId(author)]);
+      } else {
+        console.warn("ParticipationProtocol not found", ppAh.b64);
+      }
     }
     return res;
   }
@@ -638,16 +643,18 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** -- Fetch -- */
 
   /** */
-  async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, Timestamp, AgentId]> {
+  async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, Timestamp, AgentId] | null> {
     const maybeThread = this._perspective.threads.get(ppAh);
     console.log("ThreadsZvm.fetchPp()", ppAh, !!maybeThread);
     if (maybeThread) {
       return [maybeThread.pp, maybeThread.creationTime, maybeThread.author];
     }
-    const [pp, ts, author] = await this.zomeProxy.fetchPp(ppAh.hash);
-    if (pp === null) {
-      throw Promise.reject("ParticipationProtocol not found at " + ppAh)
+    const maybe = await this.zomeProxy.fetchPp(ppAh.hash);
+    if (!maybe) {
+      console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
+      return null;
     }
+    const [pp, ts, author] = maybe;
     console.log("ThreadsZvm.fetchPp() pp", pp);
     //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
     return [pp, ts, new AgentId(author)];
@@ -655,7 +662,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<[TypedBead, BeadType, Timestamp, AgentId]> {
+  async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<[TypedBead, BeadType, Timestamp, AgentId] | null> {
     console.log("fetchUnknownBead()", beadAh);
     const beadInfo = this._perspective.getBeadInfo(beadAh);
     /** Return info if bead already stored */
@@ -670,19 +677,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     let typed: TypedBead;
     let type: BeadType;
 
-    const textTuple = await this.zomeProxy.fetchTextBeadOption(bead_ah);
+    const textTuple = await this.zomeProxy.fetchTextBead(bead_ah);
     if (textTuple == null) {
-      const entryTuple = await this.zomeProxy.fetchEntryBeadOption(bead_ah);
+      const entryTuple = await this.zomeProxy.fetchEntryBead(bead_ah);
       if (entryTuple == null) {
-        const anyTuple = await this.zomeProxy.fetchAnyBeadOption(bead_ah);
+        const anyTuple = await this.zomeProxy.fetchAnyBead(bead_ah);
         if (anyTuple == null) {
-          try {
-            [creationTime, author, typed] = await this.zomeProxy.fetchEncBead(bead_ah);
-            type = ThreadsEntryType.EncryptedBead;
-          } catch (e:any) {
-            //console.error(e:any);
-            throw Promise.reject(`Bead not found at hash ${beadAh.b64} : ${e}`);
+          const maybe = await this.zomeProxy.fetchEncBead(bead_ah);
+          if (!maybe) {
+            console.warn(`Bead not found at hash ${beadAh.b64}`);
+            return null;
           }
+          [creationTime, author, typed] = maybe;
+          type = ThreadsEntryType.EncryptedBead;
         } else {
           type = ThreadsEntryType.AnyBead;
           [creationTime, author, typed] = anyTuple;
@@ -793,17 +800,20 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** get ppAh of Notif */
-  async getPpFromNotification(notif: ThreadsNotification): Promise<ActionId> {
+  async fetchPpFromNotification(notif: ThreadsNotification): Promise<ActionId | null> {
     console.log("getPpFromNotification()", notif.event);
     if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event) {
       return notif.content;
     } else {
-
       const maybeBeadInfo = this._perspective.getBeadInfo(notif.content);
       if (maybeBeadInfo) {
         return maybeBeadInfo.bead.ppAh;
       }
-      const [typed, beadType, _ts, _author] = await this.fetchUnknownBead(notif.content);
+      const maybe = await this.fetchUnknownBead(notif.content);
+      if (!maybe) {
+        return null;
+      }
+      const [typed, beadType, _ts, _author] = maybe;
       const [base, _baseType] = await this.getBaseTypedBead(typed, beadType, notif.author); // WARN: Assuming notif sender is also bead author
       return new ActionId(base.bead.ppAh);
     }
@@ -1377,20 +1387,22 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** I got notified by a peer */
     if (this.cell.address.agentId.equals(base)) {
       /** Store Notification */
-      const ppAh = await this.getPpFromNotification(notif);
+      const ppAh = await this.fetchPpFromNotification(notif);
       /** make sure we have the content signaled in the notification */
-      /*await*/ this.fetchPp(ppAh);
-      this._perspective.storeNotification(notif, ppAh);
-      /** Publish a NotifySetting.AllMessages for this thread if non exists */
-      if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
-        const ppAh = new ActionId(notif.content.b64);
-        console.log("NewDmThread notif:", ppAh);
-        const notifSettings = this._perspective.notifSettings.get(ppAh);
-        if (notifSettings) {
-          const notifSetting = notifSettings.get(this.cell.address.agentId);
-          if (!notifSetting) {
-            await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
-            console.log("NewDmThread.publishNotifSetting()", ppAh);
+      if (ppAh) {
+        /*await*/ this.fetchPp(ppAh);
+        this._perspective.storeNotification(notif, ppAh);
+        /** Publish a NotifySetting.AllMessages for this thread if non exists */
+        if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
+          const ppAh = new ActionId(notif.content.b64);
+          console.log("NewDmThread notif:", ppAh);
+          const notifSettings = this._perspective.notifSettings.get(ppAh);
+          if (notifSettings) {
+            const notifSetting = notifSettings.get(this.cell.address.agentId);
+            if (!notifSetting) {
+              await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
+              console.log("NewDmThread.publishNotifSetting()", ppAh);
+            }
           }
         }
       }

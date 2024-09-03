@@ -9,7 +9,7 @@ import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
 import {
-  AnyBeadMat,
+  AnyBeadMat, BeadType,
   EntryBeadMat, materializeTypedBead,
   TextBeadMat,
 } from "../viewModels/threads.materialize";
@@ -68,14 +68,16 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     /** */
     let beadInfo = newDvm.threadsZvm.perspective.getBeadInfo(this.hash);
     let typedBead = newDvm.threadsZvm.perspective.getBead(this.hash);
-    let beadType;
+    let beadType: BeadType | undefined = undefined;
     /* Try loading AnyBead Asset */
     if (!beadInfo) {
       const tuple = await newDvm.threadsZvm.fetchUnknownBead(this.hash);
-      beadType = tuple[1];
-      typedBead = materializeTypedBead(tuple[0], beadType);
+      if (tuple) {
+        beadType = tuple[1];
+        typedBead = materializeTypedBead(tuple[0], beadType);
+      }
     } else {
-      beadType = beadInfo.beadType
+      beadType = beadInfo.beadType;
     }
     if (beadType == ThreadsEntryType.AnyBead && this.weServices) {
       const anyBead = typedBead as AnyBeadMat;

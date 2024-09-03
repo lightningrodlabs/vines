@@ -35,17 +35,9 @@ pub fn publish_enc_bead(input: AddEncBeadInput) -> ExternResult<(ActionHash, Str
 
 ///
 #[hdk_extern]
-pub fn fetch_enc_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EncryptedBead)>> {
+pub fn fetch_enc_bead(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EncryptedBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   return Ok(fetch_typed_bead::<EncryptedBead>(bead_ah).ok());
-}
-
-
-///
-#[hdk_extern]
-pub fn fetch_enc_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EncryptedBead)> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
-  return fetch_typed_bead::<EncryptedBead>(bead_ah);
 }
 
 

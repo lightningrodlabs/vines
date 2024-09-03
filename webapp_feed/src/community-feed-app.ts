@@ -337,15 +337,20 @@ export class CommunityFeedApp extends HappElement {
       /** Directly to post or get post from comment thread subject */
       const beadAh = new ActionId(e.detail.address.b64);
       const beadInfo = await this.threadsDvm.threadsZvm.perspective.getBeadInfo(beadAh);
-      if (beadInfo) {
-        const [pp, _ts, _author] = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
-        if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
-          this._selectedPostAh = beadAh;
-        } else {
-          this._selectedPostAh = new ActionId(pp.subject.address);
-        }
-      } else {
+      if (!beadInfo) {
         console.warn("JumpEvent failed. Bead not found", beadAh.short);
+        return;
+      }
+      const maybe = await this.threadsDvm.threadsZvm.fetchPp(beadInfo.bead.ppAh);
+      if (!maybe) {
+        console.warn("JumpEvent failed. Bead's PP not found", beadInfo.bead.ppAh.short);
+        return;
+      }
+      const [pp, _ts, _author] = maybe;
+      if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
+        this._selectedPostAh = beadAh;
+      } else {
+        this._selectedPostAh = new ActionId(pp.subject.address);
       }
       this.requestUpdate();
     }

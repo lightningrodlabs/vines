@@ -25,6 +25,7 @@ fn deser_bead(data: XSalsa20Poly1305Data, bead_type: &str) -> ExternResult<BaseB
   }
 }
 
+
 #[hdk_extern]
 pub fn decrypt_my_bead(enc_bead: EncryptedBead) -> ExternResult<BaseBeadKind> {
   debug!("decrypt_my_bead() {:?}", enc_bead);

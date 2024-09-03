@@ -13,18 +13,20 @@ use zome_signals::*;
 
 /// Return original author
 #[hdk_extern]
-pub fn fetch_pp(ah: ActionHash) -> ExternResult<(ParticipationProtocol, Timestamp, AgentPubKey)> {
+pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, Timestamp, AgentPubKey)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let (record, typed) = get_typed_and_record(ah.clone().into())?;
+  let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(ah.clone().into()) else {
+    return Ok(None);
+  };
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {
-    return Ok((typed, opPair.0, opPair.1));
+    return Ok(Some((typed, opPair.0, opPair.1)));
   };
   let action = record.action().clone();
   /// Emit Signal
   emit_new_entry_signal(record, false)?;
   ///
-  Ok((typed, action.timestamp(), action.author().to_owned()))
+  Ok(Some((typed, action.timestamp(), action.author().to_owned())))
 }
 
 

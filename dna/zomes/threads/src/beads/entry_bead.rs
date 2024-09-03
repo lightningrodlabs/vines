@@ -88,17 +88,9 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
 
 ///
 #[hdk_extern]
-pub fn fetch_entry_bead_option(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
+pub fn fetch_entry_bead(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     return Ok(fetch_typed_bead::<EntryBead>(bead_ah).ok());
-}
-
-
-///
-#[hdk_extern]
-pub fn fetch_entry_bead(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, EntryBead)> {
-    std::panic::set_hook(Box::new(zome_panic_hook));
-    return fetch_typed_bead::<EntryBead>(bead_ah);
 }
 
 

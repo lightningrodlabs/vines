@@ -95,11 +95,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('publish_any_bead', input);
   }
 
-  async fetchAnyBeadOption(beadAh: ActionArray): Promise<[Timestamp, AgentArray, AnyBead] | null> {
-    return this.call('fetch_any_bead_option', beadAh);
-  }
-
-  async fetchAnyBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, AnyBead]> {
+  async fetchAnyBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, AnyBead] | null> {
     return this.call('fetch_any_bead', beadAh);
   }
 
@@ -131,11 +127,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('create_entry_bead', input);
   }
 
-  async fetchEntryBeadOption(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EntryBead] | null> {
-    return this.call('fetch_entry_bead_option', beadAh);
-  }
-
-  async fetchEntryBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EntryBead]> {
+  async fetchEntryBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EntryBead] | null> {
     return this.call('fetch_entry_bead', beadAh);
   }
 
@@ -155,11 +147,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('publish_text_bead', texto);
   }
 
-  async fetchTextBeadOption(ah: ActionArray): Promise<[Timestamp, AgentArray, TextBead] | null> {
-    return this.call('fetch_text_bead_option', ah);
-  }
-
-  async fetchTextBead(ah: ActionArray): Promise<[Timestamp, AgentArray, TextBead]> {
+  async fetchTextBead(ah: ActionArray): Promise<[Timestamp, AgentArray, TextBead] | null> {
     return this.call('fetch_text_bead', ah);
   }
 
@@ -191,11 +179,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.callBlocking('publish_enc_bead', input);
   }
 
-  async fetchEncBeadOption(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EncryptedBead] | null> {
-    return this.call('fetch_enc_bead_option', beadAh);
-  }
-
-  async fetchEncBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EncryptedBead]> {
+  async fetchEncBead(beadAh: ActionArray): Promise<[Timestamp, AgentArray, EncryptedBead] | null> {
     return this.call('fetch_enc_bead', beadAh);
   }
 
@@ -287,7 +271,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('pull_pp_notify_settings', ppAh);
   }
 
-  async fetchPp(ah: ActionArray): Promise<[ParticipationProtocol, Timestamp, AgentArray]> {
+  async fetchPp(ah: ActionArray): Promise<[ParticipationProtocol, Timestamp, AgentArray] | null> {
     return this.call('fetch_pp', ah);
   }
 

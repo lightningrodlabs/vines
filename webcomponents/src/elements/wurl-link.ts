@@ -73,7 +73,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       let thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       let name;
       if (!thread) {
-        const [ppMat, _ts, _author] = await threadsZvm.fetchPp(beadInfo.bead.ppAh);
+        const maybe = await threadsZvm.fetchPp(beadInfo.bead.ppAh);
+        if (!maybe) {
+          return false;
+        }
+        const [ppMat, _ts, _author] = maybe;
         name = ppName(ppMat);
       } else {
         name = thread.name;
