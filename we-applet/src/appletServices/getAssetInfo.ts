@@ -52,7 +52,7 @@ export async function getAssetInfo(
     switch (pEntryType) {
         case ThreadsEntryType.TextBead:
             console.log("Vines/we-applet: TextBead", wal);
-            const tuple = await threadsProxy.fetchTextBead(actionId.hash);
+            const tuple = (await threadsProxy.fetchTextBead(actionId.hash))!; // FIXME: handle null
             return {
                 icon_src: wrapPathInSvg(mdiCommentText),
                 name: tuple[2].value,
@@ -60,7 +60,7 @@ export async function getAssetInfo(
         break;
         case ThreadsEntryType.AnyBead:
             console.log("Vines/we-applet: AnyBead", wal);
-            const anyTuple = await threadsProxy.fetchAnyBead(actionId.hash);
+            const anyTuple = (await threadsProxy.fetchAnyBead(actionId.hash))!; // FIXME: handle null
             const hrlBead = materializeAnyBead(anyTuple[2]);
             const beadWal = weaveUrlToWal(hrlBead.value);
             const beadAh = new ActionId(beadWal.hrl[1]);
@@ -76,7 +76,7 @@ export async function getAssetInfo(
             const fProxy = await asCellProxy(appletClient, undefined, mainAppInfo.installed_app_id, FILES_DEFAULT_ROLE_NAME);
             const filesProxy: FilesProxy = new FilesProxy(fProxy);
             console.log("Vines/we-applet: EntryBead filesProxy", filesProxy);
-            const fileTuple = await threadsProxy.fetchEntryBead(actionId.hash);
+            const fileTuple = (await threadsProxy.fetchEntryBead(actionId.hash))!; // FIXME: handle null
             const manifest = await filesProxy.getFileInfo(fileTuple[2].sourceEh)
             //const fileBead = materializeEntryBead(fileTuple[2]);
             //const source = truncate(fileBead.sourceEh, 10, false);
@@ -88,7 +88,7 @@ export async function getAssetInfo(
         case ThreadsEntryType.ParticipationProtocol:
             console.log("Vines/we-applet: pp info", wal);
             console.log("Vines/we-applet: getPp()", wal.hrl[1], threadsProxy);
-            const pp = await threadsProxy.fetchPp(actionId.hash);
+            const pp = (await threadsProxy.fetchPp(actionId.hash))!; // FIXME: handle null
             console.log("Vines/we-applet: pp", pp);
             return {
                 icon_src: wrapPathInSvg(mdiCommentTextMultiple),

@@ -15,10 +15,11 @@ import {EntryId, ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 import {AppletGroup, VinesApp} from "@vines/app";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
+import {LitElement} from "lit";
 
 
 /** */
-export async function createVinesApplet(renderInfo: RenderInfo, weServices: WeaveServices): Promise<VinesApp> {
+export async function createVinesApplet(renderInfo: RenderInfo, weServices: WeaveServices): Promise<LitElement> {
   let appletGroups: AppletGroup[] = [];
   /** cross-applet-view */
   if (renderInfo.type == "cross-applet-view") {

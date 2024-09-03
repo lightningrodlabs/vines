@@ -7,10 +7,11 @@ import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {setupVinesEntryView, devtestNames} from "./devtest";
 import {search} from "./appletServices/search";
 import {bindAsset} from "./appletServices/bindAsset";
+import {LitElement} from "lit/development";
 
 
 /** */
-export async function setupVinesApplet() {
+export async function setupVinesApplet(): Promise<LitElement> {
   /** Determine appletView */
   let APPLET_VIEW = "main";
   try {

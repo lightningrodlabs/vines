@@ -17,7 +17,7 @@ import {
   HappMultiElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, pascal, delay, ActionId,
+  DnaViewModel, pascal, delay, ActionId, Cell,
 } from "@ddd-qc/lit-happ";
 import {
   ThreadsDvm,
@@ -192,6 +192,10 @@ export class VinesApp extends HappMultiElement {
   threadsDvm(idx: number): ThreadsDvm { return this.hvms[idx]![1].getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)! as ThreadsDvm }
 
   filesDvm(idx: number): FilesDvm { return this.hvms[idx]![1].getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm }
+
+  cells(): Cell[] {
+    return this.hvms.map(([_appProxy, hvm]) => hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)!.cell);
+  }
 
 
   /** -- Methods -- */
@@ -528,12 +532,28 @@ export class VinesApp extends HappMultiElement {
         </div>`;
     }
 
-    /** Render all FIXME */
+    console.log("<vines-app>.render() cells.length", this.cells.length);
+    /** Render all Single */
+    if (this.cells.length <= 1) {
+      return html`
+          <cell-context .cell=${this.threadsDvm(0).cell}>
+              ${guardedView}
+          </cell-context>
+      `;
+    }
+
+    /** Render all Multi */
     return html`
         <cell-context .cell=${this.threadsDvm(0).cell}>
-          ${guardedView}
+          <cell-multi-context .cells=${this.cells}>
+              <vines-page multi="true"
+                        .selectedThreadHash=${this._maybeSelectedThreadAh}
+                        .selectedBeadAh=${this._maybeSelectedBeadAh}
+              ></vines-page>
+          </cell-multi-context>
         </cell-context>
     `;
+
   }
 
 

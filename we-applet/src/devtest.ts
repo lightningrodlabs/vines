@@ -4,6 +4,7 @@ import {createVinesApplet} from "./createVinesApplet";
 import {emptyEntryAppletView} from "@ddd-qc/we-utils/dist/mocks/renderInfoMock";
 import {THREADS_DEFAULT_INTEGRITY_ZOME_NAME, VINES_DEFAULT_ROLE_NAME, ThreadsEntryType} from "@vines/elements";
 import {ActionId, snake} from "@ddd-qc/cell-proxy";
+import {LitElement} from "lit";
 
 export const devtestNames: DevTestNames = {
     installed_app_id: "VinesApplet",
@@ -16,7 +17,7 @@ export function setupVinessBlockView() {
 
 
 /** */
-export async function setupVinesEntryView() {
+export async function setupVinesEntryView(): Promise<LitElement> {
     console.log("setupVinesEntryView()");
     const context: VinesAssetQuery = {
         detail: "none",

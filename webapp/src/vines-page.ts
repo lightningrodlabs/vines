@@ -212,6 +212,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
   /** -- Properties -- */
+  /** -- Properties -- */
+
+  @property() multi: boolean = false;
+
 
   @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
   @property() selectedBeadAh: ActionId | undefined = undefined;
@@ -945,8 +949,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
 
+        const threadView = this.multi
+          ?  html`<chat-thread-multi-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-multi-view>`
+          : html`<chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>`;
+
         centerSide = html`
-            <chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>
+            ${threadView}
             ${uploadState? html`
               <div id="uploadCard">
                 <div style="padding:5px;">Uploading ${uploadState.file.name}</div>
@@ -1066,7 +1074,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let lister= html`<applet-lister></applet-lister>`
     if (this._listerToShow == this.cell.address.agentId.b64) {
-      lister = html`
+      lister = this.multi? html`
+          <dm-multi-lister
+                  .showArchived=${this._canViewArchivedSubjects}
+                  .selectedThreadHash=${this.selectedThreadHash}
+                  @createNewDm=${(_e:any) => {
+                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                      dialog.show();
+                  }}
+          ></dm-multi-lister>
+      ` : html`
           <dm-lister
                   .showArchived=${this._canViewArchivedSubjects}
                   .selectedThreadHash=${this.selectedThreadHash}
