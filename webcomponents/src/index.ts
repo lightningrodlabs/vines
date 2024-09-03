@@ -12,6 +12,7 @@ export * from './elements/chat-wal';
 export * from './elements/chat-text';
 export * from './elements/chat-item';
 export * from './elements/chat-thread-view';
+export * from './elements/chat-thread-multi-view';
 export * from './elements/comment-thread-view';
 export * from './elements/emoji-bar';
 export * from './elements/favorites-view';
@@ -40,6 +41,7 @@ export * from './elements/listers/applet-lister';
 export * from './elements/listers/topics-lister';
 export * from './elements/listers/my-threads-lister';
 export * from './elements/listers/dm-lister';
+export * from './elements/listers/dm-multi-lister';
 
 export * from './viewModels/threads.materialize';
 export * from './viewModels/threads.perspective';
