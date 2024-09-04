@@ -24,7 +24,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)
       ts: sys_time()?,
       maybe_last_known_pp_ah: None,
     };
-    let ah = create_entry(ThreadsEntry::GlobalLastProbeLog(first_log.clone()))?;
+    let ah = create_entry_relaxed(ThreadsEntry::GlobalLastProbeLog(first_log.clone()))?;
     return Ok((ah, first_log))
   }
   /// Search for updates

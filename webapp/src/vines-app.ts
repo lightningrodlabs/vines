@@ -193,7 +193,7 @@ export class VinesApp extends HappMultiElement {
 
   filesDvm(idx: number): FilesDvm { return this.hvms[idx]![1].getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm }
 
-  cells(): Cell[] {
+  get cells(): Cell[] {
     return this.hvms.map(([_appProxy, hvm]) => hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)!.cell);
   }
 
