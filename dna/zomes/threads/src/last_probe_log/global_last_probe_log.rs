@@ -78,7 +78,7 @@ pub fn commit_global_log(input: CommitGlobalLogInput) -> ExternResult<Timestamp>
     maybe_last_known_pp_ah: input.maybe_last_known_pp_ah,
   };
   /// Update the entry
-  let _ah = update_entry(ah, ThreadsEntry::GlobalLastProbeLog(gql.clone()))?;
+  let _ah = update_entry_relaxed(ah, ThreadsEntry::GlobalLastProbeLog(gql.clone()))?;
   /// Done
   Ok(gql.ts)
 }

@@ -20,6 +20,7 @@ import {LitElement} from "lit";
 
 /** */
 export async function createVinesApplet(renderInfo: RenderInfo, weServices: WeaveServices): Promise<LitElement> {
+  console.log("createVinesApplet()", renderInfo.type);
   let appletGroups: AppletGroup[] = [];
   /** cross-applet-view */
   if (renderInfo.type == "cross-applet-view") {

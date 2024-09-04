@@ -1073,7 +1073,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
     let lister= html`<applet-lister></applet-lister>`
-    if (this._listerToShow == this.cell.address.agentId.b64) {
+    if (this._listerToShow == this.cell.address.agentId.b64 || this.multi) {
       lister = this.multi? html`
           <dm-multi-lister
                   .showArchived=${this._canViewArchivedSubjects}
@@ -1149,38 +1149,47 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const profileCount = this._dvm.profilesZvm.perspective.agents.length;
 
-    /** Render all */
-    return html`
-        <div id="mainDiv" 
-             @commenting-clicked=${this.onCommentingClicked}
-             @reply-clicked=${this.onReplyClicked}
-             @edit-topic-clicked=${this.onEditTopicClicked}>
-            
-            <div id="leftSide" style="display: ${this._canShowLeft? "flex": "none"}"
-                 @contextmenu=${(e:any) => {
-                    console.log("LeftSide contextmenu", e);
-                  // e.preventDefault();
-                  // const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
-                  // const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
-                  // menu.showAt(btn);
-                  // //menu.style.top = e.clientY + "px";
-                  // //menu.style.left = e.clientX + "px";
-                }}>
+    /** Show Cross-view or group-view */
+    const topLeft = this.multi? html`
+                <div id="group-div">
+                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;">
+                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">Cross View</div>
+                    </div>
+                    <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
+                                design="Transparent" icon="navigation-down-arrow"
+                                @click=${(e:any) => {
+                                  e.preventDefault();
+                                  //console.log("onSettingsMenu()", e);
+                                  const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                                  const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
+                                  menu.showAt(btn);
+                                }}>
+                    </ui5-button>
+                    <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
+                        <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
+                        ${this._canViewArchivedSubjects
+      ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived items")} icon="hide"></ui5-menu-item>`
+      : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived items")} icon="show"></ui5-menu-item>
+                        `}
+                        <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
+                    </ui5-menu>
+                </div>      
+    ` : html`
                 <div id="group-div">
                     <ui5-avatar size="S" class="chatAvatar"
                                 @click=${() => {
-                        const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                        const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
-                        popover.showAt(btn);
-                    }}>
+                            const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                            const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
+                            popover.showAt(btn);
+                          }}>
                         <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
                     </ui5-avatar>
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;"
                          @click=${() => {
-                        const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                        const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
-                        popover.showAt(btn);
-                    }}>
+                          const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                          const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
+                          popover.showAt(btn);
+                        }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${groupProfile.name}</div>
                         <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
                             ${networkInfo? /*networkInfo.total_network_peers*/ profileCount : 1} ${msg('Members')}
@@ -1212,9 +1221,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-segmented-button-item id="mine-option">${msg('My')}</ui5-segmented-button-item>
                     <ui5-segmented-button-item id="dm-option">${msg('DMs')}</ui5-segmented-button-item>
                 </ui5-segmented-button>
+    `;
 
+
+    /** Render all */
+    return html`
+        <div id="mainDiv" 
+             @commenting-clicked=${this.onCommentingClicked}
+             @reply-clicked=${this.onReplyClicked}
+             @edit-topic-clicked=${this.onEditTopicClicked}>
+            
+            <div id="leftSide" style="display: ${this._canShowLeft? "flex": "none"}"
+                 @contextmenu=${(e:any) => {
+                    console.log("LeftSide contextmenu", e);
+                  // e.preventDefault();
+                  // const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                  // const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
+                  // menu.showAt(btn);
+                  // //menu.style.top = e.clientY + "px";
+                  // //menu.style.left = e.clientX + "px";
+                }}>
+                
+                ${topLeft}
                 ${lister}
-
                     <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"

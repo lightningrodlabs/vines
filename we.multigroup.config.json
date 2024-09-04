@@ -1,0 +1,95 @@
+{
+  "groups": [
+    {
+      "name": "Batiment 7",
+      "networkSeed": "test",
+      "icon": {
+        "type": "filesystem",
+        "path": "S:\\media\\images\\b7.jpg"
+      },
+      "creatingAgent": {
+        "agentIdx": 1,
+        "agentProfile": {
+          "nickname": "Alex",
+          "avatar": {
+            "type": "filesystem",
+            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+          }
+        }
+      },
+      "joiningAgents": [
+        {
+          "agentIdx": 2,
+          "agentProfile": {
+            "nickname": "Billy",
+            "avatar": {
+              "type": "filesystem",
+              "path": "S:\\media\\images\\308954_10150302956291669_246474565_n.jpg"
+            }
+          }
+        }
+      ],
+      "applets": [
+        {
+          "name": "Vines",
+          "instanceName": "Vines",
+          "registeringAgent": 1,
+          "joiningAgents": [2]
+        }
+      ]
+    },
+    {
+      "name": "Holo",
+      "networkSeed": "whatever",
+      "icon": {
+        "type": "filesystem",
+        "path": "S:\\media\\images\\Holo-small.png"
+      },
+      "creatingAgent": {
+        "agentIdx": 1,
+        "agentProfile": {
+          "nickname": "Alex",
+          "avatar": {
+            "type": "filesystem",
+            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+          }
+        }
+      },
+      "joiningAgents": [
+        {
+          "agentIdx": 3,
+          "agentProfile": {
+            "nickname": "Camille",
+            "avatar": {
+              "type": "filesystem",
+              "path": "S:\\media\\images\\avatar.jpg"
+            }
+          }
+        }
+      ],
+      "applets": [
+        {
+          "name": "Vines",
+          "instanceName": "Vines",
+          "registeringAgent": 1,
+          "joiningAgents": [3]
+        }
+      ]
+    }
+  ],
+  "applets": [
+    {
+      "name": "Vines",
+      "subtitle": "Tooling for conversation in group spaces on holochain\n",
+      "description": "...",
+      "icon": {
+        "type": "filesystem",
+        "path": "./webapp/icon.png"
+      },
+      "source": {
+        "type": "filesystem",
+        "path": "./artifacts/vines-we_applet.webhapp"
+      }
+    }
+  ]
+}

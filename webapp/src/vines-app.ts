@@ -532,7 +532,7 @@ export class VinesApp extends HappMultiElement {
         </div>`;
     }
 
-    console.log("<vines-app>.render() cells.length", this.cells.length);
+    console.log("<vines-app>.render() cells", this.cells);
     /** Render all Single */
     if (this.cells.length <= 1) {
       return html`

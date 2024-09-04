@@ -24,7 +24,7 @@ export class NetworkHealthPanel extends LitElement {
   /* Auto update */
   override updated() {
     const enableSwitch = this.shadowRoot!.getElementById("enableSwitch") as Switch;
-    if (enableSwitch.checked) {
+    if (enableSwitch && enableSwitch.checked) {
       this.onQueryNetworkInfo(undefined);
     }
   }
