@@ -207,12 +207,16 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('probe_my_favorites', null);
   }
 
-  async queryGlobalLog(): Promise<[ActionArray, GlobalLastProbeLog]> {
+  async commitFirstGlobalLog(): Promise<Timestamp> {
+    return this.call('commit_first_global_log', null);
+  }
+
+  async queryGlobalLog(): Promise<[ActionArray, GlobalLastProbeLog] | null> {
     return this.call('query_global_log', null);
   }
 
-  async commitGlobalLog(input: CommitGlobalLogInput): Promise<Timestamp> {
-    return this.callBlocking('commit_global_log', input);
+  async commitUpdateGlobalLog(input: CommitGlobalLogInput): Promise<Timestamp | null> {
+    return this.callBlocking('commit_update_global_log', input);
   }
 
   async probeAllLatest(begin: Timestamp): Promise<ProbeAllOutput> {

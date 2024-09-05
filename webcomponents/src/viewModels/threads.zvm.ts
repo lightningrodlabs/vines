@@ -332,7 +332,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async probeAllLatest(): Promise<void> {
     const latest = await this.zomeProxy.probeAllLatest(this._perspective.globalProbeLogTs);
-    await this.commitGlobalProbeLog(latest.searchedInterval.end);
+    await this.commitUpdateGlobalLog(latest.searchedInterval.end);
 
     /* newThreads (filter out my threads) */
     const newThreads: [ActionId, AnyId][] = [];
@@ -916,7 +916,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async commitAllProbeLogs(): Promise<void> {
     console.log("commitAllProbeLogs() start");
-    await this.commitGlobalProbeLog();
+    await this.commitUpdateGlobalLog();
     /** Commit each Thread Log */
     for (const ppAh of this._perspective.getAllPps()) {
       await this.commitThreadProbeLog(ppAh);
@@ -925,14 +925,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** Commit Global Log */
-  async commitGlobalProbeLog(maybe_ts?: Timestamp): Promise<void> {
+  async commitUpdateGlobalLog(maybe_ts?: Timestamp): Promise<void> {
     const maybeLatest = this.perspective.getLatestThread();
-    console.log("commitGlobalProbeLog() maybeLatest", maybeLatest);
+    console.log("commitUpdateGlobalLog() maybeLatest", maybeLatest);
     const input: any = {};
     if (maybe_ts) input.maybe_ts = maybe_ts;
     if (maybeLatest) input.maybe_last_known_pp_ah = maybeLatest[0].hash;
-    let latestGlobalLogTime = await this.zomeProxy.commitGlobalLog(input as CommitGlobalLogInput);
-    console.log("commitGlobalProbeLog()", prettyTimestamp(latestGlobalLogTime));
+    await this.zomeProxy.commitUpdateGlobalLog(input as CommitGlobalLogInput);
   }
 
 

@@ -251,7 +251,7 @@ export class InputBar extends LitElement {
 
   /** */
   override render() {
-    console.log("<vines-input-bar>.render()", this.cachedInput, this._wal, this.profilesZvm);
+    console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal, this.profilesZvm);
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();

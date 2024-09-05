@@ -40,7 +40,6 @@ export async function createVinesApplet(renderInfo: RenderInfo, weServices: Weav
       }
       appletGroups.push(appletGroup);
     }
-
   } else {
     /** applet-view */
     const appletViewInfo = renderInfo as unknown as AppletViewInfo;

@@ -516,10 +516,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** After first render only */
   override async firstUpdated() {
-    console.log("<vines-page> firstUpdated()");
+    console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
 
     /** Generate test data */
     //await this._dvm.threadsZvm.generateTestData("");
+
+    /** If no global commit log ; commit first one */
+    if (!this._dvm.threadsZvm.perspective.globalProbeLogTs) {
+      console.log("<vines-page> Calling commitFirstGlobalLog()");
+      this._dvm.threadsZvm.zomeProxy.commitFirstGlobalLog();
+    }
 
     /** Select Topics */
     const topicsBtn = this.shadowRoot!.getElementById("topics-option") as SegmentedButtonItem;
@@ -1108,8 +1114,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   }}
           ></dm-lister>
       `;
-    }
-    if (this._listerToShow == this.cell.address.dnaId.b64) {
+    } else if (this._listerToShow == this.cell.address.dnaId.b64) {
       lister = html`
           <topics-lister 
                          .showArchivedTopics=${this._canViewArchivedSubjects}
@@ -1121,8 +1126,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          }}
           ></topics-lister>
       `;
-    }
-    if (this._listerToShow == null) {
+    } else if (this._listerToShow == null) {
       lister = html`
           <my-threads-lister 
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
@@ -1168,7 +1172,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const topLeft = this.multi? html`
                 <div id="group-div">
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;">
-                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">Cross View</div>
+                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">Cross View DMs</div>
                     </div>
                     <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
                                 design="Transparent" icon="navigation-down-arrow"

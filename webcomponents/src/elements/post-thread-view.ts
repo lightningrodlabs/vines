@@ -160,7 +160,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     console.debug("<post-thread-view>.loadlatestThreads() mainThreadAh", this._mainThreadAh);
     if (this._mainThreadAh) {
       await dvm.threadsZvm.pullAllBeads(this._mainThreadAh);
-      await dvm.threadsZvm.commitGlobalProbeLog();
+      await dvm.threadsZvm.commitUpdateGlobalLog();
     }
     this._loading = false;
   }

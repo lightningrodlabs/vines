@@ -98,19 +98,21 @@ export class VinesApp extends HappMultiElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[]/*appWs?: AppWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView*/) {
-    const mainGroup = appletGroups? appletGroups[0] : undefined;
-    /** Figure out arguments for super() */
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    const wtf: [number | AppWebsocket, InstalledAppId | undefined] = [mainGroup? mainGroup.appWs : HC_APP_PORT, mainGroup? mainGroup.appId : undefined];
-    super([wtf], adminUrl, 20 * 1000);
+
+    let pairs: [number | AppWebsocket, InstalledAppId | undefined][] = [[HC_APP_PORT, undefined]];
+    if (appletGroups && appletGroups.length > 0) {
+      pairs = appletGroups.map((appletGroup) => [appletGroup.appWs, appletGroup.appId]);
+    }
+    super(pairs, adminUrl, 20 * 1000);
     /** */
-    if (mainGroup) {
-      this.appId = mainGroup.appId;
-      this.appletView = mainGroup.appletView;
+    if (appletGroups && appletGroups.length > 0) {
+      this.appId = appletGroups[0]!.appId;
+      this.appletView = appletGroups[0]!.appletView;
     }
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
   }
@@ -132,7 +134,7 @@ export class VinesApp extends HappMultiElement {
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
     /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
-    console.log("<thread-app>.fromWe()", appletGroups[0]);
+    console.log("<thread-app>.fromWe()", appletGroups);
     await app.createWeProfilesDvm(appletGroups[0]!.profilesAppProxy, appletGroups[0]!.profilesHcl);
     return app;
   }
@@ -211,7 +213,7 @@ export class VinesApp extends HappMultiElement {
 
   /** */
   override async hvmConstructed() {
-    console.log("<vines-app>.hvmConstructed()", this._adminWs)
+    console.log("<vines-app>.hvmConstructed() adminWs:", this._adminWs)
     /** Attempt EntryDefs (triggers genesis) */
     const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
     const filesOk = await this.attemptFilesEntryDefs(5, 1000);
