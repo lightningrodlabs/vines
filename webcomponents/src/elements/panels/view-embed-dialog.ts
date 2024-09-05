@@ -21,6 +21,7 @@ export class ViewEmbedDialog extends LitElement {
 
   /** */
   open(blobUrl: string, mime: string) {
+    console.log("<view-embed-dialog>.open()", blobUrl);
     if (!blobUrl) {
       console.warn("BlobUrl is empty");
       return;

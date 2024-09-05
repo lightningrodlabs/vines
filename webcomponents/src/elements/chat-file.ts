@@ -209,7 +209,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         //     break;
         case FileType.Image:
           item = html`<img class="preview Image" src=${this._maybeBlobUrl} alt="Preview Image" @click=${(_e:any) => {
-              // console.log("view-embed image clicked!", mime, this._maybeBlobUrl?.length);
+              console.log("view-embed image clicked!", mime, this._maybeBlobUrl?.length);
               this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {detail: {blobUrl: this._maybeBlobUrl!, mime}, bubbles: true, composed: true}));
           }}/>`;
           break;

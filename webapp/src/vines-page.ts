@@ -1530,7 +1530,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <!-- Confirm Dialog -->
         <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e:any) => {}}></confirm-dialog>
         <!-- View Embed Dialog -->
-        <view-embed-dialog id="view-embed" @confirmed=${(_e:any) => {}}></view-embed-dialog>
+        <view-embed-dialog id="view-embed"></view-embed-dialog>
         <!-- Create Topic Dialog -->
         <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
             <section>
