@@ -375,6 +375,7 @@ export class InputBar extends LitElement {
                             const maybeWal = await this.weServices.userSelectWal();
                             console.log("maybeWal", maybeWal);
                             this._wal = maybeWal;
+                            this.inputElem.focus();
                         }}>
             </ui5-button>` : html``}
             ${this.showFileBtn? html`
@@ -382,7 +383,10 @@ export class InputBar extends LitElement {
                         @click=${(_e:any) => {
                           let input = document.createElement('input');
                           input.type = 'file';
-                          input.onchange = (e:any) => {this._file = e.target.files[0];}
+                          input.onchange = (e:any) => {
+                            this._file = e.target.files[0];
+                            this.inputElem.focus();
+                          }
                           input.click();
                         }}>
             </ui5-button>` : html``}
