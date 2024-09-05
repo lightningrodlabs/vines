@@ -372,7 +372,9 @@ export class InputBar extends LitElement {
             ${this.showHrlBtn? html`
             <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
                         @click=${async (_e:any) => {
-                            this._wal = await this.weServices.userSelectWal();
+                            const maybeWal = await this.weServices.userSelectWal();
+                            console.log("maybeWal", maybeWal);
+                            this._wal = maybeWal;
                         }}>
             </ui5-button>` : html``}
             ${this.showFileBtn? html`

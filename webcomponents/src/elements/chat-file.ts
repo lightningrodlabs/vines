@@ -11,6 +11,7 @@ import {msg} from "@lit/localize";
 import {toasty} from "../toast";
 import {sharedStyles} from "../styles";
 import {EntryBeadMat} from "../viewModels/threads.materialize";
+import {ViewEmbedEvent} from "../events";
 
 
 let instanceCount = 0;
@@ -206,9 +207,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
         //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
         //     break;
-        // case FileType.Image:
-        //     preview = html`<img id="preview" src=${this._maybeBlobUrl} alt="Preview Image" />`;
-        //     break;
+        case FileType.Image:
+          item = html`<img class="preview Image" src=${this._maybeBlobUrl} alt="Preview Image" @click=${(_e:any) => {
+              // console.log("view-embed image clicked!", mime, this._maybeBlobUrl?.length);
+              this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {detail: {blobUrl: this._maybeBlobUrl!, mime}, bubbles: true, composed: true}));
+          }}/>`;
+          break;
         case FileType.Audio:
           item = html`
               <audio class="preview Audio" controls>
@@ -290,6 +294,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .Image {
+          cursor:pointer;
         }
         .Video {
           /*height: 300px;*/

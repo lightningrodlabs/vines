@@ -219,7 +219,7 @@ export class VinesApp extends HappMultiElement {
     /** Provide Files as context */
     console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
     // @ts-ignore
-    /*let _filesProvider =*/ new ContextProvider(this, globaFilesContext, this.filesDvm);
+    /*let _filesProvider =*/ new ContextProvider(this, globaFilesContext, this.filesDvm(0));
   }
 
 
@@ -532,7 +532,7 @@ export class VinesApp extends HappMultiElement {
         </div>`;
     }
 
-    console.log("<vines-app>.render() cells", this.cells);
+    console.log("<vines-app>.render() cells length:", this.cells.length);
     /** Render all Single */
     if (this.cells.length <= 1) {
       return html`

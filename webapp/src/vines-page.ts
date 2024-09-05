@@ -143,7 +143,7 @@ import {
   beadJumpEvent,
   ChatThreadView,
   CommentRequest,
-  CommentThreadView, ConfirmDialog,
+  CommentThreadView, ConfirmDialog, ViewEmbedDialog,
   doodle_flowers,
   EditTopicRequest, getThisAppletId,
   globaFilesContext,
@@ -168,7 +168,7 @@ import {
   ThreadsPerspective,
   toasty, VinesInputEvent,
   weaveUrlToWal,
-  weClientContext,
+  weClientContext, ViewEmbedEvent,
 } from "@vines/elements";
 
 import {WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -294,7 +294,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
     // @ts-ignore
-    this.addEventListener('archive', this.onArchive);
+    this.addEventListener('archive', this.onArchive)
+    // @ts-ignore
+    this.addEventListener('view-embed', this.onViewEmbed)
   }
   override disconnectedCallback() {
     super.disconnectedCallback();
@@ -307,6 +309,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('show-profile', this.onShowProfile);
     // @ts-ignore
     this.removeEventListener('archive', this.onArchive);
+    // @ts-ignore
+    this.removeEventListener('view-embed', this.onViewEmbed);
   }
 
 
@@ -325,6 +329,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     } while(shadower);
     return shadow;
+  }
+
+
+  /** */
+  async onViewEmbed(e: CustomEvent<ViewEmbedEvent>) {
+    const dialog = this.shadowRoot!.getElementById("view-embed") as ViewEmbedDialog;
+    dialog.open(e.detail.blobUrl, e.detail.mime);
   }
 
 
@@ -782,7 +793,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateFileMessage(ppAh: ActionId, file: File) {
-    console.log("onCreateFileMessage()", file.name);
+    console.log("onCreateFileMessage()", file.name, this._filesDvm);
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
       console.debug("<vines-page> startPublishFile callback", eh);
       let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh, this.weServices);
@@ -1516,9 +1527,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
             ></vines-edit-profile>
         </ui5-dialog>
-        <!-- ConfirmDialogs -->
+        <!-- Confirm Dialog -->
         <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e:any) => {}}></confirm-dialog>
-        <!-- CreateTopicDialog -->
+        <!-- View Embed Dialog -->
+        <view-embed-dialog id="view-embed" @confirmed=${(_e:any) => {}}></view-embed-dialog>
+        <!-- Create Topic Dialog -->
         <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
             <section>
                 <div>
@@ -1539,27 +1552,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </ui5-button>
             </div>
         </ui5-dialog>
-          <!-- EditTopicDialog -->
-          <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
-              <section>
-                  <div>
-                      <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
-                      <ui5-input id="editTopicTitleInput" @keydown=${(e:any) => {
-                          if (e.keyCode === 13) {
-                              e.preventDefault();
-                              this.onEditTopic(e);
-                          }
-                      }}></ui5-input>
-                  </div>
-              </section>
-              <div slot="footer">
-                  <ui5-button id="createTopicDialogButton"
-                              style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>Create
-                  </ui5-button>
-                  <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
-                  </ui5-button>
-              </div>
-          </ui5-dialog>
+        <!-- EditTopicDialog -->
+        <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
+            <section>
+                <div>
+                    <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
+                    <ui5-input id="editTopicTitleInput" @keydown=${(e:any) => {
+                        if (e.keyCode === 13) {
+                            e.preventDefault();
+                            this.onEditTopic(e);
+                        }
+                    }}></ui5-input>
+                </div>
+            </section>
+            <div slot="footer">
+                <ui5-button id="createTopicDialogButton"
+                            style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>Create
+                </ui5-button>
+                <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
+                </ui5-button>
+            </div>
+        </ui5-dialog>
         <!-- CreateThreadDialog -->
         <ui5-dialog id="create-thread-dialog" header-text=${msg("Create new channel")}>
             <section>
