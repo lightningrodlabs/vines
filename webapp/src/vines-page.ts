@@ -701,7 +701,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onReplyClicked(e: CustomEvent<ActionId>) {
     console.log("onReplyClicked()", e.detail);
     const beadAh = e.detail;
+    const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
     this._replyToAh = beadAh;
+    if (inputBar) {
+      inputBar.focusInput();
+    }
   }
 
 

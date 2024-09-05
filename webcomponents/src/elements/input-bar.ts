@@ -243,6 +243,12 @@ export class InputBar extends LitElement {
   }
 
 
+  focusInput() {
+    if (this.inputElem) {
+      this.inputElem.focus();
+    }
+  }
+
   /** */
   override render() {
     console.log("<vines-input-bar>.render()", this.cachedInput, this._wal, this.profilesZvm);

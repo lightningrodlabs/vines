@@ -253,7 +253,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         let hr = html``;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
         const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
-        console.log("<chat-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime, blm.beadAh);
+        //console.log("<chat-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime, blm.beadAh);
         if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
           const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
           passedLog = true;
