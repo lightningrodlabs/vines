@@ -263,13 +263,12 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     console.log("<my-threads-lister>   count beads", this.perspective.beads.size, myBeads.length, myBeadThreads.size);
     console.log("<my-threads-lister> count threads", this.perspective.threads.size, myThreads.size);
+    console.log("<my-threads-lister> myBeadThreads", myBeadThreads.size, myBeadThreads);
+    console.log("<my-threads-lister>     myThreads", myThreads.size, myThreads);
 
     /** concat (and dedup) */
     //const allThreads = Object.assign({}, myThreads, myBeadThreads);
     const allThreads = new ActionIdMap([...myThreads, ...myBeadThreads]);
-
-    console.log("<my-threads-lister> myBeadThreads", myBeadThreads.size, myBeadThreads);
-    console.log("<my-threads-lister> myThreads", myThreads.size, myThreads);
     console.log("<my-threads-lister> allThreads", allThreads.size, allThreads);
 
     /** appletId -> (subjectHash -> ppAh[]) */

@@ -33,7 +33,7 @@ export class Thread {
 
   /** Ctor */
   constructor(pp: ParticipationProtocol, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
-    console.debug("New Thread() dnaOriginTime", dnaOriginTime, author);
+    console.debug("New Thread()", !!pp, dnaOriginTime, author);
     this._pp = pp;
     this._latestProbeLogTime = dnaOriginTime;
     this._creationTime = creationTime;
