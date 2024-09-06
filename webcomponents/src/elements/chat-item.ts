@@ -70,6 +70,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
    * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    //console.log("<chat-item>.dvmUpdated()", this.hash, newDvm.cell.address.dnaId.b64)
     if (oldDvm) {
       oldDvm.threadsZvm.unsubscribe(this);
     }

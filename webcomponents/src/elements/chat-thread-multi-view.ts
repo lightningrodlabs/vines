@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {ActionId, AgentId, DnaId, DnaMultiElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, ActionIdMap, AgentId, DnaId, DnaMultiElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 //import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
@@ -20,7 +20,6 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     this.addEventListener('scroll', this.onWheel);
-    console.log("<chat-thread-multi-view> CTOR");
   }
 
 
@@ -37,6 +36,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   get threads(): [DnaId, ActionId][] {
     const threads: [DnaId, ActionId][] = [];
     for (const dvm of this._dvms.values()) {
+      //console.log("<chat-thread-multi-view> dvm", dvm.cell.address.dnaId);
       const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
       if (ppAh) {
         threads.push([dvm.cell.address.dnaId, ppAh]);
@@ -64,7 +64,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
   /** In dvmUpdated() this._dvm is not already set */
   protected override async dvmUpdated(cellAddress: DnaId, newDvm: ThreadsDvm, _oldDvm?: ThreadsDvm): Promise<void> {
-    console.debug("<chat-thread-multi-view>.dvmUpdated()", cellAddress);
+    //console.debug("<chat-thread-multi-view>.dvmUpdated()", cellAddress.b64, newDvm.threadsZvm.cell.address.dnaId.b64);
     /** Subscribe to ThreadsZvm */
     // if (oldDvm) {
     //   oldDvm.threadsZvm.unsubscribe(this);
@@ -213,12 +213,15 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     //const firstThread = firstDvm.threadsZvm.perspective.getParticipationProtocol(firstPpAh)!;
     const firstThread = firstDvm.threadsZvm.perspective.threads.get(firstPpAh)!;
     const mergedThread = new Thread(firstThread.pp, firstDvm.cell.dnaModifiers.origin_time, firstThread.creationTime, firstThread.author);
-
-    console.log("<chat-thread-multi-view> mergedThread", mergedThread);
+    console.log("<chat-thread-multi-view> mergedThread start", mergedThread);
+    const dnaIdMap: ActionIdMap<DnaId> = new ActionIdMap();
     for (const [dnaId, ppAh] of this.threads) {
       const thread = this._dvms.get(dnaId)!.threadsZvm.perspective.threads.get(ppAh)!;
-      console.log("<chat-thread-multi-view> adding", thread.getAll().length, mergedThread.getAll().length);
-      thread.getAll().forEach((blm) => mergedThread.addItem(blm))
+      console.log("<chat-thread-multi-view> adding ${dnaId}", thread.getAll().length, mergedThread.getAll().length);
+      thread.getAll().forEach((blm) => {
+        dnaIdMap.set(blm.beadAh, dnaId);
+        mergedThread.addItem(blm);
+      });
     }
     console.log("<chat-thread-multi-view> mergedThread:");
     mergedThread.print();
@@ -264,9 +267,12 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
         }
 
         let chatItem = html`
+            <cell-context .cell=${this._dvms.get(dnaIdMap.get(blm.beadAh)!)!.cell}>
               <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
                          style="${this.beadAh && blm.beadAh.equals(this.beadAh) ? "background:#c4f2b07a" : ""}">
-              </chat-item>`;
+              </chat-item>
+            </cell-context>
+        `;
 
         prevBeadAh = blm.beadAh;
         /** Render chatItem */
