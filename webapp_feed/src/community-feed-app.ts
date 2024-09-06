@@ -319,7 +319,7 @@ export class CommunityFeedApp extends HappElement {
     console.log("<community-feed-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(e.detail.address.hash);
+        this._weServices.openAppletMain(e.detail.address!.hash);
       }
     }
     if (e.detail.type == JumpDestinationType.Thread) {
@@ -335,7 +335,7 @@ export class CommunityFeedApp extends HappElement {
     }
     if (e.detail.type == JumpDestinationType.Bead) {
       /** Directly to post or get post from comment thread subject */
-      const beadAh = new ActionId(e.detail.address.b64);
+      const beadAh = new ActionId(e.detail.address!.b64);
       const beadInfo = await this.threadsDvm.threadsZvm.perspective.getBeadInfo(beadAh);
       if (!beadInfo) {
         console.warn("JumpEvent failed. Bead not found", beadAh.short);

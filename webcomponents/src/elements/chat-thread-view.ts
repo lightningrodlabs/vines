@@ -163,6 +163,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
     console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash, !!this._dvm);
     if (!this.threadHash) {
+      this._loading = false;
       return;
     }
     const dvm = newDvm? newDvm : this._dvm;

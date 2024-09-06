@@ -258,6 +258,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   private _lastKnownNotificationIndex = 0;
 
+  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view
 
   /** -- Getters -- */
 
@@ -526,6 +527,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page> Calling commitFirstGlobalLog()");
       this._dvm.threadsZvm.zomeProxy.commitFirstGlobalLog();
     }
+
+    /** Do it here instead of in probeAll() because this can commit an entry */
+    await this._dvm.threadsZvm.probeAllLatest();
 
     /** Select Topics */
     const topicsBtn = this.shadowRoot!.getElementById("topics-option") as SegmentedButtonItem;
@@ -827,6 +831,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this._replyToAh = undefined;
     /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
+      if (e.detail.agent) {
+        this._selectedAgent = e.detail.agent;
+      }
       /** set lastProbeTime for current thread */
       if (maybePrevThreadId) {
         await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
@@ -970,8 +977,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
 
+        console.log("chat-thread", this.multi, this.selectedThreadHash);
         const threadView = this.multi
-          ?  html`<chat-thread-multi-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-multi-view>`
+          ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this.selectedBeadAh}></chat-thread-multi-view>`
           : html`<chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>`;
 
         centerSide = html`
@@ -1165,7 +1173,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
 
-
     const profileCount = this._dvm.profilesZvm.perspective.agents.length;
 
     /** Show Cross-view or group-view */
@@ -1174,24 +1181,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;">
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">Cross View DMs</div>
                     </div>
-                    <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
-                                design="Transparent" icon="navigation-down-arrow"
-                                @click=${(e:any) => {
-                                  e.preventDefault();
-                                  //console.log("onSettingsMenu()", e);
-                                  const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
-                                  const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
-                                  menu.showAt(btn);
-                                }}>
-                    </ui5-button>
-                    <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
-                        <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
-                        ${this._canViewArchivedSubjects
-      ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived items")} icon="hide"></ui5-menu-item>`
-      : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived items")} icon="show"></ui5-menu-item>
-                        `}
-                        <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
-                    </ui5-menu>
                 </div>      
     ` : html`
                 <div id="group-div">

@@ -20,6 +20,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     this.addEventListener('scroll', this.onWheel);
+    console.log("<chat-thread-multi-view> CTOR");
   }
 
 
@@ -62,8 +63,8 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** -- Methods -- */
 
   /** In dvmUpdated() this._dvm is not already set */
-  protected override async dvmUpdated(_cellAddress: DnaId, newDvm: ThreadsDvm, _oldDvm?: ThreadsDvm): Promise<void> {
-    console.debug("<chat-thread-multi-view>.dvmUpdated()");
+  protected override async dvmUpdated(cellAddress: DnaId, newDvm: ThreadsDvm, _oldDvm?: ThreadsDvm): Promise<void> {
+    console.debug("<chat-thread-multi-view>.dvmUpdated()", cellAddress);
     /** Subscribe to ThreadsZvm */
     // if (oldDvm) {
     //   oldDvm.threadsZvm.unsubscribe(this);
@@ -145,6 +146,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   protected loadlatestMessages(dvm: ThreadsDvm) {
     console.log("<chat-thread-multi-view>.loadlatestMessages() probe", this.agent, !!dvm);
     if (!this.agent) {
+      this._loading = false;
       return;
     }
     const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
@@ -212,13 +214,13 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     const firstThread = firstDvm.threadsZvm.perspective.threads.get(firstPpAh)!;
     const mergedThread = new Thread(firstThread.pp, firstDvm.cell.dnaModifiers.origin_time, firstThread.creationTime, firstThread.author);
 
-
+    console.log("<chat-thread-multi-view> mergedThread", mergedThread);
     for (const [dnaId, ppAh] of this.threads) {
-      // FIXME: skip first thread one
       const thread = this._dvms.get(dnaId)!.threadsZvm.perspective.threads.get(ppAh)!;
+      console.log("<chat-thread-multi-view> adding", thread.getAll().length, mergedThread.getAll().length);
       thread.getAll().forEach((blm) => mergedThread.addItem(blm))
     }
-    console.log("mergedThread:");
+    console.log("<chat-thread-multi-view> mergedThread:");
     mergedThread.print();
 
     const all = mergedThread.getAll();

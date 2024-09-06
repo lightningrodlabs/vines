@@ -72,8 +72,9 @@ export type ShowProfileEvent = {
 
 
 export type JumpEvent = {
-  address: DhtId,
+  address?: DhtId,
   type: JumpDestinationType,
+  agent?: AgentId,
 }
 
 export enum JumpDestinationType {
@@ -103,4 +104,8 @@ export function beadJumpEvent(ah: ActionId): CustomEvent<JumpEvent> {
 
 export function threadJumpEvent(ah: ActionId): CustomEvent<JumpEvent> {
   return new CustomEvent<JumpEvent>('jump', {detail: {address: ah, type: JumpDestinationType.Thread}, bubbles: true, composed: true});
+}
+
+export function agentJumpEvent(address: ActionId, agent: AgentId): CustomEvent<JumpEvent> {
+  return new CustomEvent<JumpEvent>('jump', {detail: {address, agent, type: JumpDestinationType.Thread}, bubbles: true, composed: true});
 }

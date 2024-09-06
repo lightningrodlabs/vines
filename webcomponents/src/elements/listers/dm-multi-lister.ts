@@ -1,9 +1,9 @@
 import {css, html, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
-import {ActionId, DnaMultiElement, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentIdMap, DnaMultiElement, EntryId} from "@ddd-qc/lit-happ";
 //import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
-import {HideEvent, threadJumpEvent} from "../../events";
+import {agentJumpEvent, HideEvent} from "../../events";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
@@ -45,13 +45,16 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<dm-lister>.render()", this._dvms);
-    const allTreeItems: TemplateResult<1>[] = [];
+    console.log("<dm-multi-lister>.render()", this._dvms);
+    const itemMap: AgentIdMap<TemplateResult<1>> = new AgentIdMap();
     for (const dvm of this._dvms.values()) {
-      const treeItems = Array.from(dvm.threadsZvm.perspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
+      Array.from(dvm.threadsZvm.perspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
+        if (itemMap.has(otherAgent)) {
+          return;
+        }
       /** Skip if hidden */
       const subjectEh = EntryId.from(otherAgent);
-      //console.log("<dm-lister>.render() hide subjectEh?", subjectEh, otherAgent);
+      //console.log("<dm-multi-lister>.render() hide subjectEh?", subjectEh, otherAgent);
       const isThreadHidden = dvm.threadsZvm.perspective.hiddens[subjectEh.b64] ? dvm.threadsZvm.perspective.hiddens[subjectEh.b64] : false;
       if (isThreadHidden && !this.showArchived) {
         return;
@@ -59,10 +62,10 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
       /** Render DM thread */
       const maybe = dvm.threadsZvm.perspective.threads.get(ppAh);
       if (!maybe) {
-        return html`
-            <ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+        itemMap.set(otherAgent, html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`);
+        return;
       }
-      console.log("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
+      console.log("<dm-multi-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
       const maybeUnreadThread = dvm.threadsZvm.perspective.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
@@ -110,14 +113,14 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
                                   this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: otherAgent}, bubbles: true, composed: true}));
                               }}></ui5-button>`;
 
-      return html`
+        itemMap.set(otherAgent, html`
           <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500">
               <div id=${ppAh.b64} class="threadItem"
                    style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${isSelected ? "background:#DBDBDB" : ""}
                      "
-                   @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                   @click=${(_e: any) => this.dispatchEvent(agentJumpEvent(ppAh, otherAgent))}>
                   ${badge}
                   ${renderProfileAvatar(otherProfile, 'XS')}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
@@ -130,12 +133,10 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
                   ${hideShowBtn}
               </div>
           </sl-tooltip>
-      `
+      `);
       });
-      const nonNullItems: TemplateResult<1>[] = treeItems.filter((value) => value !== undefined) as TemplateResult<1>[];
-      allTreeItems.push(...nonNullItems);
     }
-
+    const allTreeItems: TemplateResult<1>[] = [...itemMap.values()];
     console.log("<dm-lister>.render() allTreeItems", allTreeItems);
 
     /** Handle empty tree case */

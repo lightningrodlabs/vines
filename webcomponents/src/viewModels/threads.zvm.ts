@@ -245,7 +245,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     await Promise.all(probes);
 
     /** Get last elements since last time (global probe log) */
-    await this.probeAllLatest();
+    //await this.probeAllLatest();
     await this.zomeProxy.probeInbox();
     await this.pullFavorites();
   }

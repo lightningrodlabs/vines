@@ -315,7 +315,7 @@ export class VinesApp extends HappMultiElement {
     console.log("<vines-app>.onJump()", e.detail);
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
-        this._weServices.openAppletMain(e.detail.address.hash);
+        this._weServices.openAppletMain(e.detail.address!.hash);
       }
     }
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
@@ -324,12 +324,12 @@ export class VinesApp extends HappMultiElement {
           /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
         }
       } else {
-        this._maybeSelectedThreadAh = new ActionId(e.detail.address.b64);
+        this._maybeSelectedThreadAh = e.detail.address? new ActionId(e.detail.address.b64) : undefined;
         this._maybeSelectedBeadAh = undefined;
       }
     }
     if (e.detail.type == JumpDestinationType.Bead) {
-      const beadAh = new ActionId(e.detail.address.b64);
+      const beadAh = new ActionId(e.detail.address!.b64);
       const beadInfo = await this.threadsDvm(0).threadsZvm.perspective.getBeadInfo(beadAh); // FIXME 0
       if (beadInfo) {
         this._maybeSelectedThreadAh = beadInfo.bead.ppAh;

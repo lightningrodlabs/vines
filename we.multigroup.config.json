@@ -1,11 +1,11 @@
 {
   "groups": [
     {
-      "name": "Batiment 7",
+      "name": "Cdric",
       "networkSeed": "test",
       "icon": {
         "type": "filesystem",
-        "path": "S:\\media\\images\\b7.jpg"
+        "path": "assets/dev/cdric.png"
       },
       "creatingAgent": {
         "agentIdx": 1,
@@ -13,18 +13,18 @@
           "nickname": "Alex",
           "avatar": {
             "type": "filesystem",
-            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+            "path": "assets/dev/alex.jpg"
           }
         }
       },
       "joiningAgents": [
-        {
-          "agentIdx": 2,
-          "agentProfile": {
-            "nickname": "Billy",
-            "avatar": {
-              "type": "filesystem",
-              "path": "S:\\media\\images\\308954_10150302956291669_246474565_n.jpg"
+      {
+        "agentIdx": 2,
+        "agentProfile": {
+          "nickname": "Billy",
+          "avatar": {
+            "type": "filesystem",
+            "path": "assets/dev/billy.png"
             }
           }
         }
@@ -39,11 +39,11 @@
       ]
     },
     {
-      "name": "Holo",
+      "name": "FAI",
       "networkSeed": "whatever",
       "icon": {
         "type": "filesystem",
-        "path": "S:\\media\\images\\Holo-small.png"
+        "path": "assets/dev/fai.jpg"
       },
       "creatingAgent": {
         "agentIdx": 1,
@@ -51,18 +51,28 @@
           "nickname": "Alex",
           "avatar": {
             "type": "filesystem",
-            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+            "path": "assets/dev/alex.jpg"
           }
         }
       },
       "joiningAgents": [
+        {
+          "agentIdx": 2,
+          "agentProfile": {
+            "nickname": "Billy",
+            "avatar": {
+              "type": "filesystem",
+              "path": "assets/dev/billy.png"
+            }
+          }
+        },
         {
           "agentIdx": 3,
           "agentProfile": {
             "nickname": "Camille",
             "avatar": {
               "type": "filesystem",
-              "path": "S:\\media\\images\\avatar.jpg"
+              "path": "assets/dev/camille.jpg"
             }
           }
         }
@@ -72,7 +82,7 @@
           "name": "Vines",
           "instanceName": "Vines",
           "registeringAgent": 1,
-          "joiningAgents": [3]
+          "joiningAgents": [2]
         }
       ]
     }
