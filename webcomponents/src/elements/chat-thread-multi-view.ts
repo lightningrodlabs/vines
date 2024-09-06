@@ -63,7 +63,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** -- Methods -- */
 
   /** In dvmUpdated() this._dvm is not already set */
-  protected override async dvmUpdated(cellAddress: DnaId, newDvm: ThreadsDvm, _oldDvm?: ThreadsDvm): Promise<void> {
+  protected override async dvmUpdated(_cellAddress: DnaId, newDvm: ThreadsDvm, _oldDvm?: ThreadsDvm): Promise<void> {
     //console.debug("<chat-thread-multi-view>.dvmUpdated()", cellAddress.b64, newDvm.threadsZvm.cell.address.dnaId.b64);
     /** Subscribe to ThreadsZvm */
     // if (oldDvm) {

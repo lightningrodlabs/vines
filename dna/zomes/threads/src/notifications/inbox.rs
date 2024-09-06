@@ -24,7 +24,7 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
         return Ok(());
     }
     let tag = LinkTag::from(vec![input.event_index]);
-    let _link_ah = create_link(input.who, input.content.clone(), ThreadsLinkType::Inbox, tag)?;
+    let _link_ah = create_link_relaxed(input.who, input.content.clone(), ThreadsLinkType::Inbox, tag)?;
     /// Done
     Ok(())
 }

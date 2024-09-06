@@ -525,7 +525,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** If no global commit log ; commit first one */
     if (!this._dvm.threadsZvm.perspective.globalProbeLogTs) {
       console.log("<vines-page> Calling commitFirstGlobalLog()");
-      this._dvm.threadsZvm.zomeProxy.commitFirstGlobalLog();
+      await this._dvm.threadsZvm.zomeProxy.commitFirstGlobalLog();
     }
 
     /** Do it here instead of in probeAll() because this can commit an entry */
