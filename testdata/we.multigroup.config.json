@@ -5,7 +5,7 @@
       "networkSeed": "test",
       "icon": {
         "type": "filesystem",
-        "path": "assets/dev/cdric.png"
+        "path": "testdata/cdric.png"
       },
       "creatingAgent": {
         "agentIdx": 1,
@@ -13,7 +13,7 @@
           "nickname": "Alex",
           "avatar": {
             "type": "filesystem",
-            "path": "assets/dev/alex.jpg"
+            "path": "testdata/alex.jpg"
           }
         }
       },
@@ -24,7 +24,7 @@
           "nickname": "Billy",
           "avatar": {
             "type": "filesystem",
-            "path": "assets/dev/billy.png"
+            "path": "testdata/billy.png"
             }
           }
         }
@@ -43,7 +43,7 @@
       "networkSeed": "whatever",
       "icon": {
         "type": "filesystem",
-        "path": "assets/dev/fai.jpg"
+        "path": "testdata/fai.jpg"
       },
       "creatingAgent": {
         "agentIdx": 1,
@@ -51,7 +51,7 @@
           "nickname": "Alex",
           "avatar": {
             "type": "filesystem",
-            "path": "assets/dev/alex.jpg"
+            "path": "testdata/alex.jpg"
           }
         }
       },
@@ -62,7 +62,7 @@
             "nickname": "Billy",
             "avatar": {
               "type": "filesystem",
-              "path": "assets/dev/billy.png"
+              "path": "testdata/billy.png"
             }
           }
         },
@@ -72,7 +72,7 @@
             "nickname": "Camille",
             "avatar": {
               "type": "filesystem",
-              "path": "assets/dev/camille.jpg"
+              "path": "testdata/camille.jpg"
             }
           }
         }
@@ -94,11 +94,11 @@
       "description": "...",
       "icon": {
         "type": "filesystem",
-        "path": "./webapp/icon.png"
+        "path": "webapp/icon.png"
       },
       "source": {
         "type": "filesystem",
-        "path": "./artifacts/vines-we_applet.webhapp"
+        "path": "artifacts/vines-we_applet.webhapp"
       }
     }
   ]

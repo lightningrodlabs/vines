@@ -1,11 +1,11 @@
 {
   "groups": [
     {
-      "name": "Batiment 7",
+      "name": "Cdric",
       "networkSeed": "test",
       "icon": {
         "type": "filesystem",
-        "path": "S:\\media\\images\\b7.jpg"
+        "path": "testdata/cdric.png"
       },
       "creatingAgent": {
         "agentIdx": 1,
@@ -13,7 +13,7 @@
           "nickname": "Alex",
           "avatar": {
             "type": "filesystem",
-            "path": "S:\\media\\images\\500x_3327649797_ba00fef6e1_b.jpg"
+            "path": "testdata/alex.jpg"
           }
         }
       },
@@ -24,7 +24,7 @@
             "nickname": "Billy",
             "avatar": {
               "type": "filesystem",
-              "path": "S:\\media\\images\\308954_10150302956291669_246474565_n.jpg"
+              "path": "testdata/billy.png"
             }
           }
         }
@@ -58,11 +58,11 @@
       "description": "...",
       "icon": {
         "type": "filesystem",
-        "path": "./webapp/icon.png"
+        "path": "webapp/icon.png"
       },
       "source": {
         "type": "filesystem",
-        "path": "./artifacts/vines-we_applet.webhapp"
+        "path": "artifacts/vines-we_applet.webhapp"
       }
     },
     {
@@ -71,11 +71,11 @@
       "description": "...",
       "icon": {
         "type": "filesystem",
-        "path": "./webapp_feed/icon.png"
+        "path": "webapp_feed/icon.png"
       },
       "source": {
         "type": "filesystem",
-        "path": "./artifacts/feed-we_applet.webhapp"
+        "path": "artifacts/feed-we_applet.webhapp"
       }
     },
     {
