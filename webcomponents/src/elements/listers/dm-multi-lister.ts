@@ -166,7 +166,6 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
     return [
       css`
         :host {
-          background: #FBFCFD;
           display: block;
           overflow-y: auto;
           height: 100%;

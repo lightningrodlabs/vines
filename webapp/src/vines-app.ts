@@ -573,7 +573,7 @@ export class VinesApp extends HappMultiElement {
     return [
       css`
         :host {
-          background: #f7f6f8;
+          background: #EFECE7;
           display: block;
           height: 100vh;
           width: 100%;

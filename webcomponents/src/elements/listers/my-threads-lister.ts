@@ -387,7 +387,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     if (this._loading)  {
       this.style.background = "#ececec";
     } else {
-      this.style.background = "#FBFCFD";
+      this.style.background = "inherit";
     }
 
     /** render all */
@@ -401,7 +401,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     return [
       css`
         :host {
-          background: #FBFCFD;
           display: block;
           overflow-y: auto;
           height: 100%;

@@ -140,7 +140,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     if (this._loading)  {
       this.style.background = "#ececec";
     } else {
-      this.style.background = "#FBFCFD";
+      this.style.background = "inherit";
     }
   }
 
@@ -322,7 +322,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           flex-direction: column-reverse;
           /*gap:15px;*/
           height: inherit;
-          background: #FBFCFD;
           font-family: '72-Light';
         }
       `,

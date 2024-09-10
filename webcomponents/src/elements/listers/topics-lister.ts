@@ -160,7 +160,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                     ${isSelected? "background:#DBDBDB" : ""}
+                     ${isSelected? "background:#095CAF45" : ""}
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
@@ -325,7 +325,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return [
       css`
         :host {
-          background: #FBFCFD;
+          /*background: #FBFCFD;*/
           display: block;
           overflow-y: auto;
           height: 100%;
@@ -370,11 +370,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           align-items: center;
           height: 36px;
           padding-left: 10px;
-          margin-right: 7px;
           cursor: pointer;
           color: #484848;
-          background: #FBFCFD;
-          border-radius: 5px;
+          background: #F6FAFC;
+          /*margin-right: 7px;*/
+          margin-left: -7px;
+          /*border-radius: 5px;*/
         }
 
         .threadItem:hover {

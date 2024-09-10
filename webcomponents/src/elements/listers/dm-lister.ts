@@ -154,7 +154,6 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return [
       css`
         :host {
-          background: #FBFCFD;
           display: block;
           overflow-y: auto;
           height: 100%;
