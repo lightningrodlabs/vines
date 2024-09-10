@@ -11,7 +11,7 @@ import "@ui5/webcomponents-fiori/dist/Bar.js";
 
 import "./input-bar";
 import {consume} from "@lit/context";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {filesContext, weClientContext} from "../contexts";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {doodle_weave} from "../doodles";
 import {FilesDvm} from "@ddd-qc/files";
@@ -63,7 +63,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   /** -- State variables -- */

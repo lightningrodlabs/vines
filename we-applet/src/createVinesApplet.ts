@@ -61,7 +61,7 @@ export async function createVinesApplet(renderInfo: RenderInfo, weServices: Weav
   }
 
   /** -- Create VinesApp -- */
-  const app = await VinesApp.fromWe(weServices, undefined, appletGroups);
+  const app = await VinesApp.fromWe(weServices, undefined, renderInfo.type == "cross-applet-view", appletGroups);
   return app;
 }
 

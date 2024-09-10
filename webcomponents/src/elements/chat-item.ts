@@ -9,7 +9,7 @@ import 'emoji-picker-element';
 import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent, ShowProfileEvent, CommentRequest} from "../events";
-import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
+import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal, weaveUrlToWAL} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
@@ -52,7 +52,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices?: WeServicesEx;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
 

@@ -16,7 +16,7 @@ import {determineBeadName, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
 import {beadJumpEvent, ShowProfileEvent} from "../events";
 import {renderAvatar} from "../render";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {filesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -51,7 +51,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
 
-  @consume({context: globaFilesContext, subscribe: true})
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
 

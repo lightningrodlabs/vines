@@ -8,8 +8,9 @@ import {EntryId} from "@ddd-qc/lit-happ";
 export const THIS_APPLET_ID = EntryId.empty(118); // 'v'
 
 export const weClientContext = createContext<WeServicesEx>('we_client');
-//export const wePerspectiveContext = createContext<WePerspective>('we_perspective');
-export const globaFilesContext = createContext<FilesDvm>('global/files');
+
+export const filesContext = createContext<FilesDvm>('main/files');
+export const allFilesContext = createContext<FilesDvm[]>('all/files');
 
 export const appProxyContext = createContext<AppProxy>('__vines_app_proxy');
 

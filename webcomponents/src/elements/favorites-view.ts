@@ -14,10 +14,9 @@ import "@ui5/webcomponents/dist/List.js"
 
 import "./input-bar";
 import {consume} from "@lit/context";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
-import {FilesDvm} from "@ddd-qc/files";
 import {toasty} from "../toast";
 import {msg} from "@lit/localize";
 
@@ -42,8 +41,6 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: globaFilesContext, subscribe: true })
-  _filesDvm!: FilesDvm;
 
   /** -- State variables -- */
 
@@ -86,7 +83,6 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
           <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">${msg("No favorites")}</div>
       `;
     }
-
 
     const bg_color = this._loading? "#ededf0" : "#ffffff"
 

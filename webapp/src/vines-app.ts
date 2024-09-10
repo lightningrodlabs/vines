@@ -24,7 +24,7 @@ import {
   ThreadsEntryType,
   THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
-  globaFilesContext,
+  filesContext,
   weClientContext,
   cardStyleTemplate,
   appProxyContext,
@@ -33,7 +33,7 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
   onlineLoadedContext,
-  toasty, hrl2Id,
+  toasty, hrl2Id, allFilesContext,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -90,6 +90,8 @@ export class VinesApp extends HappMultiElement {
   private _weProfilesDvm?: ProfilesDvm;
   protected _weServices?: WeServicesEx;
 
+  private _isMulti: boolean = false;
+
 
   /** -- Constructor -- */
 
@@ -97,7 +99,7 @@ export class VinesApp extends HappMultiElement {
   public readonly appletView?: AppletView;
 
   /** All arguments should be provided when constructed explicity */
-  constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[]/*appWs?: AppWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView*/) {
+  constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean/*appWs?: AppWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView*/) {
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
@@ -115,6 +117,7 @@ export class VinesApp extends HappMultiElement {
       this.appletView = appletGroups[0]!.appletView;
     }
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
+    this._isMulti = isMulti? isMulti : false;
   }
 
 
@@ -122,12 +125,13 @@ export class VinesApp extends HappMultiElement {
   static async fromWe(
     weServices: WeaveServices,
     adminWs: AdminWebsocket | undefined,
+    isMulti: boolean,
     appletGroups: AppletGroup[],
   ) : Promise<VinesApp> {
     if (appletGroups.length == 0) {
       throw Error("Needs at lest one appletGroup");
     }
-    const app = new VinesApp(adminWs, appletGroups);
+    const app = new VinesApp(adminWs, appletGroups, isMulti);
     /** Provide it as context */
     const appletIds = appletGroups.map((group) => group.appletId);
     app._weServices = new WeServicesEx(weServices, appletIds);
@@ -218,10 +222,15 @@ export class VinesApp extends HappMultiElement {
     const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
     const filesOk = await this.attemptFilesEntryDefs(5, 1000);
     this._hasHolochainFailed = !threadsOk || !filesOk;
-    /** Provide Files as context */
-    console.log(`\t\tProviding context "${globaFilesContext}" | in host `, this);
+    /** Provide Files as context  */
+    console.log(`\t\tProviding context "${filesContext}" | in host `, this);
+
     // @ts-ignore
-    /*let _filesProvider =*/ new ContextProvider(this, globaFilesContext, this.filesDvm(0));
+    /*let _filesProvider =*/ new ContextProvider(this, filesContext, this.filesDvm(0));
+
+    const allFilesDvm = this.hvms.map(([_proxy, hvm]) => hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm)
+    // @ts-ignore
+    /*let _filesProvider =*/ new ContextProvider(this, allFilesContext, allFilesDvm);
   }
 
 
@@ -536,7 +545,7 @@ export class VinesApp extends HappMultiElement {
 
     console.log("<vines-app>.render() cells length:", this.cells.length);
     /** Render all Single */
-    if (this.cells.length <= 1) {
+    if (!this._isMulti) {
       return html`
           <cell-context .cell=${this.threadsDvm(0).cell}>
               ${guardedView}

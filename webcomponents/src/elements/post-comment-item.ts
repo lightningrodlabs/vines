@@ -19,7 +19,7 @@ import {md} from "../markdown/md";
 import {timeSince, weaveUrlToWal} from "../utils";
 import {toasty} from "../toast";
 import {renderAvatar} from "../render";
-import {globaFilesContext, weClientContext} from "../contexts";
+import {filesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
 import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
@@ -53,7 +53,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
 
-  @consume({context: globaFilesContext, subscribe: true})
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
 

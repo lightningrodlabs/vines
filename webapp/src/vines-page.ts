@@ -137,7 +137,15 @@ import {AgentId, Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
+import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
+
 import 'css-doodle';
+
+import {SlDialog} from "@shoelace-style/shoelace";
+
 
 import {
   beadJumpEvent,
@@ -146,7 +154,7 @@ import {
   CommentThreadView, ConfirmDialog, ViewEmbedDialog,
   doodle_flowers,
   EditTopicRequest, getThisAppletId,
-  globaFilesContext,
+  filesContext,
   HideEvent,
   InputBar,
   JumpDestinationType,
@@ -212,7 +220,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
   /** -- Properties -- */
-  /** -- Properties -- */
 
   @property() multi: boolean = false;
 
@@ -227,7 +234,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
@@ -235,6 +242,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
+
+  @state() private _viewFileEh?: EntryId;
 
   @state() private _selectedCommentThreadHash?: LinkableId;
            private _selectedCommentThreadSubjectName: string = '';
@@ -923,6 +932,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+
   /** */
   override render() {
     console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
@@ -934,8 +944,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** */
-    let centerSide = html`${doodle_flowers}`;
     let primaryTitle = msg("No channel selected");
+    let centerSide = html`${doodle_flowers}`;
     /** render selected thread */
     if (this.selectedThreadHash) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
@@ -1023,7 +1033,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
 
-
     /** This agent's profile info */
     let myProfile = this._dvm.profilesZvm.getMyProfile();
     if (!myProfile) {
@@ -1037,8 +1046,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
-    let fileTable = html``;
+    /** Render File View */
     if (!this._hideFiles) {
+      primaryTitle = msg("Shared Files");
+      console.log("dFiles this._filesDvm", this._filesDvm);
       const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
           .map(([ppEh, pprm]) => {
             const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
@@ -1047,16 +1058,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           });
       console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
       console.log("dFiles filesDvm cell", this._filesDvm.cell);
-      fileTable = html`
-        <cell-context .cell=${this._filesDvm.cell}>
-            <h2>Public Files</h2>
-            <button @click=${(_e:any) => {
-                const storeDialogElem = this.shadowRoot!.querySelector("store-dialog") as StoreDialog;
-                storeDialogElem.open(false);
-            }}>Add Public file</button>
-            <store-dialog></store-dialog>        
-            <file-table .items=${publicItems}></file-table>
-            <activity-timeline></activity-timeline>
+      centerSide = html`
+        <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
+            <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px;">
+              <ui5-button design="Emphasized" style="max-width: 100px; margin-top:5px;" @click=${(_e:any) => this._hideFiles = true}>${msg("Close")}</ui5-button>           
+              <!-- <button @click=${(_e:any) => {
+                  const storeDialogElem = this.shadowRoot!.querySelector("store-dialog") as StoreDialog;
+                  storeDialogElem.open(false);
+              }}>Add Public file</button>
+              <store-dialog></store-dialog> -->  
+              <file-table type="group" notag view .items=${publicItems} style="height: 100%; display: block"
+                          @view=${(e: CustomEvent<EntryId>) => {
+                            console.log("view", e.detail.b64);
+                            const dialog = this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
+                            dialog.open = true;
+                            this._viewFileEh = e.detail;
+                          }}
+                          @download=${(e: CustomEvent<EntryId>) => {console.log("download", e.detail.b64); this._filesDvm.downloadFile(e.detail)}}
+              ></file-table>
+              <!-- <activity-timeline></activity-timeline> -->
+              <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
+                  <file-view .hash=${this._viewFileEh}></file-view>
+              </sl-dialog>
+            </div>
         </cell-context>          
       `;
     }
@@ -1214,11 +1238,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 }}>
                     </ui5-button>
                     <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
-                        <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
+                        <ui5-menu-item id="createTopic" icon="add" text=${msg("Create new Topic")}></ui5-menu-item>
                         ${this._canViewArchivedSubjects
                           ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived items")} icon="hide"></ui5-menu-item>`
                           : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived items")} icon="show"></ui5-menu-item>
                         `}
+                        <ui5-menu-item id="viewFiles" icon="documents" text=${msg("View Files")}></ui5-menu-item>
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
                     </ui5-menu>
                 </div>
@@ -1461,7 +1486,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <div id="lowerSide">
                 <div id="centerSide">
                     ${centerSide}
-                    ${fileTable}
                 </div>
                   ${this._canShowComments? html`
                 <div id="commentSide">
@@ -1655,6 +1679,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "createTopic": this.createTopicDialogElem.show(); break;
       case "viewArchived": this.onShowArchiveTopicsBtn(e); break;
       case "markAllRead": this.onCommitBtn(e); break;
+      case "viewFiles": this._hideFiles = !this._hideFiles; break;
     }
   }
 

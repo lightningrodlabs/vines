@@ -8,7 +8,7 @@ import {timeSince, truncate} from "../../utils";
 import {composeNotificationTitle, renderAvatar} from "../../render";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {globaFilesContext, weClientContext} from "../../contexts";
+import {filesContext, weClientContext} from "../../contexts";
 import {FilesDvm} from "@ddd-qc/files";
 import {JumpEvent, notification2JumpEvent} from "../../events";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -31,7 +31,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })

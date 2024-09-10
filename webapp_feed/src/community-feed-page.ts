@@ -120,7 +120,7 @@ import {DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, DnaId} fro
 
 import {
   CommentRequest, composeFeedNotificationTitle,
-  globaFilesContext,
+  filesContext,
   JumpEvent,
   onlineLoadedContext, PostCreatedEvent,
   ProfilePanel, searchFieldStyleTemplate,
@@ -247,7 +247,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })

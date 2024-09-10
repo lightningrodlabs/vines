@@ -5,7 +5,7 @@ import {sharedStyles} from "../../styles";
 import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {globaFilesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {filesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {determineSubjectName, getThisAppletId} from "../../utils";
 import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
@@ -37,7 +37,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @state() private _splitObj: SplitObject | undefined = undefined;

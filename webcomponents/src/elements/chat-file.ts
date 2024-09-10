@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, delay, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {consume} from "@lit/context";
-import {globaFilesContext} from "../contexts";
+import {filesContext} from "../contexts";
 import {FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../utils";
 import {ParcelManifest} from "@ddd-qc/delivery";
@@ -33,7 +33,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of File bead to display */
   @property() hash!: ActionId; // BeadAh
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @state() private _loading = true;

@@ -8,7 +8,7 @@ import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
 import {renderAvatar} from "../render";
-import {globaFilesContext, onlineLoadedContext, weClientContext} from "../contexts";
+import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
@@ -47,7 +47,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: weClientContext, subscribe: true })
   weServices?: WeServicesEx;
 
-  @consume({ context: globaFilesContext, subscribe: true })
+  @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
 
   @consume({ context: onlineLoadedContext, subscribe: true })

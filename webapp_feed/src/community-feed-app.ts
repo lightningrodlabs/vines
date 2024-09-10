@@ -27,7 +27,7 @@ import {
   cardStyleTemplate,
   determineSubjectName,
   doodle_threads,
-  globaFilesContext,
+  filesContext,
   JumpDestinationType,
   JumpEvent,
   MAIN_TOPIC_ID,
@@ -204,9 +204,9 @@ export class CommunityFeedApp extends HappElement {
     const filesOk = await this.attemptFilesEntryDefs(5, 1000);
     this._hasHolochainFailed = !threadsOk || !filesOk;
     /** Provide Files as context */
-    console.log(`<community-feed-app>\t\tProviding context "${globaFilesContext}" | in host `, this);
+    console.log(`<community-feed-app>\t\tProviding context "${filesContext}" | in host `, this);
     // @ts-ignore
-    let _filesProvider = new ContextProvider(this, globaFilesContext, this.filesDvm);
+    let _filesProvider = new ContextProvider(this, filesContext, this.filesDvm);
   }
 
 
