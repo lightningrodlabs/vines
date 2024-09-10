@@ -193,22 +193,11 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
     const [firstDnaId, firstPpAh] = this.threads[0]!;
 
-    /** chat-header */
-    let maybeHeader = html``;
-    let hasReachedBeginning = true;
-    for (const dvm of this._dvms.values()) {
-      const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
-      if (ppAh) {
-        hasReachedBeginning &&= dvm.threadsZvm.perspective.hasReachedBeginning(ppAh);
-      }
-    }
-    if (hasReachedBeginning) {
 
-      maybeHeader = html`<chat-header .threadHash=${firstPpAh}></chat-header>`;
-    }
 
 
     /** Merge trees */
+    const groupNames: string[] = [];
     const firstDvm: ThreadsDvm = this._dvms.get(firstDnaId)!;
     //const firstThread = firstDvm.threadsZvm.perspective.getParticipationProtocol(firstPpAh)!;
     const firstThread = firstDvm.threadsZvm.perspective.threads.get(firstPpAh)!;
@@ -216,7 +205,9 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     console.log("<chat-thread-multi-view> mergedThread start", mergedThread);
     const dnaIdMap: ActionIdMap<DnaId> = new ActionIdMap();
     for (const [dnaId, ppAh] of this.threads) {
-      const thread = this._dvms.get(dnaId)!.threadsZvm.perspective.threads.get(ppAh)!;
+      const dvm = this._dvms.get(dnaId)!;
+      if (dvm.dnaProperties.groupName) { groupNames.push(dvm.dnaProperties.groupName? dvm.dnaProperties.groupName : "unnamed") }
+      const thread = dvm.threadsZvm.perspective.threads.get(ppAh)!;
       console.log("<chat-thread-multi-view> adding ${dnaId}", thread.getAll().length, mergedThread.getAll().length);
       thread.getAll().forEach((blm) => {
         dnaIdMap.set(blm.beadAh, dnaId);
@@ -227,6 +218,20 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     mergedThread.print();
 
     const all = mergedThread.getAll();
+
+    /** Render chat-header */
+    let maybeHeader = html``;
+    let hasReachedBeginning = true;
+    for (const dvm of this._dvms.values()) {
+      const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
+      if (ppAh) {
+        hasReachedBeginning &&= dvm.threadsZvm.perspective.hasReachedBeginning(ppAh);
+      }
+    }
+    if (hasReachedBeginning) {
+
+      maybeHeader = html`<chat-header .threadHash=${firstPpAh} .groupNames=${groupNames}></chat-header>`;
+    }
 
 
     /** render each bead */

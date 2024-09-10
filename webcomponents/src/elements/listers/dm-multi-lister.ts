@@ -137,7 +137,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
       });
     }
     const allTreeItems: TemplateResult<1>[] = [...itemMap.values()];
-    console.log("<dm-lister>.render() allTreeItems", allTreeItems);
+    console.log("<dm-multi-lister>.render() allTreeItems", allTreeItems);
 
     /** Handle empty tree case */
     if (allTreeItems.length == 0) {
@@ -147,12 +147,14 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
     /** render all */
     return html`
         <div style="display:flex; flex-direction:column; gap:10px; padding:7px; margin-bottom:10px;">
+            <!--
             <ui5-button design="Emphasized"
                         @click=${(e:any) => { e.stopPropagation();
                             this.dispatchEvent(new CustomEvent<boolean>('createNewDm', {detail: true, bubbles: true, composed: true}))
                         }}>
                 ${msg('Message a peer')}
             </ui5-button>
+            -->
         </div>
         ${allTreeItems}
     `;

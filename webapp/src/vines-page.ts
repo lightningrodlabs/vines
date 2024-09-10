@@ -223,13 +223,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @property() multi: boolean = false;
 
-
   @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
   @property() selectedBeadAh: ActionId | undefined = undefined;
 
   @property({type: Object})
   networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
-
 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -838,6 +836,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
     const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
+    this._selectedAgent = undefined;
     /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
       if (e.detail.agent) {
@@ -1013,6 +1012,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             style="border:none; padding:0px"
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
+            ${this._selectedAgent? html`` : html`
             <vines-input-bar id="input-bar"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
@@ -1027,7 +1027,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                this._replyToAh = undefined;
                                this.selectedBeadAh = undefined;
                              }}
-            ></vines-input-bar>`
+            ></vines-input-bar>`}`
             }
         `;
       }
@@ -1201,11 +1201,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Show Cross-view or group-view */
     const topLeft = this.multi? html`
-                <div id="group-div">
-                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;">
-                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">Cross View DMs</div>
-                    </div>
-                </div>      
+                <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;">
+                    <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${msg("DMs Cross View")}</div>
+                </div>
     ` : html`
                 <div id="group-div">
                     <ui5-avatar size="S" class="chatAvatar"

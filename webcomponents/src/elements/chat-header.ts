@@ -31,6 +31,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of thread to display */
   @property() threadHash?: ActionId;
 
+  @property() groupNames?: string[];
 
   // /** */
   // override async getUpdateComplete(): Promise<boolean> {
@@ -53,6 +54,12 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       console.warn("No profile found");
       return html``;
     }
+
+    let groups = ""
+    if (this.groupNames) {
+      groups = ", " + msg("in groups") + " (" + this.groupNames.join(", ") +")";
+    }
+
     //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e:any) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
     /** render all */
     return html`
@@ -63,7 +70,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
               ${copyBtn}
               <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent.b64} @click=${(_e:any) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
           </h2>
-          <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b></div>
+          <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b>${groups}</div>
         </div>
     `;
   }
