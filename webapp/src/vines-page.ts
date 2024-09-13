@@ -10,6 +10,7 @@ import {
   HoloHashType, intoDhtId,
   isHashTypeB64
 } from "@ddd-qc/lit-happ";
+import QRCode from 'qrcode'
 
 import "@ddd-qc/path-explorer";
 
@@ -1299,9 +1300,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                     <ui5-button id="shareBtn" style="margin-top:10px;"
                                 design="Transparent" icon="share-2" tooltip=${msg("Share Network")}
-                                @click=${(_e:any) => {
+                                @click=${async (_e:any) => {
                                     const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
                                     const btn = this.shadowRoot!.getElementById("shareBtn") as HTMLElement;
+                                    /** Generate and add QR code */
+                                    const existingImg = popover.querySelector('img')
+                                    if (!existingImg) {
+                                      let generateQR: string;
+                                      try {
+                                        generateQR = await QRCode.toDataURL(this.cell.shareCode);
+                                        const img = document.createElement('img');
+                                        img.src = generateQR;
+                                        popover.append(img);
+                                      } catch (err) {
+                                        console.error(err);
+                                      }
+                                    }
                                     popover.showAt(btn);
                                 }}>
                     </ui5-button>                    

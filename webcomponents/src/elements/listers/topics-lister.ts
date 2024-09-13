@@ -307,11 +307,11 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (treeItems.length == 0) {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
+              <ui5-button design="Emphasized"
+                          @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
+                  ${msg('Create new Topic')}
+              </ui5-button>              
             <div style="color: grey; margin: auto;">${msg('No topics found')}</div>
-            <ui5-button design="Emphasized"
-                        @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
-                ${msg('Create new Topic')}
-            </ui5-button>
           </div>
       `;
     }

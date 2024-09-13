@@ -14,6 +14,7 @@
     "localize:build": "lit-localize build"
   },
   "devDependencies": {
+    "@types/qrcode": "~1.5.5",
     "@babel/preset-env": "^7.15.0",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "18.0.0",
@@ -35,6 +36,7 @@
     "run-singleton-cli": "^0.0.5"
   },
   "dependencies": {
+    "qrcode": "~1.5.4",
     "@vines/elements": "file:../webcomponents"
   }
 }
