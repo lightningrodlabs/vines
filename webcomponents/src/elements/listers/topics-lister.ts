@@ -7,6 +7,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
+import {sharedStyles} from "../../styles";
 
 
 /**
@@ -323,6 +324,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           /*background: #FBFCFD;*/
@@ -395,23 +397,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         .subjectBadge {
           margin-top: 10px !important;
         }
-
-        ui5-badge {
-          min-width: 1.7rem;
-          margin-top: 3px;
-          background: rgb(183, 183, 183);
-          color: rgb(232, 232, 232);
-        }
-
-        .unreadBadge {
-          background: #342D1F;
-          color: white;
-        }
-
-        .notifBadge {
-          color: #ffffff;
-          background: #359C07;
-        }
+        
       `,
 
     ];

@@ -7,6 +7,7 @@ import {HideEvent, threadJumpEvent} from "../../events";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
+import {sharedStyles} from "../../styles";
 
 
 /**
@@ -152,6 +153,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           display: block;
@@ -190,23 +192,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         .chatAvatar {
            margin: 0px -5px 0px 8px;
         }
-        
-        ui5-badge {
-          min-width: 1.7rem;
-          margin-top: 3px;
-          background: rgb(183, 183, 183);
-          color: rgb(232, 232, 232);
-        }
 
-        .unreadBadge {
-          background: #342D1F;
-          color: white;
-        }
-
-        .notifBadge {
-          color: #ffffff;
-          background: #359C07;
-        }
       `,
 
     ];

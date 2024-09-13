@@ -88,6 +88,36 @@ export const sharedStyles = css`
   .fail {
     background: #fdd;
   }
+  
+  .timeHr {
+    border: none; 
+    border-bottom: 2px dashed #dadada; 
+    flex-grow: 1; 
+    height: 0px;
+  }
+
+  ui5-badge {
+    min-width: 1.7rem;
+    margin-top: 3px;
+    background: rgb(183, 183, 183);
+    color: rgb(232, 232, 232);
+  }
+  
+  ui5-badge:hover {
+    cursor:pointer;
+  }
+
+
+  .unreadBadge {
+    background: #342D1F;
+    color: white;
+  }
+
+  .notifBadge {
+    color: #ffffff;
+    background: #359C07;
+  }
+  
 `;
 
 

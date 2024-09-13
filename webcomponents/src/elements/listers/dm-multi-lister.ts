@@ -7,6 +7,7 @@ import {agentJumpEvent, HideEvent} from "../../events";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
+import {sharedStyles} from "../../styles";
 
 
 /**
@@ -147,14 +148,12 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
     /** render all */
     return html`
         <div style="display:flex; flex-direction:column; gap:10px; padding:7px; margin-bottom:10px;">
-            <!--
             <ui5-button design="Emphasized"
                         @click=${(e:any) => { e.stopPropagation();
                             this.dispatchEvent(new CustomEvent<boolean>('createNewDm', {detail: true, bubbles: true, composed: true}))
                         }}>
                 ${msg('Message a peer')}
-            </ui5-button>
-            -->
+            </ui5-button>            
         </div>
         ${allTreeItems}
     `;
@@ -164,6 +163,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           display: block;
@@ -203,22 +203,6 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
            margin: 0px -5px 0px 8px;
         }
         
-        ui5-badge {
-          min-width: 1.7rem;
-          margin-top: 3px;
-          background: rgb(183, 183, 183);
-          color: rgb(232, 232, 232);
-        }
-
-        .unreadBadge {
-          background: #342D1F;
-          color: white;
-        }
-
-        .notifBadge {
-          color: #ffffff;
-          background: #359C07;
-        }
       `,
 
     ];

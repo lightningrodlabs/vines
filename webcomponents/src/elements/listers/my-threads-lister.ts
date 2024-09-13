@@ -19,6 +19,7 @@ import {consume} from "@lit/context";
 import {filesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
+import {sharedStyles} from "../../styles";
 
 
 /**
@@ -399,6 +400,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           display: block;
@@ -469,23 +471,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         .subjectBadge {
           margin-top: 10px !important;
         }
-
-        ui5-badge {
-          min-width: 1.7rem;
-          margin-top: 3px;
-          background: rgb(183, 183, 183);
-          color: rgb(232, 232, 232);
-        }
-
-        .unreadBadge {
-          background: #342D1F;
-          color: white;
-        }
-
-        .notifBadge {
-          color: #ffffff;
-          background: #359C07;
-        }
+        
       `,
 
     ];

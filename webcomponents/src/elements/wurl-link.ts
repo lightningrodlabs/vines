@@ -220,10 +220,6 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         :host {
           display:inline-flex;
         }
-
-        ui5-badge:hover {
-          cursor:pointer;
-        }
       `,];
   }
 }

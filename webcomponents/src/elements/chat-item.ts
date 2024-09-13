@@ -427,7 +427,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <!-- message column -->
             <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto">
-                <div id="nameRow" style="display:flex; flex-direction:row;">
+                <div id="nameRow" style="display:flex; flex-direction:row; align-items: flex-end">
                     ${hidemeta? html`` : html`
                         <span id="agentName">${agentName}</span>
                         <span class="chatDate"> ${date_str}</span>
@@ -602,8 +602,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
         
         .chatDate {
-          margin: 0px 0px 0px 5px;
-          font-size: smaller;
+          margin: 0px 0px 0px 10px;
+          font-size: 12px;
           color: gray;
         }
 

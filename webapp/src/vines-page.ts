@@ -1012,7 +1012,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             style="border:none; padding:0px"
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
-            ${this._selectedAgent? html`` : html`
             <vines-input-bar id="input-bar"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
@@ -1027,7 +1026,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                this._replyToAh = undefined;
                                this.selectedBeadAh = undefined;
                              }}
-            ></vines-input-bar>`}`
+            ></vines-input-bar>`
             }
         `;
       }
@@ -1816,7 +1815,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #lowerSide {
-          background: linear-gradient(0deg, hsla(0, 0%, 99%, 0.37) 95%, hsl(0, 0%, 87.1%) 100%);
+          background: linear-gradient(0deg, #F4F9FC 95%, hsl(0, 0%, 87.1%) 100%);
           display: flex;
           flex-direction: row;
           flex-grow: 1;
@@ -1939,7 +1938,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
           display:flex;
           flex-direction: row;
-          color: #464646;
+          color: #392D1B;
           align-items: center;
           z-index: inherit;
         }

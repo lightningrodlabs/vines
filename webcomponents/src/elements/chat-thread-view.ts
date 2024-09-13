@@ -8,6 +8,7 @@ import {BeadLink} from "../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {ts2day} from "../render";
 import {onlineLoadedContext} from "../contexts";
+import {sharedStyles} from "../styles";
 
 
 /**
@@ -272,11 +273,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           currentDay = day;
           timeHr = html`
             <div style="display: flex; flex-direction: row">
-                <hr style="border: 1px solid #dadada; flex-grow: 1; height: 0px"/>
-                <div style="font-size:small; color: #3e3d3dcc;padding-left: 3px; padding-right:3px;">
+                <hr class="timeHr"/>
+                <div style="font-size:14px; color: #868686; padding-left: 3px; padding-right:3px;">
                     ${day}
                 </div>
-                <hr style="border: 1px solid #dadada; flex-grow: 1; height: 0px"/>
+                <hr class="timeHr"/>
             </div>
         `;
         }
@@ -314,6 +315,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           flex:1;

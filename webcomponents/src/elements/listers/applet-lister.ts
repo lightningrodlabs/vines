@@ -32,6 +32,7 @@ import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {ActionHashB64, EntryHashB64} from "@holochain/client";
+import {sharedStyles} from "../../styles";
 
 
 
@@ -410,6 +411,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           display: block;
