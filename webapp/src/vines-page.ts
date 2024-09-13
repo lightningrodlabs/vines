@@ -1988,7 +1988,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           position: absolute;
           top: 5px;
           right: 8px;
-          background-color: red;
+          background-color: #33A000;
           color: white;
           border-radius: 50%;
           padding: 2px 5px;

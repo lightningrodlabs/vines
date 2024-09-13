@@ -434,7 +434,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
         ui5-panel::part(header) > ui5-button {
           border: 1px solid black;
-          background: red;
+          background: #33A000;
         }
 
         ui5-panel::part(header):hover > ui5-button {

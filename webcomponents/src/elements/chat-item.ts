@@ -304,7 +304,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                        @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = this.threadsPerspective.unreadThreads.has(maybeCommentThread);
-      const commentLinkColor = isUnread ? "red" : "blue";
+      const commentLinkColor = isUnread ? "#33A000" : "#2C74FF";
       const thread = this.threadsPerspective.threads.get(maybeCommentThread)!;
       const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");
       if (thread.beadLinksTree.length > 0) {
@@ -496,17 +496,21 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   static override get styles() {
+    //const VINE_COLOR = "rgb(108, 176, 70)";
     return [
       css`
         :host {
-          max-width:100%;
+          max-width: 100%;
         }
+
         #avatarColumn:hover {
           cursor: pointer;
         }
+
         #buttonsPop::part(content) {
           padding: 0px;
         }
+
         .hovered {
           background: #d8e2f6;
         }
@@ -536,7 +540,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #prevAuthor {
           font-weight: bold
         }
-        
+
         #prevAuthor:hover {
           text-decoration: underline;
           cursor: pointer;
@@ -548,25 +552,25 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        
+
         #prevBeadName:hover {
           color: black;
           cursor: pointer;
         }
-        
+
         .vine {
           flex-grow: 1;
-          border-left: 2px solid rgb(108, 176, 70); /*#939393;*/
+          border-left: 2px solid rgba(227, 227, 227, 0.49); /*#939393;*/
         }
 
         .replyVine {
-          border-top: 2px solid rgb(108, 176, 70); /*#939393;*/
+          border-top: 2px solid rgba(185, 185, 185, 0.41); /*#939393;*/
           border-top-left-radius: 10px;
         }
-        
+
         .bordered {
           /*border-left: 2px solid #939393;*/
-          border-bottom: 2px solid rgb(108, 176, 70); /*#939393;*/
+          border-bottom: 2px solid rgba(185, 185, 185, 0.41); /*#939393;*/
           border-bottom-left-radius: 10px;
         }
 
@@ -579,7 +583,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           margin-top: 5px;
           margin-bottom: 10px;
         }
-        
+
         .chatItem {
           display: flex;
           flex-direction: row;
@@ -591,8 +595,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         .chatAvatar {
           margin: 2px 0px 0px 2px;
-          box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;
-          outline: #4a7b57 solid 2px;
+          /*box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;*/
+          /*outline: #4a7b57 solid 2px;*/
         }
 
         .replyAvatar {
@@ -600,7 +604,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           transform: scale(0.6);
           outline: #4a7b57 solid 1px;
         }
-        
+
         .chatDate {
           margin: 0px 0px 0px 10px;
           font-size: 12px;

@@ -261,8 +261,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           passedLog = true;
           hr = html`
               <div style="display: flex; flex-direction: row">
-                  <div style="border-top: 2px solid red; flex-grow: 1; height: 0px"></div>                  
-                  <div style="width: fit-content;background: red;color:white;font-size:small;padding:2px; font-weight:bold;">${beadDateStr}</div>
+                  <div style="border-top: 2px solid #33A000; flex-grow: 1; height: 0px"></div>                  
+                  <div style="width: fit-content;background: #33A000;color:white;font-size:small;padding:2px; font-weight:bold;">${beadDateStr}</div>
               </div>
           `;
         }
@@ -272,9 +272,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         if (day != currentDay) {
           currentDay = day;
           timeHr = html`
-            <div style="display: flex; flex-direction: row">
+            <div style="display:flex; flex-direction:row; margin-bottom:2px;">
                 <hr class="timeHr"/>
-                <div style="font-size:14px; color: #868686; padding-left: 3px; padding-right:3px;">
+                <div style="font-size:14px; color:#868686; padding-left:3px; padding-right:3px;">
                     ${day}
                 </div>
                 <hr class="timeHr"/>

@@ -161,7 +161,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                     ${isSelected? "background:#DFE5E9" : ""}
+                     ${isSelected? "background:#4684FD;color:white;" : ""}
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
@@ -359,7 +359,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
         ui5-panel::part(header) > ui5-button {
           border: 1px solid black;
-          background: red;
+          background: #33A000;
         }
 
         ui5-panel::part(header):hover > ui5-button {

@@ -15,7 +15,7 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
 
     /** Create toast element */
     const toastElem: Toast = Object.assign(document.createElement('ui5-toast'), {
-        style: "background:red;",
+        style: "background:#33A000;",
         placement,
         duration,
     }) as unknown as Toast;
