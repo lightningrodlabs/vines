@@ -161,7 +161,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                     ${isSelected? "background:#095CAF45" : ""}
+                     ${isSelected? "background:#DFE5E9" : ""}
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
@@ -366,34 +366,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           display: block !important;
         }
 
-        .threadItem {
-          display: flex;
-          overflow: hidden;
-          align-items: center;
-          height: 36px;
-          padding-left: 10px;
-          cursor: pointer;
-          color: #484848;
-          background: #F6FAFC;
-          /*margin-right: 7px;*/
-          margin-left: -7px;
-          /*border-radius: 5px;*/
-        }
-
-        .threadItem:hover {
-          background: rgb(222, 232, 255);
-        }
-
-        .threadItem:hover > ui5-button {
-          display: block !important;
-        }
-
-        .showBtn {
-          border: none;
-          padding: 0px;
-          display: none;
-        }
-
+        
         .subjectBadge {
           margin-top: 10px !important;
         }

@@ -1750,7 +1750,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #profile-div:hover {
           /*background: rgba(214, 226, 245, 0.8);*/
-          outline: 1px solid darkblue;
+          outline: 1px solid #1010a6;
         }
 
         .reply-info {
@@ -1770,7 +1770,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           align-items: center;
           color: #202020;
         }
-        
+
         .ui5-select-label-root {
           font-size: larger;
           font-weight: bold;
@@ -1784,7 +1784,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #leftSide {
           /*background: #B9CCE7;*/
-          /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */         
+          /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */
           width: 275px;
           min-width: 275px;
           max-width: 275px;
@@ -1796,19 +1796,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #profilePop::part(content) {
           padding: 0px;
         }
-        
+
         #profile-row {
           display: flex;
           flex-direction: row;
+          margin-bottom: 2px;
           padding-right: 5px;
-          background: #D7D7D7AD;
+          background: rgba(221, 233, 240, 0.68);
           /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
         }
 
         #mainSide {
           overflow: auto;
           display: flex;
-          flex-grow:1;
+          flex-grow: 1;
           flex-direction: column;
           z-index: 1;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
@@ -1828,13 +1829,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           display: flex;
           flex-direction: column;
         }
-        
+
         #favoritesSide {
-          flex-direction:column;
+          flex-direction: column;
           min-width: 350px;
           max-width: 350px;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
+
         #rightSide {
           width: 500px;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
@@ -1847,6 +1849,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 
         }
+
         .chatAvatar {
           margin-top: 5px;
           margin-left: 5px;
@@ -1875,15 +1878,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #group-div {
           display: flex;
           flex-direction: row;
-          cursor:pointer;
+          cursor: pointer;
           background: none;
           padding-right: 7px;
           border-bottom: 1px solid #c6c6c6;
         }
 
         #lister-select {
-          width:auto;
-          border:none;
+          width: auto;
+          border: none;
           background: none;
           padding-left: 5px;
           padding-right: 7px;
@@ -1894,11 +1897,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #lister-select:hover {
           /*background:red;*/
           /*font-weight: bold;*/
-          z-index:0;
+          z-index: 0;
           /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
           background: rgba(214, 226, 245, 0.8);
           /*outline: 1px solid darkblue;*/
         }
+
         .popover-content {
           display: flex;
           flex-direction: column;
@@ -1936,13 +1940,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 0px 8px 0px 2px;
           height: 44px;
           /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
-          display:flex;
+          display: flex;
           flex-direction: row;
           color: #392D1B;
           align-items: center;
           z-index: inherit;
         }
-        
+
         #topicBar ui5-button {
           color: #464646;
           border: none;
@@ -1958,14 +1962,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #topicBar ui5-button:hover {
           background: #e6e6e6;
         }
-        
+
         #topBarBtnGroup {
           display: flex;
           flex-direction: row;
-          gap:3px;
+          gap: 3px;
           align-items: center
         }
-        
+
         .numberBadge {
           position: absolute;
           top: 5px;

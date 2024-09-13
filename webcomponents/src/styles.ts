@@ -96,6 +96,8 @@ export const sharedStyles = css`
     height: 0px;
   }
 
+  /** Lister */
+  
   ui5-badge {
     min-width: 1.7rem;
     margin-top: 3px;
@@ -111,11 +113,38 @@ export const sharedStyles = css`
   .unreadBadge {
     background: #342D1F;
     color: white;
+    border: none;
   }
 
   .notifBadge {
     color: #ffffff;
     background: #359C07;
+    border: none;
+  }
+  
+  .showBtn {
+    border: none;
+    padding: 0px;
+    display: none;
+  }
+
+  .threadItem {
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    height: 36px;
+    padding-left: 10px;
+    cursor: pointer;
+    color: #484848;
+    background: #F6FAFC;
+    margin-left: -7px;
+  }
+  .threadItem:hover {
+    background: rgb(222, 232, 255);
+  }
+
+  .threadItem:hover > ui5-button {
+    display: block !important;
   }
   
 `;

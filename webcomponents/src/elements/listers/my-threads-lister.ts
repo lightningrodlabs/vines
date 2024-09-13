@@ -440,34 +440,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         ui5-panel::part(header):hover > ui5-button {
           display: block !important;
         }
-
-        .threadItem {
-          display: flex;
-          overflow: hidden;
-          align-items: center;
-          height: 36px;
-          padding-left: 10px;
-          margin-right: 7px;
-          cursor: pointer;
-          color: #484848;
-          background: #FBFCFD;
-          border-radius: 5px;
-        }
-
-        .threadItem:hover {
-          background: rgb(222, 232, 255);
-        }
-
-        .threadItem:hover > ui5-button {
-          display: block !important;
-        }
-
-        .showBtn {
-          border: none;
-          padding: 0px;
-          display: none;
-        }
-
+        
         .subjectBadge {
           margin-top: 10px !important;
         }

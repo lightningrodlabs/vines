@@ -160,35 +160,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           overflow-y: auto;
           height: 100%;
         }
-
-
-        .threadItem {
-          display: flex;
-          overflow: hidden;
-          align-items: center;
-          height: 36px;
-          padding-left: 10px;
-          margin-right: 7px;
-          cursor: pointer;
-          color: #484848;
-          background: #FBFCFD;
-          border-radius: 5px;
-        }
-
-        .threadItem:hover {
-          background: rgb(222, 232, 255);
-        }
-
-        .threadItem:hover > ui5-button {
-          display: block !important;
-        }
-
-        .showBtn {
-          border: none;
-          padding: 0px;
-          display: none;
-        }
-
+        
         .chatAvatar {
            margin: 0px -5px 0px 8px;
         }
