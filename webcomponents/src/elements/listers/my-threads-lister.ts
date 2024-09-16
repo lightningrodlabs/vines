@@ -404,8 +404,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       css`
         :host {
           display: block;
-          overflow-y: auto;
-          height: 100%;
+          /*overflow-y: auto;*/
+          /*height: 100%;*/
+          padding-bottom: 20px;
         }
 
         ui5-panel {

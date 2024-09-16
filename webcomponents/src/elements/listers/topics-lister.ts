@@ -305,19 +305,18 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      return html`
-          <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-              <ui5-button design="Emphasized"
-                          @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
-                  ${msg('Create new Topic')}
-              </ui5-button>              
-            <div style="color: grey; margin: auto;">${msg('No topics found')}</div>
-          </div>
-      `;
+      treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('No topics found')}</div>`);
     }
 
     /** render all */
-    return html`${treeItems}`
+    return html`
+        ${treeItems}
+        <ui5-button design="Emphasized"
+                    style="margin: auto;"
+                    @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
+            ${msg('Create new Topic')}
+        </ui5-button>
+    `
   }
 
 
@@ -328,9 +327,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       css`
         :host {
           /*background: #FBFCFD;*/
-          display: block;
-          overflow-y: auto;
-          height: 100%;
+          /*display: block;*/
+          display: flex;
+          flex-direction: column;
+          /*overflow-y: auto;*/
+          /*height: 100%;*/
+          padding-bottom: 20px;
         }
 
         ui5-panel {

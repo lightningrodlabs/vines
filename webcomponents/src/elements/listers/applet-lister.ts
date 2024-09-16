@@ -415,7 +415,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       css`
         :host {
           display: block;
-          height: 100vh;
+          padding-bottom: 20px;
         }
 
         #threadsTree {
