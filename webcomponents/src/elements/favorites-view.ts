@@ -106,8 +106,6 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
       css`
         :host {
           padding: 10px 50px 10px 50px;
-          max-height: 100%;
-          height: 100%;
           display: flex;
           flex-direction: column;
           flex-grow: 1;

@@ -45,6 +45,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   @property({type: Boolean}) shortmenu: boolean = false;
 
+  @property({type: Boolean}) nomenu: boolean = false;
+
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -439,7 +441,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->
-            <ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>
+            ${this.nomenu? html`` : html`<ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>`}
             <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                 <emoji-picker class="light" style="display: block"
                               @emoji-click=${(event: any) => {
@@ -510,15 +512,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #buttonsPop::part(content) {
           padding: 0px;
         }
-
-        .hovered {
-          background: #d8e2f6;
-        }
-
-        #innerChatItem:hover {
-          background: #d8e2f6;
-        }
-
+        
         #agentName {
           font-family: "72";
           font-weight: bold;

@@ -146,7 +146,10 @@ export const sharedStyles = css`
   .threadItem:hover > ui5-button {
     display: block !important;
   }
-  
+
+  chat-item:hover {
+    background: #d8e2f6;
+  }
 `;
 
 
