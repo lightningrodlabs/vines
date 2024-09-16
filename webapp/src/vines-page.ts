@@ -783,23 +783,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onListerSelected(e:any) {
-    console.log("onListerSelected()", e);
-    const selectedOption = e.detail.selectedItem;
-    console.log("onListerSelected() selectedOption", selectedOption);
-    if (selectedOption.id == "dm-option") {
+  onListerSelected(id: string) {
+    console.log("onListerSelected()", id);
+    //const selectedOption = e.detail.selectedItem;
+    //console.log("onListerSelected() selectedOption", selectedOption);
+    if (id == "dm-option") {
       this._listerToShow = this.cell.address.agentId.b64;
       return;
     }
-    if (selectedOption.id == "mine-option") {
+    if (id == "mine-option") {
       this._listerToShow = null;
       return;
     }
-    if (selectedOption.id == "tools-option") {
+    if (id == "tools-option") {
       this._listerToShow = "__tools__";
       return;
     }
-    if (selectedOption.id == "topics-option") {
+    if (id == "topics-option") {
       this._listerToShow = this.cell.address.dnaId.b64;
       return;
     }
@@ -808,7 +808,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   return;
     // }
     /* it's an appletId so display the applet lister */
-    this._listerToShow = selectedOption.id;
+    this._listerToShow = id;
     this.requestUpdate();
   }
 
@@ -1246,12 +1246,46 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-menu>
                 </div>
 
+                <!-- <ui5-segmented-button-item id="dm-option">${msg('DMs')}</ui5-segmented-button-item> -->
+                <!-- 
                 <ui5-segmented-button @selection-change=${this.onListerSelected} style="margin:auto; padding-top: 7px; padding-bottom: 7px;">
                     <ui5-segmented-button-item id="topics-option">${msg('Topics')}</ui5-segmented-button-item>
                     <ui5-segmented-button-item id="tools-option">${msg('Tools')}</ui5-segmented-button-item>
                     <ui5-segmented-button-item id="mine-option">${msg('My')}</ui5-segmented-button-item>
-                    <!-- <ui5-segmented-button-item id="dm-option">${msg('DMs')}</ui5-segmented-button-item> -->
-                </ui5-segmented-button>
+                </ui5-segmented-button> -->
+                
+                <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 10px 10px 10px 10px; border-radius: 5px; padding: 3px;">
+                    <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
+                        e.preventDefault(); e.stopPropagation();
+                        this.onListerSelected("topics-option");
+                        const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                        topicsBtn.classList.add("selected");
+                        const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                        toolsBtn.classList.remove("selected");
+                        const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                        mineBtn.classList.remove("selected");
+                    }}>${msg('Topics')}</div>
+                    <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
+                        e.preventDefault(); e.stopPropagation();
+                        this.onListerSelected("tools-option");
+                        const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                        topicsBtn.classList.remove("selected");
+                        const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                        toolsBtn.classList.add("selected");
+                        const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                        mineBtn.classList.remove("selected");                        
+                    }}>${msg('Tools')}</div>
+                    <div id="mineBtn" class="listerbtn" @click=${(e:any) => {
+                        e.preventDefault(); e.stopPropagation();
+                        this.onListerSelected("mine-option");
+                        const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                        topicsBtn.classList.remove("selected");
+                        const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                        toolsBtn.classList.remove("selected");
+                        const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                        mineBtn.classList.add("selected");                        
+                    }}>${msg('My')}</div>                    
+                </div>                
     `;
 
 
@@ -1838,7 +1872,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           margin-bottom: 2px;
           padding-right: 5px;
           background: rgba(221, 233, 240, 0.68);
-          box-shadow: -1px -18px 14px -2px rgba(0,0,0,0.08);
+          box-shadow: -1px -18px 14px -2px rgba(0, 0, 0, 0.08);
         }
 
         #mainSide {
@@ -1848,7 +1882,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: column;
           z-index: 1;
           /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
-          box-shadow: -22px 0px 20px -2px rgba(0,0,0,0.08);
+          box-shadow: -22px 0px 20px -2px rgba(0, 0, 0, 0.08);
         }
 
         #lowerSide {
@@ -2022,6 +2056,26 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         .numberBadge:empty {
           display: none;
+        }
+
+        .listerbtn:hover {
+          cursor: pointer;
+          outline: 2px solid rgba(49, 95, 252, 0.61);
+        }
+
+        .listerbtn {
+          display: grid;
+          place-items: center;
+          flex-grow: 1;
+          border-radius: 10px;
+          padding: 3px 0px 3px 0px;
+          color: #4D4D4D;
+        }
+
+        .listerbtn.selected {
+          background: white;
+          font-weight: bold;
+          box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197,209,208,0)
         }
       `,
 

@@ -142,7 +142,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
 
     /** Handle empty tree case */
     if (allTreeItems.length == 0) {
-      allTreeItems.push(html`<div style="color: grey; text-align: center; margin-top: 10px;">${msg('No DM found')}</div`)
+      allTreeItems.push(html`<div style="color: grey; text-align: center; margin-top: 10px;">${msg('No messages found')}</div`)
     }
 
     /** render all */

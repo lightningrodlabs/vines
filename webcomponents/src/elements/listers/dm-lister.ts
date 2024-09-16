@@ -134,7 +134,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      treeItems.push(html`<div style="color: grey; text-align: center; margin-top: 10px;">${msg('No DM found')}</div`)
+      treeItems.push(html`<div style="color: grey; text-align: center; margin-top: 10px;">${msg('No messages found')}</div`)
     }
 
     /** render all */
