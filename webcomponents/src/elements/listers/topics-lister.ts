@@ -1,4 +1,4 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
+import {css, html, /*PropertyValues,*/ TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {customElement, property} from "lit/decorators.js";
 import {ActionId, EntryId, ZomeElement} from "@ddd-qc/lit-happ";
@@ -32,18 +32,18 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** -- Methods -- */
 
-  /** Don't update during online loading */
-  override shouldUpdate(changedProperties: PropertyValues<this>) {
-    const shouldnt = !super.shouldUpdate(changedProperties);
-    if (shouldnt) {
-      return false;
-    }
-    /** Don't update during loading */
-    if (changedProperties.has("perspective") && !this.onlineLoaded) {
-      return false;
-    }
-    return true;
-  }
+  // /** Don't update during online loading */
+  // override shouldUpdate(changedProperties: PropertyValues<this>) {
+  //   const shouldnt = !super.shouldUpdate(changedProperties);
+  //   if (shouldnt) {
+  //     return false;
+  //   }
+  //   /** Don't update during loading */
+  //   if (changedProperties.has("perspective") && !this.onlineLoaded) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
 
   /** */
