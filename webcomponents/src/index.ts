@@ -16,6 +16,7 @@ export * from './elements/chat-thread-multi-view';
 export * from './elements/comment-thread-view';
 export * from './elements/emoji-bar';
 export * from './elements/favorites-view';
+export * from './elements/favorites-item';
 export * from './elements/input-bar';
 export * from './elements/wurl-link';
 export * from './elements/peer-list';

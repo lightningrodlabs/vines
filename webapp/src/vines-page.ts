@@ -838,6 +838,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
+    this._canShowFavorites = false;
     /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
       if (e.detail.agent) {
@@ -946,8 +947,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** */
     let primaryTitle = msg("No channel selected");
     let centerSide = html`${doodle_flowers}`;
+    if (this._canShowFavorites) {
+      centerSide = html`<favorites-view></favorites-view>`
+      primaryTitle = msg("Favorites");
+    }
+
     /** render selected thread */
-    if (this.selectedThreadHash) {
+    if (this.selectedThreadHash && !this._canShowFavorites) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
@@ -987,10 +993,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
 
-        console.log("chat-thread", this.multi, this.selectedThreadHash);
         const threadView = this.multi
-          ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this.selectedBeadAh}></chat-thread-multi-view>`
-          : html`<chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>`;
+            ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this.selectedBeadAh}></chat-thread-multi-view>`
+            : html`<chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>`;
 
         centerSide = html`
             ${threadView}
@@ -1504,7 +1509,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                         }}>
                           </ui5-button>`
                   }
-                    <ui5-button icon="favorite-list" class="${this._canShowFavorites? "pressed" : ""}" @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
+                    <ui5-button icon="favorite-list" class="${this._canShowFavorites? "pressed" : ""}" @click=${() => {                       
+                          this._canShowFavorites = !this._canShowFavorites;
+                          if (this._canShowFavorites) {
+                            this._replyToAh = undefined;
+                            this._selectedAgent = undefined;
+                            this.selectedThreadHash = undefined;
+                          }
+                        }
+                    }></ui5-button>
                     <ui5-button icon="comment" class="${this._canShowComments? "pressed" : ""}" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
                     <div class="notification-button">
                       <ui5-button icon="inbox"
@@ -1558,10 +1571,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash} showInput="true"
                                          .subjectName="${this._selectedCommentThreadSubjectName}"></comment-thread-view>
                 </div>` : html``}
-                  ${this._canShowFavorites? html`
-                  <div id="favoritesSide">
-                      <favorites-view></favorites-view>
-                  </div>` : html``}
                   ${this._canShowSearch && this._canShowSearchResults? html`
                   <div id="rightSide">
                       <search-result-panel .parameters=${searchParameters}></search-result-panel>

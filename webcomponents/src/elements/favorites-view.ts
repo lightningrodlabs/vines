@@ -1,5 +1,5 @@
 import {css, html} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property, /*state*/} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -44,7 +44,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- State variables -- */
 
-  @state() private _loading = true;
+  //@state() private _loading = true;
 
 
   /** -- Getters -- */
@@ -72,43 +72,30 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
   override render() {
     console.log("<favorites-view>.render()", this._dvm.threadsZvm.perspective.favorites);
 
-    const doodle_bg =  html`
-          <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
-          </div>
-    `;
+    // if (this._loading) {
+    //   return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+    // }
 
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
-      return html`
-          ${doodle_bg}
-          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">${msg("No favorites")}</div>
-      `;
+      return html`<div style="position: relative; z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">${msg("No favorites")}</div>`;
     }
 
-    const bg_color = this._loading? "#ededf0" : "#ffffff"
-
     let beadLi = this._dvm.threadsZvm.perspective.favorites
-      .map((beadAh) => html`<side-item .hash=${beadAh} deletable="true" 
+      .map((beadAh) => html`<favorites-item .hash=${beadAh} deletable="true" 
                                        @deleted=${async(_e:any) => {
                                         await this._dvm.threadsZvm.removeFavorite(beadAh);
                                         toasty(msg("Message removed from favorites"));
-                                    }}></side-item>`);
+                                    }}></favorites-item>`);
 
     /** Different UI if no message found for thread */
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
-      beadLi = [html`
-            <ui5-li style="background: ${bg_color};">
-                ${msg("No favorites found")}                     
-            </ui5-li>`]
+      beadLi = [html`<div>${msg("No favorites found")}</div>`]
+    } else {
+      beadLi.unshift(html`<div style="flex-grow:1"></div>`)
+      beadLi.push(html`<div style="flex-grow:1"></div>`)
     }
     /** render all */
-    const title = msg("Favorites");
-    return html`
-        ${doodle_bg}
-        <h3 style="margin: 10px;font-size: 25px; color: #021133;">${title}</h3>
-        <div id="textList" style="overflow: auto;">
-            ${beadLi}
-        </div>
-    `;
+    return html`${beadLi}`;
   }
 
 
@@ -118,16 +105,13 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
       sharedStyles,
       css`
         :host {
-          background: linear-gradient(90deg, #E3EBFE 5%, #D8E4F4 5%, #D8E4F4 45%, #E3EBFE 45%, #E3EBFE 55%, #D8E4F4 55%, #D8E4F4 95%, #E3EBFE 95%);
-          background-size: 20px 20px;
-          background-position: 50px 50px;
-          padding-right: 5px;
-          padding-left: 5px;
+          padding: 10px 50px 10px 50px;
           max-height: 100%;
           height: 100%;
           display: flex;
           flex-direction: column;
           flex-grow: 1;
+          gap: 30px;
           position: relative;
           z-index: 0;
         }
