@@ -30,7 +30,7 @@ import {Thread} from "../viewModels/thread";
 export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
   /** -- Properties -- */

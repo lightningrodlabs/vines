@@ -8,6 +8,8 @@ import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
+import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {intoHrl} from "@ddd-qc/we-utils";
 
 
 /**
@@ -108,18 +110,18 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           if (hasUnreadComments) {
             commentButton = html`
                 <ui5-button icon="comment" tooltip=${msg("View comments")}
-                            style="border:none; display:none; ${isSelected? "color:white;" : ""}"
+                            style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                             design="Negative"
                             @click="${(_e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
           } else {
             commentButton = maybeCommentThread != null
               ? html`
                   <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
-                              style="border:none; display:none; ${isSelected? "color:white;" : ""}"
+                              style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                               @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`
               : html`
                   <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
-                              style="border:none; display:none; ${isSelected? "color:white;" : ""}"
+                              style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                               @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`;
           }
 
@@ -144,14 +146,14 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const hideShowBtn = this.showArchivedTopics && isThreadHidden ?
             html`
                 <ui5-button icon="show" tooltip="Show" design="Transparent"
-                            class="showBtn" style="${isSelected? "color:white;" : ""}"
+                            class="showBtn" style="${isSelected? "color:#444;" : ""}"
                             @click=${async (e:any) => {
                                 e.stopPropagation();
                                 this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh}, bubbles: true, composed: true}));
                             }}></ui5-button>
             ` : html`
                       <ui5-button icon="hide" tooltip="Hide" design="Transparent"
-                                  class="showBtn" style="${isSelected? "color:white;" : ""}"
+                                  class="showBtn" style="${isSelected? "color:#444;" : ""}"
                                   @click=${async (e:any) => {
                                       e.stopPropagation();
                                       this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh}, bubbles: true, composed: true}));
@@ -163,14 +165,18 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                     ${isSelected? "background:#4684FD;color:white;" : ""}
+                     ${isSelected? "background:#4684FD;color:#444;" : ""}
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
                     <ui5-button icon="copy" tooltip=${msg("Copy Channel Link")} design="Transparent"
-                                style="border:none; display:none; ${isSelected? "color:white;" : ""}"
-                                @click=${(e:any) => {e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: ppAh, bubbles: true, composed: true}))}}></ui5-button>
+                                style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
+                                @click=${(e:any) => {
+                                    e.stopPropagation(); e.preventDefault();
+                                    const hrl: Hrl = intoHrl(this.cell.address.dnaId, ppAh);
+                                    this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}));
+                                }}></ui5-button>
                     ${hideShowBtn}                  
                     ${commentButton}
                 </div>

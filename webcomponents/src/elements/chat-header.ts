@@ -16,6 +16,8 @@ import {msg} from "@lit/localize";
 import {sharedStyles} from "../styles";
 import {toasty} from "../toast";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
+import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {intoHrl} from "@ddd-qc/we-utils";
 
 
 /**
@@ -47,8 +49,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy DM channel to clipboard')} @click=${(e:any) => {
-      e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
-    }}></ui5-button>
+          e.stopPropagation(); e.preventDefault();
+          const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.threadHash!);
+          this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
+        }}></ui5-button>
     `;
     if (!profile) {
       console.warn("No profile found");
@@ -103,7 +107,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     let subText: TemplateResult<1>;
     const copyBtn = html`
         <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy channel to clipboard')} @click=${(e:any) => {
-            e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
+            e.stopPropagation(); e.preventDefault();
+            const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.threadHash!);
+            this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
         }}></ui5-button>      
     `;
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);

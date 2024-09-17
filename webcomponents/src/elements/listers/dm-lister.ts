@@ -8,6 +8,8 @@ import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
 import {sharedStyles} from "../../styles";
+import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {intoHrl} from "@ddd-qc/we-utils";
 
 
 /**
@@ -123,7 +125,11 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
                     <ui5-button icon="copy" tooltip=${msg("Copy Channel Link")} design="Transparent"
                                 style="border:none; display:none;"
-                                @click=${(e:any) => {e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: ppAh, bubbles: true, composed: true}))}}></ui5-button>
+                                @click=${(e:any) => {
+                                    e.stopPropagation(); e.preventDefault();
+                                    const hrl: Hrl = intoHrl(this.cell.address.dnaId, ppAh);
+                                    this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}));
+                                }}></ui5-button>
                     ${hideShowBtn}
                 </div>
               </sl-tooltip>

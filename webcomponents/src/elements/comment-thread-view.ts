@@ -24,6 +24,7 @@ import {msg} from "@lit/localize";
 import {codeStyles} from "../markdown/code-css";
 import {WAL} from "@lightningrodlabs/we-applet";
 import {InputBar} from "./input-bar";
+import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /**
@@ -370,8 +371,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy comment thread link to clipboard')}
                       style="margin-left:5px;"
                       @click=${(e:any) => {
-                        e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: this.threadHash!, bubbles: true, composed: true}))
+                          e.stopPropagation(); e.preventDefault();
+                          const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.threadHash!);
+                          this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
           }}></ui5-button>
         </h3>
         <!-- thread -->

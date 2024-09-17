@@ -39,7 +39,7 @@ import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
-import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
+import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
@@ -182,14 +182,14 @@ export class VinesApp extends HappMultiElement {
     // @ts-ignore
     this.addEventListener('jump', this.onJump);
     // @ts-ignore
-    this.addEventListener('copy-thread', this.onCopyThread);
+    this.addEventListener('copy', this.onCopy);
   }
   override disconnectedCallback() {
     super.disconnectedCallback();
     // @ts-ignore
     this.removeEventListener('jump', this.onJump);
     // @ts-ignore
-    this.removeEventListener('copy-thread', this.onCopyThread);
+    this.removeEventListener('copy', this.onCopy);
   }
 
 
@@ -356,18 +356,18 @@ export class VinesApp extends HappMultiElement {
 
 
   /** */
-  private async onCopyThread(e: CustomEvent<ActionId>) {
+  private async onCopy(e: CustomEvent<Hrl>) {
     if (!e.detail) {
-      console.warn("Invalid copy-thread event");
+      console.warn("Invalid copy event");
       return;
     }
-    const hrl: Hrl = intoHrl(this.threadsDvm(0).cell.address.dnaId, e.detail); // FIXME 0
+    const hrl: Hrl = e.detail;
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
       this._weServices.walToPocket({hrl});
     }
-    toasty(msg("Copied channel's WAL to clipboard"));
+    toasty(msg("Copied WAL to clipboard"));
   }
 
 

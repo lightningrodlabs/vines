@@ -17,7 +17,7 @@ import {
 } from "../events";
 import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {Hrl, weaveUrlFromWal, weaveUrlToWAL} from "@lightningrodlabs/we-applet";
+import {Hrl, weaveUrlToWAL} from "@lightningrodlabs/we-applet";
 import {FilesDvm} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
@@ -161,12 +161,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       break;
       case "intoHrl":
         const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.hash);
-        const wurl = weaveUrlFromWal({hrl});
-        navigator.clipboard.writeText(wurl);
-        if (this.weServices) {
-          this.weServices.walToPocket({hrl});
-        }
-        toasty(msg("Copied Message's WAL to clipboard"));
+        this.dispatchEvent(new CustomEvent<Hrl>("copy", {detail: hrl, bubbles: true, composed: true}));
       break;
       case "downloadItem": {
         const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;

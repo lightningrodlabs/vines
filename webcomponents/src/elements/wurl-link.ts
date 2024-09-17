@@ -1,9 +1,9 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
+import {ActionId, EntryId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
-import {weClientContext} from "../contexts";
+import {filesContext, weClientContext} from "../contexts";
 import {WAL, WeaveUrl} from "@lightningrodlabs/we-applet";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -13,7 +13,9 @@ import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent} from "../events";
 import {localized, msg} from "@lit/localize";
 import {toasty} from "../toast";
+import {FilesDvm} from "@ddd-qc/files";
 
+import "@ddd-qc/files/dist/elements/file-button.js";
 
 /**
  *
@@ -32,6 +34,9 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @property()
   wurl!: WeaveUrl;
 
+  @consume({ context: filesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
+
   // @property()
   // onlyIcon = false;
 
@@ -40,7 +45,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
            private _vinesTypes: string = ""
            private _assetName: string = ""
-  @state() private _appletName: string = ""
+  @state() private _toolName: string = ""
 
 
   /** -- Methods -- */
@@ -58,7 +63,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** */
     if (changedProperties.has("wurl") && this._zvm) {
       this._vinesTypes = "";
-      this._appletName = "";
+      this._toolName = "";
       this._assetName = "";
       /* await */ this.loadWal(this._zvm);
     }
@@ -100,8 +105,9 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     try {
       const wal = weaveUrlToWal(this.wurl);
       const [dnaId, dhtId] = hrl2Id(wal.hrl);
+      /** Vines */
       if (this.cell.address.dnaId.equals(dnaId)) {
-        this._appletName = "Vines";
+        this._toolName = "Vines";
         /** Determine entry */
         const hash = new ActionId(dhtId.b64);
         console.log("<wurl-link>.loadWal() hash", hash, threadsZvm);
@@ -130,12 +136,33 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
         return;
       }
+      /** Files */
+      if (this._filesDvm.cell.address.dnaId.equals(dnaId)) {
+        this._toolName = "Files";
+        const hash = new EntryId(dhtId.b64);
+        console.log("<wurl-link>.loadWal() Files hash", hash);
+        const tuple = this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(hash);
+        if (tuple) {
+          this._assetName = tuple[0].description.name;
+        } else {
+          const pprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(hash);
+          //author = pprm.author;
+          if (pprm) {
+            this._assetName = pprm.description.name;
+          } else {
+            this._assetName = "Unknown File";
+          }
+        }
+
+        return;
+      }
+      /** Some other Tool */
       const assetLocAndInfo = await this.weServices.assetInfo(wal);
       if (assetLocAndInfo) {
         const appletInfo = await this.weServices.appletInfo(assetLocAndInfo.appletHash);
         if (appletInfo) {
           this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
-          this._appletName = appletInfo.appletName;
+          this._toolName = appletInfo.appletName;
         }
       }
     } catch(e:any) {
@@ -164,7 +191,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<wurl-link>.render()", this.wurl, this._appletName);
+    console.log("<wurl-link>.render()", this.wurl, this._toolName);
     if (this.wurl == "") {
       //return html`<div>Failed to retrieve Asset. WeServices not available.</div>`;
       return html``;
@@ -175,10 +202,18 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     } catch(e:any) {
       return this.renderBadLink();
     }
-    if (!this._assetName || !this._appletName) {
+    if (!this._assetName || !this._toolName) {
       return this.renderBadLink();
     }
+
     const [dnaId, dhtId] = hrl2Id(wal.hrl);
+
+    if (this._toolName == "Files") {
+      //return html`<file-button .hash=${new EntryId(dhtId.b64)}></file-button>`;
+      return html`<ui5-badge design="Set1">${this._assetName}</ui5-badge>`;
+    }
+
+
     let colorIdx = 6;
     if (!this.cell.address.dnaId.equals(dnaId) && !this.weServices) {
       colorIdx = 3;
@@ -187,7 +222,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** render valid link */
     return html`
-        <!-- <sl-tooltip content="To ${this._appletName}"> -->
+        <!-- <sl-tooltip content="To ${this._toolName}"> -->
           <ui5-badge design="Set1" color-scheme=${colorIdx}  style="color:#0064D9"
                      @click=${(e:any) => {
                        e.stopPropagation();

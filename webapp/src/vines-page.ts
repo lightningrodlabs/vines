@@ -201,6 +201,8 @@ import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
+// @ts-ignore
+import {FileButton} from "@ddd-qc/files/dist/elements/file-button";
 import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
 //import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
@@ -871,6 +873,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
     this._canShowFavorites = false;
+    this._hideFiles = true;
 
     if (e.detail.type == JumpDestinationType.Favorites) {
       this._canShowFavorites = true;
@@ -1325,7 +1328,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
 
                 <!-- Action buttons -->
-                <div style="display:flex; flex-direction:row;">
+                <div style="display:flex; flex-direction:row; margin-right: 5px;">
                     <div style="flex-grow: 1;"></div>
                     <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; border-radius: 10px; margin-right: 5px">
                     <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => this._collapseAll = false}></ui5-button>                    
