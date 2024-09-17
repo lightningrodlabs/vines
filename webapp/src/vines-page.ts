@@ -1268,12 +1268,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 }}>
                     </ui5-button>
                     <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
-                        <ui5-menu-item id="createTopic" icon="add" text=${msg("Create new Topic")}></ui5-menu-item>
                         ${this._canViewArchivedSubjects
                           ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived items")} icon="hide"></ui5-menu-item>`
                           : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived items")} icon="show"></ui5-menu-item>
                         `}
-                        <ui5-menu-item id="viewFiles" icon="documents" text=${msg("View Files")}></ui5-menu-item>
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
                     </ui5-menu>
                 </div>
@@ -1397,11 +1395,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
-                    <ui5-button icon="favorite-list" design="Transparent"
+                    <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
+                                style="margin-top:10px; ${!this._hideFiles ? "background: #4684FD; color: white;" : ""}"
+                                @click=${() => {
+                                    this._hideFiles = !this._hideFiles;
+                                    if (!this._hideFiles) {
+                                        this._canShowFavorites = false;
+                                        this._replyToAh = undefined;
+                                        this._selectedAgent = undefined;
+                                        this.selectedThreadHash = undefined;
+                                    }
+                                }}>
+                    </ui5-button>                     
+                    <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("View Favorites")}
                                 style="margin-top:10px; ${this._canShowFavorites ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => {
                                     this._canShowFavorites = !this._canShowFavorites;
                                     if (this._canShowFavorites) {
+                                        this._hideFiles = true;
                                         this._replyToAh = undefined;
                                         this._selectedAgent = undefined;
                                         this.selectedThreadHash = undefined;
@@ -1829,10 +1840,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onGroupMenu(e:any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
-      case "createTopic": this.createTopicDialogElem.show(); break;
       case "viewArchived": this.onShowArchiveTopicsBtn(e); break;
       case "markAllRead": this.onCommitBtn(e); break;
-      case "viewFiles": this._hideFiles = !this._hideFiles; break;
     }
   }
 
