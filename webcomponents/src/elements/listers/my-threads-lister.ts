@@ -44,6 +44,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
+  @property({type: Boolean}) collapsed?: boolean = false;
   @state() private _loading = false;
 
 
@@ -222,7 +223,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
     /** render subject sub-lister */
     return html`
-          <ui5-panel id=${subjectId.b64}
+          <ui5-panel id=${subjectId.b64} ?collapsed=${this.collapsed}
                      @mouseover=${(_e:any) => {
                         const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
                         const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
@@ -353,7 +354,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
       /** render appletSubLister */
       return html`
-          <ui5-panel id=${appletId.b64}
+          <ui5-panel id=${appletId.b64} ?collapsed=${this.collapsed}
                      @mouseover=${(_e:any) => {
                          const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
                          const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);

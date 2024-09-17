@@ -854,7 +854,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   async onGroupMenu(e:any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
-      case "viewArchived": this.onShowArchiveTopicsBtn(e); break;
       case "markAllRead": this.onCommitBtn(e); break;
     }
   }
@@ -906,13 +905,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     //const semTopic = this.shadowRoot!.getElementById("topicusView") as SemanticTopicsView;
     //semTopic.requestUpdate();
   }
-
-
-  /** */
-  onShowArchiveTopicsBtn(_e?: any) {
-    this._canViewArchivedSubjects = !this._canViewArchivedSubjects;
-  }
-
 
 
   /** */

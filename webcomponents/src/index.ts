@@ -39,7 +39,7 @@ export * from './elements/panels/network-health-panel';
 export * from './elements/panels/notification-list';
 export * from './elements/panels/search-result-panel';
 
-export * from './elements/listers/applet-lister';
+export * from './elements/listers/tool-lister';
 export * from './elements/listers/topics-lister';
 export * from './elements/listers/my-threads-lister';
 export * from './elements/listers/dm-lister';

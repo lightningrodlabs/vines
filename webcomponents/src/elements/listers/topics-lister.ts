@@ -22,6 +22,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** -- Properties -- */
 
+  @property({type: Boolean}) collapsed?: boolean = false;
+
   @property() showArchivedTopics?: string;
 
   @property() selectedThreadHash?: ActionId;
@@ -106,18 +108,18 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           if (hasUnreadComments) {
             commentButton = html`
                 <ui5-button icon="comment" tooltip=${msg("View comments")}
-                            style="border:none; display:none;"
+                            style="border:none; display:none; ${isSelected? "color:white;" : ""}"
                             design="Negative"
                             @click="${(_e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
           } else {
             commentButton = maybeCommentThread != null
               ? html`
                   <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
-                              style="border:none; display:none;"
+                              style="border:none; display:none; ${isSelected? "color:white;" : ""}"
                               @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`
               : html`
                   <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
-                              style="border:none; display:none;"
+                              style="border:none; display:none; ${isSelected? "color:white;" : ""}"
                               @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`;
           }
 
@@ -142,14 +144,14 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const hideShowBtn = this.showArchivedTopics && isThreadHidden ?
             html`
                 <ui5-button icon="show" tooltip="Show" design="Transparent"
-                            class="showBtn"
+                            class="showBtn" style="${isSelected? "color:white;" : ""}"
                             @click=${async (e:any) => {
                                 e.stopPropagation();
                                 this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh}, bubbles: true, composed: true}));
                             }}></ui5-button>
             ` : html`
                       <ui5-button icon="hide" tooltip="Hide" design="Transparent"
-                                  class="showBtn"
+                                  class="showBtn" style="${isSelected? "color:white;" : ""}"
                                   @click=${async (e:any) => {
                                       e.stopPropagation();
                                       this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh}, bubbles: true, composed: true}));
@@ -167,7 +169,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
                     <ui5-button icon="copy" tooltip=${msg("Copy Channel Link")} design="Transparent"
-                                style="border:none; display:none;"
+                                style="border:none; display:none; ${isSelected? "color:white;" : ""}"
                                 @click=${(e:any) => {e.stopPropagation(); this.dispatchEvent(new CustomEvent<ActionId>('copy-thread', {detail: ppAh, bubbles: true, composed: true}))}}></ui5-button>
                     ${hideShowBtn}                  
                     ${commentButton}
@@ -258,7 +260,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
       /** render topic item */
       return html`
-          <ui5-panel id=${topicEh.b64}
+          <ui5-panel id=${topicEh.b64} ?collapsed=${this.collapsed}
                      @mouseover=${(_e:any) => {
                        const hide = this.shadowRoot!.getElementById("hide-" + topicEh.b64);
                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicEh.b64);

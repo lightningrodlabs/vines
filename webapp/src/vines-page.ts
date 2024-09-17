@@ -67,6 +67,7 @@ import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
 import "@ui5/webcomponents-icons/dist/add-favorite.js"
 import "@ui5/webcomponents-icons/dist/accept.js"
+import "@ui5/webcomponents-icons/dist/alphabetical-order.js"
 import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/attachment-text-file.js"
 import "@ui5/webcomponents-icons/dist/attachment-photo.js"
@@ -79,6 +80,7 @@ import "@ui5/webcomponents-icons/dist/copy.js"
 import "@ui5/webcomponents-icons/dist/chain-link.js"
 import "@ui5/webcomponents-icons/dist/close-command-field.js"
 import "@ui5/webcomponents-icons/dist/cloud.js"
+import "@ui5/webcomponents-icons/dist/collapse-all.js"
 import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/customer.js"
 import "@ui5/webcomponents-icons/dist/document.js"
@@ -92,6 +94,7 @@ import "@ui5/webcomponents-icons/dist/download.js"
 import "@ui5/webcomponents-icons/dist/edit.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/error.js"
+import "@ui5/webcomponents-icons/dist/expand-all.js"
 import "@ui5/webcomponents-icons/dist/feedback.js"
 import "@ui5/webcomponents-icons/dist/favorite.js"
 import "@ui5/webcomponents-icons/dist/favorite-list.js"
@@ -122,6 +125,7 @@ import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/response.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/search.js"
+import "@ui5/webcomponents-icons/dist/sort.js"
 import "@ui5/webcomponents-icons/dist/share-2.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
@@ -228,6 +232,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Properties -- */
 
+
   @property() multi: boolean = false;
 
   @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
@@ -269,6 +274,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @state() private _replyToAh: ActionId | undefined = undefined;
   @state() private _hideFiles = true;
+
+  @state() private _collapseAll: boolean = false;
+
 
   private _lastKnownNotificationIndex = 0;
 
@@ -818,7 +826,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //   this._listerToShow = THIS_APPLET_ID.b64;
     //   return;
     // }
-    /* it's an appletId so display the applet lister */
+    /* it's an appletId so display the tool lister */
     this._listerToShow = id;
     this.requestUpdate();
   }
@@ -1157,7 +1165,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
-    let lister= html`<applet-lister></applet-lister>`
+    let lister= html`<tool-lister ?collapsed=${this._collapseAll}></tool-lister>`
     if (this._listerToShow == this.cell.address.agentId.b64 || this.multi) {
       lister = this.multi? html`
           <dm-multi-lister
@@ -1180,7 +1188,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       `;
     } else if (this._listerToShow == this.cell.address.dnaId.b64) {
       lister = html`
-          <topics-lister 
+          <topics-lister  ?collapsed=${this._collapseAll}
                          .showArchivedTopics=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(_e : CustomEvent<boolean>) => this.createTopicDialogElem.show()}
@@ -1192,7 +1200,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       `;
     } else if (this._listerToShow == null) {
       lister = html`
-          <my-threads-lister 
+          <my-threads-lister ?collapsed=${this._collapseAll}
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
@@ -1275,15 +1283,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
                     </ui5-menu>
                 </div>
-
-                <!-- <ui5-segmented-button-item id="dm-option">${msg('DMs')}</ui5-segmented-button-item> -->
-                <!-- 
-                <ui5-segmented-button @selection-change=${this.onListerSelected} style="margin:auto; padding-top: 7px; padding-bottom: 7px;">
-                    <ui5-segmented-button-item id="topics-option">${msg('Topics')}</ui5-segmented-button-item>
-                    <ui5-segmented-button-item id="tools-option">${msg('Tools')}</ui5-segmented-button-item>
-                    <ui5-segmented-button-item id="mine-option">${msg('My')}</ui5-segmented-button-item>
-                </ui5-segmented-button> -->
                 
+                <!-- Custom Segmented buttons -->
                 <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 10px 10px 10px 10px; border-radius: 5px; padding: 3px;">
                     <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
@@ -1315,9 +1316,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
                         mineBtn.classList.add("selected");                        
                     }}>${msg('My')}</div>                    
-                </div>                
-    `;
+                </div>
 
+                <!-- Action buttons -->
+                <div style="display:flex; flex-direction:row;">
+                    <div style="flex-grow: 1;"></div>
+                    <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; border-radius: 10px; margin-right: 5px">
+                    <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => this._collapseAll = false}></ui5-button>                    
+                    <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => this._collapseAll = true}></ui5-button>
+                    <ui5-button icon="alphabetical-order" design="Transparent" style="height:18px;" tooltip=${msg("Sort alphabetically")}></ui5-button>                    
+                    <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" tooltip=${msg("View/Hide Archived")} @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
+                    <ui5-button icon="accept" design="Transparent" style="height:18px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
+                    </div>
+                </div>
+    `;
 
     /** Render all */
     return html`
@@ -1840,7 +1852,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onGroupMenu(e:any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
-      case "viewArchived": this.onShowArchiveTopicsBtn(e); break;
+      case "viewArchived": this._canViewArchivedSubjects = !this._canViewArchivedSubjects; break;
       case "markAllRead": this.onCommitBtn(e); break;
     }
   }
@@ -1888,12 +1900,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     toasty(msg("All marked 'read' and cleared Inbox"));
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
-  }
-
-
-  /** */
-  onShowArchiveTopicsBtn(_e?: any) {
-    this._canViewArchivedSubjects = !this._canViewArchivedSubjects;
   }
 
 

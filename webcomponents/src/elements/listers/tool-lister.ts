@@ -39,8 +39,8 @@ import {sharedStyles} from "../../styles";
 /**
  * @element
  */
-@customElement("applet-lister")
-export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+@customElement("tool-lister")
+export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -64,7 +64,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** In zvmUpdated() this._zvm is not already set! */
   protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
-    console.log("<applet-lister>.zvmUpdated()");
+    console.log("<tool-lister>.zvmUpdated()");
     await this.loadSubjectTypes(newZvm);
   }
 
@@ -72,7 +72,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    //console.log("<applet-lister>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
+    //console.log("<tool-lister>.willUpdate()", changedProperties, !!this._zvm, this.dnaHash);
     if (changedProperties.has("_appletId") && this._zvm) {
       /*await */ this.loadSubjectTypes();
     }
@@ -81,7 +81,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   private async loadSubjectTypes(newZvm?: ThreadsZvm) {
-    console.log("<applet-lister>.loadSubjectTypes()");
+    console.log("<tool-lister>.loadSubjectTypes()");
     this._loading = true;
     const zvm = newZvm? newZvm : this._zvm;
     await zvm.pullAppletSubjectTypes(this._appletId);
@@ -103,7 +103,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     // //   }
     // // }
     // // if (!threadsAppletId) {
-    // //   console.warn("Did not find Vines applet");
+    // //   console.warn("Did not find Vines tool");
     // //   return undefined;
     // // }
     // for (const [_appletHash, atts] of this.weServices.creatables.entries()) {
@@ -141,7 +141,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async clickTree(event:any) {
-    console.log("<applet-lister> click event:", event.detail.item);
+    console.log("<tool-lister> click event:", event.detail.item);
     let type;
     switch (event.detail.item.level) {
       case 3: type = ThreadsEntryType.ParticipationProtocol; break;
@@ -159,7 +159,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       await this.updateComplete;
       const b64 = event.detail.item.id as ActionHashB64;
       const jump = threadJumpEvent(new ActionId(b64));
-      console.log("<applet-lister> click event: jump", jump.detail);
+      console.log("<tool-lister> click event: jump", jump.detail);
       this.dispatchEvent(jump);
     }
 
@@ -183,7 +183,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //const isTyped = !!this.root && typeof this.root == 'object';
     //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
 
-    console.log("<applet-lister>.toggleTreeItem()", toggledTreeItem);
+    console.log("<tool-lister>.toggleTreeItem()", toggledTreeItem);
 
     event.preventDefault(); // do not let the toggle button switch yet
     busyIndicator.active = true; // block the tree from the user
@@ -202,7 +202,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       let subjects = await this._zvm.findSubjects(this._appletId, typePathEh);
       console.log("this.weServices", this.weServices);
       if (!this.weServices) {
-        console.warn("weServices not found in <applet-lister>")
+        console.warn("weServices not found in <tool-lister>")
       }
       /** Convert to TreeItem and append to Tree */
       for (const [dnaId, subjectHash] of subjects) {
@@ -288,7 +288,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<applet-lister>.render()", this._appletId);
+    console.log("<tool-lister>.render()", this._appletId);
     // if (!this.appletId) {
     //   return html `<div>No Applet selected</div>`;
     // }
@@ -297,7 +297,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
 
     let subjectTypes = this.perspective.appletSubjectTypes.get(this._appletId);
-    console.log("<applet-lister>.render() subjectTypes", subjectTypes);
+    console.log("<tool-lister>.render() subjectTypes", subjectTypes);
     if (!subjectTypes) {
       subjectTypes = new EntryIdMap();
     }
@@ -309,7 +309,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
-      console.log("<applet-lister>.render() subjectType", subjectType, pathEh);
+      console.log("<tool-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
       const isUnread = !!maybeCommentThread && this._zvm.perspective.unreadThreads.has(maybeCommentThread);
@@ -353,7 +353,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (this.weServices) {
       appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
           console.log("appletInfo", appletInfo);
-          /** exclude this applet as it's handled specifically elsewhere */
+          /** exclude this tool as it's handled specifically elsewhere */
           if (!appletInfo || appletId.equals(this.weServices.appletIds[0]!)) {
             return html``;
           }
@@ -398,7 +398,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
       <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
         <div style="display:flex; flex-direction:column; gap:10px; padding:5px; width:100%">
-          <ui5-select id="lister-select" style="margin:auto" @change=${(e:any) => {console.log("applet-lister change", e); this._appletId = e.detail.selectedOption.id}}>
+          <ui5-select id="lister-select" style="margin:auto" @change=${(e:any) => {console.log("tool-lister change", e); this._appletId = e.detail.selectedOption.id}}>
               ${appletOptions}
           </ui5-select>
           ${inner}

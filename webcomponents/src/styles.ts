@@ -134,11 +134,13 @@ export const sharedStyles = css`
     overflow: hidden;
     align-items: center;
     height: 36px;
-    padding-left: 10px;
     cursor: pointer;
     color: #484848;
     background: #F6FAFC;
-    margin-left: -7px;
+    border-radius:5px;
+    margin-left: -2px;
+    padding-left: 5px;
+    margin-right: 5px;
   }
   .threadItem:hover {
     background: rgb(222, 232, 255);
