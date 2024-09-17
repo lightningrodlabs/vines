@@ -1385,6 +1385,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                       </div>
                     </div>
+                    <ui5-button icon="favorite-list" design="Transparent"
+                                style="margin-top:10px; ${this._canShowFavorites? "background: #4684FD; color: white;" : ""}"
+                                @click=${() => {
+                                  this._canShowFavorites = !this._canShowFavorites;
+                                  if (this._canShowFavorites) {
+                                      this._replyToAh = undefined;
+                                      this._selectedAgent = undefined;
+                                      this.selectedThreadHash = undefined;
+                                  }
+                                }}>
+                    </ui5-button>
                     <ui5-button id="shareBtn" style="margin-top:10px;"
                                 design="Transparent" icon="share-2" tooltip=${msg("Share Network")}
                                 @click=${async (_e:any) => {
@@ -1536,15 +1547,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                         }}>
                           </ui5-button>`
                   }
-                    <ui5-button icon="favorite-list" class="${this._canShowFavorites? "pressed" : ""}" @click=${() => {                       
-                          this._canShowFavorites = !this._canShowFavorites;
-                          if (this._canShowFavorites) {
-                            this._replyToAh = undefined;
-                            this._selectedAgent = undefined;
-                            this.selectedThreadHash = undefined;
-                          }
-                        }
-                    }></ui5-button>
                     <ui5-button icon="comment" class="${this._canShowComments? "pressed" : ""}" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
                     <div class="notification-button">
                       <ui5-button icon="inbox"
