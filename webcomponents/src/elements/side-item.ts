@@ -132,7 +132,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       case ThreadsEntryType.EntryBead:
         content = html`<div>__File__</div>`;
         const entryBead = typedBead as EntryBeadMat;
-        console.log("<comment-thread-view> entryBead", entryBead, entryBead.sourceEh);
+        console.log("<side-item> entryBead", entryBead, entryBead.sourceEh);
         const manifestEh = entryBead.sourceEh;
         const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
         if (maybePprm) {

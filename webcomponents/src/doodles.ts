@@ -1,5 +1,6 @@
 import {html} from "lit";
 
+// #E3EBFF
 export const doodle_weave = html`
   <css-doodle>
       @grid: 1 / 100%;
@@ -15,7 +16,7 @@ export const doodle_weave = html`
             path {
               fill: none;
               stroke-linecap: square;
-              stroke: #E3EBFF;
+              stroke: #ECF3F7;
               stroke-width: 0.6;
               draw: 0.1s;
               d: M 4 5

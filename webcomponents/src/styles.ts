@@ -120,6 +120,7 @@ export const sharedStyles = css`
     color: #ffffff;
     background: #359C07;
     border: none;
+    min-width: 40px;
   }
   
   .showBtn {
@@ -208,18 +209,20 @@ export const searchFieldStyleTemplate = document.createElement('template');
 searchFieldStyleTemplate.innerHTML = `
 <style>
   .ui5-input-root {
-    background: #e7f2f9 !important;
+    background: #ECEAE9 !important;
     /*color: #003DB0 !important;*/
-    color: #656565 !important;
+    color: #525150 !important;
+    /*border: none !important;*/
+    border-radius:10px !important;
   }
   
   input::placeholder {
-    color: black !important;
+    color: #B9B7B6 !important;
   } 
   
   .ui5-input-clear-icon {
     /*color:white !important;*/
-    color: #656565 !important;
+    color: #B9B7B6 !important;
   }
 </style>
 `;

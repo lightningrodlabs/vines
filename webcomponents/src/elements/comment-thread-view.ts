@@ -301,7 +301,10 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
                     icon="journey-depart"
                     style="margin-right:0px; -webkit-transform: scaleX(-1); transform: scaleX(-1);"
-                    @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(this.threadHash!))}>
+                    @click=${(_e:any) => {
+                      this.dispatchEvent(threadJumpEvent(this.threadHash!));
+                      this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))
+      }}>
         </ui5-button>
     `;
     }
@@ -311,6 +314,11 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         ${doodle_bg}
         <!-- Title row -->
         <h3 style="margin:10px; color:#021133;">
+          <ui5-button design="Transparent" tooltip=${msg('Close')}
+                      icon="slim-arrow-right"
+                      style="margin-right:-5px;"
+                      @click=${(_e:any) => this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))}>
+          </ui5-button>            
           ${openInMainViewBtn}
           <span>${msg('Comments about')}</span>
           ${gotoAppletBtn}

@@ -1323,22 +1323,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Render all */
     return html`
-        <div id="mainDiv" 
+        <div id="mainDiv"
              @commenting-clicked=${this.onCommentingClicked}
              @reply-clicked=${this.onReplyClicked}
              @edit-topic-clicked=${this.onEditTopicClicked}>
-            
-            <div id="leftSide" style="display: ${this._canShowLeft? "flex": "none"}"
-                 @contextmenu=${(e:any) => {
-                    console.log("LeftSide contextmenu", e);
-                  // e.preventDefault();
-                  // const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
-                  // const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
-                  // menu.showAt(btn);
-                  // //menu.style.top = e.clientY + "px";
-                  // //menu.style.left = e.clientX + "px";
-                }}>
-                
+
+            <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}"
+                 @contextmenu=${(e: any) => {
+                     console.log("LeftSide contextmenu", e);
+                     // e.preventDefault();
+                     // const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                     // const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
+                     // menu.showAt(btn);
+                     // //menu.style.top = e.clientY + "px";
+                     // //menu.style.left = e.clientX + "px";
+                 }}>
+
                 ${topLeft}
                 ${lister}
                 <!-- Messages -->
@@ -1349,8 +1349,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button icon="add" tooltip=${msg("Message a peer")}
                                 design="Transparent"
                                 style="color:grey; margin-right: 8px;"
-                                @click=${async (e:any) => {
-                                    e.stopPropagation(); 
+                                @click=${async (e: any) => {
+                                    e.stopPropagation();
                                     await this.updateComplete;
                                     const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                                     dialog.show();
@@ -1358,113 +1358,138 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                 </div>
                 <dm-lister nobtn
-                        .showArchived=${this._canViewArchivedSubjects}
-                        .selectedThreadHash=${this.selectedThreadHash}
+                           .showArchived=${this._canViewArchivedSubjects}
+                           .selectedThreadHash=${this.selectedThreadHash}
                 ></dm-lister>
-                
+
                     <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
                                 @click=${async () => {
                     await this.updateComplete;
-                    this.dispatchEvent(new CustomEvent<boolean>('debug', {detail: true, bubbles: true, composed: true}));
+                    this.dispatchEvent(new CustomEvent<boolean>('debug', {
+                        detail: true,
+                        bubbles: true,
+                        composed: true
+                    }));
                 }}
                     ></ui5-button>
                     <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
                                 @click=${this.onCommitBtn}></ui5-button>
                 </div> -->
                 <div id="profile-row">
-                    <div id="profile-div" 
+                    <div id="profile-div"
                          style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;"
-                         @click=${(e:any) => {
+                         @click=${(e: any) => {
                              e.stopPropagation();
-                             this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.address.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-                      ${avatar}
-                      <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-                          <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;color:#1B2A39ED;"><abbr title=${this.cell.address.agentId.b64}>${myProfile.nickname}</abbr></div>
-                              <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
-                      </div>
+                             this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
+                                 detail: {
+                                     agentId: this.cell.address.agentId,
+                                     x: e.clientX,
+                                     y: e.clientY
+                                 }, bubbles: true, composed: true
+                             }));
+                         }}>
+                        ${avatar}
+                        <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
+                            <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;color:#1B2A39ED;">
+                                <abbr title=${this.cell.address.agentId.b64}>${myProfile.nickname}</abbr></div>
+                                <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
+                        </div>
                     </div>
                     <ui5-button icon="favorite-list" design="Transparent"
-                                style="margin-top:10px; ${this._canShowFavorites? "background: #4684FD; color: white;" : ""}"
+                                style="margin-top:10px; ${this._canShowFavorites ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => {
-                                  this._canShowFavorites = !this._canShowFavorites;
-                                  if (this._canShowFavorites) {
-                                      this._replyToAh = undefined;
-                                      this._selectedAgent = undefined;
-                                      this.selectedThreadHash = undefined;
-                                  }
+                                    this._canShowFavorites = !this._canShowFavorites;
+                                    if (this._canShowFavorites) {
+                                        this._replyToAh = undefined;
+                                        this._selectedAgent = undefined;
+                                        this.selectedThreadHash = undefined;
+                                    }
                                 }}>
                     </ui5-button>
                     <ui5-button id="shareBtn" style="margin-top:10px;"
                                 design="Transparent" icon="share-2" tooltip=${msg("Share Network")}
-                                @click=${async (_e:any) => {
+                                @click=${async (_e: any) => {
                                     const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
                                     const btn = this.shadowRoot!.getElementById("shareBtn") as HTMLElement;
                                     /** Generate and add QR code */
                                     const existingImg = popover.querySelector('img')
                                     if (!existingImg) {
-                                      let generateQR: string;
-                                      try {
-                                        generateQR = await QRCode.toDataURL(this.cell.shareCode);
-                                        const img = document.createElement('img');
-                                        img.src = generateQR;
-                                        popover.append(img);
-                                      } catch (err) {
-                                        console.error(err);
-                                      }
+                                        let generateQR: string;
+                                        try {
+                                            generateQR = await QRCode.toDataURL(this.cell.shareCode);
+                                            const img = document.createElement('img');
+                                            img.src = generateQR;
+                                            popover.append(img);
+                                        } catch (err) {
+                                            console.error(err);
+                                        }
                                     }
                                     popover.showAt(btn);
                                 }}>
-                    </ui5-button>                    
+                    </ui5-button>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
-                                @click=${(_e:any) => {
+                                @click=${(_e: any) => {
                                     const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
                                     const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
                                     settingsMenu.showAt(settingsBtn);
                                 }}>
                     </ui5-button>
-                    <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
-                              @item-click=${(e:any) => this.onSettingsMenu(e)}>
-                        <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
+                    <ui5-menu id="settingsMenu" header-text=${msg("Settings")}
+                              @item-click=${(e: any) => this.onSettingsMenu(e)}>
+                        <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
+                                       icon="user-edit"></ui5-menu-item>
                         <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>
-                        <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")} icon="open-folder" ></ui5-menu-item>
-                        <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
-                        <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
+                        <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
+                                       starts-section></ui5-menu-item>
+                        <ui5-menu-item id="uploadFileItem" text=${msg("Import File")}
+                                       icon="upload-to-cloud"></ui5-menu-item>
+                        <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
+                                       icon="open-folder"></ui5-menu-item>
+                        <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
+                                       icon="open-folder"></ui5-menu-item>
+                        <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
+                                       starts-section></ui5-menu-item>
                         <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
-                        <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"</ui5-menu-item>
+                        <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"
+                        </ui5-menu-item>
                     </ui5-menu>
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
-                        <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
+                        <div slot="header"
+                             style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <network-health-panel></network-health-panel>
-                        <div slot="footer" style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
-                          <div style="flex-grow: 1;"></div>
-                          <ui5-button slot="footer" design="Emphasized" @click=${() => {
-                                      const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                                      if (popover.isOpen()) {
-                                          popover.close();
-                                      }
-                                  }}
-                          >${msg('Close')}</ui5-button>
+                        <div slot="footer"
+                             style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
+                            <div style="flex-grow: 1;"></div>
+                            <ui5-button slot="footer" design="Emphasized" @click=${() => {
+                                const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                                if (popover.isOpen()) {
+                                    popover.close();
+                                }
+                            }}
+                            >${msg('Close')}
+                            </ui5-button>
                         </div>
                     </ui5-popover>
                     <!-- Share Network -->
                     <ui5-popover id="shareNetworkPopover">
-                        <div slot="header" style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
+                        <div slot="header"
+                             style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
                             ${msg("Share Network")}
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <div>${msg('Share this code with a peer to grant them access to this Network')} (<b>${this.cell.name})</b></div>
+                        <div>${msg('Share this code with a peer to grant them access to this Network')}
+                            (<b>${this.cell.name})</b></div>
                         <ui5-textarea .value=${this.cell.shareCode}></ui5-textarea>
-                        <div slot="footer" style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
+                        <div slot="footer"
+                             style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
                             <ui5-button slot="footer" design="Emphasized" @click=${() => {
                                 navigator.clipboard.writeText(this.cell.shareCode);
@@ -1474,83 +1499,86 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     popover.close();
                                 }
                             }}
-                            >${msg('Copy Joining Code')}</ui5-button>
+                            >${msg('Copy Joining Code')}
+                            </ui5-button>
                         </div>
                     </ui5-popover>
-                  <!-- <ui5-button style="margin-top:10px;"
+                        <!-- <ui5-button style="margin-top:10px;"
                                 design="Transparent" icon="synchronize" tooltip="Refresh"
                                 @click=${this.refresh}></ui5-button>  -->
                 </div>
             </div>
             <div id="mainSide">
-              <div id="topicBar">
-                  ${toggleLeftBtn}
-                  ${maybeBackBtn}
-                  <div id="primaryTitle" style="font-size: 20px">${primaryTitle}</div>
-                  <div style="flex-grow: 1"></div>
-                  <div id="topBarBtnGroup">
+                <div id="topicBar">
+                    ${toggleLeftBtn}
+                    ${maybeBackBtn}
+                    <div id="primaryTitle" style="font-size: 20px">${primaryTitle}</div>
+                    <div style="flex-grow: 1"></div>
                     <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
-                             style="display: ${this._canShowSearch? "flex" : "none"}"
-                             @input=${(e:any) => {
-                                 console.log("<search-field> @input", e.keyCode, e);
-                                 let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
-                                 let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
-                                 if (searchElem.value == "") {
-                                   searchPopElem.close();
-                                   this._canShowSearchResults = false;
-                                   this.requestUpdate(); // important
-                                   return;
-                                 }
-                                 searchPopElem.showAt(searchElem, true);
-                                 searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
-                             }}
-                             @keypress=${(e:any) => {
-                               console.log("<search-field> @keypress", e.keyCode, e);
-                               let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
-                               let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
-                               //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
-                               if (searchElem.value != "") {
-                                 if (e.keyCode === 13) {
-                                   searchPopElem.close();
-                                   this._canShowSearchResults = true;
-                                   this.requestUpdate(); // important
-                                 } else {
-                                   if (!searchPopElem.isOpen()) {
-                                     searchPopElem.showAt(searchElem, true);
+                               style="border-radius: 10px; border: none; height: 32px;"
+                               @input=${(e: any) => {
+                                   console.log("<search-field> @input", e.keyCode, e);
+                                   let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                                   let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
+                                   if (searchElem.value == "") {
+                                       searchPopElem.close();
+                                       this._canShowSearchResults = false;
+                                       this.requestUpdate(); // important
+                                       return;
                                    }
-                                 }
-                               } else {
-                                 // TODO: check if this code branch is actually useful
-                                 this._canShowSearchResults = false;
-                                 this.requestUpdate(); // important
-                               }
-                             }}
-                  ></ui5-input>
-                  <ui5-button icon="search" class="${this._canShowSearch? "pressed" : ""}" @click=${() => {this._canShowSearch = !this._canShowSearch;}}></ui5-button>
-
-                      ${this.selectedThreadHash === undefined ? html`` :
-                          html`<ui5-button id="notifSettingsBtn" 
-                                           icon="bell" 
-                                           tooltip=${msg('Notifications Settings')} 
-                                           @click=${() => {
-                                             console.log("notifSettingsBtn.click()");
-                                            const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
-                                            if (popover.isOpen()) {
-                                                popover.close();
-                                                return;
-                                            }
-                                            const shellbar = this.shadowRoot!.getElementById("topicBar");
-                                            if (!shellbar) {
-                                              console.error("Missing topicBar HTML Element");
-                                            }
-                                            popover.showAt(shellbar!);
-                                        }}>
-                          </ui5-button>`
-                  }
-                    <ui5-button icon="comment" class="${this._canShowComments? "pressed" : ""}" @click=${() => {this._canShowComments = !this._canShowComments;}}></ui5-button>
-                    <div class="notification-button">
-                      <ui5-button icon="inbox"
-                                         @click=${() => {
+                                   searchPopElem.showAt(searchElem, true);
+                                   searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
+                               }}
+                               @keypress=${(e: any) => {
+                                   console.log("<search-field> @keypress", e.keyCode, e);
+                                   let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                                   let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
+                                   //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
+                                   if (searchElem.value != "") {
+                                       if (e.keyCode === 13) {
+                                           searchPopElem.close();
+                                           this._canShowSearch = true;
+                                           this._canShowSearchResults = true;
+                                           this.requestUpdate(); // important
+                                       } else {
+                                           if (!searchPopElem.isOpen()) {
+                                               searchPopElem.showAt(searchElem, true);
+                                           }
+                                       }
+                                   } else {
+                                       // TODO: check if this code branch is actually useful
+                                       this._canShowSearchResults = false;
+                                       this.requestUpdate(); // important
+                                   }
+                               }}
+                    >
+                        <ui5-icon slot="icon" name="search"></ui5-icon>
+                    </ui5-input>
+                    <div style="flex-grow: 1"></div>
+                    <div id="topBarBtnGroup">
+                        ${this.selectedThreadHash === undefined ? html`` :
+                                html`
+                                    <ui5-button id="notifSettingsBtn"
+                                                icon="bell"
+                                                tooltip=${msg('Notifications Settings')}
+                                                @click=${() => {
+                                                    console.log("notifSettingsBtn.click()");
+                                                    const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
+                                                    if (popover.isOpen()) {
+                                                        popover.close();
+                                                        return;
+                                                    }
+                                                    const shellbar = this.shadowRoot!.getElementById("topicBar");
+                                                    if (!shellbar) {
+                                                        console.error("Missing topicBar HTML Element");
+                                                    }
+                                                    popover.showAt(shellbar!);
+                                                }}>
+                                    </ui5-button>`
+                        }
+                        <div class="notification-button">
+                            <ui5-button icon="inbox" tooltip=${msg('Inbox')}
+                                        @click=${() => {
                                             console.log("inboxButton.click()")
                                             const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
                                             if (popover.isOpen()) {
@@ -1560,167 +1588,188 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             const shellbar = this.shadowRoot!.getElementById("topicBar");
                                             popover.showAt(shellbar!);
                                         }}>
-                      </ui5-button>
-                      <span class="numberBadge">${this._dvm.threadsZvm.perspective.inbox.size? this._dvm.threadsZvm.perspective.inbox.size : ""}</span>
+                            </ui5-button>
+                            <span class="numberBadge">${this._dvm.threadsZvm.perspective.inbox.size ? this._dvm.threadsZvm.perspective.inbox.size : ""}</span>
+                        </div>
                     </div>
-                  </div>
-              </div>
+                </div>
 
-                <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
+                <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom"
+                             horizontal-align="Stretch">
                     <div class="popover-content">
                         <ui5-list mode="None" separators="None">
-                            <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                            <ui5-li @click=${(_e:any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
-                            <ui5-li @click=${(_e:any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(_e:any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
-                            <ui5-li @click=${(_e:any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
-                            <ui5-li @click=${(_e:any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                            <ui5-li-groupheader class="search-group-header">${msg("Search Options")}
+                            </ui5-li-groupheader>
+                            <ui5-li @click=${(_e: any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
+                            <ui5-li @click=${(_e: any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                            <ui5-li @click=${(_e: any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i>
+                            </ui5-li>
+                            <ui5-li @click=${(_e: any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                            <ui5-li @click=${(_e: any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
                         </ui5-list>
                     </div>
                 </ui5-popover>
 
-                <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
+                <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right"
+                             hide-arrow style="max-width: 500px">
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow header-text=${msg("Notification settings for this channel")}>
-                    <div  style="flex-direction: column; display: flex">
-                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><</ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsMentions" name="GroupA" text=${msg("Mentions and Replies Only")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
-                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")} @change=${(_e:any) => this.onNotifSettingsChange()} ?checked=${(notifSetting == NotifySetting.Never) as Boolean}></ui5-radio-button>
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow
+                             header-text=${msg("Notification settings for this channel")}>
+                    <div style="flex-direction: column; display: flex">
+                        <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")}
+                                          @change=${(_e: any) => this.onNotifSettingsChange()}
+                                          ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><
+                        </ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsMentions" name="GroupA"
+                                          text=${msg("Mentions and Replies Only")}
+                                          @change=${(_e: any) => this.onNotifSettingsChange()}
+                                          ?checked=${(notifSetting == NotifySetting.MentionsOnly) as Boolean}></ui5-radio-button>
+                        <ui5-radio-button id="notifSettingsNever" name="GroupA" text=${msg("Never")}
+                                          @change=${(_e: any) => this.onNotifSettingsChange()}
+                                          ?checked=${(notifSetting == NotifySetting.Never) as Boolean}></ui5-radio-button>
                     </div>
                 </ui5-popover>
 
-              <div id="lowerSide">
-                <div id="centerSide">
-                    ${centerSide}
+                <div id="lowerSide">
+                    <div id="centerSide">
+                        ${centerSide}
+                    </div>
+                    ${this._canShowComments ? html`
+                        <div id="commentSide">
+                            <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash}
+                                                 showInput="true"
+                                                 .subjectName="${this._selectedCommentThreadSubjectName}"
+                                                 @close=${(_e:any) => this._canShowComments = false}></comment-thread-view>
+                        </div>` : html``}
+                    ${this._canShowSearch && this._canShowSearchResults ? html`
+                                <div id="rightSide">
+                                    <search-result-panel .parameters=${searchParameters}></search-result-panel>
+                                </div>`
+                            : html``}
+                    <anchor-tree id="debugSide"
+                                 style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
                 </div>
-                  ${this._canShowComments? html`
-                <div id="commentSide">
-                    <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash} showInput="true"
-                                         .subjectName="${this._selectedCommentThreadSubjectName}"></comment-thread-view>
-                </div>` : html``}
-                  ${this._canShowSearch && this._canShowSearchResults? html`
-                  <div id="rightSide">
-                      <search-result-panel .parameters=${searchParameters}></search-result-panel>
-                  </div>`
-                  : html``}
-                  <anchor-tree id="debugSide"
-                               style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
-              </div>
             </div>
-        <!-- DIALOGS -->
-        <ui5-dialog id="wait-dialog">
-            <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
-        </ui5-dialog>
-        <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
-            <peer-list @avatar-clicked=${async (e:any) => {
-                console.log("@avatar-clicked", e.detail)
-                const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                dialog.close();
-                const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
-                this.dispatchEvent(threadJumpEvent(ppAh));
-            }}></peer-list>
-            <ui5-button 
-                    style="margin-top: 10px; float: right;"
-                    @click=${(_e:any) => {const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog; dialog.close()}}>
-                Cancel
-            </ui5-button>
-        </ui5-dialog>
-        <!-- Profile Dialog/Popover -->
-        <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
-            <profile-panel id="profilePanel" 
-                           @edit-profile=${(_e:any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}
-                           @input=${(e: CustomEvent<VinesInputEvent>) => {
-                             e.preventDefault();
-                             if (!e.detail.text) throw Error("Missing text in input event");
-                             this.onDmTextMessage(e.detail.text);
-                             const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
-                             if (profilePopElem.isOpen()) {
-                                 profilePopElem.close();
-                             }                             
-                           }}
-            ></profile-panel>
-        </ui5-popover>
-        <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
-            <vines-edit-profile
-                    allowCancel
-                    .profile=${myProfile}
-                    .saveProfileLabel= ${msg('Edit Profile')}
-                    @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
-                    @lang-selected=${(e: CustomEvent) => setLocale(e.detail)}
-                    @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
-            ></vines-edit-profile>
-        </ui5-dialog>
-        <!-- Confirm Dialog -->
-        <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e:any) => {}}></confirm-dialog>
-        <!-- View Embed Dialog -->
-        <view-embed-dialog id="view-embed"></view-embed-dialog>
-        <!-- Create Topic Dialog -->
-        <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
-            <section>
-                <div>
-                    <ui5-label for="topicTitleInput" required>${msg("Title")}:</ui5-label>
-                    <ui5-input id="topicTitleInput" @keydown=${(e:any) => {
-                        if (e.keyCode === 13) {
-                            e.preventDefault();
-                            this.onCreateTopic(e);
-                        }
-                    }}></ui5-input>
+            <!-- DIALOGS -->
+            <ui5-dialog id="wait-dialog">
+                <ui5-busy-indicator delay="0" size="Large" active
+                                    style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+            </ui5-dialog>
+            <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
+                <peer-list @avatar-clicked=${async (e: any) => {
+                    console.log("@avatar-clicked", e.detail)
+                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                    dialog.close();
+                    const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
+                    this.dispatchEvent(threadJumpEvent(ppAh));
+                }}></peer-list>
+                <ui5-button
+                        style="margin-top: 10px; float: right;"
+                        @click=${(_e: any) => {
+                            const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                            dialog.close()
+                        }}>
+                    Cancel
+                </ui5-button>
+            </ui5-dialog>
+            <!-- Profile Dialog/Popover -->
+            <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
+                <profile-panel id="profilePanel"
+                               @edit-profile=${(_e: any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}
+                               @input=${(e: CustomEvent<VinesInputEvent>) => {
+                                   e.preventDefault();
+                                   if (!e.detail.text) throw Error("Missing text in input event");
+                                   this.onDmTextMessage(e.detail.text);
+                                   const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
+                                   if (profilePopElem.isOpen()) {
+                                       profilePopElem.close();
+                                   }
+                               }}
+                ></profile-panel>
+            </ui5-popover>
+            <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
+                <vines-edit-profile
+                        allowCancel
+                        .profile=${myProfile}
+                        .saveProfileLabel=${msg('Edit Profile')}
+                        @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
+                        @lang-selected=${(e: CustomEvent) => setLocale(e.detail)}
+                        @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
+                ></vines-edit-profile>
+            </ui5-dialog>
+            <!-- Confirm Dialog -->
+            <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e: any) => {
+            }}></confirm-dialog>
+            <!-- View Embed Dialog -->
+            <view-embed-dialog id="view-embed"></view-embed-dialog>
+            <!-- Create Topic Dialog -->
+            <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
+                <section>
+                    <div>
+                        <ui5-label for="topicTitleInput" required>${msg("Title")}:</ui5-label>
+                        <ui5-input id="topicTitleInput" @keydown=${(e: any) => {
+                            if (e.keyCode === 13) {
+                                e.preventDefault();
+                                this.onCreateTopic(e);
+                            }
+                        }}></ui5-input>
+                    </div>
+                </section>
+                <div slot="footer">
+                    <ui5-button id="createTopicDialogButton"
+                                style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
+                    </ui5-button>
+                    <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>Cancel
+                    </ui5-button>
                 </div>
-            </section>
-            <div slot="footer">
-                <ui5-button id="createTopicDialogButton"
-                            style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
-                </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>Cancel
-                </ui5-button>
-            </div>
-        </ui5-dialog>
-        <!-- EditTopicDialog -->
-        <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
-            <section>
-                <div>
-                    <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
-                    <ui5-input id="editTopicTitleInput" @keydown=${(e:any) => {
-                        if (e.keyCode === 13) {
-                            e.preventDefault();
-                            this.onEditTopic(e);
-                        }
-                    }}></ui5-input>
+            </ui5-dialog>
+            <!-- EditTopicDialog -->
+            <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
+                <section>
+                    <div>
+                        <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
+                        <ui5-input id="editTopicTitleInput" @keydown=${(e: any) => {
+                            if (e.keyCode === 13) {
+                                e.preventDefault();
+                                this.onEditTopic(e);
+                            }
+                        }}></ui5-input>
+                    </div>
+                </section>
+                <div slot="footer">
+                    <ui5-button id="createTopicDialogButton"
+                                style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>Create
+                    </ui5-button>
+                    <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
+                    </ui5-button>
                 </div>
-            </section>
-            <div slot="footer">
-                <ui5-button id="createTopicDialogButton"
-                            style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>Create
+            </ui5-dialog>
+            <!-- CreateThreadDialog -->
+            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create new channel")}>
+                <section>
+                    <div>
+                        <ui5-label for="threadPurposeInput" required>${msg("Purpose")}:</ui5-label>
+                        <ui5-input id="threadPurposeInput"
+                                   @keydown=${async (e: any) => {
+                                       if (e.keyCode === 13) {
+                                           e.preventDefault();
+                                           await this.onCreateThread(e);
+                                       }
+                                   }}></ui5-input>
+                    </div>
+                </section>
+                <div slot="footer" style:
+                "display:flex;">
+                <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
+                            @click=${async (e: any) => await this.onCreateThread(e)}>
+                    ${msg("Create")}
                 </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
+                <ui5-button style="margin-top:5px" @click=${(_e: any) => this.createThreadDialogElem.close(false)}>
+                    Cancel
                 </ui5-button>
-            </div>
-        </ui5-dialog>
-        <!-- CreateThreadDialog -->
-        <ui5-dialog id="create-thread-dialog" header-text=${msg("Create new channel")}>
-            <section>
-                <div>
-                    <ui5-label for="threadPurposeInput" required>${msg("Purpose")}:</ui5-label>
-                    <ui5-input id="threadPurposeInput" 
-                               @keydown=${async (e:any) => {
-                                  if (e.keyCode === 13) {
-                                      e.preventDefault();
-                                      await this.onCreateThread(e);
-                                  }
-                    }}></ui5-input>
-                </div>
-            </section>
-            <div slot="footer" style:
-            "display:flex;">
-            <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                        @click=${async (e:any) => await this.onCreateThread(e)} >
-                ${msg("Create")}
-            </ui5-button>
-            <ui5-button style="margin-top:5px" @click=${(_e:any) => this.createThreadDialogElem.close(false)}>Cancel
-            </ui5-button>
-            </div>
+        </div>
         </ui5-dialog>
     `;
   }
@@ -1970,7 +2019,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: 18px;
           font-weight: bold;
         }
-
+        
         #uploadCard {
           margin: auto;
           /*margin-left:10px;*/
