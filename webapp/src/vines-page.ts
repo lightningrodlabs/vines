@@ -119,6 +119,7 @@ import "@ui5/webcomponents-icons/dist/open-folder.js"
 import "@ui5/webcomponents-icons/dist/overflow.js"
 import "@ui5/webcomponents-icons/dist/paper-plane.js"
 import "@ui5/webcomponents-icons/dist/person-placeholder.js"
+import "@ui5/webcomponents-icons/dist/picture.js"
 import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/product.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
@@ -201,7 +202,7 @@ import {consume} from "@lit/context";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
-import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
+//import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
@@ -1100,14 +1101,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("dFiles filesDvm cell", this._filesDvm.cell);
       centerSide = html`
         <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
-            <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px;">
-              <ui5-button design="Emphasized" style="max-width: 100px; margin-top:5px;" @click=${(_e:any) => this._hideFiles = true}>${msg("Close")}</ui5-button>           
-              <!-- <button @click=${(_e:any) => {
-                  const storeDialogElem = this.shadowRoot!.querySelector("store-dialog") as StoreDialog;
-                  storeDialogElem.open(false);
-              }}>Add Public file</button>
-              <store-dialog></store-dialog> -->  
-              <file-table type="group" notag view .items=${publicItems} style="height: 100%; display: block"
+            <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px; margin-top:10px;">
+              <div style="display: flex; flex-direction: row; gap:15px;">
+                      <!-- <ui5-button style="max-width: 100px;" @click=${(_e:any) => this._hideFiles = true}>${msg("Close")}</ui5-button> -->
+                  <ui5-button icon="upload-to-cloud" design="Emphasized" @click=${(_e:any) => this.openFile()}>${msg("Upload File")}</ui5-button>
+              </div>
+              <file-table type="group" notag view
+                          style="flex-grow: 1;"
+                          .items=${publicItems}
                           @view=${(e: CustomEvent<EntryId>) => {
                             console.log("view", e.detail.b64);
                             const dialog = this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
@@ -1265,23 +1266,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             ${networkInfo? /*networkInfo.total_network_peers*/ profileCount : 1} ${msg('Members')}
                         </div>
                     </div>
-                    <ui5-button id="groupBtn" style="margin-top:10px;" tooltip
-                                design="Transparent" icon="navigation-down-arrow"
-                                @click=${(e:any) => {
-                                  e.preventDefault();
-                                  //console.log("onSettingsMenu()", e);
-                                  const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
-                                  const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
-                                  menu.showAt(btn);
+                    <ui5-button id="shareBtn" icon="share-2" tooltip=${msg("Share Network")}
+                                design="Transparent"  style="margin-top:10px;"
+                                @click=${ async (e:any) => {
+                                  e.preventDefault(); e.stopPropagation();
+                                  const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                                  const btn = this.shadowRoot!.getElementById("shareBtn") as HTMLElement;
+                                  /** Generate and add QR code */
+                                  const existingImg = popover.querySelector('img')
+                                  if (!existingImg) {
+                                      let generateQR: string;
+                                      try {
+                                          generateQR = await QRCode.toDataURL(this.cell.shareCode);
+                                          const img = document.createElement('img');
+                                          img.src = generateQR;
+                                          popover.append(img);
+                                      } catch (err) {
+                                          console.error(err);
+                                      }
+                                  }
+                                  popover.showAt(btn);                                  
                                 }}>
                     </ui5-button>
-                    <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
-                        ${this._canViewArchivedSubjects
-                          ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Archived items")} icon="hide"></ui5-menu-item>`
-                          : html`<ui5-menu-item id="viewArchived" text=${msg("View Archived items")} icon="show"></ui5-menu-item>
-                        `}
-                        <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
-                    </ui5-menu>
                 </div>
                 
                 <!-- Custom Segmented buttons -->
@@ -1407,7 +1413,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
-                    <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
+                    <ui5-button icon="picture" design="Transparent"  tooltip=${msg("View Files")}
                                 style="margin-top:10px; ${!this._hideFiles ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => {
                                     this._hideFiles = !this._hideFiles;
@@ -1431,27 +1437,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     }
                                 }}>
                     </ui5-button>
-                    <ui5-button id="shareBtn" style="margin-top:10px;"
-                                design="Transparent" icon="share-2" tooltip=${msg("Share Network")}
-                                @click=${async (_e: any) => {
-                                    const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                                    const btn = this.shadowRoot!.getElementById("shareBtn") as HTMLElement;
-                                    /** Generate and add QR code */
-                                    const existingImg = popover.querySelector('img')
-                                    if (!existingImg) {
-                                        let generateQR: string;
-                                        try {
-                                            generateQR = await QRCode.toDataURL(this.cell.shareCode);
-                                            const img = document.createElement('img');
-                                            img.src = generateQR;
-                                            popover.append(img);
-                                        } catch (err) {
-                                            console.error(err);
-                                        }
-                                    }
-                                    popover.showAt(btn);
-                                }}>
-                    </ui5-button>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
                                 @click=${(_e: any) => {
@@ -1467,8 +1452,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
                                        starts-section></ui5-menu-item>
-                        <ui5-menu-item id="uploadFileItem" text=${msg("Import File")}
-                                       icon="upload-to-cloud"></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
@@ -1836,8 +1819,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
       const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
-      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, (_manifestEh) => {
+      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, async (_manifestEh) => {
         toasty(msg("File successfully shared") +": " + splitObj.dataHash);
+        console.log("<vines-page> File upload complet. requesting update.");
+        await delay(50); // required
         this.requestUpdate();
       });
       if (!maybeSplitObj) {
@@ -1865,7 +1850,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
-      case "uploadFileItem": this.openFile(); break;
       case "editProfileItem": this.profileDialogElem.show(); break;
       // @ts-ignore
       case "exportAllItem":
