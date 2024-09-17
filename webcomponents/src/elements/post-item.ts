@@ -19,7 +19,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../toast";
 import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
-import {ShowProfileEvent, VinesInputEvent} from "../events";
+import {favoritesJumpEvent, ShowProfileEvent, VinesInputEvent} from "../events";
 import {Thread} from "../viewModels/thread";
 
 
@@ -148,10 +148,10 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   async updateFavorite(beadAh: ActionId, canAdd: boolean) {
     if (canAdd) {
       await this._dvm.threadsZvm.addFavorite(beadAh);
-      toasty(msg("Post added to favorites"));
+      toasty(msg("Post added to favorites"), favoritesJumpEvent(), this);
     } else {
       await this._dvm.threadsZvm.removeFavorite(beadAh);
-      toasty(msg("Post removed from favorites"));
+      toasty(msg("Post removed from favorites"), favoritesJumpEvent(), this);
     }
   }
 

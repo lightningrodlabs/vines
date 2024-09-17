@@ -8,7 +8,13 @@ import 'emoji-picker-element';
 
 import {renderAvatar, renderProfileAvatar} from "../render";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {beadJumpEvent, threadJumpEvent, ShowProfileEvent, CommentRequest} from "../events";
+import {
+  beadJumpEvent,
+  threadJumpEvent,
+  ShowProfileEvent,
+  CommentRequest,
+  favoritesEvent
+} from "../events";
 import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlFromWal, weaveUrlToWAL} from "@lightningrodlabs/we-applet";
@@ -143,8 +149,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     console.debug("onMoreMenu item-click", e)
     switch (e.detail.item.id) {
       case "addReaction": this.onClickAddEmoji(); break;
-      case "addFavorite": this.updateFavorite(this.hash, true); break;
-      case "removeFavorite": this.updateFavorite(this.hash, false); break;
+      case "addFavorite": this.dispatchEvent(favoritesEvent(this.hash, true)); break;
+      case "removeFavorite": this.dispatchEvent(favoritesEvent(this.hash, false)); break;
       case "viewComments":
       case "createCommentThread":
         const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
@@ -190,24 +196,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async updateFavorite(beadAh: ActionId, canAdd: boolean) {
-    if (canAdd) {
-      await this._dvm.threadsZvm.addFavorite(beadAh);
-      toasty(msg("Message added to favorites"));
-    } else {
-      await this._dvm.threadsZvm.removeFavorite(beadAh);
-      toasty(msg("Message removed from favorites"));
-    }
-  }
-
-
-  /** */
   renderTopVine(beadInfo: BeadInfo) {
     console.log("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
     const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh)
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {
-      return html``;
+      return html`<div style="height: 5px;"></div>`;
     }
     const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh)!;
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
@@ -373,11 +367,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(this.hash.b64);
     const starButton = isFavorite? html`
         <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent" style="border:none;"
-                    @click=${(_e:any) => this.updateFavorite(this.hash, false)}></ui5-button>
+                    @click=${(_e:any) => this.dispatchEvent(favoritesEvent(this.hash, false))}></ui5-button>
         ` : html`
         <ui5-button id="star-btn" icon="add-favorite" tooltip=${msg("Add to favorite")} design="Transparent" style="border:none;"
-                    @click="${async (_e:any) => {
-                      await this.updateFavorite(this.hash, true);
+                    @click="${(_e:any) => {
+                      this.dispatchEvent(favoritesEvent(this.hash, true));
                       console.log("Favorites", this._dvm.threadsZvm.perspective.favorites.length);
     }}"></ui5-button>
     `;

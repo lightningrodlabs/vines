@@ -4,7 +4,8 @@ import {customElement, property} from "lit/decorators.js";
 import {ActionId} from "@ddd-qc/lit-happ";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
-import {beadJumpEvent} from "../events";
+import {beadJumpEvent, favoritesEvent} from "../events";
+import {msg} from "@lit/localize";
 
 
 /**
@@ -22,10 +23,25 @@ export class FavoritesItem extends LitElement {
   /** */
   override render() {
     console.log("<favorites-item>.render()", this.hash);
-    return html`<div><chat-item .hash=${this.hash} nomenu @click=${(e:any) => {
-      e.stopPropagation();e.preventDefault();
-      this.dispatchEvent(beadJumpEvent(this.hash))
-    }}></chat-item></div>`;
+    return html`
+        <div id="main" style="position: relative;">
+            <div style="display: flex; flex-direction: row-reverse; gap: 10px; position: absolute; top: 10px; right: 10px;">
+              <ui5-button style="" @click=${(e:any) => {
+                  e.stopPropagation(); e.preventDefault();
+                  this.dispatchEvent(beadJumpEvent(this.hash));
+              }}>
+                 ${msg("View in channel")}
+              </ui5-button>
+              <ui5-button icon="favorite" tooltip=${msg("Remove from favorites")}
+                          style="color:#FFBF00"
+                          @click=${(e:any) => {
+                            e.stopPropagation(); e.preventDefault();
+                            this.dispatchEvent(favoritesEvent(this.hash, false));
+                        }}>
+              </ui5-button>
+            </div>
+            <chat-item .hash=${this.hash} nomenu></chat-item>
+        </div>`;
   }
 
 
@@ -35,15 +51,20 @@ export class FavoritesItem extends LitElement {
       codeStyles,
       sharedStyles,
       css`
-        div {
-          cursor: pointer;
+        #main {
           background: #F6F3ED;
           border: 2px dashed #b7b7b7;
           /*padding-top: 3px;*/
         }
 
-        div:hover {
+        #main:hover {
           background: #F4F9FC;
+        }
+        
+        ui5-button {
+          border:none;
+          color: #434343;
+          font-weight: bold;
         }
       `,
     ];

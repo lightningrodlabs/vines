@@ -1,4 +1,4 @@
-import {css, html, PropertyValues/*, TemplateResult*/} from "lit";
+import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
   ActionId,
@@ -7,7 +7,8 @@ import {
   DnaId,
   EntryId,
   HappBuildModeType,
-  HoloHashType, intoDhtId,
+  HoloHashType,
+  intoDhtId,
   isHashTypeB64
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
@@ -152,10 +153,12 @@ import {
   beadJumpEvent,
   ChatThreadView,
   CommentRequest,
-  CommentThreadView, ConfirmDialog, ViewEmbedDialog,
+  CommentThreadView,
+  ConfirmDialog,
   doodle_flowers,
-  EditTopicRequest, getThisAppletId,
+  EditTopicRequest, FavoritesEvent, favoritesJumpEvent,
   filesContext,
+  getThisAppletId,
   HideEvent,
   InputBar,
   JumpDestinationType,
@@ -175,9 +178,12 @@ import {
   ThreadsDvm,
   ThreadsEntryType,
   ThreadsPerspective,
-  toasty, VinesInputEvent,
+  toasty,
+  ViewEmbedDialog,
+  ViewEmbedEvent,
+  VinesInputEvent,
   weaveUrlToWal,
-  weClientContext, ViewEmbedEvent,
+  weClientContext,
 } from "@vines/elements";
 
 import {WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -303,9 +309,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
     // @ts-ignore
-    this.addEventListener('archive', this.onArchive)
+    this.addEventListener('archive', this.onArchive);
     // @ts-ignore
-    this.addEventListener('view-embed', this.onViewEmbed)
+    this.addEventListener('view-embed', this.onViewEmbed);
+    // @ts-ignore
+    this.addEventListener('favorites', this.onFavorites);
+
   }
   override disconnectedCallback() {
     super.disconnectedCallback();
@@ -320,6 +329,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('archive', this.onArchive);
     // @ts-ignore
     this.removeEventListener('view-embed', this.onViewEmbed);
+    // @ts-ignore
+    this.removeEventListener('favorites', this.onFavorites);
   }
 
 
@@ -833,12 +844,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  async onFavorites(e: CustomEvent<FavoritesEvent>) {
+    if (e.detail.canAdd) {
+      await this._dvm.threadsZvm.addFavorite(e.detail.beadAh);
+      toasty(msg("Message added to favorites"), favoritesJumpEvent(), this);
+    } else {
+      await this._dvm.threadsZvm.removeFavorite(e.detail.beadAh);
+      toasty(msg("Message removed from favorites"), favoritesJumpEvent(), this);
+    }
+  }
+
+
+  /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
     const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
     this._canShowFavorites = false;
+
+    if (e.detail.type == JumpDestinationType.Favorites) {
+      this._canShowFavorites = true;
+    }
     /** */
     if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
       if (e.detail.agent) {

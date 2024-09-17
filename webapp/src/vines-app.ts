@@ -322,6 +322,8 @@ export class VinesApp extends HappMultiElement {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-app>.onJump()", e.detail);
+    this._maybeSelectedBeadAh = undefined;
+    this._maybeSelectedThreadAh = undefined;
     if (e.detail.type == JumpDestinationType.Applet) {
       if (this._weServices) {
         this._weServices.openAppletMain(e.detail.address!.hash);

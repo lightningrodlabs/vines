@@ -5,6 +5,11 @@ import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads
 import {WAL} from "@lightningrodlabs/we-applet";
 
 
+export type FavoritesEvent = {
+  beadAh: ActionId,
+  canAdd: boolean,
+}
+
 export type ViewEmbedEvent = {
   blobUrl: string,
   mime: string,
@@ -79,6 +84,7 @@ export type JumpEvent = {
 }
 
 export enum JumpDestinationType {
+  Favorites = "Favorites",
   Applet = "Applet",
   Thread = "Thread",
   Bead = "Bead",
@@ -109,4 +115,12 @@ export function threadJumpEvent(ah: ActionId): CustomEvent<JumpEvent> {
 
 export function agentJumpEvent(address: ActionId, agent: AgentId): CustomEvent<JumpEvent> {
   return new CustomEvent<JumpEvent>('jump', {detail: {address, agent, type: JumpDestinationType.Thread}, bubbles: true, composed: true});
+}
+
+export function favoritesJumpEvent(): CustomEvent<JumpEvent> {
+  return new CustomEvent<JumpEvent>('jump', {detail: {type: JumpDestinationType.Favorites}, bubbles: true, composed: true});
+}
+
+export function favoritesEvent(beadAh: ActionId, canAdd: boolean): CustomEvent<FavoritesEvent> {
+  return new CustomEvent<FavoritesEvent>('favorites', {detail: {beadAh, canAdd}, bubbles: true, composed: true});
 }

@@ -381,7 +381,7 @@ export class AppletLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** Handle empty tree case */
     if (treeItems.length == 0) {
       inner = html`
-            <div style="color: grey; margin: auto;">${msg('No comment threads found')}</div>
+            <div style="color: grey; margin: auto;">${msg('No channels found')}</div>
             <ui5-button design="Emphasized"  ?disabled=${!this.weServices || this.weServices.appletIds[0]! == this._appletId.b64 || this._appletId.b64 == THIS_APPLET_ID.b64}
                         @click=${(_e:any) => {
                           if (this.weServices && !this._appletId.equals(THIS_APPLET_ID)) {
