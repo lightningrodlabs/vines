@@ -4,6 +4,10 @@ import {AgentId} from "@ddd-qc/cell-proxy";
 import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads.types";
 import {WAL} from "@lightningrodlabs/we-applet";
 
+export type ViewFileEvent = {
+  dnaId: DnaId,
+  manifestEh: EntryId,
+}
 
 export type FavoritesEvent = {
   beadAh: ActionId,
@@ -123,4 +127,9 @@ export function favoritesJumpEvent(): CustomEvent<JumpEvent> {
 
 export function favoritesEvent(beadAh: ActionId, canAdd: boolean): CustomEvent<FavoritesEvent> {
   return new CustomEvent<FavoritesEvent>('favorites', {detail: {beadAh, canAdd}, bubbles: true, composed: true});
+}
+
+
+export function viewFileEvent(dnaId: DnaId, manifestEh: EntryId): CustomEvent<ViewFileEvent> {
+  return new CustomEvent<ViewFileEvent>('view-file', {detail: {dnaId, manifestEh}, bubbles: true, composed: true});
 }

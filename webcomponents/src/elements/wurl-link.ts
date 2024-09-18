@@ -161,7 +161,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (assetLocAndInfo) {
         const appletInfo = await this.weServices.appletInfo(assetLocAndInfo.appletHash);
         if (appletInfo) {
-          this._assetName = "🔗 " + assetLocAndInfo.assetInfo.name;
+          this._assetName = assetLocAndInfo.assetInfo.name;
           this._toolName = appletInfo.appletName;
         }
       }
@@ -209,8 +209,13 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const [dnaId, dhtId] = hrl2Id(wal.hrl);
 
     if (this._toolName == "Files") {
+      const manifestEh = new EntryId(dhtId.b64);
       //return html`<file-button .hash=${new EntryId(dhtId.b64)}></file-button>`;
-      return html`<ui5-badge design="Set1">${this._assetName}</ui5-badge>`;
+      return html`<ui5-badge  style="color:#5e5e6b; background: white; border: 1px solid #cbcbcb"
+                              @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent("view-file", viewFileEvent(this._filesDvm.cell.address.dnaId, manifestEh))}}>
+          ${this._assetName}
+          <ui5-icon slot="icon" name="attachment"></ui5-icon>
+      </ui5-badge>`;
     }
 
 
@@ -225,7 +230,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         <!-- <sl-tooltip content="To ${this._toolName}"> -->
           <ui5-badge design="Set1" color-scheme=${colorIdx}  style="color:#0064D9"
                      @click=${(e:any) => {
-                       e.stopPropagation();
+                       e.stopPropagation(); e.preventDefault();
                        if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
                          this.dispatchEvent(threadJumpEvent(hash))
                          return;
@@ -238,9 +243,8 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                          this.weServices.openWal(wal);
                        }
     }}>
-              <!-- Icon could also be taken from the asset's icon_src field -->
-              <!-- <ui5-icon slot="icon" name="chain-link"></ui5-icon> -->
               ${this._assetName}
+              <ui5-icon slot="icon" name="chain-link"></ui5-icon>              
           </ui5-badge>
         <!-- </sl-tooltip> -->
     `;
