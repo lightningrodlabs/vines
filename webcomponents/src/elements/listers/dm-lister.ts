@@ -123,7 +123,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${badge}
                     ${renderProfileAvatar(otherProfile, 'XS')}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
-                    <ui5-button icon="copy" tooltip=${msg("Copy Channel Link")} design="Transparent"
+                    <ui5-button icon="chain-link" tooltip=${msg("Copy Channel Link")} design="Transparent"
                                 style="border:none; display:none;"
                                 @click=${(e:any) => {
                                     e.stopPropagation(); e.preventDefault();

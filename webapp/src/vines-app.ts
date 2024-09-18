@@ -29,7 +29,6 @@ import {
   cardStyleTemplate,
   appProxyContext,
   JumpEvent,
-  JumpDestinationType,
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
   onlineLoadedContext,
@@ -322,35 +321,29 @@ export class VinesApp extends HappMultiElement {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-app>.onJump()", e.detail);
+
     this._maybeSelectedBeadAh = undefined;
     this._maybeSelectedThreadAh = undefined;
-    if (e.detail.type == JumpDestinationType.Applet) {
-      if (this._weServices) {
-        this._weServices.openAppletMain(e.detail.address!.hash);
-      }
-    }
-    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Dm) {
+
+    if (e.detail.thread) {
       if (this.appletView && this.appletView.type != "main") {
         if (this._weServices) {
           /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
         }
       } else {
-        this._maybeSelectedThreadAh = e.detail.address? new ActionId(e.detail.address.b64) : undefined;
+        this._maybeSelectedThreadAh = e.detail.thread;
         this._maybeSelectedBeadAh = undefined;
       }
+      return;
     }
-    if (e.detail.type == JumpDestinationType.Bead) {
-      const beadAh = new ActionId(e.detail.address!.b64);
-      const beadInfo = await this.threadsDvm(0).threadsZvm.perspective.getBeadInfo(beadAh); // FIXME 0
+    if (e.detail.bead) {
+      const beadInfo = await this.threadsDvm(0).threadsZvm.perspective.getBeadInfo(e.detail.bead); // FIXME 0
       if (beadInfo) {
         this._maybeSelectedThreadAh = beadInfo.bead.ppAh;
-        this._maybeSelectedBeadAh = beadAh;
+        this._maybeSelectedBeadAh = e.detail.bead;
       } else {
-        console.warn("JumpEvent failed. Bead not found", e.detail.address);
+        console.warn("JumpEvent failed. Bead not found", e.detail.bead);
       }
-    }
-    if (e.detail.type == JumpDestinationType.Dm) {
-      // TODO
     }
   }
 

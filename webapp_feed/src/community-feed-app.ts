@@ -28,7 +28,7 @@ import {
   determineSubjectName,
   doodle_threads,
   filesContext,
-  JumpDestinationType,
+  MainViewType,
   JumpEvent,
   MAIN_TOPIC_ID,
   NotifySetting,
@@ -317,12 +317,7 @@ export class CommunityFeedApp extends HappElement {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<community-feed-app>.onJump()", e.detail);
-    if (e.detail.type == JumpDestinationType.Applet) {
-      if (this._weServices) {
-        this._weServices.openAppletMain(e.detail.address!.hash);
-      }
-    }
-    if (e.detail.type == JumpDestinationType.Thread) {
+    if (e.detail.type == MainViewType.Thread) {
       // if (this.appletView && this.appletView.type != "main") {
       //   if (this._weServices) {
       //     this._weServices.openAppletMain(decodeHashFromBase64(this._weServices.appletId));
@@ -333,9 +328,9 @@ export class CommunityFeedApp extends HappElement {
       //   this._selectedBeadAh = '';
       // }
     }
-    if (e.detail.type == JumpDestinationType.Bead) {
+    if (e.detail.bead) {
       /** Directly to post or get post from comment thread subject */
-      const beadAh = new ActionId(e.detail.address!.b64);
+      const beadAh = e.detail.bead;
       const beadInfo = await this.threadsDvm.threadsZvm.perspective.getBeadInfo(beadAh);
       if (!beadInfo) {
         console.warn("JumpEvent failed. Bead not found", beadAh.short);
@@ -353,9 +348,6 @@ export class CommunityFeedApp extends HappElement {
         this._selectedPostAh = new ActionId(pp.subject.address);
       }
       this.requestUpdate();
-    }
-    if (e.detail.type == JumpDestinationType.Dm) {
-      // TODO
     }
   }
 

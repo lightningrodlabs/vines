@@ -701,7 +701,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                 <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
                           @item-click=${(e:any) => this.onSettingsMenu(e)}>
                     <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
-                    <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
+                    <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                     <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
                     <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")} icon="open-folder" ></ui5-menu-item>
                     <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>

@@ -1,5 +1,5 @@
 import {html} from "lit";
-import {property, customElement} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
@@ -10,7 +10,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {filesContext, weClientContext} from "../../contexts";
 import {FilesDvm} from "@ddd-qc/files";
-import {JumpEvent, notification2JumpEvent} from "../../events";
+import {notification2JumpEvent} from "../../events";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {composeFeedNotificationTitle} from "../../utils_feed";
 
@@ -82,12 +82,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
               ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
-              <ui5-notification-action text="Jump" slot="actions" @click=${(_e:any) => {
-                  this.dispatchEvent(new CustomEvent<JumpEvent>('jump', {detail: {
-                  address: notif.content,
-                  type: notification2JumpEvent(notif.event),
-                  }, bubbles: true, composed: true}));
-              }}>
+              <ui5-notification-action text="Jump" slot="actions" @click=${(_e:any) => this.dispatchEvent(notification2JumpEvent(notif))}>
               </ui5-notification-action>
               ${notifBody}
           </ui5-li-notification>

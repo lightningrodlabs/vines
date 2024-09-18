@@ -85,8 +85,9 @@ import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/customer.js"
 import "@ui5/webcomponents-icons/dist/document.js"
 import "@ui5/webcomponents-icons/dist/document-text.js"
-import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/decline.js"
+import "@ui5/webcomponents-icons/dist/delete.js"
+import "@ui5/webcomponents-icons/dist/developer-settings.js"
 import "@ui5/webcomponents-icons/dist/discussion.js"
 import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
@@ -163,13 +164,16 @@ import {
   CommentThreadView,
   ConfirmDialog,
   doodle_flowers,
-  EditTopicRequest, FavoritesEvent, favoritesJumpEvent,
+  EditTopicRequest,
+  FavoritesEvent,
+  favoritesJumpEvent,
   filesContext,
+  filesJumpEvent,
   getThisAppletId,
   HideEvent,
   InputBar,
-  JumpDestinationType,
   JumpEvent,
+  MainViewType,
   NotifySetting,
   onlineLoadedContext,
   parseSearchInput,
@@ -229,19 +233,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    this.addEventListener('beforeunload', (e:any) => {
-      console.log("<vines-page> beforeunload", e);
-      // await this._dvm.threadsZvm.commitSearchLogs();
-    });
+    // this.addEventListener('beforeunload', (e:any) => {
+    //   console.log("<vines-page> beforeunload", e);
+    //   // await this._dvm.threadsZvm.commitSearchLogs();
+    // });
   }
 
   /** -- Properties -- */
-
-
-  @property() multi: boolean = false;
-
-  @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
-  @property() selectedBeadAh: ActionId | undefined = undefined;
 
   @property({type: Object})
   networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
@@ -258,33 +256,39 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-//  @state() private _viewFileEh?: EntryId;
 
-  @state() private _selectedCommentThreadHash?: LinkableId;
-           private _selectedCommentThreadSubjectName: string = '';
+  @property() multi: boolean = false;
+  @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
+  @property() selectedBeadAh: ActionId | undefined = undefined;
+
+
+  /** -- Private state -- */
+
+  /** Left & Lister */
+  @state() private _canShowLeft = true;
+  @state() private _listerToShow: string | null = "topics-option";
+  @state() private _collapseAll: boolean = false;
+  @state() private _canViewArchivedSubjects = false;
+  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view
   @state() private _createTopicHash: EntryId | undefined = undefined;
 
+  /** Right panels */
   @state() private _canShowComments = false;
-  @state() private _canShowFavorites = false;
   @state() private _canShowSearchResults = false;
-  @state() private _canShowSearch = false;
   @state() private _canShowDebug = false;
 
-  @state() private _canShowLeft = true;
+  /** Main */
+  @state() private _mainView: MainViewType | undefined = undefined;
   @state() private _replyToAh: ActionId | undefined = undefined;
-  @state() private _hideFiles = true;
-  @state() private _canViewArchivedSubjects = false;
+  @state() private _selectedCommentThreadHash?: LinkableId;
+  private _selectedCommentThreadSubjectName: string = '';
   @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
-  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view
 
-  @state() private _listerToShow: string | null = null;
-  @state() private _collapseAll: boolean = false;
-
+  /** File upload */
   @state() private _splitObj: SplitObject | undefined = undefined;
 
-
+  /** Notifications */
   private _lastKnownNotificationIndex = 0;
-
 
 
   /** -- Getters -- */
@@ -455,7 +459,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
     this.selectedThreadHash = undefined;
     this.selectedBeadAh = undefined;
-    this._listerToShow = newDvm.cell.address.dnaId.b64;
   }
 
 
@@ -820,37 +823,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onListerSelected(id: string) {
-    console.log("onListerSelected()", id);
-    //const selectedOption = e.detail.selectedItem;
-    //console.log("onListerSelected() selectedOption", selectedOption);
-    if (id == "dm-option") {
-      this._listerToShow = this.cell.address.agentId.b64;
-      return;
-    }
-    if (id == "mine-option") {
-      this._listerToShow = null;
-      return;
-    }
-    if (id == "tools-option") {
-      this._listerToShow = "__tools__";
-      return;
-    }
-    if (id == "topics-option") {
-      this._listerToShow = this.cell.address.dnaId.b64;
-      return;
-    }
-    // if (selectedOption.id == "this-app-option" /*|| (this.weServices && selectedOption.id == this.weServices.appletId)*/) {
-    //   this._listerToShow = THIS_APPLET_ID.b64;
-    //   return;
-    // }
-    /* it's an appletId so display the tool lister */
-    this._listerToShow = id;
-    this.requestUpdate();
-  }
-
-
-  /** */
   async onCreateFileMessage(ppAh: ActionId, file: File) {
     console.log("onCreateFileMessage()", file.name, this._filesDvm);
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
@@ -884,39 +856,36 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
+    this.closePopups();
 
     const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
-    this._canShowFavorites = false;
-    this._hideFiles = true;
+    this._mainView = e.detail.type;
 
-    if (e.detail.type == JumpDestinationType.Favorites) {
-      this._canShowFavorites = true;
-    }
-    /** */
-    if (e.detail.type == JumpDestinationType.Thread || e.detail.type == JumpDestinationType.Bead || e.detail.type == JumpDestinationType.Dm) {
-      if (e.detail.agent) {
-        this._selectedAgent = e.detail.agent;
-      }
-      /** set lastProbeTime for current thread */
-      if (maybePrevThreadId) {
-        await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
-        /** Clear notifications on prevThread */
-        const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
-        for (const [linkAh, _notif] of prevThreadNotifs) {
-          await this._dvm.threadsZvm.deleteNotification(linkAh);
-        }
-        /** Cache and reset input-bar */
-        const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
-        if (inputBar) {
-          this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
-          inputBar.setValue("");
+    switch(e.detail.type) {
+      case MainViewType.Favorites: break;
+      case MainViewType.Files: break;
+      case MainViewType.MultiThread: this._selectedAgent = e.detail.agent; break;
+      case MainViewType.Thread: {
+        /** set lastProbeTime for current thread */
+        if (maybePrevThreadId) {
+          await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
+          /** Clear notifications on prevThread */
+          const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
+          for (const [linkAh, _notif] of prevThreadNotifs) {
+            await this._dvm.threadsZvm.deleteNotification(linkAh);
+          }
+          /** Cache and reset input-bar */
+          const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+          if (inputBar) {
+            this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
+            inputBar.setValue("");
+          }
         }
       }
+      break;
     }
-
-    this.closePopups();
   }
 
 
@@ -1016,13 +985,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** */
     let primaryTitle = msg("No channel selected");
     let centerSide = html`${doodle_flowers}`;
-    if (this._canShowFavorites) {
+    if (this._mainView == MainViewType.Favorites) {
       centerSide = html`<favorites-view></favorites-view>`
       primaryTitle = msg("Favorites");
     }
 
     /** render selected thread */
-    if (this.selectedThreadHash && !this._canShowFavorites) {
+    if (this.selectedThreadHash && this._mainView == MainViewType.Thread) {
       const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
@@ -1121,7 +1090,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
     /** Render File View */
-    if (!this._hideFiles) {
+    if (this._mainView == MainViewType.Files) {
       primaryTitle = msg("Shared Files");
       console.log("dFiles this._filesDvm", this._filesDvm);
       const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
@@ -1136,7 +1105,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
             <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px; margin-top:10px;">
               <div style="display: flex; flex-direction: row; gap:15px;">
-                      <!-- <ui5-button style="max-width: 100px;" @click=${(_e:any) => this._hideFiles = true}>${msg("Close")}</ui5-button> -->
                   <ui5-button icon="upload-to-cloud" design="Emphasized" @click=${(_e:any) => this.openFile()}>${msg("Upload File")}</ui5-button>
               </div>
               <file-table type="group" notag view
@@ -1189,52 +1157,58 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
-    let lister= html`<tool-lister ?collapsed=${this._collapseAll}></tool-lister>`
-    if (this._listerToShow == this.cell.address.agentId.b64 || this.multi) {
-      lister = this.multi? html`
-          <dm-multi-lister
-                  .showArchived=${this._canViewArchivedSubjects}
-                  .selectedThreadHash=${this.selectedThreadHash}
-                  @createNewDm=${(_e:any) => {
-                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                      dialog.show();
-                  }}
-          ></dm-multi-lister>
-      ` : html`
-          <dm-lister
-                  .showArchived=${this._canViewArchivedSubjects}
-                  .selectedThreadHash=${this.selectedThreadHash}
-                  @createNewDm=${(_e:any) => {
-                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                      dialog.show();
-                  }}
-          ></dm-lister>
-      `;
-    } else if (this._listerToShow == this.cell.address.dnaId.b64) {
-      lister = html`
-          <topics-lister  ?collapsed=${this._collapseAll}
-                         .showArchivedTopics=${this._canViewArchivedSubjects}
-                         .selectedThreadHash=${this.selectedThreadHash}
-                         @createNewTopic=${(_e : CustomEvent<boolean>) => this.createTopicDialogElem.show()}
-                         @createThreadClicked=${(e: CustomEvent<EntryId>) => {
-                             this._createTopicHash = e.detail;
-                             this.createThreadDialogElem.show();
-                         }}
-          ></topics-lister>
-      `;
-    } else if (this._listerToShow == null) {
-      lister = html`
+    let lister= html``;
+
+    switch (this._listerToShow) {
+      case "tools-option":
+        lister = html`<tool-lister ?collapsed=${this._collapseAll}></tool-lister>`;
+      break;
+      case "mine-option":
+        lister = html`
           <my-threads-lister ?collapsed=${this._collapseAll}
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this.selectedThreadHash}
                          @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e : CustomEvent<EntryId>) => {
-                          this._createTopicHash = e.detail;
-                          this.createThreadDialogElem.show()
-                        }}
-          ></my-threads-lister>
-      `;
+          this._createTopicHash = e.detail;
+          this.createThreadDialogElem.show()
+          }}></my-threads-lister>
+        `;
+      break;
+      case "topics-option":
+        lister = html`
+            <topics-lister ?collapsed=${this._collapseAll}
+                           .showArchivedTopics=${this._canViewArchivedSubjects}
+                           .selectedThreadHash=${this.selectedThreadHash}
+                           @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
+                           @createThreadClicked=${(e: CustomEvent<EntryId>) => {
+                               this._createTopicHash = e.detail;
+                               this.createThreadDialogElem.show();
+                           }}></topics-lister>
+        `;
+        break;
     }
+
+    const dmLister = this.multi? html`
+        <dm-multi-lister nobtn
+                .showArchived=${this._canViewArchivedSubjects}
+                .selectedThreadHash=${this.selectedThreadHash}
+                @createNewDm=${(_e:any) => {
+                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                    dialog.show();
+                }}
+        ></dm-multi-lister>
+    ` : html`
+        <dm-lister nobtn
+                .showArchived=${this._canViewArchivedSubjects}
+                .selectedThreadHash=${this.selectedThreadHash}
+                @createNewDm=${(_e:any) => {
+                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                    dialog.show();
+                }}
+        ></dm-lister>
+    `;
+
 
     const toggleLeftBtn = html`
         <ui5-button icon="menu2" tooltip=${msg("Show side panel")}
@@ -1322,33 +1296,36 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 10px 10px 10px 10px; border-radius: 5px; padding: 3px;">
                     <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
-                        this.onListerSelected("topics-option");
+                        this._listerToShow = "topics-option";
                         const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
                         topicsBtn.classList.add("selected");
                         const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
                         toolsBtn.classList.remove("selected");
                         const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
                         mineBtn.classList.remove("selected");
+                        this.requestUpdate();
                     }}>${msg('Topics')}</div>
                     <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
-                        this.onListerSelected("tools-option");
+                        this._listerToShow = "tools-option";
                         const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
                         topicsBtn.classList.remove("selected");
                         const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
                         toolsBtn.classList.add("selected");
                         const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                        mineBtn.classList.remove("selected");                        
+                        mineBtn.classList.remove("selected");
+                        this.requestUpdate();
                     }}>${msg('Tools')}</div>
                     <div id="mineBtn" class="listerbtn" @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
-                        this.onListerSelected("mine-option");
+                        this._listerToShow = "mine-option";
                         const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
                         topicsBtn.classList.remove("selected");
                         const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
                         toolsBtn.classList.remove("selected");
                         const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                        mineBtn.classList.add("selected");                        
+                        mineBtn.classList.add("selected");
+                        this.requestUpdate();
                     }}>${msg('My')}</div>                    
                 </div>
 
@@ -1401,10 +1378,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 }}>
                     </ui5-button>
                 </div>
-                <dm-lister nobtn
-                           .showArchived=${this._canViewArchivedSubjects}
-                           .selectedThreadHash=${this.selectedThreadHash}
-                ></dm-lister>
+                ${dmLister}
 
                     <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
@@ -1442,28 +1416,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </div>
                     </div>
                     <ui5-button icon="picture" design="Transparent"  tooltip=${msg("View Files")}
-                                style="margin-top:10px; ${!this._hideFiles ? "background: #4684FD; color: white;" : ""}"
-                                @click=${() => {
-                                    this._hideFiles = !this._hideFiles;
-                                    if (!this._hideFiles) {
-                                        this._canShowFavorites = false;
-                                        this._replyToAh = undefined;
-                                        this._selectedAgent = undefined;
-                                        this.selectedThreadHash = undefined;
-                                    }
-                                }}>
+                                style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
+                                @click=${() => this.dispatchEvent(filesJumpEvent())}>
                     </ui5-button>                     
                     <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("View Favorites")}
-                                style="margin-top:10px; ${this._canShowFavorites ? "background: #4684FD; color: white;" : ""}"
-                                @click=${() => {
-                                    this._canShowFavorites = !this._canShowFavorites;
-                                    if (this._canShowFavorites) {
-                                        this._hideFiles = true;
-                                        this._replyToAh = undefined;
-                                        this._selectedAgent = undefined;
-                                        this.selectedThreadHash = undefined;
-                                    }
-                                }}>
+                                style="margin-top:10px; ${this._mainView == MainViewType.Favorites ? "background: #4684FD; color: white;" : ""}"
+                                @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
                     </ui5-button>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
@@ -1477,19 +1435,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @item-click=${(e: any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
-                        <ui5-menu-item id="exportItem" text="Export Local" icon="save" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
-                                       starts-section></ui5-menu-item>
+                        <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
                                        icon="open-folder"></ui5-menu-item>
+                        ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
                         <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
                                        starts-section></ui5-menu-item>
+                        ` : html`
+                        <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
+                                       starts-section></ui5-menu-item>                        
                         <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"
-                        </ui5-menu-item>
+                        </ui5-menu-item>`}
                     </ui5-menu>
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
@@ -1571,7 +1531,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    if (searchElem.value != "") {
                                        if (e.keyCode === 13) {
                                            searchPopElem.close();
-                                           this._canShowSearch = true;
                                            this._canShowSearchResults = true;
                                            this.requestUpdate(); // important
                                        } else {
@@ -1610,6 +1569,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                 }}>
                                     </ui5-button>`
                         }
+                        ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : html`
+                            <ui5-button icon="developer-settings"
+                                        @click=${() => this._canShowDebug = !this._canShowDebug}>
+                            </ui5-button>
+                        `}
                         <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
                                         style="color: ${this._dvm.threadsZvm.perspective.inbox.size? "#33A000" : ""}"
@@ -1678,7 +1642,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                  .subjectName="${this._selectedCommentThreadSubjectName}"
                                                  @close=${(_e:any) => this._canShowComments = false}></comment-thread-view>
                         </div>` : html``}
-                    ${this._canShowSearch && this._canShowSearchResults ? html`
+                    ${this._canShowSearchResults ? html`
                                 <div id="rightSide">
                                     <search-result-panel .parameters=${searchParameters}></search-result-panel>
                                 </div>`
@@ -2129,6 +2093,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #topicBar {
           background: white;
           padding: 0px 8px 0px 2px;
+          margin-left:5px;
           height: 44px;
           /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
           display: flex;
