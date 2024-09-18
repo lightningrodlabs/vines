@@ -247,39 +247,51 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     let passedLog = false;
     let currentDay = "";
     let prevBeadAh: ActionId | undefined = undefined;
+    const newStr = msg("new").toUpperCase(); // prettyTimestamp(initialProbeLogTs);
+    const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
 
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let chatItems = Object.values(all).map(
-      (blm) => {
-
-        let hr = html``;
+    let chatItems = Object.values(all).map((blm) => {
+        let hr: TemplateResult<1> | undefined = undefined;
         /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
-        //console.log("<chat-thread-view> thread.latestProbeLogTime", initialProbeLogTs, thread.latestProbeLogTime, blm.creationTime, blm.beadAh);
         if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
-          const beadDateStr = "New" // prettyTimestamp(initialProbeLogTs);
           passedLog = true;
+          /** NEW */
           hr = html`
-              <div style="display: flex; flex-direction: row">
-                  <div style="border-top: 2px solid #33A000; flex-grow: 1; height: 0px"></div>                  
-                  <div style="width: fit-content;background: #33A000;color:white;font-size:small;padding:2px; font-weight:bold;">${beadDateStr}</div>
-              </div>
+          <div style="display: flex; flex-direction: row; align-items: center; margin-right: 5px;">
+              <div style="border-top: 2px dotted #33A000; flex-grow: 1; height: 0px"></div>                  
+              <div style="width: fit-content; background: #33A000; color:white; font-size:small; border-radius:3px; padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">${newStr}</div>
+          </div>
           `;
         }
-
-        let timeHr = html``;
         const day = ts2day(blm.creationTime);
-        if (day != currentDay) {
+        const canShowTimeHr = day != currentDay;
+        if (canShowTimeHr) {
           currentDay = day;
-          timeHr = html`
-            <div style="display:flex; flex-direction:row; margin-bottom:2px;">
-                <hr class="timeHr"/>
-                <div style="font-size:14px; color:#868686; padding-left:3px; padding-right:3px;">
-                    ${day}
+          /** NEW & TIME */
+          if (hr) {
+            hr = html`
+                <div style="display:flex; flex-direction:row; margin-bottom:2px;">
+                    <hr class="timeHr" style="border-bottom: 2px dotted #33A000;"/>
+                    <div style="font-size:14px; color:#33A000; padding-left:3px; padding-right:3px;">
+                        ${day}
+                    </div>
+                    <hr class="timeHr" style="border-bottom: 2px dotted #33A000;"/>
+                    <div style="width: fit-content; background: #33A000; color:white; font-size:small; border-radius:3px; padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">${newStr}</div>
                 </div>
-                <hr class="timeHr"/>
-            </div>
-        `;
+            `;
+          } else {
+            /** TIME */
+            hr = html`
+                <div style="display:flex; flex-direction:row; margin-bottom:2px;">
+                    <hr class="timeHr"/>
+                    <div style="font-size:14px; color:#868686; padding-left:3px; padding-right:3px;">
+                        ${day}
+                    </div>
+                    <hr class="timeHr"/>
+                </div>
+            `;
+          }
         }
 
         let chatItem = this._chatItems.get(blm.beadAh);
@@ -293,7 +305,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         }
         prevBeadAh = blm.beadAh;
         /** Render chatItem */
-        return html`${chatItem}${hr}${timeHr}`;
+        return html`${chatItem}${hr}`;
       }
     );
 
