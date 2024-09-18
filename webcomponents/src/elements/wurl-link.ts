@@ -10,7 +10,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ppName, weaveUrlToWal, hrl2Id} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
-import {beadJumpEvent, threadJumpEvent} from "../events";
+import {beadJumpEvent, threadJumpEvent, viewFileEvent} from "../events";
 import {localized, msg} from "@lit/localize";
 import {toasty} from "../toast";
 import {FilesDvm} from "@ddd-qc/files";
@@ -206,29 +206,29 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return this.renderBadLink();
     }
 
-    const [dnaId, dhtId] = hrl2Id(wal.hrl);
+    const [_dnaId, dhtId] = hrl2Id(wal.hrl);
 
     if (this._toolName == "Files") {
       const manifestEh = new EntryId(dhtId.b64);
       //return html`<file-button .hash=${new EntryId(dhtId.b64)}></file-button>`;
       return html`<ui5-badge  style="color:#5e5e6b; background: white; border: 1px solid #cbcbcb"
-                              @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent("view-file", viewFileEvent(this._filesDvm.cell.address.dnaId, manifestEh))}}>
+                              @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(viewFileEvent(/*this._filesDvm.cell.address.dnaId,*/ manifestEh))}}>
           ${this._assetName}
           <ui5-icon slot="icon" name="attachment"></ui5-icon>
       </ui5-badge>`;
     }
 
+    // let colorIdx = 6;
+    // if (!this.cell.address.dnaId.equals(dnaId) && !this.weServices) {
+    //   colorIdx = 3;
+    // }
 
-    let colorIdx = 6;
-    if (!this.cell.address.dnaId.equals(dnaId) && !this.weServices) {
-      colorIdx = 3;
-    }
     const hash = new ActionId(dhtId.b64)
 
     /** render valid link */
     return html`
         <!-- <sl-tooltip content="To ${this._toolName}"> -->
-          <ui5-badge design="Set1" color-scheme=${colorIdx}  style="color:#0064D9"
+          <ui5-badge style="color:#2f4dc4d4; background: white; border: 1px solid #225699a3"
                      @click=${(e:any) => {
                        e.stopPropagation(); e.preventDefault();
                        if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {

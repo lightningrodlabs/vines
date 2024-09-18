@@ -203,7 +203,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 // @ts-ignore
 import {FileButton} from "@ddd-qc/files/dist/elements/file-button";
-import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, FileView, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
 //import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
@@ -256,7 +256,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-  @state() private _viewFileEh?: EntryId;
+//  @state() private _viewFileEh?: EntryId;
 
   @state() private _selectedCommentThreadHash?: LinkableId;
            private _selectedCommentThreadSubjectName: string = '';
@@ -265,25 +265,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowComments = false;
   @state() private _canShowFavorites = false;
   @state() private _canShowSearchResults = false;
-  @state() private _canShowDebug = false;
-  @state() private _listerToShow: string | null = null;
-  @state() private _canShowLeft = true;
   @state() private _canShowSearch = false;
+  @state() private _canShowDebug = false;
 
-  @state() private _canViewArchivedSubjects = false;
-  @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
-
-  @state() private _splitObj: SplitObject | undefined = undefined;
-
+  @state() private _canShowLeft = true;
   @state() private _replyToAh: ActionId | undefined = undefined;
   @state() private _hideFiles = true;
+  @state() private _canViewArchivedSubjects = false;
+  @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
+  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view
 
+  @state() private _listerToShow: string | null = null;
   @state() private _collapseAll: boolean = false;
+
+  @state() private _splitObj: SplitObject | undefined = undefined;
 
 
   private _lastKnownNotificationIndex = 0;
 
-  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view
+
 
   /** -- Getters -- */
 
@@ -325,6 +325,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('view-embed', this.onViewEmbed);
     // @ts-ignore
     this.addEventListener('favorites', this.onFavorites);
+    // @ts-ignore
+    this.addEventListener('view', this.onViewFile);
 
   }
   override disconnectedCallback() {
@@ -342,6 +344,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('view-embed', this.onViewEmbed);
     // @ts-ignore
     this.removeEventListener('favorites', this.onFavorites);
+    // @ts-ignore
+    this.removeEventListener('view', this.onViewFile);
   }
 
 
@@ -362,6 +366,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return shadow;
   }
 
+
+  /** */
+  async onViewFile(e: CustomEvent<EntryId>) {
+    const dialog = this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
+    const fileView = this.shadowRoot!.getElementById("file-viewer") as FileView;
+    console.log("FileDvm list:", this._filesDvm.zomeNames.join(", "))
+    fileView.hash = e.detail;
+    dialog.open = true;
+  }
 
   /** */
   async onViewEmbed(e: CustomEvent<ViewEmbedEvent>) {
@@ -1112,18 +1125,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <file-table type="group" notag view
                           style="flex-grow: 1;"
                           .items=${publicItems}
-                          @view=${(e: CustomEvent<EntryId>) => {
-                            console.log("view", e.detail.b64);
-                            const dialog = this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
-                            dialog.open = true;
-                            this._viewFileEh = e.detail;
-                          }}
                           @download=${(e: CustomEvent<EntryId>) => {console.log("download", e.detail.b64); this._filesDvm.downloadFile(e.detail)}}
               ></file-table>
-              <!-- <activity-timeline></activity-timeline> -->
-              <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
-                  <file-view .hash=${this._viewFileEh}></file-view>
-              </sl-dialog>
             </div>
         </cell-context>          
       `;
@@ -1713,6 +1716,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             }}></confirm-dialog>
             <!-- View Embed Dialog -->
             <view-embed-dialog id="view-embed"></view-embed-dialog>
+            <!-- View File Dialog -->
+            <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
+              <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
+                  <file-view id="file-viewer"></file-view>
+              </sl-dialog>
+            </cell-context>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
                 <section>
