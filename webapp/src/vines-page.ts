@@ -884,6 +884,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
+
     const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
@@ -911,10 +912,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (inputBar) {
           this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
           inputBar.setValue("");
-          // console.log("onJump() inputBar cached", this._dvm.perspective.threadInputs[prevThreadHash], prevThreadHash);
         }
       }
     }
+
+    this.closePopups();
+  }
+
+
+  /* */
+  closePopups() {
     /** Close any opened popover */
     const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
     if (popover.isOpen()) {
@@ -931,6 +938,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
     if (profilePopElem.isOpen()) {
       profilePopElem.close();
+    }
+    const netPopElem = this.shadowRoot!.getElementById("networkPopover") as Popover;
+    if (netPopElem.isOpen()) {
+      netPopElem.close();
+    }
+    const sharePopElem = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+    if (sharePopElem.isOpen()) {
+      sharePopElem.close();
     }
   }
 
