@@ -319,7 +319,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render all */
     return html`
         ${treeItems}
-        <ui5-button 
+        <ui5-button design="Emphasized"
                     style="margin: auto;"
                     @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
             ${msg('Create new Topic')}

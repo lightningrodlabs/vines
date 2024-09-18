@@ -127,6 +127,8 @@ import "@ui5/webcomponents-icons/dist/response.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/search.js"
 import "@ui5/webcomponents-icons/dist/sort.js"
+import "@ui5/webcomponents-icons/dist/slim-arrow-left.js"
+import "@ui5/webcomponents-icons/dist/slim-arrow-right.js"
 import "@ui5/webcomponents-icons/dist/share-2.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
@@ -1220,11 +1222,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     const toggleLeftBtn = html`
-        <ui5-button icon="menu2" class="${this._canShowLeft? "pressed" : ""}
-                    tooltip=${this._canShowLeft? msg("Hide side panel"): msg("Show side panel")}
+        <ui5-button icon="menu2" tooltip=${msg("Show side panel")}
+                    class="${this._canShowLeft? "pressed" : ""}                    
                     slot="startButton"
-                    style="margin-right:5px;"
-                    @click=${(_e:any) => this._canShowLeft = !this._canShowLeft}>
+                    style="margin-right:5px; display: ${this._canShowLeft? "none" : ""}"
+                    @click=${(_e:any) => this._canShowLeft = true}>
         </ui5-button>
     `;
 
@@ -1293,6 +1295,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                   }
                                   popover.showAt(btn);                                  
                                 }}>
+                    </ui5-button>
+                    <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
+                                icon="slim-arrow-left"
+                                style="margin-top:10px;"
+                                @click=${(_e:any) => this._canShowLeft = false}>
                     </ui5-button>
                 </div>
                 
@@ -2157,6 +2164,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 1px 9px;
           font-size: 10px;
           font-weight: bold;
+          margin-right:-5px;
+          z-index: 10;
         }
 
         .numberBadge:empty {
