@@ -1588,8 +1588,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                 }}>
                                     </ui5-button>`
                         }
-                        <div class="notification-button">
+                        <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
+                                        style="color: ${this._dvm.threadsZvm.perspective.inbox.size? "#33A000" : ""}"
                                         @click=${() => {
                                             console.log("inboxButton.click()")
                                             const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
@@ -2139,7 +2140,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         .numberBadge {
-          position: absolute;
+          /*position: absolute;
           top: 5px;
           right: 8px;
           background-color: #33A000;
@@ -2148,8 +2149,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 2px 5px;
           font-size: 10px;
           font-weight: bold;
-          /*min-width: 18px;*/
           text-align: center;
+          */
+          background: #33A000;
+          color: white;
+          border-radius: 10px;
+          padding: 1px 9px;
+          font-size: 10px;
+          font-weight: bold;
         }
 
         .numberBadge:empty {
