@@ -157,7 +157,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           height: 80px;
           font-size: 36px;
           /*background: #9f9d9dbf;*/
-          background: rgba(227, 227, 227, 0.75);;
+          background: rgba(227, 227, 227, 0.75);
           border-radius: 50%;
           display: flex;
           justify-content: center;

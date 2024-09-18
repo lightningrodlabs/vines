@@ -145,15 +145,16 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** render all */
     return html`
-        <div style="display:flex; flex-direction:column; gap:10px; padding:7px; margin-bottom:10px;">
             ${this.nobtn? html`` : html`
-            <ui5-button design="Emphasized"
+              <div style="display:flex; flex-direction:column; gap:10px; padding:7px; margin-bottom:10px;">
+                <ui5-button design="Emphasized"
                         @click=${(e:any) => { e.stopPropagation();
                             this.dispatchEvent(new CustomEvent<boolean>('createNewDm', {detail: true, bubbles: true, composed: true}))
                         }}>
                 ${msg('Message a peer')}
-            </ui5-button>`}
-        </div>
+                </ui5-button>
+              </div>
+            `}
         ${treeItems}
     `;
   }
