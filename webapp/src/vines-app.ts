@@ -286,15 +286,6 @@ export class VinesApp extends HappMultiElement {
 
   /** */
   override async perspectiveInitializedOnline(): Promise<void> {
-    console.log("<vines-app>.perspectiveInitializedOnline() START", this.appletView);
-
-    for (let i = 0; i < this.hvms.length; i+= 1) {
-      if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
-        await this.hvms[i]![1].probeAll();
-      }
-    }
-    //await this.networkInfoAll(); // TODO: should propable store result in class field
-    console.log("<vines-app>.perspectiveInitializedOnline() DONE");
     this._onlineLoaded = true;
     this._onlineLoadedProvider.setValue(true);
   }

@@ -1817,9 +1817,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
         return;
       }
-      const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
+      /*const splitObj =*/ await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
       const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, async (_manifestEh) => {
-        toasty(msg("File successfully shared") +": " + splitObj.dataHash);
+        toasty(msg("File successfully shared") + ": " + file.name);
         console.log("<vines-page> File upload complet. requesting update.");
         await delay(50); // required
         this.requestUpdate();

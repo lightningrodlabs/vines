@@ -1333,13 +1333,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                   });
                 }
               }
-            } else {
-              if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
-                /* Set NotifSetting for new DmThread */
-                console.log("NewDmThread.publishNotifSetting() signal", pulse.ah);
-                await this.publishNotifSetting(pulse.ah, NotifySetting.AllMessages);
-              }
             }
+            // Should be set when receiving inbox item
+            // else {
+            //   if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
+            //     /* Set NotifSetting for new DmThread */
+            //     console.log("NewDmThread.publishNotifSetting() signal", pulse.ah);
+            //     await this.publishNotifSetting(pulse.ah, NotifySetting.AllMessages);
+            //   }
+            // }
           }
         }
         break;
@@ -1358,7 +1360,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  private async handleInboxLink(pulse: LinkPulseMat, _from: AgentId) {
+  private async handleInboxLink(pulse: LinkPulseMat, from: AgentId) {
     const base = AgentId.from(pulse.base);
     /** */
     if (StateChangeType.Update == pulse.state) {
@@ -1406,8 +1408,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           }
         }
       }
-    } else {
-      if (!pulse.isNew) {
+    }
+    else {
+      if (!pulse.isNew || !this.cell.address.agentId.equals(from)) {
         return;
       }
       /** I notified a peer */
