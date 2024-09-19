@@ -174,6 +174,7 @@ import {
   InputBar,
   JumpEvent,
   MainViewType,
+  NotifiableEvent,
   NotifySetting,
   onlineLoadedContext,
   parseSearchInput,
@@ -200,7 +201,7 @@ import {
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
 
-import {AgentPubKey, NetworkInfo, Timestamp,} from "@holochain/client";
+import {NetworkInfo, Timestamp,} from "@holochain/client";
 
 import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
@@ -654,6 +655,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
       console.log("<vines-pages> signaledNotifications", notif.author, notif);
+      /* Skip New DM Notif. Used only for code not UI */
+      if (notif.event == NotifiableEvent.NewDmThread) {
+        continue;
+      }
       const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
       const author =  maybeProfile? maybeProfile.nickname : "unknown";
       const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;

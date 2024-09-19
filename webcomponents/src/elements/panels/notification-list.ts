@@ -13,6 +13,7 @@ import {FilesDvm} from "@ddd-qc/files";
 import {notification2JumpEvent} from "../../events";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {composeFeedNotificationTitle} from "../../utils_feed";
+import {NotifiableEvent} from "../../viewModels/threads.materialize";
 
 
 /**
@@ -60,6 +61,10 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
     let notifsLi = Array.from(this.threadsPerspective.inbox.entries()).map(
       ([linkAh, [_ppAh, notif]]) => {
+        /* Skip New DM Notif. Used only for code not UI */
+        if (notif.event == NotifiableEvent.NewDmThread) {
+          return;
+        }
         /** Content */
         const [notifTitle, notifBody, _jump] = this.feed
           ? composeFeedNotificationTitle(notif, this._dvm, this.filesDvm, this.weServices)
