@@ -18,13 +18,13 @@
         }
       },
       "joiningAgents": [
-        {
-          "agentIdx": 2,
-          "agentProfile": {
-            "nickname": "Billy",
-            "avatar": {
-              "type": "filesystem",
-              "path": "testdata/billy.png"
+      {
+        "agentIdx": 2,
+        "agentProfile": {
+          "nickname": "Billy",
+          "avatar": {
+            "type": "filesystem",
+            "path": "testdata/billy.png"
             }
           }
         }
@@ -46,11 +46,11 @@
       "description": "...",
       "icon": {
         "type": "filesystem",
-        "path": "./webapp/icon.png"
+        "path": "webapp/icon.png"
       },
       "source": {
         "type": "filesystem",
-        "path": "./artifacts/vines-we_applet.webhapp"
+        "path": "artifacts/vines-we_applet.webhapp"
       }
     }
   ]

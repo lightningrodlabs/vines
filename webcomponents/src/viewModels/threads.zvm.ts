@@ -142,7 +142,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   private storeAttributions(originalsZvm: AuthorshipZvm) {
     /** subjects */
     for (const subjectAhB64 of this._perspective.subjects.keys()) {
-      /*await*/ originalsZvm.ascribeTarget("Subject", intoLinkableId(subjectAhB64), 0/*TODO: get creationTime of Subject*/, AgentId.empty(), true);
+      const anyId = intoAnyId(subjectAhB64);
+      if (anyId.hashType != HoloHashType.Agent) {
+        /*await*/ originalsZvm.ascribeTarget("Subject", intoLinkableId(anyId.b64), 0/*TODO: get creationTime of Subject*/, AgentId.empty(), true);
+      }
     };
     /** pps */
     for (const [ppAh, thread] of this._perspective.threads.entries()) {
@@ -348,7 +351,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     this._perspective.storeAllNewThreads(newThreads);
 
     /* unreadThreads: Map new beads to their threads */
-    let unreadThreads: ActionIdMap<[LinkableId, ActionId[]]> = new ActionIdMap();
+    let unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();
     latest.newBeadsByThread.map(async ([pp_ah, bl]) => {
       const ppAh =  new ActionId(pp_ah);
       let maybeThread = this._perspective.threads.get(ppAh);
@@ -363,11 +366,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (bl.creationTime <= maybeThread.latestProbeLogTime || this.cell.address.agentId.equals(bl.author)) {
         return;
       }
-      const subjectAddr = intoLinkableId(maybeThread.pp.subject.address);
-      if (!unreadThreads.get(ppAh)) {
-        unreadThreads.set(ppAh, [subjectAddr, []]);
-      }
-      unreadThreads.get(ppAh)![1].push(new ActionId(bl.beadAh));
+        const subjectAddr = intoAnyId(maybeThread.pp.subject.address);
+        if (!unreadThreads.get(ppAh)) {
+          unreadThreads.set(ppAh, [subjectAddr, []]);
+        }
+        unreadThreads.get(ppAh)![1].push(new ActionId(bl.beadAh));
     });
     console.log("threadsZvm.probeAllLatest() unreadThreads done", JSON.stringify(unreadThreads));
     this._perspective.storeAllUnreadThreads(unreadThreads);
@@ -1320,8 +1323,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           if (pulse.isNew) {
             if (isFromSelf) {
               /** Notify Subject author */
-              if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64) {
-                //if (subject_hash == AnyDhtHash::try_from(pp.subject.hash) {
+              if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64 && pp.subject.typeName != DM_SUBJECT_TYPE_NAME) {
                 let author = await this.zomeProxy.getRecordAuthor(intoLinkableId(pp.subject.address).hash);
                 if (!this.cell.address.agentId.equals(author)) {
                   await this.zomeProxy.notifyPeer({
@@ -1330,7 +1332,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Fork),
                   });
                 }
-                //}
               }
             } else {
               if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {

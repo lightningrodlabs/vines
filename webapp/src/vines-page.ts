@@ -1176,7 +1176,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         `;
       break;
       case "topics-option":
-        lister = html`
+        lister = this.multi? html`` : html`
             <topics-lister ?collapsed=${this._collapseAll}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this.selectedThreadHash}
@@ -1239,8 +1239,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Show Cross-view or group-view */
     const topLeft = this.multi? html`
-                <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;">
-                    <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem">${msg("DMs Cross View")}</div>
+                <div style="display: flex; flex-direction: column; align-items: stretch; padding-top:12px; margin-left:10px; flex-grow:1; min-width:0; margin-bottom: 5px">
+                    <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1.25rem">${msg("DMs Cross View")}</div>
                 </div>
     ` : html`
                 <div id="group-div">
@@ -1440,13 +1440,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
                                        icon="open-folder"></ui5-menu-item>
+                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>                        
                         ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
                         <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
                                        starts-section></ui5-menu-item>
                         ` : html`
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
-                                       starts-section></ui5-menu-item>                        
-                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
+                                       starts-section></ui5-menu-item>
                         <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"
                         </ui5-menu-item>`}

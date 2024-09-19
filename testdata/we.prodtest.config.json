@@ -17,24 +17,13 @@
           }
         }
       },
-      "joiningAgents": [
-        {
-          "agentIdx": 2,
-          "agentProfile": {
-            "nickname": "Billy",
-            "avatar": {
-              "type": "filesystem",
-              "path": "testdata/billy.jpg"
-            }
-          }
-        }
-      ],
+      "joiningAgents": [],
       "applets": [
         {
           "name": "Vines",
           "instanceName": "Vines",
           "registeringAgent": 1,
-          "joiningAgents": [2]
+          "joiningAgents": []
         }
       ]
     }

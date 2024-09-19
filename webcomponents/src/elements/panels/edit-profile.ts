@@ -229,7 +229,15 @@ export class EditProfile extends LitElement {
       this._nicknameField.valueState = ValueState.Error;
       return;
     }
-    const nickname = this._nicknameField.value;
+    const nickname = this._nicknameField.value.trim();
+    const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
+    const isValid = regex.test(nickname);
+    if (!isValid) {
+      this._nicknameField.valueState = ValueState.Error;
+      const errorMsg = this.shadowRoot!.getElementById("errorMsg") as HTMLElement;
+      errorMsg.textContent = msg("Bad characters");
+      return;
+    }
     const fields: Record<string, string> = this.getAdditionalFieldsValues();
 
     console.log("fireSaveProfile()", fields);
@@ -302,6 +310,7 @@ export class EditProfile extends LitElement {
               <ui5-input
                       id="nickname-field"
                       outlined required
+                      .maxlength=${32}
                       .label=${msg('Nickname')}
                       .value=${this.profile?.nickname || ''}
                       style="margin-left: 8px;"
@@ -311,9 +320,8 @@ export class EditProfile extends LitElement {
                         } else {
                             this._nicknameField.valueState = ValueState.Error;
                         }
-                      }}
-              >
-                  <div slot="valueStateMessage">Minimum 1 character</div>                  
+                      }}>
+                  <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>                  
               </ui5-input>
             ${this.renderAvatar()}
           </div>
