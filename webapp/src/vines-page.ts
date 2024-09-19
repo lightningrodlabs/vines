@@ -197,10 +197,10 @@ import {
   weClientContext,
 } from "@vines/elements";
 
-import {WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
+import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
 
-import {NetworkInfo, Timestamp,} from "@holochain/client";
+import {AgentPubKey, NetworkInfo, Timestamp,} from "@holochain/client";
 
 import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
 import {consume} from "@lit/context";
@@ -675,6 +675,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'high',
           timestamp: notif.timestamp / 1000,
+          aboutWal: {hrl: intoHrl(this.cell.address.dnaId, notif.content)},
+          fromAgent: notif.author.hash,
+          //forAgents?: AgentPubKey[];
         }
         weNotifs.push(myNotif);
       }
