@@ -3,7 +3,7 @@ import {customElement, property} from "lit/decorators.js";
 import {ActionId, AgentIdMap, DnaMultiElement, EntryId} from "@ddd-qc/lit-happ";
 //import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
-import {agentJumpEvent, HideEvent} from "../../events";
+import {multiJumpEvent, HideEvent} from "../../events";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
@@ -123,7 +123,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
                      ${isSelected ? "background:#DBDBDB" : ""}
                      "
-                   @click=${(_e: any) => this.dispatchEvent(agentJumpEvent(ppAh, otherAgent))}>
+                   @click=${(_e: any) => this.dispatchEvent(multiJumpEvent(ppAh, otherAgent))}>
                   ${badge}
                   ${renderProfileAvatar(otherProfile, 'XS')}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>

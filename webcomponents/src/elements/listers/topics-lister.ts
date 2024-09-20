@@ -169,7 +169,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
-                    <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold; color: white;" : ""}">${thread.pp.purpose}</span>
+                    <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.pp.purpose}</span>
                     <ui5-button icon="chain-link" tooltip=${msg("Copy Channel Link")} design="Transparent"
                                 style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                                 @click=${(e:any) => {

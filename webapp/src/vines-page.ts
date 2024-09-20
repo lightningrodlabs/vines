@@ -173,7 +173,7 @@ import {
   HideEvent,
   InputBar,
   JumpEvent,
-  MainViewType,
+  MainViewType, multiJumpEvent,
   NotifiableEvent,
   NotifySetting,
   onlineLoadedContext,
@@ -1670,7 +1670,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                     dialog.close();
                     const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
-                    this.dispatchEvent(threadJumpEvent(ppAh));
+                    if (this.multi) {
+                        this.dispatchEvent(multiJumpEvent(ppAh, e.detail));
+                    } else {
+                      this.dispatchEvent(threadJumpEvent(ppAh));
+                    }
                 }}></peer-list>
                 <ui5-button
                         style="margin-top: 10px; float: right;"

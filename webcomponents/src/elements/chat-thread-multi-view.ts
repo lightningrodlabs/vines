@@ -186,7 +186,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     console.log("<chat-thread-multi-view>.render()", this._loading, this.agent, this.beadAh, this._dvms);
     /** */
     if (this.agent === undefined) {
-      return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No channel selected")}</div>`;
+      return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No peer selected")}</div>`;
     }
     if (!this.threads.length) {
       return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;

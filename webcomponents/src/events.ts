@@ -119,8 +119,8 @@ export function threadJumpEvent(ah: ActionId): CustomEvent<JumpEvent> {
   return new CustomEvent<JumpEvent>('jump', {detail: {thread: ah, type: MainViewType.Thread}, bubbles: true, composed: true});
 }
 
-export function agentJumpEvent(thread: ActionId, agent: AgentId): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {thread, agent, type: MainViewType.Thread}, bubbles: true, composed: true});
+export function multiJumpEvent(thread: ActionId, agent: AgentId): CustomEvent<JumpEvent> {
+  return new CustomEvent<JumpEvent>('jump', {detail: {thread, agent, type: MainViewType.MultiThread}, bubbles: true, composed: true});
 }
 
 export function favoritesJumpEvent(): CustomEvent<JumpEvent> {
