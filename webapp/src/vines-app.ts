@@ -82,8 +82,6 @@ export class VinesApp extends HappMultiElement {
            private _onlineLoadedProvider?: any;
   @state() private _hasHolochainFailed: boolean | undefined = undefined;
   @state() private _hasWeProfile = false;
-  @state() private _maybeSelectedThreadAh: ActionId | undefined = undefined;
-  @state() private _maybeSelectedBeadAh: ActionId | undefined = undefined;
 
   /** We-applet specifics */
   private _weProfilesDvm?: ProfilesDvm;
@@ -183,6 +181,7 @@ export class VinesApp extends HappMultiElement {
     // @ts-ignore
     this.addEventListener('copy', this.onCopy);
   }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     // @ts-ignore
@@ -309,37 +308,16 @@ export class VinesApp extends HappMultiElement {
   }
 
 
-  /** */
+  /** Open Vines App if jump requested from a non-main view */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-app>.onJump()", e.detail);
-
-    this._maybeSelectedBeadAh = undefined;
-    this._maybeSelectedThreadAh = undefined;
-
-    if (e.detail.thread) {
-      if (this.appletView && this.appletView.type != "main") {
-        if (this._weServices) {
-          /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
-        }
-      } else {
-        this._maybeSelectedThreadAh = e.detail.thread;
-        this._maybeSelectedBeadAh = undefined;
-      }
-      return;
-    }
-    if (e.detail.bead) {
-      const beadInfo = await this.threadsDvm(0).threadsZvm.perspective.getBeadInfo(e.detail.bead); // FIXME 0
-      if (beadInfo) {
-        this._maybeSelectedThreadAh = beadInfo.bead.ppAh;
-        this._maybeSelectedBeadAh = e.detail.bead;
-      } else {
-        console.warn("JumpEvent failed. Bead not found", e.detail.bead);
-      }
+    if ((e.detail.thread || e.detail.bead) && this.appletView && this.appletView.type != "main" && this._weServices) {
+      /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
     }
   }
 
 
-  /** */
+  /** copy can be requested from a non-main view */
   private async onCopy(e: CustomEvent<Hrl>) {
     if (!e.detail) {
       console.warn("Invalid copy event");
@@ -399,8 +377,6 @@ export class VinesApp extends HappMultiElement {
     // TODO: should propable store networkInfoLogs in class field
     let view = html`
             <vines-page
-                      .selectedThreadHash=${this._maybeSelectedThreadAh}
-                      .selectedBeadAh=${this._maybeSelectedBeadAh}
                       .networkInfoLogs=${this.hvms[0]![0].networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
                       @queryNetworkInfo=${(_e:any) => {}/*this.networkInfoAll()*/}
@@ -543,10 +519,7 @@ export class VinesApp extends HappMultiElement {
     return html`
         <cell-context .cell=${this.threadsDvm(0).cell}>
           <cell-multi-context .cells=${this.cells}>
-              <vines-page multi="true"
-                        .selectedThreadHash=${this._maybeSelectedThreadAh}
-                        .selectedBeadAh=${this._maybeSelectedBeadAh}
-              ></vines-page>
+              <vines-page multi="true"></vines-page>
           </cell-multi-context>
         </cell-context>
     `;

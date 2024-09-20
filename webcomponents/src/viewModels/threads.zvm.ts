@@ -226,6 +226,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     await this.pullAppletIds();
     await this.pullAllSubjects();
     await this.zomeProxy.probeDmThreads();
+    await this.zomeProxy.probeInbox();
+    await this.pullFavorites();
+    /** Grab all threads of other subjects to see if there are new ones */
+    let probes: Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>>[] = [];
+    for (const [subjectAdr, _sub] of this._perspective.getAllSubjects()) {
+      probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr)));
+    }
+    await Promise.all(probes);
     console.debug("threadsZvm.initializePerspectiveOnline() END");
   }
 
@@ -240,23 +248,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async probeAllInnerAsync() {
     console.debug("threadsZvm.probeAllInner()", this._perspective.getAllSubjects().length)
     await this.initializePerspectiveOnline();
-    /** Grab all threads of other subjects to see if there are new ones */
-    let probes: Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>>[] = [];
-    for (const [subjectAdr, _sub] of this._perspective.getAllSubjects()) {
-      probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr)));
-    }
-    await Promise.all(probes);
-
     /** Get last elements since last time (global probe log) */
-    //await this.probeAllLatest();
-    await this.zomeProxy.probeInbox();
-    await this.pullFavorites();
+    /** WARN: this can commit an entry */
+    await this.probeAllLatest();
   }
 
 
   /** -- */
 
-  /** Feed specific */
+  /** Feed App specific */
   storeMainTopic() {
     this._perspective.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
   }
@@ -803,7 +803,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** get ppAh of Notif */
-  async fetchPpFromNotification(notif: ThreadsNotification): Promise<ActionId | null> {
+  async fetchPpAhFromNotification(notif: ThreadsNotification): Promise<ActionId | null> {
     console.log("getPpFromNotification()", notif.event);
     if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event) {
       return notif.content;
@@ -1389,15 +1389,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** I got notified by a peer */
     if (this.cell.address.agentId.equals(base)) {
       /** Store Notification */
-      const ppAh = await this.fetchPpFromNotification(notif);
+      const ppAh = await this.fetchPpAhFromNotification(notif);
       /** make sure we have the content signaled in the notification */
       if (ppAh) {
-        /*await*/ this.fetchPp(ppAh);
-        this._perspective.storeNotification(notif, ppAh);
+        /*await*/ this.fetchPp(ppAh); // We should probably fetch it for futur use
         /** Publish a NotifySetting.AllMessages for this thread if non exists */
         if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
           const ppAh = new ActionId(notif.content.b64);
-          console.log("NewDmThread notif:", ppAh);
+          console.log("NewDmThread notif:", ppAh, notif.createLinkAh);
           const notifSettings = this._perspective.notifSettings.get(ppAh);
           if (notifSettings) {
             const notifSetting = notifSettings.get(this.cell.address.agentId);
@@ -1406,6 +1405,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
               console.log("NewDmThread.publishNotifSetting()", ppAh);
             }
           }
+          /* auto delete since we don't want it to show up in UI */
+          await this.deleteNotification(notif.createLinkAh);
+        } else {
+          this._perspective.storeNotification(notif, ppAh);
         }
       }
     }
@@ -1551,7 +1554,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** make sure we have the content signaled in the notification */
     /*await*/ this.fetchPp(ppAh);
     /** */
-    this._perspective.storeNotification(notif, ppAh);
+    if (NotifiableEvent.NewDmThread != notifTip.event) {
+      this._perspective.storeNotification(notif, ppAh);
+    }
     return signal;
   }
 

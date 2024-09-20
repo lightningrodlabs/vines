@@ -259,8 +259,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   @property() multi: boolean = false;
-  @property({type: ActionId}) selectedThreadHash: ActionId | undefined = undefined;
-  @property() selectedBeadAh: ActionId | undefined = undefined;
 
 
   /** -- Private state -- */
@@ -270,7 +268,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _listerToShow: string | null = "topics-option";
   @state() private _collapseAll: boolean = false;
   @state() private _canViewArchivedSubjects = false;
-  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view
+  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we dont know which thread from which tool to use
   @state() private _createTopicHash: EntryId | undefined = undefined;
 
   /** Right panels */
@@ -281,9 +279,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** Main */
   @state() private _mainView: MainViewType | undefined = undefined;
   @state() private _replyToAh: ActionId | undefined = undefined;
-  @state() private _selectedCommentThreadHash?: LinkableId;
-  private _selectedCommentThreadSubjectName: string = '';
+  @state() private _selectedThreadHash: ActionId | undefined = undefined;
+  @state() private _selectedBeadAh: ActionId | undefined = undefined;
   @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
+  @state() private _selectedCommentThreadHash: LinkableId | undefined = undefined
+           private _selectedCommentThreadSubjectName: string = '';
 
   /** File upload */
   @state() private _splitObj: SplitObject | undefined = undefined;
@@ -458,8 +458,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    this.selectedThreadHash = undefined;
-    this.selectedBeadAh = undefined;
+    this._selectedThreadHash = undefined;
+    this._selectedBeadAh = undefined;
   }
 
 
@@ -516,7 +516,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onCreateTextMessage(inputText: string) {
     console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
-    let ppAh = this.selectedThreadHash;
+    let ppAh = this._selectedThreadHash;
     if (this._currentCommentRequest) {
       ppAh = await this.publishCommentThread(this._currentCommentRequest);
       this._currentCommentRequest = undefined;
@@ -539,7 +539,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     console.log("onDmTextMessage() beadAh", beadAh, this._dvm.threadsZvm.perspective.threads);
     this._replyToAh = undefined;
-    this.selectedBeadAh = undefined;
+    this._selectedBeadAh = undefined;
     //await delay(1000);
     this.dispatchEvent(beadJumpEvent(beadAh));
   }
@@ -547,13 +547,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateHrlMessage(wal: WAL) {
-    if (!wal || !this.selectedThreadHash) {
+    if (!wal || !this._selectedThreadHash) {
       return;
     }
     console.log("onCreateHrlMessage()", weaveUrlFromWal(wal));
     //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
     // TODO: make sure hrl is an entryHash
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this.selectedThreadHash, undefined, this._replyToAh, this.weServices);
+    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this._selectedThreadHash, undefined, this._replyToAh, this.weServices);
     console.log("onCreateHrlMessage() ah", ah);
   }
 
@@ -577,7 +577,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       await this._dvm.threadsZvm.zomeProxy.commitFirstGlobalLog();
     }
 
-    /** Do it here instead of in probeAll() because this can commit an entry */
+    /** WARN: this can commit an entry */
     await this._dvm.threadsZvm.probeAllLatest();
 
     /** Select Topics */
@@ -654,7 +654,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Create popups from signaled Notifications */
     const weNotifs = [];
     for (const notif of this.perspective.signaledNotifications.slice(this._lastKnownNotificationIndex)) {
-      console.log("<vines-pages> signaledNotifications", notif.author, notif);
+      //console.log("<vines-page> signaledNotifications", notif.author, notif);
       /* Skip New DM Notif. Used only for code not UI */
       if (notif.event == NotifiableEvent.NewDmThread) {
         continue;
@@ -863,18 +863,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onJump(e: CustomEvent<JumpEvent>) {
-    console.log("<vines-page>.onJump()", e.detail, this.selectedThreadHash);
+    console.log("<vines-page>.onJump()", e.detail, this._selectedThreadHash);
     this.closePopups();
 
-    const maybePrevThreadId = this.selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
+    const maybePrevThreadId = this._selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
+
+    /** Reset state */
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
-    this._mainView = e.detail.type;
+    this._selectedThreadHash = undefined;
+    this._selectedBeadAh = undefined;
+    this._selectedAgent = undefined;
 
+    /** Set new state */
+    this._mainView = e.detail.type;
     switch(e.detail.type) {
       case MainViewType.Favorites: break;
       case MainViewType.Files: break;
-      case MainViewType.MultiThread: this._selectedAgent = e.detail.agent; break;
+      case MainViewType.MultiThread:
       case MainViewType.Thread: {
         /** set lastProbeTime for current thread */
         if (maybePrevThreadId) {
@@ -891,6 +897,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             inputBar.setValue("");
           }
         }
+        if (!e.detail.thread && e.detail.bead) {
+          const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(e.detail.bead);
+          this._selectedThreadHash = beadInfo!.bead.ppAh;
+        } else {
+          this._selectedThreadHash = e.detail.thread;
+        }
+        this._selectedBeadAh = e.detail.bead;
+        this._selectedAgent = e.detail.agent;
       }
       break;
     }
@@ -930,7 +944,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   onNotifSettingsChange() {
     console.log("onNotifSettingsChange()");
-    if (!this.selectedThreadHash) {
+    if (!this._selectedThreadHash) {
       console.error("onNotifSettingsChange() failed. No thread selected")
       return;
     }
@@ -938,17 +952,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const mentionRadio = this.shadowRoot!.getElementById("notifSettingsMentions") as RadioButton;
     const neverRadio = this.shadowRoot!.getElementById("notifSettingsNever") as RadioButton;
     if (allRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySetting.AllMessages);
+      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySetting.AllMessages);
       //console.log("notifSetting checked", NotifySettingType.AllMessages);
       return;
     }
     if (mentionRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySetting.MentionsOnly);
+      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySetting.MentionsOnly);
       //console.log("notifSetting checked", NotifySettingType.MentionsOnly);
       return;
     }
     if (neverRadio.checked) {
-      this._dvm.threadsZvm.publishNotifSetting(this.selectedThreadHash, NotifySetting.Never);
+      this._dvm.threadsZvm.publishNotifSetting(this._selectedThreadHash, NotifySetting.Never);
       //console.log("notifSetting checked", NotifySettingType.Never);
       return;
     }
@@ -982,7 +996,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-page>.render()", this.onlineLoaded, this.selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this.onlineLoaded, this._selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     let uploadState;
@@ -999,14 +1013,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** render selected thread */
-    if (this.selectedThreadHash && this._mainView == MainViewType.Thread) {
-      const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
+    if (this._selectedThreadHash && this._mainView == MainViewType.Thread) {
+      const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
-        /*await*/ this._dvm.threadsZvm.fetchPp(this.selectedThreadHash);
+        /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
         primaryTitle = thread.name;
-        const dmThread = this._dvm.threadsZvm.isThreadDm(this.selectedThreadHash);
+        const dmThread = this._dvm.threadsZvm.isThreadDm(this._selectedThreadHash);
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
@@ -1040,8 +1054,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         const threadView = this.multi
-            ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this.selectedBeadAh}></chat-thread-multi-view>`
-            : html`<chat-thread-view id="chat-view" .threadHash=${this.selectedThreadHash} .beadAh=${this.selectedBeadAh}></chat-thread-view>`;
+            ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this._selectedBeadAh}></chat-thread-multi-view>`
+            : html`<chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
 
         centerSide = html`
             ${threadView}
@@ -1067,16 +1081,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <vines-input-bar id="input-bar"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
-                             .cachedInput=${this.perspective.threadInputs.get(this.selectedThreadHash)? this.perspective.threadInputs.get(this.selectedThreadHash) : ""}
+                             .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
                              .showHrlBtn=${!!this.weServices}
                              showFileBtn="true"
                              @input=${async (e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
                                if (e.detail.wal) await this.onCreateHrlMessage(e.detail.wal);
-                               if (e.detail.file && this.selectedThreadHash) await this.onCreateFileMessage(this.selectedThreadHash, e.detail.file);                               
+                               if (e.detail.file && this._selectedThreadHash) await this.onCreateFileMessage(this._selectedThreadHash, e.detail.file);                               
                                this._replyToAh = undefined;
-                               this.selectedBeadAh = undefined;
+                               this._selectedBeadAh = undefined;
                              }}
             ></vines-input-bar>`
             }
@@ -1129,10 +1143,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const searchParameters = parseSearchInput(searchValue, this._dvm.profilesZvm.perspective);
 
     let notifSetting = NotifySetting.MentionsOnly; // default
-    if (this.selectedThreadHash) {
-      notifSetting = this._dvm.threadsZvm.perspective.getNotifSetting(this.selectedThreadHash, this.cell.address.agentId);
+    if (this._selectedThreadHash) {
+      notifSetting = this._dvm.threadsZvm.perspective.getNotifSetting(this._selectedThreadHash, this.cell.address.agentId);
     }
-    console.log("<vines-page>.render() notifSettings", notifSetting, this.selectedThreadHash);
+    console.log("<vines-page>.render() notifSettings", notifSetting, this._selectedThreadHash);
 
     /** Group Info */
     let groupProfile: GroupProfile = {
@@ -1175,7 +1189,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         lister = html`
           <my-threads-lister ?collapsed=${this._collapseAll}
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
-                         .selectedThreadHash=${this.selectedThreadHash}
+                         .selectedThreadHash=${this._selectedThreadHash}
                          @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e : CustomEvent<EntryId>) => {
           this._createTopicHash = e.detail;
@@ -1187,7 +1201,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         lister = this.multi? html`` : html`
             <topics-lister ?collapsed=${this._collapseAll}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
-                           .selectedThreadHash=${this.selectedThreadHash}
+                           .selectedThreadHash=${this._selectedThreadHash}
                            @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                            @createThreadClicked=${(e: CustomEvent<EntryId>) => {
                                this._createTopicHash = e.detail;
@@ -1200,7 +1214,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const dmLister = this.multi? html`
         <dm-multi-lister nobtn
                 .showArchived=${this._canViewArchivedSubjects}
-                .selectedThreadHash=${this.selectedThreadHash}
+                .selectedThreadHash=${this._selectedThreadHash}
                 @createNewDm=${(_e:any) => {
                     const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                     dialog.show();
@@ -1209,7 +1223,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     ` : html`
         <dm-lister nobtn
                 .showArchived=${this._canViewArchivedSubjects}
-                .selectedThreadHash=${this.selectedThreadHash}
+                .selectedThreadHash=${this._selectedThreadHash}
                 @createNewDm=${(_e:any) => {
                     const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                     dialog.show();
@@ -1228,8 +1242,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
 
     let maybeBackBtn = html``;
-    if (this.selectedThreadHash) {
-      const thread = this.threadsPerspective.threads.get(this.selectedThreadHash);
+    if (this._selectedThreadHash) {
+      const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
       if (thread && (
         thread.pp.subject.typeName == SpecialSubjectType.EntryBead
       || thread.pp.subject.typeName == SpecialSubjectType.TextBead
@@ -1557,7 +1571,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-input>
                     <div style="flex-grow: 1"></div>
                     <div id="topBarBtnGroup">
-                        ${this.selectedThreadHash === undefined ? html`` :
+                        ${this._selectedThreadHash === undefined ? html`` :
                                 html`
                                     <ui5-button id="notifSettingsBtn"
                                                 icon="bell"
