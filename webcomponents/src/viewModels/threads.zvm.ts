@@ -1405,8 +1405,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
               console.log("NewDmThread.publishNotifSetting()", ppAh);
             }
           }
-          /* auto delete since we don't want it to show up in UI */
-          await this.deleteNotification(notif.createLinkAh);
+          ///* auto delete since we don't want it to show up in UI */
+          //await this.deleteNotification(notif.createLinkAh);
         } else {
           this._perspective.storeNotification(notif, ppAh);
         }
