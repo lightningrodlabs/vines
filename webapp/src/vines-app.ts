@@ -310,7 +310,7 @@ export class VinesApp extends HappMultiElement {
 
   /** Open Vines App if jump requested from a non-main view */
   async onJump(e: CustomEvent<JumpEvent>) {
-    console.log("<vines-app>.onJump()", e.detail);
+    //console.log("<vines-app>.onJump()", e.detail);
     if ((e.detail.thread || e.detail.bead) && this.appletView && this.appletView.type != "main" && this._weServices) {
       /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
     }

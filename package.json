@@ -58,7 +58,8 @@
 
     "multiagent"           : "cross-env AGENT_NUM=1 concurrently \"npm run multiagent:we-launch\"",
     "multiagent2"          : "cross-env AGENT_NUM=2 concurrently \"npm run multiagent:we-launch\"",
-    "multiagentall"        : "concurrently \"npm run multiagent\" \"sleep 5 && npm run multiagent2\"",
+    "multiagent3"          : "cross-env AGENT_NUM=3 concurrently \"npm run multiagent:we-launch\"",
+    "multiagentall"        : "concurrently \"npm run multiagent\" \"sleep 5 && npm run multiagent2\" \"sleep 7 && npm run multiagent3\"",
     "multiagent:we-launch" : "we-dev-cli --disable-os-notifications --dev-config testdata/we.multiagent.config.json --dev-data-dir \"D:\\ddd_temp\" --agent-idx $AGENT_NUM",
 
     "multigroup"           : "cross-env AGENT_NUM=1 concurrently \"npm run multigroup:we-launch\"",

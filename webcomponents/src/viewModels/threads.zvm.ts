@@ -25,7 +25,6 @@ import {
   ActionId,
   ActionIdMap,
   AgentId, AnyId,
-  dematerializeLinkPulse,
   DnaId,
   enc64,
   EntryId,
@@ -39,8 +38,6 @@ import {
   LinkableId,
   LinkPulseMat,
   StateChangeType,
-  TipProtocol,
-  TipProtocolVariantLink,
   ZomeSignalProtocol,
   ZomeViewModelWithSignals,
 } from "@ddd-qc/lit-happ";
@@ -1220,22 +1217,32 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   protected override async handleLinkPulse(pulse: LinkPulseMat, from: AgentId) {
-    let tip: TipProtocol | undefined = undefined;
+    //const isSignalFromSelf = this.cell.address.agentId.equals(from);
+    const isAuthorSelf = this.cell.address.agentId.equals(pulse.author);
+
     switch(pulse.link_type) {
       case ThreadsLinkType.Inbox:
         this.handleInboxLink(pulse, from);
       break;
       case ThreadsLinkType.Hide:
+        if (!isAuthorSelf) {
+          return;
+        }
         console.log("handleLinkPulse() hide", pulse.target);
         this._perspective.storeHidden(pulse.target, StateChangeType.Create == pulse.state);
       break;
       case ThreadsLinkType.Dm: {
+        console.log("handleLinkPulse() Dm", pulse.base.short);
         const targetAh = new ActionId(pulse.target.b64);
+        const forPeer = AgentId.from(pulse.base);
+        const isForMe = forPeer.equals(this.cell.address.agentId);
+        if (!isAuthorSelf && !isForMe) {
+          return;
+        }
         await this.fetchPp(targetAh);
         /** Notify peer of DmThread */
-        const peer = AgentId.from(pulse.base);
-        if (!peer.equals(this.cell.address.agentId) && pulse.isNew) {
-          await this.zomeProxy.notifyPeer({content: targetAh.hash, who: peer.hash, event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.NewDmThread)});
+        if (!isForMe && pulse.isNew) {
+          await this.zomeProxy.notifyPeer({content: targetAh.hash, who: forPeer.hash, event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.NewDmThread)});
         }
       }
       break;
@@ -1246,24 +1253,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const emoji = decoder.decode(pulse.tag);
           //console.warn("EmojiReaction CreateLink:", link.tag, emoji);
           this._perspective.storeEmojiReaction(baseAh, pulse.author, emoji);
-          if (pulse.isNew && this.cell.address.agentId.equals(from)) {
-            const link = dematerializeLinkPulse(pulse, Object.values(ThreadsLinkType)).link;
-            tip = {Link: {link, state: {Create: true}}} as TipProtocolVariantLink;
-          }
         }
         if (StateChangeType.Delete == pulse.state) {
           const decoder = new TextDecoder('utf-8');
           const emoji = decoder.decode(pulse.tag);
           //console.warn("EmojiReaction DeleteLink:", link.tag, emoji);
           this._perspective.unstoreEmojiReaction(baseAh, pulse.author, emoji);
-          if (pulse.isNew && this.cell.address.agentId.equals(from)) {
-            const link = dematerializeLinkPulse(pulse, Object.values(ThreadsLinkType)).link;
-            tip = {Link: {link, state: {Delete: true}}} as TipProtocolVariantLink;
-          }
         }
       }
       break;
       case ThreadsLinkType.NotifySetting: {
+        console.log("handleLinkPulse() NotifySetting", pulse.base.short);
         const baseAh = new ActionId(pulse.base.b64);
         if (StateChangeType.Create == pulse.state) {
           const index = pulse.tag[0] as number;
@@ -1289,25 +1289,27 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       break;
     }
-    /** */
-    if (tip) {
-      await this.broadcastTip(tip);
-    }
   }
 
 
   /** */
   protected override async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
     console.log("ThreadsZvm.handleEntryPulse()", pulse, from.short);
-    const isFromSelf = this.cell.address.agentId.equals(from);
+    //const isSignalFromSelf = this.cell.address.agentId.equals(from);
+    const isEntryFromSelf = this.cell.address.agentId.equals(pulse.author);
+
     switch(pulse.entryType) {
+      case ThreadsEntryType.EncryptedBead:
       case ThreadsEntryType.AnyBead:
       case ThreadsEntryType.EntryBead:
       case ThreadsEntryType.TextBead:
-      case ThreadsEntryType.EncryptedBead:
         const encBead = this._decoder.decode(pulse.bytes) as TypedBead;
         if (StateChangeType.Create == pulse.state) {
-          await this.handleBeadEntry(pulse, encBead, pulse.entryType, pulse.isNew, from);
+          try {
+            await this.handleBeadEntry(pulse, encBead, pulse.entryType, pulse.isNew, from);
+          } catch(_e) {
+            /** skip encryptedBead not for me */
+          }
         }
         break;
       case ThreadsEntryType.SemanticTopic:
@@ -1318,10 +1320,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         break;
       case ThreadsEntryType.ParticipationProtocol:
         const pp= this._decoder.decode(pulse.bytes) as ParticipationProtocol;
+        /** Skip DM PP's for other agents */
+        if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
+          const forAgent = new AgentId(pp.subject.address);
+          if (!isEntryFromSelf && !this.cell.address.agentId.equals(forAgent)) {
+            console.debug("DM PP not for  me");
+            return;
+          }
+        }
+        /** */
         if (StateChangeType.Create == pulse.state) {
           this._perspective.storeThread(this.cell, pulse.ah, pp, pulse.ts, pulse.author, pulse.isNew);
           if (pulse.isNew) {
-            if (isFromSelf) {
+            if (isEntryFromSelf) {
               /** Notify Subject author */
               if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64 && pp.subject.typeName != DM_SUBJECT_TYPE_NAME) {
                 let author = await this.zomeProxy.getRecordAuthor(intoLinkableId(pp.subject.address).hash);
@@ -1361,7 +1372,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   private async handleInboxLink(pulse: LinkPulseMat, from: AgentId) {
-    const base = AgentId.from(pulse.base);
+    const forAgent = AgentId.from(pulse.base);
+    const isLinkFromMe = this.cell.address.agentId.equals(pulse.author);
+    const isSignalFromMe = this.cell.address.agentId.equals(from);
+    const isForMe = this.cell.address.agentId.equals(forAgent);
+
+    console.log("handleInboxSignal()", isLinkFromMe, isSignalFromMe, isForMe);
+
+    if (!isForMe && !isLinkFromMe) {
+      return;
+    }
+
     /** */
     if (StateChangeType.Update == pulse.state) {
       console.error("Not possible to Update a link");
@@ -1369,8 +1390,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     if (StateChangeType.Delete == pulse.state) {
       //const isNew = linkInfo.state.Delete;
-      console.log("handleInboxSignal() Delete", base, this.cell.address.agentId.short);
-      if (this.cell.address.agentId.equals(base)) {
+      console.log("handleInboxSignal() Delete", forAgent.short, this.cell.address.agentId.short);
+      if (isForMe) {
         await this._perspective.unstoreNotification(pulse.create_link_hash);
       }
       return;
@@ -1378,7 +1399,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Create */
     const index = pulse.tag[0] as number;
     const event = getVariantByIndex(NotifiableEvent, index) as NotifiableEvent;
-    console.log("handleInboxSignal() Create", pulse.isNew, event, pulse.tag);
+    console.log("handleInboxSignal() Create", pulse.isNew, event, pulse.tag, forAgent.short);
     const notif: ThreadsNotification = {
       event,
       author: pulse.author,
@@ -1387,7 +1408,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       content: ActionId.from(pulse.target),
     };
     /** I got notified by a peer */
-    if (this.cell.address.agentId.equals(base)) {
+    if (isForMe) {
       /** Store Notification */
       const ppAh = await this.fetchPpAhFromNotification(notif);
       /** make sure we have the content signaled in the notification */
@@ -1411,31 +1432,32 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           this._perspective.storeNotification(notif, ppAh);
         }
       }
+      return;
     }
-    else {
-      if (!pulse.isNew || !this.cell.address.agentId.equals(from)) {
-        return;
-      }
-      /** I notified a peer */
-      /** Tip peer that we send them a notification */
-      let extra: NotificationTipBeadData | NotificationTipPpData;
-      if (NotifiableEvent.NewDmThread === event || NotifiableEvent.Fork === event) {
-        console.log("Signaling new PP notification to peer", base, pulse.target);
-        const ppAh = new ActionId(pulse.target.b64);
-        const thread = this._perspective.threads.get(ppAh)!;
-        const ppData: NotificationTipPpData = {pp: thread.pp, creationTime: thread.creationTime};
-        extra = ppData;
-      } else {
-        /** NewBead, Mention, Reply */
-        console.log("Signaling new Bead notification to peer", base, pulse.target);
-        const beadAh = new ActionId(pulse.target.b64);
-        const beadInfo = this._perspective.getBeadInfo(beadAh);
-        const typed = this._perspective.getBead(beadAh);
-        const beadData: NotificationTipBeadData = {typed: dematerializeTypedBead(typed!, beadInfo!.beadType), beadType: beadInfo!.beadType, creationTime: beadInfo!.creationTime};
-        extra = beadData;
-      }
-      await this.castNotificationTip(pulse.create_link_hash, base, notif, extra);
+
+    if (!pulse.isNew || !isLinkFromMe) {
+      return;
     }
+    /** I notified a peer */
+    /** Tip peer that we send them a notification */
+    let extra: NotificationTipBeadData | NotificationTipPpData;
+    if (NotifiableEvent.NewDmThread === event || NotifiableEvent.Fork === event) {
+      console.log("Signaling new PP notification to peer", forAgent, pulse.target);
+      const ppAh = new ActionId(pulse.target.b64);
+      const thread = this._perspective.threads.get(ppAh)!;
+      const ppData: NotificationTipPpData = {pp: thread.pp, creationTime: thread.creationTime};
+      extra = ppData;
+    } else {
+      /** NewBead, Mention, Reply */
+      console.log("Signaling new Bead notification to peer", forAgent, pulse.target);
+      const beadAh = new ActionId(pulse.target.b64);
+      const beadInfo = this._perspective.getBeadInfo(beadAh);
+      const typed = this._perspective.getBead(beadAh);
+      const beadData: NotificationTipBeadData = {typed: dematerializeTypedBead(typed!, beadInfo!.beadType), beadType: beadInfo!.beadType, creationTime: beadInfo!.creationTime};
+      extra = beadData;
+    }
+    await this.castNotificationTip(pulse.create_link_hash, forAgent, notif, extra);
+
   }
 
 

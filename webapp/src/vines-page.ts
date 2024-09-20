@@ -881,7 +881,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case MainViewType.Favorites: break;
       case MainViewType.Files: break;
       case MainViewType.MultiThread:
-      case MainViewType.Thread: {
+      case MainViewType.Thread:
         /** set lastProbeTime for current thread */
         if (maybePrevThreadId) {
           await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
@@ -905,7 +905,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
         this._selectedBeadAh = e.detail.bead;
         this._selectedAgent = e.detail.agent;
-      }
       break;
     }
   }
@@ -996,7 +995,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-page>.render()", this.onlineLoaded, this._selectedThreadHash, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     let uploadState;
@@ -1013,7 +1012,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** render selected thread */
-    if (this._selectedThreadHash && this._mainView == MainViewType.Thread) {
+    if (this._selectedThreadHash && (this._mainView == MainViewType.Thread || this._mainView == MainViewType.MultiThread)) {
       const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");

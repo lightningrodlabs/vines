@@ -27,6 +27,16 @@
             "path": "testdata/billy.png"
             }
           }
+        },
+        {
+          "agentIdx": 3,
+          "agentProfile": {
+            "nickname": "Camille",
+            "avatar": {
+              "type": "filesystem",
+              "path": "testdata/camille.jpg"
+            }
+          }
         }
       ],
       "applets": [
@@ -34,7 +44,7 @@
           "name": "Vines",
           "instanceName": "Vines",
           "registeringAgent": 1,
-          "joiningAgents": [2]
+          "joiningAgents": [2,3]
         }
       ]
     }
