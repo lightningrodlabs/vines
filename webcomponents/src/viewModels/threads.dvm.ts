@@ -65,9 +65,9 @@ export class ThreadsDvm extends DnaViewModel {
 
   private _currentLocation: ActionId | null = null;
 
-  setLocation(loc: ActionId | null) {
+  async setLocation(loc: ActionId | null) {
     this._currentLocation = loc;
-    /*await*/ this.broadcastLocation(this.profilesZvm.perspective.agents);
+    await this.broadcastLocation(this.profilesZvm.perspective.agents);
   };
 
   /** QoL Helpers */

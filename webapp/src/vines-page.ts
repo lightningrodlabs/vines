@@ -236,10 +236,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    // this.addEventListener('beforeunload', (e:any) => {
-    //   console.log("<vines-page> beforeunload", e);
-    //   // await this._dvm.threadsZvm.commitSearchLogs();
-    // });
+    window.addEventListener('beforeunload', async (_e:any) => {
+       await this._dvm.setLocation(null);
+    });
   }
 
   /** -- Properties -- */
@@ -910,7 +909,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this._selectedAgent = e.detail.agent;
       break;
     }
-    this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
+    /*await*/ this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
   }
 
 

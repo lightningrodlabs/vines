@@ -48,7 +48,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
     }
 
     const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, this.hash);
-    console.log("<presence-panel>.render() storePresence agents", agents.length);
+    //console.log("<presence-panel>.render() storePresence agents", agents.length);
     //agents.push(this.cell.address.agentId);
     if (agents.length == 0) {
       return html``;
