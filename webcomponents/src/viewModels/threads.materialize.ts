@@ -6,7 +6,7 @@ import {
   TextBead,
   ThreadsEntryType
 } from "../bindings/threads.types";
-import {WAL} from "@lightningrodlabs/we-applet";
+import {WAL} from "@theweave/api";
 import {ActionId, AgentId, EntryId} from "@ddd-qc/lit-happ";
 import {Timestamp} from "@holochain/client";
 

@@ -8,7 +8,7 @@ import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
 import {sharedStyles} from "../../styles";
-import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {Hrl} from "@theweave/api/dist/types";
 import {intoHrl} from "@ddd-qc/we-utils";
 
 

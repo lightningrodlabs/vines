@@ -1,7 +1,7 @@
 import {
   AppClient,
 } from "@holochain/client";
-import {RecordInfo, WAL} from "@lightningrodlabs/we-applet/dist/types";
+import {RecordInfo, WAL} from "@theweave/api/dist/types";
 
 
 /** */

@@ -1,7 +1,7 @@
 import {ActionId, AnyId, EntryId} from "@ddd-qc/lit-happ";
 import {AgentId} from "@ddd-qc/cell-proxy";
 import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads.types";
-import {WAL} from "@lightningrodlabs/we-applet";
+import {WAL} from "@theweave/api";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
 
 // export type ViewFileEvent = {

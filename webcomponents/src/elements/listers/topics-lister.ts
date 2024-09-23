@@ -8,7 +8,7 @@ import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
-import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {Hrl} from "@theweave/api/dist/types";
 import {intoHrl} from "@ddd-qc/we-utils";
 
 
@@ -25,6 +25,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** -- Properties -- */
 
   @property({type: Boolean}) collapsed?: boolean = false;
+  @property({type: Boolean}) alphabetical?: boolean = false;
 
   @property() showArchivedTopics?: string;
 
@@ -67,7 +68,14 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   override render() {
     console.log("<topics-lister>.render()", this.perspective.semanticTopics);
-    let treeItems = Array.from(this.perspective.semanticTopics.entries()).map(([topicEh, title]) => {
+
+    let topics = Array.from(this.perspective.semanticTopics.entries());
+    if (this.alphabetical) {
+      topics = topics.sort((a, b) => {
+        return a[1].localeCompare(b[1]);
+      });
+    }
+    let treeItems = topics.map(([topicEh, title]) => {
       const isSubjectHidden = this._zvm.perspective.hiddens[topicEh.b64]? this._zvm.perspective.hiddens[topicEh.b64] : false;
       /** Skip if hidden */
       if (isSubjectHidden && !this.showArchivedTopics) {
@@ -79,11 +87,19 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (topicThreads == undefined) {
         topicThreads = [];
       } else {
-        topicThreads = topicThreads.sort((a, b) => {
-          const nameA = this.perspective.threads.get(a)!.name;
-          const nameB = this.perspective.threads.get(b)!.name;
-          return nameA.localeCompare(nameB);
-        });
+        if (this.alphabetical) {
+          topicThreads = topicThreads.sort((a, b) => {
+            const nameA = this.perspective.threads.get(a)!.name;
+            const nameB = this.perspective.threads.get(b)!.name;
+            return nameA.localeCompare(nameB);
+          });
+        } else {
+          topicThreads = topicThreads.sort((a, b) => {
+            const nameA = this.perspective.threads.get(a)!.creationTime
+            const nameB = this.perspective.threads.get(b)!.creationTime;
+            return nameA - nameB
+          });
+        }
         threads = topicThreads.map((ppAh) => {
           const thread = this.perspective.threads.get(ppAh);
           if (!thread) {
@@ -319,11 +335,11 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render all */
     return html`
         ${treeItems}
-        <ui5-button design="Emphasized"
+        <!-- <ui5-button design="Emphasized"
                     style="margin: auto;"
                     @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
             ${msg('Create new Topic')}
-        </ui5-button>
+        </ui5-button> -->
     `
   }
 

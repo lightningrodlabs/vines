@@ -135,7 +135,7 @@ import {
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {NetworkInfo, Timestamp} from "@holochain/client";
-import {FrameNotification, GroupProfile} from "@lightningrodlabs/we-applet";
+import {FrameNotification, GroupProfile} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {getInitials, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";

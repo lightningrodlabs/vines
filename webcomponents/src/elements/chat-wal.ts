@@ -4,14 +4,14 @@ import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {weClientContext} from "../contexts";
-import {AppletInfo} from "@lightningrodlabs/we-applet";
-import {AssetLocationAndInfo} from "@lightningrodlabs/we-applet/dist/types";
+import {AppletInfo} from "@theweave/api";
+import {AssetLocationAndInfo} from "@theweave/api/dist/types";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {weaveUrlToWal} from "../utils";
 import {sharedStyles} from "../styles";
 
-import "@lightningrodlabs/we-elements/dist/elements/wal-embed.js";
+import "@theweave/elements/dist/elements/wal-embed.js";
 import {AnyBeadMat} from "../viewModels/threads.materialize";
 import {msg} from "@lit/localize";
 

@@ -3,7 +3,7 @@ import {customElement, state} from "lit/decorators.js";
 import {consume} from "@lit/context";
 import {msg} from "@lit/localize";
 
-import {CreatableType} from "@lightningrodlabs/we-applet";
+import {CreatableType} from "@theweave/api";
 import {
   ActionId, AnyId,
   DhtId,

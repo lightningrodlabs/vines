@@ -17,7 +17,7 @@ import {AgentId} from "@ddd-qc/lit-happ";
 import {VinesInputEvent} from "../events";
 import {weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlFromWal} from "@theweave/api";
 
 
 /**

@@ -10,7 +10,7 @@ import 'emoji-picker-element';
 import {renderAvatar} from "../render";
 import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {Hrl, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";

@@ -1,6 +1,6 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, dec64, DnaId, DnaElement, EntryId, intoDhtId} from "@ddd-qc/lit-happ";
+import {ActionId, DnaId, DnaElement, intoDhtId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {determineSubjectPrefix} from "../utils";
@@ -22,9 +22,9 @@ import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {sharedStyles} from "../styles";
 import {msg} from "@lit/localize";
 import {codeStyles} from "../markdown/code-css";
-import {WAL} from "@lightningrodlabs/we-applet";
+import {WAL} from "@theweave/api";
 import {InputBar} from "./input-bar";
-import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
+import {Hrl} from "@theweave/api/dist/types";
 
 
 /**
@@ -46,6 +46,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   @property() threadHash?: ActionId;
   /** Enable Input bar */
   @property() showInput: boolean = false
+
+  @property({type: Boolean}) assetview: boolean = false;
 
   /** Subject info */
   @property() subjectName?: string;
@@ -260,9 +262,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
     const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
-    const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
-    const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
-    console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
+    // const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
+    // const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
+    // console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName);
     //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
     let maybeInput = html``;
     if (this.showInput) {
@@ -277,27 +279,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     const titleTip = "Type: " + subjectType;
 
     let openInMainViewBtn = html``;
-    let gotoAppletBtn = html``;
-    if (maybeAppletInfo) {
-      console.log("<comment-thread-view> appletIcon", maybeAppletInfo.appletIcon);
-      if (maybeAppletInfo.appletIcon == "") {
-        gotoAppletBtn = html`
-            <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
-                        icon="journey-depart"
-                        style="margin-right:-5px; transform: rotate(-90deg);"
-                        @click=${(_e:any) => this.weServices?.openAppletMain(dec64(thread.pp.subject.appletId))}>
-            </ui5-button>
-        `;
-      } else {
-        gotoAppletBtn = html`
-            <ui5-button design="Transparent" tooltip=${msg('Open') + " " + appletName}
-                        style="margin-right:-5px; max-width:40px;"
-                        @click=${(_e:any) => this.weServices?.openAppletMain(dec64(thread.pp.subject.appletId))}>
-                <img src=${maybeAppletInfo.appletIcon} alt="${appletName} Icon">
-            </ui5-button>
-        `;
-      }
-    } else {
+    if (!this.assetview) {
       openInMainViewBtn = html`
         <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
                     icon="journey-depart"
@@ -305,9 +287,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                     @click=${(_e:any) => {
                       this.dispatchEvent(threadJumpEvent(this.threadHash!));
                       this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))
-      }}>
-        </ui5-button>
-    `;
+                    }}>
+        </ui5-button>`;
     }
 
     /** render all */
@@ -315,14 +296,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         ${doodle_bg}
         <!-- Title row -->
         <h3 style="margin:10px; color:#021133;">
-          <ui5-button design="Transparent" tooltip=${msg('Close')}
-                      icon="slim-arrow-right"
-                      style="margin-right:-5px;"
-                      @click=${(_e:any) => this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))}>
-          </ui5-button>            
+          ${this.assetview? html`` : html`
+            <ui5-button design="Transparent" tooltip=${msg('Close')}
+                        icon="slim-arrow-right"
+                        style="margin-right:-5px;"
+                        @click=${(_e:any) => this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))}>
+            </ui5-button>`}
           ${openInMainViewBtn}
           <span>${msg('Comments about')}</span>
-          ${gotoAppletBtn}
           <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
                   @click=${(_e:any) => {
@@ -368,7 +349,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
               ${subjectPrefix} ${subjectName}
             </span>
           </sl-tooltip>
-          <ui5-button icon="copy" design="Transparent" tooltip=${msg('Copy comment thread link to clipboard')}
+          <ui5-button icon="chain-link" design="Transparent" tooltip=${msg('Copy comment thread link to clipboard')}
                       style="margin-left:5px;"
                       @click=${(e:any) => {
                           e.stopPropagation(); e.preventDefault();

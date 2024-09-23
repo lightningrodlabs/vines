@@ -1,6 +1,6 @@
 import {AppClient} from "@holochain/client";
-import {AppletHash, WAL} from "@lightningrodlabs/we-applet/dist/types";
-import {WeaveServices} from "@lightningrodlabs/we-applet/dist/api";
+import {AppletHash, WAL} from "@theweave/api/dist/types";
+import {WeaveServices} from "@theweave/api/dist/api";
 //import {asCellProxy} from "@ddd-qc/we-utils";
 //import {FilesProxy} from "@ddd-qc/files";
 import {ParcelDescription} from "@ddd-qc/delivery";

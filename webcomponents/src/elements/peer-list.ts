@@ -28,7 +28,10 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     console.log("<peer-list>.render()", this.perspective);
 
     if (this.perspective.profiles.size === 0) {
-      return html`${msg('no peers found')}`;
+      return html`
+          <div class="folks" style="color: #7d7d7d">
+              ${msg('No peers found')}
+          </div>`;
     }
     /** Build peer list */
     const profiles: [AgentId, ProfileMat, Timestamp][] = [];

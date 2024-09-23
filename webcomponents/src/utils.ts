@@ -5,7 +5,7 @@ import {
   TypedBeadMat
 } from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {AppletId, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@lightningrodlabs/we-applet";
+import {AppletId, Hrl, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@theweave/api";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
@@ -15,7 +15,6 @@ import {ActionId, AgentId, DnaId, EntryId, intoDhtId, DhtId, isHashTypeB64} from
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
-import {Hrl} from "@lightningrodlabs/we-applet/dist/types";
 
 
 /** */

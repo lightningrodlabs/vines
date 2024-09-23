@@ -85,6 +85,7 @@ import "@ui5/webcomponents-icons/dist/comment.js"
 import "@ui5/webcomponents-icons/dist/customer.js"
 import "@ui5/webcomponents-icons/dist/document.js"
 import "@ui5/webcomponents-icons/dist/document-text.js"
+import "@ui5/webcomponents-icons/dist/download-from-cloud.js"
 import "@ui5/webcomponents-icons/dist/decline.js"
 import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/developer-settings.js"
@@ -134,6 +135,7 @@ import "@ui5/webcomponents-icons/dist/share-2.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
+import "@ui5/webcomponents-icons/dist/time-account.js"
 import "@ui5/webcomponents-icons/dist/thing-type.js"
 import "@ui5/webcomponents-icons/dist/user-edit.js"
 import "@ui5/webcomponents-icons/dist/upload-to-cloud.js"
@@ -203,7 +205,7 @@ import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
 import {NetworkInfo, Timestamp,} from "@holochain/client";
 
-import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -267,6 +269,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowLeft = true;
   @state() private _listerToShow: string | null = "topics-option";
   @state() private _collapseAll: boolean = false;
+  @state() private _canAlphabetical: boolean = false;
   @state() private _canViewArchivedSubjects = false;
   @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we dont know which thread from which tool to use
   @state() private _createTopicHash: EntryId | undefined = undefined;
@@ -334,8 +337,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('favorites', this.onFavorites);
     // @ts-ignore
     this.addEventListener('view', this.onViewFile);
-
   }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     // @ts-ignore
@@ -1189,7 +1192,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <my-threads-lister ?collapsed=${this._collapseAll}
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this._selectedThreadHash}
-                         @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                          @createThreadClicked=${(e : CustomEvent<EntryId>) => {
           this._createTopicHash = e.detail;
           this.createThreadDialogElem.show()
@@ -1198,10 +1200,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       break;
       case "topics-option":
         lister = this.multi? html`` : html`
-            <topics-lister ?collapsed=${this._collapseAll}
+            <topics-lister ?collapsed=${this._collapseAll} ?alphabetical=${this._canAlphabetical}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
-                           @createNewTopic=${(_e: CustomEvent<boolean>) => this.createTopicDialogElem.show()}
                            @createThreadClicked=${(e: CustomEvent<EntryId>) => {
                                this._createTopicHash = e.detail;
                                this.createThreadDialogElem.show();
@@ -1356,9 +1357,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; border-radius: 10px; margin-right: 5px">
                     <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => this._collapseAll = false}></ui5-button>                    
                     <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => this._collapseAll = true}></ui5-button>
-                    <ui5-button icon="alphabetical-order" design="Transparent" style="height:18px;" tooltip=${msg("Sort alphabetically")}></ui5-button>                    
+                    <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" style="height:18px;" tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
                     <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" tooltip=${msg("View/Hide Archived")} @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
                     <ui5-button icon="accept" design="Transparent" style="height:18px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
+                    ${this._listerToShow == "topics-option" ? html`
+                        <ui5-button icon="add" design="Transparent" style="height:18px;" tooltip=${msg("Create new Topic")} 
+                                    @click=${(_e:any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
                     </div>
                 </div>
     `;
@@ -1456,6 +1460,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @item-click=${(e: any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
+                        <ui5-menu-item id="syncItem" text=${msg("Probe peers for content")} icon="download-from-cloud" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
@@ -1887,6 +1892,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         break;
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
+      case "syncItem":
+        await this._filesDvm.probeAll();
+        await this._dvm.probeAll();
+        toasty(msg(`Done probing peers`));
+      break;
       case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
       case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); break;
       case "dumpFilesItem": this._filesDvm.dumpCallLogs(); this._filesDvm.dumpSignalLogs(); break;

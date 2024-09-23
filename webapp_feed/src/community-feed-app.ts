@@ -9,7 +9,7 @@ import {
   InstalledAppId,
   ZomeName,
 } from "@holochain/client";
-import {AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@lightningrodlabs/we-applet";
+import {AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal, WeaveServices} from "@theweave/api";
 import {
   ActionId,
   AgentId,

@@ -1,7 +1,7 @@
 import {createDefaultWeServicesMock, setup} from "@ddd-qc/we-utils";
 import {createVinesApplet} from "./createVinesApplet";
 import {ThreadsEntryType} from "@vines/elements";
-import {AppletServices} from "@lightningrodlabs/we-applet";
+import {AppletServices} from "@theweave/api";
 import {creatables} from "./appletServices/creatables";
 import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {setupVinesEntryView, devtestNames} from "./devtest";

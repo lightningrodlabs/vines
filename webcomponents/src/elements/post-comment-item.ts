@@ -22,7 +22,7 @@ import {renderAvatar} from "../render";
 import {filesContext, weClientContext} from "../contexts";
 import {codeStyles} from "../markdown/code-css";
 import {sharedStyles} from "../styles";
-import {Hrl, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {Hrl, weaveUrlFromWal} from "@theweave/api";
 import {ShowEmojiEvent, ShowProfileEvent} from "../events";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 

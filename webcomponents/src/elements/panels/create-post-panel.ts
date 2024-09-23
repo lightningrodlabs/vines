@@ -12,7 +12,7 @@ import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.t
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
-import {weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {weaveUrlFromWal} from "@theweave/api";
 import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
 import {SpecialSubjectType} from "../../events";
 

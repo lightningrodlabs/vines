@@ -7,7 +7,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {filesContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlFromWal} from "@theweave/api";
 import {DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {determineSubjectName, weaveUrlToWal, hrl2Id} from "../../utils";

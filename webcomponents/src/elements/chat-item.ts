@@ -17,7 +17,7 @@ import {
 } from "../events";
 import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
-import {Hrl, weaveUrlToWAL} from "@lightningrodlabs/we-applet";
+import {Hrl, weaveUrlToWAL} from "@theweave/api";
 import {FilesDvm} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
@@ -48,6 +48,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @property() hash!: ActionId;
 
   @property() prevBeadAh?: ActionId;
+
+  @property({type: Boolean}) assetview: boolean = false;
 
   @property({type: Boolean}) shortmenu: boolean = false;
 

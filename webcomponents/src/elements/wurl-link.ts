@@ -4,7 +4,7 @@ import {ActionId, EntryId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {consume} from "@lit/context";
 import {filesContext, weClientContext} from "../contexts";
-import {WAL, WeaveUrl} from "@lightningrodlabs/we-applet";
+import {WAL, WeaveUrl} from "@theweave/api";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ppName, weaveUrlToWal, hrl2Id} from "../utils";

@@ -1,6 +1,6 @@
 import {
   CreatableName, CreatableType,
-} from "@lightningrodlabs/we-applet";
+} from "@theweave/api";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiPost} from "@mdi/js";
 

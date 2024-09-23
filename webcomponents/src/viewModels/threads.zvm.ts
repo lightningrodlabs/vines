@@ -66,7 +66,7 @@ import {
   TypedContent,
 } from "./threads.materialize";
 import {TimeInterval} from "./timeInterval";
-import {WAL, weaveUrlFromWal} from "@lightningrodlabs/we-applet";
+import {WAL, weaveUrlFromWal} from "@theweave/api";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {Decoder, Encoder} from "@msgpack/msgpack";
 import {getThisAppletId, parseMentions, weaveUrlToWal} from "../utils";

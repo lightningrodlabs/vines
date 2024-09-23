@@ -1,7 +1,7 @@
 import {createDefaultWeServicesMock, setup} from "@ddd-qc/we-utils";
 import {createFeedApplet} from "./createFeedApplet";
 import {ThreadsEntryType} from "@vines/elements";
-import {AppletServices} from "@lightningrodlabs/we-applet";
+import {AppletServices} from "@theweave/api";
 import {creatables} from "./appletServices/creatables";
 import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {setupFeedEntryView, devtestNames} from "./devtest";

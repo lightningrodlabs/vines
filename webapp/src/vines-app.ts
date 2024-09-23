@@ -11,7 +11,7 @@ import {
 import {
   AppletView, CreatableName, Hrl, WAL, weaveUrlFromWal,
   WeaveServices,
-} from "@lightningrodlabs/we-applet";
+} from "@theweave/api";
 import {
   HCL,
   HappMultiElement,
@@ -408,7 +408,7 @@ export class VinesApp extends HappMultiElement {
             case ThreadsEntryType.ParticipationProtocol:
               const ppAh = new ActionId(dhtId.b64);
               console.log("asset ppAh:", ppAh);
-              view = html`<comment-thread-view style="height: 100%;" showInput="true" .threadHash=${ppAh}></comment-thread-view>`;
+              view = html`<comment-thread-view assetview .threadHash=${ppAh}  style="height: 100%;" showInput="true"></comment-thread-view>`;
             break;
             case ThreadsEntryType.EncryptedBead:
             case ThreadsEntryType.TextBead:
@@ -416,7 +416,7 @@ export class VinesApp extends HappMultiElement {
             case ThreadsEntryType.EntryBead:
                 const beadAh = new ActionId(dhtId.b64);
                 // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
-                view = html`<chat-item .hash=${beadAh} shortmenu></chat-item>`;
+                view = html`<chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
               break
             default:
               throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);

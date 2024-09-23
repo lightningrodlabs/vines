@@ -6,7 +6,7 @@ import {
 import {
   RenderInfo,
   WeaveServices,
-} from "@lightningrodlabs/we-applet";
+} from "@theweave/api";
 
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
 

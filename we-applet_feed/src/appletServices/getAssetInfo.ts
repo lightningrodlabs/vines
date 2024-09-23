@@ -8,11 +8,11 @@ import {
 import {asCellProxy} from "@ddd-qc/we-utils";
 import {ActionId, pascal} from "@ddd-qc/cell-proxy";
 import {devtestNames} from "../devtest";
-import {AssetInfo, WAL} from "@lightningrodlabs/we-applet";
+import {AssetInfo, WAL} from "@theweave/api";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiComment, mdiCommentBookmark, mdiCommentText} from "@mdi/js";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
-import {RecordInfo} from "@lightningrodlabs/we-applet/dist/types";
+import {RecordInfo} from "@theweave/api/dist/types";
 
 /** */
 export async function getAssetInfo(
