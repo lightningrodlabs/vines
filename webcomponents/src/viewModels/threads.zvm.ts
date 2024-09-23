@@ -56,7 +56,7 @@ import {
   NotifiableEvent,
   NotificationTipBeadData,
   NotificationTipPpData,
-  TextBeadMat,
+  TextBeadMat, ThreadsAppTip,
   ThreadsNotification,
   ThreadsNotificationTip,
   TypedBaseBead,
@@ -1209,7 +1209,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       data: extra,
     }
     console.log("castNotificationTip()", notificationTip, agent/*, notification.author*/);
-    const serTip = this._encoder.encode(notificationTip);
+    const notifTip: ThreadsAppTip = {type: "notification", data: notificationTip};
+    const serTip = this._encoder.encode(notifTip);
     await this.broadcastTip({App: serTip}, [agent]);
     return;
   }
@@ -1518,8 +1519,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  override handleAppTip(appTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
-    const notifTip = this._decoder.decode(appTip) as ThreadsNotificationTip;
+  override handleAppTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
+    const appTip = this._decoder.decode(serTip) as ThreadsAppTip;
+    if (appTip.type != "notification") {
+      return;
+    }
+    const notifTip = appTip.data;
     console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from);
     let ppAh: ActionId = notifTip.pp_ah;
     let signal: ZomeSignalProtocol | undefined = undefined;

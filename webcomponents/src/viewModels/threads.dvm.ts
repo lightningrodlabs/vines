@@ -22,11 +22,11 @@ import {
 } from "../bindings/threads.types";
 import {
   BaseBeadType, bead2base,
-  BeadType, EncryptedBeadContent, ThreadsNotification, ThreadsNotificationTip,
+  BeadType, EncryptedBeadContent, ThreadsAppTip, ThreadsNotification, ThreadsNotificationTip,
   TypedContent,
 } from "./threads.materialize";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
-import {Decoder} from "@msgpack/msgpack";
+import {Decoder, Encoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -34,8 +34,8 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 /** */
 export interface ThreadsDnaPerspective {
-  /* agent -> Timestamp */
-  agentPresences: AgentIdMap<number>,
+  /* agentId -> (Timestamp, threadAh) */
+  agentPresences: AgentIdMap<[number, ActionId | null]>,
   /** ppAh -> string */
   threadInputs: ActionIdMap<String>,
   /** ppAh -> Timestamp */
@@ -60,7 +60,15 @@ export class ThreadsDvm extends DnaViewModel {
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
+  private _encoder= new Encoder(HOLOCHAIN_ID_EXT_CODEC);
   private _decoder = new Decoder(HOLOCHAIN_ID_EXT_CODEC);
+
+  private _currentLocation: ActionId | null = null;
+
+  setLocation(loc: ActionId | null) {
+    this._currentLocation = loc;
+    /*await*/ this.broadcastLocation(this.profilesZvm.perspective.agents);
+  };
 
   /** QoL Helpers */
   get profilesZvm(): ProfilesAltZvm {
@@ -122,12 +130,36 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  private storePresence(from: AgentId) {
+  private storePresence(from: AgentId, thread?: ActionId | null) {
+    if (this.cell.address.agentId.equals(from)) {
+      return;
+    }
+    console.log("storePresence()", from.short, thread);
     const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
-    //console.log("Updating presence of", from, currentTimeInSeconds);
-    this._perspective.agentPresences.set(from, currentTimeInSeconds);
-    this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
-    this.notifySubscribers();
+    let latest: [number, ActionId | null] = [currentTimeInSeconds, thread !== undefined? thread : null];
+    let current = this._perspective.agentPresences.get(from);
+    if (!current) {
+      /** First time presence */
+      current = latest;
+      /** Ask for location */
+      if (thread === undefined) {
+        const locTip: ThreadsAppTip = {type: "where", data: this._currentLocation};
+        const serTip = this._encoder.encode(locTip);
+        /*await*/ this.threadsZvm.broadcastTip({App: serTip}, [from]);
+      }
+    } else {
+      /** Update only if newer */
+      if (latest[0] < current[0]) {
+        return;
+      }
+      if (thread === undefined) {
+        current[0] = currentTimeInSeconds;
+      } else {
+        current = latest;
+      }
+    }
+    this._perspective.agentPresences.set(from, current);
+    //this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
   }
 
 
@@ -157,6 +189,16 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
+  private async broadcastLocation(to?: AgentId[]) {
+    const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
+    const serTip = this._encoder.encode(locTip);
+    //const agents = from? [from] : this.allCurrentOthers();
+    const agents = to? to : this.allCurrentOthers();
+    console.log("broadcastLocation() storePresence to", agents);
+    await this.threadsZvm.broadcastTip({App: serTip}, agents);
+  }
+
+
   /** */
   private async handleTip(tip: TipProtocol, from: AgentId) {
     // /* Send pong response */
@@ -173,18 +215,32 @@ export class ThreadsDvm extends DnaViewModel {
       case "Pong":
         break;
       case "App": {
-        const serNotifTip = (tip as TipProtocolVariantApp).App;
-        const notifTip = this._decoder.decode(serNotifTip) as ThreadsNotificationTip;
-        console.log("handleTip() notifTip", notifTip);
-        const notif: ThreadsNotification = {
-          //eventIndex: notifTip.event_index,
-          event: notifTip.event,
-          createLinkAh: notifTip.link_ah,
-          author: notifTip.author,
-          timestamp: notifTip.timestamp,
-          content: new ActionId(notifTip.content.b64),
+        const serAppTip = (tip as TipProtocolVariantApp).App;
+        const appTip = this._decoder.decode(serAppTip) as ThreadsAppTip;
+        console.log("handleTip() appTip", appTip);
+        switch (appTip.type) {
+          case "where":
+            const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
+            if (locTip.data) this.storePresence(from, locTip.data);
+            const serTip = this._encoder.encode(locTip);
+            await this.threadsZvm.broadcastTip({App: serTip}, [from]);
+          break;
+          case "location":
+            this.storePresence(from, appTip.data);
+          break;
+          case "notification":
+            const notifTip: ThreadsNotificationTip = appTip.data;
+            const notif: ThreadsNotification = {
+              //eventIndex: notifTip.event_index,
+              event: notifTip.event,
+              createLinkAh: notifTip.link_ah,
+              author: notifTip.author,
+              timestamp: notifTip.timestamp,
+              content: new ActionId(notifTip.content.b64),
+            }
+            this._perspective.signaledNotifications.push(notif);
+          break;
         }
-        this._perspective.signaledNotifications.push(notif);
       }
       break;
       default:
@@ -206,20 +262,22 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  allCurrentOthers(startingAgents: AgentId[] ): AgentId[] {
-    const agents = startingAgents;
-    console.log("allCurrentOthers", agents)
-    console.log("allCurrentOthers", this._perspective.agentPresences)
+  allCurrentOthers(startingAgents?: AgentId[], thread?: ActionId): AgentId[] {
+    const agents = startingAgents? startingAgents : Array.from(this._perspective.agentPresences.keys());
+    console.log("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread);
     const currentTime: number = Math.floor(Date.now() / 1000);
-    const keysB64 = agents
+    const filtered = agents
       .filter((key) => !key.equals(this.cell.address.agentId))
       .filter((key) => {
-        const lastPingTime = this._perspective.agentPresences.get(key);
-        if (!lastPingTime) return false;
-        return (currentTime - lastPingTime) < 5 * 60; // 5 minutes
+        const pair = this._perspective.agentPresences.get(key);
+        if (!pair) return false;
+        if (thread) {
+          if (pair[1] == null || !pair[1]?.equals(thread)) return false;
+        }
+        return (currentTime - pair[0]) < 5 * 60; // 5 minutes
       });
-    console.log({keysB64});
-    return keysB64;
+    console.log("allCurrentOthers() filtered = ", filtered.length);
+    return filtered;
   }
 
 

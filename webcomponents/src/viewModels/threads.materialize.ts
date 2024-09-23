@@ -35,8 +35,20 @@ export enum NotifiableEvent {
   NewDmThread = 'NewDmThread',
 }
 
+
+export type ThreadsAppTip = {
+  type: "notification"
+  data: ThreadsNotificationTip,
+} | {
+  type: "where"
+  data: ActionId | null,
+} | {
+  type: "location",
+  data: ActionId | null
+}
+
 /**  */
-export interface ThreadsNotificationTip {
+export type ThreadsNotificationTip  = {
   event: NotifiableEvent,
   author: AgentId,
   timestamp: Timestamp,

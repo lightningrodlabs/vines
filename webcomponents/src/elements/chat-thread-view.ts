@@ -312,13 +312,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all (in reverse) */
     return html`
-      <div id="main">
         <!-- <div>${this._renderCount}</div> -->
         ${chatItems.reverse()}
         ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
         ${maybeHeader}
-      </div>
-      <presence-panel .hash=${this.threadHash}></presence-panel>
     `;
   }
 
@@ -333,23 +330,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       sharedStyles,
       css`
         :host {
-          height: 100%;
-          position: relative;
-        }
-
-        presence-panel {
-          position: absolute;
-          top: 20px;
-          right: 30px;
-        }
-        
-        #main {
           flex:1;
           overflow-y: scroll;
           display: flex;
           flex-direction: column-reverse;
           /*gap:15px;*/
           height: inherit;
+          max-height: 100%;
           font-family: '72-Light';
         }
       `,

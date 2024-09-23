@@ -4,7 +4,7 @@ import {localized, msg} from '@lit/localize';
 
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {loadProfile, renderAvatar, renderProfileAvatar,} from "../../render";
-import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+//import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ShowProfileEvent} from "../../events";
 
@@ -24,17 +24,17 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
 
   @property({type: Boolean}) opened: boolean = false;
 
-  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  threadsPerspective!: ThreadsPerspective;
-
-
-  /** */
-  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    if (oldDvm) {
-      oldDvm.threadsZvm.unsubscribe(this);
-    }
-    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-  }
+  // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  // threadsPerspective!: ThreadsPerspective;
+  //
+  //
+  // /** */
+  // protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+  //   if (oldDvm) {
+  //     oldDvm.threadsZvm.unsubscribe(this);
+  //   }
+  //   newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+  // }
 
 
   /** -- Methods -- */
@@ -47,9 +47,9 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
       return html``;
     }
 
-    const agents: AgentId[] = [];
-    console.log("<presence-panel>.render() agents", agents.length);
-
+    const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, this.hash);
+    console.log("<presence-panel>.render() storePresence agents", agents.length);
+    //agents.push(this.cell.address.agentId);
     if (agents.length == 0) {
       return html``;
     }
@@ -98,7 +98,6 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
       `;
     }
 
-
     /** */
     return html`${all}`;
   }
@@ -124,13 +123,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
         align-items: center;
         cursor: pointer;
       }
-
-      #close:hover {
-        cursor: pointer;
-        /*text-decoration: underline;*/
-        color: rgba(34, 34, 245, 0.98);
-      }
-
+      
       #big-group {
         padding: 3px 8px;        
         display: flex;
@@ -139,6 +132,12 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
         margin: 10px;
         min-width: 200px;
         min-height: 100px;
+      }
+
+      #close:hover {
+        cursor: pointer;
+        /*text-decoration: underline;*/
+        color: rgba(34, 34, 245, 0.98);
       }
       
     `]

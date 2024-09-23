@@ -910,6 +910,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this._selectedAgent = e.detail.agent;
       break;
     }
+    this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
   }
 
 
@@ -1060,6 +1061,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             : html`<chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
 
         centerSide = html`
+            <presence-panel .hash=${this._selectedThreadHash}></presence-panel>
             ${threadView}
             ${uploadState? html`
               <div id="uploadCard">
@@ -1148,7 +1150,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._selectedThreadHash) {
       notifSetting = this._dvm.threadsZvm.perspective.getNotifSetting(this._selectedThreadHash, this.cell.address.agentId);
     }
-    console.log("<vines-page>.render() notifSettings", notifSetting, this._selectedThreadHash);
+    //console.log("<vines-page>.render() notifSettings", notifSetting, this._selectedThreadHash);
 
     /** Group Info */
     let groupProfile: GroupProfile = {
@@ -2018,8 +2020,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           overflow: auto;
           display: flex;
           flex-direction: column;
+          /*position: relative;*/
         }
 
+        presence-panel {
+          position: absolute;
+          top: 50px;
+          right: 30px;
+        }
+        
         #favoritesSide {
           flex-direction: column;
           min-width: 350px;
