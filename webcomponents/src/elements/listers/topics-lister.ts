@@ -105,7 +105,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           if (!thread) {
             return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
           }
-          console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
+          //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
           const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
           const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);

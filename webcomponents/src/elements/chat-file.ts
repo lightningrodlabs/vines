@@ -12,6 +12,7 @@ import {toasty} from "../toast";
 import {sharedStyles} from "../styles";
 import {EntryBeadMat} from "../viewModels/threads.materialize";
 import {ViewEmbedEvent} from "../events";
+import {ActionHashB64} from "@holochain/client";
 
 
 let instanceCount = 0;
@@ -25,13 +26,13 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     instanceCount += 1;
-    //console.debug("ChatFile.instanceCount", instanceCount);
+    //console.debug("<chat-file>.ctor()", this.hash);
   }
 
   /** -- Properties -- */
 
   /** Hash of File bead to display */
-  @property() hash!: ActionId; // BeadAh
+  @property() hash!: ActionHashB64; // BeadAh. For some reason Lit errors if we use ActionId here.
 
   @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -49,7 +50,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     /** Load file when hash changed */
-    if (changedProperties.has("hash") || !this._manifest) {
+    // @ts-ignore: _dvm for first update
+    if (changedProperties.has("hash")  || changedProperties.has("_dvm")) {
       this._canRetry = true;
       /* await */ this.loadFileData();
     }
@@ -60,14 +62,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   private async loadFileData() {
     console.log("<chat-file>.loadFile()", !!this._filesDvm, this.hash);
     this._loading = true;
-    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
+    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
-      console.warn("<chat-file> Bead not found", this.hash);
+      console.warn("<chat-file>.loadFile() Bead not found", this.hash);
       return;
     }
     try {
       const manifestEh = entryBead.sourceEh;
-      console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash.short);
+      console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
       if (!this._manifest || this._manifest.description.size > this._filesDvm.dnaProperties.maxChunkSize) {
         this._loading = false;
@@ -106,7 +108,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       //reader.readAsDataURL(this._maybeFile);
       reader.readAsArrayBuffer(this._file);
     } catch(e:any) {
-      console.warn("Loading file failed:", this.hash.b64, e);
+      console.warn("Loading file failed:", this.hash, e);
       this._loading = false;
       this._file = null;
     }
@@ -145,13 +147,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
               <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
                       @click=${async (e:any) => {
                           e.stopPropagation(); e.preventDefault();
-                          await this.probeForFileManifest(manifestEh);
+                          const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
+                          if (entryBead) {
+                            await this.probeForFileManifest(entryBead.sourceEh);
+                          }
                       }}>
                   ${msg('Unknown File')}
               </ui5-li>
           </ui5-list>`;
     }
-    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
+    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
     }

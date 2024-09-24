@@ -252,7 +252,7 @@ export class ThreadsPerspective {
 
   /** */
   getAllNotificationsForPp(argPpAh: ActionId): [ActionId, ThreadsNotification][] {
-    console.log("getAllNotificationsForPp()", argPpAh, this.inbox);
+    console.debug("getAllNotificationsForPp()", argPpAh, this.inbox);
     let result: [ActionId, ThreadsNotification][] = [];
     for (const [linkAh, [ppAh, notif]] of this.inbox.entries()) {
       if (argPpAh.equals(ppAh)) {

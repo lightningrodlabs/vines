@@ -1072,18 +1072,25 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         let content: TypedContent | EntryBeadMat | EncryptedBeadContent;
         switch(beadInfo.beadType) {
           case ThreadsEntryType.EncryptedBead: {
-            const encBead = typedBead as EncryptedBead;
-            const otherAgent: AgentId = beadInfo.author.b64 != this.cell.address.agentId.b64
-              ? beadInfo.author
-              : new AgentId(this._perspective.threads.get(beadInfo.bead.ppAh)!.pp.subject.address);
-            content = {encBead, otherAgent};
+            /** Don't do encrypted beads */
+            continue;
+            // const encBead = typedBead as EncryptedBead;
+            // const otherAgent: AgentId = beadInfo.author.b64 != this.cell.address.agentId.b64
+            //   ? beadInfo.author
+            //   : new AgentId(this._perspective.threads.get(beadInfo.bead.ppAh)!.pp.subject.address);
+            // content = {encBead, otherAgent};
           } break;
           case ThreadsEntryType.TextBead: content = (typedBead as TextBeadMat).value; break;
           //case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat).sourceEh; break;
           case ThreadsEntryType.EntryBead: content = (typedBead as EntryBeadMat); break;
           case ThreadsEntryType.AnyBead:
             const typedAny = typedBead as AnyBeadMat;
-            content = weaveUrlToWal(typedAny.value);
+            try {
+              content = weaveUrlToWal(typedAny.value);
+            } catch(e) {
+              console.warn("weaveUrlToWal() failed during import & publish:", e);
+              continue;
+            }
             break;
         }
         /* Publish bead */
@@ -1103,7 +1110,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       /* Break loop if no progress made */
       const totalEnd = ppAhMapping.size + beadAhMapping.size;
       if (totalEnd == totalStart) {
-        console.warn("PubImp() Publish loop ended because no progress made: " + totalEnd + " / " + sortedPps.length + sortedBeads.length);
+        console.warn("PubImp() Publish loop ended because no progress made: " + totalEnd + " / " + (sortedPps.length + sortedBeads.length));
         break;
       }
       loopCount += 1

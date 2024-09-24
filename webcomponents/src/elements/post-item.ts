@@ -227,7 +227,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       postContent = html`<chat-text class="contentItem" .hash=${this.hash}></chat-text>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
-      postContent = html`<chat-file class="contentItem" .hash=${this.hash}></chat-file>`;
+      postContent = html`<chat-file class="contentItem" .hash=${this.hash.b64}></chat-file>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
       postContent = html`<chat-wal class="contentItem" .hash=${this.hash}></chat-wal>`;

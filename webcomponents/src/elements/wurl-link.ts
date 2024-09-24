@@ -174,18 +174,15 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   renderBadLink() {
     return html`
-      <abbr .title=${this.wurl}>
-          <ui5-badge design="Set1" color-scheme="2" style="color:#b50202"
+      <abbr .title=${this.wurl}><ui5-badge design="Set1" color-scheme="2" style="color:#b50202"
           @click=${(_e:any) => {
               navigator.clipboard.writeText(this.wurl);
               if (this.weServices) {
                   this.weServices.walToPocket(weaveUrlToWal(this.wurl));
               }
               toasty(msg("Copied WAL to clipboard"));
-          }}>
-            ${msg('Unknown HRL')}
-          </ui5-badge>
-      </abbr>`;
+          }}>${msg('Unknown HRL')}</ui5-badge></abbr>
+    `;
   }
 
 

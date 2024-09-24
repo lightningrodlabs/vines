@@ -276,7 +276,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       downloadItem = html`<ui5-menu-item id="downloadItem" icon="copy" text=${msg("Copy Text")}></ui5-menu-item>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
-      item = html`<chat-file class="${itemClass}" .hash=${this.hash}></chat-file>`;
+      item = html`<chat-file class="${itemClass}" .hash=${this.hash.b64}></chat-file>`;
       downloadItem = html`<ui5-menu-item id="downloadItem" icon="download" text=${msg("Download File")}></ui5-menu-item>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {

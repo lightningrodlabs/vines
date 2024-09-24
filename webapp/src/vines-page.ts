@@ -639,16 +639,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
     /** Grab AssetInfo for all AnyBeads */
-    for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
-      if (beadInfo.beadType != ThreadsEntryType.AnyBead) {
-        continue;
-      }
-      const anyBead = typed as AnyBeadMat;
-      const wal = weaveUrlToWal(anyBead.value);
-      if (!this.weServices.assetInfoCached(wal)) {
-        const maybe = await this.weServices.assetInfo(wal);
-        if (maybe) {
-          this.requestUpdate();
+    if (this.weServices) {
+      for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
+        if (beadInfo.beadType != ThreadsEntryType.AnyBead) {
+          continue;
+        }
+        const anyBead = typed as AnyBeadMat;
+        const wal = weaveUrlToWal(anyBead.value);
+        if (!this.weServices.assetInfoCached(wal)) {
+          const maybe = await this.weServices.assetInfo(wal);
+          if (maybe) {
+            this.requestUpdate();
+          }
         }
       }
     }
