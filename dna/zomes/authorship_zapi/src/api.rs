@@ -3,6 +3,7 @@ use zome_utils::*;
 
 
 ///
+#[hdk_extern]
 pub fn get_original_author(ah: ActionHash)  -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
     let maybe_response = call(CallTargetCell::Local, "zAuthorship", "get_author".into(), None, ah);
     let Ok(response) = maybe_response else {

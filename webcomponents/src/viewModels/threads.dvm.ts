@@ -414,7 +414,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
-    console.debug("import perspective", this.authorshipZvm.perspective);
+    //console.debug("import perspective", this.authorshipZvm.perspective);
 
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     this.profilesZvm.import(JSON.stringify(profiles), canPublish);

@@ -8,6 +8,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"entry_defs", 
 	"get_zome_info", 
 	"get_dna_info",
+	"get_original_author",
 	"publish_any_bead",
 	"fetch_any_bead",
 	"fetch_many_any_beads",

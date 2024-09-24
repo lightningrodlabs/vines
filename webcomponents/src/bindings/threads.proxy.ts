@@ -91,6 +91,10 @@ export class ThreadsProxy extends ZomeProxy {
   static override readonly ENTRY_TYPES = Object.values(ThreadsUnitEnum);
   static override readonly LINK_TYPES = Object.values(ThreadsLinkType);
  
+  async getOriginalAuthor(ah: ActionArray): Promise<[Timestamp, AgentArray] | null> {
+    return this.call('get_original_author', ah);
+  }
+
   async publishAnyBead(input: AddAnyBeadInput): Promise<[ActionArray, string, Timestamp]> {
     return this.callBlocking('publish_any_bead', input);
   }

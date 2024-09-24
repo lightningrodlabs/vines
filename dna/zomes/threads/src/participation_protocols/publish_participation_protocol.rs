@@ -35,18 +35,32 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     LinkTag::new(pp.purpose),
     // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
+
   /// Link from Subject Hash to PP
+  /// Handle AgentPubKey edge case
   let raw_subject_hash = holo_hash_decode_unchecked(&pp.subject.address)
     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  let subject_hash = AnyLinkableHash::from_raw_39(raw_subject_hash)
-    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  create_link(
-    subject_hash,
-    pp_ah.clone(),
-    ThreadsLinkType::Threads,
-    ts2Tag(index_time), // Store index-time in Tag
-    //str2tag(&ta.anchor), // Store Anchor in Tag
-  )?;
+  if pp.subject.type_name == "AgentPubKey" {
+    let subject_hash = HoloHash::<hash_type::Agent>::from_raw_39(raw_subject_hash)
+      .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+    create_link(
+      subject_hash,
+      pp_ah.clone(),
+      ThreadsLinkType::Threads,
+      ts2Tag(index_time), // Store index-time in Tag
+      //str2tag(&ta.anchor), // Store Anchor in Tag
+    )?;
+  } else {
+    let subject_hash = AnyLinkableHash::from_raw_39(raw_subject_hash)
+      .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
+    create_link(
+      subject_hash,
+      pp_ah.clone(),
+      ThreadsLinkType::Threads,
+      ts2Tag(index_time), // Store index-time in Tag
+      //str2tag(&ta.anchor), // Store Anchor in Tag
+    )?;
+  }
   /// Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;

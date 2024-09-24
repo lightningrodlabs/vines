@@ -67,7 +67,7 @@ import {
 } from "./threads.materialize";
 import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
-import {prettyTimestamp} from "@ddd-qc/files";
+//import {prettyTimestamp} from "@ddd-qc/files";
 import {Decoder, Encoder} from "@msgpack/msgpack";
 import {getThisAppletId, parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
@@ -954,15 +954,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async publishAllFromSnapshot(snapshot: ThreadsSnapshot, authorshipZvm: AuthorshipZvm) {
+    console.debug("PubImp() START");
+
     /** Reset */
     this._perspective = new ThreadsPerspectiveMutable();
 
-    /** SemanticTopics */
+    /** -- SemanticTopics -- */
+    /** Publish each Topic */
     for (const [_topicEh, title] of Object.values(snapshot.semanticTopics)) {
       /* const newTopicEh = */ await this.publishSemanticTopic(title);
     }
 
-    /** Subjects */
+    /** -- Subjects -- */
+    /** Create mapping between subject hash and subject type */
     const ppAhs = snapshot.pps.map((tuple) => tuple[0]);
     const entryAsSubjects: Dictionary<ThreadsEntryType> = {};
     for (const [subjectHash, _subject] of Object.values(snapshot.subjects)) {
@@ -980,25 +984,26 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       // Check if its an ActionHash?
       // or check on export if ppAh has "threads" link off of it and add that to the perspective?
     }
+    console.debug("PubImp() entryAsSubjects", entryAsSubjects);
 
     /** -- Threads & Beads -- */
     const ppAhMapping: ActionIdMap<ActionId> = new ActionIdMap();
-    /* Sort by creation time */
-    const sortedPps: [ActionId, ParticipationProtocol, Timestamp, AgentId][] = Object.values(snapshot.pps).sort(
-      ([_ppAhA, _ppA, creationTimeA], [_ppAhB, _ppB, creationTimeB]) => {
-        return creationTimeA - creationTimeB
-      }).map(([a, b, c, d]) => [new ActionId(a), b, c, new AgentId(d)])
     const beadAhMapping: ActionIdMap<ActionId> = new ActionIdMap();
-    /* Sort beads so they can get their prev bead equivalent ah */
+    /* Sort PPs by creation time */
+    const sortedPps: [ActionId, ParticipationProtocol, Timestamp, AgentId][] = Object.values(snapshot.pps)
+      .sort(([_ppAhA, _ppA, creationTimeA], [_ppAhB, _ppB, creationTimeB]) => {return creationTimeA - creationTimeB})
+      .map(([a, b, c, d]) => [new ActionId(a), b, c, new AgentId(d)])
+    /* Sort Beads by creation time, so they can get their prev bead mapped ah */
     const sortedBeads: [string, BeadInfo, TypedBeadMat][] = Object.values(snapshot.beads).sort(
       ([_beadAhA, beadInfoA, _typedBeadA], [_beadAhB, beadInfoB, _typedBeadB]) => {
         return beadInfoA.creationTime - beadInfoB.creationTime
       })
     /* loop until all beads & pps have been processed ; check if progress is made, otherwise abort */
     let loopCount = 0;
-    while(ppAhMapping.size != sortedPps.length && beadAhMapping.size != sortedBeads.length ) {
+    while(ppAhMapping.size != sortedPps.length && beadAhMapping.size != sortedBeads.length) {
       const totalStart = ppAhMapping.size + beadAhMapping.size;
-      /* Threads */
+      console.debug(`PubImp() Loop ${loopCount}: PP: ${ppAhMapping.size}/${sortedPps.length} | Beads: ${beadAhMapping.size}/${sortedBeads.length}`);
+      /* Threads: Publish & Map */
       for (const [ppAh, pp, creationTime, _a] of Object.values(sortedPps)) {
         if (ppAhMapping.get(ppAh)) {
           continue;
@@ -1020,20 +1025,20 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             pp.subject.address = newSubjectHash.b64;
           }
         }
-        /* publish pp */
+        /* Publish pp */
         const [pp_ah, _ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         const newPpAh = new ActionId(pp_ah);
         ppAhMapping.set(ppAh, newPpAh);
+        /* Publish author of new ppAh */
         let authorshipLog = authorshipZvm.perspective.getAuthor(ppAh);
-        if (!authorshipLog) {
+        if (authorshipLog) {
+          await authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, newPpAh, authorshipLog[0], authorshipLog[1]);
+        } else {
           authorshipLog = [creationTime, this.cell.address.agentId];
         }
-        /* store pp */
+        /* Store pp */
         this._perspective.storeThread(this.cell, newPpAh, pp, authorshipLog[0], authorshipLog[1], false);
-        /** commit authorshipLog for new pp */
-        if (authorshipZvm.perspective.getAuthor(ppAh) != undefined) {
-          await authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, newPpAh, authorshipLog[0], authorshipLog[1]);
-        }
+        console.log(`PubImp() PP ${ppAh.short} -> ${newPpAh.short}`, authorshipLog[0]);
       }
       // FIXME: use Promise.AllSettled();
 
@@ -1043,22 +1048,27 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (beadAhMapping.get(beadAh)) {
           continue;
         }
-        console.log("PubImp() Bead", prettyTimestamp(beadInfo.creationTime), beadAh);
+        //console.debug("PubImp() Bead", prettyTimestamp(beadInfo.creationTime), beadAh.short);
         /* Grab pp mapping */
-        if (!ppAhMapping.get(beadInfo.bead.ppAh)) {
-          console.warn("PubImp() Pp not found in mapping", beadInfo.bead.ppAh);
+        const newPpAh = ppAhMapping.get(beadInfo.bead.ppAh);
+        if (!newPpAh) {
+          console.warn("PubImp() bead aborted. Pp mapping not found.", beadInfo.bead.ppAh);
           continue;
         }
+        //console.debugdebug(`PubImp() Bead newPpAh: ${newPpAh.short}`);
         /* Grab prev bead mapping */
-        let prevBeadAh = beadInfo.bead.ppAh;
-        if (beadInfo.bead.prevBeadAh.b64 != beadInfo.bead.ppAh.b64) {
-          const prevKnownBeadAh = beadAhMapping.get(beadInfo.bead.prevBeadAh);
-          if (!prevKnownBeadAh) {
-            console.warn("PubImp() Missing prev Bead", beadInfo.bead.prevBeadAh);
-            continue;
-          }
+        let newPrevBeadAh: ActionId | undefined = undefined;
+        if (beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
+          newPrevBeadAh = newPpAh;
+        } else {
+          newPrevBeadAh = beadAhMapping.get(beadInfo.bead.prevBeadAh);
         }
-        /* Determine typed bead content */
+        if (!newPrevBeadAh) {
+          console.warn("PubImp() Missing prev Bead", beadInfo.bead.prevBeadAh);
+          continue;
+        }
+        const nextBead: Bead = {ppAh: newPpAh.hash, prevBeadAh: newPrevBeadAh.hash};
+        /* Determine Bead content */
         let content: TypedContent | EntryBeadMat | EncryptedBeadContent;
         switch(beadInfo.beadType) {
           case ThreadsEntryType.EncryptedBead: {
@@ -1076,10 +1086,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             content = weaveUrlToWal(typedAny.value);
             break;
         }
-        /* Publish */
-        const newPpAh = ppAhMapping.get(beadInfo.bead.ppAh)!;
-        console.log(`PubImp() Bead newPpAh: ${newPpAh}`);
-        const nextBead: Bead = {ppAh: newPpAh.hash, prevBeadAh: prevBeadAh.hash};
+        /* Publish bead */
         let authorshipLog = authorshipZvm.perspective.getAuthor(beadAh);
         if (!authorshipLog) {
           authorshipLog = [beadInfo.creationTime, this.cell.address.agentId];
@@ -1087,11 +1094,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const beadType = beadInfo.beadType == ThreadsEntryType.EntryBead ? "EntryBeadImport" : beadInfo.beadType as BeadType; // copy entry bead verbatim
         const [newBeadAh, _global_time_anchor, _newTm] = await this.publishTypedBeadAt(beadType, content, nextBead, authorshipLog[0], authorshipLog[1]);
         beadAhMapping.set(beadAh, newBeadAh);
-        /** commit authorshipLog for new beads */
+        /** Publish authorship for new bead */
         if (authorshipZvm.perspective.getAuthor(beadAh) != undefined) {
           await authorshipZvm.ascribeTarget(beadInfo.beadType, newBeadAh, beadInfo.creationTime, beadInfo.author);
         }
-        console.log(`PubImp() Bead ${beadAh.short} -> ${newBeadAh.short}`, authorshipLog[0]);
+        console.debug(`PubImp() Bead ${beadAh.short} -> ${newBeadAh.short}`, authorshipLog[0]);
       }
       /* Break loop if no progress made */
       const totalEnd = ppAhMapping.size + beadAhMapping.size;
@@ -1101,27 +1108,30 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       loopCount += 1
     }
-    console.log(`PubImp() looped ${loopCount} times. pps: ${ppAhMapping.size} ; beads: ${beadAhMapping.size}`);
+    console.debug(`PubImp() looped ${loopCount} times. pps: ${ppAhMapping.size} ; beads: ${beadAhMapping.size}`);
     //console.log("PubImp() beads", this.perspective.beads);
 
-    /** EmojiReactions */
+    /** -- EmojiReactions -- */
+    /** Publish each reaction link with bead mapping */
     for (const [beadAhB64, pairs] of Object.values(snapshot.emojiReactions)) {
       const beadAh = new ActionId(beadAhB64);
       for (const [author, emojis] of pairs) {
-        if (!beadAhMapping.get(beadAh)) {
+        const newBeadAh = beadAhMapping.get(beadAh);
+        if (!newBeadAh) {
           console.warn("PubImp() Bead not found in mapping", beadAh);
           continue;
         }
-        const bead_ah = beadAhMapping.get(beadAh)!.hash;
+        const new_bead_ah = newBeadAh!.hash;
         const from = new AgentId(author).hash;
         for (const emoji of emojis) {
-          await this.zomeProxy.publishReaction({bead_ah, from, emoji});
+          await this.zomeProxy.publishReaction({bead_ah: new_bead_ah, from, emoji});
           ///*const succeeded =*/await this.storeEmojiReaction(beadAh, author, emoji);
         }
       }
     }
 
-    /** Favorites */
+    /** -- Favorites -- */
+    /** Publish each Favorite link with bead mapping */
     for (const oldBeadAh of snapshot.favorites) {
       const newBeadAh = beadAhMapping.get(new ActionId(oldBeadAh));
       if (!newBeadAh) {
@@ -1131,7 +1141,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       await this.addFavorite(newBeadAh);
     }
 
-    /** Hidden */
+    /** -- Hidden -- */
+    /** Publish each hidden link with mapping if it's an EntryHash */
     for (const anyHashB64 of snapshot.hiddens) {
       const anyHash = intoDhtId(anyHashB64);
       if (anyHash.hashType == HoloHashType.Entry) {
@@ -1148,7 +1159,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
     /** other */
-    await this.pullAllSubjects();
+    await this.pullAllSubjects(); // ?? better to call probeAll ??
   }
 
 
@@ -1307,7 +1318,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const encBead = this._decoder.decode(pulse.bytes) as TypedBead;
         if (StateChangeType.Create == pulse.state) {
           try {
-            await this.handleBeadEntry(pulse, encBead, pulse.entryType, pulse.isNew, from);
+            await this.handleBeadEntryPulse(pulse, encBead, from);
           } catch(_e) {
             /** skip encryptedBead not for me */
           }
@@ -1458,20 +1469,22 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       extra = beadData;
     }
     await this.castNotificationTip(pulse.create_link_hash, forAgent, notif, extra);
-
   }
 
 
   /** */
-  private async handleBeadEntry(pulse: EntryPulseMat, typed: TypedBead, beadType: BeadType, isNew: boolean, from: AgentId): Promise<void> {
+  private async handleBeadEntryPulse(pulse: EntryPulseMat, typed: TypedBead, from: AgentId): Promise<void> {
     const beadAh = pulse.ah;
+    const beadType = pulse.entryType as BeadType;
     const typedMat = materializeTypedBead(typed, beadType);
     console.log("handleBeadEntry()", beadType, pulse.ah.short, typedMat);
     /** Store Bead */
-    await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, pulse.author, isNew);
+    const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
+    const author = maybe? new AgentId(maybe[1]) : pulse.author;
+    await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.isNew);
     /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
-    if (isNew && this.cell.address.agentId.equals(from)) {
+    if (pulse.isNew && this.cell.address.agentId.equals(from)) {
       /** Get base info */
       let ppAh: ActionId;
       let prevBeadAh: ActionId;
