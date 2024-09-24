@@ -77,6 +77,7 @@ import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./
 import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {ThreadsDvm} from "./threads.dvm";
 
 
 //generateSearchTest();
@@ -126,7 +127,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const snapshot = JSON.parse(json, holoIdReviver) as ThreadsSnapshot;
     console.log("Importing perspective", snapshot);
     if (canPublish) {
-      /*await*/ this.publishAllFromSnapshot(snapshot, authorshipZvm);
+      this._canNotify = false;
+      /*await*/ this.publishAllFromSnapshot(snapshot, authorshipZvm).then(() => {
+        this._canNotify = true;
+        this.notifySubscribers();
+        (this._dvmParent as ThreadsDvm).importDone();
+      });
       return;
     }
     /** Done */
@@ -291,15 +297,23 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async pullSubjectThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
     console.log("threadsZvm.pullSubjectThreads()", subjectId);
     let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
+    /** Skip Agent as it has dm link type to get its pps*/
+    if (subjectId.hashType == HoloHashType.Agent) {
+      return res;
+    }
     const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = new ActionId(pp_ah);
-      const maybe = await this.zomeProxy.fetchPp(pp_ah);
-      if (maybe) {
-        const [pp, ts, author] = maybe;
-        res.set(ppAh, [pp, ts, new AgentId(author)]);
-      } else {
-        console.warn("ParticipationProtocol not found", ppAh.b64);
+      try {
+        const maybe = await this.zomeProxy.fetchPp(pp_ah);
+        if (maybe) {
+          const [pp, ts, author] = maybe;
+          res.set(ppAh, [pp, ts, new AgentId(author)]);
+        } else {
+          console.warn("ParticipationProtocol not found", ppAh.b64);
+        }
+      } catch(e) {
+        continue;
       }
     }
     return res;
@@ -380,8 +394,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /**  */
   async pullNotifSettings(ppAh: ActionId): Promise<[AgentId, NotifySetting, ActionId][]> {
     //this._perspective.notifSettings.delete(ppAh);
-    const notifSettings = await this.zomeProxy.pullPpNotifySettings(ppAh.hash);
-    return notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
+    try {
+      const notifSettings = await this.zomeProxy.pullPpNotifySettings(ppAh.hash);
+      return notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
+    } catch(e) {
+      return [];
+    }
   }
 
 
@@ -649,15 +667,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (maybeThread) {
       return [maybeThread.pp, maybeThread.creationTime, maybeThread.author];
     }
-    const maybe = await this.zomeProxy.fetchPp(ppAh.hash);
-    if (!maybe) {
-      console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
+    try {
+      const maybe = await this.zomeProxy.fetchPp(ppAh.hash);
+      if (!maybe) {
+        console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
+        return null;
+      }
+      const [pp, ts, author] = maybe;
+      console.log("ThreadsZvm.fetchPp() pp", pp);
+      //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
+      return [pp, ts, new AgentId(author)];
+    } catch(e) {
       return null;
     }
-    const [pp, ts, author] = maybe;
-    console.log("ThreadsZvm.fetchPp() pp", pp);
-    //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
-    return [pp, ts, new AgentId(author)];
   }
 
 
@@ -1432,7 +1454,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       const ppAh = await this.fetchPpAhFromNotification(notif);
       /** make sure we have the content signaled in the notification */
       if (ppAh) {
-        /*await*/ this.fetchPp(ppAh); // We should probably fetch it for futur use
+         /*await*/ this.fetchPp(ppAh); // We should probably fetch it for futur use
         /** Publish a NotifySetting.AllMessages for this thread if non exists */
         if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
           const ppAh = new ActionId(notif.content.b64);

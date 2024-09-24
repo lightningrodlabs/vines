@@ -252,7 +252,7 @@ export class ThreadsPerspective {
 
   /** */
   getAllNotificationsForPp(argPpAh: ActionId): [ActionId, ThreadsNotification][] {
-    console.debug("getAllNotificationsForPp()", argPpAh, this.inbox);
+    //console.debug("getAllNotificationsForPp()", argPpAh, this.inbox);
     let result: [ActionId, ThreadsNotification][] = [];
     for (const [linkAh, [ppAh, notif]] of this.inbox.entries()) {
       if (argPpAh.equals(ppAh)) {
@@ -530,7 +530,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       if (!innerPair) {
-        throw Error("Missong innerPair argument");
+        throw Error("Missing innerPair argument");
       }
       this.decBeads.set(beadAh, innerPair);
     }
@@ -828,7 +828,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         beadInfo.author = authorshipLog[1];
       }
       //this.storeTypedBead(beadAh, typedBead, beadInfo.beadType, authorshipLog[0], authorshipLog[1], true);
-      this.storeTypedBead(beadAh, beadInfo, typedBead, true);
+      if (beadInfo.beadType != ThreadsEntryType.EncryptedBead) {
+        this.storeTypedBead(beadAh, beadInfo, typedBead, true);
+      }
       // TODO handle decBeads
     }
     console.log("import() beads", this.beads);

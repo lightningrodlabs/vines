@@ -44,6 +44,8 @@ export interface ThreadsDnaPerspective {
   initialGlobalProbeLogTs: Timestamp;
   /** */
   signaledNotifications: ThreadsNotification[],
+
+  importing: boolean,
 }
 
 
@@ -102,6 +104,7 @@ export class ThreadsDvm extends DnaViewModel {
     initialThreadProbeLogTss: new ActionIdMap(),
     initialGlobalProbeLogTs:  0,
     signaledNotifications: [],
+    importing: false,
   }
 
 
@@ -409,7 +412,10 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async importPerspective(json: string, canPublish: boolean) {
-    console.debug("Dvm.importPerspective()", json)
+    console.debug("Dvm.importPerspective()", json);
+    this._perspective.importing = true;
+    this.notifySubscribers();
+
     const external = JSON.parse(json) as any;
 
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
@@ -423,6 +429,11 @@ export class ThreadsDvm extends DnaViewModel {
     this.threadsZvm.import(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
 
     /** */
+    this.notifySubscribers();
+  }
+
+  importDone() {
+    this._perspective.importing = false;
     this.notifySubscribers();
   }
 }

@@ -1003,6 +1003,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("<vines-page>.render()", this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
+    if (this.perspective.importing) {
+      return html`<div>Importing...</div>`;
+    }
+
     let uploadState;
     if (this._splitObj) {
       uploadState = this._filesDvm.perspective.uploadStates[this._splitObj.dataHash];
@@ -1813,6 +1817,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** */
   private importDvm(canPublish: boolean) {
     console.log("importDvm()");
     var input = document.createElement('input');
