@@ -65,10 +65,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   private _currentLocation: ActionId | null = null;
 
-  async setLocation(loc: ActionId | null) {
-    this._currentLocation = loc;
-    await this.broadcastLocation(this.profilesZvm.perspective.agents);
-  };
+
 
   /** QoL Helpers */
   get profilesZvm(): ProfilesAltZvm {
@@ -82,6 +79,14 @@ export class ThreadsDvm extends DnaViewModel {
   get authorshipZvm(): AuthorshipZvm {
     return this.getZomeViewModel(AuthorshipZvm.DEFAULT_ZOME_NAME) as AuthorshipZvm;
   }
+
+
+  /** -- Setters -- */
+
+  async setLocation(loc: ActionId | null) {
+    this._currentLocation = loc;
+    await this.broadcastLocation(this.profilesZvm.perspective.agents);
+  };
 
 
   /** -- Perspective -- */
@@ -141,9 +146,9 @@ export class ThreadsDvm extends DnaViewModel {
     if (!current) {
       /** First time presence */
       current = latest;
-      /** Ask for location */
+      /** Ask or share location */
       if (thread === undefined) {
-        const locTip: ThreadsAppTip = {type: "where", data: this._currentLocation};
+        const locTip: ThreadsAppTip = {type: thread === undefined? "where" : "location", data: this._currentLocation};
         const serTip = this._encoder.encode(locTip);
         /*await*/ this.threadsZvm.broadcastTip({App: serTip}, [from]);
       }
