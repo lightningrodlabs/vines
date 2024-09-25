@@ -1083,8 +1083,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           style="border:none; padding:0px"
                           @click=${(_e:any) => {this._currentCommentRequest = undefined;}}></ui5-button>
             </div>
-            <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}">
-                ${msg("Replying to")} ${maybeReplyAuthorName}
+            <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}; background: #6f6f6f2e;">
+                ${msg("Replying to")}<span style="font-weight: bold; color:#4270A8; margin-left:3px;">${maybeReplyAuthorName}</span>
                 <div style="flex-grow: 1"></div>
                 <ui5-button icon="decline" design="Transparent"
                             style="border:none; padding:0px"

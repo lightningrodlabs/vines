@@ -93,21 +93,18 @@ export class InputBar extends LitElement {
   /**  */
   onPaste(e: ClipboardEvent) {
     e.preventDefault();
-    console.log("<vines-input-bar>.onPaste()", e);
-
+    //console.log("<vines-input-bar>.onPaste()", e);
     const text = e.clipboardData?.getData('text/plain');
-
     if (text) {
-      console.log('<vines-input-bar>.onPaste() text:', text);
+      //console.log('<vines-input-bar>.onPaste() text:', text);
       this.setValue(this.value + text);
       return;
     }
 
     const items = e.clipboardData?.items;
-
     if (items) {
       for (let i = 0; i < items.length; i++) {
-        console.log("<vines-input-bar>.onPaste()", items[i]!.type);
+        //console.log("<vines-input-bar>.onPaste()", items[i]!.type);
         //if (items[i]!.type.indexOf('image') !== -1) {
           const blob = items[i]!.getAsFile();
           if (blob) {
@@ -117,7 +114,6 @@ export class InputBar extends LitElement {
         //}
       }
     }
-
   }
 
   /** -- Methods -- */

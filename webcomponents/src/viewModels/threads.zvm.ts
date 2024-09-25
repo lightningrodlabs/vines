@@ -466,17 +466,22 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       //thread = this._threads.get(ppAh);
     }
     /** Probe the latest beads */
-    const [searchedInterval, beadLinks] = await this.zomeProxy.findLatestBeads(
-      {pp_ah: ppAh.hash, begin_time, end_time, target_limit} as GetLatestBeadsInput);
-    /** Cache them */
-    await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval));
-    /** Check if beginning of time reached */
-    console.log("pullLatestBeads() begin", searchedInterval.begin, thread.creationTime);
-    if (searchedInterval.begin <= thread.creationTime) {
-      thread.setHasSearchedOldestBead();
+    try {
+      const [searchedInterval, beadLinks] = await this.zomeProxy.findLatestBeads(
+        {pp_ah: ppAh.hash, begin_time, end_time, target_limit} as GetLatestBeadsInput);
+      /** Cache them */
+      await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval));
+      /** Check if beginning of time reached */
+      console.log("pullLatestBeads() begin", searchedInterval.begin, thread.creationTime);
+      if (searchedInterval.begin <= thread.creationTime) {
+        thread.setHasSearchedOldestBead();
+      }
+      /** Done */
+      return beadLinks;
+    } catch(e) {
+      /* throttle */
+      return [];
     }
-    /** Done */
-    return beadLinks;
   }
 
 
