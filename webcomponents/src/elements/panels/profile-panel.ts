@@ -105,7 +105,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
       :host {
         display: flex;
         flex-direction: column;
-        min-width: 280px;
+        min-width: 330px;
       }
 
       h3 {
