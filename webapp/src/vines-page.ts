@@ -603,18 +603,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       for (const appletId of appletIds) {
         /* const _appletInfo = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
-      /** notifyFrame of some new content */
-      const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
-      if (allCount > 0) {
-        this.weServices.notifyFrame([{
-          title: "New content",
-          body: "",
-          notification_type: "content",
-          icon_src: wrapPathInSvg(mdiInformationOutline),
-          urgency: 'medium',
-          timestamp: Date.now(),
-      }]);
-      }
     }
     this.requestUpdate();
     /** */
@@ -652,6 +640,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             this.requestUpdate();
           }
         }
+      }
+      /** notifyFrame of some new content: FIXME move to zvm? */
+      const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
+      //console.warn("<vines-page>.updated() weServices", allCount);
+      if (allCount > 0) {
+        this.weServices.notifyFrame([{
+          title: "Unread content",
+          body: "",
+          notification_type: "content",
+          icon_src: wrapPathInSvg(mdiInformationOutline),
+          urgency: 'medium',
+          timestamp: Date.now(),
+        }]);
       }
     }
 
@@ -1166,9 +1167,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /* Use weServices, otherise try from dna properties */
     if(this.weServices) {
       const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletIds[0]!));
-      console.log("get appletInfo", appletInfo);
+      //console.log("get appletInfo", appletInfo);
       if (appletInfo) {
-        console.log("get groupProfile", appletInfo.groupsHashes[0]);
+        //console.log("get groupProfile", appletInfo.groupsHashes[0]);
         const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]!));
         if (weGroup) {
           groupProfile = weGroup;

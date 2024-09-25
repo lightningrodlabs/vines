@@ -417,7 +417,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Probe all emojis on this bead */
   async pullEmojiReactions(beadAh: ActionId) {
-    await this.zomeProxy.pullReactions(beadAh.hash);
+    try {
+      await this.zomeProxy.pullReactions(beadAh.hash);
+    } catch(e) {/* throttle */}
   }
 
 
