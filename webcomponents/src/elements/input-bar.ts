@@ -90,6 +90,7 @@ export class InputBar extends LitElement {
     this.removeEventListener('paste', this.onPaste);
   }
 
+  /**  */
   onPaste(e: ClipboardEvent) {
     e.preventDefault();
     console.log("<vines-input-bar>.onPaste()", e);
@@ -107,14 +108,13 @@ export class InputBar extends LitElement {
     if (items) {
       for (let i = 0; i < items.length; i++) {
         console.log("<vines-input-bar>.onPaste()", items[i]!.type);
-        if (items[i]!.type.indexOf('image') !== -1) {
-
+        //if (items[i]!.type.indexOf('image') !== -1) {
           const blob = items[i]!.getAsFile();
           if (blob) {
             this._file = blob;
             return;
           }
-        }
+        //}
       }
     }
 
