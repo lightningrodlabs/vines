@@ -880,6 +880,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this._selectedBeadAh = undefined;
     this._selectedAgent = undefined;
 
+    /** Cache and reset input-bar */
+    const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+    if (inputBar && maybePrevThreadId) {
+      //console.warn("<vines-page>.onJump() Storing input-bar:", inputBar.value, maybePrevThreadId.short)
+      this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
+      inputBar.setValue("");
+    }
+
     /** Set new state */
     this._mainView = e.detail.type;
     switch(e.detail.type) {
@@ -894,12 +902,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
           for (const [linkAh, _notif] of prevThreadNotifs) {
             await this._dvm.threadsZvm.deleteNotification(linkAh);
-          }
-          /** Cache and reset input-bar */
-          const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
-          if (inputBar) {
-            this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
-            inputBar.setValue("");
           }
         }
         if (!e.detail.thread && e.detail.bead) {

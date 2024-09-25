@@ -124,6 +124,10 @@ export class InputBar extends LitElement {
 
   /** */
   protected override async firstUpdated(_changedProperties: PropertyValues) {
+    /* Set cached input */
+    if (this.inputElem && this.inputElem.value == "" && this.cachedInput != "") {
+      this.inputElem.value = this.cachedInput;
+    }
     /** Fiddle with shadow parts CSS */
     const inputBar = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
     if (inputBar) {
@@ -143,11 +147,6 @@ export class InputBar extends LitElement {
 
   /** */
   override updated() {
-    if (this.inputElem && this.inputElem.value == "" && this.cachedInput != "") {
-      this.inputElem.value = this.cachedInput;
-      //console.log("<vines-input-var> (jump) updated to", this.cachedInput);
-      //this.requestUpdate();
-    }
     if (this.background) {
       const elem = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
       elem.style.background = this.background;
