@@ -138,6 +138,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Done */
     this._perspective.restore(snapshot, authorshipZvm, this.cell);
     this.notifySubscribers();
+    (this._dvmParent as ThreadsDvm).importDone();
   }
 
 

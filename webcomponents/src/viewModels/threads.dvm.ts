@@ -412,7 +412,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async importPerspective(json: string, canPublish: boolean) {
-    console.debug("Dvm.importPerspective()", json);
+    //console.debug("Dvm.importPerspective()", json);
     this._perspective.importing = true;
     this.notifySubscribers();
 

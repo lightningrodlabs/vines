@@ -53,6 +53,21 @@ export interface ThreadsSnapshot {
 }
 
 
+function print(self: ThreadsSnapshot): void {
+  console.log("ThreadSnapshot:");
+  console.log("  -       appletIds:", self.appletIds.length);
+  console.log("  -        subjects:", self.subjects.length);
+  console.log("  -  semanticTopics:", self.semanticTopics.length);
+  console.log("  -         hiddens:", self.hiddens.length);
+  console.log("  -       favorites:", self.favorites.length);
+  console.log("  -             pps:", self.pps.length);
+  console.log("  -           beads:", self.beads.length);
+  console.log("  -  emojiReactions:", self.emojiReactions.length);
+  console.log("  - appletSubjTypes:", self.appletSubjectTypes.length);
+  console.log("  -       favorites:", self.favorites.length);
+}
+
+
 /** */
 export class ThreadsPerspective {
   /** */
@@ -465,7 +480,7 @@ export class ThreadsPerspective {
       emojiReactions.push([beadAh.b64, agents]);
     }
     /** -- Done -- */
-    return {
+    const result: ThreadsSnapshot = {
       appletIds: this.appletIds.map((id) => id.b64),
       subjects: Array.from(this.subjects.entries()),
       semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicEh, title]) => [topicEh.b64, title]),
@@ -476,6 +491,8 @@ export class ThreadsPerspective {
       emojiReactions,
       appletSubjectTypes,
     };
+    print(result);
+    return result;
   }
 }
 
@@ -754,6 +771,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   restore(snapshot: ThreadsSnapshot, authorshipZvm: AuthorshipZvm, cell: Cell) {
+    print(snapshot);
     /** Clear Notifications */
     this.globalProbeLogTs = 0;
     this.inbox.clear();
@@ -833,25 +851,40 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       }
       // TODO handle decBeads
     }
-    console.log("import() beads", this.beads);
+    //console.log("import() beads", this.beads);
     /** this._emojiReactions */
     this.emojiReactions.clear();
-    console.log("import() emojiReactions", snapshot.emojiReactions);
+    //console.log("import() emojiReactions", snapshot.emojiReactions);
     for (const [beadAhB64, pairs] of snapshot.emojiReactions) {
       const beadAh = new ActionId(beadAhB64);
       if (!this.emojiReactions.get(beadAh)) {
         this.emojiReactions.set(beadAh, new AgentIdMap());
       }
       for (const [agentB64, emojis] of pairs) {
-        console.log("import() emojiReaction", agentB64, emojis);
+        //console.log("import() emojiReaction", agentB64, emojis);
         const agent = new AgentId(agentB64);
         this.emojiReactions.get(beadAh)!.set(agent, emojis);
       }
     }
     /** this.favorites */
-    this.favorites = snapshot.favorites.map((b64) => new ActionId(b64))
+    this.favorites = snapshot.favorites.map((b64) => new ActionId(b64));
+    /** */
+    this.print();
   }
 
+
+  print(): void {
+    console.log("ThreadsPerspective:");
+    console.log("  -       appletIds:", this.appletIds.length);
+    console.log("  - appletSubjTypes:", this.appletSubjectTypes.size);
+    console.log("  -        subjects:", this.subjects.size);
+    console.log("  -  semanticTopics:", this.semanticTopics.size);
+    console.log("  -         hiddens:", Object.keys(this.hiddens).length);
+    console.log("  -       favorites:", this.favorites.length);
+    console.log("  -         threads:", this.threads.size);
+    console.log("  -           beads:", this.beads.size);
+    console.log("  -  emojiReactions:", this.emojiReactions.size);
+  }
 }
 
 
