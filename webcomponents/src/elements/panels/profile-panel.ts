@@ -76,17 +76,23 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div style="display: flex; flex-direction:row; align-items:center;">
               <h3>${this._profile.nickname}</h3>
               <div style="flex-grow:1;"></div>
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash.b64} @click=${(_e:any) => {navigator.clipboard.writeText(this.hash.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash.b64} 
+                          @click=${(_e:any) => {
+                            navigator.clipboard.writeText(this.hash.b64); 
+                            toasty(msg("Copied AgentPubKey to clipboard"));
+                          }}></ui5-button>
             </div>
             <hr style="width: 100%"/>
             <h5>${msg('Language')}</h5>
             <div class="info">${this._profile.fields['lang']}</div>
             <h5>${msg('Member since')}</h5>
             <div class="info">${ts2day(timestamp)}</div>
-            ${!this.hash.equals(this.cell.address.agentId)? html`<vines-input-bar
+            ${!this.hash.equals(this.cell.address.agentId)? html`
+              <vines-input-bar
                     .profilesZvm=${this._zvm}
                     .topic=${this._profile.nickname}
-            ></vines-input-bar>`:html``}
+                ></vines-input-bar>
+            `:html``}
           </div>
           <div style="position:absolute; top:10px; left:10px">${avatar}</div>
     `;

@@ -6,6 +6,9 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {inputBarStyleTemplate, suggestionListTemplate} from "../styles";
 
+
+import Input from "@ui5/webcomponents/dist/Input";
+
 import "@ui5/webcomponents/dist/TextArea.js";
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
@@ -39,6 +42,8 @@ export class InputBar extends LitElement {
   @state() private _file: File | undefined = undefined;
   @state() private _wal: WAL | undefined = undefined;
 
+  @state() private _isEditing: boolean = false;
+
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
 
@@ -57,7 +62,6 @@ export class InputBar extends LitElement {
     return this.shadowRoot!.getElementById("pop") as unknown as Popover;
   }
 
-
   get value(): string {
     //console.log("<vines-input-var>.value()", this.inputElem? this.inputElem.value : "<no elem>");
     if (this.inputElem) {
@@ -72,6 +76,49 @@ export class InputBar extends LitElement {
     }
   }
 
+
+  /** Handle 'jump' event */
+  override connectedCallback() {
+    super.connectedCallback();
+    // @ts-ignore
+    this.addEventListener('paste', this.onPaste);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    // @ts-ignore
+    this.removeEventListener('paste', this.onPaste);
+  }
+
+  onPaste(e: ClipboardEvent) {
+    e.preventDefault();
+    console.log("<vines-input-bar>.onPaste()", e);
+
+    const text = e.clipboardData?.getData('text/plain');
+
+    if (text) {
+      console.log('<vines-input-bar>.onPaste() text:', text);
+      this.setValue(this.value + text);
+      return;
+    }
+
+    const items = e.clipboardData?.items;
+
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        console.log("<vines-input-bar>.onPaste()", items[i]!.type);
+        if (items[i]!.type.indexOf('image') !== -1) {
+
+          const blob = items[i]!.getAsFile();
+          if (blob) {
+            this._file = blob;
+            return;
+          }
+        }
+      }
+    }
+
+  }
 
   /** -- Methods -- */
 
@@ -106,6 +153,11 @@ export class InputBar extends LitElement {
       elem.style.background = this.background;
       elem.style.borderRadius = "20px";
     }
+
+    const maybeEdit = this.shadowRoot!.getElementById("filename-input") as Input;
+    if (maybeEdit) {
+      maybeEdit.focus();
+    }
   }
 
   /** */
@@ -132,6 +184,7 @@ export class InputBar extends LitElement {
     this._cacheInputValue = "";
     this._file = undefined;
     this._wal = undefined;
+    this._isEditing = false;
   }
 
 
@@ -249,6 +302,22 @@ export class InputBar extends LitElement {
     }
   }
 
+
+  /** */
+  async onEditFile() {
+    if (!this._file) {
+      return;
+    }
+    const input = this.shadowRoot!.getElementById("filename-input") as Input;
+    const name = input.value.trim();
+    this._file = new File([this._file!], name, {
+      type: this._file!.type,
+      lastModified: this._file!.lastModified,
+    });
+    this._isEditing = false;
+  }
+
+
   /** */
   override render() {
     console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal, this.profilesZvm);
@@ -349,11 +418,19 @@ export class InputBar extends LitElement {
 
     let fileElem = html``;
     if (this._file) {
+      const fileNameElem = this._isEditing
+        ? html`<ui5-input id="filename-input" .value=${this._file.name} @change=${(_e:any) => this.onEditFile()}></ui5-input>`
+        : html`<div>${this._file.name}</div>`;
+
       fileElem = html`
-          <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
-              File: ${this._file.name}
-              <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
-                          @click=${(_e:any) => this._file = undefined}></ui5-button>
+          <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc; display: flex; flex-direction: row; align-items: center; margin-bottom: 3px;">
+              <div style="margin-right:5px;">${msg("File")}:</div>
+              ${fileNameElem}
+              <ui5-button class="fileIcon" icon="edit" design="Transparent" tooltip=${msg('Rename file')}
+                          style="margin-left:10px;"
+                          @click=${(_e:any) => this._isEditing = !this._isEditing}></ui5-button>
+              <ui5-button class="fileIcon trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
+                          @click=${(_e:any) => {this._file = undefined; this._isEditing = false;}}></ui5-button>
           </div>
       `;
     }
@@ -420,6 +497,10 @@ export class InputBar extends LitElement {
   static override get styles() {
     return [
       css`
+        :host {
+          background: beige;
+        }
+
         ui5-avatar {
           margin-top: 9px;
           margin-left: 15px;
@@ -428,6 +509,14 @@ export class InputBar extends LitElement {
         #pop {
           /*background: #e3e3e3;*/
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+        }
+
+        #filename-input {
+          /*color: rgba(28, 79, 248, 0.75);*/
+          width: auto;
+          max-height: 18px;
+          background: #a7636312;
+          border: none;
         }
 
         #inputBar {
@@ -444,11 +533,14 @@ export class InputBar extends LitElement {
           padding: 0px;
         }
 
-        .trash {
-          color: #ec4b7a;
+        .fileIcon {
           padding: 0px;
           margin: 0px;
           height: 20px;
+        }
+
+        .trash {
+          color: #ec4b7a;
         }
 
         .trash:hover {

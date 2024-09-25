@@ -1088,7 +1088,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             style="border:none; padding:0px"
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
-            <vines-input-bar id="input-bar"
+            <vines-input-bar id="input-bar" contenteditable="true"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}

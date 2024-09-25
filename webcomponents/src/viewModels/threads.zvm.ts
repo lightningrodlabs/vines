@@ -274,12 +274,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.log("threadsZvm.probeAllAppletIds()")
     // const appletIds = await this.zomeProxy.getApplets();
     // this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
-    const entryB64s = await this.zomeProxy.pullApplets();
-    const list = entryB64s.map((b64) => new EntryId(b64));
-    this._perspective.storeAllAppletIds(list);
-    console.log("threadsZvm.probeAllAppletIds() list", list);
-    this.notifySubscribers();
-    return list;
+    try {
+      const entryB64s = await this.zomeProxy.pullApplets();
+      const list = entryB64s.map((b64) => new EntryId(b64));
+      this._perspective.storeAllAppletIds(list);
+      console.log("threadsZvm.probeAllAppletIds() list", list);
+      this.notifySubscribers();
+      return list;
+    } catch(e) {
+      /** Throttled */
+      return this._perspective.appletIds;
+    }
   }
 
 
@@ -432,7 +437,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return [];
     }
     /** Probe */
-    const [interval, beadLinks] = await this.zomeProxy.findBeads(ppAh.hash);
+    let maybe;
+    try {
+      maybe = await this.zomeProxy.findBeads(ppAh.hash);
+    } catch (e) {/* throttle */ return [];}
+    const [interval, beadLinks] = maybe;
     console.log("pullAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Fetch */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval));
