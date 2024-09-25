@@ -18,13 +18,14 @@ pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, T
   let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(ah.clone().into()) else {
     return Ok(None);
   };
+  /// Emit Signal
+  emit_new_entry_signal(record.clone(), false)?;
+  ///
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {
     return Ok(Some((typed, opPair.0, opPair.1)));
   };
   let action = record.action().clone();
-  /// Emit Signal
-  emit_new_entry_signal(record, false)?;
   ///
   Ok(Some((typed, action.timestamp(), action.author().to_owned())))
 }

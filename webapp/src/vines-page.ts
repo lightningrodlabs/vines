@@ -1901,9 +1901,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "importCommitItem": this.importDvm(true); break;
       case "importOnlyItem": this.importDvm(false); break;
       case "syncItem":
-        await this._filesDvm.probeAll();
-        await this._dvm.probeAll();
-        toasty(msg(`Done probing peers`));
+        this._filesDvm.probeAll();
+        this._dvm.probeAll();
       break;
       case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
       case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); break;

@@ -255,6 +255,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Get last elements since last time (global probe log) */
     /** WARN: this can commit an entry */
     await this.probeAllLatest();
+    this._perspective.print();
   }
 
 
@@ -1049,7 +1050,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           }
         }
         /* Publish pp */
-        const [pp_ah, _ts] = await this.zomeProxy.publishParticipationProtocol(pp);
+        let maybePair;
+        try {
+          maybePair = await this.zomeProxy.publishParticipationProtocol(pp);
+        } catch(e) { continue; /* throttle */ }
+        const [pp_ah, _ts] = maybePair
         const newPpAh = new ActionId(pp_ah);
         ppAhMapping.set(ppAh, newPpAh);
         /* Publish author of new ppAh */
