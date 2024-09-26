@@ -1,9 +1,7 @@
 import {css, html, LitElement} from "lit";
-import {customElement} from "lit/decorators.js";
-import {consume} from "@lit/context";
+import {customElement, property} from "lit/decorators.js";
 
 import '@weblogin/trendchart-elements';
-import {appProxyContext} from "../../contexts";
 import {AppProxy} from "@ddd-qc/cell-proxy";
 import {NetworkInfo, Timestamp} from "@holochain/client";
 import {delay} from "@ddd-qc/lit-happ";
@@ -17,9 +15,7 @@ import Switch from "@ui5/webcomponents/dist/Switch";
 @customElement("network-health-panel")
 export class NetworkHealthPanel extends LitElement {
 
-  @consume({ context: appProxyContext, subscribe: true})
-  _appProxy!: AppProxy;
-
+  @property() appProxy!: AppProxy;
 
   /* Auto update */
   override updated() {
@@ -31,13 +27,13 @@ export class NetworkHealthPanel extends LitElement {
 
   /** */
   override render() {
-    console.log("<network-health>.render()");
+    console.log("<network-health>.render()",  !!this.appProxy);
 
-    if (!this._appProxy) {
+    if (!this.appProxy)  {
       return html`no app proxy found via context`;
     }
 
-    const allNetworkLogs = this._appProxy.networkInfoLogs;
+    const allNetworkLogs = this.appProxy.networkInfoLogs;
 
     //const queryBtn = html`<ui5-button @click=${this.onQueryNetworkInfo}>Query</ui5-button>`
     const queryBtn = html``;

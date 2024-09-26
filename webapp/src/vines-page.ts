@@ -144,7 +144,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {AgentId, Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
+import {AgentId, AppProxy, Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -202,9 +202,6 @@ import {
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
-
-import {NetworkInfo, Timestamp,} from "@holochain/client";
-
 import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@theweave/api";
 import {consume} from "@lit/context";
 
@@ -219,7 +216,6 @@ import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
-import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
 
 
@@ -243,11 +239,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  @property({type: Object})
-  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
-
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
+
+  @property() appProxy!: AppProxy; // for network info
 
   @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
@@ -257,7 +252,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
-
 
   @property() multi: boolean = false;
 
@@ -270,7 +264,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _collapseAll: boolean = false;
   @state() private _canAlphabetical: boolean = false;
   @state() private _canViewArchivedSubjects = false;
-  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we dont know which thread from which tool to use
+  @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we don't know which thread from which tool to use
   @state() private _createTopicHash: EntryId | undefined = undefined;
 
   /** Right panels */
@@ -597,10 +591,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
-      console.log("<vines-page> firstUpdated() calling pullAppletIds()", this.weServices);
-      const appletIds = await this._dvm.threadsZvm.pullAppletIds();
-      console.log("<vines-page> firstUpdated() appletIds", appletIds);
-      for (const appletId of appletIds) {
+      console.log("<vines-page>.firstUpdated() cacheFullAppletInfo", this.weServices);
+      //const appletIds = await this._dvm.threadsZvm.pullAppletIds();
+      //console.log("<vines-page> firstUpdated() appletIds", appletIds);
+      for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
         /* const _appletInfo = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
     }
@@ -1188,7 +1182,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Get network info for this cell */
     const sId = this.cell.address.str;
-    const networkInfos = this.networkInfoLogs && this.networkInfoLogs[sId]? this.networkInfoLogs[sId] : [];
+    const networkInfos = this.appProxy && this.appProxy.networkInfoLogs[sId]? this.appProxy.networkInfoLogs[sId] : [];
     const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
     let lister= html``;
@@ -1494,7 +1488,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <network-health-panel></network-health-panel>
+                        <network-health-panel .appProxy=${this.appProxy}></network-health-panel>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>

@@ -274,17 +274,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.log("threadsZvm.probeAllAppletIds()")
     // const appletIds = await this.zomeProxy.getApplets();
     // this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
-    try {
-      const entryB64s = await this.zomeProxy.pullApplets();
-      const list = entryB64s.map((b64) => new EntryId(b64));
-      this._perspective.storeAllAppletIds(list);
-      console.log("threadsZvm.probeAllAppletIds() list", list);
-      this.notifySubscribers();
-      return list;
-    } catch(e) {
-      /** Throttled */
-      return this._perspective.appletIds;
-    }
+    const entryB64s = await this.zomeProxy.pullApplets();
+    const list = entryB64s.map((b64) => new EntryId(b64));
+    this._perspective.storeAllAppletIds(list);
+    console.log("threadsZvm.probeAllAppletIds() list", list);
+    this.notifySubscribers();
+    return list;
   }
 
 
@@ -424,7 +419,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async pullEmojiReactions(beadAh: ActionId) {
     try {
       await this.zomeProxy.pullReactions(beadAh.hash);
-    } catch(e) {/* throttle */}
+    } catch(e:any) {
+      if (!e.throttled) {
+        return Promise.reject(e);
+      }
+    }
   }
 
 
@@ -440,7 +439,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     let maybe;
     try {
       maybe = await this.zomeProxy.findBeads(ppAh.hash);
-    } catch (e) {/* throttle */ return [];}
+    } catch (e:any) {
+      if (!e.throttled) {
+        return Promise.reject(e);
+      }
+      return [];
+    }
     const [interval, beadLinks] = maybe;
     console.log("pullAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Fetch */
@@ -478,8 +482,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       /** Done */
       return beadLinks;
-    } catch(e) {
-      /* throttle */
+    } catch(e:any) {
+      if (!e.throttled) {
+        return Promise.reject(e);
+      }
       return [];
     }
   }
@@ -1069,7 +1075,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         let maybePair;
         try {
           maybePair = await this.zomeProxy.publishParticipationProtocol(pp);
-        } catch(e) { continue; /* throttle */ }
+        } catch(e:any) {
+          if (!e.throttled) {
+            return Promise.reject(e);
+          }
+          continue;
+        }
         const [pp_ah, _ts] = maybePair
         const newPpAh = new ActionId(pp_ah);
         ppAhMapping.set(ppAh, newPpAh);

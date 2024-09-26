@@ -322,10 +322,10 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
-      console.log("<community-feed-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
-      const appletIds = await this._dvm.threadsZvm.pullAppletIds();
-      console.log("<community-feed-page> firstUpdated() appletIds", appletIds);
-      for (const appletId of appletIds) {
+      //console.log("<community-feed-page> firstUpdated() calling probeAllAppletIds()", this.weServices);
+      //const appletIds = await this._dvm.threadsZvm.pullAppletIds();
+      //console.log("<community-feed-page> firstUpdated() appletIds", appletIds);
+      for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
         /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */

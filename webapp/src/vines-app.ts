@@ -22,12 +22,10 @@ import {
 import {
   ThreadsDvm,
   ThreadsEntryType,
-  THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   filesContext,
   weClientContext,
   cardStyleTemplate,
-  appProxyContext,
   JumpEvent,
   VINES_DEFAULT_ROLE_NAME,
   doodle_flowers,
@@ -42,13 +40,13 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
+import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile, Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 import "./vines-page"
 
-import Button from "@ui5/webcomponents/dist/Button";
+//import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
 
 
@@ -216,59 +214,16 @@ export class VinesApp extends HappMultiElement {
   /** */
   override async hvmConstructed() {
     console.log("<vines-app>.hvmConstructed() adminWs:", this._adminWs)
-    /** Attempt EntryDefs (triggers genesis) */
-    const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
-    const filesOk = await this.attemptFilesEntryDefs(5, 1000);
-    this._hasHolochainFailed = !threadsOk || !filesOk;
-    /** Provide Files as context  */
+    this._hasHolochainFailed = false;
+    /** Provide Files DVM context  */
     console.log(`\t\tProviding context "${filesContext}" | in host `, this);
-
     // @ts-ignore
     /*let _filesProvider =*/ new ContextProvider(this, filesContext, this.filesDvm(0));
-
     const allFilesDvm = this.hvms.map(([_proxy, hvm]) => hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm)
     // @ts-ignore
     /*let _filesProvider =*/ new ContextProvider(this, allFilesContext, allFilesDvm);
   }
 
-
-  /**  */
-  async attemptThreadsEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
-    for (let i = 0; i < this.hvms.length; i+= 1) {
-      while (attempts > 0) {
-        attempts -= 1;
-        const allAppEntryTypes = await this.threadsDvm(i).fetchAllEntryDefs();
-        if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-          console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-          await delay(delayMs);
-        } else {
-          // console.log("allAppEntryTypes", allAppEntryTypes)
-          break;
-        }
-      }
-      if (attempts == 0) return false;
-    }
-    return true;
-  }
-
-
-  /** */
-  async attemptFilesEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
-    for (let i = 0; i < this.hvms.length; i+= 1) {
-      while (attempts > 0) {
-        attempts -= 1;
-        const allAppEntryTypes = await this.filesDvm(i).fetchAllEntryDefs();
-        if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-          console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
-          await delay(delayMs);
-        } else {
-          break;
-        }
-      }
-      if (attempts == 0) return false;
-    }
-    return true;
-  }
 
 
   /** */
@@ -334,6 +289,20 @@ export class VinesApp extends HappMultiElement {
 
 
   /** */
+  private onRetryHolochain() {
+    window.location.reload();
+      // const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
+      // btn.disabled = true;
+      // const allAppEntryTypes = await this.threadsDvm(0).fetchAllEntryDefs(); // FIXME 0
+      // if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
+      //   console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+      //   btn.disabled = false;
+      // } else {
+      //   this._hasHolochainFailed = false;
+      // }
+  }
+
+  /** */
   override render() {
     console.log("<vines-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
     /** Check init has been done */
@@ -344,23 +313,13 @@ export class VinesApp extends HappMultiElement {
         ></ui5-busy-indicator>
       `;
     }
-    if(this._hasHolochainFailed) {
+    if(this._hasHolochainFailed || this.hvms.length == 0) {
       return html`
       <div style="display: flex; flex-direction: column">
         <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};</div>
         <ui5-button id="retryBtn" design="Emphasized"
                     style="max-width:300px"
-                    @click=${async (_e:any) => {
-          const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
-          btn.disabled = true;
-          const allAppEntryTypes = await this.threadsDvm(0).fetchAllEntryDefs(); // FIXME 0
-          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-              console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-              btn.disabled = false;
-          } else {
-              this._hasHolochainFailed = false;
-          }
-        }}>
+                    @click=${async (_e:any) => this.onRetryHolochain()}>
           ${msg('Retry')}
         </ui5-button>
       </div>
@@ -374,19 +333,20 @@ export class VinesApp extends HappMultiElement {
       `;
     }
 
+    const appProxy = this.hvms[0]![0];
+
     // TODO: should propable store networkInfoLogs in class field
     let view = html`
             <vines-page
-                      .networkInfoLogs=${this.hvms[0]![0].networkInfoLogs} 
+                      .appProxy=${appProxy}
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${(_e:any) => {}/*this.networkInfoAll()*/}
+                      @queryNetworkInfo=${(_e:any) => this.networkInfoAll() }
             ></vines-page>`;
     if (this.appletView) {
-      console.log("appletView", this.appletView);
+      console.log("<vines-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
-          // @ts-ignore
-          let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
+          /** N/A */
         break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
@@ -447,11 +407,7 @@ export class VinesApp extends HappMultiElement {
           console.error("Unknown applet-view type", this.appletView);
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
-    } else {
-      // @ts-ignore
-      let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
     }
-
 
     const doodle_bg =  html `
       <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">

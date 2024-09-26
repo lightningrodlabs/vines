@@ -18,8 +18,8 @@ mod notifications;
 mod query_all;
 
 use hdk::hdi::prelude::DnaHash;
-use hdk::prelude::*;
 
+use hdk::prelude::*;
 
 #[hdk_extern]
 fn get_zome_info(_:()) -> ExternResult<ZomeInfo> {

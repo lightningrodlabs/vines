@@ -23,7 +23,6 @@ import {
   pascal,
 } from "@ddd-qc/lit-happ";
 import {
-  appProxyContext,
   cardStyleTemplate,
   determineSubjectName,
   doodle_threads,
@@ -35,7 +34,6 @@ import {
   onlineLoadedContext,
   ParticipationProtocol,
   Subject,
-  THREADS_DEFAULT_COORDINATOR_ZOME_NAME,
   THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
   ThreadsDvm,
   ThreadsEntryType,
@@ -52,12 +50,12 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import {AssetViewInfo, intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, BaseRoleName, CloneId} from "@ddd-qc/cell-proxy";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {FILES_DEFAULT_COORDINATOR_ZOME_NAME, FilesDvm} from "@ddd-qc/files";
+import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 
-import Button from "@ui5/webcomponents/dist/Button";
+//import Button from "@ui5/webcomponents/dist/Button";
 
 import "./community-feed-page"
 
@@ -199,46 +197,11 @@ export class CommunityFeedApp extends HappElement {
   /** */
   override async hvmConstructed() {
     console.log("<community-feed-app>.hvmConstructed()", this._adminWs)
-    /** Attempt EntryDefs (triggers genesis) */
-    const threadsOk = await this.attemptThreadsEntryDefs(5, 1000);
-    const filesOk = await this.attemptFilesEntryDefs(5, 1000);
-    this._hasHolochainFailed = !threadsOk || !filesOk;
+    this._hasHolochainFailed = false;
     /** Provide Files as context */
     console.log(`<community-feed-app>\t\tProviding context "${filesContext}" | in host `, this);
     // @ts-ignore
     let _filesProvider = new ContextProvider(this, filesContext, this.filesDvm);
-  }
-
-
-  async attemptThreadsEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
-    while(attempts > 0) {
-      attempts -= 1;
-      const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-        console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-        await delay(delayMs);
-      } else {
-        // console.log("allAppEntryTypes", allAppEntryTypes)
-        return true;
-      }
-    }
-    return false;
-  }
-
-
-  /** */
-  async attemptFilesEntryDefs(attempts: number, delayMs: number): Promise<boolean> {
-    while(attempts > 0) {
-      attempts -= 1;
-      const allAppEntryTypes = await this.filesDvm.fetchAllEntryDefs();
-      if (Object.values(allAppEntryTypes[FILES_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-        console.warn(`No entries found for ${FILES_DEFAULT_COORDINATOR_ZOME_NAME}`);
-        await delay(delayMs);
-      } else {
-        return true;
-      }
-    }
-    return false;
   }
 
 
@@ -386,18 +349,7 @@ export class CommunityFeedApp extends HappElement {
         <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Feed\" cell.")};</div>
         <ui5-button id="retryBtn" design="Emphasized"
                     style="max-width:300px"
-                    @click=${async (_e:any) => {
-          const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
-          btn.disabled = true;
-          const allAppEntryTypes = await this.threadsDvm.fetchAllEntryDefs();
-          if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-              console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-              btn.disabled = false;
-          } else {
-              this._hasHolochainFailed = false;
-          }
-        }}>
-          ${msg('Retry')}
+                    @click=${async (_e:any) => window.location.reload()}
         </ui5-button>
       </div>
       `;
@@ -430,8 +382,6 @@ export class CommunityFeedApp extends HappElement {
       console.log("<community-feed-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
-          // @ts-ignore
-          let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
         break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
@@ -517,9 +467,6 @@ export class CommunityFeedApp extends HappElement {
           console.error("Unknown applet-view type", this.appletView);
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
-    } else {
-      // @ts-ignore
-      let _provider = new ContextProvider(this, appProxyContext, this.appProxy);
     }
 
 
