@@ -313,7 +313,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         } else {
           console.warn("ParticipationProtocol not found", ppAh.b64);
         }
-      } catch(e) {
+      } catch(e:any) {
+        if (!e.throttled) {
+          return Promise.reject(e);
+        }
         continue;
       }
     }
@@ -693,19 +696,23 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (maybeThread) {
       return [maybeThread.pp, maybeThread.creationTime, maybeThread.author];
     }
+    let maybe;
     try {
-      const maybe = await this.zomeProxy.fetchPp(ppAh.hash);
-      if (!maybe) {
-        console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
-        return null;
+      maybe = await this.zomeProxy.fetchPp(ppAh.hash);
+    } catch(e:any) {
+      if (!e.throttled) {
+        return Promise.reject(e);
       }
-      const [pp, ts, author] = maybe;
-      console.log("ThreadsZvm.fetchPp() pp", pp);
-      //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
-      return [pp, ts, new AgentId(author)];
-    } catch(e) {
       return null;
     }
+    if (!maybe) {
+      console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
+      return null;
+    }
+    const [pp, ts, author] = maybe;
+    console.log("ThreadsZvm.fetchPp() pp", pp);
+    //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
+    return [pp, ts, new AgentId(author)];
   }
 
 

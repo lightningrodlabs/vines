@@ -671,7 +671,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocol {
-    console.log(`storeThread() thread "${ppAh.short}"`, author.short, pp);
+    console.debug(`storeThread() thread "${ppAh.short}"`, author.short, pp);
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
     }

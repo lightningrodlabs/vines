@@ -157,7 +157,7 @@ import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import 'css-doodle';
 
 import {SlDialog} from "@shoelace-style/shoelace";
-
+import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 import {
   beadJumpEvent,
@@ -190,7 +190,7 @@ import {
   threadJumpEvent,
   ThreadsDnaPerspective,
   ThreadsDvm,
-  ThreadsEntryType,
+  ThreadsEntryType, ThreadsPerspective,
   toasty,
   ViewEmbedDialog,
   ViewEmbedEvent,
@@ -248,6 +248,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
+
+  /** Observed perspective from zvm */
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  threadsPerspective!: ThreadsPerspective;
 
   @property() multi: boolean = false;
 
@@ -366,6 +370,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** In dvmUpdated() this._dvm is not already set! */
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    //console.log("<vines-page>.dvmUpdated()", this.hash, newDvm.cell.address.dnaId.b64);
+    /* Subscribe to ThreadsZvm */
+    if (oldDvm) {
+      oldDvm.threadsZvm.unsubscribe(this);
+    }
+    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+  }
+
+
   /** */
   async onViewFile(e: CustomEvent<EntryId>) {
     const dialog = this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
@@ -441,19 +456,32 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Update -- */
 
- ///** DEBUG */
- //protected override async willUpdate(changedProperties: PropertyValues<this>) {
- //  super.willUpdate(changedProperties);
- //   console.log("<vines-page>.willUpdate()", changedProperties);
- // }
+   /** DEBUG */
+   protected override async willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+     console.log("<vines-page>.willUpdate()", changedProperties);
+   }
 
 
   /** -- Update -- */
 
   /** */
   async onCreateTopic(_e:any) {
-    const input = this.shadowRoot!.getElementById("topicTitleInput") as HTMLInputElement;
+    const input = this.shadowRoot!.getElementById("topicTitleInput") as Input;
     const name = input.value.trim();
+    if (name.length < 2) {
+      input.valueState = ValueState.Error;
+      return;
+    }
+    const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
+    const isValid = regex.test(name);
+    if (!isValid) {
+      input.valueState = ValueState.Error;
+      const errorMsg = this.shadowRoot!.getElementById("errorMsg") as HTMLElement;
+      errorMsg.textContent = msg("Invalid characters");
+      return;
+    }
+
     await this._dvm.threadsZvm.publishSemanticTopic(name);
     //console.log("onCreateList() res:", res)
     input.value = "";
@@ -478,9 +506,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateThread(_e:any) {
-    const input = this.shadowRoot!.getElementById("threadPurposeInput") as HTMLInputElement;
+    const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
     const name = input.value.trim();
     if (name.length < 1) {
+      input.valueState = ValueState.Error;
+      return;
+    }
+    const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
+    const isValid = regex.test(name);
+    if (!isValid) {
+      input.valueState = ValueState.Error;
+      const errorMsg = this.shadowRoot!.getElementById("channelErrorMsg") as HTMLElement;
+      errorMsg.textContent = msg("Invalid characters");
       return;
     }
     if (!this._createTopicHash) {
@@ -1011,6 +1048,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** render selected thread */
     if (this._selectedThreadHash && (this._mainView == MainViewType.Thread || this._mainView == MainViewType.MultiThread)) {
       const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
+      console.warn("<vines-page>.render() thread", !!thread, this._selectedThreadHash.short);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
@@ -1744,7 +1782,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 e.preventDefault();
                                 this.onCreateTopic(e);
                             }
-                        }}></ui5-input>
+                        }}>
+                            <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 2 characters")}</div>
+                        </ui5-input>
                     </div>
                 </section>
                 <div slot="footer">
@@ -1787,7 +1827,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                            e.preventDefault();
                                            await this.onCreateThread(e);
                                        }
-                                   }}></ui5-input>
+                                   }}>
+                            <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
+                        </ui5-input>
                     </div>
                 </section>
                 <div slot="footer" style:
@@ -2013,13 +2055,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           overflow: auto;
           display: flex;
           flex-direction: column;
-          /*position: relative;*/
+          position: relative;
         }
 
         presence-panel {
           position: absolute;
-          top: 50px;
-          right: 30px;
+          top: 30px;
+          right: 40px;
         }
         
         #favoritesSide {

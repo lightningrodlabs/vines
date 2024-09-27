@@ -168,11 +168,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     const dvm = newDvm? newDvm : this._dvm;
-    dvm.threadsZvm.pullLatestBeads(this.threadHash, undefined, undefined, 20)
+    const threadAh = this.threadHash; // Cache value;
+    dvm.threadsZvm.pullLatestBeads(threadAh, undefined, undefined, 20)
       .then(async (beadLinks) => {
         console.log("<chat-thread-view>.loadlatestMessages() pulled", beadLinks.length);
         await this.loadBeadComments(beadLinks, dvm);
-        await dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
+        await dvm.threadsZvm.commitThreadProbeLog(threadAh);
         this._loading = false;
       });
     this._loading = true;
