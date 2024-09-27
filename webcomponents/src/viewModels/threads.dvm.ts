@@ -33,7 +33,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 
 /** */
-export interface ThreadsDnaPerspective {
+export type ThreadsDnaPerspective = {
   /* agentId -> (Timestamp, threadAh) */
   agentPresences: AgentIdMap<[number, ActionId | null]>,
   /** ppAh -> string */
@@ -46,6 +46,14 @@ export interface ThreadsDnaPerspective {
   signaledNotifications: ThreadsNotification[],
 
   importing: boolean,
+}
+
+export type ThreadsDnaPerspectiveComparable = {
+  importing: boolean,
+  signaledNotifications: number,
+  initialThreadProbeLogTss: number,
+  agentPresences: string,
+
 }
 
 
@@ -66,7 +74,6 @@ export class ThreadsDvm extends DnaViewModel {
   private _decoder = new Decoder(HOLOCHAIN_ID_EXT_CODEC);
 
   private _currentLocation: ActionId | null = null;
-
 
 
   /** QoL Helpers */
@@ -93,10 +100,6 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** -- Perspective -- */
 
-  protected hasChanged(): boolean {
-    // TODO
-    return true
-  }
 
   private _perspective: ThreadsDnaPerspective = {
     agentPresences: new AgentIdMap(),
@@ -110,6 +113,16 @@ export class ThreadsDvm extends DnaViewModel {
 
   get perspective(): ThreadsDnaPerspective {
     return this._perspective;
+  }
+
+  override comparable(): Object {
+    const res: ThreadsDnaPerspectiveComparable = {
+      importing: this.perspective.importing,
+      signaledNotifications: this.perspective.signaledNotifications.length,
+      initialThreadProbeLogTss: this.perspective.initialThreadProbeLogTss.size,
+      agentPresences: JSON.stringify(this.perspective.agentPresences),
+    }
+    return res;
   }
 
 

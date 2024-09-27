@@ -24,7 +24,7 @@ import {ThreadsProxy} from "../bindings/threads.proxy";
 import {
   ActionId,
   ActionIdMap,
-  AgentId, AnyId,
+  AgentId, AnyId, AnyIdMap, DhtId,
   DnaId,
   enc64,
   EntryId,
@@ -73,7 +73,11 @@ import {getThisAppletId, parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
-import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
+import {
+  ThreadsPerspective,
+  ThreadsPerspectiveMutable,
+  ThreadsSnapshot
+} from "./threads.perspective";
 import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -104,13 +108,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     return this._perspective.readonly;
   }
 
-  /* */
-  protected hasChanged(): boolean {
-    if (!this._previousPerspective) {
-      return true;
-    }
-    let hasChanged = true; // TODO
-    return hasChanged;
+  override comparable(): Object {
+    return this.perspective.comparable();
   }
 
 
@@ -393,13 +392,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /**  */
+  /** TODO: maybe cache value ; check when pulling latest is actually necessary  */
   async pullNotifSettings(ppAh: ActionId): Promise<[AgentId, NotifySetting, ActionId][]> {
     //this._perspective.notifSettings.delete(ppAh);
     try {
       const notifSettings = await this.zomeProxy.pullPpNotifySettings(ppAh.hash);
       return notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
-    } catch(e) {
+    } catch(e:any) {
+      if (!e.throttled) {
+        return Promise.reject(e);
+      }
       return [];
     }
   }
@@ -1366,6 +1368,21 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  _authorCache: AnyIdMap<AgentId> = new AnyIdMap<AgentId>();
+
+  /** */
+  async getRecordAuthor(dh: DhtId): Promise<AgentId> {
+    const maybe = this._authorCache.get(dh.b64);
+    if (maybe) {
+      return maybe;
+    }
+    const a = await this.zomeProxy.getRecordAuthor(dh.hash);
+    const id = new AgentId(a);
+    this._authorCache.set(dh.b64, id);
+    return id;
+  }
+
+
   /** */
   protected override async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
     console.log("ThreadsZvm.handleEntryPulse()", pulse, from.short);
@@ -1409,11 +1426,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             if (isEntryFromSelf) {
               /** Notify Subject author */
               if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64 && pp.subject.typeName != DM_SUBJECT_TYPE_NAME) {
-                let author = await this.zomeProxy.getRecordAuthor(intoLinkableId(pp.subject.address).hash);
+                let author = await this.getRecordAuthor(intoDhtId(pp.subject.address));
                 if (!this.cell.address.agentId.equals(author)) {
                   await this.zomeProxy.notifyPeer({
                     content: pulse.ah.hash,
-                    who: author,
+                    who: author.hash,
                     event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Fork),
                   });
                 }
@@ -1584,8 +1601,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const hasJumpedBead = lastKnownBead.length > 1 && !lastKnownBead[0]!.beadAh.equals(prevBeadAh);
         //console.log("handleBeadEntry() hasJumpedBead", hasJumpedBead, isDmThread, lastKnownBead, prevBeadAh);
         if (hasJumpedBead && !isDmThread) {
-          let reply_author = await this.zomeProxy.getRecordAuthor(prevBeadAh.hash);
-          notifs.push({content: beadAh.hash, who: reply_author, event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Reply)});
+          let reply_author = await this.getRecordAuthor(prevBeadAh);
+          notifs.push({content: beadAh.hash, who: reply_author.hash, event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Reply)});
         }
       }
       await this.notifyPeers(ppAh, beadAh, notifs);

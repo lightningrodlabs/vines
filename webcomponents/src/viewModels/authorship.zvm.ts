@@ -31,14 +31,6 @@ export class AuthorshipZvm extends ZomeViewModel {
     return this._perspective.readonly;
   }
 
-  /* */
-  protected hasChanged(): boolean {
-    if (!this._previousPerspective) {
-      return true;
-    }
-    let hasChanged = true; // TODO
-    return hasChanged;
-  }
 
   /** Dump perspective as JSON  (caller should call getAllPublicManifest() first) */
   export(/*originalsZvm: AuthorshipZvm*/): string {

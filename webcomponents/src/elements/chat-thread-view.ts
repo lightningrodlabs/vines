@@ -1,7 +1,7 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {ActionId, ActionIdMap, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../bindings/threads.types";
@@ -70,14 +70,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** Don't update during loading of beads */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<chat-thread-view>.shouldUpdate()", changedProperties, this._loading);
+    console.log("<chat-thread-view>.shouldUpdate()", !this._loading, changedProperties);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;
     }
     if (changedProperties.has("threadHash")) {
-      this.loadlatestMessages();
-      return true;
+       this.loadlatestMessages();
+       return false;
     }
     if (changedProperties.has("_loading")) {
       return true;
@@ -162,7 +162,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
-    console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash, !!this._dvm);
+    console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash);
     if (!this.threadHash) {
       this._loading = false;
       return;
@@ -170,9 +170,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     const dvm = newDvm? newDvm : this._dvm;
     dvm.threadsZvm.pullLatestBeads(this.threadHash, undefined, undefined, 20)
       .then(async (beadLinks) => {
-        this._loading = false;
+        console.log("<chat-thread-view>.loadlatestMessages() pulled", beadLinks.length);
         await this.loadBeadComments(beadLinks, dvm);
         await dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
+        this._loading = false;
       });
     this._loading = true;
   }
@@ -184,7 +185,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     const beginningReached = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
-    console.log("loadPreviousMessages() beginningReached = ", beginningReached);
+    console.log("<chat-thread-view>.loadPreviousMessages() beginningReached = ", beginningReached);
     if (beginningReached) {
       //this._dvm.threadsZvm.perspective.threads[this.threadHash]
       return;
@@ -220,7 +221,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-thread-view>.render()", this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm, this._renderCount);
+    console.log("<chat-thread-view>.render()", this._renderCount, this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
     this._renderCount += 1;
 
     /** */
@@ -294,15 +295,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           }
         }
 
-        let chatItem = this._chatItems.get(blm.beadAh);
-        if (!chatItem) {
-          //console.log("<chat-thread-view> instanceCount create", blm.beadAh.short);
-          chatItem = html`
+        const chatItem = html`
               <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
                          style="${this.beadAh && blm.beadAh.equals(this.beadAh) ? "background:#c4f2b07a" : ""}">
               </chat-item>`;
-          this._chatItems.set(blm.beadAh, chatItem);
-        }
         prevBeadAh = blm.beadAh;
         /** Render chatItem */
         return html`${chatItem}${hr}`;
@@ -320,8 +316,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
   private _renderCount = 0;
-
-  private _chatItems: ActionIdMap<TemplateResult<1>> = new ActionIdMap<TemplateResult<1>>();
 
 
   /** */

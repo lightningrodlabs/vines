@@ -191,7 +191,6 @@ import {
   ThreadsDnaPerspective,
   ThreadsDvm,
   ThreadsEntryType,
-  ThreadsPerspective,
   toasty,
   ViewEmbedDialog,
   ViewEmbedEvent,
@@ -238,9 +237,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
   /** -- Properties -- */
-
-  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
-  threadsPerspective!: ThreadsPerspective;
 
   @property() appProxy!: AppProxy; // for network info
 
@@ -445,18 +441,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Update -- */
 
-  /** */
-  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
-    console.log("<vines-page>.dvmUpdated()");
-    if (oldDvm) {
-      console.log("\t Unsubscribed to threadsZvm's roleName = ", oldDvm.threadsZvm.cell.name)
-      oldDvm.threadsZvm.unsubscribe(this);
-    }
-    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-    console.log("\t Subscribed threadsZvm's roleName = ", newDvm.threadsZvm.cell.name)
-    this._selectedThreadHash = undefined;
-    this._selectedBeadAh = undefined;
-  }
+ ///** DEBUG */
+ //protected override async willUpdate(changedProperties: PropertyValues<this>) {
+ //  super.willUpdate(changedProperties);
+ //   console.log("<vines-page>.willUpdate()", changedProperties);
+ // }
 
 
   /** -- Update -- */
@@ -622,7 +611,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Grab AssetInfo for all AnyBeads */
     if (this.weServices) {
-      for (const [beadInfo, typed] of this.threadsPerspective.beads.values()) {
+      for (const [beadInfo, typed] of this._dvm.threadsZvm.perspective.beads.values()) {
         if (beadInfo.beadType != ThreadsEntryType.AnyBead) {
           continue;
         }
@@ -870,9 +859,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Reset state */
     this._replyToAh = undefined;
     this._selectedAgent = undefined;
-    this._selectedThreadHash = undefined;
-    this._selectedBeadAh = undefined;
-    this._selectedAgent = undefined;
+
 
     /** Cache and reset input-bar */
     const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
@@ -885,8 +872,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Set new state */
     this._mainView = e.detail.type;
     switch(e.detail.type) {
-      case MainViewType.Favorites: break;
-      case MainViewType.Files: break;
+      case MainViewType.Favorites:
+      case MainViewType.Files:
+        this._selectedThreadHash = undefined;
+        this._selectedBeadAh = undefined;
+        this._selectedAgent = undefined;
+        break;
       case MainViewType.MultiThread:
       case MainViewType.Thread:
         /** set lastProbeTime for current thread */
@@ -1019,7 +1010,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** render selected thread */
     if (this._selectedThreadHash && (this._mainView == MainViewType.Thread || this._mainView == MainViewType.MultiThread)) {
-      const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
+      const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
@@ -1034,7 +1025,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         /** Set input bar 'topic' */
         let topic = msg("Reply");
         if (isHashTypeB64(thread.pp.subject.address, HoloHashType.Entry)) {
-          const maybeSemanticTopicTitle = this.threadsPerspective.semanticTopics.get(new EntryId(thread.pp.subject.address));
+          const maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(thread.pp.subject.address));
           if (maybeSemanticTopicTitle) {
             topic = maybeSemanticTopicTitle;
           }
@@ -1247,7 +1238,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let maybeBackBtn = html``;
     if (this._selectedThreadHash) {
-      const thread = this.threadsPerspective.threads.get(this._selectedThreadHash);
+      const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
       if (thread && (
         thread.pp.subject.typeName == SpecialSubjectType.EntryBead
       || thread.pp.subject.typeName == SpecialSubjectType.TextBead

@@ -30,7 +30,7 @@ import {Cell} from "@ddd-qc/cell-proxy";
 
 /** Snapshot does not store notifications and new/unread state */
 /** TODO: store private dms */
-export interface ThreadsSnapshot {
+export type ThreadsSnapshot = {
   /** Store of all Subjects: hash -> Subject */
   subjects: [HoloHashB64, Subject][],
   /** Store of all SemTopic: eh -> TopicTitle */
@@ -64,8 +64,24 @@ function print(self: ThreadsSnapshot): void {
   console.log("  -           beads:", self.beads.length);
   console.log("  -  emojiReactions:", self.emojiReactions.length);
   console.log("  - appletSubjTypes:", self.appletSubjectTypes.length);
-  console.log("  -       favorites:", self.favorites.length);
 }
+
+export type ThreadsPerspectiveComparable = {
+  appletIds: number,
+  subjects: number,
+  semanticTopics: number,
+  hiddens: number,
+  favorites: number,
+  threads: number,
+  beads: number,
+  emojiReactions: number,
+  appletSubjectTypes: number,
+  dmAgents: number,
+  decBeads: number,
+  inbox: number,
+  notifSettings: number,
+  unreadThreads: number,
+};
 
 
 /** */
@@ -124,6 +140,26 @@ export class ThreadsPerspective {
   /** Unread subject == Has at least one unread thread */
   /** ppAh -> (subjectHash, beadAh[]) */
   unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
+
+  comparable(): Object {
+    const res: ThreadsPerspectiveComparable = {
+      appletIds: this.appletIds.length,
+      subjects: this.subjects.size,
+      semanticTopics: this.semanticTopics.size,
+      hiddens: Object.keys(this.hiddens).length,
+      favorites: this.favorites.length,
+      threads: this.threads.size,
+      beads: this.beads.size,
+      emojiReactions: this.emojiReactions.size,
+      appletSubjectTypes: this.appletSubjectTypes.size,
+      dmAgents: this.dmAgents.size,
+      decBeads: this.decBeads.size,
+      inbox: this.inbox.size,
+      notifSettings: this.notifSettings.size,
+      unreadThreads: this.unreadThreads.size,
+    };
+    return res;
+  }
 
 
   /** -- Getters -- */
