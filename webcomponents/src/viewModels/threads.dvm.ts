@@ -120,7 +120,7 @@ export class ThreadsDvm extends DnaViewModel {
       importing: this.perspective.importing,
       signaledNotifications: this.perspective.signaledNotifications.length,
       initialThreadProbeLogTss: this.perspective.initialThreadProbeLogTss.size,
-      agentPresences: JSON.stringify(this.perspective.agentPresences),
+      agentPresences: JSON.stringify(Array.from(this.perspective.agentPresences.entries())),
     }
     return res;
   }
@@ -155,10 +155,10 @@ export class ThreadsDvm extends DnaViewModel {
     if (this.cell.address.agentId.equals(from)) {
       return;
     }
-    console.log("storePresence()", from.short, thread);
     const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
     let latest: [number, ActionId | null] = [currentTimeInSeconds, thread !== undefined? thread : null];
     let current = this._perspective.agentPresences.get(from);
+    console.debug("storePresence()", from.short, currentTimeInSeconds, latest, current, thread);
     if (!current) {
       /** First time presence */
       current = latest;
@@ -181,6 +181,7 @@ export class ThreadsDvm extends DnaViewModel {
     }
     this._perspective.agentPresences.set(from, current);
     //this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
+    this.notifySubscribers();
   }
 
 

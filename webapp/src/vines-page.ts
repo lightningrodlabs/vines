@@ -1059,7 +1059,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     if (this.perspective.importing) {
-      return html`<div>Importing...</div>`;
+      return html`
+          <ui5-busy-indicator delay="0" size="Large" active
+                              style="margin:auto; width:100%; height:100%; color:#05b92f"
+          ></ui5-busy-indicator>`;
     }
 
     let uploadState;
@@ -1078,7 +1081,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** render selected thread */
     if (this._selectedThreadHash && (this._mainView == MainViewType.Thread || this._mainView == MainViewType.MultiThread)) {
       const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
-      console.warn("<vines-page>.render() thread", !!thread, this._selectedThreadHash.short);
+      //console.warn("<vines-page>.render() thread", !!thread, this._selectedThreadHash.short);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
