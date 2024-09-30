@@ -38,10 +38,10 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): Pro
 export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
     const initials = getInitials(profile.nickname);
     const avatarUrl = profile.fields['avatar'];
-    const slot = slotArg? slotArg : "avatar";
+    const slot = slotArg? slotArg : "";
     return avatarUrl
       ? html`<ui5-avatar size=${size} class=${classArg} slot=${slot}>
-                <img src=${avatarUrl} style="object-fit: cover;">
+                <img .src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>`
       : html`<ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
 }

@@ -317,16 +317,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         /** Create avatar for each author */
           //console.log("Authors' Avatar", Object.keys(authors).length);
         let avatars = Object.keys(authors).map((author) => {
-            return renderAvatar(this._dvm.profilesZvm, new AgentId(author), "XS");
+            return renderAvatar(this._dvm.profilesZvm, new AgentId(author), "XS", "");
           });
 
-        // TODO: AvatarGroup doesnt work for some unknown reason
-        // const avatarGroup = Object.keys(authors).length > 1
-        //   ? html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>`
-        //   : html`${avatars}`;
+        const avatarGroup = Object.keys(authors).length > 1
+          ? html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>`
+          : html`${avatars}`;
 
         commentThread = html`
-                ${avatars}
+                ${avatarGroup}
                 <span class="thread-link" style="color: ${commentLinkColor}"
                       @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
               ${thread.beadLinksTree.length > 1 ? "" + thread.beadLinksTree.length + " comments" : "" + thread.beadLinksTree.length + " comment"} 
