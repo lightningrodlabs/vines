@@ -410,7 +410,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                  }
              }}>
             <!-- avatar column -->
-            <div id="avatarColumn" style="display: flex; flex-direction: column; width:48px;"
+            <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;"
                     @click=${(e:any) => {
                       e.stopPropagation();
                       this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
