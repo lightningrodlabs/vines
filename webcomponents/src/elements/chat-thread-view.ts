@@ -68,7 +68,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** Don't update during loading of beads */
+  /** Don't update during loading of beads  */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
     console.log("<chat-thread-view>.shouldUpdate()", !this._loading, changedProperties);
     const shouldnt = !super.shouldUpdate(changedProperties);
@@ -77,7 +77,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     if (changedProperties.has("threadHash")) {
        this.loadlatestMessages();
-       return false;
+       return true;
     }
     if (changedProperties.has("_loading")) {
       return true;

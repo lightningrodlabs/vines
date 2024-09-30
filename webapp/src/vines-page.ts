@@ -1542,6 +1542,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ` : html`
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
                                        starts-section></ui5-menu-item>
+                        <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"
                         </ui5-menu-item>`}
@@ -1972,6 +1973,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       break;
       case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
       case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); break;
+      case "eraseItem": this._dvm.purgeLogs(); break;
       case "dumpFilesItem": this._filesDvm.dumpCallLogs(); this._filesDvm.dumpSignalLogs(); break;
       case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
     }

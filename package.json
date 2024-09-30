@@ -134,7 +134,7 @@
     "@theweave/api": "0.1.0",
     "@theweave/elements": "0.1.0",
     "@ddd-qc/cell-proxy": "=0.29.12",
-    "@ddd-qc/lit-happ": "=0.29.14",
+    "@ddd-qc/lit-happ": "=0.29.15",
     "@ddd-qc/profiles-dvm": "=0.29.3",
     "@ddd-qc/we-utils": "=0.29.4",
     "@ddd-qc/files": "=0.5.4",
