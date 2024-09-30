@@ -116,8 +116,8 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500">
                 <div id=${ppAh.b64} class="threadItem" 
                      style="
-                     font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
-                     ${isSelected? "background:#DBDBDB" : ""}
+                     font-weight: ${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
+                     ${isSelected? "background:#4684FD; color:white;" : ""}
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
@@ -136,7 +136,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           `});
 
     treeItems = treeItems.filter((value) => value !== undefined);
-    console.log("<dm-lister>.render() treeItems", treeItems);
+    //console.log("<dm-lister>.render() treeItems", treeItems);
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
@@ -167,7 +167,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       css`
         :host {
           display: block;
-          overflow-y: auto;
+          /*overflow-y: auto;*/
           height: 100%;
         }
         

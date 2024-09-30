@@ -160,7 +160,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
       css`
         :host {
           display: block;
-          overflow-y: auto;
+          /*overflow-y: auto;*/
           height: 100%;
         }
         

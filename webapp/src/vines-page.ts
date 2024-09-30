@@ -1419,25 +1419,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                  }}>
 
                 ${topLeft}
-                ${lister}
-                <!-- Messages -->
-                <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
-                    <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-                    <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
-                    <span style="flex-grow: 1"></span>
-                    <ui5-button icon="add" tooltip=${msg("Message a peer")}
-                                design="Transparent"
-                                style="color:grey; margin-right: 8px;"
-                                @click=${async (e: any) => {
-                                    e.stopPropagation();
-                                    await this.updateComplete;
-                                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                                    dialog.show();
-                                }}>
-                    </ui5-button>
+                
+                <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
+                  ${lister}
+                  <!-- Messages -->
+                  <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+                      <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
+                      <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+                      <span style="flex-grow: 1"></span>
+                      <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                                  design="Transparent"
+                                  style="color:grey; margin-right: 8px;"
+                                  @click=${async (e: any) => {
+                                      e.stopPropagation();
+                                      await this.updateComplete;
+                                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                                      dialog.show();
+                                  }}>
+                      </ui5-button>
+                  </div>
+                  ${dmLister}
+                  <div style="min-height: 50px"></div>
                 </div>
-                ${dmLister}
-
+                <div style="flex-grow: 1"></div>
                     <!--
                 <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
                     <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"

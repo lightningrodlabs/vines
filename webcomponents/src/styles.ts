@@ -131,7 +131,7 @@ export const sharedStyles = css`
 
   .threadItem {
     display: flex;
-    overflow: hidden;
+    /*overflow: hidden;*/
     align-items: center;
     height: 36px;
     cursor: pointer;

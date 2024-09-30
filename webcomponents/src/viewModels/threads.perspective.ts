@@ -682,6 +682,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     const subjectAddr = intoAnyId(pp.subject.address);
     const thread = new Thread(pp, cell.dnaModifiers.origin_time, creationTime, author);
     console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${creationTime}"`);
+    /** Add already stored log */
+    const maybeLog = this._tempThreadLogs.get(ppAh);
+    if (maybeLog) {
+      thread.setLatestProbeLogTime(maybeLog.ts);
+      this._tempThreadLogs.delete(ppAh);
+    }
+    /** */
     this.threads.set(ppAh, thread);
     /** Add already stored beads */
     for (const [beadAh, [info, _typed]] of this.beads.entries()) {
@@ -775,11 +782,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
+  private _tempThreadLogs: ActionIdMap<ThreadLastProbeLog> = new ActionIdMap();
   storeThreadLog(log: ThreadLastProbeLog) {
     const ppAh = new ActionId(log.ppAh);
     const thread = this.threads.get(ppAh);
     if (!thread) {
       console.warn("Getting ThreadLastProbeLog for unknown thread", ppAh);
+      this._tempThreadLogs.set(ppAh, log);
       return;
     }
     thread.setLatestProbeLogTime(log.ts);
