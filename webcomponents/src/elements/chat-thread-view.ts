@@ -326,7 +326,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       css`
         :host {
           flex:1;
-          /*overflow-y: scroll;*/
+          overflow-y: scroll;
           display: flex;
           flex-direction: column-reverse;
           /*gap:15px;*/

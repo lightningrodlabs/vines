@@ -35,17 +35,15 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): Pro
 
 
 /** Render ui5-avatar with profile pic */
-export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?:string) {
+export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
     const initials = getInitials(profile.nickname);
     const avatarUrl = profile.fields['avatar'];
     const slot = slotArg? slotArg : "avatar";
-    return avatarUrl? html`
-              <ui5-avatar size=${size} class=${classArg} slot=${slot}>
-                  <img src=${avatarUrl} style="object-fit: cover;">
-              </ui5-avatar>
-            `: html`
-              <ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>
-    `;
+    return avatarUrl
+      ? html`<ui5-avatar size=${size} class=${classArg} slot=${slot}>
+                <img src=${avatarUrl} style="object-fit: cover;">
+              </ui5-avatar>`
+      : html`<ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
 }
 
 
