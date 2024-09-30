@@ -997,11 +997,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return;
     }
     console.log(`commitThreadProbeLog() Thread "${thread.pp.purpose}":`, thread.probedUnion, thread.latestProbeLogTime, thread.beadLinksTree, thread.beadLinksTree.length);
-    const probeLog: any = {ppAh: ppAh.hash};
+    const probeLog: ThreadLastProbeLog = {ppAh: ppAh.hash, ts: 0};
     if (thread.beadLinksTree.end.value) probeLog.maybeLastKnownBeadAh = thread.beadLinksTree.end.value.beadAh.hash;
     if (thread.beadLinksTree.end.key) probeLog.ts = thread.beadLinksTree.end.key;
     console.log(`commitThreadProbeLog() probeLog:`, probeLog);
-    await this.zomeProxy.commitThreadLog(probeLog as ThreadLastProbeLog);
+    await this.zomeProxy.commitThreadLog(probeLog);
   }
 
 
