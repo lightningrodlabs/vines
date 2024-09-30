@@ -74,6 +74,7 @@ import "@ui5/webcomponents-icons/dist/attachment-photo.js"
 import "@ui5/webcomponents-icons/dist/attachment-video.js"
 import "@ui5/webcomponents-icons/dist/attachment-audio.js"
 import "@ui5/webcomponents-icons/dist/attachment-zip-file.js"
+import "@ui5/webcomponents-icons/dist/arrow-bottom.js"
 import "@ui5/webcomponents-icons/dist/bell.js"
 import "@ui5/webcomponents-icons/dist/bookmark.js"
 import "@ui5/webcomponents-icons/dist/copy.js"
@@ -280,6 +281,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
   @state() private _selectedCommentThreadHash: LinkableId | undefined = undefined
            private _selectedCommentThreadSubjectName: string = '';
+
+  // @ts-ignore
+  private _isDmListVisible: boolean = true;
+
+  private _dmListObs = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      this._isDmListVisible = entry.isIntersecting;
+      const dmSign = this.shadowRoot!.getElementById("dmSign") as HTMLElement;
+      if (dmSign) {
+        dmSign.style.display = this._isDmListVisible? "none" : "flex";
+      }
+      // if (entry.isIntersecting) {
+      //   console.log('The div is visible');
+      // } else {
+      //   console.log('The div is not visible');
+      // }
+    });
+  }, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.05
+  });
+
 
   /** File upload */
   @state() private _splitObj: SplitObject | undefined = undefined;
@@ -589,6 +613,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** After first render only */
   override async firstUpdated() {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
+
+    /** Start observing the div */
+    const dmList = this.shadowRoot!.getElementById("dmLister") as HTMLElement;
+    if (dmList) {
+      this._dmListObs.observe(dmList);
+    }
 
     /** Generate test data */
     //await this._dvm.threadsZvm.generateTestData("");
@@ -1254,7 +1284,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 }}
         ></dm-multi-lister>
     ` : html`
-        <dm-lister nobtn
+        <dm-lister id="dmLister" nobtn
                 .showArchived=${this._canViewArchivedSubjects}
                 .selectedThreadHash=${this._selectedThreadHash}
                 @createNewDm=${(_e:any) => {
@@ -1407,7 +1437,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @reply-clicked=${this.onReplyClicked}
              @edit-topic-clicked=${this.onEditTopicClicked}>
 
-            <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}"
+            <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}; position: relative"
                  @contextmenu=${(e: any) => {
                      console.log("LeftSide contextmenu", e);
                      // e.preventDefault();
@@ -1418,6 +1448,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                      // //menu.style.left = e.clientX + "px";
                  }}>
 
+                <div id="dmSign"><ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon><div>${msg("DMs")}</div></div>
+                
                 ${topLeft}
                 
                 <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
@@ -2067,7 +2099,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           top: 30px;
           right: 40px;
         }
-        
+
         #favoritesSide {
           flex-direction: column;
           min-width: 350px;
@@ -2100,7 +2132,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: 18px;
           font-weight: bold;
         }
-        
+
         #uploadCard {
           margin: auto;
           /*margin-left:10px;*/
@@ -2176,7 +2208,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #topicBar {
           background: white;
           padding: 0px 8px 0px 2px;
-          margin-left:5px;
+          margin-left: 5px;
           height: 44px;
           /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
           display: flex;
@@ -2227,7 +2259,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 1px 9px;
           font-size: 10px;
           font-weight: bold;
-          margin-right:-5px;
+          margin-right: -5px;
           z-index: 10;
         }
 
@@ -2252,7 +2284,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         .listerbtn.selected {
           background: white;
           font-weight: bold;
-          box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197,209,208,0)
+          box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197, 209, 208, 0);
+        }
+
+        #dmSign {
+          /*width: 50px;*/
+          flex-direction: row;
+          border-radius: 20px;
+          background: #8f8f8f;
+          position: absolute;
+          bottom: 70px;
+          left: 90px;
+          display: block;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
+          padding:10px;
         }
       `,
 
