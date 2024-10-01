@@ -6,6 +6,8 @@ import copy from "rollup-plugin-copy";
 //import builtins from "rollup-plugin-node-builtins";
 //import globals from "rollup-plugin-node-globals";
 
+import builtins from "rollup-plugin-node-builtins";
+
 import babel from "@rollup/plugin-babel";
 import html from "@web/rollup-plugin-html";
 //import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
@@ -19,9 +21,9 @@ const DIST_FOLDER = "dist"
 export default {
   input: "index.html",
   output: {
-    entryFileNames: "[hash].js",
-    chunkFileNames: "[hash].js",
-    assetFileNames: "[hash][extname]",
+    entryFileNames: "index.js",
+    //chunkFileNames: "[hash].js",
+    assetFileNames: "assets[extname]",
     format: "es",
     dir: DIST_FOLDER,
   },
@@ -41,7 +43,7 @@ export default {
       preferBuiltins: false,
     }),
     //typescript({ experimentalDecorators: true, outDir: DIST_FOLDER }),
-    //builtins(),
+    builtins(), // For launcher
     //globals(),
     /** Minify JS */
     //terser(),
@@ -106,7 +108,6 @@ export default {
       copyOnce: true,
       targets: [
         { src: "icon.png", dest: DIST_FOLDER },
-        { src: "logo.svg", dest: DIST_FOLDER },
         { src: "favicon.ico", dest: DIST_FOLDER },
         { src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css", dest: DIST_FOLDER, rename: "styles.css" },
         { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: DIST_FOLDER }

@@ -31,7 +31,7 @@
   "applets": [
     {
       "name": "Vines",
-      "subtitle": "Tooling for conversation in group spaces on holochain\n",
+      "subtitle": "Tooling for conversation in group spaces on holochain",
       "description": "...",
       "icon": {
         "type": "filesystem",

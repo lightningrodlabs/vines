@@ -96,7 +96,7 @@
     "launch:we"          : "echo pass | hc-launch --piped -n 1 artifacts/vines-we_applet.webhapp network mem",
 
     "test"               : "npm run build:happ && npm run build -w @vines/elements && npm t -w @vines/tests",
-    "package:webapp"     : "rm -rf artifacts/vines-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/vines-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/vines.webhapp",
+    "package:webapp"     : "rm -rf artifacts/vines-webapp-ui.zip && npm run dist -w webapp && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/vines-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/vines.webhapp",
     "package:we"         : "rm -rf artifacts/vines-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/vines-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp",
     "package:feed:we"    : "rm -rf artifacts/feed-we_applet-ui.zip & cd we-applet_feed/dist && rm -f *.map && bestzip ../../artifacts/feed-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet_feed/webhapp.workdir -o artifacts/feed-we_applet.webhapp",
 
@@ -137,8 +137,8 @@
     "@ddd-qc/lit-happ": "=0.29.15",
     "@ddd-qc/profiles-dvm": "=0.29.3",
     "@ddd-qc/we-utils": "=0.29.4",
-    "@ddd-qc/files": "=0.5.4",
-    "@ddd-qc/delivery": "=0.16.0",
+    "@ddd-qc/files": "=0.5.5",
+    "@ddd-qc/delivery": "=0.16.1",
     "@ddd-qc/path-explorer": "0.5.0",
     "@holochain-open-dev/core-types": "0.7.0",
     "@holochain-open-dev/profiles": "^0.400.0-dev.1",

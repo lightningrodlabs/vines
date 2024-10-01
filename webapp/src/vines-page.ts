@@ -1303,7 +1303,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     class="${this._canShowLeft? "pressed" : ""}                    
                     slot="startButton"
                     style="margin-right:5px; display: ${this._canShowLeft? "none" : ""}"
-                    @click=${(_e:any) => this._canShowLeft = true}>
+                    @click=${(_e:any) => this._canShowLeft = true} >
         </ui5-button>
     `;
 
@@ -1547,8 +1547,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                        starts-section></ui5-menu-item>
                         <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
                         <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
-                        <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"
-                        </ui5-menu-item>`}
+                        <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
+                        `}
                     </ui5-menu>
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
@@ -1579,7 +1579,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <div>${msg('Share this code with a peer to grant them access to this Network')}
-                            (<b>${this.cell.name})</b></div>
+                            (seed: "${this.cell.dnaModifiers.network_seed}")</div>
                         <ui5-textarea .value=${this.cell.shareCode}></ui5-textarea>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">

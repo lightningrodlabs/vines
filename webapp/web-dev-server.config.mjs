@@ -3,13 +3,15 @@ import rollupReplace from '@rollup/plugin-replace';
 import rollupCommonjs from '@rollup/plugin-commonjs';
 import { fromRollup } from '@web/dev-server-rollup';
 import rollupBuiltins from 'rollup-plugin-node-builtins';
+import rollupCopy from "rollup-plugin-copy";
 
 const replace = fromRollup(rollupReplace);
 const commonjs = fromRollup(rollupCommonjs);
 const builtins = fromRollup(rollupBuiltins);
+const copy = fromRollup(rollupCopy);
 
 
-console.log("web-dev-server: process.env.HAPP_BUILD_MODE: ", process.env.HAPP_BUILD_MODE);
+console.log("START: process.env.HAPP_BUILD_MODE: ", process.env.HAPP_BUILD_MODE);
 const HAPP_BUILD_MODE = process.env.HAPP_BUILD_MODE? process.env.HAPP_BUILD_MODE : "Release";
 
 
@@ -48,6 +50,12 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     }),
     builtins(),
     commonjs({}),
+    copy({
+      copyOnce: true,
+      targets: [
+        { src: 'favicon.ico', dest: 'dist' },
+      ],
+    }),
 
     /** Use Hot Module Replacement by uncommenting. Requires @open-wc/dev-server-hmr plugin */
     // hmr && hmrPlugin({ exclude: ['**/*/node_modules/**/*'], presets: [presets.litElement] }),
@@ -55,3 +63,5 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
 
   // See documentation for all available options
 });
+
+console.log("END");

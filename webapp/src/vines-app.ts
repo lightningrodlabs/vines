@@ -95,16 +95,33 @@ export class VinesApp extends HappMultiElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean/*appWs?: AppWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView*/) {
+    console.log("<vines-app>.ctor()");
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-
-    let pairs: [number | AppWebsocket, InstalledAppId | undefined][] = [[HC_APP_PORT, undefined]];
+    let pairs: [number | AppWebsocket, InstalledAppId | undefined][] = [];
     if (appletGroups && appletGroups.length > 0) {
       pairs = appletGroups.map((appletGroup) => [appletGroup.appWs, appletGroup.appId]);
+    } else {
+      if (!HC_APP_PORT) {
+        console.log({window});
+        const __HC_LAUNCHER_ENV__: string = "__HC_LAUNCHER_ENV__";
+        const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
+        if (isLauncher) {
+          // @ts-ignore
+          const env = window[__HC_LAUNCHER_ENV__];
+          console.log("env.APP_INTERFACE_PORT", env!.APP_INTERFACE_PORT);
+          pairs = [[env!.APP_INTERFACE_PORT, env!.INSTALLED_APP_ID]];
+        } else {
+          throw Error("No appWebsocket or APP PORT set");
+        }
+      } else {
+        pairs = [[HC_APP_PORT, undefined]];
+      }
     }
+    console.log("<vines-app>.ctor() pairs", pairs);
     super(pairs, adminUrl, 20 * 1000);
     /** */
     if (appletGroups && appletGroups.length > 0) {
