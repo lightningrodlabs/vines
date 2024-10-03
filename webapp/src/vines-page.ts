@@ -1234,8 +1234,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
       }
     } else {
-      if (this._dvm.dnaProperties.groupName) {
+      if (this._dvm.dnaProperties.groupName && this._dvm.dnaProperties.groupName != "MyTeam") {
         groupProfile.name = this._dvm.dnaProperties.groupName;
+      }
+      if (groupProfile.name == "Vines" && this._dvm.cell.dnaModifiers.network_seed) {
+        groupProfile.name = this._dvm.cell.dnaModifiers.network_seed;
       }
       if (this._dvm.dnaProperties.groupSvgIcon) {
         groupProfile.icon_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
