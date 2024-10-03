@@ -30,7 +30,6 @@ export default {
   watch: {
     clearScreen: false,
   },
-  //external: [],
   plugins: [
     /** Enable using HTML as rollup entrypoint */
     html({
