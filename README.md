@@ -1,11 +1,14 @@
 # Vines
 
-A conversation capacity for groups in The Weave
+A conversation capacity for groups in The Weave.
 
 ##  Background
 
 The current state-of-the-art in sync/async conversation is Discord/Slack: channel based chat with affordances for replys and threading.  The context created by a channel is completely implicit in the channel name and it's use by the community/people that use it.   The structure of any message is always the same except if you think of an emoji reaction as message type.  This is actually quite powerful (it's why we are using it) but it has some severe limitations.
 
+## Feed
+
+Experimental app for single feed conversation a-la Facebook group.
 
 ## Dev testing
 
@@ -21,17 +24,40 @@ The current state-of-the-art in sync/async conversation is Discord/Slack: channe
 5. `npm run build:localize`
 
 ### Web
-`npm run devtest`
+#### Vines
+Single agent browser devtest: `npm run devtest`
 
-## Network
+Network of 3 agents devtest: `bash npm run network3`
 
-To bootstrap a network of N agents:
+#### Feed
+Single agent browser devtest: `npm run devtest:feed`
 
-``` bash
-npm run network 3
-```
+### Moss
 
-Replace the "3" for the number of agents you want to bootstrap.
+#### Vines
+In web browser:
+`npm run devtest:we`
+
+In Moss:
+`npm run prodtestfull:we`
+
+With 3 agents:
+`npm run multiagentall`
+
+With multiple groups:
+`npm run multigroupall`
+
+With multiple tools:
+`npm run multitoolall`
+
+#### Feed
+In web browser:
+`npm run devtest:feed:we`
+
+In Moss:
+`npm run prodtestfull:feed:we`
+
+
 ## Package
 
 To package the web-happ:
@@ -47,12 +73,16 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 
 | Directory                                  | Description                                                                                                                 |
 |:-------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
+| `/artifacts/`                              | All final output files
+| `/bin/`                                    | holochain binairies when testing
 | `/dna/`                                    | DNA source code
 | `/scripts/`                                | Tool chain
-| `/webapp/`                                 | The webapp source code
-| &nbsp;&nbsp;&nbsp;&nbsp;`webhapp.workdir/` | webhapp work directory
+| `/testdata/`                               | Config files and asset fils for testing with @theweave/cli
+| `/we-applet/`                              | Source code for the Moss tool version of Vines
+| `/webapp/`                                 | The webapp source code off Vines
+| `/we-applet_feed/`                         | Source code for the Moss tool version of Feed
+| `/webapp_feed/`                            | The webapp source code of Feed
 | `/webcomponents/`                          | The web components source code
-| `/we-applet/`                              | The applet for We integration
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)

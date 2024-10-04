@@ -613,7 +613,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                 <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
               </ui5-avatar>
             </sl-tooltip>
-            <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
+            <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon disabled
                        @input=${(e:any) => {
                           console.log("<search-field> @input", e.keyCode, e);
                           let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
