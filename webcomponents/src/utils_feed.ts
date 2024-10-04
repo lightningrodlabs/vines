@@ -3,11 +3,11 @@ import {determineBeadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
-import {ActionId, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId} from "@ddd-qc/lit-happ";
 
 
 /** MAIN TOPIC is hardcoded */
-export const MAIN_TOPIC_ID: EntryId = EntryId.empty(77); // 'M'
+export const MAIN_TOPIC_ID: ActionId = ActionId.empty(77); // 'M'
 export const MAIN_SEMANTIC_TOPIC = "__main";
 
 /**

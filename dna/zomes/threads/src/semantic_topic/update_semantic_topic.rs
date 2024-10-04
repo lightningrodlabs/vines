@@ -8,14 +8,14 @@ use crate::semantic_topic::*;
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateTopicInput {
-  pub eh: EntryHash,
+  pub ah: ActionHash,
   pub topic: SemanticTopic,
 }
 
 /// Creates the SemanticTopic
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<EntryHash> {
+pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Make sur length is OK
   if let Ok(properties) = get_properties() {
@@ -25,7 +25,7 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<EntryHash>
     }
   }
   /// Make sure Topic does already exists
-  let (record, old) = get_typed_and_record::<SemanticTopic>(input.eh.into())?;
+  let (record, old) = get_typed_and_record::<SemanticTopic>(input.ah.into())?;
   /// Make sure title changed
   if old.title == input.topic.title {
       return error("Topic title is same");
@@ -35,18 +35,19 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<EntryHash>
   //   return error("Only original author can change topic title");
   // }
 
-  debug!("update_semantic_topic from: '{}' to: '{}'", old.title, input.topic.title);
+  debug!("update_semantic_topic() from: '{}' to: '{}'", old.title, input.topic.title);
 
-  ///
-  let new_eh = hash_entry(input.topic.clone())?;
-  let _ah = update_entry(record.action_address().to_owned(), ThreadsEntry::SemanticTopic(input.topic.clone()))?;
+  /// Update Entry
+  //let new_eh = hash_entry(input.topic.clone())?;
+  let ah = update_entry(record.action_address().to_owned(), ThreadsEntry::SemanticTopic(input.topic.clone()))?;
+  /// Add to Anchor tree
   let tp = determine_topic_anchor(input.topic.title.clone())?;
   tp.ensure()?;
   let ph = tp.path_entry_hash()?;
   debug!("create_semantic_topic() path:  '{}' {} | {}", path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
   create_link(
     ph,
-    new_eh.clone(),
+    ah.clone(),
     ThreadsLinkType::Topics,
     LinkTag::new(input.topic.title.to_lowercase().as_bytes().to_vec()),
   )?;
@@ -61,5 +62,5 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<EntryHash>
   }
   //delete_link(old_ph)?;
   ///
-  Ok(new_eh)
+  Ok(ah)
 }

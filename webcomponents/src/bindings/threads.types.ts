@@ -196,7 +196,7 @@ export interface SetNotifySettingInput {
 
 /** Input to the notify call */
 export interface UpdateTopicInput {
-  eh: EntryArray
+  ah: ActionArray
   topic: SemanticTopic
 }
 

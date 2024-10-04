@@ -3,7 +3,7 @@ import {
   ActionIdMap,
   AgentId,
   AgentIdMap,
-  DnaViewModel, EntryId, TipProtocol, TipProtocolVariantApp,
+  DnaViewModel, TipProtocol, TipProtocolVariantApp,
   ZomeSignal,
   ZomeSignalProtocol, ZomeSignalProtocolType
 } from "@ddd-qc/lit-happ";
@@ -30,6 +30,7 @@ import {Decoder, Encoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
+import {PathExplorerZvm} from "@ddd-qc/path-explorer";
 
 
 /** */
@@ -66,7 +67,7 @@ export type ThreadsDnaPerspectiveComparable = {
 export class ThreadsDvm extends DnaViewModel {
 
   static override readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
-  static override readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm/*, PathExplorerZvm*/ ]
+  static override readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm, PathExplorerZvm ]
 
   readonly signalHandler?: AppSignalCb = this.handleSignal;
 
@@ -347,11 +348,11 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async editSemanticTopic(old_eh: EntryId, title: string): Promise<EntryId> {
-    let eh = await this.threadsZvm.editSemanticTopic(old_eh, title);
+  async editSemanticTopic(old_hash: ActionId, title: string): Promise<ActionId> {
+    let ah = await this.threadsZvm.editSemanticTopic(old_hash, title);
     //const tip: TipProtocol = {type: "UpdateSemanticTopic", old_topic_eh: old_eh, new_topic_eh: eh, title};
     //await this.broadcastTip(tip);
-    return eh;
+    return ah;
   }
 
 

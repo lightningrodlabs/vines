@@ -34,7 +34,7 @@ export type ThreadsSnapshot = {
   /** Store of all Subjects: hash -> Subject */
   subjects: [HoloHashB64, Subject][],
   /** Store of all SemTopic: eh -> TopicTitle */
-  semanticTopics: [EntryHashB64, string][],
+  semanticTopics: [ActionHashB64, string][],
   /** Keep only marked items */
   hiddens: HoloHashB64[],
   favorites: ActionHashB64[],
@@ -91,7 +91,7 @@ export class ThreadsPerspective {
   /** Store of all Subjects: hash -> Subject */
   subjects: AnyIdMap<Subject> = new AnyIdMap();
   /** Store of all SemTopic: eh -> TopicTitle */
-  semanticTopics: EntryIdMap<string> = new EntryIdMap();
+  semanticTopics: ActionIdMap<string> = new ActionIdMap();
   /** Any hash -> isHidden */
   hiddens: Dictionary<boolean> = {};
   /** */
@@ -519,7 +519,7 @@ export class ThreadsPerspective {
     const result: ThreadsSnapshot = {
       appletIds: this.appletIds.map((id) => id.b64),
       subjects: Array.from(this.subjects.entries()),
-      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicEh, title]) => [topicEh.b64, title]),
+      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, title]) => [topicHash.b64, title]),
       hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
       favorites: this.favorites.map((id) => id.b64),
       pps: Array.from(this.threads.entries()).map(([ppAh, thread]) => [ppAh.b64, thread.pp, thread.creationTime, thread.author.b64]),
@@ -635,12 +635,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeSemanticTopic(eh: EntryId, title: string): void {
-    this.semanticTopics.set(eh, title);
+  storeSemanticTopic(hash: ActionId, title: string): void {
+    this.semanticTopics.set(hash, title);
   }
+
   /** */
-  unstoreSemanticTopic(eh: EntryId): void {
-    this.semanticTopics.delete(eh);
+  unstoreSemanticTopic(hash: ActionId): void {
+    this.semanticTopics.delete(hash);
   }
 
 
@@ -859,8 +860,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** this.semanticTopics */
     this.semanticTopics.clear();
-    for (const [topicEh, title] of Object.values(snapshot.semanticTopics)) {
-      this.storeSemanticTopic(new EntryId(topicEh), title);
+    for (const [topicHash, title] of Object.values(snapshot.semanticTopics)) {
+      this.storeSemanticTopic(new ActionId(topicHash), title);
     }
     /** this.hiddens */
     this.hiddens = {}

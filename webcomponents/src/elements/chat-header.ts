@@ -4,8 +4,6 @@ import {
   ActionId,
   AgentId,
   DnaElement,
-  EntryId,
-  getHashType,
   intoAnyId,
 } from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix} from "../utils";
@@ -15,7 +13,6 @@ import {beadJumpEvent, SpecialSubjectType} from "../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../styles";
 import {toasty} from "../toast";
-import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {Hrl} from "@theweave/api/dist/types";
 import {intoHrl} from "@ddd-qc/we-utils";
 
@@ -97,11 +94,11 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
     const subjectAddr = thread.pp.subject.address;
     let maybeSemanticTopicTitle: string | undefined = undefined;
-    const subjectHashType = getHashType(subjectAddr);
-    if (subjectHashType == HoloHashType.Entry) {
-      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(subjectAddr));
+    //const subjectHashType = getHashType(subjectAddr);
+    if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
+      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(subjectAddr));
     }
-    console.debug("subjectHashType", subjectHashType);
+    //console.debug("subjectHashType", subjectHashType);
     const subjectId = ActionId.from(intoAnyId(subjectAddr));
     let title: TemplateResult<1>;
     let subText: TemplateResult<1>;

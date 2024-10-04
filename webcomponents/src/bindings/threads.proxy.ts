@@ -287,10 +287,6 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('probe_pps_from_subject_hash', lh);
   }
 
-  async probePpsFromSubjectAnchor(anchor: string): Promise<[ActionArray, Timestamp][]> {
-    return this.call('probe_pps_from_subject_anchor', anchor);
-  }
-
   async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[ActionArray, Timestamp]> {
     return this.callBlocking('publish_participation_protocol', pp);
   }
@@ -323,7 +319,7 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('query_enc_beads', null);
   }
 
-  async publishSemanticTopic(semanticTopic: SemanticTopic): Promise<EntryArray> {
+  async publishSemanticTopic(semanticTopic: SemanticTopic): Promise<ActionArray> {
     return this.callBlocking('publish_semantic_topic', semanticTopic);
   }
 
@@ -331,11 +327,11 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('pull_all_semantic_topics', null);
   }
 
-  async searchSemanticTopics(titleFilter: string): Promise<[EntryArray, string][]> {
+  async searchSemanticTopics(titleFilter: string): Promise<[ActionArray, EntryArray, string][]> {
     return this.call('search_semantic_topics', titleFilter);
   }
 
-  async updateSemanticTopic(input: UpdateTopicInput): Promise<EntryArray> {
+  async updateSemanticTopic(input: UpdateTopicInput): Promise<ActionArray> {
     return this.callBlocking('update_semantic_topic', input);
   }
 

@@ -9,7 +9,6 @@ import {
   HappBuildModeType,
   HoloHashType,
   intoDhtId,
-  isHashTypeB64
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
 
@@ -266,7 +265,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canAlphabetical: boolean = false;
   @state() private _canViewArchivedSubjects = false;
   @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we don't know which thread from which tool to use
-  @state() private _createTopicHash: EntryId | undefined = undefined;
+  @state() private _createTopicHash: ActionId | undefined = undefined;
 
   /** Right panels */
   @state() private _canShowComments = false;
@@ -521,7 +520,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!topicHash) {
       throw Promise.reject("Missing TopicHash attribute");
     }
-    await this._dvm.editSemanticTopic(new EntryId(topicHash), name);
+    await this._dvm.editSemanticTopic(new ActionId(topicHash), name);
     //console.log("onCreateList() res:", res)
     input.value = "";
     this.editTopicDialogElem.close();
@@ -1095,8 +1094,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
         /** Set input bar 'topic' */
         let topic = msg("Reply");
-        if (isHashTypeB64(thread.pp.subject.address, HoloHashType.Entry)) {
-          const maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new EntryId(thread.pp.subject.address));
+        if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
+          const maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(thread.pp.subject.address));
           if (maybeSemanticTopicTitle) {
             topic = maybeSemanticTopicTitle;
           }
@@ -1261,7 +1260,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           <my-threads-lister ?collapsed=${this._collapseAll}
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this._selectedThreadHash}
-                         @createThreadClicked=${(e : CustomEvent<EntryId>) => {
+                         @createThreadClicked=${(e : CustomEvent<ActionId>) => {
           this._createTopicHash = e.detail;
           this.createThreadDialogElem.show()
           }}></my-threads-lister>
@@ -1272,7 +1271,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <topics-lister ?collapsed=${this._collapseAll} ?alphabetical=${this._canAlphabetical}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
-                           @createThreadClicked=${(e: CustomEvent<EntryId>) => {
+                           @createThreadClicked=${(e: CustomEvent<ActionId>) => {
                                this._createTopicHash = e.detail;
                                this.createThreadDialogElem.show();
                            }}></topics-lister>
@@ -1755,8 +1754,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             <!-- DIALOGS -->
             <ui5-dialog id="wait-dialog">
-                <ui5-busy-indicator delay="0" size="Large" active
-                                    style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+                <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
             <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
                 <peer-list @avatar-clicked=${async (e: any) => {
@@ -1853,7 +1851,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </section>
                 <div slot="footer">
                     <ui5-button id="createTopicDialogButton"
-                                style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>Create
+                                style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>
+                        ${msg("Edit")}
                     </ui5-button>
                     <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
                     </ui5-button>

@@ -236,7 +236,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       break;
       /** -- Vines types -- */
       case SpecialSubjectType.SemanticTopic:
-        let semTopicTitle = threadsZvm.perspective.semanticTopics.get(new EntryId(subject.address));
+        let semTopicTitle = threadsZvm.perspective.semanticTopics.get(new ActionId(subject.address));
         if (!semTopicTitle) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
           return "{Unknown Topic}";

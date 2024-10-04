@@ -7,11 +7,10 @@ mod delete_semantic_topic;
 
 use hdi::hash_path::path::DELIMITER;
 use hdk::prelude::*;
-//use zome_utils::*;
 use threads_integrity::*;
 
 
-///
+/// Semantic Topics are anchored by title's first letters.
 pub(crate) fn determine_topic_anchor(title: String) -> ExternResult<TypedPath> {
   // conver to lowercase for path for ease of search
   let lower_title = title.to_lowercase();

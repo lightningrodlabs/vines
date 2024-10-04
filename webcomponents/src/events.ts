@@ -34,7 +34,7 @@ export interface VinesInputEvent {
 
 /** */
 export type EditTopicRequest = {
-  topicHash: EntryId,
+  topicHash: ActionId,
   subjectName: string,
 }
 

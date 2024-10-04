@@ -298,7 +298,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   async pullSubjectThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
     console.log("threadsZvm.pullSubjectThreads()", subjectId);
     let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
-    /** Skip Agent as it has dm link type to get its pps*/
+    /** Skip Agent as it has dm link type to get its pps */
     if (subjectId.hashType == HoloHashType.Agent) {
       return res;
     }
@@ -313,7 +313,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         } else {
           console.warn("ParticipationProtocol not found", ppAh.b64);
         }
-      } catch(e:any) {
+      } catch(e: any) {
         if (!e.throttled) {
           return Promise.reject(e);
         }
@@ -636,25 +636,25 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async editSemanticTopic(old_eh: EntryId, title: string, preventStoring?: boolean) : Promise<EntryId> {
-    const eh = await this.zomeProxy.updateSemanticTopic({eh: old_eh.hash, topic: {title}});
-    const newEh = new EntryId(eh);
-    this._perspective.unstoreSemanticTopic(old_eh);
-    if (!preventStoring) {
-      this._perspective.storeSemanticTopic(newEh, title);
-    }
-    console.log("editSemanticTopic()", title, newEh.short);
-    //console.log("editSemanticTopic()", this._perspective.allSemanticTopics);
-    /** Done */
-    this.notifySubscribers();
-    return newEh;
+  async editSemanticTopic(old_ah: ActionId, title: string/*, preventStoring?: boolean*/) : Promise<ActionId> {
+    const ah = await this.zomeProxy.updateSemanticTopic({ah: old_ah.hash, topic: {title}});
+    const newAh = new ActionId(ah);
+    // this._perspective.unstoreSemanticTopic(old_eh);
+    // if (!preventStoring) {
+    //   this._perspective.storeSemanticTopic(newAh, title);
+    // }
+    // console.log("editSemanticTopic()", title, newAh.short);
+    // //console.log("editSemanticTopic()", this._perspective.allSemanticTopics);
+    // /** Done */
+    // this.notifySubscribers();
+    return newAh;
   }
 
 
   /** */
-  async publishSemanticTopic(title: string) : Promise<EntryId> {
+  async publishSemanticTopic(title: string) : Promise<ActionId> {
     const eh = await this.zomeProxy.publishSemanticTopic({title});
-    return new EntryId(eh);
+    return new ActionId(eh);
   }
 
 
@@ -666,15 +666,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: EntryId, topicEh: EntryId, purpose: string): Promise<[number, ActionId]> {
+  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string): Promise<[number, ActionId]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const subject: Subject = {
-      address: topicEh.b64,
+      address: topicAh.b64,
       typeName: SpecialSubjectType.SemanticTopic,
       appletId: appletId.b64,
       dnaHashB64: this.cell.address.dnaId.b64,
     };
-    const semTopicTitle = this._perspective.semanticTopics.get(topicEh);
+    const semTopicTitle = this._perspective.semanticTopics.get(topicAh);
     const pp: ParticipationProtocol = {
       purpose,
       rules: "N/A",
@@ -1016,7 +1016,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** -- SemanticTopics -- */
     /** Publish each Topic */
-    for (const [_topicEh, title] of Object.values(snapshot.semanticTopics)) {
+    for (const [_topicHash, title] of Object.values(snapshot.semanticTopics)) {
       /* const newTopicEh = */ await this.publishSemanticTopic(title);
     }
 
@@ -1412,8 +1412,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         break;
       case ThreadsEntryType.SemanticTopic:
         const semTopic = this._decoder.decode(pulse.bytes) as SemanticTopic;
-        if (StateChangeType.Create == pulse.state) {
-          this._perspective.storeSemanticTopic(pulse.eh, semTopic.title);
+        if (StateChangeType.Create == pulse.state || StateChangeType.Update == pulse.state) {
+          this._perspective.storeSemanticTopic(pulse.ah, semTopic.title);
         }
         break;
       case ThreadsEntryType.ParticipationProtocol:

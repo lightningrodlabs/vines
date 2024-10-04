@@ -9,7 +9,15 @@ use zome_signals::emit_links_signal;
 #[hdk_extern]
 pub fn probe_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let links = get_links(link_input(lh, ThreadsLinkType::Threads, None))?;
+  let mut subject_hash = lh.clone();
+  /// If link is actionHash, grab latest update
+  if let Some(ah) = lh.clone().into_action_hash() {
+    let record = get_latest_record(ah)?;
+    subject_hash = record.action_address().to_owned().into();
+    debug!("{} | base: {} | latest {}", subject_hash == lh, lh, subject_hash);
+  }
+  /// Grab links
+  let links = get_links(link_input(subject_hash, ThreadsLinkType::Threads, None))?;
   let ahs = links
     .iter()
     .map(|l| {
@@ -26,7 +34,7 @@ pub fn probe_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(Act
 
 
 /// Return ppAhs and timestamp of its index-time
-#[hdk_extern]
+// #[hdk_extern] Not used for now
 pub fn probe_pps_from_subject_anchor(anchor: String) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   if anchor.is_empty() {
