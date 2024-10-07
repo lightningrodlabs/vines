@@ -69,7 +69,9 @@ function print(self: ThreadsSnapshot): void {
 export type ThreadsPerspectiveComparable = {
   appletIds: number,
   subjects: number,
+  subjectToLatest: number,
   semanticTopics: number,
+  bannedSemanticTopics: number,
   hiddens: number,
   favorites: number,
   threads: number,
@@ -90,8 +92,11 @@ export class ThreadsPerspective {
   appletIds: EntryId[] = [];
   /** Store of all Subjects: hash -> Subject */
   subjects: AnyIdMap<Subject> = new AnyIdMap();
+  subjectToLatest: AnyIdMap<AnyId> = new AnyIdMap();
+  subjectToOrig: AnyIdMap<AnyId> = new AnyIdMap();
   /** Store of all SemTopic: eh -> TopicTitle */
   semanticTopics: ActionIdMap<string> = new ActionIdMap();
+  bannedSemanticTopics: ActionId[] = [];
   /** Any hash -> isHidden */
   hiddens: Dictionary<boolean> = {};
   /** */
@@ -127,7 +132,7 @@ export class ThreadsPerspective {
   /** -- Extra -- */
 
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
-  threadsPerSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
+  threadsPerOrigSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
   /** PathEntryHash -> [DnaId, SubjectHash][] */
   subjectsPerType: EntryIdMap<[DnaId, AnyId][]> = new EntryIdMap();
   ///* name string -> ppAh */
@@ -145,7 +150,9 @@ export class ThreadsPerspective {
     const res: ThreadsPerspectiveComparable = {
       appletIds: this.appletIds.length,
       subjects: this.subjects.size,
+      subjectToLatest: this.subjectToLatest.size,
       semanticTopics: this.semanticTopics.size,
+      bannedSemanticTopics: this.bannedSemanticTopics.length,
       hiddens: Object.keys(this.hiddens).length,
       favorites: this.favorites.length,
       threads: this.threads.size,
@@ -345,9 +352,33 @@ export class ThreadsPerspective {
 
   /** -- Getters -- */
 
+  /** Recursivily follow mapping */
+  getLatestSubject(origSubjectId: AnyId): AnyId {
+    let subjectId = origSubjectId;
+    let next;
+    do {
+      next = this.subjectToLatest.get(subjectId.b64);
+      if (next) subjectId = next;
+    } while(next);
+    return subjectId;
+  }
+
+  /** Recursivily follow mapping */
+  getOrigSubject(latestSubId: AnyId): AnyId {
+    let subjectId = latestSubId;
+    let prev;
+    do {
+      prev = this.subjectToOrig.get(subjectId.b64)
+      if (prev) subjectId = prev;
+    } while(prev);
+    return subjectId;
+  }
+
+
   /** */
-  getCommentThreadForSubject(subjectId: AnyId): ActionId | null {
-    const ppAhs = this.threadsPerSubject.get(subjectId.b64);
+  getCommentThreadForSubject(origSubjectId: AnyId): ActionId | null {
+    const subjectId = this.getOrigSubject(origSubjectId);
+    const ppAhs = this.threadsPerOrigSubject.get(subjectId.b64);
     if (!ppAhs) {
       return null;
     }
@@ -362,8 +393,9 @@ export class ThreadsPerspective {
 
 
   /** */
-  getSubjectThreads(any: HoloHashB64): ActionId[] {
-    const maybe = this.threadsPerSubject.get(any);
+  getSubjectThreads(origSubjectId: AnyId): ActionId[] {
+    const subjectId = this.getOrigSubject(origSubjectId);
+    const maybe = this.threadsPerOrigSubject.get(subjectId.b64);
     if (!maybe) return [];
     return maybe;
   }
@@ -402,9 +434,9 @@ export class ThreadsPerspective {
 
     /* Figure out if subjects are new: no older "none-new" threads found for this subject */
     let newSubjects: AnyIdMap<Timestamp> = new AnyIdMap();
-    for (const [subjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
-      //const pairs = await this.zomeProxy.getPpsFromSubjectHash(decodeHashFromBase64(subjectHash));
-      const threads = this.threadsPerSubject.get(subjectHash)? this.threadsPerSubject.get(subjectHash)!: [];
+    for (const [origSubjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
+      const subjectHash = this.getOrigSubject(intoAnyId(origSubjectHash)).b64;
+      const threads = this.threadsPerOrigSubject.get(subjectHash)? this.threadsPerOrigSubject.get(subjectHash)!: [];
       const pairs: [ActionId, Timestamp][] = threads.map((ppAh) => {
         const thread = this.threads.get(ppAh);
         if (!thread) {
@@ -634,13 +666,30 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   }
 
 
+  updateSemanticTopic(newAh: ActionId, oldAh: ActionId, title: string): void {
+    this.unstoreSemanticTopic(oldAh);
+    this.storeSemanticTopic(newAh, title);
+    this.subjectToOrig.set(newAh.b64, oldAh);
+    this.subjectToLatest.set(oldAh.b64, newAh);
+    //this.subjects.set(subjectAddr.b64, pp.subject);
+  }
+
   /** */
   storeSemanticTopic(hash: ActionId, title: string): void {
-    this.semanticTopics.set(hash, title);
+    console.log("store SemanticTopic", hash.short);
+    if (!this.bannedSemanticTopics.includes(hash)) {
+      this.semanticTopics.set(hash, title);
+    }
   }
 
   /** */
   unstoreSemanticTopic(hash: ActionId): void {
+    // if (!this.semanticTopics.has(hash)) {
+    //   console.warn("Unstoring unknown topic", hash.short);
+    //   return;
+    // }
+    this.bannedSemanticTopics.push(hash);
+    console.log("unstore SemanticTopic", hash.short);
     this.semanticTopics.delete(hash);
   }
 
@@ -709,19 +758,30 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         this.newThreads.set(ppAh, subjectAddr);
       }
       /** threadsPerSubject */
-      if (!this.threadsPerSubject.get(subjectAddr.b64)) {
-        this.threadsPerSubject.set(subjectAddr.b64, []);
+      const origSubjectAddr = this.getOrigSubject(subjectAddr);
+      console.log(`storeThread() thread orig: ${subjectAddr.short} -> ${origSubjectAddr.short}`);
+      if (!this.threadsPerOrigSubject.get(origSubjectAddr.b64)) {
+        this.threadsPerOrigSubject.set(origSubjectAddr.b64, []);
       }
-      this.threadsPerSubject.get(subjectAddr.b64)!.push(ppAh);
+      this.threadsPerOrigSubject.get(origSubjectAddr.b64)!.push(ppAh);
 
       /** All Subjects */
-      if (!this.subjects.get(subjectAddr.b64)) {
-        this.subjects.set(subjectAddr.b64, pp.subject);
-      }
+      this.storeSubject(pp.subject);
+      // if (!this.subjects.get(subjectAddr.b64)) {
+      //   this.subjects.set(subjectAddr.b64, pp.subject);
+      // }
     }
     //console.log("storePp()", ppMat.subjectHash, ppAh)
     /** Done */
     return pp;
+  }
+
+
+  /** */
+  storeSubject(sub: Subject) {
+    if (!this.subjects.get(sub.address)) {
+      this.subjects.set(sub.address, sub);
+    }
   }
 
 
@@ -807,7 +867,6 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   storeAllSubjects(list: Subject[]) {
     this.subjects.clear();
     for (const subject of list) {
-
       this.subjects.set(subject.address, subject);
     }
   }
@@ -842,6 +901,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** this.subjects */
     this.subjects.clear();
+    this.subjectToLatest.clear();
     this.subjectsPerType.clear();
     for (const [subjectAddr, subject] of Object.values(snapshot.subjects)) {
       this.subjects.set(subjectAddr, subject);
@@ -870,7 +930,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** this.threads */
     this.threads.clear();
-    this.threadsPerSubject.clear();
+    this.threadsPerOrigSubject.clear();
     this.dmAgents.clear();
     for (const [ppAhB64, ppMat, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
       const ppAh = new ActionId(ppAhB64);

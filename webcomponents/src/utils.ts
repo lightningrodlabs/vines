@@ -1,9 +1,4 @@
-import {
-  AnyBeadMat,
-  BeadType, EntryBeadMat,
-  TextBeadMat,
-  TypedBeadMat
-} from "./viewModels/threads.materialize";
+import {AnyBeadMat, BeadType, EntryBeadMat, TextBeadMat, TypedBeadMat} from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
 import {AppletId, Hrl, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@theweave/api";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
@@ -11,7 +6,7 @@ import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
 import {ParticipationProtocol, Subject, ThreadsEntryType} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {ActionId, AgentId, DnaId, EntryId, intoDhtId, DhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
 import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
@@ -146,8 +141,17 @@ export class AnyIdMap<T> extends Map<HoloHashB64, T> {}
 
 
 /** Determine pp's name */
-export function ppName(pp: ParticipationProtocol): string {
-  return `${determineSubjectPrefix(pp.subject.typeName as SpecialSubjectType)} ${pp.subject_name}: ${pp.purpose}`;
+export function latestThreadName(pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
+  const curSubjectId = intoAnyId(pp.subject.address);
+  const latestSubjectId = threadsZvm.perspective.getLatestSubject(curSubjectId);
+  const latestSubject = threadsZvm.perspective.subjects.get(latestSubjectId.b64);
+  console.log("latestThreadName", curSubjectId.short, latestSubjectId.short);
+  if (!latestSubject) return "unknown thread";
+  const subjectType = pp.subject.typeName as SpecialSubjectType;
+  if (subjectType == SpecialSubjectType.SemanticTopic) {
+    return `${determineSubjectPrefix(subjectType)} ${latestSubject.name}: ${pp.purpose}`;
+  }
+  return `${determineSubjectPrefix(subjectType)} ${latestSubject.name}: ${pp.purpose}`;
 }
 
 
@@ -206,7 +210,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
           //thread = await threadsZvm.fetchPp(subject.address);
           return "{Unknown Thread}";
         }
-        return thread.name;
+        return latestThreadName(thread.pp, threadsZvm);
       }
       break;
       case SpecialSubjectType.SubjectType:

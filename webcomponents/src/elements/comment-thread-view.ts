@@ -3,7 +3,7 @@ import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, DnaId, DnaElement, intoDhtId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {determineSubjectPrefix} from "../utils";
+import {determineSubjectPrefix, latestThreadName} from "../utils";
 
 
 /** @ui5/webcomponents(-fiori) */
@@ -259,7 +259,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     //<!-- @load-more=${this.onLoadMore}-->
 
     const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
-    const subjectName = this.subjectName? this.subjectName : thread.pp.subject_name;
+    const subjectName = this.subjectName? this.subjectName : latestThreadName(thread.pp, this._dvm.threadsZvm);
     const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
     // const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;

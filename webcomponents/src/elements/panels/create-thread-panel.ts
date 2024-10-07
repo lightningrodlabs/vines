@@ -50,17 +50,17 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const attLocInfo = await this.weServices!.assetInfo(wal0);
       const subject: Subject = {
         address: dhtId.b64,
+        name: "",
         typeName: SpecialSubjectType.Asset,
         dnaHashB64: dnaId.b64,
         appletId: new EntryId(attLocInfo!.appletHash).b64,
       }
-      const subject_name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices!);
-      console.log("@create event subject_name", subject_name);
+      subject.name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices!);
+      console.log("@create event subject name", subject.name);
       const pp: ParticipationProtocol = {
         purpose,
         rules: "N/A",
         subject,
-        subject_name,
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {

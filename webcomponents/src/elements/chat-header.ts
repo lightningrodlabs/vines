@@ -2,11 +2,11 @@ import {css, html, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {
   ActionId,
-  AgentId,
+  AgentId, AnyId,
   DnaElement,
   intoAnyId,
 } from "@ddd-qc/lit-happ";
-import {determineSubjectPrefix} from "../utils";
+import {determineSubjectPrefix, latestThreadName} from "../utils";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {renderAvatar, renderProfileAvatar} from "../render";
 import {beadJumpEvent, SpecialSubjectType} from "../events";
@@ -15,6 +15,7 @@ import {sharedStyles} from "../styles";
 import {toasty} from "../toast";
 import {Hrl} from "@theweave/api/dist/types";
 import {intoHrl} from "@ddd-qc/we-utils";
+import {PropertyValues} from "lit/development";
 
 
 /**
@@ -29,6 +30,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of thread to display */
   @property() threadHash?: ActionId;
+  private  _latestSubjectId?: AnyId;
 
   @property() groupNames?: string[];
 
@@ -38,6 +40,21 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   //   const superOk = await super.getUpdateComplete();
   //   return superOk;
   // }
+
+
+  /** */
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    console.log("<chat-header>.willUpdate()", changedProperties, !!this._dvm);
+    // @ts-ignore: _dvm for first update
+    if (changedProperties.has("threadHash") || (changedProperties.has("_dvm") && this.threadHash)) {
+      let thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash!);
+      if (thread) {
+        console.log("<chat-header>.willUpdate() get latest", !!this._dvm);
+        this._latestSubjectId = this._dvm.threadsZvm.perspective.getLatestSubject(intoAnyId(thread.pp.subject.address));
+      }
+    }
+  }
 
 
   /* */
@@ -79,7 +96,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-header>.render():", this.threadHash);
+    console.log("<chat-header>.render()", this.threadHash, this._latestSubjectId);
     if (!this.threadHash) {
       return html`<div>Thread hash missing</div>`;
     }
@@ -92,14 +109,14 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return this.renderDmThreadHeader(maybeDmThread);
     }
 
-    const subjectAddr = thread.pp.subject.address;
+    //const subjectAddr = thread.pp.subject.address;
     let maybeSemanticTopicTitle: string | undefined = undefined;
     //const subjectHashType = getHashType(subjectAddr);
     if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
-      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(subjectAddr));
+      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(this._latestSubjectId!.b64));
     }
     //console.debug("subjectHashType", subjectHashType);
-    const subjectId = ActionId.from(intoAnyId(subjectAddr));
+    const subjectId = ActionId.from(this._latestSubjectId!);
     let title: TemplateResult<1>;
     let subText: TemplateResult<1>;
     const copyBtn = html`
@@ -110,23 +127,23 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         }}></ui5-button>      
     `;
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
-    const subjectName = `${subjectPrefix} ${thread.pp.subject_name}`;
+    const threadName = latestThreadName(thread.pp, this._dvm.threadsZvm);
     if (maybeSemanticTopicTitle) {
-      title = html`${msg("Welcome to")} ${thread.name} !`;
-      subText = html`${msg("This is the start of a channel about topic")} ${subjectName}`;
+      title = html`${msg("Welcome to")} ${threadName} !`;
+      subText = html`${msg("This is the start of a channel about topic")} ${thread.pp.purpose}`;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", thread.pp.subject.address);
+      console.log("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
-        title = html`${msg("Comments about")} <span class="subjectName">${subjectName}</span> from ${avatarElem}`;
+        title = html`${msg("Comments about")} <span class="subjectName">${threadName}</span> from ${avatarElem}`;
         subText = html`${msg("This is the start of comment thread about chat message")} 
                       <span style="color:blue; cursor:pointer" 
                             @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
-                        ${subjectName}
+                        ${threadName}
                       </span>`;
       } else {
-        title = html`${msg("Comments about")} <span class="subjectName">${subjectName}</span>`;
+        title = html`${msg("Comments about")} <span class="subjectName">${threadName}</span>`;
         subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName}: ${thread.pp.purpose}`;
       }
     }

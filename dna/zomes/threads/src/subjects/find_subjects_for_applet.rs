@@ -6,7 +6,7 @@ use crate::subjects::find_subjects_by_type::*;
 
 ///
 #[hdk_extern]
-pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, String)>> {
+pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, String, String)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   if applet_id.is_empty() {
     return error("Empty applet_id");

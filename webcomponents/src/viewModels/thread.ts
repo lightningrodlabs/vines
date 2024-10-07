@@ -5,7 +5,6 @@ import {TimeInterval} from "./timeInterval";
 import createRBTree, {Tree} from "functional-red-black-tree";
 //import {Base64} from "js-base64";
 import {BeadLinkMaterialized} from "./threads.materialize";
-import {ppName} from "../utils";
 import {AgentId} from "@ddd-qc/lit-happ";
 import {ParticipationProtocol} from "../bindings/threads.types";
 
@@ -45,8 +44,6 @@ export class Thread {
 
 
   /** -- Getters -- */
-
-  get name(): string { return ppName(this._pp)}
 
   get pp(): ParticipationProtocol { return this._pp}
 

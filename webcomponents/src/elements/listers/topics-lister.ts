@@ -10,6 +10,7 @@ import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {Hrl} from "@theweave/api/dist/types";
 import {intoHrl} from "@ddd-qc/we-utils";
+import {latestThreadName} from "../../utils";
 
 
 /**
@@ -67,7 +68,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<topics-lister>.render()", this.perspective.semanticTopics);
+    console.log("<topics-lister>.render()", this.perspective.semanticTopics.size, this.perspective.semanticTopics);
 
     let topics = Array.from(this.perspective.semanticTopics.entries());
     if (this.alphabetical) {
@@ -83,14 +84,14 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
       /** Render threads for Topic */
       let threads: TemplateResult<1>[] = [];
-      let topicThreads = this.perspective.threadsPerSubject.get(topicAh.b64);
+      let topicThreads = this.perspective.getSubjectThreads(topicAh);
       if (topicThreads == undefined) {
         topicThreads = [];
       } else {
         if (this.alphabetical) {
           topicThreads = topicThreads.sort((a, b) => {
-            const nameA = this.perspective.threads.get(a)!.name;
-            const nameB = this.perspective.threads.get(b)!.name;
+            const nameA = latestThreadName(this.perspective.threads.get(a)!.pp, this._zvm);
+            const nameB = latestThreadName(this.perspective.threads.get(b)!.pp, this._zvm);
             return nameA.localeCompare(nameB);
           });
         } else {

@@ -48,7 +48,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async beforeCreate(): Promise<[ActionId, boolean]> {
     this._creating = true;
     /** Create main thread if none found */
-    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
+    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerOrigSubject.get(MAIN_TOPIC_ID.b64);
     let mainThreadAh: ActionId;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
@@ -149,12 +149,13 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
     const subject: Subject = {
       address: beadAh.b64,
+      name: "",
       typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
       appletId: getThisAppletId(this.weServices),
       dnaHashB64: this.cell.address.dnaId.b64,
     };
-    const subjectName = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
-    return this._dvm.publishCommentThread( subject, subjectName);
+    subject.name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
+    return this._dvm.publishCommentThread(subject);
   }
 
 

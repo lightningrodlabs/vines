@@ -1,8 +1,11 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
+use path_explorer_types::*;
 use crate::semantic_topic::*;
-
+use crate::participation_protocols::probe_pps_from_subject_hash;
+use crate::participation_protocols::get_subject_tp;
+use crate::subjects::link_subject_to_pp;
 
 /// Input to the notify call
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
@@ -25,7 +28,8 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<ActionHash
     }
   }
   /// Make sure Topic does already exists
-  let (record, old) = get_typed_and_record::<SemanticTopic>(input.ah.into())?;
+  let lh: AnyLinkableHash = input.ah.into();
+  let (record, old) = get_typed_and_record::<SemanticTopic>(lh.clone())?;
   /// Make sure title changed
   if old.title == input.topic.title {
       return error("Topic title is same");
@@ -40,27 +44,56 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<ActionHash
   /// Update Entry
   //let new_eh = hash_entry(input.topic.clone())?;
   let ah = update_entry(record.action_address().to_owned(), ThreadsEntry::SemanticTopic(input.topic.clone()))?;
-  /// Add to Anchor tree
+  /// Add to Topics PathTree
   let tp = determine_topic_anchor(input.topic.title.clone())?;
   tp.ensure()?;
   let ph = tp.path_entry_hash()?;
-  debug!("create_semantic_topic() path:  '{}' {} | {}", path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
+  debug!("update_semantic_topic() path:  '{}' {} | {}", path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
   create_link(
     ph,
     ah.clone(),
     ThreadsLinkType::Topics,
     LinkTag::new(input.topic.title.to_lowercase().as_bytes().to_vec()),
   )?;
-  /// Delete previous link
+  /// Delete previous Topics links
   let old_tp = determine_topic_anchor(old.title.clone())?;
   let old_ph = old_tp.path_entry_hash()?;
   let prefix = LinkTag::new(old.title.to_lowercase().as_bytes().to_vec());
   let links = get_links(link_input(old_ph.clone(), ThreadsLinkType::Topics, Some(prefix)))?;
-  debug!("Links found: {}", links.len());
+  debug!("update_semantic_topic() Topics Links found: {}", links.len());
   for link in links {
     delete_link(link.create_link_hash)?;
   }
   //delete_link(old_ph)?;
+  /// Displace "Protocols" link for each PP refering this Subject
+  let threads = probe_pps_from_subject_hash(lh.clone())?;
+  for (pp_ah, _ts) in threads {
+    let (_eh, pp) = get_typed_from_ah::<ParticipationProtocol>(pp_ah.clone())?;
+    let action_ts = get(pp_ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
+    /// Add to Subjects PathTree
+    let mut new_subject = pp.subject.clone();
+    new_subject.address = holo_hash_encode(ah.get_raw_39());
+    let subject_tp = get_subject_tp(new_subject.clone())?;
+    subject_tp.ensure()?;
+    debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
+    let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
+    create_link(
+      subject_tp.path_entry_hash()?,
+      pp_ah.clone(),
+      ThreadsLinkType::Protocols,
+      LinkTag::new(pp.purpose),
+      // str2tag(&subject_hash_str), // Store Subject Hash in Tag
+    )?;
+    /// Delete (all) previous "Protocols" link (OPTIM: should do this only on first pp)
+    let old_subject_tp = get_subject_tp(pp.subject.clone())?;
+    let links = get_links(link_input(old_subject_tp.path_entry_hash()?, ThreadsLinkType::Protocols, None))?;
+    debug!("update_semantic_topic() Protocols Links found: {}", links.len());
+    for link in links {
+      delete_link(link.create_link_hash)?;
+    }
+    /// Add "Threads" link
+    link_subject_to_pp(&pp.subject, &pp_ah, action_ts)?;
+  }
   ///
   Ok(ah)
 }

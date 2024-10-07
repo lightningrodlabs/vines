@@ -2,7 +2,7 @@ import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {html, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
-import {determineBeadName} from "./utils";
+import {determineBeadName, latestThreadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
@@ -62,7 +62,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title += " " + maybeThread.name;
+                title += " " + latestThreadName(maybeThread.pp, threadsZvm);
             }
             content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
@@ -82,7 +82,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         }
         else {
           if (maybeThread) {
-            title = msg("New message in") + " " + maybeThread.name;
+            title = msg("New message in") + " " + latestThreadName(maybeThread.pp, threadsZvm);
           }
         }
         content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
@@ -98,7 +98,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
           const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title = msg("Reply in") + " " + maybeThread.name;
+                title = msg("Reply in") + " " + latestThreadName(maybeThread.pp, threadsZvm);
             }
             content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
@@ -112,7 +112,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             // const subjectHash = maybeThread.pp.subjectHash;
             // const subject = this.getSubject(subjectHash);
             // title = "New thread about a " + subject.typeName;
-            title += " " + maybeThread.name;
+            title += " " + latestThreadName(maybeThread.pp, threadsZvm);
             content = msg("Rules") + ": " + maybeThread.pp.rules;
         }
     }

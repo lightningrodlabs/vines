@@ -206,6 +206,11 @@ export interface FindSubjectsInput {
   subjectType: string
 }
 
+export interface AppSubjectTip {
+  type_type: string
+  data: Subject
+}
+
 export enum BaseBeadKindType {
 	AnyBead = 'AnyBead',
 	EntryBead = 'EntryBead',
@@ -262,11 +267,11 @@ export interface ParticipationProtocol {
   purpose: string
   rules: string
   subject: Subject
-  subject_name: string
 }
 
 export interface Subject {
   address: string
+  name: string
   typeName: string
   dnaHashB64: string
   appletId: string

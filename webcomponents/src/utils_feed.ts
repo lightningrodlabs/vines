@@ -15,7 +15,7 @@ export const MAIN_SEMANTIC_TOPIC = "__main";
  * This is because partitioned networks edge case where several agents create the main thread.
  */
 export function getMainThread(dvm: ThreadsDvm): ActionId | undefined {
-  const threads = dvm.threadsZvm.perspective.getSubjectThreads(MAIN_TOPIC_ID.b64);
+  const threads = dvm.threadsZvm.perspective.getSubjectThreads(MAIN_TOPIC_ID);
   //console.log("getMainThread()", threads, dvm);
   if (!threads || threads.length == 0) {
     return undefined;
@@ -50,7 +50,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
       const typedBead = threadsDvm.threadsZvm.perspective.getBead(ah);
       const maybeThread = threadsDvm.threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
       if (maybeThread) {
-        title = 'Mentionned in "' + maybeThread.pp.subject_name + '"';
+        title = 'Mentionned in "' + maybeThread.pp.subject.name + '"';
       }
       content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
     }
@@ -65,7 +65,7 @@ export function  composeFeedNotificationTitle(notif: ThreadsNotification, thread
         if (beadInfo.bead.ppAh.equals(mainThreadAh)) {
           title = "New post";
         } else {
-          title = `New comment on post "${maybeThread.pp.subject_name}"` //maybeThread.name;
+          title = `New comment on post "${maybeThread.pp.subject.name}"` //maybeThread.name;
         }
         content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
       }

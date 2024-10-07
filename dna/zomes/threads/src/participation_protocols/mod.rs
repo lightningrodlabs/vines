@@ -2,6 +2,7 @@
 mod probe_pps_from_subject;
 mod publish_participation_protocol;
 
+pub use probe_pps_from_subject::*;
 
 use hdi::hash_path::path::{Component};
 use hdk::prelude::*;
@@ -32,7 +33,7 @@ pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, T
 
 
 ///
-fn get_subject_tp(subject: Subject) -> ExternResult<TypedPath> {
+pub fn get_subject_tp(subject: Subject) -> ExternResult<TypedPath> {
   debug!("get_subject_tp() applet_id: {}", subject.applet_id);
   let mut tp = get_subject_type_tp(subject.applet_id.clone(), &subject.type_name)?;
   //let subject_hash_comp = hash2comp(subject_hash);
@@ -63,23 +64,25 @@ pub fn get_applet_tp(applet_id: String) -> ExternResult<TypedPath> {
 
 ///
 pub fn subject2comp(subject: &Subject) -> Component {
-  debug!("subject2comp() {} | {}", subject.dna_hash_b64, subject.address);
-  let str = format!("{}{}{}", subject.dna_hash_b64, "|", subject.address);
+  debug!("subject2comp() {} | {} | {}", subject.dna_hash_b64, subject.address, subject.name);
+  let str = format!("{}{}{}{}{}", subject.dna_hash_b64, "|", subject.address, "|", subject.name);
   //debug!("subject2comp() {}", str);
   str.into()
 }
 
 
 ///
-pub fn comp2subject(comp: &Component) -> ExternResult<(String, String)> {
+pub fn comp2subject(comp: &Component) -> ExternResult<(String, String, String)> {
   let s = String::try_from(comp)
     .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
 
   debug!("comp2subject() s = {}", s);
-  let (dna_hash_b64, subject_address) = s.split_at(s.find("|").unwrap());
-  let subject_address = &subject_address[1..]; // remove delimiter
-  debug!("comp2subject() {} :: {}", dna_hash_b64, subject_address);
+  let parts: Vec<&str> = s.split("|").collect();
+  // let (dna_hash_b64, subject_address, name) = s.split_at(s.find("|").unwrap());
+  // let subject_address = &subject_address[1..]; // remove delimiter
+  // let name = &name[1..]; // remove delimiter
+  debug!("comp2subject() parts = {:?}", parts);
 
 
-  Ok((dna_hash_b64.to_string(), subject_address.to_string()))
+  Ok((parts[0].to_string(), parts[1].to_string(), parts[2].to_string()))
 }

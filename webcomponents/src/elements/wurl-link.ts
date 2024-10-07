@@ -7,7 +7,7 @@ import {filesContext, weClientContext} from "../contexts";
 import {WAL, WeaveUrl} from "@theweave/api";
 import {ThreadsZvm} from "../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {ppName, weaveUrlToWal, hrl2Id} from "../utils";
+import {latestThreadName, weaveUrlToWal, hrl2Id} from "../utils";
 import {sharedStyles} from "../styles";
 import {ThreadsEntryType} from "../bindings/threads.types";
 import {beadJumpEvent, threadJumpEvent, viewFileEvent} from "../events";
@@ -83,9 +83,9 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           return false;
         }
         const [ppMat, _ts, _author] = maybe;
-        name = ppName(ppMat);
+        name = latestThreadName(ppMat, threadsZvm);
       } else {
-        name = thread.name;
+        name = latestThreadName(thread.pp, threadsZvm);
       }
       //console.log("<wurl-link> loadWal() thread", thread.name);
       this._vinesTypes = ThreadsEntryType.AnyBead;
@@ -113,7 +113,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         console.log("<wurl-link>.loadWal() hash", hash, threadsZvm);
         const maybeThread = threadsZvm.perspective.threads.get(hash);
         if (maybeThread) {
-          this._assetName = maybeThread.name;
+          this._assetName = latestThreadName(maybeThread.pp, threadsZvm);
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
           return;
         }
@@ -125,7 +125,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         try {
           await threadsZvm.fetchPp(hash);
           const thread = threadsZvm.perspective.threads.get(hash)!;
-          this._assetName = thread.name;
+          this._assetName = latestThreadName(thread.pp, threadsZvm);
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
         } catch(e:any) {}
         /** Try Bead */

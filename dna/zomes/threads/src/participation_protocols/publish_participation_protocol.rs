@@ -4,7 +4,7 @@ use zome_utils::*;
 use time_indexing::{index_item};
 use path_explorer_types::*;
 use crate::participation_protocols::*;
-
+use crate::subjects::link_subject_to_pp;
 
 /// Create a Pp off of anything
 #[hdk_extern]
@@ -14,20 +14,12 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   let maybe_index_time: Option<Timestamp> = None; // FIXME
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
-  //let pp_eh = hash_entry(pp_entry)?;
-  /// Global Subjects Index
+
+  /// Add subject to Subjects PathTree and link it to PP
   let subject_tp = get_subject_tp(pp.subject.clone())?;
   subject_tp.ensure()?;
   debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
-  /// Use given index_time or use the PP's creation time
-  let index_time = if let Some(index_time) = maybe_index_time {
-    index_time
-  } else {
-    let action_ts = get(pp_ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
-    action_ts
-  };
-  /// Link from Subject Path to PP
   create_link(
     subject_tp.path_entry_hash()?,
     pp_ah.clone(),
@@ -36,31 +28,17 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     // str2tag(&subject_hash_str), // Store Subject Hash in Tag
   )?;
 
-  /// Link from Subject Hash to PP
-  /// Handle AgentPubKey edge case
-  let raw_subject_hash = holo_hash_decode_unchecked(&pp.subject.address)
-    .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  if pp.subject.type_name == "AgentPubKey" {
-    let subject_hash = HoloHash::<hash_type::Agent>::from_raw_39(raw_subject_hash)
-      .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-    create_link(
-      subject_hash,
-      pp_ah.clone(),
-      ThreadsLinkType::Threads,
-      ts2Tag(index_time), // Store index-time in Tag
-      //str2tag(&ta.anchor), // Store Anchor in Tag
-    )?;
+  /// Use given index_time or use the PP's creation time
+  let index_time = if let Some(index_time) = maybe_index_time {
+    index_time
   } else {
-    let subject_hash = AnyLinkableHash::from_raw_39(raw_subject_hash)
-      .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-    create_link(
-      subject_hash,
-      pp_ah.clone(),
-      ThreadsLinkType::Threads,
-      ts2Tag(index_time), // Store index-time in Tag
-      //str2tag(&ta.anchor), // Store Anchor in Tag
-    )?;
-  }
+    let action_ts = get(pp_ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
+    action_ts
+  };
+
+  /// Link from Subject Hash to PP
+  link_subject_to_pp(&pp.subject, &pp_ah, index_time.clone())?;
+
   /// Global time-Index
   let global_time_tp = Path::from(GLOBAL_TIME_INDEX)
     .typed(ThreadsLinkType::GlobalTimePath)?;

@@ -174,7 +174,7 @@ import {
   getThisAppletId,
   HideEvent,
   InputBar,
-  JumpEvent,
+  JumpEvent, latestThreadName,
   MainViewType, multiJumpEvent,
   NotifiableEvent,
   NotifySetting,
@@ -869,6 +869,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
         address: request.subjectId.b64,
+        name: request.subjectName,
         typeName: request.subjectType,
         appletId: getThisAppletId(this.weServices),
         dnaHashB64: this.cell.address.dnaId.b64,
@@ -877,7 +878,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         purpose: "comment",
         rules: "N/A",
         subject,
-        subject_name: request.subjectName,
     };
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
@@ -1085,7 +1085,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         console.log("<vines-page>.render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
-        primaryTitle = thread.name;
+        primaryTitle = latestThreadName(thread.pp, this._dvm.threadsZvm);
         const dmThread = this._dvm.threadsZvm.isThreadDm(this._selectedThreadHash);
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);

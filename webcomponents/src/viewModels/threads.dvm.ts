@@ -242,6 +242,10 @@ export class ThreadsDvm extends DnaViewModel {
         const appTip = this._decoder.decode(serAppTip) as ThreadsAppTip;
         console.log("handleTip() appTip", appTip);
         switch (appTip.type) {
+          case "subject":
+            console.warn("latestThreadName Received subject", appTip.data?.address);
+            this.threadsZvm.storeSubject(appTip.data!);
+          break;
           case "where":
             const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
             if (locTip.data) this.storePresence(from, locTip.data);
@@ -357,12 +361,12 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishCommentThread(subject: Subject, subject_name: string): Promise<ActionId> {
+  async publishCommentThread(subject: Subject/*, subject_name: string*/): Promise<ActionId> {
     const pp: ParticipationProtocol = {
       purpose: "comment",
       rules: "N/A",
       subject,
-      subject_name,
+      //subject_name,
     };
     const [_creation_ts, ppAh] = await this.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;

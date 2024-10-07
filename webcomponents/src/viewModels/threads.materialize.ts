@@ -2,7 +2,7 @@ import {
   AnyBead, BaseBeadKind, Bead,
   EncryptedBead,
   EntryBead,
-  ParticipationProtocol,
+  ParticipationProtocol, Subject,
   TextBead,
   ThreadsEntryType
 } from "../bindings/threads.types";
@@ -45,6 +45,9 @@ export type ThreadsAppTip = {
 } | {
   type: "location",
   data: ActionId | null
+} | {
+  type: "subject",
+  data: Subject | null
 }
 
 /**  */

@@ -25,9 +25,10 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
   let pp = ParticipationProtocol {
     purpose: "Private conversation".to_string(),
     rules: "privacy".to_string(),
-    subject_name: "agent".to_string(),
+    //subject_name: "agent".to_string(),
     subject: Subject {
       address: holo_hash_encode(input.other_agent.get_raw_39()),
+      name: "agent".to_string(),
       type_name: DM_SUBJECT_TYPE_NAME.to_string(),
       dna_hash_b64: holo_hash_encode(dna_info()?.hash.get_raw_39()),
       applet_id: input.applet_id,

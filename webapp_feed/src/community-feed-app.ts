@@ -229,7 +229,7 @@ export class CommunityFeedApp extends HappElement {
     /** Make sure main topic and thread exists */
     this.threadsDvm.threadsZvm.storeMainTopic();
     this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
-    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
+    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerOrigSubject.get(MAIN_TOPIC_ID.b64);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
       const mainThreadAh = getMainThread(this.threadsDvm)!;
@@ -305,7 +305,7 @@ export class CommunityFeedApp extends HappElement {
         return;
       }
       const [pp, _ts, _author] = maybe;
-      if (pp.subject_name == MAIN_SEMANTIC_TOPIC) {
+      if (pp.subject.name == MAIN_SEMANTIC_TOPIC) {
         this._selectedPostAh = beadAh;
       } else {
         this._selectedPostAh = new ActionId(pp.subject.address);
@@ -438,17 +438,17 @@ export class CommunityFeedApp extends HappElement {
                         }
                         const subject: Subject = {
                             address: dhtId.b64,
+                            name: "",
                             typeName: SpecialSubjectType.Asset,
                             dnaHashB64: dnaId.b64,
                             appletId: new EntryId(attLocInfo.appletHash).b64,
                         }
-                        const subject_name = determineSubjectName(subject, this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
+                        subject.name = determineSubjectName(subject, this.threadsDvm.threadsZvm, this.filesDvm, this._weServices);
                         //console.log("@create event subject_name", subject_name);                        
                         const pp: ParticipationProtocol = {
                             purpose: e.detail.purpose,
                             rules: e.detail.rules,
                             subject,
-                            subject_name,
                         };
                         const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);
                         const wal: WAL = {hrl: intoHrl(this.threadsDvm.cell.address.dnaId, ppAh), context: pp.subject.address}
