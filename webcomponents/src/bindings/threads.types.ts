@@ -195,6 +195,12 @@ export interface SetNotifySettingInput {
 }
 
 /** Input to the notify call */
+export interface PublishTopicInput {
+  appletId: string
+  topic: SemanticTopic
+}
+
+/** Input to the notify call */
 export interface UpdateTopicInput {
   ah: ActionArray
   topic: SemanticTopic

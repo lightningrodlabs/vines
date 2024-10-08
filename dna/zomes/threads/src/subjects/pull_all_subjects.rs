@@ -2,11 +2,10 @@ use hdi::hash_path::path::Component;
 use hdk::prelude::*;
 use threads_integrity::*;
 use path_explorer_types::*;
-use zome_signals::{TipProtocol, ZomeSignalProtocol};
-use zome_signals::ZomeSignalProtocol::Tip;
+//use zome_signals::{TipProtocol, ZomeSignalProtocol};
+//use zome_signals::*;
 use zome_utils::zome_panic_hook;
 use crate::participation_protocols::comp2subject;
-use zome_signals::*;
 
 
 /// Walk Subjects AnchorTree
@@ -54,15 +53,14 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
       applet_id,
     };
     all.push(subject.clone());
-    /// Emit tip about the existence of this subject
-    let app_tip = AppSubjectTip {
-      type_type: "subject".to_string(),
-      data: subject,
-    };
-    //let data = SerializedBytes::from(bincode::serialize(&app_tip).unwrap());
-    let data = encode(&app_tip).unwrap();
-    let tip: TipProtocol = TipProtocol::App(UnsafeBytes::from(data).into());
-    let _ = emit_zome_signal(vec![ZomeSignalProtocol::Tip(tip)]);
+    // /// Emit tip about the existence of this subject
+    // let app_tip = AppSubjectTip {
+    //   type_type: "subject".to_string(),
+    //   data: subject,
+    // };
+    // let data = encode(&app_tip).unwrap();
+    // let tip: TipProtocol = TipProtocol::App(UnsafeBytes::from(data).into());
+    // let _ = emit_zome_signal(vec![ZomeSignalProtocol::Tip(tip)]);
   }
   /// Done
   debug!("all {:?}", all);

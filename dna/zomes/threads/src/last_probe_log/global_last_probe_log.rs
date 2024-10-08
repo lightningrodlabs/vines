@@ -27,7 +27,7 @@ pub fn commit_first_global_log(_ : ()) -> ExternResult<Timestamp> {
     ts: sys_time()?,
     maybe_last_known_pp_ah: None,
   };
-  let ah = create_entry(ThreadsEntry::GlobalLastProbeLog(first_log.clone()))?;
+  let _ah = create_entry(ThreadsEntry::GlobalLastProbeLog(first_log.clone()))?;
   // /// Emit signal
   // let record = get_record(ah.into())?;
   // let pulse = EntryPulse::try_from_new_record(record.clone(), true)?;
@@ -108,7 +108,7 @@ pub fn commit_update_global_log(input: CommitGlobalLogInput) -> ExternResult<Opt
     maybe_last_known_pp_ah: input.maybe_last_known_pp_ah,
   };
   /// Update the entry
-  let ah = update_entry_relaxed(ah, ThreadsEntry::GlobalLastProbeLog(gql.clone()))?;
+  let _ah = update_entry_relaxed(ah, ThreadsEntry::GlobalLastProbeLog(gql.clone()))?;
   // /// Emit signal
   // let update_record = get_record(ah.into())?;
   // let pulse = EntryPulse::try_from_new_record(update_record.clone(), true)?;

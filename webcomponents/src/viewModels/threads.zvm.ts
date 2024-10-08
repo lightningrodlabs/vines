@@ -12,7 +12,7 @@ import {
   GlobalLastProbeLog,
   NotifyPeerInput,
   NotifySetting,
-  ParticipationProtocol,
+  ParticipationProtocol, PublishTopicInput,
   SemanticTopic,
   SetNotifySettingInput,
   Subject,
@@ -82,6 +82,7 @@ import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsDvm} from "./threads.dvm";
+import {THIS_APPLET_ID} from "../contexts";
 
 
 //generateSearchTest();
@@ -656,7 +657,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async publishSemanticTopic(title: string) : Promise<ActionId> {
-    const eh = await this.zomeProxy.publishSemanticTopic({title});
+    const input: PublishTopicInput ={
+      appletId: THIS_APPLET_ID.b64,
+      topic: {title},
+    };
+    const eh = await this.zomeProxy.publishSemanticTopic(input);
     return new ActionId(eh);
   }
 
