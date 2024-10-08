@@ -9,8 +9,8 @@ import {
 } from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {
-  AppSignal,
-  AppSignalCb,
+  AppSignal, Signal, SignalType,
+  SignalCb,
   Timestamp
 } from "@holochain/client";
 import {
@@ -69,7 +69,7 @@ export class ThreadsDvm extends DnaViewModel {
   static override readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
   static override readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm, PathExplorerZvm ]
 
-  readonly signalHandler?: AppSignalCb = this.handleSignal;
+  readonly signalHandler?: SignalCb = this.handleSignal;
 
   private _encoder= new Encoder(HOLOCHAIN_ID_EXT_CODEC);
   private _decoder = new Decoder(HOLOCHAIN_ID_EXT_CODEC);
@@ -189,8 +189,12 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Signaling -- */
 
   /** */
-  handleSignal(appSignal: AppSignal) {
-    console.log("ThreadsDvm.handleSignal()", appSignal);
+  handleSignal(ssignal: Signal) {
+    console.log("ThreadsDvm.handleSignal()", ssignal);
+    if (!(SignalType.App in ssignal)) {
+      return;
+    }
+    const appSignal: AppSignal = ssignal.App;
     if (!("pulses" in (appSignal.payload as Object))) {
       return;
     }

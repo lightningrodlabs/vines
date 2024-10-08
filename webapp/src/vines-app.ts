@@ -4,7 +4,7 @@ import {ContextProvider} from "@lit/context";
 import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket,
-  AppSignal,
+  Signal,
   AppWebsocket,
   InstalledAppId,
 } from "@holochain/client";
@@ -220,7 +220,7 @@ export class VinesApp extends HappMultiElement {
   /** -- Methods -- */
 
   /** */
-  handleSignal(sig: AppSignal) {
+  handleSignal(sig: Signal) {
     console.log("<vines-app>.handleSignal()");
     for (const [appProxy, _hvm] of this.hvms) {
       appProxy.onSignal(sig);

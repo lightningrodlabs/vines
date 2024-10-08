@@ -488,11 +488,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Update -- */
 
-  /** */
-  async onCreateTopic(_e:any) {
-    const input = this.shadowRoot!.getElementById("topicTitleInput") as Input;
+  private validateTopic(inputId: string): string | undefined {
+    const input = this.shadowRoot!.getElementById(inputId) as Input;
     const name = input.value.trim();
-    if (name.length < 2) {
+    if (name.length < 3) {
       input.valueState = ValueState.Error;
       return;
     }
@@ -504,25 +503,34 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       errorMsg.textContent = msg("Invalid characters");
       return;
     }
-
-    await this._dvm.threadsZvm.publishSemanticTopic(name);
-    //console.log("onCreateList() res:", res)
     input.value = "";
+    return name;
+  }
+
+
+  /** */
+  async onCreateTopic(_e:any) {
+    const name = this.validateTopic("topicTitleInput");
+    if (!name) {
+      return;
+    }
+    await this._dvm.threadsZvm.publishSemanticTopic(name);
     this.createTopicDialogElem.close();
   }
 
 
   /** */
   async onEditTopic(_e:any) {
-    const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
-    const name = input.value.trim();
+    const name = this.validateTopic("editTopicTitleInput");
+    if (!name) {
+      return;
+    }
+    // TODO: Dont allow new name to be equal to current value
     const topicHash = this.editTopicDialogElem.getAttribute('TopicHash');
     if (!topicHash) {
       throw Promise.reject("Missing TopicHash attribute");
     }
     await this._dvm.editSemanticTopic(new ActionId(topicHash), name);
-    //console.log("onCreateList() res:", res)
-    input.value = "";
     this.editTopicDialogElem.close();
   }
 
@@ -1824,7 +1832,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this.onCreateTopic(e);
                             }
                         }}>
-                            <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 2 characters")}</div>
+                            <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
                 </section>
@@ -1846,7 +1854,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 e.preventDefault();
                                 this.onEditTopic(e);
                             }
-                        }}></ui5-input>
+                        }}>
+                            <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
+                        </ui5-input>
                     </div>
                 </section>
                 <div slot="footer">

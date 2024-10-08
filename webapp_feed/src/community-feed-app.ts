@@ -4,7 +4,7 @@ import {ContextProvider} from "@lit/context";
 import {PropertyValues} from "lit/development";
 import {
   AdminWebsocket,
-  AppSignal,
+  Signal,
   AppWebsocket,
   InstalledAppId,
   ZomeName,
@@ -188,7 +188,7 @@ export class CommunityFeedApp extends HappElement {
   /** -- Methods -- */
 
   /** */
-  handleSignal(sig: AppSignal) {
+  handleSignal(sig: Signal) {
     console.log("<community-feed-app>.handleSignal()")
     this.appProxy.onSignal(sig);
   }
