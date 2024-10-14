@@ -488,21 +488,26 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Update -- */
 
+
   private validateTopic(inputId: string): string | undefined {
     const input = this.shadowRoot!.getElementById(inputId) as Input;
     const name = input.value.trim();
+    let childDivs = input.querySelectorAll('div');
     if (name.length < 3) {
       input.valueState = ValueState.Error;
+      /** Works even though Lit throws an error when inputing a valid name afterwords */
+      childDivs[0]!.innerText = msg("Minimum 3 characters");
       return;
     }
-    const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
+    const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
     const isValid = regex.test(name);
     if (!isValid) {
       input.valueState = ValueState.Error;
-      const errorMsg = this.shadowRoot!.getElementById("errorMsg") as HTMLElement;
-      errorMsg.textContent = msg("Invalid characters");
+      childDivs[0]!.innerText = msg("Invalid characters");
       return;
     }
+    //console.log("validateTopic() success", childDivs);
+    input.valueState = ValueState.None;
     input.value = "";
     return name;
   }
@@ -543,11 +548,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       input.valueState = ValueState.Error;
       return;
     }
-    const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
+    const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
     const isValid = regex.test(name);
     if (!isValid) {
       input.valueState = ValueState.Error;
       const errorMsg = this.shadowRoot!.getElementById("channelErrorMsg") as HTMLElement;
+      console.log("ValidateTopic() channel", errorMsg);
       errorMsg.textContent = msg("Invalid characters");
       return;
     }
@@ -1832,7 +1838,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this.onCreateTopic(e);
                             }
                         }}>
-                            <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
+                            <div id="topicErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
                 </section>
@@ -1855,7 +1861,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 this.onEditTopic(e);
                             }
                         }}>
-                            <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
+                            <div id="editTopicErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
                 </section>

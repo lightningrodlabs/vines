@@ -256,7 +256,11 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       .filter(([info, _typed]) => info.author.b64 == this.cell.address.agentId.b64)
       .filter(([info, _typed]) => info.beadType != ThreadsEntryType.EncryptedBead);
     const myBeadThreads: ActionIdMap<Thread> = new ActionIdMap();
-    myBeads.map(([beadInfo, _typed]) => myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)!));
+    myBeads
+      .filter(([beadInfo, _typed]) => !!this.perspective.threads.get(beadInfo.bead.ppAh))
+      .map(([beadInfo, _typed]) => {
+      myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)!)
+    });
 
     const myThreads: ActionIdMap<Thread> = new ActionIdMap();
     Array.from(this.perspective.threads.entries())
