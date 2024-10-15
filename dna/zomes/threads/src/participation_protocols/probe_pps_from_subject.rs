@@ -12,7 +12,8 @@ pub fn probe_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(Act
   let mut subject_hash = lh.clone();
   /// If link is actionHash, grab latest update
   if let Some(ah) = lh.clone().into_action_hash() {
-    let record = get_latest_record(ah)?;
+    //let record = get_latest_record(ah)?;
+    let record = get_record(ah.into())?;
     subject_hash = record.action_address().to_owned().into();
     debug!("{} | base: {} | latest {}", subject_hash == lh, lh, subject_hash);
   }

@@ -300,16 +300,33 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Get all Threads for a subject */
   async pullSubjectThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
-    console.log("threadsZvm.pullSubjectThreads()", subjectId);
-    let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
+    //console.log("threadsZvm.pullSubjectThreads() start", subjectId);
     /** Skip Agent as it has dm link type to get its pps */
     if (subjectId.hashType == HoloHashType.Agent) {
-      return res;
+      return new ActionIdMap();
     }
+    /** */
+    let merged: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
+    const subjectIds = this._perspective.getAllSubjectVersions(subjectId);
+    //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length);
+    for (const subjectId of subjectIds) {
+      const tuples = await this.pullSubjectVersionThreads(subjectId);
+      //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size);
+      merged = new ActionIdMap([...merged, ...tuples]);
+    }
+    //console.log("threadsZvm.pullSubjectThreads() end", merged.size);
+    return merged;
+  }
+
+
+  /** */
+  async pullSubjectVersionThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
+    let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
     const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = new ActionId(pp_ah);
       try {
+        //console.log("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.short);
         const maybe = await this.zomeProxy.fetchPp(pp_ah);
         if (maybe) {
           const [pp, ts, author] = maybe;

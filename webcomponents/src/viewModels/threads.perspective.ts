@@ -132,7 +132,7 @@ export class ThreadsPerspective {
   /** -- Extra -- */
 
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
-  threadsPerOrigSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
+  threadsPerSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
   /** PathEntryHash -> [DnaId, SubjectHash][] */
   subjectsPerType: EntryIdMap<[DnaId, AnyId][]> = new EntryIdMap();
   ///* name string -> ppAh */
@@ -352,6 +352,32 @@ export class ThreadsPerspective {
 
   /** -- Getters -- */
 
+  /** */
+
+  /** Recursivily follow mapping and store all IDs in both directions */
+  getAllSubjectVersions(subjectAnyId: AnyId): AnyId[] {
+    let subjectId = subjectAnyId;
+    let all: AnyId[] = [subjectAnyId];
+    let next;
+    do {
+      next = this.subjectToLatest.get(subjectId.b64);
+      if (next) {
+        all.push(next);
+        subjectId = next;
+      }
+    } while(next);
+    subjectId = subjectAnyId;
+    let prev;
+    do {
+      prev = this.subjectToOrig.get(subjectId.b64)
+      if (prev) {
+        all.push(prev);
+        subjectId = prev;
+      }
+    } while(prev);
+    return all;
+  }
+
   /** Recursivily follow mapping */
   getLatestSubject(origSubjectId: AnyId): AnyId {
     let subjectId = origSubjectId;
@@ -376,9 +402,8 @@ export class ThreadsPerspective {
 
 
   /** */
-  getCommentThreadForSubject(origSubjectId: AnyId): ActionId | null {
-    const subjectId = this.getOrigSubject(origSubjectId);
-    const ppAhs = this.threadsPerOrigSubject.get(subjectId.b64);
+  getCommentThreadForSubject(subjectId: AnyId): ActionId | null {
+    const ppAhs = this.threadsPerSubject.get(subjectId.b64);
     if (!ppAhs) {
       return null;
     }
@@ -393,9 +418,22 @@ export class ThreadsPerspective {
 
 
   /** */
-  getSubjectThreads(origSubjectId: AnyId): ActionId[] {
-    const subjectId = this.getOrigSubject(origSubjectId);
-    const maybe = this.threadsPerOrigSubject.get(subjectId.b64);
+  getSubjectThreads(startSubjectId: AnyId): ActionId[] {
+    const subjectIds = this.getAllSubjectVersions(startSubjectId);
+    //console.log("getSubjectThreads() subjectIds", subjectIds.length, startSubjectId.short);
+    let all: ActionId[] = []
+    for (const subjectId of subjectIds) {
+      const pps = this.getSubjectVersionThreads(subjectId);
+      //console.log("getSubjectThreads() pps", pps.length);
+      all = all.concat(pps);
+    }
+    //console.log("getSubjectThreads() END", all.length);
+    return all;
+  }
+
+  /** */
+  getSubjectVersionThreads(subjectId: AnyId): ActionId[] {
+    const maybe = this.threadsPerSubject.get(subjectId.b64);
     if (!maybe) return [];
     return maybe;
   }
@@ -436,7 +474,7 @@ export class ThreadsPerspective {
     let newSubjects: AnyIdMap<Timestamp> = new AnyIdMap();
     for (const [origSubjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
       const subjectHash = this.getOrigSubject(intoAnyId(origSubjectHash)).b64;
-      const threads = this.threadsPerOrigSubject.get(subjectHash)? this.threadsPerOrigSubject.get(subjectHash)!: [];
+      const threads = this.threadsPerSubject.get(subjectHash)? this.threadsPerSubject.get(subjectHash)!: [];
       const pairs: [ActionId, Timestamp][] = threads.map((ppAh) => {
         const thread = this.threads.get(ppAh);
         if (!thread) {
@@ -758,12 +796,10 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         this.newThreads.set(ppAh, subjectAddr);
       }
       /** threadsPerSubject */
-      const origSubjectAddr = this.getOrigSubject(subjectAddr);
-      console.log(`storeThread() thread orig: ${subjectAddr.short} -> ${origSubjectAddr.short}`);
-      if (!this.threadsPerOrigSubject.get(origSubjectAddr.b64)) {
-        this.threadsPerOrigSubject.set(origSubjectAddr.b64, []);
+      if (!this.threadsPerSubject.get(subjectAddr.b64)) {
+        this.threadsPerSubject.set(subjectAddr.b64, []);
       }
-      this.threadsPerOrigSubject.get(origSubjectAddr.b64)!.push(ppAh);
+      this.threadsPerSubject.get(subjectAddr.b64)!.push(ppAh);
 
       /** All Subjects */
       this.storeSubject(pp.subject);
@@ -930,7 +966,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** this.threads */
     this.threads.clear();
-    this.threadsPerOrigSubject.clear();
+    this.threadsPerSubject.clear();
     this.dmAgents.clear();
     for (const [ppAhB64, ppMat, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
       const ppAh = new ActionId(ppAhB64);

@@ -48,7 +48,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   private async beforeCreate(): Promise<[ActionId, boolean]> {
     this._creating = true;
     /** Create main thread if none found */
-    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerOrigSubject.get(MAIN_TOPIC_ID.b64);
+    const mainThreads = this._dvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     let mainThreadAh: ActionId;
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {

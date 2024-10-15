@@ -1684,11 +1684,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                 }}>
                                     </ui5-button>`
                         }
-                        ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : html`
-                            <ui5-button icon="developer-settings"
-                                        @click=${() => this._canShowDebug = !this._canShowDebug}>
-                            </ui5-button>
-                        `}
+                        ${
+                            HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : /*html``*/
+                                    html`<ui5-button icon="developer-settings" @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
+                        }
                         <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
                                         style="color: ${this._dvm.threadsZvm.perspective.inbox.size? "#33A000" : ""}"

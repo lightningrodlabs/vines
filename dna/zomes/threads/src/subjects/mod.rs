@@ -12,7 +12,7 @@ use threads_integrity::*;
 use zome_utils::*;
 
 
-//
+/// Create Threads link
 pub fn link_subject_to_pp(subject: &Subject, pp_ah: &ActionHash, index_time: Timestamp) -> ExternResult<()> {
   /// Handle AgentPubKey edge case
   let raw_subject_hash = holo_hash_decode_unchecked(&subject.address)

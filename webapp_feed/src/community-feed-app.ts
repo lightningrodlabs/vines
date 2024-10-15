@@ -229,7 +229,7 @@ export class CommunityFeedApp extends HappElement {
     /** Make sure main topic and thread exists */
     this.threadsDvm.threadsZvm.storeMainTopic();
     this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
-    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerOrigSubject.get(MAIN_TOPIC_ID.b64);
+    const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {
       const mainThreadAh = getMainThread(this.threadsDvm)!;

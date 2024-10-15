@@ -15,7 +15,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
 
-  /// Add subject to Subjects PathTree and link it to PP
+  /// Add subject to Subjects PathTree and create "Protocols" link
   let subject_tp = get_subject_tp(pp.subject.clone())?;
   subject_tp.ensure()?;
   debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
