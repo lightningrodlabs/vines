@@ -131,6 +131,11 @@ export interface AddManyTextBeadAtInput {
   count: number
 }
 
+export interface AppStringTip {
+  type_type: string
+  data: string
+}
+
 export interface DecryptBeadInput {
   encBead: EncryptedBead
   otherAgent: AgentArray
@@ -210,11 +215,6 @@ export interface UpdateTopicInput {
 export interface FindSubjectsInput {
   appletId: string
   subjectType: string
-}
-
-export interface AppSubjectTip {
-  type_type: string
-  data: Subject
 }
 
 export enum BaseBeadKindType {

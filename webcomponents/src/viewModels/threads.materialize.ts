@@ -35,19 +35,22 @@ export enum NotifiableEvent {
   NewDmThread = 'NewDmThread',
 }
 
-
+/** */
 export type ThreadsAppTip = {
   type: "notification"
   data: ThreadsNotificationTip,
 } | {
-  type: "where"
-  data: ActionId | null,
+  type: "where" // ask for peer's channel location
+  data: ActionId | null, // my current channel location
 } | {
-  type: "location",
-  data: ActionId | null
+  type: "location", // broadcast my channel location
+  data: ActionId | null  // my current channel location
 } | {
-  type: "subject",
+  type: "subject", // not used
   data: Subject | null
+} | {
+  type: "string",
+  data: string | null
 }
 
 /**  */
@@ -64,9 +67,8 @@ export type ThreadsNotificationTip  = {
 
 
 export interface ThreadsNotification {
-  //eventIndex: number,
-  event: NotifiableEvent,
   createLinkAh: ActionId,
+  event: NotifiableEvent,
   author: AgentId,
   timestamp: Timestamp,
   content: ActionId, // ppAh or beadAh depending on event

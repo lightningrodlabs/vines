@@ -1,17 +1,25 @@
 import {ActionHashB64, AgentPubKeyB64, EntryHashB64, HoloHashB64, Timestamp} from "@holochain/client";
 import {
-  Dictionary,
-  AgentId,
   ActionId,
-  EntryId,
-  AgentIdMap,
   ActionIdMap,
-  EntryIdMap, DnaId, LinkableId, intoAnyId, AnyId,
+  AgentId,
+  AgentIdMap,
+  AnyId,
+  Dictionary,
+  DnaId,
+  EntryId,
+  EntryIdMap,
+  intoAnyId,
+  LinkableId,
 } from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
   DM_SUBJECT_TYPE_NAME,
-  NotifySetting, ParticipationProtocol, Subject, ThreadLastProbeLog, ThreadsEntryType,
+  NotifySetting,
+  ParticipationProtocol,
+  Subject,
+  ThreadLastProbeLog,
+  ThreadsEntryType,
 } from "../bindings/threads.types";
 import {AnyIdMap} from "../utils";
 import {
@@ -33,6 +41,7 @@ import {Cell} from "@ddd-qc/cell-proxy";
 export type ThreadsSnapshot = {
   /** Store of all Subjects: hash -> Subject */
   subjects: [HoloHashB64, Subject][],
+  subjectsToLatest: [HoloHashB64, HoloHashB64][],
   /** Store of all SemTopic: eh -> TopicTitle */
   semanticTopics: [ActionHashB64, string][],
   /** Keep only marked items */
@@ -57,6 +66,7 @@ function print(self: ThreadsSnapshot): void {
   console.log("ThreadSnapshot:");
   console.log("  -       appletIds:", self.appletIds.length);
   console.log("  -        subjects:", self.subjects.length);
+  console.log("  -subjectsToLatest:", self.subjectsToLatest.length);
   console.log("  -  semanticTopics:", self.semanticTopics.length);
   console.log("  -         hiddens:", self.hiddens.length);
   console.log("  -       favorites:", self.favorites.length);
@@ -125,6 +135,8 @@ export class ThreadsPerspective {
   //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
   /** linkAh -> (ppAh, notif) */
   inbox: ActionIdMap<[ActionId, ThreadsNotification]> = new ActionIdMap();
+  /** ppAh -> (author, linkAh)[] */
+  inboxByThread: ActionIdMap<[AgentId, ActionId][]> = new ActionIdMap();
   /* ppAh -> (agent -> value) */
   notifSettings: ActionIdMap<AgentIdMap<NotifySetting>> = new ActionIdMap();
 
@@ -585,10 +597,16 @@ export class ThreadsPerspective {
       const agents: [AgentPubKeyB64, string[]][] = Array.from(map.entries()).map(([agent, emojis]) => [agent.b64, emojis]);
       emojiReactions.push([beadAh.b64, agents]);
     }
+    /** SubjectsToLatest */
+    const subjectsToLatest: [HoloHashB64, HoloHashB64][] = [];
+    for (const [old, newer] of this.subjectToLatest.entries()) {
+      subjectsToLatest.push([old, newer.b64])
+    }
     /** -- Done -- */
     const result: ThreadsSnapshot = {
       appletIds: this.appletIds.map((id) => id.b64),
       subjects: Array.from(this.subjects.entries()),
+      subjectsToLatest,
       semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, title]) => [topicHash.b64, title]),
       hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
       favorites: this.favorites.map((id) => id.b64),
@@ -686,15 +704,35 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeNotification(notif: ThreadsNotification, ppAh: ActionId) {
-    console.log("storeNotification()", notif.event, ppAh);
-    this.inbox.set(notif.createLinkAh, [ppAh, notif]);
+  storeNotification(newNotif: ThreadsNotification, ppAh: ActionId) {
+    if (this.inbox.get(newNotif.createLinkAh)) {
+      return;
+    }
+    console.log("storeNotification()", newNotif.event, ppAh);
+    this.inbox.set(newNotif.createLinkAh, [ppAh, newNotif]);
+    const maybe = this.inboxByThread.get(ppAh);
+    if (!maybe) {
+      this.inboxByThread.set(ppAh, [[newNotif.author, newNotif.createLinkAh]]);
+    } else {
+      maybe.push([newNotif.author, newNotif.createLinkAh])
+    }
   }
 
 
   /** */
   unstoreNotification(linkAh: ActionId) {
-    this.inbox.delete(linkAh); // = undefined;
+    const maybe = this.inbox.get(linkAh);
+    if (!maybe) {
+      return
+    }
+    const ppAh = maybe[0];
+    //const notifAuthor = maybe[1].author;
+    /** Delete in inboxByThread */
+    const newList = this.inboxByThread.get(ppAh)!
+      .filter(([_author, lAh]) => !linkAh.equals(lAh));
+    this.inboxByThread.set(ppAh, newList);
+    /** */
+    this.inbox.delete(linkAh);
   }
 
 
@@ -937,7 +975,6 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** this.subjects */
     this.subjects.clear();
-    this.subjectToLatest.clear();
     this.subjectsPerType.clear();
     for (const [subjectAddr, subject] of Object.values(snapshot.subjects)) {
       this.subjects.set(subjectAddr, subject);
@@ -953,6 +990,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
           this.subjectsPerType.get(pathEh)!.push([new DnaId(subject.dnaHashB64), intoAnyId(subjectAddr)]);
         }
       }
+    }
+    /** subjectToLatest */
+    this.subjectToLatest.clear();
+    this.subjectToOrig.clear();
+    for (const [old, newer] of snapshot.subjectsToLatest) {
+      this.subjectToLatest.set(old, intoAnyId(newer));
+      this.subjectToOrig.set(newer, intoAnyId(old));
     }
     /** this.semanticTopics */
     this.semanticTopics.clear();

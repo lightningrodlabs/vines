@@ -67,9 +67,10 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
   Ok(all)
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AppSubjectTip {
-  #[serde(rename = "type")]
-  type_type: String,
-  data: Subject,
-}
+// #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+// pub struct AppSubjectTip {
+//   #[serde(rename = "type")]
+//   type_type: String,
+//   data: Subject,
+// }
+

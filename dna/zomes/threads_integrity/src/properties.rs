@@ -11,6 +11,25 @@ pub struct ThreadsProperties {
 }
 
 
+impl ThreadsProperties {
+   pub fn validate(&self) -> ExternResult<ValidateCallbackResult> {
+      if self.max_topic_name_length == 0 {
+         return Ok(ValidateCallbackResult::Invalid("DNA Property \"max_topic_name_length\" must be > 0".to_string()));
+      }
+      if self.max_topic_name_length < self.min_topic_name_length as u16 {
+         return Ok(ValidateCallbackResult::Invalid("DNA Property \"max_topic_name_length\" must be bigger than \"min_topic_name_length\"".to_string()));
+      }
+      if self.group_name.len() > 64 {
+         return Ok(ValidateCallbackResult::Invalid("DNA Property \"group_name\" is too big".to_string()));
+      }
+      if self.group_svg_icon.len() > 1024 * 1024 {
+         return Ok(ValidateCallbackResult::Invalid("DNA Property \"group_svg_icon\" is too big".to_string()));
+      }
+      ///
+      Ok(ValidateCallbackResult::Valid)
+   }
+}
+
 /// Return the DNA properties
 pub fn get_properties() -> ExternResult<ThreadsProperties> {
    //debug!("*** get_properties() called");

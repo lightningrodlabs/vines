@@ -73,8 +73,8 @@
     "start:local"        : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run _save-ports\" \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp\"",
     "start:mem:feed"     : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:mem\" \"sleep 7 && npm run start:ui -w webapp_feed\"",
 
-    "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/vines.happ --run=$HC_APP_PORT -a vines network mem",
-    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/vines.happ --run=$HC_APP_PORT -a vines network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
+    "new-sandbox:mem"    : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/vines.happ --run=$HC_APP_PORT -a vines network mem",
+    "new-sandbox:local"  : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate artifacts/vines.happ --run=$HC_APP_PORT -a vines network --bootstrap http://127.0.0.1:$BOOT_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
 
     "serve"              : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) npm run serve:run",
     "serve:run"          : "hc run-local-services --bootstrap-port $BOOT_PORT --signal-port $SIGNAL_PORT",
@@ -86,7 +86,7 @@
     "start:feed:local"   : "cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run _save-ports\" \"npm run build:watch -w webcomponents\" \"npm run new-sandbox:local\" \"sleep 7 && npm run start:ui -w webapp_feed\"",
     "network2:feed"      : "npm run clean:hc & npm run build:devtest && cross-env BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:save\" \"npm run serve:run\" \"cross-env INDEX=0 npm run start:feed:local\" \"sleep 1 && cross-env INDEX=1 npm run start:feed:local\"",
 
-    "_sandbox"           : "echo INDEX $INDEX & echo PORTS $BOOT_PORT $SIGNAL_PORT $HC_APP_PORT $HC_ADMIN_PORT & RUST_LOG=warn WASM_LOG=warn echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX",
+    "_sandbox"           : "echo INDEX $INDEX & echo PORTS $BOOT_PORT $SIGNAL_PORT $HC_APP_PORT $HC_ADMIN_PORT & RUST_LOG=warn WASM_LOG=debug echo \"pass\" | $npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT run $INDEX",
     "_local"             : "cross-env BOOT_PORT=$(cat .hc_bootenv) SIGNAL_PORT=$(cat .hc_signalenv) HC_APP_PORT=$(cat .hc_app_$INDEX) HC_ADMIN_PORT=$(cat .hc_admin_$INDEX) HAPP_BUILD_MODE='Debug' concurrently \"npm run _sandbox\" \"sleep 7 && npm run start:ui-only -w webapp\"",
     "local0"             : "cross-env INDEX=0 npm run _local",
     "local1"             : "cross-env INDEX=1 npm run _local",

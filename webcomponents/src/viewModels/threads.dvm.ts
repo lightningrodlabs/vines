@@ -250,6 +250,10 @@ export class ThreadsDvm extends DnaViewModel {
             //console.warn("latestThreadName Received subject", appTip.data?.address);
             //this.threadsZvm.storeSubject(appTip.data!);
           break;
+          case "string":
+            console.warn(`TIP APP STRING: "${appTip.data}"`);
+            //this.threadsZvm.storeSubject(appTip.data!);
+            break;
           case "where":
             const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
             if (locTip.data) this.storePresence(from, locTip.data);

@@ -8,11 +8,13 @@ import {
   CommitGlobalLogInput,
   DM_SUBJECT_TYPE_NAME,
   EncryptedBead,
-  EntryBead, GetLatestBeadsInput,
+  EntryBead,
+  GetLatestBeadsInput,
   GlobalLastProbeLog,
   NotifyPeerInput,
   NotifySetting,
-  ParticipationProtocol, PublishTopicInput,
+  ParticipationProtocol,
+  PublishTopicInput,
   SemanticTopic,
   SetNotifySettingInput,
   Subject,
@@ -24,7 +26,10 @@ import {ThreadsProxy} from "../bindings/threads.proxy";
 import {
   ActionId,
   ActionIdMap,
-  AgentId, AnyId, AnyIdMap, DhtId,
+  AgentId,
+  AnyId,
+  AnyIdMap,
+  DhtId,
   DnaId,
   enc64,
   EntryId,
@@ -32,7 +37,9 @@ import {
   EntryPulseMat,
   getIndexByVariant,
   getVariantByIndex,
-  HoloHashType, holoIdReviver, intoAnyId,
+  HoloHashType,
+  holoIdReviver,
+  intoAnyId,
   intoDhtId,
   intoLinkableId,
   LinkableId,
@@ -56,7 +63,8 @@ import {
   NotifiableEvent,
   NotificationTipBeadData,
   NotificationTipPpData,
-  TextBeadMat, ThreadsAppTip,
+  TextBeadMat,
+  ThreadsAppTip,
   ThreadsNotification,
   ThreadsNotificationTip,
   TypedBaseBead,
@@ -73,11 +81,7 @@ import {getThisAppletId, parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
-import {
-  ThreadsPerspective,
-  ThreadsPerspectiveMutable,
-  ThreadsSnapshot
-} from "./threads.perspective";
+import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
 import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -310,9 +314,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const subjectIds = this._perspective.getAllSubjectVersions(subjectId);
     //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length);
     for (const subjectId of subjectIds) {
-      const tuples = await this.pullSubjectVersionThreads(subjectId);
-      //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size);
-      merged = new ActionIdMap([...merged, ...tuples]);
+      try {
+        const tuples = await this.pullSubjectVersionThreads(subjectId);
+        //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size);
+        merged = new ActionIdMap([...merged, ...tuples]);
+      } catch(e: any) {
+        if (!e.throttled) {
+          return Promise.reject(e);
+        }
+        continue; // pullSubjectThreads() might be called multiple times for the same subject
+      }
     }
     //console.log("threadsZvm.pullSubjectThreads() end", merged.size);
     return merged;
@@ -855,6 +866,21 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async deleteNotification(linkAh: ActionId): Promise<void> {
+    console.log("deleteNotification()", linkAh.short, this._perspective.inbox, this._perspective.inboxByThread);
+    /** Delete all new bead notifications from same author in same thread */
+    const [ppAh, notif] = this._perspective.inbox.get(linkAh)!;
+    if (notif.event == NotifiableEvent.NewBead) {
+      const notifs = this._perspective.inboxByThread.get(ppAh)!;
+      for (const [_author, createLinkAh] of notifs) {
+        const prev = this._perspective.inbox.get(createLinkAh)![1];
+        if (prev.event == NotifiableEvent.NewBead && prev.author.equals(notif.author) && !linkAh.equals(createLinkAh)) {
+          console.log("deleteNotification() unpublish similar", createLinkAh.short);
+          await this.zomeProxy.unpublishNotification(createLinkAh.hash);
+        }
+      }
+    }
+    /** */
+    console.log("deleteNotification() unpublish", linkAh.short);
     await this.zomeProxy.unpublishNotification(linkAh.hash);
   }
 
@@ -1458,7 +1484,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** */
         if (StateChangeType.Create == pulse.state) {
           this._perspective.storeThread(this.cell, pulse.ah, pp, pulse.ts, pulse.author, pulse.isNew);
-          if (pulse.isNew) {
+          if (pulse.isNew && this._canNotify) {
             if (isEntryFromSelf) {
               /** Notify Subject author */
               if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64 && pp.subject.typeName != DM_SUBJECT_TYPE_NAME) {
@@ -1627,7 +1653,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       /** Notify Reply */
       /** Notify reply if prevBead in Bead is different from last known bead for pp and not in a DM thread */
-      if (!prevBeadAh.equals(ppAh)) { // Thread's first bead has ppAh equals prevBeadAh
+      if (this._canNotify && !prevBeadAh.equals(ppAh)) { // Thread's first bead has ppAh equals prevBeadAh
         const isDmThread = this.isThreadDm(ppAh);
         const thread = this._perspective.threads.get(ppAh);
         if (!thread) {
