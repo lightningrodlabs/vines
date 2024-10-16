@@ -1066,9 +1066,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     this._perspective = new ThreadsPerspectiveMutable();
 
     /** -- SemanticTopics -- */
-    /** Publish each Topic */
-    for (const [_topicHash, title] of Object.values(snapshot.semanticTopics)) {
-      /* const newTopicEh = */ await this.publishSemanticTopic(title);
+    const topicMapping: ActionIdMap<ActionId> = new ActionIdMap();
+    /** Publish each Latest Topic */
+    for (const [topicAhB64, title] of Object.values(snapshot.semanticTopics)) {
+      const newTopicAh =  await this.publishSemanticTopic(title);
+      topicMapping.set(new ActionId(topicAhB64), newTopicAh);
     }
 
     /** -- Subjects -- */
@@ -1084,6 +1086,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (maybeBeadIndex > -1) {
         const tuple = snapshot.beads[maybeBeadIndex]!;
         entryAsSubjects[subjectHash] = tuple[1].beadType as ThreadsEntryType;
+        continue;
+      }
+      if (topicMapping.get(ActionId.from(subjectHash))) {
+        entryAsSubjects[subjectHash] = ThreadsEntryType.SemanticTopic;
         continue;
       }
       // FIXME: Figure out how to map ppAh used as subjectHash
@@ -1106,7 +1112,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       })
     /* loop until all beads & pps have been processed ; check if progress is made, otherwise abort */
     let loopCount = 0;
-    while(ppAhMapping.size != sortedPps.length && beadAhMapping.size != sortedBeads.length) {
+    while(ppAhMapping.size != sortedPps.length || beadAhMapping.size != sortedBeads.length) {
       const totalStart = ppAhMapping.size + beadAhMapping.size;
       console.debug(`PubImp() Loop ${loopCount}: PP: ${ppAhMapping.size}/${sortedPps.length} | Beads: ${beadAhMapping.size}/${sortedBeads.length}`);
       /* Threads: Publish & Map */
@@ -1117,18 +1123,31 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /* Grab subject mapping */
         const maybeEntrySubject = entryAsSubjects[pp.subject.address];
         if (maybeEntrySubject) {
-          if (maybeEntrySubject == ThreadsEntryType.ParticipationProtocol) {
-            const newSubjectHash = ppAhMapping.get(new ActionId(pp.subject.address));
-            if (!newSubjectHash) {
-              continue;
+          const subjectAh = new ActionId(pp.subject.address);
+          switch (maybeEntrySubject) {
+            case ThreadsEntryType.ParticipationProtocol: {
+              const newSubjectHash = ppAhMapping.get(subjectAh);
+              if (!newSubjectHash) {
+                continue;
+              }
+              pp.subject.address = newSubjectHash.b64;
             }
-            pp.subject.address = newSubjectHash.b64;
-          } else {
-            const newSubjectHash = beadAhMapping.get(new ActionId(pp.subject.address));
-            if (!newSubjectHash) {
-              continue;
+            break;
+            case ThreadsEntryType.SemanticTopic: {
+              const newSubjectHash = topicMapping.get(subjectAh);
+              if (!newSubjectHash) {
+                continue;
+              }
+              pp.subject.address = newSubjectHash.b64;
             }
-            pp.subject.address = newSubjectHash.b64;
+            break;
+            default: {
+              const newSubjectHash = beadAhMapping.get(subjectAh);
+              if (!newSubjectHash) {
+                continue;
+              }
+              pp.subject.address = newSubjectHash.b64;
+            }
           }
         }
         /* Publish pp */
@@ -1230,7 +1249,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       loopCount += 1
     }
-    console.debug(`PubImp() looped ${loopCount} times. pps: ${ppAhMapping.size} ; beads: ${beadAhMapping.size}`);
+    console.debug(`PubImp() looped ${loopCount} times. pps: ${ppAhMapping.size}/${sortedPps.length} ; beads: ${beadAhMapping.size}`);
     //console.log("PubImp() beads", this.perspective.beads);
 
     /** -- EmojiReactions -- */

@@ -41,8 +41,7 @@ import {Cell} from "@ddd-qc/cell-proxy";
 export type ThreadsSnapshot = {
   /** Store of all Subjects: hash -> Subject */
   subjects: [HoloHashB64, Subject][],
-  subjectsToLatest: [HoloHashB64, HoloHashB64][],
-  /** Store of all SemTopic: eh -> TopicTitle */
+  /** Store of all SemTopic: ah -> TopicTitle */
   semanticTopics: [ActionHashB64, string][],
   /** Keep only marked items */
   hiddens: HoloHashB64[],
@@ -66,7 +65,6 @@ function print(self: ThreadsSnapshot): void {
   console.log("ThreadSnapshot:");
   console.log("  -       appletIds:", self.appletIds.length);
   console.log("  -        subjects:", self.subjects.length);
-  console.log("  -subjectsToLatest:", self.subjectsToLatest.length);
   console.log("  -  semanticTopics:", self.semanticTopics.length);
   console.log("  -         hiddens:", self.hiddens.length);
   console.log("  -       favorites:", self.favorites.length);
@@ -597,20 +595,23 @@ export class ThreadsPerspective {
       const agents: [AgentPubKeyB64, string[]][] = Array.from(map.entries()).map(([agent, emojis]) => [agent.b64, emojis]);
       emojiReactions.push([beadAh.b64, agents]);
     }
-    /** SubjectsToLatest */
-    const subjectsToLatest: [HoloHashB64, HoloHashB64][] = [];
-    for (const [old, newer] of this.subjectToLatest.entries()) {
-      subjectsToLatest.push([old, newer.b64])
-    }
+
+    /** PPs */
+    /** Collapse subject address to latest version */
+    let pps: [ActionHashB64, ParticipationProtocol, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries()).map(([ppAh, thread]) => {
+      const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
+      thread.pp.subject.address = latest.b64;
+      return [ppAh.b64, thread.pp, thread.creationTime, thread.author.b64];
+    });
+
     /** -- Done -- */
     const result: ThreadsSnapshot = {
       appletIds: this.appletIds.map((id) => id.b64),
       subjects: Array.from(this.subjects.entries()),
-      subjectsToLatest,
       semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, title]) => [topicHash.b64, title]),
       hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
       favorites: this.favorites.map((id) => id.b64),
-      pps: Array.from(this.threads.entries()).map(([ppAh, thread]) => [ppAh.b64, thread.pp, thread.creationTime, thread.author.b64]),
+      pps,
       beads: Array.from(this.beads.entries()).map(([beadAh, [beadInfo, typed]]) => [beadAh.b64, beadInfo, typed]),
       emojiReactions,
       appletSubjectTypes,
@@ -990,13 +991,6 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
           this.subjectsPerType.get(pathEh)!.push([new DnaId(subject.dnaHashB64), intoAnyId(subjectAddr)]);
         }
       }
-    }
-    /** subjectToLatest */
-    this.subjectToLatest.clear();
-    this.subjectToOrig.clear();
-    for (const [old, newer] of snapshot.subjectsToLatest) {
-      this.subjectToLatest.set(old, intoAnyId(newer));
-      this.subjectToOrig.set(newer, intoAnyId(old));
     }
     /** this.semanticTopics */
     this.semanticTopics.clear();
