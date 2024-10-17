@@ -754,7 +754,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<[TypedBead, BeadType, Timestamp, AgentId] | null> {
-    console.log("fetchUnknownBead()", beadAh);
+    console.log("fetchUnknownBead()", beadAh.short);
     const beadInfo = this._perspective.getBeadInfo(beadAh);
     /** Return info if bead already stored */
     if (beadInfo) {
@@ -920,7 +920,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         return null;
       }
       const [typed, beadType, _ts, _author] = maybe;
-      const [base, _baseType] = await this.getBaseTypedBead(typed, beadType, notif.author); // WARN: Assuming notif sender is also bead author
+      const [base, _baseType] = await this.getBaseTypedBead(notif.content, typed, beadType, notif.author); // WARN: Assuming notif sender is also bead author
       return new ActionId(base.bead.ppAh);
     }
   }
@@ -968,7 +968,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, isNew: boolean) {
-    console.log("storeTypedBead()", beadAh);
+    console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
     /** pre */
     if (this._perspective.getBeadInfo(beadAh)) {
       return;
@@ -981,9 +981,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     let beadInfo: BeadInfo;
     let innerPair: [BeadInfo, TypedBaseBeadMat] | undefined = undefined;
     if (beadType == ThreadsEntryType.EncryptedBead) {
-      console.log("storeTypedBead() EncryptedBead", beadAh);
+      console.debug("ThreadsZvm.storeTypedBead() EncryptedBead", beadAh.short);
       /** Get inner */
-      const [innerTyped, innerBeadType] = await this.getBaseTypedBead(dematerializeTypedBead(typedBead, beadType), beadType, author);
+      const [innerTyped, innerBeadType] = await this.getBaseTypedBead(beadAh, dematerializeTypedBead(typedBead, beadType), beadType, author);
       /** Store inner Bead */
       const bead = innerTyped.bead;
       const innerBeadInfo = {creationTime, author, beadType: innerBeadType, bead: materializeBead(bead)} as BeadInfo;
@@ -1000,8 +1000,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async getBaseTypedBead(typedBead: TypedBead, beadType: BeadType, author: AgentId): Promise<[TypedBaseBead, BaseBeadType]> {
+  _decCache: ActionIdMap<BaseBeadKind> = new ActionIdMap<BaseBeadKind>(); // Cache result to avoid throttle
+  async getBaseTypedBead(beadAh: ActionId, typedBead: TypedBead, beadType: BeadType, author: AgentId): Promise<[TypedBaseBead, BaseBeadType]> {
+    console.log("getBaseTypedBead()", beadAh.short);
     if (beadType == ThreadsEntryType.EncryptedBead) {
+      if (this._decCache.get(beadAh)) {
+        return base2typed(this._decCache.get(beadAh)!);
+      }
       let innerBead: BaseBeadKind;
       if (author.equals(this.cell.address.agentId)) {
         innerBead = await this.zomeProxy.decryptMyBead(typedBead as EncryptedBead);
@@ -1011,6 +1016,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           otherAgent: author.hash,
         });
       }
+      this._decCache.set(beadAh, innerBead);
       return base2typed(innerBead);
     }
     return [typedBead as TypedBaseBead, beadType];

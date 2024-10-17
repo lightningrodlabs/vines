@@ -94,7 +94,7 @@ export class VinesApp extends HappMultiElement {
   public readonly appletView?: AppletView;
 
   /** All arguments should be provided when constructed explicity */
-  constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean/*appWs?: AppWebsocket, readonly appId?: InstalledAppId, public appletView?: AppletView*/) {
+  constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
     console.log("<vines-app>.ctor()");
     const adminUrl = _adminWs
       ? undefined

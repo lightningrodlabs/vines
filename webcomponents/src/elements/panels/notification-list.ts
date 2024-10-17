@@ -54,13 +54,15 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<notification-list>.render()", this.threadsPerspective.inbox.size);
+    console.log("<notification-list>.render()", this.threadsPerspective.inbox.size, this.threadsPerspective.inbox);
     if (this.threadsPerspective.inbox.size == 0) {
       return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }
 
-    let notifsLi = Array.from(this.threadsPerspective.inbox.entries()).map(
-      ([linkAh, [_ppAh, notif]]) => {
+    const filteredInbox = this.threadsPerspective.filteredInbox();
+    //console.log("<notification-list> filteredInbox", filteredInbox);
+    let notifsLi = filteredInbox.map(
+      ([linkAh, notif]) => {
         /* Skip New DM Notif. Used only for code not UI */
         if (notif.event == NotifiableEvent.NewDmThread) {
           return;

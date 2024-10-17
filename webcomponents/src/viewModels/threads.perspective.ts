@@ -26,6 +26,7 @@ import {
   BeadInfo,
   BeadLinkMaterialized,
   BeadType,
+  NotifiableEvent,
   TextBeadMat,
   ThreadsNotification,
   TypedBaseBeadMat,
@@ -253,6 +254,7 @@ export class ThreadsPerspective {
   }
 
 
+  /** */
   getBaseBead(beadAh: ActionId): TypedBaseBeadMat | undefined {
     const maybeBead = this.beads.get(beadAh);
     if (!maybeBead) {
@@ -361,6 +363,29 @@ export class ThreadsPerspective {
 
 
   /** -- Getters -- */
+
+  /** Return curated linkAh & Notif array */
+  filteredInbox(): [ActionId, ThreadsNotification][] {
+    const res: Map<String, [ActionId, ThreadsNotification][]> = new Map();
+    Array.from(this.inbox.entries())
+      .map(([linkAh, [ppAh, notif]]) => {
+        if (notif.event == NotifiableEvent.NewDmThread) {
+          return;
+        }
+        const trip = ""+ppAh.b64+notif.author.b64;
+        const cur = res.get(trip);
+        if (!cur) {
+          res.set(trip, [[linkAh, notif]]);
+          return;
+        }
+        if (cur && notif.event == NotifiableEvent.NewBead) {
+          return;
+        }
+        cur.push([linkAh, notif]);
+
+      });
+    return Array.from(res.values()).flat();
+  }
 
   /** */
 
@@ -669,6 +694,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
+    console.log("storeTypedBead()", beadInfo.beadType, beadAh.short)
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       if (!innerPair) {

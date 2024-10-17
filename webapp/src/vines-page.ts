@@ -1449,6 +1449,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
     `;
 
+
+    const filteredInbox = this._dvm.threadsZvm.perspective.filteredInbox();
+    //console.log("filteredInbox", filteredInbox);
+
     /** Render all */
     return html`
         <div id="mainDiv"
@@ -1690,7 +1694,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         }
                         <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
-                                        style="color: ${this._dvm.threadsZvm.perspective.inbox.size? "#33A000" : ""}"
+                                        style="color: ${filteredInbox.length? "#33A000" : ""}"
                                         @click=${() => {
                                             console.log("inboxButton.click()")
                                             const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
@@ -1702,7 +1706,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             popover.showAt(shellbar!);
                                         }}>
                             </ui5-button>
-                            <span class="numberBadge">${this._dvm.threadsZvm.perspective.inbox.size ? this._dvm.threadsZvm.perspective.inbox.size : ""}</span>
+                            <span class="numberBadge">${filteredInbox.length ? filteredInbox.length : ""}</span>
                         </div>
                     </div>
                 </div>

@@ -70,6 +70,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
     break;
     case NotifiableEvent.NewBead: {
       jump = beadJumpEvent(ah);
+      //console.log("composeNotificationTitle() NewBead", ah.short, threadsZvm)
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
       if (!beadInfo) {
         title = msg("New message");
