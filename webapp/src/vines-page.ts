@@ -800,6 +800,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
     this.profileDialogElem.close(false);
+    await delay(100); // Necessary to make sure our new profile is displayed since vines-page is not reactive to ProfilesZome
     this.requestUpdate();
   }
 
@@ -1259,9 +1260,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** Get network info for this cell */
-    const sId = this.cell.address.str;
-    const networkInfos = this.appProxy && this.appProxy.networkInfoLogs[sId]? this.appProxy.networkInfoLogs[sId] : [];
-    const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
+    //const sId = this.cell.address.str;
+    //const networkInfos = this.appProxy && this.appProxy.networkInfoLogs[sId]? this.appProxy.networkInfoLogs[sId] : [];
+    //const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
     let lister= html``;
 
@@ -1364,7 +1365,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem;color:#1B2A39DB">${groupProfile.name}</div>
                         <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
-                            ${networkInfo? /*networkInfo.total_network_peers*/ profileCount : 1} ${msg('Members')}
+                            ${profileCount} ${msg('Members')}
                         </div>
                     </div>
                     <ui5-button id="shareBtn" icon="share-2" tooltip=${msg("Share Network")}
@@ -1514,7 +1515,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div> -->
                 <div id="profile-row">
                     <div id="profile-div"
-                         style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0;"
+                         style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0; margin-left:2px"
                          @click=${(e: any) => {
                              e.stopPropagation();
                              this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
