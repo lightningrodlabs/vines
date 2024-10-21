@@ -232,7 +232,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     window.addEventListener('beforeunload', async (_e:any) => {
-      this.onBeforeUnload();
+      if (!this.weServices) {
+        this.onBeforeUnload();
+      }
     });
   }
 
