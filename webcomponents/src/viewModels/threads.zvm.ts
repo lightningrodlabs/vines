@@ -92,6 +92,19 @@ import {THIS_APPLET_ID} from "../contexts";
 //generateSearchTest();
 
 
+/** Better way to catch and handle "throttled" error */
+function catchThrottled<T>(promise: Promise<T>): Promise<[undefined, T] | [Error]> {
+  return promise
+    .then(data => [undefined, data] as [undefined, T])
+    .catch(error => {
+      if (error.throttled) {
+        return [error];
+      }
+      throw error;
+    })
+}
+
+
 /**
  *
  */
@@ -314,16 +327,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const subjectIds = this._perspective.getAllSubjectVersions(subjectId);
     //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length);
     for (const subjectId of subjectIds) {
-      try {
-        const tuples = await this.pullSubjectVersionThreads(subjectId);
-        //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size);
-        merged = new ActionIdMap([...merged, ...tuples]);
-      } catch(e: any) {
-        if (!e.throttled) {
-          return Promise.reject(e);
-        }
+      const [throttleError, tuples] = await catchThrottled(this.pullSubjectVersionThreads(subjectId));
+      if (throttleError) {
         continue; // pullSubjectThreads() might be called multiple times for the same subject
       }
+      //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size);
+      merged = new ActionIdMap([...merged, ...tuples]);
     }
     //console.log("threadsZvm.pullSubjectThreads() end", merged.size);
     return merged;
@@ -336,20 +345,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
     for (const [pp_ah, _linkTs] of pps) {
       const ppAh = new ActionId(pp_ah);
-      try {
-        //console.log("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.short);
-        const maybe = await this.zomeProxy.fetchPp(pp_ah);
-        if (maybe) {
-          const [pp, ts, author] = maybe;
-          res.set(ppAh, [pp, ts, new AgentId(author)]);
-        } else {
-          console.warn("ParticipationProtocol not found", ppAh.b64);
-        }
-      } catch(e: any) {
-        if (!e.throttled) {
-          return Promise.reject(e);
-        }
+      //console.log("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.short);
+      const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp(pp_ah));
+      if (throttleError) {
         continue;
+      }
+      if (maybe) {
+        const [pp, ts, author] = maybe;
+        res.set(ppAh, [pp, ts, new AgentId(author)]);
+      } else {
+        console.warn("ParticipationProtocol not found", ppAh.b64);
       }
     }
     return res;
@@ -430,15 +435,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** TODO: maybe cache value ; check when pulling latest is actually necessary  */
   async pullNotifSettings(ppAh: ActionId): Promise<[AgentId, NotifySetting, ActionId][]> {
     //this._perspective.notifSettings.delete(ppAh);
-    try {
-      const notifSettings = await this.zomeProxy.pullPpNotifySettings(ppAh.hash);
-      return notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
-    } catch(e:any) {
-      if (!e.throttled) {
-        return Promise.reject(e);
-      }
+    const [throttleError, notifSettings] = await catchThrottled(this.zomeProxy.pullPpNotifySettings(ppAh.hash));
+    if (throttleError) {
       return [];
     }
+    return notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
   }
 
 
@@ -454,13 +455,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Probe all emojis on this bead */
   async pullEmojiReactions(beadAh: ActionId) {
-    try {
-      await this.zomeProxy.pullReactions(beadAh.hash);
-    } catch(e:any) {
-      if (!e.throttled) {
-        return Promise.reject(e);
-      }
-    }
+    await catchThrottled(this.zomeProxy.pullReactions(beadAh.hash));
   }
 
 
@@ -473,13 +468,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return [];
     }
     /** Probe */
-    let maybe;
-    try {
-      maybe = await this.zomeProxy.findBeads(ppAh.hash);
-    } catch (e:any) {
-      if (!e.throttled) {
-        return Promise.reject(e);
-      }
+    const [throttleError, maybe] = await catchThrottled(this.zomeProxy.findBeads(ppAh.hash));
+    if (throttleError) {
       return [];
     }
     const [interval, beadLinks] = maybe;
@@ -732,13 +722,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     if (maybeThread) {
       return [maybeThread.pp, maybeThread.creationTime, maybeThread.author];
     }
-    let maybe;
-    try {
-      maybe = await this.zomeProxy.fetchPp(ppAh.hash);
-    } catch(e:any) {
-      if (!e.throttled) {
-        return Promise.reject(e);
-      }
+    const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp(ppAh.hash));
+    if (throttleError) {
       return null;
     }
     if (!maybe) {
@@ -1157,13 +1142,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           }
         }
         /* Publish pp */
-        let maybePair;
-        try {
-          maybePair = await this.zomeProxy.publishParticipationProtocol(pp);
-        } catch(e:any) {
-          if (!e.throttled) {
-            return Promise.reject(e);
-          }
+        const [throttleError, maybePair] = await catchThrottled(this.zomeProxy.publishParticipationProtocol(pp));
+        if (throttleError) {
           continue;
         }
         const [pp_ah, _ts] = maybePair

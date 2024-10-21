@@ -232,9 +232,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
     window.addEventListener('beforeunload', async (_e:any) => {
-       await this._dvm.setLocation(null);
+      this.onBeforeUnload();
     });
   }
+
 
   /** -- Properties -- */
 
@@ -334,6 +335,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** -- Methods -- */
+
+
+  /** */
+  async onBeforeUnload() {
+    console.warn("<vines-page>.onBeforeUnload()");
+    await this._dvm.setLocation(null);
+  }
 
   /** Handle 'jump' event */
   override connectedCallback() {
@@ -666,6 +674,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
         /* const _appletInfo = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
+      /** Register callback */
+      this.weServices.onBeforeUnload(() => this.onBeforeUnload());
     }
     this.requestUpdate();
     /** */
