@@ -337,6 +337,34 @@ export class ThreadsPerspective {
 
 
   /** */
+  getEditThread(beadAh: ActionId): [ActionId, Thread] | undefined {
+    let res: [ActionId, Thread] | undefined = undefined;
+    this.threads.forEach((thread, ah, _map) => {
+      if (thread.pp.subject.address == beadAh.b64 && thread.pp.purpose == "EDIT") {
+        res = [ah, thread];
+      }
+    });
+    return res;
+  }
+
+  getLatestEdit(beadAh: ActionId): string {
+    const pair = this.getEditThread(beadAh);
+    if (!pair) {
+      const bead = this.getBead(beadAh)! as TextBeadMat;
+      return bead.value;
+    }
+    const lastBeads = pair[1].getLast(1);
+    if (lastBeads.length == 0) {
+      console.warn("Missing beads in EditThread", beadAh.short);
+      const bead = this.getBead(beadAh)! as TextBeadMat;
+      return bead.value;
+    }
+    const lastBead = lastBeads[0]!;
+    const bead = this.getBead(lastBead.beadAh) as TextBeadMat;
+    return bead.value;
+  }
+
+  /** */
   getLatestThread(): [ActionId, Thread] | undefined {
     let res: [ActionId, Thread] | undefined = undefined;
     this.threads.forEach((thread, ah, _map) => {

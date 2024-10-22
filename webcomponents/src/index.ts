@@ -18,6 +18,7 @@ export * from './features/chat-thread/chat-file';
 export * from './features/chat-thread/chat-header';
 export * from './features/chat-thread/chat-wal';
 export * from './features/chat-thread/chat-text';
+export * from './features/chat-thread/chat-text-edit';
 export * from './features/chat-thread/chat-item';
 export * from './features/chat-thread/chat-thread-view';
 export * from './features/chat-thread/chat-thread-multi-view';

@@ -563,7 +563,54 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  /** -- Edit -- */
+
+  /** */
+  async publishEditThread(beadAh: ActionId): Promise<[Timestamp, ActionId]> {
+    console.log("publishEditThread()", beadAh);
+    const subject: Subject = {
+      address: beadAh.b64,
+      name: "",
+      typeName: SpecialSubjectType.TextBead,
+      appletId: THIS_APPLET_ID.b64,
+      dnaHashB64: this.cell.address.dnaId.b64,
+    };
+    const pp: ParticipationProtocol = {
+      purpose: "EDIT",
+      rules: "ONLY AUTHOR TEXT BEADS",
+      subject,
+    }
+    const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
+    /** */
+    return [ts, new ActionId(pp_ah)];
+  }
+
+
+  /** */
+  async editMyTextBead(beadAh: ActionId, value: string) {
+    console.log("threadsZvm.editMyTextBead()", beadAh, value);
+    /** make sure it's my text bead */
+    const beadInfo = this._perspective.getBeadInfo(beadAh);
+    if (!beadInfo || beadInfo.beadType != ThreadsEntryType.TextBead || !beadInfo.author.equals(this.cell.address.agentId)) {
+      throw Error("Invalid bead to update");
+    }
+    /** Grab bead's "edit" thread */
+    let ppAh: ActionId;
+    const pair = this._perspective.getEditThread(beadAh);
+    /** if none, create one */
+    if (!pair) {
+      const res = await this.publishEditThread(beadAh);
+      ppAh = res[1];
+    } else {
+      ppAh = pair[0];
+    }
+    /** publish bead to edit thread */
+    await this.publishTypedBead(ThreadsEntryType.TextBead, value, ppAh);
+  }
+
+
   /** -- Publish: Commit to source-chain (and possibly the DHT) and store it (async because the commit could fail) -- */
+
 
   /** */
   async publishTypedBead(type: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId) : Promise<[ActionId, string, number, TypedBead]> {
@@ -698,7 +745,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string): Promise<[number, ActionId]> {
+  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string): Promise<[Timestamp, ActionId]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
     const [semTopicTitle, _semAuthor] = this._perspective.semanticTopics.get(topicAh)!;
     const subject: Subject = {
@@ -1163,6 +1210,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           await authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, newPpAh, authorshipLog[0], authorshipLog[1]);
         } else {
           authorshipLog = [creationTime, this.cell.address.agentId];
+        }
+        /** Publish title update */
+        if (title != pp.purpose) {
+          await this.editThreadTitle(newPpAh, title);
         }
         /* Store pp */
         this._perspective.storeThread(this.cell, newPpAh, pp, title, authorshipLog[0], authorshipLog[1], false);
