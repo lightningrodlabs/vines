@@ -43,7 +43,7 @@ export type ThreadsSnapshot = {
   /** Store of all Subjects: hash -> Subject */
   subjects: [HoloHashB64, Subject][],
   /** Store of all SemTopic: ah -> TopicTitle */
-  semanticTopics: [ActionHashB64, string][],
+  semanticTopics: [ActionHashB64, string, AgentPubKeyB64][],
   /** Keep only marked items */
   hiddens: HoloHashB64[],
   favorites: ActionHashB64[],
@@ -103,8 +103,8 @@ export class ThreadsPerspective {
   subjects: AnyIdMap<Subject> = new AnyIdMap();
   subjectToLatest: AnyIdMap<AnyId> = new AnyIdMap();
   subjectToOrig: AnyIdMap<AnyId> = new AnyIdMap();
-  /** Store of all SemTopic: eh -> TopicTitle */
-  semanticTopics: ActionIdMap<string> = new ActionIdMap();
+  /** Store of all SemTopic: ah -> TopicTitle */
+  semanticTopics: ActionIdMap<[string, AgentId]> = new ActionIdMap();
   bannedSemanticTopics: ActionId[] = [];
   /** Any hash -> isHidden */
   hiddens: Dictionary<boolean> = {};
@@ -157,6 +157,7 @@ export class ThreadsPerspective {
   /** ppAh -> (subjectHash, beadAh[]) */
   unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
 
+  /***/
   comparable(): Object {
     const res: ThreadsPerspectiveComparable = {
       appletIds: this.appletIds.length,
@@ -633,7 +634,7 @@ export class ThreadsPerspective {
     const result: ThreadsSnapshot = {
       appletIds: this.appletIds.map((id) => id.b64),
       subjects: Array.from(this.subjects.entries()),
-      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, title]) => [topicHash.b64, title]),
+      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, [title, author]]) => [topicHash.b64, title, author.b64]),
       hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
       favorites: this.favorites.map((id) => id.b64),
       pps,
@@ -769,19 +770,19 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   }
 
 
-  updateSemanticTopic(newAh: ActionId, oldAh: ActionId, title: string): void {
+  updateSemanticTopic(newAh: ActionId, oldAh: ActionId, title: string, author: AgentId): void {
     this.unstoreSemanticTopic(oldAh);
-    this.storeSemanticTopic(newAh, title);
+    this.storeSemanticTopic(newAh, title, author);
     this.subjectToOrig.set(newAh.b64, oldAh);
     this.subjectToLatest.set(oldAh.b64, newAh);
     //this.subjects.set(subjectAddr.b64, pp.subject);
   }
 
   /** */
-  storeSemanticTopic(hash: ActionId, title: string): void {
+  storeSemanticTopic(hash: ActionId, title: string, author: AgentId): void {
     console.log("store SemanticTopic", hash.short);
     if (!this.bannedSemanticTopics.includes(hash)) {
-      this.semanticTopics.set(hash, title);
+      this.semanticTopics.set(hash, [title, author]);
     }
   }
 
@@ -1020,8 +1021,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** this.semanticTopics */
     this.semanticTopics.clear();
-    for (const [topicHash, title] of Object.values(snapshot.semanticTopics)) {
-      this.storeSemanticTopic(new ActionId(topicHash), title);
+    for (const [topicHash, title, author] of Object.values(snapshot.semanticTopics)) {
+      this.storeSemanticTopic(new ActionId(topicHash), title, new AgentId(author));
     }
     /** this.hiddens */
     this.hiddens = {}

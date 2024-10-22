@@ -2,13 +2,13 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
 import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {BeadLink} from "../bindings/threads.types";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {ts2day} from "../render";
-import {onlineLoadedContext} from "../contexts";
-import {sharedStyles} from "../styles";
+import {ts2day} from "../../render";
+import {onlineLoadedContext} from "../../contexts";
+import {sharedStyles} from "../../styles";
 
 
 /**

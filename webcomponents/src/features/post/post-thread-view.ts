@@ -2,12 +2,12 @@ import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
 import {ActionId, delay, DnaElement, intoDhtId} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {BeadLink} from "../bindings/threads.types";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {onlineLoadedContext} from "../contexts";
-import {getMainThread, MAIN_TOPIC_ID} from "../utils_feed";
+import {onlineLoadedContext} from "../../contexts";
+import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
 
 
 /**

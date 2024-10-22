@@ -1,13 +1,13 @@
 import {css, html} from "lit";
 import {property, customElement} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import {ThreadsZvm} from "../viewModels/threads.zvm";
-import {sharedStyles} from "../styles";
-import {md} from "../markdown/md";
-import {codeStyles} from "../markdown/code-css";
-import {TextBeadMat} from "../viewModels/threads.materialize";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import {sharedStyles} from "../../styles";
+import {md} from "../../markdown/md";
+import {codeStyles} from "../../markdown/code-css";
+import {TextBeadMat} from "../../viewModels/threads.materialize";
 
 
 /**

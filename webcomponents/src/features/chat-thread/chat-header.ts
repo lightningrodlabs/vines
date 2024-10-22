@@ -6,13 +6,13 @@ import {
   DnaElement,
   intoAnyId,
 } from "@ddd-qc/lit-happ";
-import {determineSubjectPrefix, latestThreadName} from "../utils";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {renderAvatar, renderProfileAvatar} from "../render";
-import {beadJumpEvent, SpecialSubjectType} from "../events";
+import {determineSubjectPrefix, latestThreadName} from "../../utils";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {renderAvatar, renderProfileAvatar} from "../../render";
+import {beadJumpEvent, SpecialSubjectType} from "../../events";
 import {msg} from "@lit/localize";
-import {sharedStyles} from "../styles";
-import {toasty} from "../toast";
+import {sharedStyles} from "../../styles";
+import {toasty} from "../../toast";
 import {Hrl} from "@theweave/api/dist/types";
 import {intoHrl} from "@ddd-qc/we-utils";
 import {PropertyValues} from "lit/development";
@@ -113,7 +113,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     let maybeSemanticTopicTitle: string | undefined = undefined;
     //const subjectHashType = getHashType(subjectAddr);
     if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
-      maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(this._latestSubjectId!.b64));
+      const pair = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(this._latestSubjectId!.b64))!;
+      maybeSemanticTopicTitle = pair[0];
     }
     //console.debug("subjectHashType", subjectHashType);
     const subjectId = ActionId.from(this._latestSubjectId!);

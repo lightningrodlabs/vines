@@ -150,9 +150,9 @@ export function latestThreadName(pp: ParticipationProtocol, threadsZvm: ThreadsZ
   const latestSubject = threadsZvm.perspective.subjects.get(latestSubjectId.b64);
   if (!latestSubject) {
     if(subjectType == SpecialSubjectType.SemanticTopic) {
-      let topic = threadsZvm.perspective.semanticTopics.get(ActionId.from(latestSubjectId));
-      if (topic) {
-        subjectName = topic;
+      let pair = threadsZvm.perspective.semanticTopics.get(ActionId.from(latestSubjectId));
+      if (pair) {
+        subjectName = pair[0];
       }
     }
   } else {
@@ -248,12 +248,12 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
       break;
       /** -- Vines types -- */
       case SpecialSubjectType.SemanticTopic:
-        let semTopicTitle = threadsZvm.perspective.semanticTopics.get(new ActionId(subject.address));
-        if (!semTopicTitle) {
+        const pair = threadsZvm.perspective.semanticTopics.get(new ActionId(subject.address));
+        if (!pair) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
           return "{Unknown Topic}";
         }
-        return semTopicTitle;
+        return pair[0];
         break;
       case SpecialSubjectType.TextBead:
       case SpecialSubjectType.EntryBead:

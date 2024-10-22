@@ -1,25 +1,26 @@
 import {html, PropertyValues, css} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
-import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
 
-import "./input-bar";
+import "../../elements/input-bar";
 import {consume} from "@lit/context";
-import {filesContext, weClientContext} from "../contexts";
-import {ThreadsEntryType} from "../bindings/threads.types";
-import {doodle_weave} from "../doodles";
+import {filesContext, weClientContext} from "../../contexts";
+import {ThreadsEntryType} from "../../bindings/threads.types";
+import {doodle_weave} from "../../doodles";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {sharedStyles} from "../styles";
+import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
-import {codeStyles} from "../markdown/code-css";
-import {InputBar} from "./input-bar";
+import {codeStyles} from "../../markdown/code-css";
+import {InputBar} from "../../elements/input-bar";
+
 
 
 /**

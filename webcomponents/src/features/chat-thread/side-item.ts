@@ -8,18 +8,18 @@ import {ActionId, AgentId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
-import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat} from "../viewModels/threads.materialize";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {AnyBead, ThreadsEntryType} from "../bindings/threads.types";
-import {md} from "../markdown/md";
-import {determineBeadName, weaveUrlToWal} from "../utils";
-import {toasty} from "../toast";
-import {beadJumpEvent, ShowProfileEvent} from "../events";
-import {renderAvatar} from "../render";
-import {filesContext, weClientContext} from "../contexts";
-import {codeStyles} from "../markdown/code-css";
-import {sharedStyles} from "../styles";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat} from "../../viewModels/threads.materialize";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {AnyBead, ThreadsEntryType} from "../../bindings/threads.types";
+import {md} from "../../markdown/md";
+import {codeStyles} from "../../markdown/code-css";
+import {determineBeadName, weaveUrlToWal} from "../../utils";
+import {toasty} from "../../toast";
+import {beadJumpEvent, ShowProfileEvent} from "../../events";
+import {renderAvatar} from "../../render";
+import {filesContext, weClientContext} from "../../contexts";
+import {sharedStyles} from "../../styles";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 

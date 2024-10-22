@@ -6,27 +6,28 @@ export * from './events';
 export * from './toast';
 export * from './search';
 
-export * from './elements/chat-file';
-export * from './elements/chat-header';
-export * from './elements/chat-wal';
-export * from './elements/chat-text';
-export * from './elements/chat-item';
-export * from './elements/chat-thread-view';
-export * from './elements/chat-thread-multi-view';
-export * from './elements/comment-thread-view';
 export * from './elements/emoji-bar';
 export * from './elements/favorites-view';
 export * from './elements/favorites-item';
 export * from './elements/input-bar';
 export * from './elements/wurl-link';
 export * from './elements/peer-list';
-export * from './elements/side-item';
+export * from './features/chat-thread/side-item';
 
-export * from './elements/post-item';
-export * from './elements/post-header';
-export * from './elements/post-thread-view';
-export * from './elements/post-comment-thread-view';
-export * from './elements/post-comment-item';
+export * from './features/chat-thread/chat-file';
+export * from './features/chat-thread/chat-header';
+export * from './features/chat-thread/chat-wal';
+export * from './features/chat-thread/chat-text';
+export * from './features/chat-thread/chat-item';
+export * from './features/chat-thread/chat-thread-view';
+export * from './features/chat-thread/chat-thread-multi-view';
+export * from './features/chat-thread/comment-thread-view';
+
+export * from './features/post/post-item';
+export * from './features/post/post-header';
+export * from './features/post/post-thread-view';
+export * from './features/post/post-comment-thread-view';
+export * from './features/post/post-comment-item';
 export * from './utils_feed';
 
 export * from './elements/panels/presence-panel';

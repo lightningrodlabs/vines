@@ -70,13 +70,13 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   override render() {
     console.log("<topics-lister>.render()", this.perspective.semanticTopics.size, this.perspective.semanticTopics);
 
-    let topics = Array.from(this.perspective.semanticTopics.entries());
+    let pairs = Array.from(this.perspective.semanticTopics.entries());
     if (this.alphabetical) {
-      topics = topics.sort((a, b) => {
-        return a[1].localeCompare(b[1]);
+      pairs = pairs.sort((a, b) => {
+        return a[1][0].localeCompare(b[1][0]);
       });
     }
-    let treeItems = topics.map(([topicAh, title]) => {
+    let treeItems = pairs.map(([topicAh, [title, author]]) => {
       const isSubjectHidden = this._zvm.perspective.hiddens[topicAh.b64]? this._zvm.perspective.hiddens[topicAh.b64] : false;
       /** Skip if hidden */
       if (isSubjectHidden && !this.showArchivedTopics) {
@@ -290,7 +290,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
                        if (hide) hide.style.display = "block";
                        if (cmt) cmt.style.display = "block";
-                       if (edit) edit.style.display = "block";
+                       if (edit && this.cell.address.agentId.equals(author)) edit.style.display = "block";
                      }}
                      @mouseout=${(_e:any) => {
                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);

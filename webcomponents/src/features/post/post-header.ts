@@ -1,17 +1,17 @@
 import {css, html} from "lit";
 import {customElement} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {msg} from "@lit/localize";
-import {sharedStyles} from "../styles";
-import {renderAvatar} from "../render";
+import {sharedStyles} from "../../styles";
+import {renderAvatar} from "../../render";
 
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
-import {ThreadsEntryType} from "../bindings/threads.types";
-import {weClientContext} from "../contexts";
+import {ThreadsEntryType} from "../../bindings/threads.types";
+import {weClientContext} from "../../contexts";
 import {consume} from "@lit/context";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {getMainThread, MAIN_TOPIC_ID} from "../utils_feed";
+import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
 
 
 /**

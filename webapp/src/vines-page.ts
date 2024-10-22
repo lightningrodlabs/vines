@@ -1122,9 +1122,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         /** Set input bar 'topic' */
         let topic = msg("Reply");
         if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
-          const maybeSemanticTopicTitle = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(thread.pp.subject.address));
-          if (maybeSemanticTopicTitle) {
-            topic = maybeSemanticTopicTitle;
+          const pair = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(thread.pp.subject.address));
+          if (pair) {
+            topic = pair[0];
           }
         }
         /** Check uploading state */

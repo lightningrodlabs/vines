@@ -3,19 +3,19 @@ import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import 'emoji-picker-element';
 
-import {renderAvatar, renderProfileAvatar} from "../render";
-import {ThreadsEntryType} from "../bindings/threads.types";
+import {renderAvatar, renderProfileAvatar} from "../../render";
+import {ThreadsEntryType} from "../../bindings/threads.types";
 import {
   beadJumpEvent,
   threadJumpEvent,
   ShowProfileEvent,
   CommentRequest,
   favoritesEvent
-} from "../events";
-import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
+} from "../../events";
+import {filesContext, onlineLoadedContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlToWAL} from "@theweave/api";
 import {FilesDvm} from "@ddd-qc/files";
@@ -24,12 +24,12 @@ import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
-import {toasty} from "../toast";
-import {popoverStyleTemplate} from "../styles";
-import {determineBeadName} from "../utils";
+import {toasty} from "../../toast";
+import {popoverStyleTemplate} from "../../styles";
+import {determineBeadName} from "../../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat} from "../viewModels/threads.materialize";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat} from "../../viewModels/threads.materialize";
 
 
 /**

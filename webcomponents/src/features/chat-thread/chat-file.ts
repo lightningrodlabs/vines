@@ -1,17 +1,17 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, delay, DnaElement, EntryId} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {consume} from "@lit/context";
-import {filesContext} from "../contexts";
+import {filesContext} from "../../contexts";
 import {FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
-import {type2ui5Icon} from "../utils";
+import {type2ui5Icon} from "../../utils";
 import {ParcelManifest} from "@ddd-qc/delivery";
 import {msg} from "@lit/localize";
-import {toasty} from "../toast";
-import {sharedStyles} from "../styles";
-import {EntryBeadMat} from "../viewModels/threads.materialize";
-import {ViewEmbedEvent} from "../events";
+import {toasty} from "../../toast";
+import {sharedStyles} from "../../styles";
+import {EntryBeadMat} from "../../viewModels/threads.materialize";
+import {ViewEmbedEvent} from "../../events";
 import {ActionHashB64} from "@holochain/client";
 
 

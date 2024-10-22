@@ -1,18 +1,18 @@
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {consume} from "@lit/context";
-import {weClientContext} from "../contexts";
+import {weClientContext} from "../../contexts";
 import {AppletInfo} from "@theweave/api";
 import {AssetLocationAndInfo} from "@theweave/api/dist/types";
-import {ThreadsZvm} from "../viewModels/threads.zvm";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {weaveUrlToWal} from "../utils";
-import {sharedStyles} from "../styles";
+import {weaveUrlToWal} from "../../utils";
+import {sharedStyles} from "../../styles";
 
 import "@theweave/elements/dist/elements/wal-embed.js";
-import {AnyBeadMat} from "../viewModels/threads.materialize";
+import {AnyBeadMat} from "../../viewModels/threads.materialize";
 import {msg} from "@lit/localize";
 
 /**

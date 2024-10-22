@@ -3,12 +3,12 @@ import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import 'emoji-picker-element';
 
-import {renderAvatar} from "../render";
-import {filesContext, onlineLoadedContext, weClientContext} from "../contexts";
+import {renderAvatar} from "../../render";
+import {filesContext, onlineLoadedContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
@@ -17,10 +17,10 @@ import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
-import {toasty} from "../toast";
-import {NotifySetting, ThreadsEntryType} from "../bindings/threads.types";
-import {favoritesJumpEvent, ShowProfileEvent, VinesInputEvent} from "../events";
-import {Thread} from "../viewModels/thread";
+import {toasty} from "../../toast";
+import {NotifySetting, ThreadsEntryType} from "../../bindings/threads.types";
+import {favoritesJumpEvent, ShowProfileEvent, VinesInputEvent} from "../../events";
+import {Thread} from "../../viewModels/thread";
 
 
 /**

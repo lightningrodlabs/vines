@@ -280,7 +280,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Feed App specific */
   storeMainTopic() {
-    this._perspective.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC);
+    this._perspective.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC, this.cell.address.agentId);
   }
 
 
@@ -694,7 +694,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** */
   async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string): Promise<[number, ActionId]> {
     console.log("publishThreadFromSemanticTopic()", appletId);
-    const semTopicTitle = this._perspective.semanticTopics.get(topicAh)!;
+    const [semTopicTitle, _semAuthor] = this._perspective.semanticTopics.get(topicAh)!;
     const subject: Subject = {
       address: topicAh.b64,
       name: semTopicTitle,
@@ -1469,11 +1469,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       case ThreadsEntryType.SemanticTopic:
         const semTopic = this._decoder.decode(pulse.bytes) as SemanticTopic;
         if (StateChangeType.Create == pulse.state) {
-          this._perspective.storeSemanticTopic(pulse.ah, semTopic.title);
+          this._perspective.storeSemanticTopic(pulse.ah, semTopic.title, pulse.author);
         }
         if (StateChangeType.Update == pulse.state) {
           console.log("Update SemanticTopic", pulse);
-          this._perspective.updateSemanticTopic(pulse.ah, pulse.origAh!, semTopic.title);
+          this._perspective.updateSemanticTopic(pulse.ah, pulse.origAh!, semTopic.title, pulse.author);
         }
         break;
       case ThreadsEntryType.ParticipationProtocol:
