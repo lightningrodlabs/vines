@@ -128,10 +128,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         }}></ui5-button>      
     `;
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
-    const threadName = latestThreadName(thread.pp, this._dvm.threadsZvm);
+    const threadName = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
     if (maybeSemanticTopicTitle) {
       title = html`${msg("Welcome to")} ${threadName} !`;
-      subText = html`${msg("This is the start of a channel about topic")} ${thread.pp.purpose}`;
+      subText = html`${msg("This is the start of a channel about topic")} ${thread.title}`;
     } else {
       console.log("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
@@ -145,7 +145,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
                       </span>`;
       } else {
         title = html`${msg("Comments about")} <span class="subjectName">${threadName}</span>`;
-        subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName}: ${thread.pp.purpose}`;
+        subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName}: ${thread.title}`;
       }
     }
 
@@ -155,7 +155,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <div class="rounded-emoji">${subjectPrefix}</div>
           <h2>${title} ${copyBtn}</h2>
           <div class="subtext">${subText}</div>
-          <!-- <div class="subtext">Purpose: ${thread.pp.purpose}</div> -->
+          <!-- <div class="subtext">Purpose: ${thread.title}</div> -->
           <div class="subtext">${msg("Rules")}: ${thread.pp.rules}</div>
         </div>
     `;

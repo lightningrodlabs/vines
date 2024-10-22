@@ -199,6 +199,12 @@ export interface SetNotifySettingInput {
   agent: AgentArray
 }
 
+/**  */
+export interface UpdatePpTitleInput {
+  ppAh: ActionArray
+  newTitle: string
+}
+
 /** Input to the notify call */
 export interface PublishTopicInput {
   appletId: string

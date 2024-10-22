@@ -1,11 +1,8 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-use path_explorer_types::*;
 use crate::semantic_topic::*;
-use crate::participation_protocols::probe_pps_from_subject_hash;
-use crate::participation_protocols::get_subject_tp;
-use crate::subjects::link_subject_to_pp;
+
 
 /// Input to the notify call
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]

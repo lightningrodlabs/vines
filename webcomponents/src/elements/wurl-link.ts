@@ -82,10 +82,10 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         if (!maybe) {
           return false;
         }
-        const [ppMat, _ts, _author] = maybe;
-        name = latestThreadName(ppMat, threadsZvm);
+        const [ppMat, title, _ts, _author] = maybe;
+        name = latestThreadName(title, ppMat, threadsZvm);
       } else {
-        name = latestThreadName(thread.pp, threadsZvm);
+        name = latestThreadName(thread.title, thread.pp, threadsZvm);
       }
       //console.log("<wurl-link> loadWal() thread", thread.name);
       this._vinesTypes = ThreadsEntryType.AnyBead;
@@ -113,7 +113,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         console.log("<wurl-link>.loadWal() hash", hash, threadsZvm);
         const maybeThread = threadsZvm.perspective.threads.get(hash);
         if (maybeThread) {
-          this._assetName = latestThreadName(maybeThread.pp, threadsZvm);
+          this._assetName = latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
           return;
         }
@@ -125,7 +125,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         try {
           await threadsZvm.fetchPp(hash);
           const thread = threadsZvm.perspective.threads.get(hash)!;
-          this._assetName = latestThreadName(thread.pp, threadsZvm);
+          this._assetName = latestThreadName(thread.title, thread.pp, threadsZvm);
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
         } catch(e:any) {}
         /** Try Bead */

@@ -65,6 +65,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', { detail: {topicHash, subjectName}, bubbles: true, composed: true }));
   }
 
+  /** */
+  onClickEditChannel(ppAh: ActionId) {
+    this.dispatchEvent(new CustomEvent<ActionId>('edit-channel-clicked', { detail: ppAh, bubbles: true, composed: true }));
+  }
+
+
 
   /** */
   override render() {
@@ -90,8 +96,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       } else {
         if (this.alphabetical) {
           topicThreads = topicThreads.sort((a, b) => {
-            const nameA = latestThreadName(this.perspective.threads.get(a)!.pp, this._zvm);
-            const nameB = latestThreadName(this.perspective.threads.get(b)!.pp, this._zvm);
+            const threadA = this.perspective.threads.get(a)!;
+            const nameA = latestThreadName(threadA.title, threadA.pp, this._zvm);
+            const threadB = this.perspective.threads.get(b)!;
+            const nameB = latestThreadName(threadB.title, threadB.pp, this._zvm);
             return nameA.localeCompare(nameB);
           });
         } else {
@@ -129,17 +137,17 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                 <ui5-button icon="comment" tooltip=${msg("View comments")}
                             style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                             design="Negative"
-                            @click="${(_e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}"></ui5-button>`;
+                            @click="${(_e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}"></ui5-button>`;
           } else {
             commentButton = maybeCommentThread != null
               ? html`
                   <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
                               style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                              @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`
+                              @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}}></ui5-button>`
               : html`
                   <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
                               style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                              @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.pp.purpose)}}></ui5-button>`;
+                              @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}}></ui5-button>`;
           }
 
           /** 'new', 'notif' or 'unread' badge to display */
@@ -177,7 +185,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                                   }}></ui5-button>`;
 
           return html`
-              <sl-tooltip content=${thread.pp.purpose} style="--show-delay:1000">
+              <sl-tooltip content=${thread.title} style="--show-delay:1000">
                 <div id=${ppAh.b64} class="threadItem" 
                      style="
                      font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
@@ -186,7 +194,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
-                    <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.pp.purpose}</span>
+                    <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
+                    <ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
+                                style="border:none;display: none"
+                                @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>
                     <ui5-button icon="chain-link" tooltip=${msg("Copy Channel Link")} design="Transparent"
                                 style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                                 @click=${(e:any) => {
@@ -304,7 +315,6 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
-                <!-- Edit not working properly -->
                 <ui5-button id=${"edit-" + topicAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                         style="border:none;display: none"
                         @click=${(_e:any) => this.onClickEditTopic(topicAh, title)}></ui5-button>

@@ -360,15 +360,6 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async editSemanticTopic(old_hash: ActionId, title: string): Promise<ActionId> {
-    let ah = await this.threadsZvm.editSemanticTopic(old_hash, title);
-    //const tip: TipProtocol = {type: "UpdateSemanticTopic", old_topic_eh: old_eh, new_topic_eh: eh, title};
-    //await this.broadcastTip(tip);
-    return ah;
-  }
-
-
-  /** */
   async publishCommentThread(subject: Subject/*, subject_name: string*/): Promise<ActionId> {
     const pp: ParticipationProtocol = {
       purpose: "comment",

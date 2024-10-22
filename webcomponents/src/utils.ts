@@ -141,7 +141,7 @@ export class AnyIdMap<T> extends Map<HoloHashB64, T> {}
 
 
 /** Determine pp's name */
-export function latestThreadName(pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
+export function latestThreadName(threadTitle: string, pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
   const curSubjectId = intoAnyId(pp.subject.address);
   const subjectType = pp.subject.typeName as SpecialSubjectType;
   let subjectName = "unknown thread";
@@ -159,7 +159,7 @@ export function latestThreadName(pp: ParticipationProtocol, threadsZvm: ThreadsZ
     subjectName = latestSubject.name;
   }
   console.log("latestThreadName", curSubjectId.short, latestSubjectId.short, threadsZvm.perspective.subjects);
-  return `${determineSubjectPrefix(subjectType)} ${subjectName}: ${pp.purpose}`;
+  return `${determineSubjectPrefix(subjectType)} ${subjectName}: ${threadTitle}`;
 }
 
 
@@ -218,7 +218,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
           //thread = await threadsZvm.fetchPp(subject.address);
           return "{Unknown Thread}";
         }
-        return latestThreadName(thread.pp, threadsZvm);
+        return latestThreadName(thread.title, thread.pp, threadsZvm);
       }
       break;
       case SpecialSubjectType.SubjectType:

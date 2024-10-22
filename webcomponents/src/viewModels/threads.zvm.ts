@@ -657,6 +657,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+
+  /** */
+  async editThreadTitle(ppAh: ActionId, title: string/*, preventStoring?: boolean*/) : Promise<void> {
+    /*const link_ah =*/ await this.zomeProxy.updatePpTitle({ppAh: ppAh.hash, newTitle: title});
+  }
+
   /** */
   async editSemanticTopic(old_ah: ActionId, title: string/*, preventStoring?: boolean*/) : Promise<ActionId> {
     const ah = await this.zomeProxy.updateSemanticTopic({ah: old_ah.hash, topic: {title}});
@@ -716,11 +722,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** -- Fetch -- */
 
   /** */
-  async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, Timestamp, AgentId] | null> {
+  async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, string, Timestamp, AgentId] | null> {
     const maybeThread = this._perspective.threads.get(ppAh);
     console.log("ThreadsZvm.fetchPp()", ppAh, !!maybeThread);
     if (maybeThread) {
-      return [maybeThread.pp, maybeThread.creationTime, maybeThread.author];
+      return [maybeThread.pp, maybeThread.title, maybeThread.creationTime, maybeThread.author];
     }
     const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp(ppAh.hash));
     if (throttleError) {
@@ -732,8 +738,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     const [pp, ts, author] = maybe;
     console.log("ThreadsZvm.fetchPp() pp", pp);
-    //await this.fetchThreadHideState(ppAh, pp, encodeHashToBase64(author));
-    return [pp, ts, new AgentId(author)];
+    /** grab latest title */
+    const title = await this.zomeProxy.getPpTitle(ppAh.hash);
+    /** */
+    return [pp, title, ts, new AgentId(author)];
   }
 
 
@@ -1093,9 +1101,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const ppAhMapping: ActionIdMap<ActionId> = new ActionIdMap();
     const beadAhMapping: ActionIdMap<ActionId> = new ActionIdMap();
     /* Sort PPs by creation time */
-    const sortedPps: [ActionId, ParticipationProtocol, Timestamp, AgentId][] = Object.values(snapshot.pps)
-      .sort(([_ppAhA, _ppA, creationTimeA], [_ppAhB, _ppB, creationTimeB]) => {return creationTimeA - creationTimeB})
-      .map(([a, b, c, d]) => [new ActionId(a), b, c, new AgentId(d)])
+    const sortedPps: [ActionId, ParticipationProtocol, string, Timestamp, AgentId][] = Object.values(snapshot.pps)
+      .sort(([_ppAhA, _ppA, _title, creationTimeA, _author], [_ppAhB, _ppB, _titleB, creationTimeB, _authorB]) => {return creationTimeA - creationTimeB})
+      .map(([a, b, c, d, e]) => [new ActionId(a), b, c, d, new AgentId(e)])
     /* Sort Beads by creation time, so they can get their prev bead mapped ah */
     const sortedBeads: [string, BeadInfo, TypedBeadMat][] = Object.values(snapshot.beads).sort(
       ([_beadAhA, beadInfoA, _typedBeadA], [_beadAhB, beadInfoB, _typedBeadB]) => {
@@ -1107,7 +1115,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       const totalStart = ppAhMapping.size + beadAhMapping.size;
       console.debug(`PubImp() Loop ${loopCount}: PP: ${ppAhMapping.size}/${sortedPps.length} | Beads: ${beadAhMapping.size}/${sortedBeads.length}`);
       /* Threads: Publish & Map */
-      for (const [ppAh, pp, creationTime, _a] of Object.values(sortedPps)) {
+      for (const [ppAh, pp, title, creationTime, _a] of Object.values(sortedPps)) {
         if (ppAhMapping.get(ppAh)) {
           continue;
         }
@@ -1157,7 +1165,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           authorshipLog = [creationTime, this.cell.address.agentId];
         }
         /* Store pp */
-        this._perspective.storeThread(this.cell, newPpAh, pp, authorshipLog[0], authorshipLog[1], false);
+        this._perspective.storeThread(this.cell, newPpAh, pp, title, authorshipLog[0], authorshipLog[1], false);
         console.log(`PubImp() PP ${ppAh.short} -> ${newPpAh.short}`, authorshipLog[0]);
       }
       // FIXME: use Promise.AllSettled();
@@ -1427,13 +1435,32 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
       }
       break;
+      case ThreadsLinkType.TitleFix: {
+        console.log("handleLinkPulse() TitleFix", pulse.target.short);
+        const ppAh = new ActionId(pulse.target.b64);
+        if (StateChangeType.Create == pulse.state) {
+          const decoder = new TextDecoder('utf-8');
+          const title = decoder.decode(pulse.tag);
+          const maybe = this._perspective.threads.get(ppAh);
+          if (maybe) {
+            maybe.setTitle(title)
+          } else {
+            this._channelTitleCache.set(ppAh, title); // title for unknown thread, cache it for now
+          }
+        }
+        // if (StateChangeType.Delete == pulse.state) {
+        //   this._perspective.unstoreFavorite(targetAh);
+        // }
+      }
+        break;
     }
   }
+  _channelTitleCache: ActionIdMap<string> = new ActionIdMap<string>();
 
 
-  _authorCache: AnyIdMap<AgentId> = new AnyIdMap<AgentId>();
 
   /** */
+  _authorCache: AnyIdMap<AgentId> = new AnyIdMap<AgentId>();
   async getRecordAuthor(dh: DhtId): Promise<AgentId> {
     const maybe = this._authorCache.get(dh.b64);
     if (maybe) {
@@ -1488,7 +1515,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         /** */
         if (StateChangeType.Create == pulse.state) {
-          this._perspective.storeThread(this.cell, pulse.ah, pp, pulse.ts, pulse.author, pulse.isNew);
+          const maybeTitle = this._channelTitleCache.get(pulse.ah);
+          this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.isNew);
+          this.zomeProxy.getPpTitle(pulse.ah.hash);
           if (pulse.isNew && this._canNotify) {
             if (isEntryFromSelf) {
               /** Notify Subject author */

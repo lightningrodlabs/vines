@@ -47,8 +47,8 @@ export type ThreadsSnapshot = {
   /** Keep only marked items */
   hiddens: HoloHashB64[],
   favorites: ActionHashB64[],
-  /** ppAh -> (ppMat, ts, author) */
-  pps: [ActionHashB64, ParticipationProtocol, Timestamp, AgentPubKeyB64][],
+  /** (ppAh, ppMat, title, ts, author) */
+  pps: [ActionHashB64, ParticipationProtocol, string, Timestamp, AgentPubKeyB64][],
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: [ActionHashB64, BeadInfo, TypedBeadMat][],
   /** bead_ah -> [agent, emojis[]][] */
@@ -84,6 +84,7 @@ export type ThreadsPerspectiveComparable = {
   hiddens: number,
   favorites: number,
   threads: number,
+  threadTitles: string[],
   beads: number,
   emojiReactions: number,
   appletSubjectTypes: number,
@@ -103,7 +104,7 @@ export class ThreadsPerspective {
   subjects: AnyIdMap<Subject> = new AnyIdMap();
   subjectToLatest: AnyIdMap<AnyId> = new AnyIdMap();
   subjectToOrig: AnyIdMap<AnyId> = new AnyIdMap();
-  /** Store of all SemTopic: ah -> TopicTitle */
+  /** Store of all SemTopic: ah -> (TopicTitle, author) */
   semanticTopics: ActionIdMap<[string, AgentId]> = new ActionIdMap();
   bannedSemanticTopics: ActionId[] = [];
   /** Any hash -> isHidden */
@@ -157,7 +158,7 @@ export class ThreadsPerspective {
   /** ppAh -> (subjectHash, beadAh[]) */
   unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
 
-  /***/
+  /** Things to compare when deciding to notify subscribers */
   comparable(): Object {
     const res: ThreadsPerspectiveComparable = {
       appletIds: this.appletIds.length,
@@ -168,6 +169,7 @@ export class ThreadsPerspective {
       hiddens: Object.keys(this.hiddens).length,
       favorites: this.favorites.length,
       threads: this.threads.size,
+      threadTitles: Array.from(this.threads.values()).map((thread) => thread.title),
       beads: this.beads.size,
       emojiReactions: this.emojiReactions.size,
       appletSubjectTypes: this.appletSubjectTypes.size,
@@ -624,10 +626,10 @@ export class ThreadsPerspective {
 
     /** PPs */
     /** Collapse subject address to latest version */
-    let pps: [ActionHashB64, ParticipationProtocol, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries()).map(([ppAh, thread]) => {
+    let pps: [ActionHashB64, ParticipationProtocol, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries()).map(([ppAh, thread]) => {
       const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
       thread.pp.subject.address = latest.b64;
-      return [ppAh.b64, thread.pp, thread.creationTime, thread.author.b64];
+      return [ppAh.b64, thread.pp, thread.title, thread.creationTime, thread.author.b64];
     });
 
     /** -- Done -- */
@@ -824,7 +826,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocol {
+  storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocol {
     console.debug(`storeThread() thread "${ppAh.short}"`, author.short, pp);
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
@@ -834,7 +836,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       return this.threads.get(ppAh)!.pp;
     }
     const subjectAddr = intoAnyId(pp.subject.address);
-    const thread = new Thread(pp, cell.dnaModifiers.origin_time, creationTime, author);
+    const thread = new Thread(pp, maybeTitle, cell.dnaModifiers.origin_time, creationTime, author);
     console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${creationTime}"`);
     /** Add already stored log */
     const maybeLog = this._tempThreadLogs.get(ppAh);
@@ -1033,12 +1035,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.threads.clear();
     this.threadsPerSubject.clear();
     this.dmAgents.clear();
-    for (const [ppAhB64, ppMat, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
+    for (const [ppAhB64, ppMat, title, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
       const ppAh = new ActionId(ppAhB64);
       const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
         ? authorshipZvm.perspective.getAuthor(ppAh)!
         : [creationTime, cell.address.agentId];
-      this.storeThread(cell, ppAh, ppMat, authorshipLog[0], authorshipLog[1], false);
+      this.storeThread(cell, ppAh, ppMat, title, authorshipLog[0], authorshipLog[1], false);
     }
     /** this.beads */
     this.beads.clear();

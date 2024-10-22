@@ -304,7 +304,7 @@ export class CommunityFeedApp extends HappElement {
         console.warn("JumpEvent failed. Bead's PP not found", beadInfo.bead.ppAh.short);
         return;
       }
-      const [pp, _ts, _author] = maybe;
+      const [pp, _title, _ts, _author] = maybe;
       if (pp.subject.name == MAIN_SEMANTIC_TOPIC) {
         this._selectedPostAh = beadAh;
       } else {

@@ -1,8 +1,8 @@
 
 mod probe_pps_from_subject;
 mod publish_participation_protocol;
+mod pp_title;
 
-pub use probe_pps_from_subject::*;
 
 use hdi::hash_path::path::{Component};
 use hdk::prelude::*;

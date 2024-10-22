@@ -319,6 +319,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   get createTopicDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("create-topic-dialog") as Dialog;
   }
+  get editChannelDialogElem(): Dialog {
+    return this.shadowRoot!.getElementById("edit-channel-dialog") as Dialog;
+  }
   get editTopicDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("edit-topic-dialog") as Dialog;
   }
@@ -499,10 +502,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Update -- */
 
 
-  private validateTopic(inputId: string): string | undefined {
+  private validateTitle(inputId: string, prev?: string): string | undefined {
     const input = this.shadowRoot!.getElementById(inputId) as Input;
     const name = input.value.trim();
     let childDivs = input.querySelectorAll('div');
+    /** Must be different from previous */
+    if (prev && prev == name) {
+      input.valueState = ValueState.Error;
+      childDivs[0]!.innerText = msg("Must be different from current title");
+      return;
+    }
+    /** Must be at least 3 chars for link anchors */
     if (name.length < 3) {
       input.valueState = ValueState.Error;
       /** Works even though Lit throws an error when inputing a valid name afterwords */
@@ -525,28 +535,44 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateTopic(_e:any) {
-    const name = this.validateTopic("topicTitleInput");
-    if (!name) {
+    const title = this.validateTitle("topicTitleInput");
+    if (!title) {
       return;
     }
-    await this._dvm.threadsZvm.publishSemanticTopic(name);
+    await this._dvm.threadsZvm.publishSemanticTopic(title);
     this.createTopicDialogElem.close();
   }
 
 
   /** */
   async onEditTopic(_e:any) {
-    const name = this.validateTopic("editTopicTitleInput");
-    if (!name) {
-      return;
-    }
-    // TODO: Dont allow new name to be equal to current value
     const topicHash = this.editTopicDialogElem.getAttribute('TopicHash');
     if (!topicHash) {
       throw Promise.reject("Missing TopicHash attribute");
     }
-    await this._dvm.editSemanticTopic(new ActionId(topicHash), name);
+    const current = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(topicHash))![0];
+    const title = this.validateTitle("editTopicTitleInput", current);
+    if (!title) {
+      return;
+    }
+    await this._dvm.threadsZvm.editSemanticTopic(new ActionId(topicHash), title);
     this.editTopicDialogElem.close();
+  }
+
+
+  /** */
+  async onEditChannel(_e:any) {
+    const hash = this.editChannelDialogElem.getAttribute('ChannelHash');
+    if (!hash) {
+      throw Promise.reject("Missing ChannelHash attribute");
+    }
+    const current = this._dvm.threadsZvm.perspective.threads.get(new ActionId(hash))!.title;
+    const title = this.validateTitle("editChannelTitleInput", current);
+    if (!title) {
+      return;
+    }
+    await this._dvm.threadsZvm.editThreadTitle(new ActionId(hash), title);
+    this.editChannelDialogElem.close();
   }
 
 
@@ -834,12 +860,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  async onEditChannelClicked(e: CustomEvent<ActionId>) {
+    console.log("onEditChannelClicked()", e.detail);
+    //const request = e.detail;
+    const title = this._dvm.threadsZvm.perspective.threads.get(e.detail)!.title;
+    console.log("onEditChannelClicked() title", title);
+    const input = this.shadowRoot!.getElementById("editChannelTitleInput") as HTMLInputElement;
+    input.value = title;
+    this.editChannelDialogElem.setAttribute('ChannelHash', e.detail.b64);
+    this.editChannelDialogElem.open = true;
+  }
+
+
+  /** */
   async onEditTopicClicked(e: CustomEvent<EditTopicRequest>) {
     console.log("onEditTopicClicked()", e.detail);
     const request = e.detail;
     const input = this.shadowRoot!.getElementById("editTopicTitleInput") as HTMLInputElement;
     input.value = request.subjectName;
-    this.editTopicDialogElem.setAttribute('topicHash', request.topicHash.b64);
+    this.editTopicDialogElem.setAttribute('TopicHash', request.topicHash.b64);
     this.editTopicDialogElem.open = true;
   }
 
@@ -1112,7 +1151,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         console.log("<vines-page>.render() fetchPp WARNING");
         /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
-        primaryTitle = latestThreadName(thread.pp, this._dvm.threadsZvm);
+        primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
         const dmThread = this._dvm.threadsZvm.isThreadDm(this._selectedThreadHash);
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
@@ -1471,6 +1510,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <div id="mainDiv"
              @commenting-clicked=${this.onCommentingClicked}
              @reply-clicked=${this.onReplyClicked}
+             @edit-channel-clicked=${this.onEditChannelClicked}
              @edit-topic-clicked=${this.onEditTopicClicked}>
 
             <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}; position: relative"
@@ -1866,6 +1906,30 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                 </div>
             </ui5-dialog>
+            <!-- EditChannelDialog -->
+            <ui5-dialog id="edit-channel-dialog" header-text=${msg('Edit Channel Title')}>
+                <section>
+                    <div>
+                        <ui5-label for="editChannelTitleInput" required>${msg("Title")}:</ui5-label>
+                        <ui5-input id="editChannelTitleInput" @keydown=${(e: any) => {
+                            if (e.keyCode === 13) {
+                              e.preventDefault();
+                              this.onEditChannel(e);
+                            }
+                          }}>
+                          <div id="editChannelErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
+                        </ui5-input>
+                    </div>
+                </section>
+                <div slot="footer">
+                    <ui5-button id="createChannelDialogButton"
+                                style="margin-top:5px" design="Emphasized" @click=${this.onEditChannel}>
+                        ${msg("Edit")}
+                    </ui5-button>
+                    <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.close(false)}>Cancel
+                    </ui5-button>
+                </div>
+            </ui5-dialog>            
             <!-- EditTopicDialog -->
             <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
                 <section>

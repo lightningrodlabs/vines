@@ -70,7 +70,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-      title = latestThreadName(thread.pp, this._zvm);
+      title = latestThreadName(thread.title, thread.pp, this._zvm);
       const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       const threadIsNew = this.perspective.newThreads.has(ppAh);
@@ -131,18 +131,18 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                           class="showBtn"
                           @click=${async (_e:any) => {
           await this._zvm.unhideSubject(ppAh);
-          toasty(`${msg("Unarchived Subject")} "${thread.pp.purpose}"`);
+          toasty(`${msg("Unarchived Subject")} "${thread.title}"`);
         }}></ui5-button>
           ` : html`
                     <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                 class="showBtn"
                                 @click=${async (_e:any) => {
           await this._zvm.hideSubject(ppAh);
-          toasty(`${msg("Archived Subject")} "${thread.pp.purpose}"`);
+          toasty(`${msg("Archived Subject")} "${thread.title}"`);
         }}></ui5-button>`;
 
       return html`
-            <sl-tooltip content=${thread.pp.purpose} style="--show-delay:1000">
+            <sl-tooltip content=${thread.title} style="--show-delay:1000">
                 <div id=${ppAh.b64} class="threadItem"
                      style="
                        font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 

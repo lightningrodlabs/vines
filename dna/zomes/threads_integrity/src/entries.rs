@@ -89,7 +89,6 @@ pub struct ParticipationProtocol {
     pub purpose: String,
     pub rules: String,
     pub subject: Subject,
-    //pub subject_name: String,
 }
 
 

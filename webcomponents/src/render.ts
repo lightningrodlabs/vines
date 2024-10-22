@@ -62,7 +62,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title += " " + latestThreadName(maybeThread.pp, threadsZvm);
+                title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
             }
             content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
@@ -83,7 +83,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         }
         else {
           if (maybeThread) {
-            title = msg("New message in") + " " + latestThreadName(maybeThread.pp, threadsZvm);
+            title = msg("New message in") + " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
           }
         }
         content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
@@ -99,7 +99,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
           const typedBead = threadsZvm.perspective.getBaseBead(ah);
             const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
             if (maybeThread) {
-                title = msg("Reply in") + " " + latestThreadName(maybeThread.pp, threadsZvm);
+                title = msg("Reply in") + " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
             }
             content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
         }
@@ -113,7 +113,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             // const subjectHash = maybeThread.pp.subjectHash;
             // const subject = this.getSubject(subjectHash);
             // title = "New thread about a " + subject.typeName;
-            title += " " + latestThreadName(maybeThread.pp, threadsZvm);
+            title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
             content = msg("Rules") + ": " + maybeThread.pp.rules;
         }
     }

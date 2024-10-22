@@ -56,6 +56,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"pull_notify_settings",
 	"pull_pp_notify_settings",
 	"fetch_pp",
+	"get_pp_title",
+	"update_pp_title",
 	"probe_pps_from_subject_hash",
 	"publish_participation_protocol",
 	"query_all",

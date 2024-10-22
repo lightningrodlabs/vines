@@ -88,11 +88,13 @@ export async function getAssetInfo(
         case ThreadsEntryType.ParticipationProtocol:
             console.log("Vines/we-applet: pp info", wal);
             console.log("Vines/we-applet: getPp()", wal.hrl[1], threadsProxy);
-            const pp = (await threadsProxy.fetchPp(actionId.hash))!; // FIXME: handle null
-            console.log("Vines/we-applet: pp", pp);
+            //const pp = (await threadsProxy.fetchPp(actionId.hash))!; // FIXME: handle null
+            //console.log("Vines/we-applet: pp", pp);
+            const title = await threadsProxy.getPpTitle(actionId.hash);
             return {
                 icon_src: wrapPathInSvg(mdiCommentTextMultiple),
-                name: pp[0].purpose,
+                //name: pp[0].purpose,
+                name: title,
             };
         break;
         // case "path": {

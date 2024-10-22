@@ -34,4 +34,5 @@ export enum ThreadsLinkType {
 	NotifySetting = 'NotifySetting',
 	Favorite = 'Favorite',
 	Dm = 'Dm',
+	TitleFix = 'TitleFix',
 }

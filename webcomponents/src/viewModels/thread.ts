@@ -16,6 +16,8 @@ export class Thread {
 
   /* Participation Protocol */
   private _pp: ParticipationProtocol;
+  /* */
+  private _title: string;
   /* Author of the thread's PP entry */
   private _author: AgentId;
   /* CreationTime of the thread's PP entry */
@@ -31,13 +33,13 @@ export class Thread {
 
 
   /** Ctor */
-  constructor(pp: ParticipationProtocol, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
+  constructor(pp: ParticipationProtocol, maybeTitle: string | undefined, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
     console.debug("New Thread()", !!pp, dnaOriginTime, author);
     this._pp = pp;
+    this._title = maybeTitle? maybeTitle : this._pp.purpose;
     this._latestProbeLogTime = dnaOriginTime;
     this._creationTime = creationTime;
     this._author = author;
-
     this._beadLinksTree = createRBTree();
     //this._beadLinksTree = createRBTree((a, b) => b - a);
   }
@@ -50,6 +52,8 @@ export class Thread {
   get creationTime(): Timestamp { return this._creationTime}
 
   get author(): AgentId { return this._author}
+
+  get title(): string { return this._title}
 
   //get isHidden(): boolean { return this._isHidden}
 
@@ -79,6 +83,8 @@ export class Thread {
 
 
   /** -- Setters -- */
+
+  setTitle(title: string): void { this._title = title}
 
   /** */
   setLatestProbeLogTime(time: Timestamp): void {

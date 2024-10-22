@@ -115,4 +115,5 @@ pub enum ThreadsLinkType {
     NotifySetting,
     Favorite,
     Dm,
+    TitleFix,
 }
