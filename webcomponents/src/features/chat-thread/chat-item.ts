@@ -1,5 +1,5 @@
 import {html, css, PropertyValues} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
@@ -56,6 +56,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   @property({type: Boolean}) nomenu: boolean = false;
 
+  @property({type: Boolean}) canEdit: boolean = false;
+
+
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -72,7 +75,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   private _renderCount = 0;
-  @state() private _canEdit = false;
 
 
   /** -- Methods -- */
@@ -103,6 +105,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
       this.loadBead();
+      this.canEdit = false;
     }
   }
 
@@ -274,14 +277,18 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let downloadItem = html``;
     const itemClass = hidemeta? "" : "innerItem";
     if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-      if (!this._canEdit) {
+      if (!this.canEdit) {
         item = html`<chat-text class="${itemClass}" .hash=${this.hash}></chat-text>`;
       } else {
-        item = html`<chat-text-edit id="text-edit" class="${itemClass}" .hash=${this.hash} @edit-bead=${async(e: CustomEvent<string>) => {
-            this._canEdit = false;
-            ///*let ah =*/ await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail, beadInfo.bead.ppAh, undefined, undefined, this.weServices);
-            await this._dvm.threadsZvm.editMyTextBead(this.hash, e.detail);
-        }}></chat-text-edit>`;
+        item = html`<chat-text-edit id="text-edit" class="${itemClass}" .hash=${this.hash} 
+                                    @edit-bead=${async(e: CustomEvent<string | null>) => {
+                                      this.canEdit = false;
+                                      ///*let ah =*/ await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail, beadInfo.bead.ppAh, undefined, undefined, this.weServices);
+                                        if (e.detail) {
+                                          await this._dvm.threadsZvm.editMyTextBead(this.hash, e.detail);
+                                        }
+                                  }}
+        ></chat-text-edit>`;
       }
       downloadItem = html`<ui5-menu-item id="downloadItem" icon="copy" text=${msg("Copy Text")}></ui5-menu-item>`;
     }
@@ -393,7 +400,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       if (beadInfo.beadType == ThreadsEntryType.TextBead && beadInfo.author.equals(this.cell.address.agentId)) {
         sideButtons.unshift(html`
             <ui5-button id="star-btn" icon="edit" tooltip=${msg("Edit")} design="Transparent" style="border:none;"
-                        @click=${(_e:any) => this._canEdit = true}></ui5-button>
+                        @click=${(_e:any) => this.canEdit = true}></ui5-button>
         `);
       }
     }
@@ -449,9 +456,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     <span id="nameEnd" style="width:10px"></span>
                 </div>
                 ${item}
-                ${this._canEdit? html`<div style="font-size: small; margin-top:-5px; margin-bottom:5px">
-                    ${msg("escape to")} <span class="linky" @click=${() => this._canEdit = false}>${msg("cancel")}</span> • ${msg("enter to")} <span class="linky" @click=${async() => {
-                      this._canEdit = false;
+                ${this.canEdit? html`<div style="font-size: small; margin-top:-2px; margin-bottom:5px">
+                    ${msg("escape to")} <span class="linky" @click=${() => this.canEdit = false}>${msg("cancel")}</span> • ${msg("enter to")} <span class="linky" @click=${async() => {
+                      this.canEdit = false;
                       const elem = this.shadowRoot!.getElementById("text-edit") as ChatTextEdit;
                     /*let ah =*/ await this._dvm.threadsZvm.editMyTextBead(this.hash, elem.value);
                 }}>${msg("save")}</span>

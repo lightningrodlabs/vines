@@ -297,7 +297,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         }
 
         const chatItem = html`
-              <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
+              <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh} .canEdit=${false}
                          style="${this.beadAh && blm.beadAh.equals(this.beadAh) ? "background:#c4f2b07a" : ""}">
               </chat-item>`;
         prevBeadAh = blm.beadAh;

@@ -541,7 +541,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       // await this.fetchPp(ppAh);
       // thread = this._threads.get(ppAh);
       //if (!thread) {
-      throw Promise.reject("Unknown thread: " + ppAh);
+      throw Promise.reject("Unknown thread: " + ppAh.short);
       //}
     }
     if (!prevBeadAh) {
@@ -595,17 +595,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       throw Error("Invalid bead to update");
     }
     /** Grab bead's "edit" thread */
-    let ppAh: ActionId;
     const pair = this._perspective.getEditThread(beadAh);
-    /** if none, create one */
+    /** if none, create one and manually publish first bead */
     if (!pair) {
-      const res = await this.publishEditThread(beadAh);
-      ppAh = res[1];
-    } else {
-      ppAh = pair[0];
+      const [_ts, ppAh] = await this.publishEditThread(beadAh);
+      const bead: Bead = {
+        ppAh: ppAh.hash,
+        prevBeadAh: ppAh.hash,
+      }
+      /*const tuple =*/ await this.publishTypedBeadAt(ThreadsEntryType.TextBead, value, bead,  Date.now() * 1000, this.cell.address.agentId);
+      return;
     }
     /** publish bead to edit thread */
-    await this.publishTypedBead(ThreadsEntryType.TextBead, value, ppAh);
+    await this.publishTypedBead(ThreadsEntryType.TextBead, value, pair[0]);
   }
 
 
