@@ -996,7 +996,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Cache and reset input-bar */
     const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
     if (inputBar && maybePrevThreadId) {
-      //console.warn("<vines-page>.onJump() Storing input-bar:", inputBar.value, maybePrevThreadId.short)
+      //console.warn("<vines-page>.onJump() cachedInput Storing input-bar:", inputBar.value, maybePrevThreadId.short)
       this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
       inputBar.setValue("");
     }
