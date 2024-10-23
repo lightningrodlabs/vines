@@ -354,7 +354,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 ${threadAvatar}
                 <span class="thread-link" style="color: ${commentLinkColor}"
                       @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(maybeCommentThread))}>
-              view comments
+              ${msg("view comments")}
             </span>
         `;
       }

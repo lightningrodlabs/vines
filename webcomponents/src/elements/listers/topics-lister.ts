@@ -195,9 +195,9 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
-                    <ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
+                    ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                                 style="border:none;display: none"
-                                @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>
+                                @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
                     <ui5-button icon="chain-link" tooltip=${msg("Copy Channel Link")} design="Transparent"
                                 style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
                                 @click=${(e:any) => {

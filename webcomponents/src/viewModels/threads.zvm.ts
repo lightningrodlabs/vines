@@ -1570,7 +1570,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (StateChangeType.Create == pulse.state) {
           const maybeTitle = this._channelTitleCache.get(pulse.ah);
           this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.isNew);
+          /** grab latest title edit */
           this.zomeProxy.getPpTitle(pulse.ah.hash);
+          /** grab latest textbead edit if it's an EDIT thread */
+          if (pp.purpose == "EDIT") {
+            /*await*/ this.pullLatestBeads(pulse.ah, pulse.ts);
+          }
+          /** */
           if (pulse.isNew && this._canNotify) {
             if (isEntryFromSelf) {
               /** Notify Subject author */
