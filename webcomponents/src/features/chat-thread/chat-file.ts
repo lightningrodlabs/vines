@@ -51,9 +51,24 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     /** Load file when hash changed */
     // @ts-ignore: _dvm for first update
-    if (changedProperties.has("hash")  || changedProperties.has("_dvm")) {
+    if (changedProperties.has("hash") || changedProperties.has("_dvm")) {
       this._canRetry = true;
       /* await */ this.loadFileData();
+    }
+  }
+
+
+  /** */
+  protected override async updated(_changedProperties: PropertyValues) {
+    /** click file for preview */
+    const maybeImg = this.shadowRoot!.getElementById("img-bead") as HTMLElement;
+    if (maybeImg) {
+      maybeImg.addEventListener('click', (e:any) => {
+        e.stopPropagation(); e.preventDefault();
+        const mime = kind2mime(this._manifest!.description.kind_info);
+        console.log("view-embed image clicked!", mime, this._maybeBlobUrl);
+        this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {detail: {blobUrl: this._maybeBlobUrl!, mime}, bubbles: true, composed: true}));
+      });
     }
   }
 
@@ -69,15 +84,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     try {
       const manifestEh = entryBead.sourceEh;
-      console.log("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
+      console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
       if (!this._manifest || this._manifest.description.size > this._filesDvm.dnaProperties.maxChunkSize) {
+        console.debug("<chat-file>.loadFile() stopped", this._manifest);
         this._loading = false;
         this._file = null;
         return;
       }
       const fileType = kind2Type(this._manifest.description.kind_info);
-      console.log("<chat-file>.loadFile() fileType", fileType);
+      console.debug("<chat-file>.loadFile() fileType", fileType);
       if (fileType == "Binary" || fileType == "Zip" || fileType == "Other") {
           this._loading = false;
           this._file = null;
@@ -93,7 +109,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
       const mime = kind2mime(this._manifest.description.kind_info);
       reader.onload = (event) => {
-        console.log("FileReader onload", event, mime);
+        console.debug("<chat-file>.loadFile() FileReader onload", event, mime);
         if (event.target == null || event.target.result == null) {
           console.warn("FileReader event is null", event);
           this._loading = false;
@@ -101,14 +117,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         }
         const blob = new Blob([event.target.result], {type: mime});
         this._maybeBlobUrl = URL.createObjectURL(blob);
-        console.log("FileReader blob", blob, this._maybeBlobUrl)
+        console.debug("<chat-file>.loadFile() FileReader blob", blob, this._maybeBlobUrl)
         //this.requestUpdate();
         this._loading = false;
       };
       //reader.readAsDataURL(this._maybeFile);
       reader.readAsArrayBuffer(this._file);
     } catch(e:any) {
-      console.warn("Loading file failed:", this.hash, e);
+      console.warn("<chat-file>.loadFile() Loading file failed:", this.hash, e);
       this._loading = false;
       this._file = null;
     }
@@ -213,10 +229,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
         //     break;
         case FileType.Image:
-          item = html`<img class="preview Image" src=${this._maybeBlobUrl} alt="Preview Image" @click=${(_e:any) => {
-              console.log("view-embed image clicked!", mime, this._maybeBlobUrl?.length);
-              this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {detail: {blobUrl: this._maybeBlobUrl!, mime}, bubbles: true, composed: true}));
-          }}/>`;
+          item = html`<img id="img-bead" class="preview Image" src=${this._maybeBlobUrl} />`;
           break;
         case FileType.Audio:
           item = html`
@@ -245,7 +258,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     /** render item */
     return html`
         <sl-tooltip content=${fileDesc.name} style="--show-delay:1000">
-            <!--<div>${this._renderCount}</div>-->
             ${item}
         </sl-tooltip>
     `;

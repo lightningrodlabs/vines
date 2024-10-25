@@ -788,9 +788,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const [pp, ts, author] = maybe;
     console.log("ThreadsZvm.fetchPp() pp", pp);
     /** grab latest title */
-    const title = await this.zomeProxy.getPpTitle(ppAh.hash);
+    const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle(ppAh.hash));
+    if (throttleError2) {
+      return null;
+    }
     /** */
-    return [pp, title, ts, new AgentId(author)];
+    return [pp, title!, ts, new AgentId(author)];
   }
 
 
@@ -1571,7 +1574,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const maybeTitle = this._channelTitleCache.get(pulse.ah);
           this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.isNew);
           /** grab latest title edit */
-          try {this.zomeProxy.getPpTitle(pulse.ah.hash);} catch(e) {}
+          catchThrottled(this.zomeProxy.getPpTitle(pulse.ah.hash));
           /** grab latest textbead edit if it's an EDIT thread */
           if (pp.purpose == "EDIT") {
             /*await*/ this.pullLatestBeads(pulse.ah, pulse.ts);
