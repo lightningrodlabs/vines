@@ -266,10 +266,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     /** hide if prevBead is closer than a minute and same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
-      const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
+      const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.prevBeadAh);
       if (prevInfo) {
         const diff = beadInfo.creationTime - prevInfo.creationTime;
-        hidemeta = beadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000;
+        hidemeta = beadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000; // 60 secs
       }
     }
     let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);

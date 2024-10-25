@@ -846,10 +846,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     try {
       switch (beadType) {
-        case ThreadsEntryType.TextBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchTextBead(beadAh.hash); break;
-        case ThreadsEntryType.EntryBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchEntryBead(beadAh.hash); break;
-        case ThreadsEntryType.AnyBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchAnyBead(beadAh.hash); break;
-        case ThreadsEntryType.EncryptedBead: /*[creationTime, author, typed] =*/ await this.zomeProxy.fetchEncBead(beadAh.hash); break;
+        case ThreadsEntryType.TextBead: /*[creationTime, author, typed] =*/ await catchThrottled(this.zomeProxy.fetchTextBead(beadAh.hash)); break;
+        case ThreadsEntryType.EntryBead: /*[creationTime, author, typed] =*/ await catchThrottled(this.zomeProxy.fetchEntryBead(beadAh.hash)); break;
+        case ThreadsEntryType.AnyBead: /*[creationTime, author, typed] =*/ await catchThrottled(this.zomeProxy.fetchAnyBead(beadAh.hash)); break;
+        case ThreadsEntryType.EncryptedBead: /*[creationTime, author, typed] =*/ await catchThrottled(this.zomeProxy.fetchEncBead(beadAh.hash)); break;
       }
     } catch(e:any) {
       console.error(e);
