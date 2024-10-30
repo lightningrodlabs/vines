@@ -341,6 +341,9 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** Handle empty tree case */
     if (treeItems.length == 0) {
       treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('No topics found')}</div>`);
+      //if (this._dvm.profilesZvm.perspective.agents.length <= 1) {
+        treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('(Might not be connected to peers yet)')}</div>`);
+      //}
     }
 
     /** render all */

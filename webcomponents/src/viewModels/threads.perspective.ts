@@ -158,6 +158,7 @@ export class ThreadsPerspective {
   /** ppAh -> (subjectHash, beadAh[]) */
   unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
 
+
   /** Things to compare when deciding to notify subscribers */
   comparable(): Object {
     const res: ThreadsPerspectiveComparable = {

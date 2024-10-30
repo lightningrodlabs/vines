@@ -1449,7 +1449,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
                 
                 <!-- Custom Segmented buttons -->
-                <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 10px 10px 10px 10px; border-radius: 5px; padding: 3px;">
+                ${!this.weServices? html`` : html`
+                <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 10px 10px; border-radius: 5px; padding: 3px;">
                     <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
                         e.preventDefault(); e.stopPropagation();
                         this._listerToShow = "topics-option";
@@ -1483,7 +1484,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         mineBtn.classList.add("selected");
                         this.requestUpdate();
                     }}>${msg('My')}</div>                    
-                </div>
+                </div>`}
 
                 <!-- Action buttons -->
                 <div style="display:flex; flex-direction:row; margin-right: 5px;">
@@ -2255,6 +2256,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: none;
           padding-right: 7px;
           border-bottom: 1px solid #c6c6c6;
+          margin-bottom: 7px;
         }
 
         #lister-select {
