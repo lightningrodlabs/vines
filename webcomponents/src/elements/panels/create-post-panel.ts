@@ -147,6 +147,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
+    console.debug("createCommentThread()", beadAh);
     const subject: Subject = {
       address: beadAh.b64,
       name: "",

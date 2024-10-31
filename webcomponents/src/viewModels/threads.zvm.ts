@@ -93,7 +93,7 @@ import {THIS_APPLET_ID} from "../contexts";
 
 
 /** Better way to catch and handle "throttled" error */
-function catchThrottled<T>(promise: Promise<T>): Promise<[undefined, T] | [Error]> {
+export function catchThrottled<T>(promise: Promise<T>): Promise<[undefined, T] | [Error]> {
   return promise
     .then(data => [undefined, data] as [undefined, T])
     .catch(error => {
@@ -317,7 +317,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Get all Threads for a subject */
   async pullSubjectThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
-    //console.log("threadsZvm.pullSubjectThreads() start", subjectId);
+    console.log("threadsZvm.pullSubjectThreads() start", subjectId);
     /** Skip Agent as it has dm link type to get its pps */
     if (subjectId.hashType == HoloHashType.Agent) {
       return new ActionIdMap();
@@ -325,16 +325,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** */
     let merged: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
     const subjectIds = this._perspective.getAllSubjectVersions(subjectId);
-    //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length);
-    for (const subjectId of subjectIds) {
-      const [throttleError, tuples] = await catchThrottled(this.pullSubjectVersionThreads(subjectId));
+    //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length, subjectId.short);
+    for (const curSubjId of subjectIds) {
+      const [throttleError, tuples] = await catchThrottled(this.pullSubjectVersionThreads(curSubjId));
       if (throttleError) {
+        //console.log("threadsZvm.pullSubjectThreads() throttleError", throttleError, curSubjId);
         continue; // pullSubjectThreads() might be called multiple times for the same subject
       }
-      //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size);
+      //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size, subjectId.short);
       merged = new ActionIdMap([...merged, ...tuples]);
     }
-    //console.log("threadsZvm.pullSubjectThreads() end", merged.size);
+    console.log("threadsZvm.pullSubjectThreads() end", merged.size, subjectId.short);
     return merged;
   }
 
@@ -1574,7 +1575,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const maybeTitle = this._channelTitleCache.get(pulse.ah);
           this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.isNew);
           /** grab latest title edit */
-          catchThrottled(this.zomeProxy.getPpTitle(pulse.ah.hash));
+          this.zomeProxy.getPpTitle(pulse.ah.hash).catch(() => {});
           /** grab latest textbead edit if it's an EDIT thread */
           if (pp.purpose == "EDIT") {
             /*await*/ this.pullLatestBeads(pulse.ah, pulse.ts);

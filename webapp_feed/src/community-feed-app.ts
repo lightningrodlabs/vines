@@ -220,15 +220,16 @@ export class CommunityFeedApp extends HappElement {
   override async perspectiveInitializedOnline(): Promise<void> {
     console.log("<community-feed-app>.perspectiveInitializedOnline() START", this.appletView);
 
-    if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
-      await this.hvm.probeAll();
-    }
+    // if (!this.appletView || (this.appletView && this.appletView.type == "main")) {
+    //   await this.hvm.probeAll();
+    // }
+
     await this.networkInfoAll(); // FIXME: should propable store result in class field
 
 
     /** Make sure main topic and thread exists */
     this.threadsDvm.threadsZvm.storeMainTopic();
-    this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
+    await this.threadsDvm.threadsZvm.pullSubjectThreads(MAIN_TOPIC_ID);
     const mainThreads = this.threadsDvm.threadsZvm.perspective.threadsPerSubject.get(MAIN_TOPIC_ID.b64);
     console.log("<community-feed-app>.perspectiveInitializedOnline() threads", mainThreads);
     if (mainThreads && mainThreads.length > 0) {

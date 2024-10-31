@@ -2,7 +2,7 @@ import {html, css, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import 'emoji-picker-element';
@@ -21,6 +21,7 @@ import {toasty} from "../../toast";
 import {NotifySetting, ThreadsEntryType} from "../../bindings/threads.types";
 import {favoritesJumpEvent, ShowProfileEvent, VinesInputEvent} from "../../events";
 import {Thread} from "../../viewModels/thread";
+import {catchThrottled} from "../../viewModels/threads.zvm";
 
 
 /**
@@ -80,7 +81,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     console.log("<post-item>.loadPost()")
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     if (!beadInfo) {
-      await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
+      await catchThrottled(this._dvm.threadsZvm.fetchUnknownBead(this.hash));
     }
     await this._dvm.threadsZvm.pullEmojiReactions(this.hash);
     const commentThreadAh = await this.getCommentThread();
@@ -158,10 +159,17 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async getCommentThread(): Promise<ActionId> {
+    console.debug("getCommentThread()", this.hash);
     let commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
     if (!commentThreadAh) {
-      await this._dvm.threadsZvm.pullSubjectThreads(this.hash);
-      commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
+      await delay(200); // avoid throttle issue
+      const threads = await this._dvm.threadsZvm.pullSubjectThreads(this.hash);
+      //console.debug("getCommentThread(), threads", threads);
+      Array.from(threads.entries()).map(([ppAh, [pp, _ts, _auth]]) => {
+        if (pp.purpose == "comment") {
+          commentThreadAh = ppAh;
+        }});
+      //commentThreadAh = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
       if (!commentThreadAh) {
         console.error("Missing Comment thread for Post", this.hash);
         throw Promise.reject("Missing comment thread for Post");
