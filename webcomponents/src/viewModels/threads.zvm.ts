@@ -1483,12 +1483,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       break;
       case ThreadsLinkType.Favorite: {
         console.log("handleLinkPulse() Favorite", pulse.target.short);
-        const targetAh = new ActionId(pulse.target.b64);
-        if (StateChangeType.Create == pulse.state) {
-          this._perspective.storeFavorite(targetAh);
-        }
-        if (StateChangeType.Delete == pulse.state) {
-          this._perspective.unstoreFavorite(targetAh);
+        if (pulse.author.equals(this.cell.address.agentId)) {
+          const targetAh = new ActionId(pulse.target.b64);
+          if (StateChangeType.Create == pulse.state) {
+            this._perspective.storeFavorite(targetAh);
+          }
+          if (StateChangeType.Delete == pulse.state) {
+            this._perspective.unstoreFavorite(targetAh);
+          }
         }
       }
       break;
