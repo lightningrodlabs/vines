@@ -712,6 +712,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  private _cachedUnread = "";
+  private _cachedNew = "";
   protected override async updated(_changedProperties: PropertyValues) {
     /** ??? */
     try {
@@ -744,8 +746,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       /** notifyFrame of some new content: FIXME move to zvm? */
       const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
-      //console.warn("<vines-page>.updated() weServices", allCount);
-      if (allCount > 0) {
+      const comparableUnread = JSON.stringify(Array.from(this._dvm.threadsZvm.perspective.unreadThreads.entries()));
+      const comparableNew = JSON.stringify(Array.from(this._dvm.threadsZvm.perspective.newThreads.entries()));
+      console.debug("<vines-page>.updated() weServices", allCount, this._cachedUnread, this._cachedNew);
+      if (allCount > 0 && (comparableUnread != this._cachedUnread || comparableNew != this._cachedNew)) {
+        console.log("<vines-page>.updated() weServices", allCount);
+        this._cachedUnread = comparableUnread;
+        this._cachedNew = comparableNew;
         this.weServices.notifyFrame([{
           title: "Unread content",
           body: "",
