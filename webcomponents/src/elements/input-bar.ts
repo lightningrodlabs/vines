@@ -97,7 +97,14 @@ export class InputBar extends LitElement {
     const text = e.clipboardData?.getData('text/plain');
     if (text) {
       //console.log('<vines-input-bar>.onPaste() text:', text);
-      this.setValue(this.value + text);
+      /** Get the text content before and after cursor */
+      const nativeTextarea = this.inputElem.shadowRoot!.querySelector("textarea") as unknown as HTMLInputElement;
+      console.log("<vines-input-bar>.onPaste() input", nativeTextarea.selectionStart, nativeTextarea.selectionEnd);
+      const textBeforeCursor = this.value.substring(0, nativeTextarea.selectionStart!);
+      const textAfterCursor = this.value.substring(nativeTextarea.selectionEnd!);
+      /** Done */
+      this.setValue(textBeforeCursor + text + textAfterCursor);
+      //this.setValue(this.value + text);
       return;
     }
 

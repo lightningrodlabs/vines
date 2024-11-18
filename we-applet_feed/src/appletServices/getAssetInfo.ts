@@ -34,7 +34,7 @@ export async function getAssetInfo(
     if (!mainAppInfo) {
         throw Promise.reject("Missing Main AppInfo");
     }
-    
+
     const cellProxy = await asCellProxy(
       appletClient,
       undefined,
@@ -50,6 +50,9 @@ export async function getAssetInfo(
         case ThreadsEntryType.TextBead:
             console.log("Feed/we-applet: TextBead", wal);
             const tuple = await threadsProxy.fetchTextBead(dhtId.hash);
+            if (!tuple) {
+                throw new Error(`Feed/we-applet/getAssetInfo(): TextBead not found`);
+            }
             return {
                 icon_src: wrapPathInSvg(mdiCommentText),
                 name: tuple[2].value,
@@ -58,6 +61,9 @@ export async function getAssetInfo(
         case ThreadsEntryType.AnyBead:
             console.log("Feed/we-applet: AnyBead", wal);
             const anyTuple = await threadsProxy.fetchAnyBead(dhtId.hash);
+            if (!anyTuple) {
+                throw new Error(`Feed/we-applet/getAssetInfo(): Bead not found`);
+            }
             const hrlBead = materializeAnyBead(anyTuple[2]);
             const wall = weaveUrlToWal(hrlBead.value);
             const beadAh = new ActionId(wall.hrl[1])
@@ -73,6 +79,9 @@ export async function getAssetInfo(
             const filesProxy: FilesProxy = new FilesProxy(fProxy);
             console.log("Feed/we-applet: EntryBead filesProxy", filesProxy);
             const fileTuple = await threadsProxy.fetchEntryBead(dhtId.hash);
+            if (!fileTuple) {
+                throw new Error(`Feed/we-applet/getAssetInfo(): Bead not found`);
+            }
             const manifest = await filesProxy.getFileInfo(fileTuple[2].sourceEh)
             //const fileBead = materializeEntryBead(fileTuple[2]);
             //const source = truncate(fileBead.sourceEh, 10, false);

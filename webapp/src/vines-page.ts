@@ -216,6 +216,7 @@ import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
+import {HoloHashB64} from "@holochain/client";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -712,8 +713,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  private _cachedUnread = "";
-  private _cachedNew = "";
+  private _cachedUnread: Map<HoloHashB64, HoloHashB64[]> = new Map();
+  private _cachedNew: HoloHashB64[] = [];
   protected override async updated(_changedProperties: PropertyValues) {
     /** ??? */
     try {
@@ -744,24 +745,49 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
       }
-      /** notifyFrame of some new content: FIXME move to zvm? */
-      const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
-      const comparableUnread = JSON.stringify(Array.from(this._dvm.threadsZvm.perspective.unreadThreads.entries()));
-      const comparableNew = JSON.stringify(Array.from(this._dvm.threadsZvm.perspective.newThreads.entries()));
-      console.debug("<vines-page>.updated() weServices", allCount, this._cachedUnread, this._cachedNew);
-      if (allCount > 0 && (comparableUnread != this._cachedUnread || comparableNew != this._cachedNew)) {
-        console.log("<vines-page>.updated() weServices", allCount);
-        this._cachedUnread = comparableUnread;
-        this._cachedNew = comparableNew;
-        this.weServices.notifyFrame([{
-          title: "Unread content",
-          body: "",
-          notification_type: "content",
-          icon_src: wrapPathInSvg(mdiInformationOutline),
-          urgency: 'medium',
-          timestamp: Date.now(),
-        }]);
+      /** Notify Frame of some new content: FIXME move to zvm? */
+      //const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
+      const comparableNew = Array.from(this._dvm.threadsZvm.perspective.newThreads.values()).map((id) => id.b64);
+      //console.debug("<vines-page>.updated() weServices", allCount, this._cachedUnread, this._cachedNew);
+      //if (allCount > 0 && (comparableUnread != this._cachedUnread || comparableNew != this._cachedNew)) {
+      for (const threadAh in comparableNew) {
+        if (!this._cachedNew.includes(threadAh)) {
+          console.log("<vines-page>.updated() weServices New thread", threadAh);
+          this.weServices.notifyFrame([{
+            title: "New thread",
+            body: "",
+            notification_type: "content",
+            icon_src: wrapPathInSvg(mdiInformationOutline),
+            urgency: 'medium',
+            aboutWal: {hrl: intoHrl(this.cell.address.dnaId, intoDhtId(threadAh))},
+            timestamp: Date.now(),
+          }]);
+        }
       }
+      this._cachedNew = comparableNew;
+      const comparableUnread: Map<HoloHashB64, HoloHashB64[]> = new Map(Array.from(this._dvm.threadsZvm.perspective.unreadThreads.entries())
+        .map(([threadId, [_subId, ids]]) => [threadId.b64, ids.map((id) => id.b64)]));
+      for (const [threadAhB64, ids] of Array.from(comparableUnread.entries())) {
+        const threads = Array.from(this._cachedUnread.keys());
+        if (threads.includes(threadAhB64)) {
+          let threadAh = new ActionId(threadAhB64);
+          for (const idb64 of ids) {
+            if (this._cachedUnread.get(threadAhB64)!.includes(idb64)) {
+              console.log("<vines-page>.updated() weServices New message", threadAh);
+              this.weServices.notifyFrame([{
+                title: "New message",
+                body: "",
+                notification_type: "content",
+                icon_src: wrapPathInSvg(mdiInformationOutline),
+                urgency: 'medium',
+                aboutWal: {hrl: intoHrl(this.cell.address.dnaId, threadAh)},
+                timestamp: Date.now(),
+              }]);
+            }
+          }
+        }
+      }
+      this._cachedUnread = comparableUnread;
     }
 
     /** Create popups from signaled Notifications */

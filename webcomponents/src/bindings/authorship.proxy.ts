@@ -110,4 +110,8 @@ export class AuthorshipProxy extends ZomeProxy {
   async getAscribedTypeChildren(targetType: string): Promise<[AnyLinkableArray, Timestamp, AgentArray][]> {
     return this.call('get_ascribed_type_children', targetType);
   }
+
+  async getRecordAuthor(dh: AnyDhtArray): Promise<AgentArray> {
+    return this.call('get_record_author', dh);
+  }
 }
