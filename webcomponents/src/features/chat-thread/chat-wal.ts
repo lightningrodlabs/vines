@@ -165,13 +165,13 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       sharedStyles,
       css`
         :host {
-          max-width: 600px;
+          /*max-width: 600px;*/
         }
         #fileList {
           min-width: 350px;
           border-radius: 10px;
           margin: 10px 5px 10px 5px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;*/
         }
 
         #fileLi {

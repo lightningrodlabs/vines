@@ -113,7 +113,7 @@
     "clean:all"          : "git clean -f -x -d -e .idea && rm -rf submodules"
   },
   "devDependencies": {
-    "@theweave/cli": "0.13.0-gamma.5",
+    "@theweave/cli": "0.13.0-gamma.6",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
@@ -132,7 +132,7 @@
   "dependencies": {
     "@holochain/client": "=0.18.0-dev.13",
     "@theweave/api": "=0.2.1",
-    "@theweave/elements": "=0.1.1",
+    "@theweave/elements": "=0.2.1",
     "@ddd-qc/cell-proxy": "=0.30.0",
     "@ddd-qc/lit-happ": "=0.30.0",
     "@ddd-qc/profiles-dvm": "=0.30.0",

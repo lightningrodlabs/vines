@@ -748,9 +748,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** Notify Frame of some new content: FIXME move to zvm? */
       //const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
       const comparableNew = Array.from(this._dvm.threadsZvm.perspective.newThreads.values()).map((id) => id.b64);
-      //console.debug("<vines-page>.updated() weServices", allCount, this._cachedUnread, this._cachedNew);
+      //console.debug("<vines-page>.updated() weServices comparableNew", comparableNew);
       //if (allCount > 0 && (comparableUnread != this._cachedUnread || comparableNew != this._cachedNew)) {
-      for (const threadAh in comparableNew) {
+      for (const threadAh of comparableNew) {
         if (!this._cachedNew.includes(threadAh)) {
           console.log("<vines-page>.updated() weServices New thread", threadAh);
           this.weServices.notifyFrame([{
@@ -773,7 +773,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           let threadAh = new ActionId(threadAhB64);
           for (const idb64 of ids) {
             if (this._cachedUnread.get(threadAhB64)!.includes(idb64)) {
-              console.log("<vines-page>.updated() weServices New message", threadAh);
+              //console.log("<vines-page>.updated() weServices New message", threadAh);
               this.weServices.notifyFrame([{
                 title: "New message",
                 body: "",
