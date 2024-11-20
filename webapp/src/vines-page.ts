@@ -201,7 +201,7 @@ import {
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
-import {FrameNotification, GroupProfile, WAL, weaveUrlFromWal} from "@theweave/api";
+import {FrameNotification, GroupProfile, Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -367,6 +367,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('favorites', this.onFavorites);
     // @ts-ignore
     this.addEventListener('view', this.onViewFile);
+    // @ts-ignore
+    this.addEventListener('copy', this.onCopy);
   }
 
   override disconnectedCallback() {
@@ -386,8 +388,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('favorites', this.onFavorites);
     // @ts-ignore
     this.removeEventListener('view', this.onViewFile);
+    // @ts-ignore
+    this.removeEventListener('copy', this.onCopy);
   }
 
+  /** */
+  private _debugThreadAh?: ActionId;
+
+  async onCopy(e: CustomEvent<Hrl>) {
+    const hrl: Hrl = e.detail;
+    //const wurl = weaveUrlFromWal({hrl}/*, true*/);
+    this._canShowDebug = true;
+    this._debugThreadAh = new ActionId(hrl[1]);
+  }
 
   /** */
   getDeepestElemAt(x: number, y: number): HTMLElement {
@@ -1852,7 +1865,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     <search-result-panel .parameters=${searchParameters}></search-result-panel>
                                 </div>`
                             : html``}
-                    <vines-graph id="debugSide"
+                    <vines-graph id="debugSide" .threadHash=${this._debugThreadAh}
                                  style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></vines-graph>
                     <!-- <anchor-tree id="debugSide"
                                  style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
