@@ -7,13 +7,12 @@ export * from './toast';
 export * from './search';
 
 export * from './elements/emoji-bar';
-export * from './elements/favorites-view';
-export * from './elements/favorites-item';
 export * from './elements/input-bar';
 export * from './elements/wurl-link';
 export * from './elements/peer-list';
-export * from './features/chat-thread/side-item';
+export * from './elements/graph';
 
+export * from './features/chat-thread/side-item';
 export * from './features/chat-thread/chat-file';
 export * from './features/chat-thread/chat-header';
 export * from './features/chat-thread/chat-wal';
@@ -29,7 +28,11 @@ export * from './features/post/post-header';
 export * from './features/post/post-thread-view';
 export * from './features/post/post-comment-thread-view';
 export * from './features/post/post-comment-item';
+
 export * from './utils_feed';
+
+export * from './features/favorites/favorites-view';
+export * from './features/favorites/favorites-item';
 
 export * from './elements/panels/presence-panel';
 export * from './elements/panels/view-embed-dialog';

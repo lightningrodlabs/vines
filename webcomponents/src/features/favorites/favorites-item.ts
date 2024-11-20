@@ -2,9 +2,9 @@ import {css, html, LitElement} from "lit";
 import {customElement, property} from "lit/decorators.js";
 
 import {ActionId} from "@ddd-qc/lit-happ";
-import {codeStyles} from "../markdown/code-css";
-import {sharedStyles} from "../styles";
-import {beadJumpEvent, favoritesEvent} from "../events";
+import {codeStyles} from "../../markdown/code-css";
+import {sharedStyles} from "../../styles";
+import {beadJumpEvent, favoritesEvent} from "../../events";
 import {msg} from "@lit/localize";
 
 

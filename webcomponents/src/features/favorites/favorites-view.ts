@@ -1,8 +1,12 @@
 import {css, html} from "lit";
 import {customElement, property, /*state*/} from "lit/decorators.js";
+import {msg} from "@lit/localize";
+
 import {DnaElement} from "@ddd-qc/lit-happ";
-import {ThreadsDvm} from "../viewModels/threads.dvm";
-import {ThreadsPerspective} from "../viewModels/threads.perspective";
+import {WeServicesEx} from "@ddd-qc/we-utils";
+
+import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
@@ -12,13 +16,12 @@ import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/List.js"
 
 
-import "./input-bar";
+import "../../elements/input-bar";
 import {consume} from "@lit/context";
-import {weClientContext} from "../contexts";
-import {WeServicesEx} from "@ddd-qc/we-utils";
-import {sharedStyles} from "../styles";
-import {toasty} from "../toast";
-import {msg} from "@lit/localize";
+import {weClientContext} from "../../contexts";
+import {sharedStyles} from "../../styles";
+import {toasty} from "../../toast";
+
 
 
 /**

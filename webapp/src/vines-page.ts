@@ -1852,8 +1852,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     <search-result-panel .parameters=${searchParameters}></search-result-panel>
                                 </div>`
                             : html``}
-                    <anchor-tree id="debugSide"
-                                 style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree>
+                    <vines-graph id="debugSide"
+                                 style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></vines-graph>
+                    <!-- <anchor-tree id="debugSide"
+                                 style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
                 </div>
             </div>
             <!-- DIALOGS -->
