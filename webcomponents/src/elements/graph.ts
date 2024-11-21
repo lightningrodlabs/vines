@@ -53,12 +53,20 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
         const typedBead = this.threadsPerspective.getBead(blm.beadAh);
         if (typedBead) {
           const value = (typedBead as any).value? (typedBead as any).value as string : "<entry>";
-          const str = value.substring(0, 32) + (value.length > 32 ? '...' : '');
+          const str = value.substring(0, 16) + (value.length > 16 ? '...' : '');
           const bead = (typedBead as any).bead as BeadMat;
-          const node = {data: {id: blm.beadAh.b64, ts: blm.beadType, type: blm.beadType, label: str}};
+          console.log("<vines-graph>.updated() bead", blm.beadAh.b64);
+          const node = {data: {id: blm.beadAh.b64, ts: blm.creationTime, type: blm.beadType, label: str}};
           elements.push(node);
           const edge = {data: {source: bead.prevBeadAh.b64, target: blm.beadAh.b64}};
           elements.push(edge);
+          /** */
+          const prevBead = this.threadsPerspective.getBead(bead.prevBeadAh);
+          if (!prevBead && !bead.prevBeadAh.equals(bead.ppAh)) {
+            console.log("<vines-graph>.updated() bead ghost", bead.prevBeadAh.b64);
+            const ghostNode = {data: {id: bead.prevBeadAh.b64, ts: blm.creationTime - 1, type: 'Ghost', label: "<missing bead>"}};
+            elements.push(ghostNode);
+          }
         }
       },
       startTs? startTs : 0);
@@ -77,17 +85,17 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
       { // node a
         data: { id: 'a', name: 'bob'}
       },
+      { // edge ab
+        data: { /*id: 'ab',*/ source: 'a', target: 'b' }
+      },
       { // node b
         data: { id: 'b', name: 'michel' }
       },
-      { // edge ab
-        data: { /*id: 'ab',*/ source: 'a', target: 'b' }
-      }
     ];
 
     /** Thread tree */
     if (this.threadHash) {
-        elements = this.toCytoscape();
+      elements = this.toCytoscape();
       console.log("<vines-graph>.updated() elements", elements.length);
     }
 
@@ -100,15 +108,44 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
         {
           selector: 'node',
           style: {
-            'background-color': '#666',
+            'background-color': '#6ec2b3',
             'label': 'data(label)'
           }
         },
-
+        {
+          selector: 'node[type = "Ghost"]',
+          style: {
+            'background-color': '#666',
+            'shape': 'triangle',
+          }
+        },
+        {
+          selector: 'node[type = "Thread"]',
+          style: {
+            'background-color': '#fa1638',
+            'shape': 'diamond',
+          }
+        },
+        {
+          selector: 'node[type = "EntryBead"]',
+          style: {
+            'background-color': '#b0a95b',
+            'shape': 'rectangle',
+            'label': '<File>',
+          }
+        },
+        {
+          selector: 'node[type = "AnyBead"]',
+          style: {
+            'background-color': '#55e844',
+            'shape': 'star',
+            'label': '<WAL>',
+          }
+        },
         {
           selector: 'edge',
           style: {
-            'width': 3,
+            'width': 2,
             'line-color': '#ccc',
             'target-arrow-color': '#ccc',
             'target-arrow-shape': 'triangle',
@@ -124,7 +161,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
         //padding: 200,
         circle: false,
         grid: false,
-        spacingFactor: 1.2,
+        spacingFactor: 1.5,
         avoidOverlap: true,
         //roots: ["a"],
       }

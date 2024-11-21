@@ -85,7 +85,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** No WeServices */
     if (!this.weServices) {
       return html`        
-          <ui5-list id="fileList">
+          <ui5-list id="fileList" class="listfail">
           <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash.b64}>
               ${msg("Failed to retrieve Asset. WeaveServices not available.")}
           </ui5-li>
@@ -99,10 +99,10 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** No asset info */
     if (!this._appletInfo || !this._assetLocAndInfo) {
       return html`        
-          <ui5-list id="fileList">
+          <ui5-list id="fileList" class="listfail">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
                   @click=${(_e:any) => this.loadHrl(this.hash, this._zvm)}>
-              Failed to retrieve Asset.
+              Failed to retrieve Asset
           </ui5-li>
       </ui5-list>
       `;
@@ -111,7 +111,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     const anyBead = this._zvm.perspective.getBaseBead(this.hash) as AnyBeadMat;
     if (!anyBead) {
       return html`
-        <ui5-list id="fileList">
+        <ui5-list id="fileList" class="listfail">
             <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
                     @click=${async (_e:any) => {
                         await this._zvm.probeAllInner();
@@ -128,7 +128,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** Wrong bead type */
     if (anyBead.typeInfo != "wal") {
       return html`          
-          <ui5-list id="fileList">
+          <ui5-list id="fileList" class="listfail">
           <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash.b64}>
               Error: Message not of type WAL
           </ui5-li>
@@ -177,7 +177,9 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         #fileLi {
           border-radius: 10px;
         }
-        
+        .listfail {
+          max-width: 600px;
+        }
       `,];
   }
 }

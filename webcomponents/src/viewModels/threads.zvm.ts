@@ -1035,10 +1035,20 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       const innerBeadInfo = {creationTime, author, beadType: innerBeadType, bead: materializeBead(bead)} as BeadInfo;
       beadInfo = {creationTime, author, beadType: ThreadsEntryType.EncryptedBead, bead: materializeBead(bead)} as BeadInfo;
       innerPair = [innerBeadInfo, materializeTypedBead(innerTyped, innerBeadType) as TypedBaseBeadMat];
+      /** Check and fetch prevBead */
+      const prev = this._perspective.beads.get(innerBeadInfo.bead.prevBeadAh);
+      if (!prev && !innerBeadInfo.bead.prevBeadAh.equals(innerBeadInfo.bead.ppAh)) {
+        this.fetchUnknownBead(innerBeadInfo.bead.prevBeadAh);
+      }
     } else {
       const bead = (typedBead as TypedBaseBeadMat).bead;
       beadInfo = {creationTime, author, beadType, bead} as BeadInfo;
       console.log("storeBead()", beadAh, bead.ppAh, typedBead, author);
+      /** Check and fetch prevBead */
+      const prev = this._perspective.beads.get(beadInfo.bead.prevBeadAh);
+      if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
+        this.fetchUnknownBead(beadInfo.bead.prevBeadAh);
+      }
     }
     /** Store in perspective */
     this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isNew, innerPair);
