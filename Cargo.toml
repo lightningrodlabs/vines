@@ -23,9 +23,9 @@ hdk = { version = "=0.3.4", default-features = false }
 
 zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-3.2" }
 zome_signals = { git = "https://github.com/ddd-mtl/zome-signals", branch = "hdk-3.2" }
-time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-3.2" }
-path_explorer_types = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-3.2" }
-path_explorer = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-3.2" }
+time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-3.1" }
+path_explorer_types = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-3.1" }
+path_explorer = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-3.1" }
 
 [profile.dev]
 lto = false
