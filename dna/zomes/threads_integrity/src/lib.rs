@@ -11,6 +11,7 @@ pub use entries::*;
 pub use properties::*;
 
 use hdi::prelude::*;
+use threads_model::*;
 
 ///-------------------------------------------------------------------------------------------------
 /// Global consts

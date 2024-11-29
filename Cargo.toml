@@ -7,6 +7,7 @@ members = [
   "dna/zomes/authorship_zapi",
   "dna/zomes/profiles_integrity",
   "dna/zomes/profiles",
+  "dna/zomes/threads_model",
   "dna/zomes/threads_integrity",
   "dna/zomes/threads",
   ]
