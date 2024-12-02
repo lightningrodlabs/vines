@@ -6,9 +6,12 @@
 
 mod entries;
 mod properties;
+mod types;
 
 pub use entries::*;
 pub use properties::*;
+pub use types::*;
+
 
 ///-------------------------------------------------------------------------------------------------
 /// Global consts
