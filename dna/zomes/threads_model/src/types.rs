@@ -21,14 +21,14 @@ pub struct BeadInfo {
 
 
 ///
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, PartialEq, Deserialize, Debug, Clone)]
 pub enum BeadType {
   Base(BaseBeadType),
   Encrypted,
 }
 
 ///
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, PartialEq, Deserialize, Debug, Clone)]
 pub enum BaseBeadType {
   Text,
   Entry,
