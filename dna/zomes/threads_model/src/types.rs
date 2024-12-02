@@ -1,3 +1,4 @@
+use hdi::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
