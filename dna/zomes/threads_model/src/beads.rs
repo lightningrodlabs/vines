@@ -130,6 +130,26 @@ impl TypedBaseBead {
   }
 }
 
+impl From<TypedBaseBead> for BaseBeadType {
+  fn from(item: TypedBaseBead) -> Self {
+    match item {
+      TypedBaseBead::Any(_a) => BaseBeadType::Any,
+      TypedBaseBead::Entry(_a) => BaseBeadType::Entry,
+      TypedBaseBead::Text(_a) => BaseBeadType::Text,
+    }
+  }
+}
+
+
+impl From<TypedBead> for BeadType {
+  fn from(item: TypedBead) -> Self {
+    match item {
+      TypedBead::Encrypted(_e) => BeadType::Encrypted,
+      TypedBead::Base(b) => BeadType::Base(BaseBeadType::from(b)),
+    }
+  }
+}
+
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
