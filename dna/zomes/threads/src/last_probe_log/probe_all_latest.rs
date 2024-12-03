@@ -13,7 +13,6 @@ pub struct ProbeAllOutput {
   pub new_beads_by_thread: Vec<(ActionHash, BeadLink)>,
 }
 
-
 /// Get latest links from the global time index
 #[hdk_extern]
 pub fn probe_all_latest(begin: Timestamp) -> ExternResult<ProbeAllOutput> {

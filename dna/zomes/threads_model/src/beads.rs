@@ -1,5 +1,4 @@
 use hdi::prelude::*;
-use zome_integrity_utils::*;
 
 
 /// First bead: prev_bead_ah == pp_ah
