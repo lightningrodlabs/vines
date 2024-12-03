@@ -2,16 +2,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use time_indexing::*;
 use zome_utils::*;
-use crate::beads::{BeadLink};
-
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ProbeAllOutput {
-  pub searched_interval: SweepInterval,
-  pub new_threads_by_subject: Vec<(String, ActionHash)>, // SubjectHashB64
-  pub new_beads_by_thread: Vec<(ActionHash, BeadLink)>,
-}
+use threads_zapi::*;
 
 /// Get latest links from the global time index
 #[hdk_extern]
@@ -60,7 +51,7 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
         let bl = BeadLink {
           creation_time: item_tag.ts_us, //creation_time: link.timestamp,
           bead_ah: ActionHash::try_from(link.target).unwrap(),
-          bead_type: item_tag.item_type,
+          bead_type: BeadType::from_str(&item_tag.item_type),
           author: link.author,
         };
         /// Add only if after begin_time since we may have older items from the same time bucket

@@ -20,7 +20,7 @@ pub fn publish_any_bead(input: AddAnyBeadInput) -> ExternResult<(ActionHash, Str
     debug!("add_any_bead() {:?}", input);
     let ah = create_entry(ThreadsEntry::AnyBead(input.anyBead.clone()))?;
     //let bead_type = format!("__any::{}", input.type_info);
-    let tp_pair = index_bead(input.anyBead.bead.clone(), ah.clone(), "AnyBead"/*&bead_type*/, input.creation_time)?;
+    let tp_pair = index_bead(input.anyBead.bead.clone(), ah.clone(), BeadType::Base(BaseBeadType::Any), input.creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     /// Done
     Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))

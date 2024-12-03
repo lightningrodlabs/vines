@@ -2,7 +2,6 @@ use hdk::{
   prelude::*,
 };
 use threads_integrity::*;
-use crate::beads::{BeadLink};
 use zome_utils::*;
 use time_indexing::*;
 
@@ -42,7 +41,7 @@ pub fn find_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInter
       BeadLink {
         creation_time: bt.ts_us, //creation_time: link.timestamp,
         bead_ah: ActionHash::try_from(link.target).unwrap(),
-        bead_type: bt.item_type,
+        bead_type: BeadType::from_str(&bt.item_type),
         author: link.author,
       }
     })

@@ -3,7 +3,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 
 ///
-fn create_encrypted_bead<T>(typed_bead: T, bead_type: &str, other_agent: AgentPubKey) -> ExternResult<EncryptedBead>
+fn create_encrypted_bead<T>(typed_bead: T, bead_type: BaseBeadType, other_agent: AgentPubKey) -> ExternResult<EncryptedBead>
   where
     T: serde::Serialize + Clone + Sized + std::fmt::Debug
 {
@@ -16,7 +16,7 @@ fn create_encrypted_bead<T>(typed_bead: T, bead_type: &str, other_agent: AgentPu
   let for_self = ed_25519_x_salsa20_poly1305_encrypt(
     me.clone(), me, data)?;
   /// Done
-  Ok(EncryptedBead { for_self, for_other, bead_type: bead_type.to_string()})
+  Ok(EncryptedBead { for_self, for_other, bead_type: bead_type})
 }
 
 
@@ -31,8 +31,8 @@ pub struct EncryptBeadInput {
 #[hdk_extern]
 pub fn encrypt_bead(input: EncryptBeadInput) -> ExternResult<EncryptedBead> {
   match input.base {
-    TypedBaseBead::Any(any) => create_encrypted_bead(any, "AnyBead", input.other_agent),
-    TypedBaseBead::Entry(e) => create_encrypted_bead(e, "EntryBead", input.other_agent),
-    TypedBaseBead::Text(tb) => create_encrypted_bead(tb, "TextBead", input.other_agent),
+    TypedBaseBead::Any(any) => create_encrypted_bead(any, BaseBeadType::Any, input.other_agent),
+    TypedBaseBead::Entry(e) => create_encrypted_bead(e, BaseBeadType::Entry, input.other_agent),
+    TypedBaseBead::Text(tb) => create_encrypted_bead(tb, BaseBeadType::Text, input.other_agent),
   }
 }

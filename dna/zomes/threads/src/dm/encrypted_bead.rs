@@ -25,7 +25,7 @@ pub fn publish_enc_bead(input: AddEncBeadInput) -> ExternResult<(ActionHash, Str
   /// Commit
   let ah = create_entry(ThreadsEntry::EncryptedBead(input.enc_bead.clone()))?;
   //let bead_type = format!("__any::{}", input.type_info);
-  let tp_pair = index_bead(bead.clone(), ah.clone(), "EncryptedBead"/*&bead_type*/, input.creation_time)?;
+  let tp_pair = index_bead(bead.clone(), ah.clone(), BeadType::Encrypted, input.creation_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   /// Done
   Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))

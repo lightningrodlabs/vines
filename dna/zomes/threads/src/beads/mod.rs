@@ -17,16 +17,6 @@ use authorship_zapi::get_original_author;
 use zome_signals::*;
 
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BeadLink {
-  pub creation_time: Timestamp, // index_time can be determined by rounding creation_time
-  pub bead_ah: ActionHash,
-  pub bead_type: String,
-  pub author: AgentPubKey,
-}
-
-
 ///
 pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, T)> {
   debug!("fetch_typed_bead() {}", bead_ah);

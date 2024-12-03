@@ -19,7 +19,7 @@ pub struct AddEntryBeadInput {
 pub fn publish_entry_bead(input: AddEntryBeadInput) -> ExternResult<(ActionHash, EntryBead, String, Timestamp)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let ah = create_entry(ThreadsEntry::EntryBead(input.entry_bead.clone()))?;
-    let tp_pair = index_bead(input.entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, input.creation_time)?;
+    let tp_pair = index_bead(input.entry_bead.bead.clone(), ah.clone(), BeadType::Base(BaseBeadType::Entry), input.creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     ///
     Ok((ah, input.entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
@@ -49,7 +49,7 @@ pub fn publish_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(Action
     debug!("publish_entry_as_bead() {:?}", input);
     let (entry_bead, creation_time) = create_entry_bead(input.clone())?;
     let ah = create_entry(ThreadsEntry::EntryBead(entry_bead.clone()))?;
-    let tp_pair = index_bead(entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, creation_time)?;
+    let tp_pair = index_bead(entry_bead.bead.clone(), ah.clone(), BeadType::Base(BaseBeadType::Entry), creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     ///
     Ok((ah, entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))

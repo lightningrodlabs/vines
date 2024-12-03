@@ -1,5 +1,5 @@
 [package]
-name = "threads_integrity"
+name = "threads_zapi"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
@@ -11,6 +11,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 serde.workspace = true
-hdi.workspace = true
+hdk.workspace = true
+
+time_indexing.workspace = true
 threads_model.workspace = true
 

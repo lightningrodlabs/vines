@@ -9,6 +9,7 @@ members = [
   "dna/zomes/profiles",
   "dna/zomes/threads_model",
   "dna/zomes/threads_integrity",
+  "dna/zomes/threads_zapi",
   "dna/zomes/threads",
   ]
 
@@ -23,6 +24,8 @@ serde = { version = "=1.0.203", default-features = false }
 #hdk = { version = "=0.3.4", default-features = false }
 hdi = "=0.4.4"
 hdk = "=0.3.4"
+
+threads_model = { path = "dna/zomes/threads_model" }
 
 zome_integrity_utils = { git = "https://github.com/ddd-mtl/zome-integrity-utils", branch = "hdk-3.2" }
 zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-3.2" }

@@ -22,6 +22,8 @@ zome_signals.workspace = true
 time_indexing.workspace = true
 path_explorer_types.workspace = true
 
+threads_zapi = {path = "../threads_zapi"}
+
 threads_integrity = { package = "threads_integrity", path = "../threads_integrity" }
 threads_model = { package = "threads_model", path = "../threads_model" }
 authorship_zapi = { package = "authorship_zapi", path = "../authorship_zapi" }

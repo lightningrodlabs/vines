@@ -49,7 +49,7 @@ pub struct AnyBead {
 pub struct EncryptedBead {
   pub for_other: XSalsa20Poly1305EncryptedData,
   pub for_self: XSalsa20Poly1305EncryptedData,
-  pub bead_type: String,
+  pub bead_type: BaseBeadType,
 }
 
 
@@ -60,12 +60,47 @@ pub enum BeadType {
   Encrypted,
 }
 
+impl BeadType {
+  pub fn from_str(str: &str) -> Self {
+    match str {
+      "Encrypted" => BeadType::Encrypted,
+      _ => BeadType::Base(BaseBeadType::from_str(str)),
+    }
+  }
+
+  pub fn to_str(&self) -> &str {
+    match self {
+      BeadType::Encrypted => "Encrypted",
+      BeadType::Base(base) => base.to_str(),
+    }
+  }
+}
+
 ///
 #[derive(Serialize, PartialEq, Deserialize, Debug, Clone)]
 pub enum BaseBeadType {
   Text,
   Entry,
   Any,
+}
+
+impl BaseBeadType {
+  pub fn from_str(str: &str) -> Self {
+    match str {
+      "Text" => BaseBeadType::Text,
+      "Entry" => BaseBeadType::Entry,
+      "Any" => BaseBeadType::Any,
+      _ => panic!("String not a BaseBeadType"),
+    }
+  }
+
+  pub fn to_str(&self) -> &str {
+    match self {
+      BaseBeadType::Text => "Text",
+      BaseBeadType::Entry => "Entry",
+      BaseBeadType::Any => "Any",
+    }
+  }
 }
 
 
@@ -94,12 +129,6 @@ impl TypedBaseBead {
     }
   }
 }
-
-
-
-
-
-
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

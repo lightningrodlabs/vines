@@ -1,26 +1,27 @@
 use hdk::prelude::*;
-use zome_utils::*;
+//use zome_utils::*;
 use threads_integrity::{AnyBead, EncryptedBead, EntryBead, TextBead, TypedBaseBead};
+use threads_model::BaseBeadType;
 
 ///
-fn deser_bead(data: XSalsa20Poly1305Data, bead_type: &str) -> ExternResult<TypedBaseBead> {
+fn deser_bead(data: XSalsa20Poly1305Data, bead_type: BaseBeadType) -> ExternResult<TypedBaseBead> {
   match bead_type {
-    "EntryBead" => {
+    BaseBeadType::Entry => {
       let item: EntryBead = bincode::deserialize(data.as_ref())
         .expect("Deserialization should work");
       Ok(TypedBaseBead::Entry(item))
     }
-    "AnyBead" => {
+    BaseBeadType::Any => {
       let item: AnyBead = bincode::deserialize(data.as_ref())
         .expect("Deserialization should work");
       Ok(TypedBaseBead::Any(item))
     }
-    "TextBead" => {
+    BaseBeadType::Text => {
       let item: TextBead = bincode::deserialize(data.as_ref())
         .expect("Deserialization should work");
       Ok(TypedBaseBead::Text(item))
     }
-    _ => error("Unknown bead type"),
+    //_ => error("Unknown bead type"),
   }
 }
 
@@ -34,7 +35,7 @@ pub fn decrypt_my_bead(enc_bead: EncryptedBead) -> ExternResult<TypedBaseBead> {
     enc_bead.for_self,
   )?;
   /// Deserialize
-  return deser_bead(data, enc_bead.bead_type.as_str());
+  return deser_bead(data, enc_bead.bead_type);
 }
 
 
@@ -56,5 +57,5 @@ pub fn decrypt_bead(input: DecryptBeadInput) -> ExternResult<TypedBaseBead> {
     input.enc_bead.for_other,
   )?;
   /// Deserialize
-  return deser_bead(data, input.enc_bead.bead_type.as_str());
+  return deser_bead(data, input.enc_bead.bead_type);
 }

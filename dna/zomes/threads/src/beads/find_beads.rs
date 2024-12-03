@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
 use time_indexing::*;
-use crate::beads::{BeadLink};
+
 
 /// Travers the thread-specific time-index tree and get all BeadLinks
 /// USE WITH CARE as this can easily timeout as it's a loop of get_links()
@@ -33,7 +33,7 @@ pub fn find_beads(pp_ah: ActionHash/*,  link_tag: Option<LinkTag>*/) -> ExternRe
                          BeadLink {
                            creation_time: bt.ts_us, //creation_time: ll.timestamp,
                            bead_ah: ActionHash::try_from(ll.target).unwrap(),
-                           bead_type: bt.item_type,
+                           bead_type: BeadType::from_str(&bt.item_type),
                            author: ll.author,
                          }
                        })
