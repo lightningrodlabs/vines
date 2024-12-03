@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 //use zome_utils::*;
-use threads_integrity::{EncryptedBead, BaseBeadKind};
+use threads_integrity::*;
 
 ///
 fn create_encrypted_bead<T>(typed_bead: T, bead_type: &str, other_agent: AgentPubKey) -> ExternResult<EncryptedBead>
@@ -23,7 +23,7 @@ fn create_encrypted_bead<T>(typed_bead: T, bead_type: &str, other_agent: AgentPu
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EncryptBeadInput {
-  pub base: BaseBeadKind,
+  pub base: TypedBaseBead,
   pub other_agent: AgentPubKey,
 }
 
@@ -31,8 +31,8 @@ pub struct EncryptBeadInput {
 #[hdk_extern]
 pub fn encrypt_bead(input: EncryptBeadInput) -> ExternResult<EncryptedBead> {
   match input.base {
-    BaseBeadKind::AnyBead(any) => create_encrypted_bead(any, "AnyBead", input.other_agent),
-    BaseBeadKind::EntryBead(e) => create_encrypted_bead(e, "EntryBead", input.other_agent),
-    BaseBeadKind::TextBead(tb) => create_encrypted_bead(tb, "TextBead", input.other_agent),
+    TypedBaseBead::Any(any) => create_encrypted_bead(any, "AnyBead", input.other_agent),
+    TypedBaseBead::Entry(e) => create_encrypted_bead(e, "EntryBead", input.other_agent),
+    TypedBaseBead::Text(tb) => create_encrypted_bead(tb, "TextBead", input.other_agent),
   }
 }

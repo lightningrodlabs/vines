@@ -6,11 +6,11 @@
 
 mod entries;
 mod properties;
-mod types;
+mod beads;
 
 pub use entries::*;
 pub use properties::*;
-pub use types::*;
+pub use beads::*;
 
 
 ///-------------------------------------------------------------------------------------------------
