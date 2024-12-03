@@ -17,6 +17,8 @@ mod dm;
 mod notifications;
 mod query_all;
 
+use last_probe_log::*;
+
 use hdk::hdi::prelude::DnaHash;
 use hdk::prelude::*;
 
