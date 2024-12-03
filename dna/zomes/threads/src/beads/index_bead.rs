@@ -3,7 +3,6 @@ use zome_utils::*;
 use time_indexing::*;
 use threads_integrity::*;
 
-
 /// Returns the Thread Time Anchor and the Global Time Anchor
 pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, ts_us: Timestamp) -> ExternResult<(TypedPath, TypedPath)> {
   /// Index in Thread time-Index

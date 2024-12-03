@@ -2,7 +2,6 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
 
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublishDmThreadInput {
@@ -29,8 +28,8 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
     subject: Subject {
       address: holo_hash_encode(input.other_agent.get_raw_39()),
       type_name: DM_SUBJECT_TYPE_NAME.to_string(),
-      dna_hash_b64: holo_hash_encode(dna_info()?.hash.get_raw_39()),
-      applet_id: input.applet_id,
+      dna: dna_info()?.hash,
+      applet_id: EntryHashB64::from_b64_str(&input.applet_id).unwrap().into(),
     }
   };
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());

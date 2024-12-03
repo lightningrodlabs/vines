@@ -11,7 +11,8 @@ pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, 
   if applet_id.is_empty() {
     return error("Empty applet_id");
   }
-  let tp = get_applet_tp(applet_id.clone())?;
+  let eh = EntryHashB64::from_b64_str(&applet_id).unwrap();
+  let tp = get_applet_tp(eh.into())?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subjects_for_dna() found {} children", children.len());
   let mut input = FindSubjectsInput { applet_id, subject_type: "".to_string() };
@@ -32,7 +33,8 @@ pub fn find_subject_types_for_applet(applet_id: String) -> ExternResult<Vec<(Str
   if applet_id.is_empty() {
     return error("Empty applet_id");
   }
-  let tp = get_applet_tp(applet_id.clone())?;
+  let eh = EntryHashB64::from_b64_str(&applet_id).unwrap();
+  let tp = get_applet_tp(eh.into())?;
   let children = tp_children_paths(&tp)?;
   debug!("get_subject_types_for_dna() found {} children", children.len());
   let leafs = children.into_iter()

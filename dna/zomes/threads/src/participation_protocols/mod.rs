@@ -40,7 +40,7 @@ fn get_subject_tp(subject: Subject) -> ExternResult<TypedPath> {
 
 
 ///
-pub fn get_subject_type_tp(applet_id: String, subject_type_name: &str) -> ExternResult<TypedPath> {
+pub fn get_subject_type_tp(applet_id: EntryHash, subject_type_name: &str) -> ExternResult<TypedPath> {
   let mut tp = get_applet_tp(applet_id)?;
   tp.path.append_component(subject_type_name.into());
   Ok(tp)
@@ -48,9 +48,9 @@ pub fn get_subject_type_tp(applet_id: String, subject_type_name: &str) -> Extern
 
 
 ///
-pub fn get_applet_tp(applet_id: String) -> ExternResult<TypedPath> {
+pub fn get_applet_tp(applet_id: EntryHash) -> ExternResult<TypedPath> {
   //let applet_id_comp = hash2comp(applet_hash);
-  let applet_id_comp = Component::from(applet_id);
+  let applet_id_comp = hash2comp(applet_id);
   let mut tp = Path::from(ROOT_ANCHOR_SUBJECTS)
     .typed(ThreadsLinkType::SubjectPath)?;
   tp.path.append_component(applet_id_comp);
@@ -60,9 +60,10 @@ pub fn get_applet_tp(applet_id: String) -> ExternResult<TypedPath> {
 
 ///
 pub fn subject2comp(subject: &Subject) -> Component {
-  debug!("subject2comp() {} | {}", subject.dna_hash_b64, subject.address);
-  let str = format!("{}{}{}", subject.dna_hash_b64, "|", subject.address);
-  //debug!("subject2comp() {}", str);
+  let dnaB64 = DnaHashB64::from(subject.dna.clone());
+  debug!("subject2comp()1: {} | {}", dnaB64, subject.address);
+  let str = format!("{}{}{}", dnaB64, "|", subject.address);
+  debug!("subject2comp()2: {}", str);
   str.into()
 }
 

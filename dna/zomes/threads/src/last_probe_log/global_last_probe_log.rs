@@ -3,7 +3,6 @@ use zome_utils::*;
 use threads_integrity::*;
 use zome_signals::*;
 
-
 ///
 #[hdk_extern]
 pub fn query_global_log(_ : ()) -> ExternResult<(ActionHash, GlobalLastProbeLog)> {

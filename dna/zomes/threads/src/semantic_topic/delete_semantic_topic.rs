@@ -1,6 +1,6 @@
 use hdk::prelude::*;
-use threads_integrity::*;
 use zome_utils::*;
+use threads_model::*;
 
 
 /// Delete the SemanticTopic

@@ -2,7 +2,6 @@ use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::{AnyBead, EncryptedBead, EntryBead, TextBead, BaseBeadKind};
 
-
 ///
 fn deser_bead(data: XSalsa20Poly1305Data, bead_type: &str) -> ExternResult<BaseBeadKind> {
   match bead_type {

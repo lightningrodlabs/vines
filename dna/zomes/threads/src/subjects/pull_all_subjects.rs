@@ -26,7 +26,7 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     }
     debug!("Parsing leaf_anchor: '{}'", tp.anchor);
     //let applet_hash = comp2hash(&comps[1])?;
-    let applet_id = String::try_from(&comps[1])
+    let applet_id_b64 = String::try_from(&comps[1])
         .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     let subject_type_comp = comps[2].clone();
     //let subject_hash = comp2hash(&comps[3])?;
@@ -37,8 +37,8 @@ pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
     let subject = Subject {
       address: subject_address.clone(),
       type_name,
-      dna_hash_b64,
-      applet_id,
+      dna: DnaHashB64::from_b64_str(&dna_hash_b64).unwrap().into(),
+      applet_id: EntryHashB64::from_b64_str(&applet_id_b64).unwrap().into(),
     };
     all.push(subject);
   }

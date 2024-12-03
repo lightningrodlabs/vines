@@ -1,4 +1,5 @@
 use hdi::prelude::*;
+use zome_integrity_utils::*;
 
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -93,14 +94,23 @@ pub struct ParticipationProtocol {
 }
 
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Subject {
-    pub address: String, // HoloHashB64
+    pub address: AnyHashB64,
+    //pub name: String,
     pub type_name: String,
-    pub dna_hash_b64: String, // DnaHashB64
-    pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)
+    pub dna: DnaHash,
+    pub applet_id: EntryHash,
 }
+
+// #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct Subject {
+//     pub address: String, // HoloHashB64
+//     pub type_name: String,
+//     pub dna_hash_b64: String, // DnaHashB64
+//     pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)
+// }
 
 
 #[hdk_entry_helper]

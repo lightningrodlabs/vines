@@ -6,7 +6,6 @@ use crate::beads::{fetch_typed_bead, index_bead};
 use crate::dm::decrypt_my_bead;
 
 
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AddEncBeadInput {

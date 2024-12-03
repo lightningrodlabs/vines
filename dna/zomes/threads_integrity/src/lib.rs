@@ -4,19 +4,15 @@
 #![allow(non_snake_case)]
 #![allow(unused_attributes)]
 
-mod entries;
-mod properties;
 
-pub use entries::*;
-pub use properties::*;
-
-use hdi::prelude::*;
-use threads_model::*;
+pub use threads_model::*;
 
 
 ///-------------------------------------------------------------------------------------------------
 /// Entry types
 ///-------------------------------------------------------------------------------------------------
+
+use hdi::prelude::*;
 
 #[derive(Serialize, Deserialize, SerializedBytes, Clone)]
 #[hdk_entry_types]

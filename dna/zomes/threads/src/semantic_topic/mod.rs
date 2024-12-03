@@ -10,7 +10,6 @@ use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::*;
 
-
 ///
 pub(crate) fn determine_topic_anchor(title: String) -> ExternResult<TypedPath> {
   // conver to lowercase for path for ease of search
