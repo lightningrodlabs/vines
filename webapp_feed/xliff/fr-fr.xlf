@@ -2,10 +2,6 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
 <file target-language="fr-fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
-<trans-unit id="s2c8189544e3ea679">
-  <source>Retry</source>
-  <target>Réessayer</target>
-</trans-unit>
 <trans-unit id="sf969c2297c7b8324">
   <source>Create new Topic</source>
   <target>Créer nouveau Sujet</target>

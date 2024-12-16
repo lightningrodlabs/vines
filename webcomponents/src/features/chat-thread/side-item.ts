@@ -69,7 +69,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       if (type == ThreadsEntryType.AnyBead && this.weServices) {
         const anyBead = typedBead as AnyBead;
         const wal = weaveUrlToWal(anyBead.value);
-        await this.weServices.assetInfo(wal);
+        await this.weServices.assets.assetInfo(wal);
       }
     }
   }
@@ -112,7 +112,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
                    style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
                    @click=${async (e:any) => {
                     e.stopPropagation();
-                    await this.weServices?.assetInfo(wal);
+                    await this.weServices?.assets.assetInfo(wal);
                     this.requestUpdate();
                   }}>
                   <ui5-icon name="synchronize"></ui5-icon>
@@ -122,7 +122,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           } else {
             content = html`
               <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e:any) => this.weServices?.openWal(wal)}>
+                   @click=${(_e:any) => this.weServices?.openAsset(wal)}>
                   ${maybeInfo.assetInfo.name}
               </div>
           `;

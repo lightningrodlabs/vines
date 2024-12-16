@@ -22,8 +22,8 @@ export async function createFeedApplet(
   weServices: WeaveServices,
 ): Promise<CommunityFeedApp> {
 
-  if (renderInfo.type =="cross-applet-view") {
-    throw Error("cross-applet-view not implemented by Vines");
+  if (renderInfo.type =="cross-group-view") {
+    throw Error("cross-group-view not implemented by Vines");
   }
 
   const appletViewInfo = renderInfo as unknown as AppletViewInfo;

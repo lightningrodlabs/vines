@@ -82,7 +82,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     if (beadType == ThreadsEntryType.AnyBead && this.weServices) {
       const anyBead = typedBead as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
-      await this.weServices.assetInfo(wal);
+      await this.weServices.assets.assetInfo(wal);
     }
     await newDvm.threadsZvm.pullEmojiReactions(this.hash);
   }
@@ -129,7 +129,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
                       console.error("WeServices missing");
                       return;
                     }
-                    await this.weServices.assetInfo(wal);
+                    await this.weServices.assets.assetInfo(wal);
                     this.requestUpdate();
                   }}>
                   <ui5-icon name="synchronize"></ui5-icon>
@@ -140,7 +140,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
             content = html`
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e:any) => {if (this.weServices) this.weServices.openWal(wal)}}>
+                   @click=${(_e:any) => {if (this.weServices) this.weServices.openAsset(wal)}}>
                   ${maybeInfo.assetInfo.name}
               </div>
           `;
@@ -177,7 +177,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {
-      this.weServices.walToPocket({hrl});
+      this.weServices.assets.assetToPocket({hrl});
     }
     toasty(msg("Copied Message's WAL to clipboard"));
   }

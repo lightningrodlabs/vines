@@ -69,7 +69,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     try {
       const anyBead = zvm.perspective.getBaseBead(hash) as AnyBeadMat;
       const wal = weaveUrlToWal(anyBead.value);
-      this._assetLocAndInfo = await this.weServices.assetInfo(wal);
+      this._assetLocAndInfo = await this.weServices.assets.assetInfo(wal);
       this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo!.appletHash);
     } catch(e:any) {
       console.warn("Failed to load HRL", hash, e);
@@ -142,7 +142,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
           <ui5-list id="fileList">
               <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-                      @click=${(_e:any) => this.weServices.openWal(weaveUrlToWal(anyBead.value))}>
+                      @click=${(_e:any) => this.weServices.openAsset(weaveUrlToWal(anyBead.value))}>
                   ${this._assetLocAndInfo.assetInfo.name}
               </ui5-li>
           </ui5-list>

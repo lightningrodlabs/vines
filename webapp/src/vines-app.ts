@@ -299,7 +299,7 @@ export class VinesApp extends HappMultiElement {
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
-      this._weServices.walToPocket({hrl});
+      this._weServices.assets.assetToPocket({hrl});
     }
     toasty(msg("Copied WAL to clipboard"));
   }

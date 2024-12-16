@@ -119,7 +119,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     const wurl = weaveUrlFromWal({hrl});
     navigator.clipboard.writeText(wurl);
     if (this.weServices) {
-      this.weServices.walToPocket({hrl});
+      this.weServices.assets.assetToPocket({hrl});
     }
     toasty(msg("Copied Message's WAL to clipboard"));
   }

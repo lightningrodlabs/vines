@@ -343,11 +343,11 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                       }
                       return;
                   }
-                  /** OpenWal() if weServices is available */
+                  /** openAsset() if weServices is available */
                   if (this.weServices) {
                       if (thread.pp.subject.appletId != this.weServices.appletIds[0]!) {
                           //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
-                          this.weServices.openWal(wal);
+                          this.weServices.openAsset(wal);
                       }
                       return;
                   }

@@ -47,7 +47,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const wurl = (this.shadowRoot!.getElementById("wurlInput") as Input).value;
       const wal0 = weaveUrlToWal(wurl);
       const [dnaId, dhtId] = hrl2Id(wal0.hrl);
-      const attLocInfo = await this.weServices!.assetInfo(wal0);
+      const attLocInfo = await this.weServices!.assets.assetInfo(wal0);
       const subject: Subject = {
         address: dhtId.b64,
         name: "",
@@ -91,7 +91,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
               <ui5-label for="wurlInput" required>Subject weaveURL:</ui5-label>
               <ui5-input id="wurlInput"></ui5-input>
               <ui5-button icon="add" @click=${async (_e:any) => {
-                  const maybeWal = await this.weServices?.userSelectWal();
+                  const maybeWal = await this.weServices?.assets.userSelectAsset();
                   if (!maybeWal) {
                       return;
                   }

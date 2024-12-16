@@ -32,7 +32,7 @@ async function setupFeedMainView() {
   const appletServices: AppletServices = {
     creatables,
     getAssetInfo,
-    bindAsset,
+    //bindAsset,
     blockTypes: {},
     search,
   };

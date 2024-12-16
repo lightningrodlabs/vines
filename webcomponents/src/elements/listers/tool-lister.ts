@@ -216,7 +216,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           //const dnaHash = toggledTreeItem['dnaHash'];
           console.log("calling weServices.assetInfo()", dnaId, subjectHash);
           try {
-            const assetLocInfo = await this.weServices.assetInfo({hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)), context: null});
+            const assetLocInfo = await this.weServices.assets.assetInfo({hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)), context: null});
             console.log("assetLocInfo", assetLocInfo);
             if (assetLocInfo) {
               newItem.text = assetLocInfo.assetInfo.name;

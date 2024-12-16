@@ -6,7 +6,6 @@ import {creatables} from "./appletServices/creatables";
 import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {setupVinesEntryView, devtestNames} from "./devtest";
 import {search} from "./appletServices/search";
-import {bindAsset} from "./appletServices/bindAsset";
 import {LitElement} from "lit/development";
 
 
@@ -34,7 +33,7 @@ async function setupVinesMainView() {
   const appletServices: AppletServices = {
     creatables,
     getAssetInfo,
-    bindAsset,//: async (a, b, c, d) => {},
+    //bindAsset,//: async (a, b, c, d) => {},
     blockTypes: {},
     search,
   };

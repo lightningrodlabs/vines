@@ -752,7 +752,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const anyBead = typed as AnyBeadMat;
         const wal = weaveUrlToWal(anyBead.value);
         if (!this.weServices.assetInfoCached(wal)) {
-          const maybe = await this.weServices.assetInfo(wal);
+          const maybe = await this.weServices.assets.assetInfo(wal);
           if (maybe) {
             this.requestUpdate();
           }

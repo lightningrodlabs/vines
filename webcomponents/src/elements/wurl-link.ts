@@ -157,7 +157,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         return;
       }
       /** Some other Tool */
-      const assetLocAndInfo = await this.weServices.assetInfo(wal);
+      const assetLocAndInfo = await this.weServices.assets.assetInfo(wal);
       if (assetLocAndInfo) {
         const appletInfo = await this.weServices.appletInfo(assetLocAndInfo.appletHash);
         if (appletInfo) {
@@ -178,7 +178,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           @click=${(_e:any) => {
               navigator.clipboard.writeText(this.wurl);
               if (this.weServices) {
-                  this.weServices.walToPocket(weaveUrlToWal(this.wurl));
+                  this.weServices.assets.assetToPocket(weaveUrlToWal(this.wurl));
               }
               toasty(msg("Copied WAL to clipboard"));
           }}>${msg('Unknown HRL')}</ui5-badge></abbr>
@@ -237,7 +237,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                            return;
                        }                       
                        if (this.weServices) {
-                         this.weServices.openWal(wal);
+                         this.weServices.openAsset(wal);
                        }
     }}>
               ${this._assetName}

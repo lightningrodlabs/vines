@@ -22,10 +22,6 @@
   <source>Export All</source>
   <target>Exporter tout</target>
 </trans-unit>
-<trans-unit id="sae7541d42db412aa">
-  <source>Import File</source>
-  <target>importer Fichier</target>
-</trans-unit>
 <trans-unit id="s793f79a4b17b7cf6">
   <source>Import only</source>
   <target>Importer Seulement</target>
@@ -122,10 +118,6 @@
   <source>Replying to</source>
   <target>Répondre à</target>
 </trans-unit>
-<trans-unit id="sf38167aac87c6032">
-  <source>Hide side panel</source>
-  <target>Cacher panneau latéral</target>
-</trans-unit>
 <trans-unit id="s71882be308cb9fdd">
   <source>Show side panel</source>
   <target>montrere panneau latéral</target>
@@ -133,18 +125,6 @@
 <trans-unit id="s9f5a5f23312798f0">
   <source>Members</source>
   <target>Membres</target>
-</trans-unit>
-<trans-unit id="s3d63d9646e0c8c2d">
-  <source>Hide Archived items</source>
-  <target>Cacher les items archivés</target>
-</trans-unit>
-<trans-unit id="sd3be074afe707a6e">
-  <source>View Archived items</source>
-  <target>Montrer les items archivés</target>
-</trans-unit>
-<trans-unit id="sc64f7f67ac6b0f80">
-  <source>Direct Messages</source>
-  <target>Messages Privés</target>
 </trans-unit>
 <trans-unit id="s8865f02d9ebbd0f5">
   <source>Topics</source>
@@ -157,10 +137,6 @@
 <trans-unit id="s1027a21e203c37d6">
   <source>Select a peer</source>
   <target>Seléctionner un membre</target>
-</trans-unit>
-<trans-unit id="sb2d6cc791eab6dc9">
-  <source>My Channels</source>
-  <target>Mes Canaux</target>
 </trans-unit>
 <trans-unit id="s99f110d27e30b289">
   <source>Title</source>
@@ -177,10 +153,6 @@
 <trans-unit id="s382a2aa3984474dd">
   <source>Create</source>
   <target>Créer</target>
-</trans-unit>
-<trans-unit id="s2350820794cf0edb">
-  <source>Copied channel's WAL to clipboard</source>
-  <target>WAL du canal copié dans le presse-papier</target>
 </trans-unit>
 <trans-unit id="s06aa213afe598b85">
   <source>DM channel archived</source>
@@ -229,6 +201,102 @@
 <trans-unit id="s8933f1bb82275307">
   <source>All marked 'read' and cleared Inbox</source>
   <target>Marqué tout comme 'lu' et vider la Inbox</target>
+</trans-unit>
+<trans-unit id="s7ce5b133496ec34b">
+  <source>Must be different from current title</source>
+</trans-unit>
+<trans-unit id="scecf37017247b0b6">
+  <source>Minimum 3 characters</source>
+</trans-unit>
+<trans-unit id="s76195d20b87dba54">
+  <source>Invalid characters</source>
+</trans-unit>
+<trans-unit id="s0c26ad411955878a">
+  <source>Message added to favorites</source>
+</trans-unit>
+<trans-unit id="sd5cebf2dae9ada75">
+  <source>Message removed from favorites</source>
+</trans-unit>
+<trans-unit id="s20a500234e838dda">
+  <source>Favorites</source>
+</trans-unit>
+<trans-unit id="sed94da90fb5a6dbb">
+  <source>Shared Files</source>
+</trans-unit>
+<trans-unit id="sa32e9d0a108ee802">
+  <source>Upload File</source>
+</trans-unit>
+<trans-unit id="s59bf2810d8b2ec28">
+  <source>DMs Cross View</source>
+</trans-unit>
+<trans-unit id="sd0e1071f680d9d0e">
+  <source>Share Network</source>
+</trans-unit>
+<trans-unit id="s78a89f89fef5b384">
+  <source>Close side panel</source>
+</trans-unit>
+<trans-unit id="sc26501e3ade7da3c">
+  <source>Tools</source>
+</trans-unit>
+<trans-unit id="sf1f5ac34e94bd146">
+  <source>Expand All</source>
+</trans-unit>
+<trans-unit id="s62006d0c66337241">
+  <source>Collapse All</source>
+</trans-unit>
+<trans-unit id="s0da17e4cd77bb878">
+  <source>Sort by creation time</source>
+</trans-unit>
+<trans-unit id="sd332c0ffa9a5a912">
+  <source>Sort alphabetically</source>
+</trans-unit>
+<trans-unit id="s9bd37c4afb69d679">
+  <source>View/Hide Archived</source>
+</trans-unit>
+<trans-unit id="sbdeedc1c60306b35">
+  <source>Messages</source>
+</trans-unit>
+<trans-unit id="s884f957390b84459">
+  <source>Message a peer</source>
+</trans-unit>
+<trans-unit id="sbf876639a6e9cbd7">
+  <source>View Files</source>
+</trans-unit>
+<trans-unit id="s95a45a35aa072a65">
+  <source>View Favorites</source>
+</trans-unit>
+<trans-unit id="sc676fdb513f1ea9a">
+  <source>Probe peers for content</source>
+</trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+</trans-unit>
+<trans-unit id="sa76d4c01726b605e">
+  <source>Share this code with a peer to grant them access to this Network</source>
+</trans-unit>
+<trans-unit id="s8587f911bd45e922">
+  <source>Copied share code to clipboard</source>
+</trans-unit>
+<trans-unit id="s86d42860e023b5f1">
+  <source>Copy Joining Code</source>
+</trans-unit>
+<trans-unit id="s55ddc7f60d3c09bb">
+  <source>Inbox</source>
+</trans-unit>
+<trans-unit id="s776051c2e6506aa1">
+  <source>File Info</source>
+</trans-unit>
+<trans-unit id="s96c1e831779d81f8">
+  <source>Edit Channel Title</source>
+</trans-unit>
+<trans-unit id="s64ef2a6c2dd1d3d1">
+  <source>Edit</source>
+</trans-unit>
+<trans-unit id="s1495feaa681f374b">
+  <source>Minimum 1 character</source>
+</trans-unit>
+<trans-unit id="sa2d505555b6701a8">
+  <source>Copied WAL to clipboard</source>
 </trans-unit>
 </body>
 </file>

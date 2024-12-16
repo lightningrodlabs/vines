@@ -74,10 +74,6 @@
   <source>No comment thread selected</source>
   <target>Aucun fil de commentaire selection.</target>
 </trans-unit>
-<trans-unit id="s1f7698c061c208c9">
-  <source>Open</source>
-  <target>Ouvrir</target>
-</trans-unit>
 <trans-unit id="s0fe8f27f468c7dea">
   <source>Open in Main View</source>
   <target>Ouvrir dans la vu principal</target>
@@ -170,10 +166,6 @@
   <source>Unknown HRL</source>
   <target>HRL inconnu</target>
 </trans-unit>
-<trans-unit id="s8630af8889a7f784">
-  <source>no profiles found</source>
-  <target>Aucun profile trouvé</target>
-</trans-unit>
 <trans-unit id="s1a86d5e8ae309e09">
   <source>Toggle Notifications</source>
   <target>Enclencher Notifications</target>
@@ -225,10 +217,6 @@
 <trans-unit id="s498865c7bd1f3959">
   <source>unknown</source>
   <target>inconnu</target>
-</trans-unit>
-<trans-unit id="sde5369c767e7871d">
-  <source>No DM found</source>
-  <target>Aucun message privé trouvé</target>
 </trans-unit>
 <trans-unit id="s884f957390b84459">
   <source>Message a peer</source>
@@ -306,10 +294,6 @@
   <source>Unknown Asset</source>
   <target>Asset inconnu</target>
 </trans-unit>
-<trans-unit id="s17839aa6c281acca">
-  <source>No comment threads found</source>
-  <target>Aucun fil de commentaire trouvé</target>
-</trans-unit>
 <trans-unit id="se4b80aa1aac3e36a">
   <source>Go to Tool</source>
   <target>Ouvrir Outil</target>
@@ -321,10 +305,6 @@
 <trans-unit id="sf969c2297c7b8324">
   <source>Create new Topic</source>
   <target>Créer nouveau Sujet</target>
-</trans-unit>
-<trans-unit id="s46249fe17f6f2595">
-  <source>Unknown Tool</source>
-  <target>Outil inconnu</target>
 </trans-unit>
 <trans-unit id="s1255df4f4e1c2450">
   <source>Copy comment thread link to clipboard</source>
@@ -350,10 +330,6 @@
   <source>Purpose</source>
   <target>Raison d'être</target>
 </trans-unit>
-<trans-unit id="s0c26ad411955878a">
-  <source>Message added to favorites</source>
-  <target>Message ajouté aux favoris</target>
-</trans-unit>
 <trans-unit id="sd5cebf2dae9ada75">
   <source>Message removed from favorites</source>
   <target>Message retiré des favoris</target>
@@ -361,10 +337,6 @@
 <trans-unit id="s4b60729034e68523">
   <source>No favorites found</source>
   <target>Aucun favoris trouvés</target>
-</trans-unit>
-<trans-unit id="s20a500234e838dda">
-  <source>Favorites</source>
-  <target>Favoris</target>
 </trans-unit>
 <trans-unit id="sd1f81284eeb7b503">
   <source>File</source>
@@ -409,6 +381,78 @@
 <trans-unit id="s829d60d437d50c76">
   <source>to mention</source>
   <target>pour mentionner</target>
+</trans-unit>
+<trans-unit id="s3a9afc986f4936cf">
+  <source>Rename file</source>
+</trans-unit>
+<trans-unit id="s245245214a77e4cf">
+  <source>No peers found</source>
+</trans-unit>
+<trans-unit id="sab8a74b036ed883a">
+  <source>in groups</source>
+</trans-unit>
+<trans-unit id="s6e9ce538224a588b">
+  <source>Copied Text to clipboard</source>
+</trans-unit>
+<trans-unit id="s48736e8439e2acb6">
+  <source>Copied WAL Link to clipboard</source>
+</trans-unit>
+<trans-unit id="s307bf47df2cfaaf5">
+  <source>Download File</source>
+</trans-unit>
+<trans-unit id="s748439ab9fb5827c">
+  <source>Copy WAL Link</source>
+</trans-unit>
+<trans-unit id="s2031d5f7041e82aa">
+  <source>view comments</source>
+</trans-unit>
+<trans-unit id="s64ef2a6c2dd1d3d1">
+  <source>Edit</source>
+</trans-unit>
+<trans-unit id="sbd3ca78d792615e7">
+  <source>escape to</source>
+</trans-unit>
+<trans-unit id="s47e83eaa4b387e3b">
+  <source>cancel</source>
+</trans-unit>
+<trans-unit id="sdeb4105e1f8533a2">
+  <source>enter to</source>
+</trans-unit>
+<trans-unit id="s096a5e18bf857c28">
+  <source>save</source>
+</trans-unit>
+<trans-unit id="s2138d5192571b731">
+  <source>new</source>
+</trans-unit>
+<trans-unit id="sb226ae3a8315e853">
+  <source>No peer selected</source>
+</trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+</trans-unit>
+<trans-unit id="s254411fa9c331fa4">
+  <source>View in channel</source>
+</trans-unit>
+<trans-unit id="s0d1be7a2c400c080">
+  <source>more</source>
+</trans-unit>
+<trans-unit id="s3b8b01f13046cffd">
+  <source>Who's here</source>
+</trans-unit>
+<trans-unit id="s850f63b3de1ffb7c">
+  <source>Bad characters</source>
+</trans-unit>
+<trans-unit id="s1495feaa681f374b">
+  <source>Minimum 1 character</source>
+</trans-unit>
+<trans-unit id="sb8103c12cb92e053">
+  <source>No SubjectTypes found</source>
+</trans-unit>
+<trans-unit id="s458a5d1890be89c6">
+  <source>(Might not be connected to peers yet)</source>
+</trans-unit>
+<trans-unit id="s11ec812e25ceef8a">
+  <source>No messages found</source>
 </trans-unit>
 </body>
 </file>

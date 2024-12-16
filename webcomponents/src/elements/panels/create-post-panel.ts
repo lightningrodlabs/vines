@@ -130,7 +130,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onCreateHrl() {
     /** Check */
-    const maybeWal = await this.weServices.userSelectWal();
+    const maybeWal = await this.weServices.assets.userSelectAsset();
     if (!maybeWal) {
       return;
     }

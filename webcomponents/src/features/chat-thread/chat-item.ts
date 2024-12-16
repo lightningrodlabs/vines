@@ -186,7 +186,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           const wal = weaveUrlToWAL(anyBead.value);
           navigator.clipboard.writeText(anyBead.value);
           if (this.weServices) {
-            this.weServices.walToPocket(wal);
+            this.weServices.assets.assetToPocket(wal);
           }
           toasty(msg("Copied WAL Link to clipboard"));
         }

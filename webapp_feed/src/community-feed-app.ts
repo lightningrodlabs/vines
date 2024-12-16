@@ -326,7 +326,7 @@ export class CommunityFeedApp extends HappElement {
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
-      this._weServices.walToPocket({hrl});
+      this._weServices.assets.assetToPocket({hrl});
     }
     toasty(msg("Copied channel's WAL to clipboard"));
   }
@@ -433,7 +433,7 @@ export class CommunityFeedApp extends HappElement {
                         //console.log("@create post event", e.detail);
                         const wal0 = weaveUrlToWal(e.detail.wurl);
                         const [dnaId, dhtId] = hrl2Id(wal0.hrl);
-                        const attLocInfo = await this._weServices!.assetInfo(wal0);
+                        const attLocInfo = await this._weServices!.assets.assetInfo(wal0);
                         if (!attLocInfo) {
                           throw Error("Missing assetInfo");
                         }

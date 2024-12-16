@@ -22,10 +22,10 @@ import {LitElement} from "lit";
 export async function createVinesApplet(renderInfo: RenderInfo, weServices: WeaveServices): Promise<LitElement> {
   console.log("createVinesApplet() type:", renderInfo.type);
   let appletGroups: AppletGroup[] = [];
-  /** cross-applet-view */
-  if (renderInfo.type == "cross-applet-view") {
+  /** cross-group-view */
+  if (renderInfo.type == "cross-group-view") {
     const crossViewInfo = renderInfo as unknown as CrossViewInfo;
-    //throw Error("cross-applet-view not implemented by Vines");
+    //throw Error("cross-group-view not implemented by Vines");
     console.log("createVinesApplet()         crossViewInfo", crossViewInfo);
     for (const [appletHash, appletClients] of crossViewInfo.applets.entries()) {
       const appWs = appletClients.appletClient as AppWebsocket;
@@ -61,7 +61,7 @@ export async function createVinesApplet(renderInfo: RenderInfo, weServices: Weav
   }
 
   /** -- Create VinesApp -- */
-  const app = await VinesApp.fromWe(weServices, undefined, renderInfo.type == "cross-applet-view", appletGroups);
+  const app = await VinesApp.fromWe(weServices, undefined, renderInfo.type == "cross-group-view", appletGroups);
   return app;
 }
 
