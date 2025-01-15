@@ -115,7 +115,7 @@
     "clean:all"          : "git clean -f -x -d -e .idea && rm -rf submodules"
   },
   "devDependencies": {
-    "@theweave/cli": "0.13.0-epsilon.1",
+    "@theweave/cli": "0.13.0-rc.1",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",

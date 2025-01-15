@@ -358,3 +358,10 @@ export interface ThreadsProperties {
   groupName: string
   groupSvgIcon: string
 }
+
+export interface BeadLink {
+  creationTime: Timestamp
+  beadAh: ActionArray
+  beadType: string
+  author: AgentArray
+}
