@@ -104,6 +104,7 @@ import "@ui5/webcomponents-icons/dist/flag.js"
 import "@ui5/webcomponents-icons/dist/group.js"
 import "@ui5/webcomponents-icons/dist/home.js"
 import "@ui5/webcomponents-icons/dist/hide.js"
+import "@ui5/webcomponents-icons/dist/history.js"
 import "@ui5/webcomponents-icons/dist/inbox.js"
 import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/journey-arrive.js"
@@ -422,7 +423,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onCopy(e: CustomEvent<Hrl>) {
     const hrl: Hrl = e.detail;
     const threadAh = new ActionId(hrl[1]);
-    //console.log("THREAD", threadAh);
+    console.log("THREAD", threadAh);
     //this._canShowDebug = true;
     //this._debugThreadAh = threadAh;
   }
@@ -1110,6 +1111,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           this._selectedThreadHash = e.detail.thread;
         }
         this._threadStack.push(this._selectedThreadHash!);
+        if (this._threadStack.length > 20) {
+          this._threadStack.shift();
+        }
         this._selectedBeadAh = e.detail.bead;
         this._selectedAgent = e.detail.agent;
       break;
@@ -1449,6 +1453,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
 
 
+    const hisLister = html`
+        <history-lister id="hisLister"
+                ?collapsed=${this._collapseAll}
+                .showArchived=${this._canViewArchivedSubjects}
+                .selectedThreadHash=${this._selectedThreadHash}
+                .threadStack=${this._threadStack}
+         ></history-lister>
+    `;
+
+
     const toggleLeftBtn = html`
         <ui5-button icon="menu2" tooltip=${msg("Show side panel")}
                     class="${this._canShowLeft? "pressed" : ""}                    
@@ -1614,6 +1628,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 
                 <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
                   ${lister}
+                    <!-- History -->
+                    <!-- <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+                        <ui5-icon style="width: 1.2rem; height: 1.2rem" name="history"></ui5-icon>
+                        <span style="width: 1.2rem; height: 1.2rem">${msg("History")}</span>
+                        <span style="flex-grow: 1"></span>
+                    </div> -->
+                    ${hisLister}
                   <!-- Messages -->
                   <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
                       <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>

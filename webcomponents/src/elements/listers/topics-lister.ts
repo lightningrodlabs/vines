@@ -25,6 +25,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** -- Properties -- */
 
+  @property({type: Boolean}) history?: boolean = false;
   @property({type: Boolean}) collapsed?: boolean = false;
   @property({type: Boolean}) alphabetical?: boolean = false;
 
