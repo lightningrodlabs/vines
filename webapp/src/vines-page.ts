@@ -285,6 +285,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _selectedCommentThreadHash: LinkableId | undefined = undefined
            private _selectedCommentThreadSubjectName: string = '';
 
+
+  private _threadStack: ActionId[] = [];
+
   // @ts-ignore
   private _isDmListVisible: boolean = true;
 
@@ -368,7 +371,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // @ts-ignore
     this.addEventListener('view', this.onViewFile);
     // @ts-ignore
-    this.addEventListener('copy', this.onCopy);
+    this.addEventListener('mouseup', this.handleMouse);
+    // @ts-ignore
+    this.addEventListener('copy', this.onCopy); // For debugging
   }
 
   override disconnectedCallback() {
@@ -389,17 +394,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // @ts-ignore
     this.removeEventListener('view', this.onViewFile);
     // @ts-ignore
+    this.removeEventListener('mouseup', this.handleMouse);
+    // @ts-ignore
     this.removeEventListener('copy', this.onCopy);
   }
+
+
+  handleMouse(event: any) {
+    // Handle the back/forward button press
+    console.log('handleMouse()', event);
+    if (event.button === 4 || event.button === 5) {
+      event.preventDefault();
+      if (event.button === 4) { // back button
+        console.log('Back button pressed - implement custom behavior');
+        this.goBack();
+      } else {
+        // go forward
+        // FIXME
+      }
+    }
+  }
+
 
   /** */
   private _debugThreadAh?: ActionId;
 
   async onCopy(e: CustomEvent<Hrl>) {
     const hrl: Hrl = e.detail;
-    //const wurl = weaveUrlFromWal({hrl}/*, true*/);
-    this._canShowDebug = true;
-    this._debugThreadAh = new ActionId(hrl[1]);
+    const threadAh = new ActionId(hrl[1]);
+    //console.log("THREAD", threadAh);
+    //this._canShowDebug = true;
+    //this._debugThreadAh = threadAh;
   }
 
   /** */
@@ -1028,6 +1053,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  goBack() {
+    if (this._threadStack.length < 2) {
+      return;
+    }
+    const prev = this._threadStack[this._threadStack.length - 2];
+    //console.log("goBack()", this._threadStack, prev);
+    this.dispatchEvent(threadJumpEvent(prev!));
+  }
+
+
+  /** */
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this._selectedThreadHash);
     this.closePopups();
@@ -1073,6 +1109,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         } else {
           this._selectedThreadHash = e.detail.thread;
         }
+        this._threadStack.push(this._selectedThreadHash!);
         this._selectedBeadAh = e.detail.bead;
         this._selectedAgent = e.detail.agent;
       break;
