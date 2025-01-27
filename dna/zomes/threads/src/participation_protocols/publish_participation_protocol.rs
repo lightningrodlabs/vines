@@ -11,6 +11,7 @@ use crate::participation_protocols::*;
 #[feature(zits_blocking)]
 pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
+  debug!("publish pp: {}", pp.purpose);
   let maybe_index_time: Option<Timestamp> = None; // FIXME
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;

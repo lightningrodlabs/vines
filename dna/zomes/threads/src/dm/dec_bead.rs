@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::{AnyBead, EncryptedBead, EntryBead, TextBead, TypedBaseBead};
+use threads_zapi::*;
 use threads_model::BaseBeadType;
 
 ///
@@ -36,14 +37,6 @@ pub fn decrypt_my_bead(enc_bead: EncryptedBead) -> ExternResult<TypedBaseBead> {
   )?;
   /// Deserialize
   return deser_bead(data, enc_bead.bead_type);
-}
-
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DecryptBeadInput {
-  pub enc_bead: EncryptedBead,
-  pub other_agent: AgentPubKey,
 }
 
 

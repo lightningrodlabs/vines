@@ -2,17 +2,10 @@ use hdk::prelude::*;
 use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::*;
+use threads_zapi::*;
 use crate::beads::{fetch_typed_bead, index_bead};
 use crate::dm::decrypt_my_bead;
 
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AddEncBeadInput {
-  pub enc_bead: EncryptedBead,
-  pub other_agent: AgentPubKey,
-  pub creation_time: Timestamp,
-}
 
 /// Return bead ah, type, Global Time Anchor, bucket time
 #[hdk_extern]

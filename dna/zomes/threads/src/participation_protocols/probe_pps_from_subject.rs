@@ -9,6 +9,7 @@ use zome_signals::emit_links_signal;
 #[hdk_extern]
 pub fn probe_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
+  debug!("probe_pps: {}", lh);
   let links = get_links(link_input(lh, ThreadsLinkType::Threads, None))?;
   let ahs = links
     .iter()

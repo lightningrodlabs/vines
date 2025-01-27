@@ -1,14 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
+use threads_zapi::*;
 use zome_utils::*;
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PublishDmThreadInput {
-  pub other_agent: AgentPubKey,
-  pub applet_id: String, // EntryHashB64 of the Applet entry in the group dna (We)
-}
-
 
 
 /// Publish a Pp off of another Agent
