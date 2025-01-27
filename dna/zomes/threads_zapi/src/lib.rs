@@ -40,3 +40,11 @@ pub struct DecryptBeadInput {
   pub enc_bead: EncryptedBead,
   pub other_agent: AgentPubKey,
 }
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EncryptBeadInput {
+  pub base: TypedBaseBead,
+  pub other_agent: AgentPubKey,
+}

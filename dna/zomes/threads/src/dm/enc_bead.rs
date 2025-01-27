@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 //use zome_utils::*;
 use threads_integrity::*;
+use threads_zapi::*;
 
 ///
 fn create_encrypted_bead<T>(typed_bead: T, bead_type: BaseBeadType, other_agent: AgentPubKey) -> ExternResult<EncryptedBead>
@@ -17,14 +18,6 @@ fn create_encrypted_bead<T>(typed_bead: T, bead_type: BaseBeadType, other_agent:
     me.clone(), me, data)?;
   /// Done
   Ok(EncryptedBead { for_self, for_other, bead_type: bead_type})
-}
-
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EncryptBeadInput {
-  pub base: TypedBaseBead,
-  pub other_agent: AgentPubKey,
 }
 
 
