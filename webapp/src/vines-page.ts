@@ -217,7 +217,7 @@ import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
-import {HoloHashB64} from "@holochain/client";
+import {HoloHashB64, Timestamp} from "@holochain/client";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -752,7 +752,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  private _cachedUnread: Map<HoloHashB64, HoloHashB64[]> = new Map();
+  private _cachedUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map();
   private _cachedNew: HoloHashB64[] = [];
   protected override async updated(_changedProperties: PropertyValues) {
     /** ??? */
@@ -804,14 +804,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
       }
       this._cachedNew = comparableNew;
-      const comparableUnread: Map<HoloHashB64, HoloHashB64[]> = new Map(Array.from(this._dvm.threadsZvm.perspective.unreadThreads.entries())
-        .map(([threadId, [_subId, ids]]) => [threadId.b64, ids.map((id) => id.b64)]));
-      for (const [threadAhB64, ids] of Array.from(comparableUnread.entries())) {
+      const comparableUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map(Array.from(this._dvm.threadsZvm.perspective.unreadThreads.entries())
+        .map(([threadId, [_subId, bead_ids]]) => [threadId.b64, bead_ids.map(([id, ts]) => [id.b64, ts])]));
+      for (const [threadAhB64, bead_tuples] of Array.from(comparableUnread.entries())) {
         const threads = Array.from(this._cachedUnread.keys());
         if (threads.includes(threadAhB64)) {
           let threadAh = new ActionId(threadAhB64);
-          for (const idb64 of ids) {
-            if (this._cachedUnread.get(threadAhB64)!.includes(idb64)) {
+          for (const tuple of bead_tuples) {
+            if (this._cachedUnread.get(threadAhB64)!.includes(tuple)) {
               //console.log("<vines-page>.updated() weServices New message", threadAh);
               this.weServices.notifyFrame([{
                 title: "New message",
@@ -820,7 +820,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 icon_src: wrapPathInSvg(mdiInformationOutline),
                 urgency: 'medium',
                 aboutWal: {hrl: intoHrl(this.cell.address.dnaId, threadAh)},
-                timestamp: Date.now(),
+                timestamp: tuple[1] / 1000,
               }]);
             }
           }

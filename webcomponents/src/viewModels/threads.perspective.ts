@@ -155,8 +155,8 @@ export class ThreadsPerspective {
   /* ppAh -> SubjectHash */
   newThreads: ActionIdMap<AnyId> = new ActionIdMap();
   /** Unread subject == Has at least one unread thread */
-  /** ppAh -> (subjectHash, beadAh[]) */
-  unreadThreads: ActionIdMap<[AnyId, ActionId[]]> = new ActionIdMap();// Unread thread == Has "new" beads
+  /** ppAh -> (subjectHash, (beadAh, CreationTime)[]) */
+  unreadThreads: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap();// Unread thread == Has "new" beads
 
 
   /** Things to compare when deciding to notify subscribers */
@@ -700,7 +700,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeAllUnreadThreads(list: ActionIdMap<[AnyId, ActionId[]]>) {
+  storeAllUnreadThreads(list: ActionIdMap<[AnyId, [ActionId, Timestamp][]]>) {
     this.unreadThreads.clear();
     for (const [ah, map] of list.entries()) {
       this.unreadThreads.set(ah, map)
@@ -757,7 +757,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       if (!this.unreadThreads.get(ppAh)) {
         this.unreadThreads.set(ppAh, [intoAnyId(thread.pp.subject.address), []]);
       }
-      this.unreadThreads.get(ppAh)![1].push(beadAh);
+      this.unreadThreads.get(ppAh)![1].push([beadAh, creationTime]);
     }
   }
 
