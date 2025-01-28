@@ -258,25 +258,27 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
-    const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
-    if (!beadInfo) {
+    const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
+    const baseBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
+    if (!beadInfo || !baseBeadInfo) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
+    const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
     /** hide if prevBead is closer than a minute and same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
       const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.prevBeadAh);
       if (prevInfo) {
-        const diff = beadInfo.creationTime - prevInfo.creationTime;
-        hidemeta = beadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000; // 60 secs
+        const diff = baseBeadInfo.creationTime - prevInfo.creationTime;
+        hidemeta = baseBeadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000; // 60 secs
       }
     }
-    let beadAsSubjectName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
+    let beadAsSubjectName = determineBeadName(baseBeadInfo.beadType, typed, this._filesDvm, this.weServices);
     let item = html``;
     let downloadItem = html``;
     const itemClass = hidemeta? "" : "innerItem";
-    if (beadInfo.beadType == ThreadsEntryType.TextBead) {
+    if (baseBeadInfo.beadType == ThreadsEntryType.TextBead) {
       if (!this.canEdit) {
         item = html`<chat-text class="${itemClass}" .hash=${this.hash}></chat-text>`;
       } else {
@@ -292,11 +294,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       }
       downloadItem = html`<ui5-menu-item id="downloadItem" icon="copy" text=${msg("Copy Text")}></ui5-menu-item>`;
     }
-    if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
+    if (baseBeadInfo.beadType == ThreadsEntryType.EntryBead) {
       item = html`<chat-file class="${itemClass}" .hash=${this.hash.b64}></chat-file>`;
       downloadItem = html`<ui5-menu-item id="downloadItem" icon="download" text=${msg("Download File")}></ui5-menu-item>`;
     }
-    if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
+    if (baseBeadInfo.beadType == ThreadsEntryType.AnyBead) {
       item = html`<chat-wal class="${itemClass}" .hash=${this.hash}></chat-wal>`;
       downloadItem = html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
     }
@@ -305,13 +307,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip=${msg("Create comment thread for this message")} design="Transparent" style="border:none;"
-                      @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">                      
+                      @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, baseBeadInfo.beadType, "side")}">                      
         </ui5-button>`;
     const hasComments = maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread);
     if (hasComments) {
       commentButton = html`              
           <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
-                       @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, beadInfo.beadType, "side")}">
+                       @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, baseBeadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = this.threadsPerspective.unreadThreads.has(maybeCommentThread);
       const commentLinkColor = isUnread ? "#33A000" : "#2C74FF";
@@ -397,7 +399,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<chat-item> shortmenu", this.shortmenu)
     if (!this.shortmenu) {
       sideButtons = [starButton, reactionButton, replyButton, commentButton, menuButton];
-      if (beadInfo.beadType == ThreadsEntryType.TextBead && beadInfo.author.equals(this.cell.address.agentId)) {
+      if (!isEncrypted && baseBeadInfo.beadType == ThreadsEntryType.TextBead && baseBeadInfo.author.equals(this.cell.address.agentId)) {
         sideButtons.unshift(html`
             <ui5-button id="star-btn" icon="edit" tooltip=${msg("Edit")} design="Transparent" style="border:none;"
                         @click=${(_e:any) => this.canEdit = true}></ui5-button>
@@ -406,10 +408,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
 
 
-    const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
+    const date = new Date(baseBeadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
 
-    const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author);
+    const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(baseBeadInfo.author);
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
 
@@ -417,7 +419,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     return html`
       <div id="innerChatItem">
         <!-- Vine row -->
-        ${hidemeta? html`` : this.renderTopVine(beadInfo)}
+        ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
         <!-- main horizontal div (row) -->
         <div id=${"chat-item__" + this.hash.b64} class="chatItem"
              @mouseenter=${(_e:any) => {
@@ -437,9 +439,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;"
                     @click=${(e:any) => {
                       e.stopPropagation();
-                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: baseBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
                     }}>
-              ${hidemeta? html`` : renderAvatar(this._dvm.profilesZvm, beadInfo.author, "S")}
+              ${hidemeta? html`` : renderAvatar(this._dvm.profilesZvm, baseBeadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
                   <div style="flex-grow:1;"></div>
                   <div class="vine"></div>

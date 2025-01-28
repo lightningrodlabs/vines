@@ -8,6 +8,7 @@ import {sharedStyles} from "../../styles";
 import {md} from "../../markdown/md";
 import {codeStyles} from "../../markdown/code-css";
 import {TextBeadMat} from "../../viewModels/threads.materialize";
+import {ThreadsEntryType} from "../../bindings/threads.types";
 
 
 /**
@@ -35,7 +36,11 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (!tm) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
-    const value = this._zvm.perspective.getLatestEdit(this.hash);
+    const beadInfo = this._zvm.perspective.getBeadInfo(this.hash)!;
+    let value = this._zvm.perspective.getLatestEdit(this.hash);
+    if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
+      value = tm.value;
+    }
     //md.use(emoji/* , options */);
     const result = md.render(value);
     const parsed = unsafeHTML(result);

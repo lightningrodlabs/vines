@@ -246,12 +246,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         ui5-panel::part(header):hover > ui5-button {
           display: block !important;
         }
-
-
-        .subjectBadge {
-          margin-top: 10px !important;
-        }
-
+        
       `,
 
     ];
