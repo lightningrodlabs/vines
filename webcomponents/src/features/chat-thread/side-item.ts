@@ -161,6 +161,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     }
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh);
+    if (!prevBeadInfo || !prevBead) {
+      return html`<ui5-busy-indicator delay="0" size="Small" active style="color:#f69e19"></ui5-busy-indicator>`;
+    }
     /** */
     return html`
       <blockquote class="reply"
