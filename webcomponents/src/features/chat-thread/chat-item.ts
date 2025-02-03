@@ -29,7 +29,7 @@ import {popoverStyleTemplate} from "../../styles";
 import {determineBeadName} from "../../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {AnyBeadMat, BeadInfo, EntryBeadMat, TextBeadMat} from "../../viewModels/threads.materialize";
+import {AnyBeadMat, BeadInfo, EntryBeadMat} from "../../viewModels/threads.materialize";
 import {ChatTextEdit} from "./chat-text-edit";
 
 
@@ -173,8 +173,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       case "downloadItem": {
         const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;
         if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-          const tm = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as TextBeadMat;
-          navigator.clipboard.writeText(tm.value);
+          let value = this._dvm.threadsZvm.perspective.getLatestEdit(this.hash);
+          navigator.clipboard.writeText(value);
           toasty(msg("Copied Text to clipboard"));
         }
         if (beadInfo.beadType == ThreadsEntryType.EntryBead) {

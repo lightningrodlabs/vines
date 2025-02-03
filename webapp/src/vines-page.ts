@@ -1096,7 +1096,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case MainViewType.MultiThread:
       case MainViewType.Thread:
         /** Figure out the new thread to jump to */
-        let nextThreadAh = this._selectedThreadHash = e.detail.thread;
+        let nextThreadAh = e.detail.thread;
         if (!e.detail.thread && e.detail.bead) {
           const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(e.detail.bead);
           nextThreadAh = beadInfo!.bead.ppAh;
