@@ -1102,7 +1102,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           nextThreadAh = beadInfo!.bead.ppAh;
         }
         //console.log("onJump() Thread", maybePrevThreadId, nextThreadAh);
-        if (!maybePrevThreadId || !nextThreadAh!.equals(this._selectedThreadHash!)) {
+        if (!maybePrevThreadId || !nextThreadAh!.equals(maybePrevThreadId)) {
           this._selectedThreadHash = nextThreadAh;
           /** set lastProbeTime for current thread */
           if (maybePrevThreadId) {
@@ -1113,9 +1113,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               await this._dvm.threadsZvm.deleteNotification(linkAh);
             }
           }
-          this._threadStack.push(this._selectedThreadHash!);
-          if (this._threadStack.length > 20) {
-            this._threadStack.shift();
+          // Add to stack
+          //console.log!("onJump() Add to stack", this._selectedThreadHash, this._threadStack);
+          if (this._threadStack.length == 0 || !this._threadStack![this._threadStack!.length - 1]!.equals(this._selectedThreadHash!)) {
+            this._threadStack.push(this._selectedThreadHash!);
+            if (this._threadStack.length > 20) {
+              this._threadStack.shift();
+            }
           }
           this._selectedBeadAh = e.detail.bead;
           this._selectedAgent = e.detail.agent;
