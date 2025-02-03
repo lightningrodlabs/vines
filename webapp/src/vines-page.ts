@@ -1867,8 +1867,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             const shellbar = this.shadowRoot!.getElementById("topicBar");
                                             popover.showAt(shellbar!);
                                         }}>
+                                <span class="numberBadge">${filteredInbox.length? filteredInbox.length : ""}</span>
                             </ui5-button>
-                            <span class="numberBadge">${filteredInbox.length ? filteredInbox.length : ""}</span>
                         </div>
                     </div>
                 </div>
@@ -2474,7 +2474,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 1px 9px;
           font-size: 10px;
           font-weight: bold;
-          margin-right: -5px;
+          /*margin-right: -5px;*/
           z-index: 10;
         }
 
