@@ -97,7 +97,7 @@ export async function getAssetInfo(
                 icon_src: wrapPathInSvg(mdiMessageTextOutline),
                 name: `<unknown>`
             };
-            breaks;
+            break;
         default:
             throw new Error(`Feed/we-applet: Unknown entry type ${recordInfo.entryType}.`);
     }

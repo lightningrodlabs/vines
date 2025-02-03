@@ -33,7 +33,6 @@ import {
   DnaId,
   enc64,
   EntryId,
-  EntryPulse,
   EntryPulseMat,
   getIndexByVariant,
   getVariantByIndex,
@@ -45,6 +44,7 @@ import {
   LinkableId,
   LinkPulseMat,
   StateChangeType,
+  ValidatedBy,
   ZomeSignalProtocol,
   ZomeViewModelWithSignals,
 } from "@ddd-qc/lit-happ";
@@ -1013,7 +1013,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, isNew: boolean) {
+  async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean) {
     console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
     /** pre */
     if (this._perspective.getBeadInfo(beadAh)) {
@@ -1051,7 +1051,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
     }
     /** Store in perspective */
-    this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isNew, innerPair);
+    this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isPersistent, isNew, innerPair);
   }
 
 
@@ -1232,7 +1232,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           await this.editThreadTitle(newPpAh, title);
         }
         /* Store pp */
-        this._perspective.storeThread(this.cell, newPpAh, pp, title, authorshipLog[0], authorshipLog[1], false);
+        this._perspective.storeThread(this.cell, newPpAh, pp, title, authorshipLog[0], authorshipLog[1], true, false);
         console.log(`PubImp() PP ${ppAh.short} -> ${newPpAh.short}`, authorshipLog[0]);
       }
       // FIXME: use Promise.AllSettled();
@@ -1467,6 +1467,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const emoji = decoder.decode(pulse.tag);
           //console.warn("EmojiReaction CreateLink:", link.tag, emoji);
           this._perspective.storeEmojiReaction(baseAh, pulse.author, emoji);
+          if (pulse.validatedBy != ValidatedBy.None) {
+            this._perspective.setPersistent(pulse.create_link_hash.b64);
+          }
         }
         if (StateChangeType.Delete == pulse.state) {
           const decoder = new TextDecoder('utf-8');
@@ -1585,7 +1588,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** */
         if (StateChangeType.Create == pulse.state) {
           const maybeTitle = this._channelTitleCache.get(pulse.ah);
-          this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.isNew);
+          this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
           /** grab latest title edit */
           this.zomeProxy.getPpTitle(pulse.ah.hash).catch(() => {});
           /** grab latest textbead edit if it's an EDIT thread */
@@ -1657,6 +1660,21 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         await this._perspective.unstoreNotification(pulse.create_link_hash);
       }
       return;
+    }
+    /** Check if was requested by AppTip */
+    if (this._missingLinkAhs.size > 0) {
+      console.debug!("handleInboxLink() this._missingLinkAhs", pulse.create_link_hash.b64, this._missingLinkAhs);
+      const maybe = this._missingLinkAhs.get(pulse.create_link_hash)
+      if (maybe) {
+        console.debug!("handleInboxLink() delete");
+        (this._dvmParent as ThreadsDvm).addSignaledNotif(maybe);
+        this._missingLinkAhs.delete(pulse.create_link_hash);
+      }
+      if (this._missingLinkAhs.size == 0) {
+        console.debug!("handleInboxLink() clearInterval");
+        clearInterval(this._intervalId);
+        this._intervalId = undefined;
+      }
     }
     /** Create */
     const index = pulse.tag[0] as number;
@@ -1731,7 +1749,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Store Bead */
     const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;
-    await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.isNew);
+    await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
     /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
     if (pulse.isNew && this.cell.address.agentId.equals(from)) {
@@ -1780,74 +1798,88 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
   }
 
+  private _missingLinkAhs: ActionIdMap<ThreadsNotificationTip> = new ActionIdMap();
+  private _intervalId: any | undefined = undefined;
 
-  /** */
+  /** Handle notification Tip */
   override handleAppTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
     const appTip = this._decoder.decode(serTip) as ThreadsAppTip;
     if (appTip.type != "notification") {
       return;
     }
     const notifTip = appTip.data;
-    console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from);
-    let ppAh: ActionId = notifTip.pp_ah;
-    let signal: ZomeSignalProtocol | undefined = undefined;
-    /** Store received Entry */
-    if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
-      const {typed, beadType, creationTime} = notifTip.data as NotificationTipBeadData;
-      const beadAh = notifTip.content;
-      console.log(`notifTip ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
-      const entryPulse: EntryPulse = {
-        ah: beadAh.hash,
-        eh: EntryId.empty().hash,
-        ts: creationTime,
-        author: from.hash,
-        state: {Create: true},
-        def: {
-          entry_index: getIndexByVariant(ThreadsEntryType, beadType),
-          zome_index: 42,
-          visibility: "Public",
-        },
-        bytes: this._encoder.encode(typed),
-      };
-      signal = {Entry: entryPulse};
-    }
-    if (NotifiableEvent.NewDmThread == notifTip.event || NotifiableEvent.Fork === notifTip.event) {
-      const {pp, creationTime} = notifTip.data as NotificationTipPpData;
-      console.log(`notifTip ${JSON.stringify(notifTip.event)}:`, creationTime, pp);
-      const entryPulse: EntryPulse = {
-        ah: notifTip.content.hash,
-        eh: EntryId.empty().hash,
-        ts: creationTime,
-        author: from.hash,
-        state: {Create: true},
-        def: {
-          entry_index: getIndexByVariant(ThreadsEntryType, ThreadsEntryType.ParticipationProtocol),
-          zome_index: 42,
-          visibility: "Public",
-        },
-        bytes: this._encoder.encode(pp),
-      };
-      signal = {Entry: entryPulse};
+    console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._intervalId);
+    /** Poll interval until we get it from DHT */
+    this._missingLinkAhs.set(notifTip.link_ah, notifTip);
+    if (!this._intervalId) {
+      this._intervalId = setInterval(() => {
+        console.log!("Polling Inbox");
+        this.zomeProxy.probeInbox();
+        }, 5000);
     }
 
-    ///* Brutal way to make sure we have the content signaled in the notification */
-    //await this.probeAllLatest();
-    /** */
-    const notif: ThreadsNotification = {
-      event: notifTip.event,
-      author: notifTip.author,
-      timestamp: notifTip.timestamp,
-      content: notifTip.content,
-      createLinkAh: notifTip.link_ah,
-    }
-    console.log(`handleAppTip() storeNotification:`, notif);
-    /** make sure we have the content signaled in the notification */
-    /*await*/ this.fetchPp(ppAh);
-    /** */
-    if (NotifiableEvent.NewDmThread != notifTip.event) {
-      this._perspective.storeNotification(notif, ppAh);
-    }
-    return signal;
+    return undefined;
+
+    //let ppAh: ActionId = notifTip.pp_ah;
+    // let signal: ZomeSignalProtocol | undefined = undefined;
+    // /** Store received Entry */
+    // if (NotifiableEvent.Mention == notifTip.event || NotifiableEvent.Reply == notifTip.event || NotifiableEvent.NewBead == notifTip.event) {
+    //   const {typed, beadType, creationTime} = notifTip.data as NotificationTipBeadData;
+    //   const beadAh = notifTip.content;
+    //   console.log(`notifTip ${JSON.stringify(notifTip.event)}:`, beadAh, typed);
+    //   const entryPulse: EntryPulse = {
+    //     ah: beadAh.hash,
+    //     eh: EntryId.empty().hash,
+    //     ts: creationTime,
+    //     author: from.hash,
+    //     state: {Create: true},
+    //     def: {
+    //       entry_index: getIndexByVariant(ThreadsEntryType, beadType),
+    //       zome_index: 42,
+    //       visibility: "Public",
+    //     },
+    //     bytes: this._encoder.encode(typed),
+    //   };
+    //   signal = {Entry: entryPulse};
+    // }
+    // if (NotifiableEvent.NewDmThread == notifTip.event || NotifiableEvent.Fork === notifTip.event) {
+    //   const {pp, creationTime} = notifTip.data as NotificationTipPpData;
+    //   console.log(`notifTip ${JSON.stringify(notifTip.event)}:`, creationTime, pp);
+    //   const entryPulse: EntryPulse = {
+    //     ah: notifTip.content.hash,
+    //     eh: EntryId.empty().hash,
+    //     ts: creationTime,
+    //     author: from.hash,
+    //     state: {Create: true},
+    //     def: {
+    //       entry_index: getIndexByVariant(ThreadsEntryType, ThreadsEntryType.ParticipationProtocol),
+    //       zome_index: 42,
+    //       visibility: "Public",
+    //     },
+    //     bytes: this._encoder.encode(pp),
+    //   };
+    //   signal = {Entry: entryPulse};
+    // }
+    //
+    // ///* Brutal way to make sure we have the content signaled in the notification */
+    // //await this.probeAllLatest();
+    // /** */
+    // const notif: ThreadsNotification = {
+    //   event: notifTip.event,
+    //   author: notifTip.author,
+    //   timestamp: notifTip.timestamp,
+    //   content: notifTip.content,
+    //   createLinkAh: notifTip.link_ah,
+    // }
+    // console.log(`handleAppTip() storeNotification:`, notif);
+    // /** make sure we have the content signaled in the notification */
+    // /*await*/ this.fetchPp(ppAh);
+    // /** */
+    // if (NotifiableEvent.NewDmThread != notifTip.event) {
+    //   this.probeAllLatest()
+    //   //this._perspective.storeNotification(notif, ppAh);
+    // }
+    // return signal;
   }
 
 

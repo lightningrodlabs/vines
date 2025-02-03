@@ -37,7 +37,7 @@ export enum NotifiableEvent {
 
 /** */
 export type ThreadsAppTip = {
-  type: "notification"
+  type: "notification" // tell peers I've sent them a notification (they should check inbox)
   data: ThreadsNotificationTip,
 } | {
   type: "where" // ask for peer's channel location

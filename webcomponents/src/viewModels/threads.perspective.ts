@@ -1,4 +1,4 @@
-import {ActionHashB64, AgentPubKeyB64, EntryHashB64, HoloHashB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, AnyDhtHashB64, EntryHashB64, HoloHashB64, Timestamp} from "@holochain/client";
 import {
   ActionId,
   ActionIdMap,
@@ -98,6 +98,10 @@ export type ThreadsPerspectiveComparable = {
 
 /** */
 export class ThreadsPerspective {
+
+  /** All Entries that have effectively been found in source-chain or DHT */
+  persistentStorageMap: Set<AnyDhtHashB64> = new Set();
+
   /** */
   appletIds: EntryId[] = [];
   /** Store of all Subjects: hash -> Subject */
@@ -225,6 +229,12 @@ export class ThreadsPerspective {
     return typesForDna.get(pathHash);
   }
 
+
+  /** */
+  isPersistent(hash: AnyDhtHashB64): boolean {
+    console.log("Persistent: is?", hash, this.persistentStorageMap.has(hash));
+    return this.persistentStorageMap.has(hash);
+  }
 
   getBeadInfo(beadAh: ActionId): BeadInfo | undefined {
     const maybeBead = this.beads.get(beadAh);
@@ -404,7 +414,7 @@ export class ThreadsPerspective {
         if (notif.event == NotifiableEvent.NewDmThread) {
           return;
         }
-        const trip = ""+ppAh.b64+notif.author.b64;
+        const trip = "" + ppAh.b64 + notif.author.b64;
         const cur = res.get(trip);
         if (!cur) {
           res.set(trip, [[linkAh, notif]]);
@@ -691,10 +701,20 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   /** -- Store -- */
 
   /** */
+  setPersistent(hash: AnyDhtHashB64) {
+    console.log("Persistent: set", hash);
+    this.persistentStorageMap.add(hash);
+  }
+  unsetPersistent(hash: AnyDhtHashB64) {
+    console.log("Persistent: unset", hash);
+    this.persistentStorageMap.delete(hash);
+  }
+
+  /** */
   storeAllNewThreads(list: [ActionId, AnyId][]) {
     this.newThreads.clear();
     for (const [ah, subjectHash] of list) {
-      this.newThreads.set(ah, subjectHash)
+      this.newThreads.set(ah, subjectHash);
     }
   }
 
@@ -725,8 +745,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
-    console.log("storeTypedBead()", beadInfo.beadType, beadAh.short)
+  storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isPersistent: boolean, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
+    console.log("storeTypedBead()", beadInfo.beadType, beadAh.short, isPersistent);
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       if (!innerPair) {
@@ -737,6 +757,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** Store normal base Bead */
     this.beads.set(beadAh, [beadInfo, typedBead]);
     this.storeBeadInThread(beadAh, beadInfo.bead.ppAh, beadInfo.creationTime, isNew, beadInfo.beadType);
+    if (isPersistent) {
+      this.persistentStorageMap.add(beadAh.b64);
+    }
   }
 
 
@@ -855,10 +878,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, isNew: boolean): ParticipationProtocol {
+  storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean): ParticipationProtocol {
     console.debug(`storeThread() thread "${ppAh.short}"`, author.short, pp);
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
+    }
+    if (isPersistent) {
+      this.persistentStorageMap.add(ppAh.b64);
     }
     /** Return already stored PP */
     if (this.threads.has(ppAh)) {
@@ -1069,7 +1095,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
         ? authorshipZvm.perspective.getAuthor(ppAh)!
         : [creationTime, cell.address.agentId];
-      this.storeThread(cell, ppAh, ppMat, title, authorshipLog[0], authorshipLog[1], false);
+      this.storeThread(cell, ppAh, ppMat, title, authorshipLog[0], authorshipLog[1], false, false);
     }
     /** this.beads */
     this.beads.clear();
@@ -1085,7 +1111,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       }
       //this.storeTypedBead(beadAh, typedBead, beadInfo.beadType, authorshipLog[0], authorshipLog[1], true);
       if (beadInfo.beadType != ThreadsEntryType.EncryptedBead) {
-        this.storeTypedBead(beadAh, beadInfo, typedBead, true);
+        this.storeTypedBead(beadAh, beadInfo, typedBead, false, true);
       }
       // TODO handle decBeads
     }

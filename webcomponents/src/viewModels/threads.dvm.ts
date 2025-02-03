@@ -227,6 +227,20 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
+  addSignaledNotif(notifTip: ThreadsNotificationTip) {
+    const notif: ThreadsNotification = {
+      //eventIndex: notifTip.event_index,
+      event: notifTip.event,
+      createLinkAh: notifTip.link_ah,
+      author: notifTip.author,
+      timestamp: notifTip.timestamp,
+      content: new ActionId(notifTip.content.b64),
+    }
+    this._perspective.signaledNotifications.push(notif);
+  }
+
+
+  /** */
   private async handleTip(tip: TipProtocol, from: AgentId) {
     // /* Send pong response */
     // if (tip.type != "Pong") {
@@ -264,16 +278,8 @@ export class ThreadsDvm extends DnaViewModel {
             this.storePresence(from, appTip.data);
           break;
           case "notification":
-            const notifTip: ThreadsNotificationTip = appTip.data;
-            const notif: ThreadsNotification = {
-              //eventIndex: notifTip.event_index,
-              event: notifTip.event,
-              createLinkAh: notifTip.link_ah,
-              author: notifTip.author,
-              timestamp: notifTip.timestamp,
-              content: new ActionId(notifTip.content.b64),
-            }
-            this._perspective.signaledNotifications.push(notif);
+            // const notifTip: ThreadsNotificationTip = appTip.data;
+            // this.addSignaledNotif(notifTip)
           break;
         }
       }

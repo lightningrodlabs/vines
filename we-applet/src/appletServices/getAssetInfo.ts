@@ -10,7 +10,7 @@ import {ActionId, pascal} from "@ddd-qc/cell-proxy";
 import {devtestNames} from "../devtest";
 import {AssetInfo, WAL} from "@theweave/api";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
-import {mdiComment, mdiCommentBookmark, mdiCommentText, mdiCommentTextMultiple} from "@mdi/js";
+import {mdiComment, mdiCommentBookmark, mdiCommentText, mdiCommentTextMultiple, mdiMessageTextOutline} from "@mdi/js";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {RecordInfo} from "@theweave/api/dist/types";
 
@@ -95,6 +95,14 @@ export async function getAssetInfo(
                 icon_src: wrapPathInSvg(mdiCommentTextMultiple),
                 //name: pp[0].purpose,
                 name: title,
+            };
+        break;
+        case ThreadsEntryType.SemanticTopic:
+            console.log("Feed/we-applet: SemanticTopic", wal);
+            // There is no zfn for getting for fetching a SemanticTopic as it is not necessary.
+            return {
+                icon_src: wrapPathInSvg(mdiMessageTextOutline),
+                name: `<unknown>`
             };
         break;
         // case "path": {

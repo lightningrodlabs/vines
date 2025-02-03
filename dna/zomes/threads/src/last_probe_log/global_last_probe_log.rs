@@ -72,7 +72,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<Option<(ActionHash, GlobalLastPr
   let latest_record = records.last().unwrap().clone();
   let typed: GlobalLastProbeLog = get_typed_from_record(latest_record.clone())?;
   /// Emit signal
-  let pulse = EntryPulse::try_from_new_record(latest_record.clone(), false)?;
+  let pulse = EntryPulse::try_from_new_record(latest_record.clone(), ValidatedBy::Me, false)?;
   emit_zome_signal(vec![ZomeSignalProtocol::Entry(pulse)])?;
   /// Done
   Ok(Some((latest_record.action_address().to_owned(), typed)))

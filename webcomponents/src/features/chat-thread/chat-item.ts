@@ -263,6 +263,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (!beadInfo || !baseBeadInfo) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
+    const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
+    //const isPersistent = false;
     const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
     /** hide if prevBead is closer than a minute and same author */
@@ -417,7 +419,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-      <div id="innerChatItem">
+      <div id="innerChatItem" style="position: relative">
+        ${isPersistent? html`` : html`<div class="grey-veil"></div>`}
         <!-- Vine row -->
         ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
         <!-- main horizontal div (row) -->
@@ -468,7 +471,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->
-            ${this.nomenu? html`` : html`<ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>`}
+            ${this.nomenu || !isPersistent ? html`` : html`<ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>`}
             <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                 <emoji-picker class="light" style="display: block"
                               @emoji-click=${(event: any) => {
@@ -539,7 +542,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #buttonsPop::part(content) {
           padding: 0px;
         }
-        
+
         #agentName {
           font-family: "72";
           font-weight: bold;
@@ -605,6 +608,16 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           margin-bottom: 10px;
         }
 
+        .grey-veil {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(222, 222, 222, 0.33);
+          z-index: 800;
+        }
+        
         .chatItem {
           display: flex;
           flex-direction: row;
@@ -637,9 +650,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           padding-top: 7px;
           margin-left: 5px;
         }
+
         .linky {
           color: blue;
         }
+
         .linky:hover {
           text-decoration: underline;
           cursor: pointer;

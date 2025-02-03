@@ -1095,27 +1095,31 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         break;
       case MainViewType.MultiThread:
       case MainViewType.Thread:
-        /** set lastProbeTime for current thread */
-        if (maybePrevThreadId) {
-          await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
-          /** Clear notifications on prevThread */
-          const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
-          for (const [linkAh, _notif] of prevThreadNotifs) {
-            await this._dvm.threadsZvm.deleteNotification(linkAh);
-          }
-        }
+        /** Figure out the new thread to jump to */
+        let nextThreadAh = this._selectedThreadHash = e.detail.thread;
         if (!e.detail.thread && e.detail.bead) {
           const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(e.detail.bead);
-          this._selectedThreadHash = beadInfo!.bead.ppAh;
-        } else {
-          this._selectedThreadHash = e.detail.thread;
+          nextThreadAh = beadInfo!.bead.ppAh;
         }
-        this._threadStack.push(this._selectedThreadHash!);
-        if (this._threadStack.length > 20) {
-          this._threadStack.shift();
+        //console.log("onJump() Thread", maybePrevThreadId, nextThreadAh);
+        if (!maybePrevThreadId || !nextThreadAh!.equals(this._selectedThreadHash!)) {
+          this._selectedThreadHash = nextThreadAh;
+          /** set lastProbeTime for current thread */
+          if (maybePrevThreadId) {
+            await this._dvm.threadsZvm.commitThreadProbeLog(maybePrevThreadId);
+            /** Clear notifications on prevThread */
+            const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
+            for (const [linkAh, _notif] of prevThreadNotifs) {
+              await this._dvm.threadsZvm.deleteNotification(linkAh);
+            }
+          }
+          this._threadStack.push(this._selectedThreadHash!);
+          if (this._threadStack.length > 20) {
+            this._threadStack.shift();
+          }
+          this._selectedBeadAh = e.detail.bead;
+          this._selectedAgent = e.detail.agent;
         }
-        this._selectedBeadAh = e.detail.bead;
-        this._selectedAgent = e.detail.agent;
       break;
     }
     /*await*/ this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);

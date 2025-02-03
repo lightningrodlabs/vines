@@ -56,7 +56,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
   /// Emit signals
   let pulses = hashmap.iter()
     .map(|(_ah, record)| {
-      let pulse = EntryPulse::try_from_new_record(record.to_owned(), false).unwrap();
+      let pulse = EntryPulse::try_from_new_record(record.to_owned(), ValidatedBy::Me, false).unwrap();
       ZomeSignalProtocol::Entry(pulse)
     })
     .collect();
