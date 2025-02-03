@@ -53,7 +53,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     // @ts-ignore: _dvm for first update
     if (changedProperties.has("hash") || changedProperties.has("_dvm")) {
       this._canRetry = true;
-      /* await */ this.loadFileData();
+      /* await */ this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
     }
   }
 
@@ -74,7 +74,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  private async loadFileData() {
+  private async loadFileData(maxSize: number) {
     console.log("<chat-file>.loadFile()", !!this._filesDvm, this.hash);
     this._loading = true;
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
@@ -86,7 +86,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       const manifestEh = entryBead.sourceEh;
       console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
-      if (!this._manifest || this._manifest.description.size > this._filesDvm.dnaProperties.maxChunkSize) {
+      if (!this._manifest || this._manifest.description.size > maxSize) {
         console.debug("<chat-file>.loadFile() stopped", this._manifest);
         this._loading = false;
         this._file = null;
@@ -140,7 +140,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     await this._filesDvm.deliveryZvm.probeDht();
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
     if (fileTuple) {
-      await this.loadFileData();
+      await this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
     }
     this.requestUpdate();
   }
@@ -198,6 +198,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     const fileDesc = filePprm.description;
     const fileType = kind2Type(fileDesc.kind_info);
+    const isViewable = fileType == FileType.Image || fileType == FileType.Audio || fileType == FileType.Video || fileType == FileType.Text || fileType == FileType.Pdf;
 
     /** Default file render (any big file) */
     let item = html`
@@ -205,8 +206,17 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
                   @click=${(_e:any) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
             ${fileDesc.name}
+            <!-- <ui5-button icon="show" 
+                        style="height:30px;margin-left:10px"
+                        @click=${(e:any)=> {e.preventDefault(); e.stopPropagation(); this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize * 20)}}
+            ></ui5-button> -->              
           </ui5-li>
-        </ui5-list>`;
+        </ui5-list>
+        ${isViewable? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
+             @click=${(e:any)=> {e.preventDefault(); e.stopPropagation(); this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize * 20)}}>
+            ${msg('View')}
+        </div>` : html``}        
+    `;
 
     const mime = kind2mime(this._manifest.description.kind_info);
     //const fileType = kind2Type(this._manifest.description.kind_info);
@@ -328,6 +338,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           max-height: 100vh !important;
           white-space: pre;
           box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
+        }
+
+
+        .linky {
+          color: blue;
+        }
+
+        .linky:hover {
+          text-decoration: underline;
+          cursor: pointer;
         }
 
       `,];
