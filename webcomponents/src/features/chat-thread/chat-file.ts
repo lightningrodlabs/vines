@@ -53,7 +53,23 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     // @ts-ignore: _dvm for first update
     if (changedProperties.has("hash") || changedProperties.has("_dvm")) {
       this._canRetry = true;
-      /* await */ this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
+      /** Load file from Cache or grab it from DHT if it's small */
+      const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
+      if (!entryBead) {
+        console.warn("<chat-file>.loadFile() Bead not found", this.hash);
+        return;
+      }
+      const file = this._filesDvm.perspective.fileCache.get(entryBead.sourceEh);
+      const tuple = this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(entryBead.sourceEh);
+      if (file && tuple) {
+        console.debug!("LOADED FILE FROM CACHE", tuple[0].description.name, this.hash);
+        this._file = file;
+        this._manifest = tuple[0];
+        this.loadBlob();
+      } else {
+        /* await */
+        this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
+      }
     }
   }
 
@@ -95,11 +111,21 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       const fileType = kind2Type(this._manifest.description.kind_info);
       console.debug("<chat-file>.loadFile() fileType", fileType);
       if (fileType == "Binary" || fileType == "Zip" || fileType == "Other") {
-          this._loading = false;
-          this._file = null;
-          return;
+        this._loading = false;
+        this._file = null;
+        return;
       }
       this._file = (await this._filesDvm.fetchFile(manifestEh))[1];
+      this.loadBlob();
+    } catch(e) {
+      this._loading = false;
+      this._file = null;
+    }
+  }
+
+
+  loadBlob() {
+    try {
       /** Set _maybeBlobUrl */
       const reader = new FileReader();
       if (this._maybeBlobUrl) {
@@ -107,7 +133,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         this._maybeBlobUrl = undefined;
       }
       //this._maybeBlobUrl = URL.createObjectURL(this._maybeFile);
-      const mime = kind2mime(this._manifest.description.kind_info);
+      const mime = kind2mime(this._manifest!.description.kind_info);
       reader.onload = (event) => {
         console.debug("<chat-file>.loadFile() FileReader onload", event, mime);
         if (event.target == null || event.target.result == null) {
@@ -122,13 +148,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         this._loading = false;
       };
       //reader.readAsDataURL(this._maybeFile);
-      reader.readAsArrayBuffer(this._file);
+      reader.readAsArrayBuffer(this._file!);
     } catch(e:any) {
       console.warn("<chat-file>.loadFile() Loading file failed:", this.hash, e);
       this._loading = false;
       this._file = null;
     }
   }
+
 
 
   /** */
