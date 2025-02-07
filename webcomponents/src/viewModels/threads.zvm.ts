@@ -87,6 +87,7 @@ import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsDvm} from "./threads.dvm";
 import {THIS_APPLET_ID} from "../contexts";
+import {msg} from "@lit/localize";
 
 
 //generateSearchTest();
@@ -578,7 +579,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     };
     const pp: ParticipationProtocol = {
       purpose: "EDIT",
-      rules: "ONLY AUTHOR TEXT BEADS",
+      rules: msg("Only text messsages from the original message author are allowed"),
       subject,
     }
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);

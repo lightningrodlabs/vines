@@ -128,7 +128,7 @@ function tokenizeMentions(str: string): string[]  {
 };
 
 
-/** TODO: remove once its implemented in we-applet */
+/** TODO: remove once it's implemented in we-applet */
 export function weaveUrlToWal(url: string): WAL {
   const weaveLocation = weaveUrlToLocation(url);
   if (weaveLocation.type !== 'asset') {
@@ -157,6 +157,14 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
     }
   } else {
     subjectName = latestSubject.name;
+    /** Handle Edit message special case */
+    if(subjectType == SpecialSubjectType.TextBead && threadTitle == "EDIT") {
+      const beadAh = ActionId.from(latestSubject.address);
+      const tuple = threadsZvm.perspective.beads.get(beadAh);
+      if (tuple) {
+        return `"${(tuple[1] as TextBeadMat).value}"`;
+      }
+    }
   }
   console.log("latestThreadName", curSubjectId.short, latestSubjectId.short, threadsZvm.perspective.subjects);
   return `${determineSubjectPrefix(subjectType)} ${subjectName}: ${threadTitle}`;

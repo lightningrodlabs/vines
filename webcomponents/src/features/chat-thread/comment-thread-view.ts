@@ -310,7 +310,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                         @click=${(_e:any) => this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))}>
             </ui5-button>`}
           ${openInMainViewBtn}
-          <span>${msg('Comments about')}</span>
+          <span>${msg('About')}</span>
           <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
                   @click=${(_e:any) => {

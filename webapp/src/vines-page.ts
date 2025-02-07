@@ -1294,7 +1294,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               </div>
             ` : html`
             <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
-              ${msg("Comments about")} "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
+              ${msg("About")} "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
               <ui5-button icon="delete" design="Transparent"
                           style="border:none; padding:0px"
                           @click=${(_e:any) => {this._currentCommentRequest = undefined;}}></ui5-button>
