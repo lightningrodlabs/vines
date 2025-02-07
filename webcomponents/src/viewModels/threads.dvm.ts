@@ -151,19 +151,22 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
-  /** */
+  /**
+   * If thread is not provided we just know peer is online and assume still in same location
+   * Peer can be online but not in any thread (thread = null)
+   */
   private storePresence(from: AgentId, thread?: ActionId | null) {
     if (this.cell.address.agentId.equals(from)) {
       return;
     }
     const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
-    let latest: [number, ActionId | null] = [currentTimeInSeconds, thread !== undefined? thread : null];
+    let newest: [number, ActionId | null] = [currentTimeInSeconds, thread !== undefined? thread : null];
     let current = this._perspective.agentPresences.get(from);
-    console.debug("storePresence()", from.short, currentTimeInSeconds, latest, current, thread);
+    console.debug("storePresence()", from.short, currentTimeInSeconds, newest, current, thread);
     if (!current) {
       /** First time presence */
-      current = latest;
-      /** Ask or share location */
+      current = newest;
+      /** Ask for location or share my location since peer might not know my location at this time */
       if (thread === undefined) {
         const locTip: ThreadsAppTip = {type: thread === undefined? "where" : "location", data: this._currentLocation};
         const serTip = this._encoder.encode(locTip);
@@ -171,13 +174,13 @@ export class ThreadsDvm extends DnaViewModel {
       }
     } else {
       /** Update only if newer */
-      if (latest[0] < current[0]) {
+      if (newest[0] < current[0]) {
         return;
       }
       if (thread === undefined) {
         current[0] = currentTimeInSeconds;
       } else {
-        current = latest;
+        current = newest;
       }
     }
     this._perspective.agentPresences.set(from, current);
@@ -269,8 +272,9 @@ export class ThreadsDvm extends DnaViewModel {
             //this.threadsZvm.storeSubject(appTip.data!);
             break;
           case "where":
+            /** Peer is asking for our location */
+            if (appTip.data) this.storePresence(from, appTip.data); // store their location
             const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
-            if (locTip.data) this.storePresence(from, locTip.data);
             const serTip = this._encoder.encode(locTip);
             await this.threadsZvm.broadcastTip({App: serTip}, [from]);
           break;

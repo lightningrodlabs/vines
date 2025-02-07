@@ -1706,6 +1706,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
               await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
               console.log("NewDmThread.publishNotifSetting()", ppAh);
             }
+          } else { // Not sure but should probably publish setting if we didn't find any
+            await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
+            console.log("NewDmThread.publishNotifSetting() None found", ppAh);
           }
           ///* auto delete since we don't want it to show up in UI */
           //await this.deleteNotification(notif.createLinkAh);
