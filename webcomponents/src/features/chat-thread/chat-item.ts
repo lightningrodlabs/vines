@@ -412,6 +412,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     const date = new Date(baseBeadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false});
+    const time_str = date.getHours() + ":" + date.getMinutes();
 
     const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(baseBeadInfo.author);
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
@@ -445,7 +446,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                       this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: baseBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
                     }}>
               ${hidemeta? html`` : renderAvatar(this._dvm.profilesZvm, baseBeadInfo.author, "S")}
-              <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px;">
+              <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px; position: relative;">
+                  <div class="${hidemeta? "no-minutes":"minutes"}" style="position: absolute;">${time_str}</div>
                   <div style="flex-grow:1;"></div>
                   <div class="vine"></div>
               </div>
@@ -658,6 +660,18 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         .linky:hover {
           text-decoration: underline;
           cursor: pointer;
+        }
+        .no-minutes {
+          padding-left:10px;
+          font-size:0px;
+          color:grey;
+          padding-top:1px;
+        }
+        .chatItem:hover .no-minutes {
+          font-size:12px;
+        }
+        .minutes {
+          font-size:0px;
         }
       `,];
   }

@@ -85,6 +85,13 @@ export async function getAssetInfo(
                 name: `File: ${manifest.description.name}`
             };
             break;
+        case ThreadsEntryType.EncryptedBead:
+            console.log("Vines/we-applet: EncryptedBead", wal);
+            return {
+                icon_src: wrapPathInSvg(mdiCommentText),
+                name: `A Private Message`
+            };
+            break;
         case ThreadsEntryType.ParticipationProtocol:
             console.log("Vines/we-applet: pp info", wal);
             console.log("Vines/we-applet: getPp()", wal.hrl[1], threadsProxy);
@@ -102,7 +109,7 @@ export async function getAssetInfo(
             // There is no zfn for getting for fetching a SemanticTopic as it is not necessary.
             return {
                 icon_src: wrapPathInSvg(mdiMessageTextOutline),
-                name: `<Unknown SemanticTopic>`
+                name: `A Semantic Topic`
             };
         break;
         // case "path": {
