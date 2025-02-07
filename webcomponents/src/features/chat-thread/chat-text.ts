@@ -9,6 +9,8 @@ import {md} from "../../markdown/md";
 import {codeStyles} from "../../markdown/code-css";
 import {TextBeadMat} from "../../viewModels/threads.materialize";
 import {ThreadsEntryType} from "../../bindings/threads.types";
+import {msg} from "@lit/localize";
+import {threadJumpEvent} from "../../events";
 
 
 /**
@@ -29,7 +31,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   override render() {
     //console.debug("<chat-text>.render()", this.hash);
     if (!this.hash) {
-      return html`<div style="color:red">No message found</div>`;
+      return html`<div style="color:red">${msg("No message found")}</div>`;
     }
 
     const tm = this._zvm.perspective.getBaseBead(this.hash) as TextBeadMat;
@@ -37,6 +39,14 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const beadInfo = this._zvm.perspective.getBeadInfo(this.hash)!;
+    const maybe = this._zvm.perspective.getEditThread(this.hash);
+    const isEdited = maybe? maybe[1].beadLinksTree.length > 0: false;
+    let editedHtml = html``;
+    if (isEdited) {
+      editedHtml = html`<span class="edited" @click=${() => {
+          this.dispatchEvent(threadJumpEvent(maybe![0]));
+      }}>${msg("(edited)")}</span>`;
+    }
     let value = this._zvm.perspective.getLatestEdit(this.hash);
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       value = tm.value;
@@ -47,7 +57,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //const parsed = result; // FOR DEBUGGING
 
     /** render all */
-    return html`<div id="chat-text" class="chatMsg">${parsed}</div>`;
+    return html`<div id="chat-text" class="chatMsg">${parsed}${editedHtml}</div>`;
   }
 
 
@@ -59,7 +69,15 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       css`
         .chatMsg {
           margin: 0px;
-        }        
+        } 
+        .edited { 
+          color:grey;
+          font-size:10px;
+        }
+        .edited:hover {
+          text-decoration: underline;
+          cursor: pointer;
+        }
       `,];
   }
 }
