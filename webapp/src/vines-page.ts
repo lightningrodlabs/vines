@@ -1431,7 +1431,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         `;
       break;
       case "topics-option":
-        lister = this.multi? html`` : html`
+        lister = html`
             <topics-lister ?collapsed=${this._collapseAll} ?alphabetical=${this._canAlphabetical}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
@@ -1502,11 +1502,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const profileCount = this._dvm.profilesZvm.perspective.agents.length;
 
     /** Show Cross-view or group-view */
-    const topLeft = this.multi? html`
-                <div style="display: flex; flex-direction: column; align-items: stretch; padding-top:12px; margin-left:10px; flex-grow:1; min-width:0; margin-bottom: 5px">
-                    <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1.25rem">${msg("DMs Cross View")}</div>
-                </div>
-    ` : html`
+    const topLeft = html`
                 <div id="group-div">
                     <ui5-avatar size="S" class="chatAvatar"
                                 @click=${() => {
@@ -1614,6 +1610,57 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const filteredInbox = this._dvm.threadsZvm.perspective.filteredInbox();
     //console.log("filteredInbox", filteredInbox);
 
+    const leftSide = this.multi? html`
+        <div id="dmSign"><ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon><div>${msg("DMs")}</div></div>
+        <div style="padding-top:12px; margin-left:10px; min-width:0; margin-bottom: 15px">
+            <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1.25rem">${msg("DMs Cross View")}</div>
+        </div>
+        <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
+          <!-- Messages -->
+          <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+              <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
+              <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+              <span style="flex-grow: 1"></span>
+              <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                          design="Transparent"
+                          style="color:grey; margin-right: 8px;"
+                          @click=${async (e: any) => {
+                            e.stopPropagation();
+                            await this.updateComplete;
+                            const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                            dialog.show();
+                          }}>
+              </ui5-button>
+          </div>
+          ${dmLister}
+          <div style="min-height: 50px"></div>
+        </div>
+    ` : html`
+        ${topLeft}
+        <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
+          ${lister}
+          ${hisLister}
+          <!-- Messages -->
+          <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+              <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
+              <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+              <span style="flex-grow: 1"></span>
+              <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                          design="Transparent"
+                          style="color:grey; margin-right: 8px;"
+                          @click=${async (e: any) => {
+                            e.stopPropagation();
+                            await this.updateComplete;
+                            const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                            dialog.show();
+                          }}>
+              </ui5-button>
+          </div>
+          ${dmLister}
+          <div style="min-height: 50px"></div>
+        </div>
+    `;
+
     /** Render all */
     return html`
         <div id="mainDiv"
@@ -1622,65 +1669,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @edit-channel-clicked=${this.onEditChannelClicked}
              @edit-topic-clicked=${this.onEditTopicClicked}>
 
-            <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}; position: relative"
-                 @contextmenu=${(e: any) => {
-                     console.log("LeftSide contextmenu", e);
-                     // e.preventDefault();
-                     // const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
-                     // const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
-                     // menu.showAt(btn);
-                     // //menu.style.top = e.clientY + "px";
-                     // //menu.style.left = e.clientX + "px";
-                 }}>
-
-                <div id="dmSign"><ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon><div>${msg("DMs")}</div></div>
-                
-                ${topLeft}
-                
-                <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
-                  ${lister}
-                    <!-- History -->
-                    <!-- <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
-                        <ui5-icon style="width: 1.2rem; height: 1.2rem" name="history"></ui5-icon>
-                        <span style="width: 1.2rem; height: 1.2rem">${msg("History")}</span>
-                        <span style="flex-grow: 1"></span>
-                    </div> -->
-                    ${hisLister}
-                  <!-- Messages -->
-                  <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
-                      <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-                      <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
-                      <span style="flex-grow: 1"></span>
-                      <ui5-button icon="add" tooltip=${msg("Message a peer")}
-                                  design="Transparent"
-                                  style="color:grey; margin-right: 8px;"
-                                  @click=${async (e: any) => {
-                                      e.stopPropagation();
-                                      await this.updateComplete;
-                                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                                      dialog.show();
-                                  }}>
-                      </ui5-button>
-                  </div>
-                  ${dmLister}
-                  <div style="min-height: 50px"></div>
-                </div>
+            <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}; position: relative">
+                ${leftSide}                
                 <div style="flex-grow: 1"></div>
-                    <!--
-                <div style="display:flex; flex-direction:row; height:44px; border:1px solid #fad0f1;background:#f1b0b0">
-                    <ui5-button design="Transparent" icon="action-settings" tooltip="Go to settings"
-                                @click=${async () => {
-                    await this.updateComplete;
-                    this.dispatchEvent(new CustomEvent<boolean>('debug', {
-                        detail: true,
-                        bubbles: true,
-                        composed: true
-                    }));
-                }}
-                    ></ui5-button>
-                    <ui5-button icon="activate" tooltip="Commit logs" design="Transparent"
-                                @click=${this.onCommitBtn}></ui5-button>
-                </div> -->
                 <div id="profile-row">
                     <div id="profile-div"
                          style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0; margin-left:2px"
