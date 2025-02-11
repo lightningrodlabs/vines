@@ -296,6 +296,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     entries.forEach((entry) => {
       this._isDmListVisible = entry.isIntersecting;
       const dmSign = this.shadowRoot!.getElementById("dmSign") as HTMLElement;
+      console.log("IntersectionObserver()", !!dmSign)
       if (dmSign) {
         dmSign.style.display = this._isDmListVisible? "none" : "flex";
       }
@@ -1121,9 +1122,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               this._threadStack.shift();
             }
           }
-          this._selectedBeadAh = e.detail.bead;
-          this._selectedAgent = e.detail.agent;
         }
+        this._selectedBeadAh = e.detail.bead;
+        this._selectedAgent = e.detail.agent;
       break;
     }
     /*await*/ this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
@@ -1247,6 +1248,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
         primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
+        const isEditOther = this._dvm.threadsZvm.isEditThreadFromPeer(this._selectedThreadHash);
         const dmThread = this._dvm.threadsZvm.isThreadDm(this._selectedThreadHash);
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
@@ -1307,6 +1309,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
             <vines-input-bar id="input-bar" contenteditable="true"
+                             style="display: ${isEditOther? "none":""}"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
@@ -2514,7 +2517,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           position: absolute;
           bottom: 70px;
           left: 90px;
-          display: block;
+          display: none;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
           padding:10px;
         }

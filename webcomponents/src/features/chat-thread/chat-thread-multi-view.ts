@@ -26,8 +26,8 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
   /** -- Properties -- */
 
-  /** Hash of agent to display */
-  @property() agent!: AgentId;
+  /** Hash of agent DMs to display */
+  @property() agent?: AgentId;
   /** Hash of bead to focus */
   @property() beadAh?: ActionId;
 
@@ -38,7 +38,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     const threads: [DnaId, ActionId][] = [];
     for (const dvm of this._dvms.values()) {
       //console.log("<chat-thread-multi-view> dvm", dvm.cell.address.dnaId);
-      const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
+      const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent!);
       if (ppAh) {
         threads.push([dvm.cell.address.dnaId, ppAh]);
       }
@@ -94,7 +94,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     /** Fetch notifSetting for current thread */
-    if (changedProperties.has("agent")) {
+    if (changedProperties.has("agent") && this.agent) {
       for (const dvm of this._dvms.values()) {
         const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
         if (!ppAh) {
@@ -165,7 +165,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
   /** */
   async loadPreviousMessages(dvm: ThreadsDvm): Promise<void> {
-    const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
+    const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent!);
     if (!ppAh) {
       return;
     }

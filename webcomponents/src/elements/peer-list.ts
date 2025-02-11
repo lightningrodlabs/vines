@@ -50,9 +50,12 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     const peers = profiles
       .map(([agentId, profile, _ts]) => {
         return html`
-          <li class="folk" style="display:flex; align-items:center">
-            <span @click=${(_e:any) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }))}>
-              ${renderProfileAvatar(profile, "S")}
+          <li class="folk" 
+              style="display:flex; align-items:center"
+              @click=${(_e:any) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }))}
+          >
+            <span>
+                ${renderProfileAvatar(profile, "S")}
               <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
                 ${profile.nickname}
               </span>

@@ -996,6 +996,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  isEditThreadFromPeer(ppAh: ActionId): boolean | null {
+    const thread = this._perspective.threads.get(ppAh);
+    if (!thread) {
+      return null;
+    }
+    if (thread.pp.subject.typeName == SpecialSubjectType.TextBead && thread.title == "EDIT") {
+        return !this.cell.address.agentId.equals(thread.author);
+    }
+    return false;
+  }
+
   /** */
   isThreadDm(ppAh: ActionId): AgentId | null {
     const thread = this._perspective.threads.get(ppAh);

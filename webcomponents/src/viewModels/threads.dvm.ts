@@ -224,7 +224,7 @@ export class ThreadsDvm extends DnaViewModel {
     const serTip = this._encoder.encode(locTip);
     //const agents = from? [from] : this.allCurrentOthers();
     const agents = to? to : this.allCurrentOthers();
-    console.log("broadcastLocation() storePresence to", agents);
+    console.log("broadcastLocation() of to", this._currentLocation, agents);
     await this.threadsZvm.broadcastTip({App: serTip}, agents);
   }
 
