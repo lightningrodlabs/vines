@@ -1019,6 +1019,11 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
+  unstoreUnreadThread(threadHash: ActionId) {
+    this.unreadThreads.delete(threadHash);
+  }
+
+  /** */
   storeAllAppletIds(ehs: EntryId[]) {
     this.appletIds = ehs;
   }

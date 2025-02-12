@@ -1411,6 +1411,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  /** */
+  unstoreUnreadThread(threadHash: ActionId) {
+    this._perspective.unstoreUnreadThread(threadHash);
+    this.notifySubscribers();
+  }
+
+
   /** -- Signaling / Notifying -- */
 
   /** */

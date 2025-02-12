@@ -756,6 +756,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   private _cachedUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map();
   private _cachedNew: HoloHashB64[] = [];
   protected override async updated(_changedProperties: PropertyValues) {
+    //console.log("<vines-page> updated()", this._dvm.threadsZvm.perspective.unreadThreads.size);
     /** ??? */
     try {
       const chatView = this.shadowRoot!.getElementById("chat-view") as ChatThreadView;
@@ -769,6 +770,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** i.e. element not present */
     }
 
+
+    /** Unmark as unread beads from currently selected thread */
+    if (this._selectedThreadHash && this._dvm.threadsZvm.perspective.unreadThreads.has(this._selectedThreadHash)) {
+      //console.log("<vines-page> Removing thread from Unreads!");
+      this._dvm.threadsZvm.unstoreUnreadThread(this._selectedThreadHash);
+    }
 
     /** Grab AssetInfo for all AnyBeads */
     if (this.weServices) {
