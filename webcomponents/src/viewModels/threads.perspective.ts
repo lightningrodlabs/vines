@@ -154,13 +154,13 @@ export class ThreadsPerspective {
   ///* name string -> ppAh */
   //private _threadsByName: Dictionary<ActionId> = {};
 
-  /** New == Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
+  /** New = Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
   newThreads: ActionIdMap<AnyId> = new ActionIdMap();
-  /** Unread subject == Has at least one unread thread */
+  /** Unread thread = Has "new" beads */
   /** ppAh -> (subjectHash, (beadAh, CreationTime)[]) */
-  unreadThreads: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap();// Unread thread == Has "new" beads
+  unreadThreads: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap(); //
 
 
   /** Things to compare when deciding to notify subscribers */
@@ -745,7 +745,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isPersistent: boolean, isNew: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
+  storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isPersistent: boolean, isUnread: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
     console.log("storeTypedBead()", beadInfo.beadType, beadAh.short, isPersistent);
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
@@ -756,7 +756,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     /** Store normal base Bead */
     this.beads.set(beadAh, [beadInfo, typedBead]);
-    this.storeBeadInThread(beadAh, beadInfo.bead.ppAh, beadInfo.creationTime, isNew, beadInfo.beadType);
+    this.storeBeadInThread(beadAh, beadInfo, isUnread, beadInfo.beadType);
     if (isPersistent) {
       this.persistentStorageMap.add(beadAh.b64);
     }
@@ -764,7 +764,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /* Store Bead in its Thread */
-  private storeBeadInThread(beadAh: ActionId, ppAh: ActionId, creationTime: Timestamp, isNew: boolean, beadType: BeadType) {
+  private storeBeadInThread(beadAh: ActionId, beadInfo: BeadInfo, isUnread: boolean, beadType: BeadType) {
+    const ppAh = beadInfo.bead.ppAh;
+    const creationTime = beadInfo.creationTime;
     console.log("storeBeadInThread()", ppAh.short, beadType, beadAh.short, creationTime, this.threads.get(ppAh));
     const thread = this.threads.get(ppAh);
     if (!thread) {
@@ -776,7 +778,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType};
     thread.addItem(blMat);
-    if (isNew) {
+    if (isUnread) {
       if (!this.unreadThreads.get(ppAh)) {
         this.unreadThreads.set(ppAh, [intoAnyId(thread.pp.subject.address), []]);
       }
@@ -904,7 +906,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** Add already stored beads */
     for (const [beadAh, [info, _typed]] of this.beads.entries()) {
       if (info.bead.ppAh.equals(ppAh)) {
-        this.storeBeadInThread(beadAh, ppAh, info.creationTime, false, info.beadType);
+        this.storeBeadInThread(beadAh, info, false, info.beadType);
       }
     }
     if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {

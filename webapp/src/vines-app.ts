@@ -122,14 +122,13 @@ export class VinesApp extends HappMultiElement {
       }
     }
     console.log("<vines-app>.ctor() pairs", pairs);
-    super(pairs, adminUrl, 20 * 1000);
+    super(pairs, isMulti? !isMulti : true, adminUrl, 20 * 1000);
     /** */
     if (appletGroups && appletGroups.length > 0) {
       this.appId = appletGroups[0]!.appId;
       this.appletView = appletGroups[0]!.appletView;
     }
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
-    this._isMulti = isMulti? isMulti : false;
   }
 
 
@@ -166,7 +165,7 @@ export class VinesApp extends HappMultiElement {
     const cell_infos = Object.values(profilesAppInfo.cell_info);
     console.log("createProfilesDvm() cell_infos:", cell_infos);
     /** Create Profiles DVM */
-    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, profilesHcl);
+    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, profilesHcl, false);
     console.log("createProfilesDvm() dvm", dvm);
     await this.setupWeProfilesDvm(dvm as ProfilesDvm, new AgentId(profilesAppInfo.agent_pub_key));
   }
@@ -478,7 +477,7 @@ export class VinesApp extends HappMultiElement {
         </div>`;
     }
 
-    console.log("<vines-app>.render() cells length:", this.cells.length);
+    console.log("<vines-app>.render() cells length:", this.cells.length, this._isMulti);
     /** Render all Single */
     if (!this._isMulti) {
       return html`

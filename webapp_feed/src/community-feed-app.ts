@@ -139,7 +139,7 @@ export class CommunityFeedApp extends HappElement {
     console.log("<community-feed-app> createProfilesDvm() cell_infos:", cell_infos);
     /** Create Profiles DVM */
     //const profilesZvmDef: ZvmDef = [ProfilesZvm, profilesZomeName];
-    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId));
+    const dvm: DnaViewModel = new profilesDef.ctor(this, profilesProxy, new HCL(profilesAppId, profilesBaseRoleName, profilesCloneId), false);
     console.log("<community-feed-app> createProfilesDvm() dvm", dvm);
     await this.setupWeProfilesDvm(dvm as ProfilesDvm, new AgentId(profilesAppInfo.agent_pub_key));
   }

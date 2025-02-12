@@ -1467,7 +1467,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         await this.fetchPp(targetAh);
         /** Notify peer of DmThread */
-        if (!isForMe && pulse.isNew) {
+        if (this.isMainView && !isForMe && pulse.isNew) {
           await this.zomeProxy.notifyPeer({content: targetAh.hash, who: forPeer.hash, event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.NewDmThread)});
         }
       }
@@ -1707,7 +1707,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (ppAh) {
          /*await*/ this.fetchPp(ppAh); // We should probably fetch it for futur use
         /** Publish a NotifySetting.AllMessages for this thread if non exists */
-        if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
+        if (this.isMainView && NotifiableEvent.NewDmThread === event && pulse.isNew) {
           const ppAh = new ActionId(notif.content.b64);
           console.log("NewDmThread notif:", ppAh, notif.createLinkAh);
           const notifSettings = this._perspective.notifSettings.get(ppAh);
@@ -1764,7 +1764,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Store Bead */
     const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;
-    await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
+    await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew && !author.equals(this.cell.address.agentId));
     /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
     if (pulse.isNew && this.cell.address.agentId.equals(from)) {
@@ -1900,7 +1900,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   private async notifyPeers(ppAh: ActionId, content: LinkableId, notifs: NotifyPeerInput[]) {
-    console.log("notifyPeers()", ppAh, notifs);
+    console.log("notifyPeers()", ppAh, notifs, this.isMainView);
+    if (!this.isMainView) {
+      // Only MainView can notify
+      return;
+    }
     /** Get latest notif settings */
     let settings = await this.pullNotifSettings(ppAh);
     /** Get alls & nevers */
