@@ -118,7 +118,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
           const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
-          const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
+          const maybeUnreadThread = this.perspective.unreads.get(ppAh);
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
           const threadIsNew = this.perspective.newThreads.has(ppAh);
           if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
@@ -128,7 +128,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
           let hasUnreadComments = false;
           if (maybeCommentThread != null) {
-            hasUnreadComments = this.perspective.unreadThreads.has(maybeCommentThread);
+            hasUnreadComments = this.perspective.unreads.has(maybeCommentThread);
           }
           //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
@@ -254,8 +254,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           /** Agregate count of unread beads on all topic's threads */
           let count = 0;
           for (const topicPpAh of topicThreads) {
-            if (this.perspective.unreadThreads.get(topicPpAh)) {
-              count += this.perspective.unreadThreads.get(topicPpAh)![1].length;
+            if (this.perspective.unreads.get(topicPpAh)) {
+              count += this.perspective.unreads.get(topicPpAh)![1].length;
             }
           }
           if (count > 0) {

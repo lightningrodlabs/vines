@@ -405,7 +405,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     this._perspective.storeAllNewThreads(newThreads);
 
     /* unreadThreads: Map new beads to their threads */
-    let unreadThreads: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap();
+    let unreadsByThread: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap();
     latest.newBeadsByThread.map(async ([pp_ah, bl]) => {
       const ppAh =  new ActionId(pp_ah);
       let maybeThread = this._perspective.threads.get(ppAh);
@@ -421,13 +421,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         return;
       }
         const subjectAddr = intoAnyId(maybeThread.pp.subject.address);
-        if (!unreadThreads.get(ppAh)) {
-          unreadThreads.set(ppAh, [subjectAddr, []]);
+        if (!unreadsByThread.get(ppAh)) {
+          unreadsByThread.set(ppAh, [subjectAddr, []]);
         }
-        unreadThreads.get(ppAh)![1].push([new ActionId(bl.beadAh), bl.creationTime]);
+        unreadsByThread.get(ppAh)![1].push([new ActionId(bl.beadAh), bl.creationTime]);
     });
-    console.log("threadsZvm.probeAllLatest() unreadThreads done", JSON.stringify(unreadThreads));
-    this._perspective.storeAllUnreadThreads(unreadThreads);
+    console.log("threadsZvm.probeAllLatest() unreadThreads done", JSON.stringify(unreadsByThread));
+    this._perspective.storeAllUnreads(unreadsByThread);
 
     /** Done */
     this.notifySubscribers();
@@ -914,6 +914,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async deleteNotification(linkAh: ActionId): Promise<void> {
     console.log("deleteNotification()", linkAh.short, this._perspective.inbox, this._perspective.inboxByThread);
+    if (!this._perspective.inbox.get(linkAh)) {
+      return;
+    }
     /** Delete all new bead notifications from same author in same thread */
     const [ppAh, notif] = this._perspective.inbox.get(linkAh)!;
     if (notif.event == NotifiableEvent.NewBead) {

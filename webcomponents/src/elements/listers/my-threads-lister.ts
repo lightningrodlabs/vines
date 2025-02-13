@@ -71,7 +71,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
       title = latestThreadName(thread.title, thread.pp, this._zvm);
-      const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
+      const maybeUnreadThread = this.perspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       const threadIsNew = this.perspective.newThreads.has(ppAh);
       console.log("<my-threads-lister>.render() thread:", thread.pp.purpose, maybeUnreadThread);
@@ -203,8 +203,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         /** Agregate count of unread beads on all subject's threads */
         let count = 0;
         for (const myThreadAh of myThreads) {
-          if (this.perspective.unreadThreads.get(myThreadAh)) {
-            count += this.perspective.unreadThreads.get(myThreadAh)![1].length;
+          if (this.perspective.unreads.get(myThreadAh)) {
+            count += this.perspective.unreads.get(myThreadAh)![1].length;
           }
         }
         if (count > 0) {

@@ -67,7 +67,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       console.log("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-      const maybeUnreadThread = this.threadsPerspective.unreadThreads.get(ppAh);
+      const maybeUnreadThread = this.threadsPerspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
       /** Determine other agent's profile */

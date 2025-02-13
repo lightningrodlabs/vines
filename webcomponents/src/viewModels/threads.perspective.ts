@@ -90,9 +90,10 @@ export type ThreadsPerspectiveComparable = {
   appletSubjectTypes: number,
   dmAgents: number,
   decBeads: number,
-  inbox: number,
   notifSettings: number,
-  unreadThreads: number,
+  inbox: number,
+  unreads: number,
+  globalProbeLogTs: number,
 };
 
 
@@ -158,9 +159,9 @@ export class ThreadsPerspective {
   /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
   newThreads: ActionIdMap<AnyId> = new ActionIdMap();
-  /** Unread thread = Has "new" beads */
+  /** Unread messages by thread. Unread thread = Has "new" beads */
   /** ppAh -> (subjectHash, (beadAh, CreationTime)[]) */
-  unreadThreads: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap(); //
+  unreads: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap();
 
 
   /** Things to compare when deciding to notify subscribers */
@@ -180,9 +181,10 @@ export class ThreadsPerspective {
       appletSubjectTypes: this.appletSubjectTypes.size,
       dmAgents: this.dmAgents.size,
       decBeads: this.decBeads.size,
-      inbox: this.inbox.size,
       notifSettings: this.notifSettings.size,
-      unreadThreads: this.unreadThreads.size,
+      inbox: this.inbox.size,
+      unreads: this.unreads.size,
+      globalProbeLogTs: this.globalProbeLogTs,
     };
     return res;
   }
@@ -524,7 +526,7 @@ export class ThreadsPerspective {
 
   /** unreadSubjects: subject has at least one unread thread */
   getUnreadSubjects(): AnyId[] {
-    let unreadSubjects = Array.from(this.unreadThreads.values()).map(([subjectId, _beads]) => subjectId);
+    let unreadSubjects = Array.from(this.unreads.values()).map(([subjectId, _beads]) => subjectId);
     /** Dedup */
     return [...new Set(unreadSubjects)];
   }
@@ -710,6 +712,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.persistentStorageMap.delete(hash);
   }
 
+
   /** */
   storeAllNewThreads(list: [ActionId, AnyId][]) {
     this.newThreads.clear();
@@ -720,10 +723,10 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeAllUnreadThreads(list: ActionIdMap<[AnyId, [ActionId, Timestamp][]]>) {
-    this.unreadThreads.clear();
+  storeAllUnreads(list: ActionIdMap<[AnyId, [ActionId, Timestamp][]]>) {
+    this.unreads.clear();
     for (const [ah, map] of list.entries()) {
-      this.unreadThreads.set(ah, map)
+      this.unreads.set(ah, map)
     }
   }
 
@@ -779,10 +782,10 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     const blMat: BeadLinkMaterialized = {creationTime, beadAh, beadType};
     thread.addItem(blMat);
     if (isUnread) {
-      if (!this.unreadThreads.get(ppAh)) {
-        this.unreadThreads.set(ppAh, [intoAnyId(thread.pp.subject.address), []]);
+      if (!this.unreads.get(ppAh)) {
+        this.unreads.set(ppAh, [intoAnyId(thread.pp.subject.address), []]);
       }
-      this.unreadThreads.get(ppAh)![1].push([beadAh, creationTime]);
+      this.unreads.get(ppAh)![1].push([beadAh, creationTime]);
     }
   }
 
@@ -792,7 +795,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     if (this.inbox.get(newNotif.createLinkAh)) {
       return;
     }
-    console.log("storeNotification()", newNotif.event, ppAh);
+    console.log("storeNotification()", newNotif.event, newNotif.createLinkAh.b64);
     this.inbox.set(newNotif.createLinkAh, [ppAh, newNotif]);
     const maybe = this.inboxByThread.get(ppAh);
     if (!maybe) {
@@ -998,7 +1001,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   /** */
   storeGlobalLog(latestGlobalLogTime: Timestamp) {
     this.globalProbeLogTs = latestGlobalLogTime;
-    this.unreadThreads.clear();
+    this.unreads.clear();
     this.newThreads.clear();
   }
 
@@ -1014,13 +1017,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       return;
     }
     thread.setLatestProbeLogTime(log.ts);
-    this.unreadThreads.delete(ppAh);
+    this.unreads.delete(ppAh);
   }
 
 
   /** */
   unstoreUnreadThread(threadHash: ActionId) {
-    this.unreadThreads.delete(threadHash);
+    this.unreads.delete(threadHash);
   }
 
   /** */
@@ -1048,7 +1051,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.inbox.clear();
     this.notifSettings.clear();
     this.newThreads.clear();
-    this.unreadThreads.clear();
+    this.unreads.clear();
     /** this.appletIds */
     this.appletIds = [];
     for (const appletId of Object.values(snapshot.appletIds)) {

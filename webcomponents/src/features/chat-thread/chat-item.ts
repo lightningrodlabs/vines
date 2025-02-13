@@ -317,7 +317,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
                        @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, baseBeadInfo.beadType, "side")}">
           </ui5-button>`;
-      const isUnread = this.threadsPerspective.unreadThreads.has(maybeCommentThread);
+      const isUnread = this.threadsPerspective.unreads.has(maybeCommentThread);
       const commentLinkColor = isUnread ? "#33A000" : "#2C74FF";
       const thread = this.threadsPerspective.threads.get(maybeCommentThread)!;
       const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");

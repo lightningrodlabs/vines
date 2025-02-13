@@ -161,7 +161,7 @@ import {SlDialog} from "@shoelace-style/shoelace";
 import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 import {
-  beadJumpEvent,
+  beadJumpEvent, catchThrottled,
   ChatThreadView,
   CommentRequest,
   CommentThreadView,
@@ -771,10 +771,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
 
-    /** Unmark as unread beads from currently selected thread */
-    if (this._selectedThreadHash && this._dvm.threadsZvm.perspective.unreadThreads.has(this._selectedThreadHash)) {
-      //console.log("<vines-page> Removing thread from Unreads!");
-      this._dvm.threadsZvm.unstoreUnreadThread(this._selectedThreadHash);
+    /** Unmark beads from currently selected thread */
+    if (this._selectedThreadHash) {
+      if (this._dvm.threadsZvm.perspective.unreads.has(this._selectedThreadHash)) {
+        console.log("<vines-page> deleteNotification selected unread", this._selectedThreadHash.b64);
+        this._dvm.threadsZvm.unstoreUnreadThread(this._selectedThreadHash);
+      }
+      const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(this._selectedThreadHash);
+      for (const [linkAh, _notif] of prevThreadNotifs) {
+        console.log("<vines-page> deleteNotification selected notif", linkAh.b64);
+        /*await*/ delay(1000).then(() => catchThrottled(this._dvm.threadsZvm.deleteNotification(linkAh))); // FOR UNKNOWN REASON Link might not be stored in chain yet, so wait a bit...
+      }
+
     }
 
     /** Grab AssetInfo for all AnyBeads */
@@ -812,7 +820,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
       }
       this._cachedNew = comparableNew;
-      const comparableUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map(Array.from(this._dvm.threadsZvm.perspective.unreadThreads.entries())
+      const comparableUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map(Array.from(this._dvm.threadsZvm.perspective.unreads.entries())
         .map(([threadId, [_subId, bead_ids]]) => [threadId.b64, bead_ids.map(([id, ts]) => [id.b64, ts])]));
       for (const [threadAhB64, bead_tuples] of Array.from(comparableUnread.entries())) {
         const threads = Array.from(this._cachedUnread.keys());
@@ -1118,6 +1126,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             /** Clear notifications on prevThread */
             const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(maybePrevThreadId);
             for (const [linkAh, _notif] of prevThreadNotifs) {
+              console.log("<vines-page> deleteNotification selected 2", linkAh.b64);
               await this._dvm.threadsZvm.deleteNotification(linkAh);
             }
           }

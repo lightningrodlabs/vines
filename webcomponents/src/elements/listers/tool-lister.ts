@@ -257,7 +257,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         //const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(ppAh);
         //const hasUnreadComments = unreadSubjects.map((id) => id.b64).includes(ppAh.b64);
         const threadIsNew = this.perspective.newThreads.has(ppAh);
-        const hasNewBeads = this.perspective.unreadThreads.has(ppAh);
+        const hasNewBeads = this.perspective.unreads.has(ppAh);
 
         /** 'new' badge to display */
         let newBadge = html``;
@@ -312,7 +312,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       console.log("<tool-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
-      const isUnread = !!maybeCommentThread && this._zvm.perspective.unreadThreads.has(maybeCommentThread);
+      const isUnread = !!maybeCommentThread && this._zvm.perspective.unreads.has(maybeCommentThread);
       const topicIsNew = newSubjects.get(pathEh.b64) != undefined;
 
       let commentButton = html``;

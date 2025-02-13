@@ -86,7 +86,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const isSelected = false;
       //const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
-      const maybeUnreadThread = this.perspective.unreadThreads.get(ppAh);
+      const maybeUnreadThread = this.perspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       const threadIsNew = this.perspective.newThreads.has(ppAh);
       if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
@@ -96,7 +96,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
       let hasUnreadComments = false;
       if (maybeCommentThread != null) {
-        hasUnreadComments = this.perspective.unreadThreads.has(maybeCommentThread);
+        hasUnreadComments = this.perspective.unreads.has(maybeCommentThread);
       }
       //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 

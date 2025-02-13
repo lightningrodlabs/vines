@@ -70,7 +70,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
       }
       console.log("<dm-multi-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-      const maybeUnreadThread = dvm.threadsZvm.perspective.unreadThreads.get(ppAh);
+      const maybeUnreadThread = dvm.threadsZvm.perspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       const threadIsNew = dvm.threadsZvm.perspective.newThreads.has(ppAh);
       /** Determine other agent's profile */

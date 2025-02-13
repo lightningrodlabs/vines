@@ -329,7 +329,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */
-      const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
+      const allCount = this._dvm.threadsZvm.perspective.unreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
       if (allCount > 0) {
         this.weServices.notifyFrame([{
           title: "New content",
