@@ -404,7 +404,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   handleMouse(event: any) {
     // Handle the back/forward button press
-    console.log('handleMouse()', event);
+    //console.log('handleMouse()', event);
     if (event.button === 4 || event.button === 5) {
       event.preventDefault();
       if (event.button === 4) { // back button
@@ -780,7 +780,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const prevThreadNotifs = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(this._selectedThreadHash);
       for (const [linkAh, _notif] of prevThreadNotifs) {
         console.log("<vines-page> deleteNotification selected notif", linkAh.b64);
-        /*await*/ delay(1000).then(() => catchThrottled(this._dvm.threadsZvm.deleteNotification(linkAh))); // FOR UNKNOWN REASON Link might not be stored in chain yet, so wait a bit...
+        /*await*/
+        delay(1000).then(() => {
+          catchThrottled(this._dvm.threadsZvm.deleteNotification(linkAh));
+          //this._dvm.threadsZvm.notifySubscribers();
+        }); // FOR UNKNOWN REASON (holochain bug?) Link record might not be available immediately even though holochain told us about it...
       }
 
     }
@@ -1952,17 +1956,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
             <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
-                <peer-list @avatar-clicked=${async (e: any) => {
-                    console.log("@avatar-clicked", e.detail)
-                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                    dialog.close();
-                    const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
-                    if (this.multi) {
-                        this.dispatchEvent(multiJumpEvent(ppAh, e.detail));
-                    } else {
-                      this.dispatchEvent(threadJumpEvent(ppAh));
-                    }
-                }}></peer-list>
+                <peer-list 
+                    @avatar-clicked=${async (e: any) => {
+                      console.log("@avatar-clicked", e.detail)
+                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                      dialog.close();
+                      const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
+                      if (this.multi) {
+                          this.dispatchEvent(multiJumpEvent(ppAh, e.detail));
+                      } else {
+                        this.dispatchEvent(threadJumpEvent(ppAh));
+                      }
+                  }}>
+                </peer-list>
                 <ui5-button
                         style="margin-top: 10px; float: right;"
                         @click=${(_e: any) => {

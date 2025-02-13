@@ -932,6 +932,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** */
     console.log("deleteNotification() unpublish", linkAh.short);
     await this.zomeProxy.unpublishNotification(linkAh.hash);
+    this.notifySubscribers();
   }
 
 
@@ -1458,8 +1459,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     switch(pulse.link_type) {
       case ThreadsLinkType.Inbox:
+        //delay(1000).then(() => {this.handleInboxLink(pulse, from); this.notifySubscribers();});
         this.handleInboxLink(pulse, from);
-      break;
+        break;
       case ThreadsLinkType.Hide:
         if (!isAuthorSelf) {
           return;
@@ -1664,9 +1666,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const isSignalFromMe = this.cell.address.agentId.equals(from);
     const isForMe = this.cell.address.agentId.equals(forAgent);
 
-    console.log("handleInboxSignal()", isLinkFromMe, isSignalFromMe, isForMe);
+    console.log("handleInboxLink()", isLinkFromMe, isSignalFromMe, isForMe, pulse.validatedBy, pulse.create_link_hash.b64);
 
-    if (!isForMe && !isLinkFromMe) {
+    if (!isForMe && !isLinkFromMe || pulse.validatedBy == ValidatedBy.None) {
       return;
     }
 
@@ -1677,18 +1679,18 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     if (StateChangeType.Delete == pulse.state) {
       //const isNew = linkInfo.state.Delete;
-      console.log("handleInboxSignal() Delete", forAgent.short, this.cell.address.agentId.short);
+      console.log("handleInboxLink() Delete", forAgent.short, this.cell.address.agentId.short);
       if (isForMe) {
         await this._perspective.unstoreNotification(pulse.create_link_hash);
       }
       return;
     }
-    /** Check if was requested by AppTip */
+    /** Check & Clear if was requested by AppTip */
     if (this._missingLinkAhs.size > 0) {
       console.debug!("handleInboxLink() this._missingLinkAhs", pulse.create_link_hash.b64, this._missingLinkAhs);
       const maybe = this._missingLinkAhs.get(pulse.create_link_hash)
       if (maybe) {
-        console.debug!("handleInboxLink() delete");
+        console.debug!("handleInboxLink() remove missing");
         (this._dvmParent as ThreadsDvm).addSignaledNotif(maybe);
         this._missingLinkAhs.delete(pulse.create_link_hash);
       }
@@ -1698,10 +1700,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         this._intervalId = undefined;
       }
     }
-    /** Create */
+    /** Form ThreadsNotification */
     const index = pulse.tag[0] as number;
     const event = getVariantByIndex(NotifiableEvent, index) as NotifiableEvent;
-    console.log("handleInboxSignal() Create", pulse.isNew, event, pulse.tag, forAgent.short);
+    console.log("handleInboxSignal() Create ThreadsNotification", pulse.isNew, event, pulse.tag, forAgent.short);
     const notif: ThreadsNotification = {
       event,
       author: pulse.author,
@@ -1717,29 +1719,31 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (ppAh) {
          /*await*/ this.fetchPp(ppAh); // We should probably fetch it for futur use
         /** Publish a NotifySetting.AllMessages for this thread if non exists */
-        if (this.isMainView && NotifiableEvent.NewDmThread === event && pulse.isNew) {
-          const ppAh = new ActionId(notif.content.b64);
-          console.log("NewDmThread notif:", ppAh, notif.createLinkAh);
-          const notifSettings = this._perspective.notifSettings.get(ppAh);
-          if (notifSettings) {
-            const notifSetting = notifSettings.get(this.cell.address.agentId);
-            if (!notifSetting) {
+        if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
+          if (this.isMainView) {
+            const ppAh = new ActionId(notif.content.b64);
+            console.log("NewDmThread notif:", ppAh, notif.createLinkAh);
+            const notifSettings = this._perspective.notifSettings.get(ppAh);
+            if (notifSettings) {
+              const notifSetting = notifSettings.get(this.cell.address.agentId);
+              if (!notifSetting) {
+                await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
+                console.log("NewDmThread.publishNotifSetting()", ppAh);
+              }
+            } else { // Not sure but should probably publish setting if we didn't find any
               await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
-              console.log("NewDmThread.publishNotifSetting()", ppAh);
+              console.log("NewDmThread.publishNotifSetting() None found", ppAh);
             }
-          } else { // Not sure but should probably publish setting if we didn't find any
-            await this.publishNotifSetting(ppAh, NotifySetting.AllMessages);
-            console.log("NewDmThread.publishNotifSetting() None found", ppAh);
+            ///* auto delete since we don't want it to show up in UI */
+            //await this.deleteNotification(notif.createLinkAh);
           }
-          ///* auto delete since we don't want it to show up in UI */
-          //await this.deleteNotification(notif.createLinkAh);
         } else {
           this._perspective.storeNotification(notif, ppAh);
         }
       }
       return;
     }
-
+    /** */
     if (!pulse.isNew || !isLinkFromMe) {
       return;
     }
@@ -1823,27 +1827,29 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
   }
 
+
+  /** Handle AppTip */
   private _missingLinkAhs: ActionIdMap<ThreadsNotificationTip> = new ActionIdMap();
   private _intervalId: any | undefined = undefined;
-
-  /** Handle notification Tip */
   override handleAppTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
     const appTip = this._decoder.decode(serTip) as ThreadsAppTip;
     if (appTip.type != "notification") {
       return;
     }
+    /** Handle Notification Tip */
     const notifTip = appTip.data;
     console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._intervalId);
     /** Poll interval until we get it from DHT */
     this._missingLinkAhs.set(notifTip.link_ah, notifTip);
     if (!this._intervalId) {
+      this.zomeProxy.probeInbox();
       this._intervalId = setInterval(() => {
-        console.log!("Polling Inbox");
+        console.log("Polling Inbox for Missing links...");
         this.zomeProxy.probeInbox();
         }, 5000);
     }
 
-    return undefined;
+    return;
 
     //let ppAh: ActionId = notifTip.pp_ah;
     // let signal: ZomeSignalProtocol | undefined = undefined;

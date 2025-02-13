@@ -85,8 +85,6 @@ export class VinesApp extends HappMultiElement {
   private _weProfilesDvm?: ProfilesDvm;
   protected _weServices?: WeServicesEx;
 
-  private _isMulti: boolean = false;
-
 
   /** -- Constructor -- */
 
@@ -477,9 +475,9 @@ export class VinesApp extends HappMultiElement {
         </div>`;
     }
 
-    console.log("<vines-app>.render() cells length:", this.cells.length, this._isMulti);
+    console.log("<vines-app>.render() cells length:", this.cells.length, this.isMainView);
     /** Render all Single */
-    if (!this._isMulti) {
+    if (this.isMainView) {
       return html`
           <cell-context .cell=${this.threadsDvm(0).cell}>
               ${guardedView}
