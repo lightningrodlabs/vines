@@ -1,10 +1,9 @@
-import {css, html, PropertyValues} from "lit";
+import {css, html, LitElement, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
   ActionId,
   delay,
   DnaElement,
-  DnaId,
   EntryId,
   HappBuildModeType,
   HoloHashType,
@@ -162,10 +161,9 @@ import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 import {
   beadJumpEvent, catchThrottled,
-  ChatThreadView,
   CommentRequest,
   CommentThreadView,
-  ConfirmDialog,
+  ConfirmDialog, determinerGroupProfile,
   doodle_flowers,
   EditTopicRequest,
   FavoritesEvent,
@@ -202,7 +200,7 @@ import {
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
-import {FrameNotification, GroupProfile, Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
+import {FrameNotification, Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -422,6 +420,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   private _debugThreadAh?: ActionId;
 
   async onCopy(e: CustomEvent<Hrl>) {
+    if (!e.detail) {
+      console.warn("Invalid copy event");
+      return;
+    }
     const hrl: Hrl = e.detail;
     const threadAh = new ActionId(hrl[1]);
     console.log("THREAD", threadAh);
@@ -756,19 +758,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   private _cachedUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map();
   private _cachedNew: HoloHashB64[] = [];
   protected override async updated(_changedProperties: PropertyValues) {
-    //console.log("<vines-page> updated()", this._dvm.threadsZvm.perspective.unreadThreads.size);
+    //console.log("<vines-page>.updated()");
     /** ??? */
     try {
-      const chatView = this.shadowRoot!.getElementById("chat-view") as ChatThreadView;
+      const chatView = this.shadowRoot!.getElementById("chat-view") as LitElement;
       const view = await chatView.updateComplete;
       //console.log("ChatView.parent.updated() ", view, chatView.scrollTop, chatView.scrollHeight, chatView.clientHeight)
-      if (!view) {
+      if (!view || this.multi) { // in multi-view, tell thread-view to update
+        //console.log("<vines-page>.updated() chatView", this.multi);
         /** Request a new update for scrolling to work */
         chatView.requestUpdate();
       }
     } catch(e:any) {
       /** i.e. element not present */
     }
+
+
+    // /** in multi-view, tell thread-view to update */
+    // if (this.multi) {
+    //     const el = this.shadowRoot!.getElementById("chat-view") as ChatThreadMultiView;
+    //     if (el) {
+    //       el.requestUpdate();
+    //     }
+    // }
 
 
     /** Unmark beads from currently selected thread */
@@ -1400,33 +1412,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("<vines-page>.render() notifSettings", notifSetting, this._selectedThreadHash);
 
     /** Group Info */
-    let groupProfile: GroupProfile = {
-      name: "Vines",
-      icon_src: "icon.png",
-    };
-
-    /* Use weServices, otherise try from dna properties */
-    if(this.weServices) {
-      const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletIds[0]!));
-      //console.log("get appletInfo", appletInfo);
-      if (appletInfo) {
-        //console.log("get groupProfile", appletInfo.groupsHashes[0]);
-        const weGroup = this.weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]!));
-        if (weGroup) {
-          groupProfile = weGroup;
-        }
-      }
-    } else {
-      if (this._dvm.dnaProperties.groupName && this._dvm.dnaProperties.groupName != "MyTeam") {
-        groupProfile.name = this._dvm.dnaProperties.groupName;
-      }
-      if (groupProfile.name == "Vines" && this._dvm.cell.dnaModifiers.network_seed) {
-        groupProfile.name = this._dvm.cell.dnaModifiers.network_seed;
-      }
-      if (this._dvm.dnaProperties.groupSvgIcon) {
-        groupProfile.icon_src = `data:image/svg+xml;base64,${this._dvm.dnaProperties.groupSvgIcon}`;
-      }
-    }
+    const groupProfile = determinerGroupProfile(this._dvm.dnaProperties, [this.weServices, 0]);
 
     /** Get network info for this cell */
     //const sId = this.cell.address.str;
@@ -1945,10 +1931,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     <search-result-panel .parameters=${searchParameters}></search-result-panel>
                                 </div>`
                             : html``}
-                    <vines-graph id="debugSide" .threadHash=${this._debugThreadAh}
-                                 style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></vines-graph>
-                    <!-- <anchor-tree id="debugSide"
-                                 style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
+                    ${HAPP_BUILD_MODE === HappBuildModeType.Retail? html`` : html`
+                      <vines-graph id="debugSide" .threadHash=${this._debugThreadAh}
+                        style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></vines-graph>
+                        <!-- <anchor-tree id="debugSide"
+                        style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
+                    `}
                 </div>
             </div>
             <!-- DIALOGS -->

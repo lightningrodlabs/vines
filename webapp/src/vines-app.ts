@@ -93,7 +93,7 @@ export class VinesApp extends HappMultiElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
-    console.log("<vines-app>.ctor()");
+    console.log("<vines-app>.ctor()", appletGroups?.length);
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
@@ -226,8 +226,8 @@ export class VinesApp extends HappMultiElement {
 
 
   /** */
-  override async hvmConstructed() {
-    console.log("<vines-app>.hvmConstructed() adminWs:", this._adminWs)
+  override async hvmsConstructed() {
+    console.log("<vines-app>.hvmsConstructed()", this.hvms.length, this._adminWs)
     this._hasHolochainFailed = false;
     /** Provide Files DVM context  */
     console.log(`\t\tProviding context "${filesContext}" | in host `, this);

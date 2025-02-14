@@ -1,10 +1,10 @@
 import {AnyBeadMat, BeadType, EntryBeadMat, TextBeadMat, TypedBeadMat} from "./viewModels/threads.materialize";
 import {FilesDvm, FileType} from "@ddd-qc/files";
-import {AppletId, Hrl, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@theweave/api";
+import {AppletId, GroupProfile, Hrl, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@theweave/api";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
-import {ParticipationProtocol, Subject, ThreadsEntryType} from "./bindings/threads.types";
+import {ParticipationProtocol, Subject, ThreadsEntryType, ThreadsProperties} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
@@ -352,4 +352,40 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
     break;
   }
   return "<unknown>";
+}
+
+
+
+
+/* Use weServices, otherwise try from dna properties */
+export function determinerGroupProfile(dnaProperties: ThreadsProperties, tuple?: [WeServicesEx, number]): GroupProfile {
+  /** weServices */
+  if(tuple && tuple[0]) {
+    const weServices = tuple[0];
+    const appletInfo = weServices.appletInfoCached(new EntryId(weServices.appletIds[tuple[1]]!));
+    //console.log("get appletInfo", appletInfo);
+    if (appletInfo) {
+      //console.log("get groupProfile", appletInfo.groupsHashes[0]);
+      const weGroup = weServices.groupProfileCached(new DnaId(appletInfo.groupsHashes[0]!));
+      if (weGroup) {
+        return weGroup;
+      }
+    }
+  }
+  /** dnaProperties */
+  let groupProfile: GroupProfile = {
+    name: "Vines",
+    icon_src: "icon.png",
+  };
+  if (dnaProperties.groupName && dnaProperties.groupName != "MyTeam") {
+    groupProfile.name = dnaProperties.groupName;
+  }
+  // if (groupProfile.name == "Vines" && _dvm.cell.dnaModifiers.network_seed) {
+  //   groupProfile.name = this._dvm.cell.dnaModifiers.network_seed;
+  // }
+  if (dnaProperties.groupSvgIcon) {
+    groupProfile.icon_src = `data:image/svg+xml;base64,${dnaProperties.groupSvgIcon}`;
+  }
+
+  return groupProfile;
 }

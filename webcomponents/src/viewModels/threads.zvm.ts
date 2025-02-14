@@ -800,8 +800,33 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
-  async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<[TypedBead, BeadType, Timestamp, AgentId] | null> {
+  async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
     console.log("fetchUnknownBead()", beadAh.short);
+    /** Return info if bead already stored */
+    if (this._perspective.getBeadInfo(beadAh)) {
+      return;
+    }
+    /** */
+    let bead_ah = beadAh.hash;
+    const textTuple = await catchThrottled(this.zomeProxy.fetchTextBead(bead_ah));
+    if (textTuple == null) {
+      const entryTuple = await catchThrottled(this.zomeProxy.fetchEntryBead(bead_ah));
+      if (entryTuple == null) {
+        const anyTuple = await catchThrottled(this.zomeProxy.fetchAnyBead(bead_ah));
+        if (anyTuple == null) {
+          const maybe = await catchThrottled(this.zomeProxy.fetchEncBead(bead_ah));
+          if (!maybe) {
+            console.warn(`Bead not found at hash ${beadAh.b64}`);
+          }
+        }
+      }
+    }
+  }
+
+
+  /** */
+  async mustFetchUnknownBead(beadAh: ActionId): Promise<[TypedBead, BeadType, Timestamp, AgentId] | null> {
+    console.log("mustFetchUnknownBead()", beadAh.short);
     const beadInfo = this._perspective.getBeadInfo(beadAh);
     /** Return info if bead already stored */
     if (beadInfo) {
@@ -966,7 +991,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (maybeBeadInfo) {
         return maybeBeadInfo.bead.ppAh;
       }
-      const maybe = await this.fetchUnknownBead(notif.content);
+      const maybe = await this.mustFetchUnknownBead(notif.content);
       if (!maybe) {
         return null;
       }
@@ -1059,7 +1084,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     } else {
       const bead = (typedBead as TypedBaseBeadMat).bead;
       beadInfo = {creationTime, author, beadType, bead} as BeadInfo;
-      console.log("storeBead()", beadAh, bead.ppAh, typedBead, author);
+      console.log("storeTypedBead()", beadAh, bead.ppAh, typedBead, author);
       /** Check and fetch prevBead */
       const prev = this._perspective.beads.get(beadInfo.bead.prevBeadAh);
       if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
@@ -1712,7 +1737,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       content: ActionId.from(pulse.target),
     };
     /** I got notified by a peer */
-    if (isForMe) {
+    if (isForMe && this.isMainView) {
       /** Store Notification */
       const ppAh = await this.fetchPpAhFromNotification(notif);
       /** make sure we have the content signaled in the notification */
@@ -1840,13 +1865,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const notifTip = appTip.data;
     console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._intervalId);
     /** Poll interval until we get it from DHT */
-    this._missingLinkAhs.set(notifTip.link_ah, notifTip);
-    if (!this._intervalId) {
-      this.zomeProxy.probeInbox();
-      this._intervalId = setInterval(() => {
-        console.log("Polling Inbox for Missing links...");
+    if (this.isMainView && !this._missingLinkAhs.has(notifTip.link_ah)) {
+      this._missingLinkAhs.set(notifTip.link_ah, notifTip);
+      if (!this._intervalId) {
         this.zomeProxy.probeInbox();
+        this._intervalId = setInterval(() => {
+          console.log("Polling Inbox for Missing links...");
+          this.zomeProxy.probeInbox();
         }, 5000);
+      }
     }
 
     return;

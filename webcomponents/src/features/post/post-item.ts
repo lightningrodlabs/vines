@@ -21,7 +21,6 @@ import {toasty} from "../../toast";
 import {NotifySetting, ThreadsEntryType} from "../../bindings/threads.types";
 import {favoritesJumpEvent, ShowProfileEvent, VinesInputEvent} from "../../events";
 import {Thread} from "../../viewModels/thread";
-import {catchThrottled} from "../../viewModels/threads.zvm";
 
 
 /**
@@ -81,7 +80,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     console.log("<post-item>.loadPost()")
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     if (!beadInfo) {
-      await catchThrottled(this._dvm.threadsZvm.fetchUnknownBead(this.hash));
+      await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     }
     await this._dvm.threadsZvm.pullEmojiReactions(this.hash);
     const commentThreadAh = await this.getCommentThread();
