@@ -1602,7 +1602,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; border-radius: 10px; margin-right: 5px">
                     <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => this._collapseAll = false}></ui5-button>                    
                     <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => this._collapseAll = true}></ui5-button>
-                    <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" style="height:18px;" tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
+                    <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" 
+                                style="height:18px;" 
+                                tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} 
+                                @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
                     <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" 
                                 tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Topics & Channels")} 
                                 @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>

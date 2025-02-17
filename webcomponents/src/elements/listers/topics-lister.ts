@@ -80,6 +80,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       pairs = pairs.sort((a, b) => {
         return a[1][0].localeCompare(b[1][0]);
       });
+    } else {
+      pairs = pairs.reverse();
     }
     let treeItems = pairs.map(([topicAh, [title, author]]) => {
       const isSubjectHidden = this._zvm.perspective.hiddens[topicAh.b64]? this._zvm.perspective.hiddens[topicAh.b64] : false;
@@ -105,7 +107,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           topicThreads = topicThreads.sort((a, b) => {
             const nameA = this.perspective.threads.get(a)!.creationTime
             const nameB = this.perspective.threads.get(b)!.creationTime;
-            return nameA - nameB
+            return nameB - nameA
           });
         }
         threads = topicThreads.map((ppAh) => {
