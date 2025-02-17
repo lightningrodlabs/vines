@@ -1525,8 +1525,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           popover.showAt(btn);
                         }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem;color:#1B2A39DB">${groupProfile.name}</div>
-                        <div style="font-size: 0.66rem;color:grey; text-decoration: underline;"><ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
-                            ${profileCount} ${msg('Members')}
+                        <div style="font-size: 0.66rem;color:grey; text-decoration: underline;">
+                            <ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
+                            <span id="membersCount" @click=${async (e: any) => {
+                                e.stopPropagation();
+                                await this.updateComplete;
+                                const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
+                                dialog.show();
+                            }}>
+                                ${profileCount} ${msg('Members')}
+                            </span>
                         </div>
                     </div>
                     <ui5-button id="shareBtn" icon="share-2" tooltip=${msg("Share Network")}
@@ -1957,6 +1965,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-dialog id="wait-dialog">
                 <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
+            <ui5-dialog id="view-agents-dialog" header-text=${msg('Members')}>
+                <peer-list
+                        @avatar-clicked=${async (e: any) => {
+                            e.stopPropagation();
+                            console.log("@avatar-clicked", e.detail);
+                            this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: e.detail, x: window.innerWidth/2, y: window.innerHeight/2}, bubbles: true, composed: true}));}}>
+                        }}>
+                </peer-list>
+                <ui5-button
+                        style="margin-top: 10px; float: right;"
+                        @click=${(_e: any) => {
+                            const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
+                            dialog.close()
+                        }}>
+                    Cancel
+                </ui5-button>
+            </ui5-dialog>
+            <!-- -->
             <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
                 <peer-list 
                     @avatar-clicked=${async (e: any) => {
@@ -2466,7 +2492,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         }
 
-
+        #membersCount:hover {
+          color:black;
+        }
         #topicBar ui5-button:hover {
           background: #e6e6e6;
         }
