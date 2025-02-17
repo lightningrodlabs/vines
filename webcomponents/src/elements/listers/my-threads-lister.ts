@@ -216,7 +216,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const subjectHasUnreads = unreadSubjects.map((id) => id.b64).includes(subjectId.b64);
 
     if (threads.length == 0) {
-      threads = [html`<div class="threadItem">
+      threads = [html`<div class="threadItem" style="background: #F6FAFC; cursor: default">
                    <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No channels found')}</span>
               </div>`];
     }
