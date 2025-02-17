@@ -2008,7 +2008,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
                 <section>
                     <div>
-                        <ui5-label for="topicTitleInput" required>${msg("Title")}:</ui5-label>
+                        <ui5-label for="topicTitleInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="topicTitleInput" @keydown=${(e: any) => {
                             if (e.keyCode === 13) {
                                 e.preventDefault();
@@ -2031,7 +2031,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-dialog id="edit-channel-dialog" header-text=${msg('Edit Channel Title')}>
                 <section>
                     <div>
-                        <ui5-label for="editChannelTitleInput" required>${msg("Title")}:</ui5-label>
+                        <ui5-label for="editChannelTitleInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="editChannelTitleInput" @keydown=${(e: any) => {
                             if (e.keyCode === 13) {
                               e.preventDefault();
@@ -2055,7 +2055,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
                 <section>
                     <div>
-                        <ui5-label for="editTopicTitleInput" required>${msg("Title")}:</ui5-label>
+                        <ui5-label for="editTopicTitleInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="editTopicTitleInput" @keydown=${(e: any) => {
                             if (e.keyCode === 13) {
                                 e.preventDefault();
@@ -2079,7 +2079,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-dialog id="create-thread-dialog" header-text=${msg("Create new channel")}>
                 <section>
                     <div>
-                        <ui5-label for="threadPurposeInput" required>${msg("Purpose")}:</ui5-label>
+                        <ui5-label for="threadPurposeInput">${msg("Purpose")}:</ui5-label>
                         <ui5-input id="threadPurposeInput"
                                    @keydown=${async (e: any) => {
                                        if (e.keyCode === 13) {

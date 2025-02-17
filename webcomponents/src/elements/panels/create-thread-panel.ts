@@ -84,7 +84,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
     return html`
       <section>
           <div>
-            <ui5-label for="purposeInput" required>${msg("Purpose")}:</ui5-label>
+            <ui5-label for="purposeInput">${msg("Purpose")}:</ui5-label>
             <ui5-input id="purposeInput" value=${msg('comment')}></ui5-input>
           </div>
           <div>
