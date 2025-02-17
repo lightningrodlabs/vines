@@ -441,7 +441,7 @@ export class InputBar extends LitElement {
     let walElem = html``;
     if (this._wal) {
       walElem = html`
-          <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc;">
+          <div style="margin-left: 35px; height: 35px; margin-top: 5px; color: #4141cc;">
               <wurl-link wurl="${weaveUrlFromWal(this._wal)}"></wurl-link>
               <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
                           @click=${(_e:any) => this._wal = undefined}></ui5-button>
