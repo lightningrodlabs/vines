@@ -397,7 +397,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>`
       : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
     }
-            <ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link"></ui5-menu-item>
+            ${this.weServices
+                    ? html`<ui5-menu-item id="intoHrl" text=${msg("Add Message to Pocket")}></ui5-menu-item>`
+                    : html`<ui5-menu-item id="intoHrl" text=${msg("Copy Message Link")} icon="chain-link"></ui5-menu-item>`}
             <ui5-menu-item id="copyText" disabled text=${msg("Copy Text")} icon="copy"></ui5-menu-item>
             <ui5-menu-item id="flagMessage" disabled text=${msg("Report Message")} icon="flag"></ui5-menu-item>
         </ui5-menu>

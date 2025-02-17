@@ -299,7 +299,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     if (baseBeadInfo.beadType == ThreadsEntryType.AnyBead) {
       item = html`<chat-wal class="${itemClass}" .hash=${this.hash}></chat-wal>`;
-      downloadItem = html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
+      downloadItem = this.weServices
+        ? html`<ui5-menu-item id="downloadItem" text=${msg("Add WAL to Pocket")}></ui5-menu-item>`
+        : html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
     }
     /** Determine the comment button to display depending on current comments for this message */
     const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
@@ -489,13 +491,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <ui5-menu-item id="addReaction" icon="feedback" text=${msg("Add Reaction")} ></ui5-menu-item>
                 ${isFavorite
                         ? html`<ui5-menu-item id="removeFavorite" icon="favorite" text=${msg("Remove from favorites")}></ui5-menu-item>`
-                        : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`
-                }
+                        : html`<ui5-menu-item id="addFavorite" icon="add-favorite" text=${msg("Add to favorite")}></ui5-menu-item>`}
                 ${hasComments
                         ? html`<ui5-menu-item id="viewComments" icon="discussion" text=${msg("View comment thread")} ></ui5-menu-item>`
-                        : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create new comment thread")}></ui5-menu-item>`
-                }
-                <ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>
+                        : html`<ui5-menu-item id="createCommentThread" icon="sys-add" text=${msg("Create new comment thread")}></ui5-menu-item>`}
+                ${this.weServices
+                      ? html`<ui5-menu-item id="intoHrl" text=${msg("Add Message to Pocket")}></ui5-menu-item>`
+                      : html`<ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>`}
                 ${downloadItem}
                 <ui5-menu-item id="flagMessage" disabled icon="flag" text=${msg("Report Message")}></ui5-menu-item>
 

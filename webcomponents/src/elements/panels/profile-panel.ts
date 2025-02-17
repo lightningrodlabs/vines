@@ -76,7 +76,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div style="display: flex; flex-direction:row; align-items:center;">
               <h3>${this._profile.nickname}</h3>
               <div style="flex-grow:1;"></div>
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash.b64} 
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${msg("AgentPubKey") + ": " + this.hash.b64} 
                           @click=${(_e:any) => {
                             navigator.clipboard.writeText(this.hash.b64); 
                             toasty(msg("Copied AgentPubKey to clipboard"));

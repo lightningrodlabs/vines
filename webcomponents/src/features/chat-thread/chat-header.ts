@@ -78,7 +78,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <h2 style="display: flex; align-items: center">
               ${profile.nickname}
               ${copyBtn}
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent.b64} @click=${(_e:any) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
+              <ui5-button icon="number-sign" design="Transparent" tooltip=${msg("AgentPubKey") + ": " + otherAgent.b64}
+                          @click=${(_e:any) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));
+                          }}>
+              </ui5-button>
           </h2>
           <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b>${groups}</div>
         </div>
