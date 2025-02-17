@@ -8,8 +8,6 @@ import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
-import {Hrl} from "@theweave/api/dist/types";
-import {intoHrl} from "@ddd-qc/we-utils";
 import {latestThreadName} from "../../utils";
 
 
@@ -199,13 +197,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                     ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                                 style="border:none;display: none"
                                 @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
-                    <ui5-button icon="chain-link" tooltip=${msg("Copy Channel Link")} design="Transparent"
-                                style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                                @click=${(e:any) => {
-                                    e.stopPropagation(); e.preventDefault();
-                                    const hrl: Hrl = intoHrl(this.cell.address.dnaId, ppAh);
-                                    this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}));
-                                }}></ui5-button>
+                    <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
+                                     style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>
                     ${hideShowBtn}                  
                     ${commentButton}
                 </div>
@@ -374,6 +367,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           padding-bottom: 20px;
         }
 
+        .subjectBadge {
+          margin-top: 10px !important;
+        }
+        
         ui5-panel {
           display: flex;
           flex-direction: column;
@@ -403,15 +400,20 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           background: #33A000;
         }
 
+        ui5-panel::part(header) > copy-wal-button {
+          border: 1px solid black;
+          background: #33A000;
+        }
+        
+        
+      
         ui5-panel::part(header):hover > ui5-button {
           display: block !important;
         }
-
         
-        .subjectBadge {
-          margin-top: 10px !important;
+        ui5-panel::part(header):hover > copy-wal-button {
+          display: block !important;
         }
-        
       `,
 
     ];

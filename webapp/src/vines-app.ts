@@ -392,6 +392,9 @@ export class VinesApp extends HappMultiElement {
                 // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
                 view = html`<chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
               break
+            case ThreadsEntryType.SemanticTopic:
+              view = html`<div>{SemanticTopic}</div>`
+              break
             default:
               throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);
           }

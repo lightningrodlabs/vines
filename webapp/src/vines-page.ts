@@ -478,7 +478,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onArchive(e: CustomEvent<HideEvent>) {
-    const verb = e.detail.hide? msg("Archive") : msg("Unarchive");
+    const verb = e.detail.hide? msg("Hide") : msg("Unhide");
     const dialog = this.shadowRoot!.getElementById("confirm-hide-topic") as ConfirmDialog;
     /** DM */
     if (e.detail.address.hashType == HoloHashType.Agent) {
@@ -487,10 +487,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this.addEventListener('confirmed', async (_f) => {
         if (e.detail.hide) {
           await this._dvm.threadsZvm.hideDmThread(agentId);
-          toasty(msg(`DM channel archived`));
+          toasty(msg(`DM channel hidden`));
         } else {
           await this._dvm.threadsZvm.unhideDmThread(agentId);
-          toasty(msg("DM channel unarchived"));
+          toasty(msg("DM channel unhidden"));
         }
       });
       dialog.open();
@@ -503,10 +503,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
         await this._dvm.threadsZvm.hideSubject(dhtId);
-        toasty(`${type} ${msg("archived")}`);
+        toasty(`${type} ${msg("hidden")}`);
       } else {
         await this._dvm.threadsZvm.unhideSubject(dhtId);
-        toasty(`${type} ${msg("Unarchived")}`);
+        toasty(`${type} ${msg("unhidden")}`);
       }
     });
     dialog.open();
@@ -1603,7 +1603,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => this._collapseAll = false}></ui5-button>                    
                     <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => this._collapseAll = true}></ui5-button>
                     <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" style="height:18px;" tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
-                    <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" tooltip=${msg("View/Hide Archived")} @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
+                    <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" 
+                                tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Topics & Channels")} 
+                                @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
                     <ui5-button icon="accept" design="Transparent" style="height:18px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
                     ${this._listerToShow == "topics-option" ? html`
                         <ui5-button icon="add" design="Transparent" style="height:18px;" tooltip=${msg("Create new Topic")} 

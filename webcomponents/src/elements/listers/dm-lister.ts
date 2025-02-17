@@ -8,8 +8,6 @@ import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderProfileAvatar} from "../../render";
 import {sharedStyles} from "../../styles";
-import {Hrl} from "@theweave/api/dist/types";
-import {intoHrl} from "@ddd-qc/we-utils";
 
 
 /**
@@ -123,13 +121,8 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${badge}
                     ${renderProfileAvatar(otherProfile, 'XS')}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
-                    <ui5-button icon="chain-link" tooltip=${msg("Copy Channel Link")} design="Transparent"
-                                style="border:none; display:none;"
-                                @click=${(e:any) => {
-                                    e.stopPropagation(); e.preventDefault();
-                                    const hrl: Hrl = intoHrl(this.cell.address.dnaId, ppAh);
-                                    this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}));
-                                }}></ui5-button>
+                    <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
+                                     style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>
                     ${hideShowBtn}
                 </div>
               </sl-tooltip>

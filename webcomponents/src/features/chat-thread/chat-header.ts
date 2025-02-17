@@ -13,8 +13,6 @@ import {beadJumpEvent, SpecialSubjectType} from "../../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../../styles";
 import {toasty} from "../../toast";
-import {Hrl} from "@theweave/api/dist/types";
-import {intoHrl} from "@ddd-qc/we-utils";
 import {PropertyValues} from "lit/development";
 
 
@@ -61,13 +59,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   renderDmThreadHeader(otherAgent: AgentId) {
     console.log("renderDmThreadHeader()", otherAgent, this.cell.address.dnaId.print());
     const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
-    const copyBtn = html`
-        <ui5-button icon="chain-link" design="Transparent" tooltip=${msg('Copy DM channel to clipboard')} @click=${(e:any) => {
-          e.stopPropagation(); e.preventDefault();
-          const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.threadHash!);
-          this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
-        }}></ui5-button>
-    `;
+    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${msg('DM channel')}></copy-wal-button>`;
     if (!profile) {
       console.warn("No profile found");
       return html``;
@@ -83,7 +75,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id="chat-header">
           ${renderProfileAvatar(profile, "L")}
-          <h2>
+          <h2 style="display: flex; align-items: center">
               ${profile.nickname}
               ${copyBtn}
               <ui5-button icon="number-sign" design="Transparent" tooltip=${otherAgent.b64} @click=${(_e:any) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));}}></ui5-button>
@@ -120,13 +112,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const subjectId = ActionId.from(this._latestSubjectId!);
     let title: TemplateResult<1>;
     let subText: TemplateResult<1>;
-    const copyBtn = html`
-        <ui5-button icon="chain-link" design="Transparent" tooltip=${msg('Copy channel to clipboard')} @click=${(e:any) => {
-            e.stopPropagation(); e.preventDefault();
-            const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.threadHash!);
-            this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
-        }}></ui5-button>      
-    `;
+    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${msg('channel')}></copy-wal-button>`;
+
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
     const threadName = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
     if (maybeSemanticTopicTitle) {
@@ -183,11 +170,21 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         h2 {
           line-height: 44px;
           margin: 3px 0px 3px 0px;
+          display: flex; 
+          align-items: center; 
+          gap: 15px;
         }
         h2 > ui5-button {
           display: none;
         }
         h2:hover > ui5-button {
+          display: inline-block;
+        }
+
+        h2 > copy-wal-button {
+          display: none;
+        }
+        h2:hover > copy-wal-button {
           display: inline-block;
         }
         

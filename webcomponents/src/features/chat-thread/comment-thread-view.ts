@@ -4,7 +4,6 @@ import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, DnaId, DnaElement, intoDhtId} from "@ddd-qc/lit-happ";
 
 import {WAL} from "@theweave/api";
-import {Hrl} from "@theweave/api/dist/types";
 
 import {FilesDvm} from "@ddd-qc/files";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
@@ -356,13 +355,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
               ${subjectPrefix} ${subjectName}
             </span>
           </sl-tooltip>
-          <ui5-button icon="chain-link" design="Transparent" tooltip=${msg('Copy comment thread link to clipboard')}
-                      style="margin-left:5px;"
-                      @click=${(e:any) => {
-                          e.stopPropagation(); e.preventDefault();
-                          const hrl: Hrl = intoHrl(this.cell.address.dnaId, this.threadHash!);
-                          this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
-          }}></ui5-button>
+            <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}
+                             style="margin-left:5px;"></copy-wal-button>
         </h3>
         <!-- thread -->
         <div id="list" @show-profile=${(e:any) => console.log("onShowProfile div", e)}>

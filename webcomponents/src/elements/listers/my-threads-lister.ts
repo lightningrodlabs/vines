@@ -138,7 +138,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                                 class="showBtn"
                                 @click=${async (_e:any) => {
           await this._zvm.hideSubject(ppAh);
-          toasty(`${msg("Archived Subject")} "${thread.title}"`);
+          toasty(`${msg("Hidden Subject")} "${thread.title}"`);
         }}></ui5-button>`;
 
       return html`

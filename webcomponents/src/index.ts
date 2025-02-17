@@ -10,6 +10,7 @@ export * from './elements/emoji-bar';
 export * from './elements/input-bar';
 export * from './elements/wurl-link';
 export * from './elements/peer-list';
+export * from './elements/copy-wal-button';
 export * from './elements/graph';
 
 export * from './features/chat-thread/side-item';

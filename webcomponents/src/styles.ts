@@ -150,6 +150,10 @@ export const sharedStyles = css`
     display: block !important;
   }
 
+  .threadItem:hover > copy-wal-button {
+    display: block !important;
+  }
+  
   chat-item:hover {
     background: #d8e2f6;
   }
