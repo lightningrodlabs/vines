@@ -11,7 +11,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {AnyIdMap, latestThreadName} from "../../utils";
+import {AnyIdMap} from "../../utils";
 import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../events";
 import {Thread} from "../../viewModels/thread";
@@ -70,7 +70,13 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-      title = latestThreadName(thread.title, thread.pp, this._zvm);
+
+      //title = latestThreadName(thread.title, thread.pp, this._zvm);
+      const curSubjectId = intoAnyId(thread.pp.subject.address);
+      const latestSubjectId = this._zvm.perspective.getLatestSubject(curSubjectId);
+      const latestSubject = this._zvm.perspective.subjects.get(latestSubjectId.b64)!;
+      title = latestSubject.name;
+
       const maybeUnreadThread = this.perspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
       const threadIsNew = this.perspective.newThreads.has(ppAh);

@@ -1618,8 +1618,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const filteredInbox = this._dvm.threadsZvm.perspective.filteredInbox();
     //console.log("filteredInbox", filteredInbox);
 
+
+    const dmSign = html`<div id="dmSign" style="cursor: pointer" @click=${() => {
+        const div = this.shadowRoot!.getElementById("listerGroup") as HTMLElement;
+        if (div) {
+            div.scrollTop = div.scrollHeight - div.clientHeight;
+        }
+    }}><ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon><div>${msg("DMs")}</div></div>`;
+
     const leftSide = this.multi? html`
-        <div id="dmSign"><ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon><div>${msg("DMs")}</div></div>
+        ${dmSign}
         <div style="padding-top:12px; margin-left:10px; min-width:0; margin-bottom: 15px">
             <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1.25rem">${msg("DMs Cross View")}</div>
         </div>
@@ -1645,6 +1653,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </div>
     ` : html`
         ${topLeft}
+        ${dmSign}
         <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
           ${lister}
           ${hisLister}
