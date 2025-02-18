@@ -26,11 +26,11 @@ export class FavoritesItem extends LitElement {
     return html`
         <div id="main" style="position: relative;">
             <div style="display: flex; flex-direction: row-reverse; gap: 10px; position: absolute; top: 10px; right: 10px;">
-              <ui5-button style="" @click=${(e:any) => {
-                  e.stopPropagation(); e.preventDefault();
-                  this.dispatchEvent(beadJumpEvent(this.hash));
-              }}>
-                 ${msg("View in channel")}
+              <ui5-button @click=${(e:any) => {
+                            e.stopPropagation(); e.preventDefault();
+                            this.dispatchEvent(beadJumpEvent(this.hash));
+                        }}>
+                 ${msg("Jump")}
               </ui5-button>
               <ui5-button icon="favorite" tooltip=${msg("Remove from favorites")}
                           style="color:#FFBF00"

@@ -10,7 +10,7 @@ import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {determineSubjectPrefix, latestThreadName} from "../../utils";
+import {latestThreadName} from "../../utils";
 
 import "../../elements/input-bar";
 import {consume} from "@lit/context";
@@ -266,7 +266,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
     const subjectName = this.subjectName? this.subjectName : latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
-    const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
+    //const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
     // const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
     // const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";

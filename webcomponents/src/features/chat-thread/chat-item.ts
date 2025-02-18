@@ -25,7 +25,7 @@ import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../../toast";
-import {popoverStyleTemplate} from "../../styles";
+//import {popoverStyleTemplate} from "../../styles";
 import {determineBeadName} from "../../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -111,11 +111,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected override async updated(_changedProperties: PropertyValues) {
-    /** Fiddle with shadow CSS */
-    const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
-    if (popover) {
-      popover.shadowRoot!.appendChild(popoverStyleTemplate.content.cloneNode(true));
-    }
+    // /** Fiddle with shadow CSS */
+    // const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
+    // if (popover) {
+    //   popover.shadowRoot!.appendChild(popoverStyleTemplate.content.cloneNode(true));
+    // }
   }
 
 
@@ -426,17 +426,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         <!-- main horizontal div (row) -->
         <div id=${"chat-item__" + this.hash.b64} class="chatItem"
              @mouseenter=${(_e:any) => {
-                 const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
-                 const anchor = this.shadowRoot!.getElementById("nameEnd") as HTMLElement;
-                 if (popover && anchor) {
-                     popover.showAt(anchor);
-                 }
+                 const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
+                 popover.style.display = "block";
+                 // const anchor = this.shadowRoot!.getElementById("nameEnd") as HTMLElement;
+                 // if (popover && anchor) {
+                 //     popover.showAt(anchor);
+                 // }
               }}
              @mouseleave=${(_e:any) => {
-               const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
-                 if (popover) {
-                   popover.close();
-                 }
+               const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
+                 popover.style.display = "none";
+                 // if (popover) {
+                 //   popover.close();
+                 // }
              }}>
             <!-- avatar column -->
             <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;"
@@ -452,7 +454,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
               </div>
             </div>
             <!-- message column -->
-            <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto">
+            <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto; position: relative">
                 <div id="nameRow" style="display:flex; flex-direction:row; align-items: flex-end">
                     ${hidemeta? html`` : html`
                         <span id="agentName">${agentName}</span>
@@ -472,7 +474,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->
-            ${this.nomenu || !isPersistent ? html`` : html`<ui5-popover id="buttonsPop" hide-arrow allow-target-overlap placement-type="Left" style="min-width: 0px;">${sideButtons}</ui5-popover>`}
+            ${this.nomenu || !isPersistent ? html`` : html`<div id="buttonsPop">${sideButtons}</div>`}
             <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                 <emoji-picker class="light" style="display: block"
                               @emoji-click=${(event: any) => {
@@ -540,14 +542,21 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           cursor: pointer;
         }
 
-        #buttonsPop::part(content) {
-          padding: 0px;
+        #buttonsPop {
+          padding: 1px 2px 1px 2px;
+          border-radius: 8px;
+          border: 1px solid #29538a;
+          display: none;
+          background: rgba(255, 255, 255, 0.95);
+          position: absolute;
+          top: 5px;
+          right: 5px;
         }
 
         #agentName {
           font-family: "72";
           font-weight: bold;
-          color: rgba(38, 38, 38, 0.89);
+          color: rgba(38, 38, 38, 0.9);
         }
 
         #bottomLeft {
@@ -618,7 +627,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           background-color: rgba(222, 222, 222, 0.33);
           z-index: 800;
         }
-        
+
         .chatItem {
           display: flex;
           flex-direction: row;
@@ -660,17 +669,20 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           text-decoration: underline;
           cursor: pointer;
         }
+
         .no-minutes {
-          padding-left:10px;
-          font-size:0px;
-          color:grey;
-          padding-top:1px;
+          padding-left: 10px;
+          font-size: 0px;
+          color: grey;
+          padding-top: 1px;
         }
+
         .chatItem:hover .no-minutes {
-          font-size:12px;
+          font-size: 12px;
         }
+
         .minutes {
-          font-size:0px;
+          font-size: 0px;
         }
       `,];
   }
