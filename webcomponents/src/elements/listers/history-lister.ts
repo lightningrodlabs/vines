@@ -189,7 +189,10 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
     /** render all */
     return html`
         <ui5-panel ?collapsed=${this.collapsed}
-                   @toggle=${(e:any) => {console.log("<history-lister> TOGGLED", e.target.collapsed); this.collapsed = e.target.collapsed}}>
+                   @toggle=${(e:any) => {
+                     //console.log("<history-lister> TOGGLED", e.target.collapsed); 
+                     this.collapsed = e.target.collapsed;                      
+                   }}>
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
                 <span style="width: 1.2rem; height: 1.2rem">${msg("History")}</span>
             </div>

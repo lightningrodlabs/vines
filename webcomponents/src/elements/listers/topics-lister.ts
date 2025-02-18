@@ -1,7 +1,7 @@
 import {css, html, /*PropertyValues,*/ TemplateResult} from "lit";
 import {consume} from "@lit/context";
-import {customElement, property} from "lit/decorators.js";
-import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
+import {customElement, property, state} from "lit/decorators.js";
+import {ActionId, ActionIdMap, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
@@ -27,7 +27,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
   /** -- Properties -- */
 
   @property({type: Boolean}) history?: boolean = false;
-  @property({type: Boolean}) collapsed?: boolean = false;
+
   @property({type: Boolean}) alphabetical?: boolean = false;
 
   @property() showArchivedTopics?: string;
@@ -54,9 +54,13 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
   // }
 
 
+  @state() collapsed: ActionIdMap<boolean> = new ActionIdMap<boolean>();
+
   /** */
   collapseAll(canCollapse: boolean): void {
-    this.collapsed = canCollapse;
+    //console.log("<topics-lister> collapseAll", canCollapse);
+    this.collapsed.forEach((_v, k, map) => {map.set(k, canCollapse)} );
+    this.requestUpdate();
   }
 
 
@@ -299,9 +303,19 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
 
       /** render topic item */
       console.log("<topics-lister> collapsed", this.collapsed);
+      let collapsed = false;
+      if (this.collapsed.get(topicAh)) {
+        collapsed = this.collapsed.get(topicAh)!;
+      }  else {
+        this.collapsed.set(topicAh, false);
+      }
       return html`
-          <ui5-panel id=${topicAh.b64} ?collapsed=${this.collapsed}
-                     @toggle=${(e:any) => {console.log("<topics-lister> TOGGLED", e.target.collapsed); this.collapsed = e.target.collapsed}}
+          <ui5-panel id=${topicAh.b64} ?collapsed=${collapsed}
+                     @toggle=${(e:any) => {
+                       //console.log("<topics-lister> TOGGLED", e.target.collapsed);
+                       this.collapsed.set(topicAh, e.target.collapsed);
+                       this.requestUpdate();
+                     }}
                      @mouseover=${(_e:any) => {
                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);

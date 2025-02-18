@@ -236,7 +236,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** render subject sub-lister */
     return html`
           <ui5-panel id=${subjectId.b64} ?collapsed=${this.collapsed}
-                     @toggle=${(e:any) => this.collapsed = e.target.collapsed}
+                     @toggle=${(_e:any) => this.requestUpdate()}
                      @mouseover=${(_e:any) => {
                         const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
                         const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);

@@ -1438,7 +1438,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "topics-option":
         console.log("<vines-page> topics-lister", this._collapseAll);
         lister = html`
-            <topics-lister id="lister" ?collapsed=${this._collapseAll} ?alphabetical=${this._canAlphabetical}
+            <topics-lister id="lister" ?alphabetical=${this._canAlphabetical}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
                            @createThreadClicked=${(e: CustomEvent<ActionId>) => {
