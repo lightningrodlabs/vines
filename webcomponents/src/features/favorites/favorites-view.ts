@@ -80,7 +80,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     // }
 
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {
-      return html`<div style="position: relative; z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">${msg("No favorites")}</div>`;
+      return html`<div style="position: relative; z-index:1; margin: auto;font-size: 1.5rem; color: #04040470;">${msg("No favorites")}</div>`;
     }
 
     let beadLi = this._dvm.threadsZvm.perspective.favorites

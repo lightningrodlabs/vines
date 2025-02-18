@@ -109,15 +109,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
   }
 
-  /** */
-  protected override async updated(_changedProperties: PropertyValues) {
-    // /** Fiddle with shadow CSS */
-    // const popover = this.shadowRoot!.getElementById("buttonsPop") as Popover;
-    // if (popover) {
-    //   popover.shadowRoot!.appendChild(popoverStyleTemplate.content.cloneNode(true));
-    // }
-  }
-
 
   /** */
   private async loadBead() {
@@ -427,18 +418,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         <div id=${"chat-item__" + this.hash.b64} class="chatItem"
              @mouseenter=${(_e:any) => {
                  const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
-                 popover.style.display = "block";
-                 // const anchor = this.shadowRoot!.getElementById("nameEnd") as HTMLElement;
-                 // if (popover && anchor) {
-                 //     popover.showAt(anchor);
-                 // }
+                 if (popover) {
+                     popover.style.display = "block";
+                 }
               }}
              @mouseleave=${(_e:any) => {
                const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
+               if (popover) {
                  popover.style.display = "none";
-                 // if (popover) {
-                 //   popover.close();
-                 // }
+               }
              }}>
             <!-- avatar column -->
             <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;"

@@ -25,7 +25,7 @@ export class FavoritesItem extends LitElement {
     console.log("<favorites-item>.render()", this.hash);
     return html`
         <div id="main" style="position: relative;">
-            <div style="display: flex; flex-direction: row-reverse; gap: 10px; position: absolute; top: 10px; right: 10px;">
+            <div style="display: flex; flex-direction: row-reverse; gap: 10px; position: absolute; top: 10px; right: 10px; z-index: 10">
               <ui5-button @click=${(e:any) => {
                             e.stopPropagation(); e.preventDefault();
                             this.dispatchEvent(beadJumpEvent(this.hash));
