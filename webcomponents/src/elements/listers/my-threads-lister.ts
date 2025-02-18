@@ -20,13 +20,14 @@ import {filesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {Subject, ThreadsEntryType} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {sharedStyles} from "../../styles";
+import {ICollapsable} from "./topics-lister";
 
 
 /**
  *
  */
 @customElement("my-threads-lister")
-export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> implements ICollapsable {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -58,6 +59,11 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     this._loading = false;
   }
 
+
+  /** */
+  collapseAll(canCollapse: boolean): void {
+    this.collapsed = canCollapse;
+  }
 
   /** */
   renderSubjectSubLister(subjectId: AnyId, _subject: Subject, myThreads: ActionId[], /*title: string, isHidden: boolean*/) {
@@ -230,6 +236,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** render subject sub-lister */
     return html`
           <ui5-panel id=${subjectId.b64} ?collapsed=${this.collapsed}
+                     @toggle=${(e:any) => this.collapsed = e.target.collapsed}
                      @mouseover=${(_e:any) => {
                         const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
                         const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);

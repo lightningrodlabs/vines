@@ -10,12 +10,15 @@ import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
 
+export interface ICollapsable {
+  collapseAll(canCollapse: boolean): void;
+}
 
 /**
  *
  */
 @customElement("topics-lister")
-export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> implements ICollapsable {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -52,6 +55,12 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
 
   /** */
+  collapseAll(canCollapse: boolean): void {
+    this.collapsed = canCollapse;
+  }
+
+
+  /** */
   onClickCommentPp(maybeCommentThread: ActionId | null, ppAh: ActionId, subjectName: string) {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: ppAh, subjectType: SpecialSubjectType.ParticipationProtocol, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
@@ -73,7 +82,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<topics-lister>.render()", this.perspective.semanticTopics.size, this.perspective.semanticTopics);
+    console.log("<topics-lister>.render()", this.collapsed, this.perspective.semanticTopics.size, this.perspective.semanticTopics);
 
     let pairs = Array.from(this.perspective.semanticTopics.entries());
     if (this.alphabetical) {
@@ -289,8 +298,10 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }
 
       /** render topic item */
+      console.log("<topics-lister> collapsed", this.collapsed);
       return html`
           <ui5-panel id=${topicAh.b64} ?collapsed=${this.collapsed}
+                     @toggle=${(e:any) => {console.log("<topics-lister> TOGGLED", e.target.collapsed); this.collapsed = e.target.collapsed}}
                      @mouseover=${(_e:any) => {
                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);

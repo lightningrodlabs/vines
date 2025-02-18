@@ -8,13 +8,14 @@ import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
+import {ICollapsable} from "./topics-lister";
 
 
 /**
  *
  */
 @customElement("history-lister")
-export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> implements ICollapsable {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -50,6 +51,11 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   //   return true;
   // }
 
+
+  /** */
+  collapseAll(canCollapse: boolean): void {
+    this.collapsed = canCollapse;
+  }
 
   /** */
   onClickCommentPp(maybeCommentThread: ActionId | null, ppAh: ActionId, subjectName: string) {
@@ -182,7 +188,8 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     /** render all */
     return html`
-        <ui5-panel ?collapsed=${this.collapsed}>
+        <ui5-panel ?collapsed=${this.collapsed}
+                   @toggle=${(e:any) => {console.log("<history-lister> TOGGLED", e.target.collapsed); this.collapsed = e.target.collapsed}}>
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
                 <span style="width: 1.2rem; height: 1.2rem">${msg("History")}</span>
             </div>

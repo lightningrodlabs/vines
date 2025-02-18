@@ -33,6 +33,7 @@ import "@ui5/webcomponents/dist/StandardListItem.js";
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import {ActionHashB64, EntryHashB64} from "@holochain/client";
 import {sharedStyles} from "../../styles";
+import {ICollapsable} from "./topics-lister";
 
 
 
@@ -40,7 +41,7 @@ import {sharedStyles} from "../../styles";
  * @element
  */
 @customElement("tool-lister")
-export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
+export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> implements ICollapsable {
 
   constructor() {
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
@@ -59,6 +60,11 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @state() private _isHovered: EntryIdMap<boolean> = new EntryIdMap();
            private _threadCreatableType?: CreatableType;
 
+
+  /** */
+  collapseAll(_canCollapse: boolean): void {
+    //this.collapsed = canCollapse;
+  }
 
   /** -- Methods -- */
 

@@ -171,7 +171,7 @@ import {
   filesContext,
   filesJumpEvent,
   getThisAppletId,
-  HideEvent,
+  HideEvent, ICollapsable,
   InputBar,
   JumpEvent, latestThreadName,
   MainViewType, multiJumpEvent,
@@ -1248,7 +1248,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-page>.render()", this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     if (this.perspective.importing) {
@@ -1423,11 +1423,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     switch (this._listerToShow) {
       case "tools-option":
-        lister = html`<tool-lister ?collapsed=${this._collapseAll}></tool-lister>`;
+        lister = html`<tool-lister id="lister" ?collapsed=${this._collapseAll}></tool-lister>`;
       break;
       case "mine-option":
         lister = html`
-          <my-threads-lister ?collapsed=${this._collapseAll}
+          <my-threads-lister id="lister" ?collapsed=${this._collapseAll}
                          .showArchivedSubjects=${this._canViewArchivedSubjects}
                          .selectedThreadHash=${this._selectedThreadHash}
                          @createThreadClicked=${(e : CustomEvent<ActionId>) => {
@@ -1437,8 +1437,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         `;
       break;
       case "topics-option":
+        console.log("<vines-page> topics-lister", this._collapseAll);
         lister = html`
-            <topics-lister ?collapsed=${this._collapseAll} ?alphabetical=${this._canAlphabetical}
+            <topics-lister id="lister" ?collapsed=${this._collapseAll} ?alphabetical=${this._canAlphabetical}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
                            @createThreadClicked=${(e: CustomEvent<ActionId>) => {
@@ -1608,8 +1609,31 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div style="display:flex; flex-direction:row; margin-right: 5px;">
                     <div style="flex-grow: 1;"></div>
                     <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; border-radius: 10px; margin-right: 5px">
-                    <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => this._collapseAll = false}></ui5-button>                    
-                    <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => this._collapseAll = true}></ui5-button>
+                    <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => {
+                      console.log("<topics-lister> EXPAND ALL")
+                      this._collapseAll = false;
+                      const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
+                      if (lister) {
+                          lister.collapseAll(false);
+                      }
+                      const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
+                      if (lister) {
+                          hisLister.collapseAll(false);
+                      }
+                        
+                    }}></ui5-button>                    
+                    <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => {
+                      console.log("<topics-lister> Collapse ALL")
+                      this._collapseAll = true;
+                      const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
+                      if (lister) {
+                          lister.collapseAll(true);
+                      }
+                        const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
+                        if (lister) {
+                            hisLister.collapseAll(true);
+                        }                      
+                    }}></ui5-button>
                     <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" 
                                 style="height:18px;" 
                                 tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} 
