@@ -1345,8 +1345,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
-                             .showHrlBtn=${!!this.weServices}
-                             showFileBtn="true"
+                             showAddBtn="true"
                              @input=${async (e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
@@ -1966,10 +1965,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${centerSide}
                     </div>
                     ${this._canShowComments ? html`
+                        <!-- .subjectName="${this._selectedCommentThreadSubjectName}" -->
                         <div id="commentSide">
                             <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash}
                                                  showInput="true"
-                                                 .subjectName="${this._selectedCommentThreadSubjectName}"
                                                  @close=${(_e:any) => this._canShowComments = false}></comment-thread-view>
                         </div>` : html``}
                     ${this._canShowSearchResults ? html`

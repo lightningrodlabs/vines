@@ -21,7 +21,9 @@ import {VinesInputEvent} from "../events";
 import {weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
-
+//import {toasty} from "../toast";
+import Menu from "@ui5/webcomponents/dist/Menu";
+import Button from "@ui5/webcomponents/dist/Button";
 
 /**
  * @element
@@ -33,9 +35,9 @@ export class InputBar extends LitElement {
 
   @property() topic: string = '';
   @property() cachedInput: string = '';
-  @property() showHrlBtn?: string;
+
   @property() background?: string;
-  @property() showFileBtn?: string;
+  @property() showAddBtn?: string;
   @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
@@ -449,22 +451,20 @@ export class InputBar extends LitElement {
       `;
     }
 
-    /** render all */
-    return html`
-        ${fileElem}
-        ${walElem}
-        <ui5-bar id="inputBar" design="FloatingFooter">
-            <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
-            ${this.showHrlBtn? html`
-            <ui5-button design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
-                        @click=${async (_e:any) => {
-                            const maybeWal = await this.weServices.assets.userSelectAsset();
-                            console.log("maybeWal", maybeWal);
-                            this._wal = maybeWal;
-                            this.inputElem.focus();
-                        }}>
-            </ui5-button>` : html``}
-            ${this.showFileBtn? html`
+
+    let addBtn = html``;
+    if (this.showAddBtn) {
+      addBtn = this.weServices
+        ? html`
+          <ui5-button id="addBtn" design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
+                      @click=${(_e: any) => {
+                          const settingsMenu = this.shadowRoot!.getElementById("addMenu") as Menu;
+                          const settingsBtn = this.shadowRoot!.getElementById("addBtn") as Button;
+                          settingsMenu.showAt(settingsBtn);
+                      }}>
+          </ui5-button>          
+        `
+        : html`
             <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
                         @click=${(_e:any) => {
                           let input = document.createElement('input');
@@ -474,8 +474,18 @@ export class InputBar extends LitElement {
                             this.inputElem.focus();
                           }
                           input.click();
-                        }}>
-            </ui5-button>` : html``}
+                        }}>          
+        `;
+    }
+
+
+    /** render all */
+    return html`
+        ${fileElem}
+        ${walElem}
+        <ui5-bar id="inputBar" design="FloatingFooter">
+            <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
+            ${addBtn}
             <!-- TEXT AREA -->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
                           placeholder=${`${msg("Message")} #${this.topic}, @ ${msg("to mention")}`}
@@ -493,8 +503,48 @@ export class InputBar extends LitElement {
               ${agentItems}
           </ui5-list>
         </ui5-popover>
+        <!-- menu -->
+        <ui5-menu id="addMenu" header-text=${msg("Add")}
+                  @item-click=${(e: any) => this.onAddMenu(e)}>
+            <ui5-menu-item id="fileItem" text=${msg("Upload a File")} icon="attachment" starts-section></ui5-menu-item>             
+            ${this.weServices? html`
+            <ui5-menu-item id="linkWalItem" text=${msg("Insert a WAL Link")} icon="chain-link" starts-section></ui5-menu-item>
+            <ui5-menu-item id="embedWalItem" text=${msg("Embed a WAL")} starts-section></ui5-menu-item>
+            ` : html``}
+        </ui5-menu>        
     `;
   }
+
+
+  /** */
+  async onAddMenu(e:any): Promise<void> {
+    console.log("AddMenu.item-click", e);
+    switch (e.detail.item.id) {
+      case "fileItem":
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = (e:any) => {
+          this._file = e.target.files[0];
+          this.inputElem.focus();
+        }
+        input.click();
+      break;
+      case "linkWalItem":
+        const maybeWalLink = await this.weServices.assets.userSelectAsset();
+        console.log("maybeWalLink", maybeWalLink);
+        if (maybeWalLink) {
+          this.inputElem.value += weaveUrlFromWal(maybeWalLink);
+        }
+      break;
+      case "embedWalItem":
+        const maybeWal = await this.weServices.assets.userSelectAsset();
+        console.log("maybeWal", maybeWal);
+        this._wal = maybeWal;
+        this.inputElem.focus();
+      break;
+    }
+  }
+
 
   /** */
   static override get styles() {

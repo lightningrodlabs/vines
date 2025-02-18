@@ -363,8 +363,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                              .profilesZvm=${this._dvm.profilesZvm}
                              topic="comment"
                              .cachedInput=${this._dvm.perspective.threadInputs.get(this.hash)? this._dvm.perspective.threadInputs.get(this.hash) : ""}
-                             .showHrlBtn=${!!this.weServices}
-                             showFileBtn="true"
+                             showAddBtn="true"
                              @input=${ async(e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onTextComment(e.detail.text);

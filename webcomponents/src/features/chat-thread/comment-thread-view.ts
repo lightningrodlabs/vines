@@ -352,7 +352,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                   }
                   }
             }>
-              ${subjectPrefix} ${subjectName}
+              ${subjectName}
             </span>
           </sl-tooltip>
             <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}
