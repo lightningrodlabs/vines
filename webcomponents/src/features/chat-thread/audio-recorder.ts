@@ -12,11 +12,25 @@ export class AudioRecorder {
 
   get initialized(): boolean{ return !!this.mediaRecorder;}
 
+
+  /** -- Methods -- */
+
+  /** */
   async initialize(): Promise<void> {
+    // Configure audio constraints
+    const audioConstraints: MediaTrackConstraints = {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+      channelCount: 1,
+      sampleRate: 16000,
+    };
+
     try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       this.mediaRecorder = new MediaRecorder(this.mediaStream, {
-        mimeType: MIC_MIME_TYPE
+        mimeType: MIC_MIME_TYPE,
+        audioBitsPerSecond: 12000
       });
 
       this.mediaRecorder.addEventListener('dataavailable', (event) => {
