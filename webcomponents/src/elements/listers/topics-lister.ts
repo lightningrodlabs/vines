@@ -10,9 +10,12 @@ import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
 
+
+/** */
 export interface ICollapsable {
   collapseAll(canCollapse: boolean): void;
 }
+
 
 /**
  *

@@ -24,6 +24,8 @@ import {WAL, weaveUrlFromWal} from "@theweave/api";
 //import {toasty} from "../toast";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
+import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
+//import Dialog from "@ui5/webcomponents/dist/Dialog";
 
 /**
  * @element
@@ -62,6 +64,10 @@ export class InputBar extends LitElement {
 
   get popoverElem(): Popover {
     return this.shadowRoot!.getElementById("pop") as unknown as Popover;
+  }
+
+  get micDialogElem(): Popover {
+    return this.shadowRoot!.getElementById("mic-dialog") as Popover;
   }
 
   get value(): string {
@@ -453,7 +459,17 @@ export class InputBar extends LitElement {
 
 
     let addBtn = html``;
+    let micBtn = html``;
     if (this.showAddBtn) {
+      micBtn = html`
+          <ui5-button id="micBtn" design="Transparent" icon="microphone"  tooltip=${msg('Voice Message')}
+                      @click=${(_e: any) => {
+                          const el = this.shadowRoot!.getElementById("micBtn") as HTMLElement;
+                          this.micDialogElem.showAt(el);
+                          //this.micDialogElem.show();
+                      }}>
+          </ui5-button>        
+      `;
       addBtn = this.weServices
         ? html`
           <ui5-button id="addBtn" design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
@@ -486,6 +502,7 @@ export class InputBar extends LitElement {
         <ui5-bar id="inputBar" design="FloatingFooter">
             <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
             ${addBtn}
+            ${micBtn}
             <!-- TEXT AREA -->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
                           placeholder=${`${msg("Message")} #${this.topic}, @ ${msg("to mention")}`}
@@ -511,7 +528,20 @@ export class InputBar extends LitElement {
             <ui5-menu-item id="linkWalItem" text=${msg("Insert a WAL Link")} icon="chain-link" starts-section></ui5-menu-item>
             <ui5-menu-item id="embedWalItem" text=${msg("Embed a WAL")} starts-section></ui5-menu-item>
             ` : html``}
-        </ui5-menu>        
+        </ui5-menu>
+        <!-- CreateThreadDialog -->
+        <ui5-popover id="mic-dialog" header-text=${msg("Create voice message")} placement-type="Top">
+          <audio-panel @close=${() => this.micDialogElem.close(false)}
+                       @mic=${(e:any) => {
+                           const file = new File([e.detail],
+                                   "recording.opus",
+                                   { type: MIC_MIME_TYPE, lastModified: Date.now() }
+                           );
+                           this._file = file;
+                         this.micDialogElem.close(false);
+                       }}
+          ></audio-panel>
+        </ui5-popover>
     `;
   }
 

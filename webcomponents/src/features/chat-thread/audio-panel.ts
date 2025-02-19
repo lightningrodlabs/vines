@@ -1,0 +1,120 @@
+import {css, html, LitElement} from "lit";
+import {customElement} from "lit/decorators.js";
+import {sharedStyles} from "../../styles";
+import {AudioRecorder, MIC_MIME_TYPE} from "./audio-recorder";
+import {msg} from "@lit/localize";
+
+
+/**
+ * @element
+ */
+@customElement("audio-panel")
+export class AudioPanel extends LitElement {
+
+  private _recorder = new AudioRecorder();
+  private _initialized = false;
+  //private _maybeBlobUrl: string | undefined = undefined;
+
+  private _maybeBlob: Blob | undefined = undefined;
+  private _maybeBlobUrl: string | undefined = undefined;
+
+
+  /** */
+  async startRec() {
+    if (!this._initialized) {
+      await this._recorder.initialize();
+      this._initialized = true;
+    }
+    this._recorder.startRecording();
+  }
+
+
+  async stopRec() {
+    this._maybeBlob = await this._recorder.stopRecording();
+    if (this._maybeBlobUrl) {
+      URL.revokeObjectURL(this._maybeBlobUrl);
+      this._maybeBlobUrl = undefined;
+    }
+    this._maybeBlobUrl = URL.createObjectURL(this._maybeBlob);
+    //this._recorder.save(this._maybeBlob);
+  }
+
+
+  /** */
+  override render() {
+    console.debug("<audio-panel>.render()", this._recorder.isRecording, !!this._maybeBlob);
+
+    /** Default state */
+    let recordBtn = html`<ui5-button icon="record" @click=${async () => {await this.startRec(); this.requestUpdate()}}></ui5-button>`;
+    let preview = html`<div class="preview">${msg("(Press record button to start recording)")}</div>`;
+
+    /** preview */
+    if (this._maybeBlobUrl) {
+    preview = html`
+          <audio class="preview Audio" controls>
+              <source .src=${this._maybeBlobUrl} type=${MIC_MIME_TYPE}>
+              ${msg("Your browser does not support the audio element.")}
+          </audio>`;
+    }
+
+
+    /** recordBtn*/
+
+    if (this._recorder.isRecording) {
+      preview = html`<div class="preview">${msg("Recording in progess...")}</div>`;
+      recordBtn = html`
+          <ui5-button icon="stop" 
+                      @click=${async () => {
+              await this.stopRec();
+              this.requestUpdate();
+          }}></ui5-button>`;
+    }
+
+
+
+
+    /** preview */
+
+    /** render all */
+    return html`
+        ${preview}
+        ${recordBtn}
+        <div slot="footer" style="display: flex; flex-direction:row-reverse; gap: 10px;">
+          <ui5-button style="margin-top:5px" @click=${(_e:any) => {
+              this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
+          }}>
+              ${msg("Cancel")}
+          </ui5-button>
+            <ui5-button style="margin-top:5px" design="Emphasized"
+                        ?disabled=${!this._maybeBlob}
+                        @click=${(_e:any) => {
+                this.dispatchEvent(new CustomEvent('mic', {detail: this._maybeBlob, bubbles: true, composed: true}));
+            }}>
+                ${msg("Attach")}
+            </ui5-button>            
+        </div>
+    `;
+  }
+
+
+
+  /** */
+  static override get styles() {
+    return [
+      sharedStyles,
+      css`
+        :host {
+          min-width: 300px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .preview {
+          height: 54px;
+          line-height: 54px;
+          text-align: center;
+        }
+      `,];
+  }
+}

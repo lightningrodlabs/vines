@@ -110,6 +110,7 @@ import "@ui5/webcomponents-icons/dist/journey-arrive.js"
 import "@ui5/webcomponents-icons/dist/journey-depart.js"
 import "@ui5/webcomponents-icons/dist/less.js"
 import "@ui5/webcomponents-icons/dist/menu2.js"
+import "@ui5/webcomponents-icons/dist/microphone.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
 import "@ui5/webcomponents-icons/dist/marketing-campaign.js"
 import "@ui5/webcomponents-icons/dist/navigation-down-arrow.js"
@@ -126,6 +127,7 @@ import "@ui5/webcomponents-icons/dist/process.js"
 import "@ui5/webcomponents-icons/dist/product.js"
 import "@ui5/webcomponents-icons/dist/pdf-attachment.js"
 import "@ui5/webcomponents-icons/dist/response.js"
+import "@ui5/webcomponents-icons/dist/record.js"
 import "@ui5/webcomponents-icons/dist/save.js"
 import "@ui5/webcomponents-icons/dist/search.js"
 import "@ui5/webcomponents-icons/dist/sort.js"
@@ -134,6 +136,7 @@ import "@ui5/webcomponents-icons/dist/slim-arrow-right.js"
 import "@ui5/webcomponents-icons/dist/share-2.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/show.js"
+import "@ui5/webcomponents-icons/dist/stop.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/time-account.js"
 import "@ui5/webcomponents-icons/dist/thing-type.js"
@@ -2002,7 +2005,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
                             dialog.close()
                         }}>
-                    Cancel
+                    ${msg("Cancel")}
                 </ui5-button>
             </ui5-dialog>
             <!-- -->
@@ -2026,7 +2029,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                             dialog.close()
                         }}>
-                    Cancel
+                    ${msg("Cancel")}
                 </ui5-button>
             </ui5-dialog>
             <!-- Profile Dialog/Popover -->
@@ -2084,7 +2087,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button id="createTopicDialogButton"
                                 style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>Cancel
+                    <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>
+                        ${msg("Cancel")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -2108,7 +2112,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="margin-top:5px" design="Emphasized" @click=${this.onEditChannel}>
                         ${msg("Edit")}
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.close(false)}>Cancel
+                    <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.close(false)}>
+                        ${msg("Cancel")}
                     </ui5-button>
                 </div>
             </ui5-dialog>            
@@ -2132,7 +2137,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>
                         ${msg("Edit")}
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>Cancel
+                    <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>
+                        ${msg("Cancel")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -2159,7 +2165,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${msg("Create")}
                 </ui5-button>
                 <ui5-button style="margin-top:5px" @click=${(_e: any) => this.createThreadDialogElem.close(false)}>
-                    Cancel
+                    ${msg("Cancel")}
                 </ui5-button>
         </div>
         </ui5-dialog>
