@@ -12,8 +12,6 @@ import {msg} from "@lit/localize";
 export class AudioPanel extends LitElement {
 
   private _recorder = new AudioRecorder();
-  private _initialized = false;
-  //private _maybeBlobUrl: string | undefined = undefined;
 
   private _maybeBlob: Blob | undefined = undefined;
   private _maybeBlobUrl: string | undefined = undefined;
@@ -21,9 +19,8 @@ export class AudioPanel extends LitElement {
 
   /** */
   async startRec() {
-    if (!this._initialized) {
+    if (!this._recorder.initialized) {
       await this._recorder.initialize();
-      this._initialized = true;
     }
     this._recorder.startRecording();
   }
@@ -45,8 +42,14 @@ export class AudioPanel extends LitElement {
     console.debug("<audio-panel>.render()", this._recorder.isRecording, !!this._maybeBlob);
 
     /** Default state */
-    let recordBtn = html`<ui5-button icon="record" @click=${async () => {await this.startRec(); this.requestUpdate()}}></ui5-button>`;
+    let recordBtn = html`
+        <ui5-button icon="microphone" design="Emphasized" 
+                    style="border-radius: 50%; width: 60px; height: 60px"
+                    @click=${async () => {await this.startRec(); this.requestUpdate()}}
+        ></ui5-button>
+    `;
     let preview = html`<div class="preview">${msg("(Press record button to start recording)")}</div>`;
+
 
     /** preview */
     if (this._maybeBlobUrl) {
@@ -58,12 +61,12 @@ export class AudioPanel extends LitElement {
     }
 
 
-    /** recordBtn*/
-
+    /** isRecording state */
     if (this._recorder.isRecording) {
       preview = html`<div class="preview">${msg("Recording in progess...")}</div>`;
       recordBtn = html`
-          <ui5-button icon="stop" 
+          <ui5-button icon="stop" design="Negative"
+                      style="border-radius: 50%; width: 60px; height: 60px"
                       @click=${async () => {
               await this.stopRec();
               this.requestUpdate();
@@ -71,16 +74,13 @@ export class AudioPanel extends LitElement {
     }
 
 
-
-
-    /** preview */
-
     /** render all */
     return html`
         ${preview}
         ${recordBtn}
-        <div slot="footer" style="display: flex; flex-direction:row-reverse; gap: 10px;">
+        <div style="display: flex; flex-direction:row-reverse; gap: 10px; margin-top: 10px;">
           <ui5-button style="margin-top:5px" @click=${(_e:any) => {
+              this._recorder.releaseMedia();
               this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
           }}>
               ${msg("Cancel")}
@@ -88,6 +88,7 @@ export class AudioPanel extends LitElement {
             <ui5-button style="margin-top:5px" design="Emphasized"
                         ?disabled=${!this._maybeBlob}
                         @click=${(_e:any) => {
+                this._recorder.releaseMedia();
                 this.dispatchEvent(new CustomEvent('mic', {detail: this._maybeBlob, bubbles: true, composed: true}));
             }}>
                 ${msg("Attach")}
@@ -108,6 +109,7 @@ export class AudioPanel extends LitElement {
           display: flex;
           flex-direction: column;
           gap: 10px;
+          align-items: center;
         }
         
         .preview {

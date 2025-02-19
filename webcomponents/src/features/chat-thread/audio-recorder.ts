@@ -6,13 +6,16 @@ export class AudioRecorder {
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private _isRecording = false;
+  private mediaStream: MediaStream | null = null;
 
   get isRecording(): boolean {return this._isRecording;}
 
+  get initialized(): boolean{ return !!this.mediaRecorder;}
+
   async initialize(): Promise<void> {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.mediaRecorder = new MediaRecorder(stream, {
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new MediaRecorder(this.mediaStream, {
         mimeType: MIC_MIME_TYPE
       });
 
@@ -26,6 +29,19 @@ export class AudioRecorder {
       console.error('Error initializing audio recorder:', error);
       throw error;
     }
+  }
+
+
+  releaseMedia(): void {
+    if (this.mediaStream) {
+      // Stop all tracks in the stream
+      this.mediaStream.getTracks().forEach(track => {
+        track.stop();
+      });
+      this.mediaStream = null;
+    }
+
+    this.mediaRecorder = null;
   }
 
 
