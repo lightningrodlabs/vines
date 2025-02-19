@@ -1394,7 +1394,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <div style="display: flex; flex-direction: row; gap:15px;">
                   <ui5-button icon="upload-to-cloud" design="Emphasized" @click=${(_e:any) => this.openFile()}>${msg("Upload File")}</ui5-button>
               </div>
-              <file-table type="group" notag view
+              <file-table type="group" notag view nolocal noselect
                           style="flex-grow: 1;"
                           .items=${publicItems}
                           @download=${(e: CustomEvent<EntryId>) => {console.log("download", e.detail.b64); this._filesDvm.downloadFile(e.detail)}}
@@ -1656,7 +1656,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("filteredInbox", filteredInbox);
 
 
-    const dmSign = html`<div id="dmSign" style="cursor: pointer" @click=${() => {
+    const dmSign = html`<div id="dmSign" style="cursor: pointer; z-index: 100" @click=${() => {
         const div = this.shadowRoot!.getElementById("listerGroup") as HTMLElement;
         if (div) {
             div.scrollTop = div.scrollHeight - div.clientHeight;
