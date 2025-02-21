@@ -87,8 +87,8 @@ pub struct SemanticTopic {
 #[derive(Clone, PartialEq)]
 pub struct ParticipationProtocol {
     pub purpose: String,
-    pub rules: String,
     pub subject: Subject,
+    pub rules: Rules,
 }
 
 
@@ -121,3 +121,92 @@ pub struct ThreadLastProbeLog {
     pub maybe_last_known_bead_ah: Option<ActionHash>,
 }
 
+///-------------------------------------------------------------------------------------------------
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Rules {
+    None,
+    Auto(AutoRules),
+    Manual(ManualRules),
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ManualRules {
+    pub instructions: String,
+    pub allowed_flags: u16,
+    pub validators: Vec<AgentPubKey>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AutoRules {
+    pub can_wal: bool,
+    pub can_file: Option<FileRules>,
+    pub can_text: Option<TextRules>,
+    pub allowed_agents: Vec<AgentPubKey>,
+    // pub maybe_shared_cap_per_day: Option<u16>, // Not implemented
+    pub maybe_agent_cap_per_day: Option<u16>,
+}
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TextRules {
+    pub banned_words: Vec<String>,
+    pub min_text_lenght: u32, // FIXME: must be < than MAX
+    pub max_text_lenght: u32,
+}
+
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileRules {
+    pub allowed_file_types: Vec<String>, /// Empty means no limitation
+    pub min_file_size: u32, // FIXME: must be < than MAX
+    pub max_file_size: u32, // Not possible to enforce currently because validation cant grab entry from a different zome
+}
+
+
+impl Default for AutoRules {
+    fn default() -> Self {
+        Self {
+            can_wal: true,
+            can_file: Some(FileRules::default()),
+            can_text: Some(TextRules::default()),
+            allowed_agents: Vec::default(),
+            //maybe_shared_cap_per_day: None,
+            maybe_agent_cap_per_day: None,
+        }
+    }
+}
+
+
+impl Default for TextRules {
+    fn default() -> Self {
+        Self {
+            banned_words: Vec::default(),
+            min_text_lenght: 0,
+            max_text_lenght: 0,
+        }
+    }
+}
+
+
+impl Default for FileRules {
+    fn default() -> Self {
+        Self {
+            allowed_file_types: Vec::default(),
+            min_file_size: 0,
+            max_file_size: 0,
+        }
+    }
+}
+
+
+impl Default for Rules {
+    fn default() -> Self {
+        Rules::None
+    }
+}

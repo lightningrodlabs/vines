@@ -6,6 +6,8 @@
 
 mod entries;
 mod properties;
+mod validation_app_entry;
+mod validate;
 
 pub use entries::*;
 pub use properties::*;

@@ -24,7 +24,7 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
   /// Create PP
   let pp = ParticipationProtocol {
     purpose: "Private conversation".to_string(),
-    rules: "privacy".to_string(),
+    rules: Rules::default(),
     //subject_name: "agent".to_string(),
     subject: Subject {
       address: holo_hash_encode(input.other_agent.get_raw_39()),
