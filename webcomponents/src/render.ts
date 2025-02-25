@@ -9,6 +9,7 @@ import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materia
 import {AgentId} from "@ddd-qc/lit-happ";
 import {beadJumpEvent, JumpEvent, threadJumpEvent} from "./events";
 import {msg} from "@lit/localize";
+import {Rules} from "./bindings/threads.types";
 
 
 
@@ -44,6 +45,26 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
                 <img .src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>`
       : html`<ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+}
+
+
+/** */
+export function rules2str(rules: Rules): string {
+  if ("none" in rules) {
+    return msg('None');
+  }
+   if ("manual" in rules) {
+    return msg('Manual') + ": " + rules.manual.instructions;
+  }
+  if ("auto" in rules) {
+    return msg('Auto') + ": "
+    + (rules.auto.canText? msg('Text,') : "")
+    + (rules.auto.canFile? msg('File,') : "")
+    + (rules.auto.canWal? msg('WAL,') : "")
+    + (rules.auto.allowedAgents.length > 0? msg('Restricted') : msg('All'))
+    + (rules.auto.maybeAgentCapPerDay? msg(', Capped') : "");
+  }
+  return msg('None');
 }
 
 
@@ -114,7 +135,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             // const subject = this.getSubject(subjectHash);
             // title = "New thread about a " + subject.typeName;
             title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
-            content = msg("Rules") + ": " + maybeThread.pp.rules;
+            content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
         }
     }
     break;

@@ -22,6 +22,7 @@ import "@ui5/webcomponents/dist/AvatarGroup.js"
 import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/Button.js";
+import '@ui5/webcomponents/dist/CheckBox.js';
 import "@ui5/webcomponents/dist/CustomListItem.js";
 import "@ui5/webcomponents/dist/Card.js";
 import "@ui5/webcomponents/dist/CardHeader.js";
@@ -32,12 +33,15 @@ import "@ui5/webcomponents/dist/List.js";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/MenuItem.js";
+import '@ui5/webcomponents/dist/MultiComboBox.js';
 import "@ui5/webcomponents/dist/MultiInput.js";
+import '@ui5/webcomponents/dist/features/InputSuggestions.js';
 import "@ui5/webcomponents/dist/Option.js";
 import "@ui5/webcomponents/dist/Panel.js";
 import "@ui5/webcomponents/dist/Popover.js";
 import "@ui5/webcomponents/dist/ProgressIndicator.js";
 import "@ui5/webcomponents/dist/features/InputSuggestions.js";
+import '@ui5/webcomponents/dist/RadioButton.js';
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/SegmentedButton.js";
 import "@ui5/webcomponents/dist/SegmentedButtonItem.js";
@@ -2157,6 +2161,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
                         </ui5-input>
                     </div>
+                    <rules-edit .availableProfiles=${this._dvm.profilesZvm.perspective.profiles}></rules-edit>
                 </section>
                 <div slot="footer" style:
                 "display:flex;">
