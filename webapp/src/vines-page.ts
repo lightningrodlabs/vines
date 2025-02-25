@@ -1049,7 +1049,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
-        rules: "N/A",
+        rules: {none:null}, // FIXME
         subject,
     };
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
@@ -1536,7 +1536,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
                                 dialog.show();
                             }}>
-                                ${profileCount} ${msg('Members')}
+                                ${profileCount} ${profileCount > 1 ? msg('Members') : msg('Member')}
                             </span>
                         </div>
                     </div>

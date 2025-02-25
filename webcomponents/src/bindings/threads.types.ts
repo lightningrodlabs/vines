@@ -277,8 +277,8 @@ export interface SemanticTopic {
 /**  */
 export interface ParticipationProtocol {
   purpose: string
-  rules: string
   subject: Subject
+  rules: Rules
 }
 
 export interface Subject {
@@ -298,6 +298,45 @@ export interface ThreadLastProbeLog {
   ts: Timestamp
   ppAh: ActionArray
   maybeLastKnownBeadAh?: ActionArray
+}
+
+/** ------------------------------------------------------------------------------------------------- */
+export enum RulesType {
+	None = 'None',
+	Auto = 'Auto',
+	Manual = 'Manual',
+}
+export type RulesVariantNone = {none: null}
+export type RulesVariantAuto = {auto: AutoRules}
+export type RulesVariantManual = {manual: ManualRules}
+export type Rules = 
+ | RulesVariantNone | RulesVariantAuto | RulesVariantManual;
+
+export interface ManualRules {
+  instructions: string
+  allowedFlags: number
+  validators: AgentArray[]
+}
+
+export interface AutoRules {
+  canWal: boolean
+  canFile?: FileRules
+  canText?: TextRules
+  allowedAgents: AgentArray[]
+  maybeAgentCapPerDay?: number
+}
+
+export interface TextRules {
+  bannedWords: string[]
+  minTextLenght: number
+  maxTextLenght: number
+}
+
+export interface FileRules {
+  allowedFileTypes: string[]
+  /** Empty means no limitation */
+  minFileSize: number
+  maxFileSize: number
 }
 
 /**

@@ -36,9 +36,10 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     /** Build peer list */
     const profiles: [AgentId, ProfileMat, Timestamp][] = [];
     for (const [agentId, profileId] of this.perspective.profileByAgent.entries()) {
-      if (agentId.equals(this.cell.address.agentId)) {
-        continue;
-      }
+      // // exclude self
+      // if (agentId.equals(this.cell.address.agentId)) {
+      //   continue;
+      // }
       const pair = this.perspective.profiles.get(profileId);
       if (!pair) {
         continue;

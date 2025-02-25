@@ -186,8 +186,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     if (!this._manifest) {
       return html`
-          <ui5-list id="fileList">
-              <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash}
+          <ui5-list id="fileList" style="max-width: 300px;">
+              <ui5-li id="fileLi" class="fail" icon="synchronize"
                       @click=${async (e:any) => {
                           e.stopPropagation(); e.preventDefault();
                           const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
@@ -195,10 +195,10 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
                             await this.probeForFileManifest(entryBead.sourceEh);
                           }
                       }}>
-                  ${msg('Unknown File')}
+                  <abbr title=${msg('File hash: ') + this.hash} style="text-decoration: none;">${msg('Missing File')}</abbr>
               </ui5-li>
           </ui5-list>`;
-    }
+   }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
@@ -213,13 +213,13 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f61933"></ui5-busy-indicator>`;
       }
       return html`
-        <ui5-list id="fileList">
-          <ui5-li id="fileLi" class="fail" icon="synchronize" description=${manifestEh.b64}
+        <ui5-list id="fileList" style="max-width: 300px;">
+          <ui5-li id="fileLi" class="fail" icon="synchronize"
                   @click=${async (e:any) => {
                       e.stopPropagation(); e.preventDefault();
                       await this.probeForFileManifest(manifestEh);
                   }}>
-              ${msg('File data not found')}
+              <abbr title=${msg('File manifest hash: ') + manifestEh.b64} style="text-decoration: none;">${msg('File data not found')}</abbr>
           </ui5-li>
         </ui5-list>`;
     }

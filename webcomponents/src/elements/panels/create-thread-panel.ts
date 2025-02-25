@@ -59,7 +59,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       console.log("@create event subject name", subject.name);
       const pp: ParticipationProtocol = {
         purpose,
-        rules: "N/A",
+        rules: {none:null}, // FIXME
         subject,
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
