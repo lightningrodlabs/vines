@@ -14,6 +14,7 @@ export * from './elements/copy-wal-button';
 export * from './elements/graph';
 
 export * from './features/rules/rules-edit';
+export * from './features/rules/rules-view';
 
 export * from './features/chat-thread/audio-panel';
 export * from './features/chat-thread/side-item';

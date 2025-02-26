@@ -14,7 +14,7 @@ import {
   NotifyPeerInput,
   NotifySetting,
   ParticipationProtocol,
-  PublishTopicInput,
+  PublishTopicInput, Rules,
   SemanticTopic,
   SetNotifySettingInput,
   Subject,
@@ -579,7 +579,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     };
     const pp: ParticipationProtocol = {
       purpose: "EDIT",
-      rules: {none:null}, // FIXME // msg("Only text messsages from the original message author are allowed"),
+      rules: {none:true}, // FIXME // msg("Only text messsages from the original message author are allowed"),
       subject,
     }
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
@@ -749,8 +749,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string): Promise<[Timestamp, ActionId]> {
-    console.log("publishThreadFromSemanticTopic()", appletId);
+  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string, rules: Rules): Promise<[Timestamp, ActionId]> {
+    console.log("publishThreadFromSemanticTopic()", appletId, rules);
     const [semTopicTitle, _semAuthor] = this._perspective.semanticTopics.get(topicAh)!;
     const subject: Subject = {
       address: topicAh.b64,
@@ -761,7 +761,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     };
     const pp: ParticipationProtocol = {
       purpose,
-      rules: {none:null}, // FIXME
+      rules,
       subject,
     }
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);

@@ -3,18 +3,17 @@ import { customElement, property, state } from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {AutoRules, FileRules, ManualRules, Rules, RulesType, TextRules} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {AgentId, AgentIdMap} from "@ddd-qc/lit-happ";
-import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
-import {Timestamp} from "@holochain/client";
+import {AgentId} from "@ddd-qc/lit-happ";
+import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
 
 @customElement('rules-edit')
 export class RulesEdit extends LitElement {
 
   @property()
-  rules: Rules = { none: null };
+  rules: Rules = { none: true };
 
   @property()
-  availableProfiles: AgentIdMap<[Profile, Timestamp]> = new AgentIdMap();
+  profiles!: ProfilesAltPerspective;
 
 
   @state()
@@ -25,7 +24,7 @@ export class RulesEdit extends LitElement {
   @state()
   private manualRules: ManualRules = {
     instructions: '',
-    allowedFlags: 1,
+    allowedFlags: 0,
     validators: []
   };
 
@@ -66,7 +65,7 @@ export class RulesEdit extends LitElement {
     this.rulesType = selectedValue;
 
     if (selectedValue === RulesType.None) {
-      this.rules = { none: null };
+      this.rules = { none: true };
     } else if (selectedValue === RulesType.Auto) {
       this.rules = { auto: this.autoRules };
     } else if (selectedValue === RulesType.Manual) {
@@ -210,16 +209,14 @@ export class RulesEdit extends LitElement {
   }
 
   private handleAgentSelectionChange(e: CustomEvent) {
-    const selectedItems = (e.target as any).selectedItems;
+    const selectedItems = e.detail.items;
     const selectedAgents: Uint8Array[] = [];
+    console.log("handleAgentSelectionChange", e, selectedItems);
 
     for (const item of selectedItems) {
       const agentHashB64 = item.getAttribute('data-id');
       const agentId = new AgentId(agentHashB64);
-      const agent = this.availableProfiles.get(agentId);
-      if (agent) {
-        selectedAgents.push(agentId.hash);
-      }
+      selectedAgents.push(agentId.hash);
     }
 
     if (this.rulesType === RulesType.Auto) {
@@ -247,11 +244,11 @@ export class RulesEdit extends LitElement {
     console.log("<ruled-edit>.render()", this.rules, this.rulesType);
 
     let peerList = [];
-    for (const [id, [profile, _ts]] of this.availableProfiles.entries()) {
-      console.log("<ruled-edit>.render() profile", profile.nickname);
+    for (const [agentId, actionId] of this.profiles!.profileByAgent.entries()) {
+      const pair = this.profiles!.profiles.get(actionId)!;
       peerList.push(html`
-        <ui5-mcb-item data-id=${id.b64} .text=${profile.nickname}
-                      ?selected=${this.manualRules.validators.some(a => a === id.hash)}>
+        <ui5-mcb-item data-id=${agentId.b64} .text=${pair[0].nickname}
+                      ?selected=${this.manualRules.validators.some(a => a === agentId.hash)}>
         </ui5-mcb-item>
     `)};
 
@@ -370,12 +367,12 @@ export class RulesEdit extends LitElement {
                     </div>
                     
                     <div class="field-row">
-                        <ui5-label>${msg('Infringements permitted per user')}:</ui5-label>
+                        <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
                         <ui5-input type="number" value=${this.manualRules.allowedFlags} @change=${this.handleAllowedFlagsChange}></ui5-input>
                     </div>
                     
                     <div class="field-row">
-                        <ui5-label>Admins:</ui5-label>
+                        <ui5-label>Administrators:</ui5-label>
                         <ui5-multi-combobox style="flex-grow:1;" @selection-change=${this.handleAgentSelectionChange}>
                             ${peerList}
                         </ui5-multi-combobox>

@@ -6,10 +6,10 @@ import {
   DnaElement,
   intoAnyId,
 } from "@ddd-qc/lit-happ";
-import {determineSubjectPrefix, latestThreadName} from "../../utils";
+import {determineSubjectPrefix, latestThreadName, truncate} from "../../utils";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
-import {renderAvatar, renderProfileAvatar} from "../../render";
-import {beadJumpEvent, SpecialSubjectType} from "../../events";
+import {renderAvatar, renderProfileAvatar, rules2str} from "../../render";
+import {beadJumpEvent, ShowRulesEvent, SpecialSubjectType} from "../../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../../styles";
 import {toasty} from "../../toast";
@@ -99,6 +99,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!thread) {
       return html`<div>No thread found</div>`;
     }
+    console.log("<chat-header>.render() thread", thread);
     const maybeDmThread = this._dvm.threadsZvm.isThreadDm(this.threadHash);
     if (maybeDmThread) {
       return this.renderDmThreadHeader(maybeDmThread);
@@ -139,6 +140,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
+    const rulesStr = truncate(rules2str(thread.pp.rules), 200, true);
     /** render all */
     return html`
         <div id="chat-header">
@@ -146,7 +148,14 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <h2>${title} ${copyBtn}</h2>
           <div class="subtext">${subText}</div>
           <!-- <div class="subtext">Purpose: ${thread.title}</div> -->
-          <div class="subtext">${msg("Rules")}: ${thread.pp.rules}</div>
+          <div class="subtext">
+              ${msg("Rules")}: 
+              <span class="rules" 
+                    @click=${(e:any) => {
+                      e.preventDefault(); e.stopPropagation();
+                        this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {detail: {ppAh: this.threadHash!, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
+                    ${rulesStr}</span>
+          </div>
         </div>
     `;
   }
@@ -157,6 +166,15 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     return [
       sharedStyles,
       css`
+        
+        .rules {
+          text-decoration: underline;
+        }
+        .rules:hover {
+          cursor: pointer;
+          font-weight: bold;
+        }
+        
         .rounded-emoji {
           width: 80px;
           height: 80px;

@@ -126,7 +126,7 @@ pub struct ThreadLastProbeLog {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Rules {
-    None,
+    None(bool), // useless bool just here for easier serialization
     Auto(AutoRules),
     Manual(ManualRules),
 }
@@ -207,6 +207,6 @@ impl Default for FileRules {
 
 impl Default for Rules {
     fn default() -> Self {
-        Rules::None
+        Rules::None(true)
     }
 }

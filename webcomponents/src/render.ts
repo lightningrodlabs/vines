@@ -54,7 +54,9 @@ export function rules2str(rules: Rules): string {
     return msg('None');
   }
    if ("manual" in rules) {
-    return msg('Manual') + ": " + rules.manual.instructions;
+     const instructions = rules.manual.instructions.length > 0 ? rules.manual.instructions
+       : msg("No instructions provided");
+    return msg('Manual') + ": " + instructions;
   }
   if ("auto" in rules) {
     return msg('Auto') + ": "

@@ -187,9 +187,9 @@ import {
   onlineLoadedContext,
   parseSearchInput,
   ParticipationProtocol,
-  ProfilePanel,
+  ProfilePanel, RulesEdit, RulesView,
   searchFieldStyleTemplate,
-  ShowProfileEvent,
+  ShowProfileEvent, ShowRulesEvent,
   SpecialSubjectType,
   Subject,
   THIS_APPLET_ID,
@@ -367,6 +367,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // @ts-ignore
     this.addEventListener('jump', this.onJump);
     // @ts-ignore
+    this.addEventListener('show-rules', this.onShowRules);
+    // @ts-ignore
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
     // @ts-ignore
@@ -392,6 +394,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('edit-profile', this.onEditProfile);
     // @ts-ignore
     this.removeEventListener('show-profile', this.onShowProfile);
+    // @ts-ignore
+    this.removeEventListener('show-rules', this.onShowRules);
     // @ts-ignore
     this.removeEventListener('archive', this.onArchive);
     // @ts-ignore
@@ -521,6 +525,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
+  onShowRules(e: CustomEvent<ShowRulesEvent>) {
+    console.log("onShowRules()", e.detail)
+    const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
+    //console.log("onShowProfile() elem", elem)
+    const popover = this.shadowRoot!.getElementById("rulesPop") as Popover;
+    const sub = this.shadowRoot!.getElementById("rulesPanel") as RulesView;
+    const thread = this._dvm.threadsZvm.perspective.threads.get(e.detail.ppAh);
+    if (thread) {
+      sub.rules = thread.pp.rules;
+      sub.requestUpdate();
+      popover.showAt(elem);
+    }
+  }
+
+
+  /** */
   onShowProfile(e: CustomEvent<ShowProfileEvent>) {
     console.log("onShowProfile()", e.detail)
     const elem = this.getDeepestElemAt(e.detail.x, e.detail.y);
@@ -628,14 +648,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateThread(_e:any) {
+    /** Check purpose */
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
-    const name = input.value.trim();
-    if (name.length < 1) {
+    const purpose = input.value.trim();
+    if (purpose.length < 1) {
       input.valueState = ValueState.Error;
       return;
     }
     const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
-    const isValid = regex.test(name);
+    const isValid = regex.test(purpose);
     if (!isValid) {
       input.valueState = ValueState.Error;
       const errorMsg = this.shadowRoot!.getElementById("channelErrorMsg") as HTMLElement;
@@ -643,18 +664,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       errorMsg.textContent = msg("Invalid characters");
       return;
     }
+    /** Check subject */
     if (!this._createTopicHash) {
       console.warn("Missing topic hash");
       return;
     }
+    /** Check Rules */
+    const rulesEdit = this.shadowRoot!.getElementById("rulesEdit") as RulesEdit;
+    /** Publish */
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(
       this.weServices? new EntryId(this.weServices.appletIds[0]!) : THIS_APPLET_ID,
       this._createTopicHash,
-      name,
+      purpose,
+      rulesEdit.rules,
     );
+    /** cleanup */
     input.value = "";
-    this.dispatchEvent(threadJumpEvent(ppAh));
     this.createThreadDialogElem.close(false);
+    /** Jump to new thread */
+    this.dispatchEvent(threadJumpEvent(ppAh));
   }
 
 
@@ -1053,7 +1081,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
-        rules: {none:null}, // FIXME
+        rules: {none:true},
         subject,
     };
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
@@ -2012,7 +2040,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${msg("Cancel")}
                 </ui5-button>
             </ui5-dialog>
-            <!-- -->
+            <!-- View members dialog -->
             <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
                 <peer-list 
                     @avatar-clicked=${async (e: any) => {
@@ -2036,6 +2064,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${msg("Cancel")}
                 </ui5-button>
             </ui5-dialog>
+            <!-- View Rules Dialog/Popover -->
+            <ui5-popover id="rulesPop" placement-type="Right" hide-arrow allow-target-overlap
+                         style="min-width: 0px; max-width: 800px;">
+                <rules-view id="rulesPanel"></rules-view>
+            </ui5-popover>
             <!-- Profile Dialog/Popover -->
             <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
                 <profile-panel id="profilePanel"
@@ -2161,7 +2194,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
                         </ui5-input>
                     </div>
-                    <rules-edit .availableProfiles=${this._dvm.profilesZvm.perspective.profiles}></rules-edit>
+                    <rules-edit id="rulesEdit" .profiles=${this._dvm.profilesZvm.perspective}></rules-edit>
                 </section>
                 <div slot="footer" style:
                 "display:flex;">

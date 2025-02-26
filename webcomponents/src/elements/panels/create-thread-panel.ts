@@ -14,12 +14,13 @@ import {determineSubjectName, weaveUrlToWal, hrl2Id} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {SpecialSubjectType} from "../../events";
+import {RulesEdit} from "../../features/rules/rules-edit";
 
 
 /**
  * @element
  */
-@customElement("create-thread-panel")
+@customElement("creatable-thread-panel")
 export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
@@ -32,7 +33,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
   _filesDvm!: FilesDvm;
 
   @consume({ context: weClientContext, subscribe: true })
-  weServices?: WeServicesEx;
+  weServices!: WeServicesEx;
 
   @state() private _creating = false;
 
@@ -44,6 +45,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
     this._creating = true;
     try {
       const purpose = (this.shadowRoot!.getElementById("purposeInput") as Input).value;
+      const rules = (this.shadowRoot!.getElementById("rulesEdit") as RulesEdit).rules;
       const wurl = (this.shadowRoot!.getElementById("wurlInput") as Input).value;
       const wal0 = weaveUrlToWal(wurl);
       const [dnaId, dhtId] = hrl2Id(wal0.hrl);
@@ -59,7 +61,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       console.log("@create event subject name", subject.name);
       const pp: ParticipationProtocol = {
         purpose,
-        rules: {none:null}, // FIXME
+        rules,
         subject,
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
@@ -100,6 +102,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
               }}></ui5-button>              
           </div>          
       </section>
+      <rules-edit id="rulesEdit" .profiles=${this._dvm.profilesZvm.perspective}></rules-edit>
       <div slot="footer" class="footer">
         <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e:any) => this.onCreate()}>
             ${msg("Create")}

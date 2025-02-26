@@ -73,6 +73,12 @@ export type HideEvent = {
   hide: boolean
 }
 
+export type ShowRulesEvent = {
+  ppAh: ActionId,
+  x: number,
+  y: number,
+}
+
 export type ShowProfileEvent = {
   agentId: AgentId,
   x: number,

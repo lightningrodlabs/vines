@@ -306,7 +306,7 @@ export enum RulesType {
 	Auto = 'Auto',
 	Manual = 'Manual',
 }
-export type RulesVariantNone = {none: null}
+export type RulesVariantNone = {none: boolean}
 export type RulesVariantAuto = {auto: AutoRules}
 export type RulesVariantManual = {manual: ManualRules}
 export type Rules = 

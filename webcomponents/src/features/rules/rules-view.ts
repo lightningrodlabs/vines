@@ -1,0 +1,320 @@
+import {html, css, TemplateResult} from 'lit';
+import { customElement, property} from 'lit/decorators.js';
+import {sharedStyles} from "../../styles";
+import { FileRules, Rules, RulesType, TextRules} from "../../bindings/threads.types";
+import {msg} from "@lit/localize";
+import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
+import {formatFileSize} from "../../utils";
+import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {renderProfileAvatar} from "../../render";
+import {ShowProfileEvent} from "../../events";
+
+
+
+export function getRuleType(rules: Rules): RulesType {
+  if ('none' in rules) return RulesType.None;
+  if ('auto' in rules) return RulesType.Auto;
+  if ('manual' in rules) return RulesType.Manual;
+  return RulesType.None;
+}
+
+
+@customElement('rules-view')
+export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm> {
+
+  constructor() {
+    super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
+  }
+
+
+  @property()
+  rules: Rules = {none: true};
+
+
+  /** */
+  private renderProfiles(agentHashes: Uint8Array[]): TemplateResult<1>[] {
+    let peerList: TemplateResult<1>[] = [];
+    const unknown = html`${msg('Unknown member')}`;
+    for (const agentId of agentHashes.map((hash) => new AgentId(hash))) {
+      const ah = this._zvm.perspective.profileByAgent.get(agentId);
+      console.log("renderProfiles", agentId, ah, this._zvm.perspective);
+      if (!ah) {
+        peerList.push(unknown);
+        continue;
+      }
+      const pair = this._zvm.perspective.profiles.get(ah);
+      const li = !pair
+        ? unknown
+        //: html`${pair![0].nickname}`;
+        : html`<div style="cursor:pointer"
+                      @click=${(e:any) => {
+                  e.stopPropagation();
+                  this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+              }}>${renderProfileAvatar(pair![0], "XS")}</div>`;
+      peerList.push(li);
+    }
+    return peerList;
+  }
+
+
+  /** */
+  private renderNoneRules() {
+    return html`
+            <div class="section">
+                  <ui5-text>${msg('No specific rules have been set for this channel.')}</ui5-text>
+            </div>
+        `;
+  }
+
+
+  /** */
+  private renderAutoRules() {
+    const autoRules = 'auto' in this.rules ? this.rules.auto : null;
+    if (!autoRules) return html``;
+    const peerList = this.renderProfiles(autoRules.allowedAgents);
+    /** */
+    return html`
+            <div class="section">
+                <ui5-panel header="Auto Rules Configuration" expanded>
+                    <div class="field-row">
+                        <div class="field-label">Can WAL:</div>
+                        <div class="field-value">
+                            ${autoRules.canWal
+      ? html`<ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled`
+      : html`<ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled`}
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-label">Agent Cap Per Day:</div>
+                        <div class="field-value">
+                            ${autoRules.maybeAgentCapPerDay !== undefined
+      ? html`<ui5-badge>${autoRules.maybeAgentCapPerDay}</ui5-badge>`
+      : html`<ui5-text>No limit</ui5-text>`}
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-label">Allowed Agents:</div>
+                        <div class="field-value">
+                            ${autoRules.allowedAgents.length > 0
+                              ? html`<div class="peers">${peerList}</div>`
+                              : html`<ui5-text>Everyone</ui5-text>`
+                            }
+                        </div>
+                    </div>
+
+                    ${autoRules.canFile ? this.renderFileRules(autoRules.canFile) : html`
+                        <div class="field-row">
+                            <div class="field-label">File Operations:</div>
+                            <div class="field-value">
+                                <ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled
+                            </div>
+                        </div>
+                    `}
+
+                    ${autoRules.canText ? this.renderTextRules(autoRules.canText) : html`
+                        <div class="field-row">
+                            <div class="field-label">Text Operations:</div>
+                            <div class="field-value">
+                                <ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled
+                            </div>
+                        </div>
+                    `}
+                </ui5-panel>
+            </div>
+        `;
+  }
+
+
+  /** */
+  private renderFileRules(fileRules: FileRules) {
+    return html`
+            <div class="field-row">
+                <div class="field-label">File Operations:</div>
+                <div class="field-value">
+                    <ui5-icon name="check-circle" class="icon-true"></ui5-icon> Enabled
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <ui5-title level="H5">File Rules</ui5-title>
+                
+                <div class="field-row">
+                    <div class="field-label">Allowed File Types:</div>
+                    <div class="field-value badge-container">
+                        ${fileRules.allowedFileTypes.length > 0
+      ? fileRules.allowedFileTypes.map(type => html`<ui5-badge color-scheme="info">${type}</ui5-badge>`)
+      : html`<ui5-text>All file types allowed</ui5-text>`}
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field-label">File Size Limits:</div>
+                    <div class="field-value">
+                        Min: ${formatFileSize(fileRules.minFileSize)} | 
+                        Max: ${formatFileSize(fileRules.maxFileSize)}
+                    </div>
+                </div>
+            </div>
+        `;
+  }
+
+
+  /** */
+  private renderTextRules(textRules: TextRules) {
+    return html`
+            <div class="field-row">
+                <div class="field-label">Text Operations:</div>
+                <div class="field-value">
+                    <ui5-icon name="check-circle" class="icon-true"></ui5-icon> Enabled
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <ui5-title level="H5">${msg('Text Message Rules')}</ui5-title>
+                
+                <div class="field-row">
+                    <div class="field-label">Banned Words:</div>
+                    <div class="field-value badge-container">
+                        ${textRules.bannedWords.length > 0
+      ? textRules.bannedWords.map(word => html`<ui5-badge color-scheme="negative">${word}</ui5-badge>`)
+      : html`<ui5-text>No banned words</ui5-text>`}
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field-label">Text Length Limits:</div>
+                    <div class="field-value">
+                        Min: ${textRules.minTextLenght} characters | 
+                        Max: ${textRules.maxTextLenght} characters
+                    </div>
+                </div>
+            </div>
+        `;
+  }
+
+
+  /** */
+  private renderManualRules() {
+    const manualRules = 'manual' in this.rules ? this.rules.manual : null;
+    if (!manualRules) return html``;
+    const peerList = this.renderProfiles(manualRules.validators);
+    /** */
+    return html`
+            <div class="section">
+                    <div class="field-row">
+                        <div class="field-label">Instructions:</div>
+                        <div class="field-value">
+                            ${manualRules.instructions ? html`
+                                <pre>${manualRules.instructions}</pre>
+                            ` : html`
+                                <ui5-text>No instructions provided</ui5-text>
+                            `}
+                        </div>
+                    </div>
+                                     
+                    <div class="field-row">
+                        <div class="field-label">Administrators:</div>
+                        <div class="field-value">
+                            ${manualRules.validators.length > 0
+      ? html`<div class="peers">${peerList}</div>`
+      : html`<ui5-text style="color:red">${msg('No administrators configured for this channel')}</ui5-text>`}
+                        </div>
+                    </div>
+
+                <div class="field-row">
+                    <div class="field-label">Infringements allowed:</div>
+                    <div class="field-value">${manualRules.allowedFlags}</div>
+                </div>
+                
+            </div>
+        `;
+  }
+
+
+  /** */
+  override render() {
+    console.log("<ruled-edit>.render()", this.rules);
+    const ruleType = getRuleType(this.rules);
+
+    const style = ruleType === RulesType.None
+      ? 'color: #ab9776; background: rgb(235 234 159)'
+      : ruleType === RulesType.Auto
+        ? 'color: purple; background: rgb(229 201 249)'
+        : 'color: #4d4de7; background: rgb(208 237 255)';
+    const scheme = ruleType === RulesType.None ? '1' : ruleType === RulesType.Auto ? '4' : '6';
+
+    /** */
+    return html`
+      <div slot="header" style="display: flex">
+          <ui5-title level="H3">${msg('Rules')}</ui5-title>
+          <div style="flex-grow: 1"></div>
+          <ui5-badge color-scheme=${scheme} style=${style}>${ruleType}</ui5-badge>
+      </div>
+      
+      <div class="section"></div>
+      
+      ${ruleType === RulesType.Auto ? this.renderAutoRules() : ''}
+      ${ruleType === RulesType.Manual ? this.renderManualRules() : ''}
+      ${ruleType === RulesType.None ? this.renderNoneRules() : ''}
+    `;
+  }
+
+
+  /** */
+  static override get styles() {
+    return [
+      sharedStyles,
+      css`
+        :host {
+          /*max-width: 700px;*/
+        }
+        
+        .section {
+          margin-bottom: 1.5rem;
+        }
+        .field-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          margin-bottom: 0.75rem;
+          gap: 0.5rem;
+        }
+        .field-label {
+          font-weight: bold;
+          min-width: 180px;
+          color: var(--sapContent_LabelColor, #6a6d70);
+        }
+        .field-value {
+          flex: 1;
+        }
+        .field-group {
+          margin-left: 1.5rem;
+          padding-left: 1rem;
+          border-left: 3px solid var(--sapInformationBorderColor, #0a6ed1);
+          margin-bottom: 1rem;
+        }
+        .badge-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+        .icon-true {
+          color: var(--sapPositiveColor, #107e3e);
+        }
+        .icon-false {
+          color: var(--sapNegativeColor, #bb0000);
+        }
+        pre {
+          background-color: var(--sapGroup_ContentBackground, #f7f7f7);
+          /*padding: 0.5rem;*/
+          /*border-radius: 0.25rem;*/
+          white-space: pre-wrap;
+          word-break: break-word;
+          margin: 0;
+        }
+      `
+    ]
+  }
+}

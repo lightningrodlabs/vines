@@ -373,7 +373,7 @@ export class ThreadsDvm extends DnaViewModel {
   async publishCommentThread(subject: Subject/*, subject_name: string*/): Promise<ActionId> {
     const pp: ParticipationProtocol = {
       purpose: "comment",
-      rules: {none:null}, // FIXME
+      rules: {none:true}, // FIXME
       subject,
       //subject_name,
     };

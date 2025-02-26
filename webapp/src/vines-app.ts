@@ -408,14 +408,14 @@ export class VinesApp extends HappMultiElement {
             reject: (reason: any) => Promise<void>;
           };
           if (creatableViewInfo.name == "thread") {
-            view = html`<create-thread-panel 
+            view = html`<creatable-thread-panel 
                     @create=${async (e: CustomEvent<WAL>) => {
                         console.log("@create event", e.detail);
                         await creatableViewInfo.resolve(e.detail);
                       }}
                     @cancel=${(_e:any) => creatableViewInfo.cancel()}
                     @reject=${(e: CustomEvent<any>) => creatableViewInfo.reject(e.detail)}
-            ></create-thread-panel>`;
+            ></creatable-thread-panel>`;
           } else {
             throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)
           }
