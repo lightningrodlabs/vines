@@ -72,56 +72,58 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     const autoRules = 'auto' in this.rules ? this.rules.auto : null;
     if (!autoRules) return html``;
     const peerList = this.renderProfiles(autoRules.allowedAgents);
+
+    console.log("renderAutoRules", autoRules);
     /** */
     return html`
             <div class="section">
-                <ui5-panel header="Auto Rules Configuration" expanded>
                     <div class="field-row">
-                        <div class="field-label">Can WAL:</div>
+                        <div class="field-label">Limit per Day:</div>
                         <div class="field-value">
-                            ${autoRules.canWal
-      ? html`<ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled`
-      : html`<ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled`}
+                            ${!!autoRules.maybeAgentCapPerDay
+      ? html`<span>${autoRules.maybeAgentCapPerDay}</span>`
+      : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>No limit`}
                         </div>
                     </div>
 
                     <div class="field-row">
-                        <div class="field-label">Agent Cap Per Day:</div>
-                        <div class="field-value">
-                            ${autoRules.maybeAgentCapPerDay !== undefined
-      ? html`<ui5-badge>${autoRules.maybeAgentCapPerDay}</ui5-badge>`
-      : html`<ui5-text>No limit</ui5-text>`}
-                        </div>
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field-label">Allowed Agents:</div>
+                        <div class="field-label">Allowed Members:</div>
                         <div class="field-value">
                             ${autoRules.allowedAgents.length > 0
                               ? html`<div class="peers">${peerList}</div>`
-                              : html`<ui5-text>Everyone</ui5-text>`
+                              : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>Everyone`
                             }
                         </div>
                     </div>
 
+                    <div class="field-row">
+                        <div class="field-label">WAL Embeds:</div>
+                        <div class="field-value">
+                            ${autoRules.canWal
+                                    ? html`<ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled`
+                                    : html`<ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled`}
+                        </div>
+                    </div>
+                
                     ${autoRules.canFile ? this.renderFileRules(autoRules.canFile) : html`
                         <div class="field-row">
-                            <div class="field-label">File Operations:</div>
+                            <div class="field-label">File Messages:</div>
                             <div class="field-value">
-                                <ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled
+                                <ui5-icon name="decline" class="icon-false"></ui5-icon> 
+                                Disabled
                             </div>
                         </div>
                     `}
 
                     ${autoRules.canText ? this.renderTextRules(autoRules.canText) : html`
                         <div class="field-row">
-                            <div class="field-label">Text Operations:</div>
+                            <div class="field-label">Text Messages:</div>
                             <div class="field-value">
-                                <ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled
+                                <ui5-icon name="decline" class="icon-false"></ui5-icon>
+                                Disabled
                             </div>
                         </div>
                     `}
-                </ui5-panel>
             </div>
         `;
   }
@@ -131,21 +133,19 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private renderFileRules(fileRules: FileRules) {
     return html`
             <div class="field-row">
-                <div class="field-label">File Operations:</div>
+                <div class="field-label">File Messages:</div>
                 <div class="field-value">
-                    <ui5-icon name="check-circle" class="icon-true"></ui5-icon> Enabled
+                    <ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled
                 </div>
             </div>
             
             <div class="field-group">
-                <ui5-title level="H5">File Rules</ui5-title>
-                
                 <div class="field-row">
                     <div class="field-label">Allowed File Types:</div>
                     <div class="field-value badge-container">
                         ${fileRules.allowedFileTypes.length > 0
       ? fileRules.allowedFileTypes.map(type => html`<ui5-badge color-scheme="info">${type}</ui5-badge>`)
-      : html`<ui5-text>All file types allowed</ui5-text>`}
+      : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>All file types allowed`}
                     </div>
                 </div>
                 
@@ -165,29 +165,27 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private renderTextRules(textRules: TextRules) {
     return html`
             <div class="field-row">
-                <div class="field-label">Text Operations:</div>
+                <div class="field-label">Text Messages:</div>
                 <div class="field-value">
-                    <ui5-icon name="check-circle" class="icon-true"></ui5-icon> Enabled
+                    <ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled
                 </div>
             </div>
             
             <div class="field-group">
-                <ui5-title level="H5">${msg('Text Message Rules')}</ui5-title>
-                
                 <div class="field-row">
                     <div class="field-label">Banned Words:</div>
                     <div class="field-value badge-container">
                         ${textRules.bannedWords.length > 0
       ? textRules.bannedWords.map(word => html`<ui5-badge color-scheme="negative">${word}</ui5-badge>`)
-      : html`<ui5-text>No banned words</ui5-text>`}
+      : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>No banned words`}
                     </div>
                 </div>
                 
                 <div class="field-row">
                     <div class="field-label">Text Length Limits:</div>
                     <div class="field-value">
-                        Min: ${textRules.minTextLenght} characters | 
-                        Max: ${textRules.maxTextLenght} characters
+                        Min: ${textRules.minTextLenght} | 
+                        Max: ${textRules.maxTextLenght} ${msg('characters')}
                     </div>
                 </div>
             </div>
@@ -271,6 +269,11 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
           /*max-width: 700px;*/
         }
         
+        .peers {
+          display: flex;
+          flex-direction: row;
+          gap: 5px;
+        }
         .section {
           margin-bottom: 1.5rem;
         }

@@ -63,7 +63,7 @@ import RadioButton from "@ui5/webcomponents/dist/RadioButton";
 import SegmentedButtonItem from "@ui5/webcomponents/dist/SegmentedButtonItem";
 
 /** @ui5/webcomponents-icons */
-//import "@ui5/webcomponents-icons/dist/allIcons-static.js";
+//import "@ui5/webcomponents-icons/dist/allIcons.js";
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"

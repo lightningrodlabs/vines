@@ -282,16 +282,16 @@ export class RulesEdit extends LitElement {
                         </ui5-input>
                     </div>
 
-                    <div style="margin-top:15px;">${msg('Message Types')}</div>
+                    <!-- <div style="margin-top:15px;">${msg('Message Types')}</div> -->
                     
                     <div class="field-row">
-                        <ui5-label style="font-size: large">WAL</ui5-label>
+                        <ui5-label style="font-size: large">WAL Embeds</ui5-label>
                         <ui5-switch ?checked=${this.autoRules.canWal} @change=${this.handleAutoCanWalChange}></ui5-switch>
                         <!-- <ui5-checkbox ?checked=${this.autoRules.canWal} @change=${this.handleAutoCanWalChange}></ui5-checkbox> -->
                     </div>
                     
                     <div class="field-row">
-                        <ui5-label style="font-size: large">File</ui5-label>
+                        <ui5-label style="font-size: large">File Messages</ui5-label>
                         <ui5-switch ?checked=${this.autoRules.canFile} @change=${this.handleAutoCanFileChange}></ui5-switch>
                             <!--<ui5-checkbox ?checked=${!!this.autoRules.canFile} @change=${this.handleAutoCanFileChange}></ui5-checkbox> -->
                     </div>
@@ -323,7 +323,7 @@ export class RulesEdit extends LitElement {
                     ` : ''}
                     
                     <div class="field-row" style="margin-top:20px">
-                        <ui5-label style="font-size: large;">Text</ui5-label>
+                        <ui5-label style="font-size: large;">Text Messages</ui5-label>
                         <ui5-switch ?checked=${this.autoRules.canText} @change=${this.handleAutoCanTextChange}></ui5-switch>
                         <!-- <ui5-checkbox ?checked=${!!this.autoRules.canText} @change=${this.handleAutoCanTextChange}></ui5-checkbox> -->
                     </div>
