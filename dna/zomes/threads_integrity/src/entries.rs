@@ -155,8 +155,8 @@ pub struct AutoRules {
 #[serde(rename_all = "camelCase")]
 pub struct TextRules {
     pub banned_words: Vec<String>,
-    pub min_text_lenght: u32, // FIXME: must be < than MAX
-    pub max_text_lenght: u32,
+    pub min_text_length: u32, // FIXME: must be < than MAX
+    pub max_text_length: u32,
 }
 
 
@@ -187,8 +187,8 @@ impl Default for TextRules {
     fn default() -> Self {
         Self {
             banned_words: Vec::default(),
-            min_text_lenght: 0,
-            max_text_lenght: 0,
+            min_text_length: 0,
+            max_text_length: 0,
         }
     }
 }

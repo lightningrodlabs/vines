@@ -156,11 +156,11 @@ pub fn validate_entry_bead(rules: FileRules, eb: EntryBead) -> ExternResult<Vali
 ///
 pub fn validate_text_bead(rules: TextRules, tb: TextBead) -> ExternResult<ValidateCallbackResult> {
   /// Check length limit
-  if tb.value.len() < rules.min_text_lenght as usize {
+  if tb.value.len() < rules.min_text_length as usize {
     let msg = format!("Text message is too short: {}", tb.value.len());
     return Ok(ValidateCallbackResult::Invalid(msg));
   }
-  if rules.max_text_lenght > 0 && tb.value.len() > rules.max_text_lenght as usize {
+  if rules.max_text_length > 0 && tb.value.len() > rules.max_text_length as usize {
     let msg = format!("Text message is too long: {}", tb.value.len());
     return Ok(ValidateCallbackResult::Invalid(msg));
   }

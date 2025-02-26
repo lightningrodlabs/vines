@@ -328,8 +328,8 @@ export interface AutoRules {
 
 export interface TextRules {
   bannedWords: string[]
-  minTextLenght: number
-  maxTextLenght: number
+  minTextLength: number
+  maxTextLength: number
 }
 
 export interface FileRules {

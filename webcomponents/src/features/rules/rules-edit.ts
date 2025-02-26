@@ -31,8 +31,8 @@ export class RulesEdit extends LitElement {
   @state()
   private textRules: TextRules = {
     bannedWords: [],
-    minTextLenght: 0,
-    maxTextLenght: 1000
+    minTextLength: 0,
+    maxTextLength: 1000
   };
 
   @state()
@@ -154,7 +154,7 @@ export class RulesEdit extends LitElement {
   private handleTextMinLengthChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
-      this.textRules.minTextLenght = value;
+      this.textRules.minTextLength = value;
       if (this.autoRules.canText) {
         this.autoRules.canText = { ...this.textRules };
         this.rules = { auto: { ...this.autoRules } };
@@ -165,7 +165,7 @@ export class RulesEdit extends LitElement {
   private handleTextMaxLengthChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
-      this.textRules.maxTextLenght = value;
+      this.textRules.maxTextLength = value;
       if (this.autoRules.canText) {
         this.autoRules.canText = { ...this.textRules };
         this.rules = { auto: { ...this.autoRules } };
@@ -344,12 +344,12 @@ export class RulesEdit extends LitElement {
                             
                             <div class="field-row">
                                 <ui5-label>Min Text Length:</ui5-label>
-                                <ui5-input type="number" value=${this.textRules.minTextLenght} @change=${this.handleTextMinLengthChange}></ui5-input>
+                                <ui5-input type="number" value=${this.textRules.minTextLength} @change=${this.handleTextMinLengthChange}></ui5-input>
                             </div>
                             
                             <div class="field-row">
                                 <ui5-label>Max Text Length:</ui5-label>
-                                <ui5-input type="number" value=${this.textRules.maxTextLenght} @change=${this.handleTextMaxLengthChange}></ui5-input>
+                                <ui5-input type="number" value=${this.textRules.maxTextLength} @change=${this.handleTextMaxLengthChange}></ui5-input>
                             </div>
                         </div>
                     ` : ''}

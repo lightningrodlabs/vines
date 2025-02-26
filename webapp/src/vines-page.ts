@@ -1380,7 +1380,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
-                             showAddBtn="true"
+                             .rules=${this._selectedThreadHash? this.threadsPerspective.threads.get(this._selectedThreadHash)?.pp.rules: {none:true}}
                              @input=${async (e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);

@@ -184,8 +184,8 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 <div class="field-row">
                     <div class="field-label">Text Length Limits:</div>
                     <div class="field-value">
-                        Min: ${textRules.minTextLenght} | 
-                        Max: ${textRules.maxTextLenght} ${msg('characters')}
+                        Min: ${textRules.minTextLength} | 
+                        Max: ${textRules.maxTextLength} ${msg('characters')}
                     </div>
                 </div>
             </div>

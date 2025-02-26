@@ -25,7 +25,8 @@ import {WAL, weaveUrlFromWal} from "@theweave/api";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
-//import Dialog from "@ui5/webcomponents/dist/Dialog";
+import {Rules} from "../bindings/threads.types";
+
 
 /**
  * @element
@@ -39,7 +40,7 @@ export class InputBar extends LitElement {
   @property() cachedInput: string = '';
 
   @property() background?: string;
-  @property() showAddBtn?: string;
+  @property() rules: Rules = {none: true};
   @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
@@ -329,6 +330,53 @@ export class InputBar extends LitElement {
   }
 
 
+  // @ts-ignore
+  private canWal = true;
+  // @ts-ignore
+  private canFile = true;
+  // @ts-ignore
+  private canText = true;
+  // @ts-ignore
+  private minFileSize = 0;
+  // @ts-ignore
+  private maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
+  // @ts-ignore
+  private minTextSize = 0;
+  // @ts-ignore
+  private maxTextSize = 0;
+
+  /** */
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    if (changedProperties.has("rules")) {
+
+      /** */
+        //const rulesType = getRuleType(this.rules);
+      this.canWal = true;
+      this.canFile = true;
+      this.canText = true;
+      this.minFileSize = 0;
+      this.maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
+      this.minTextSize = 0;
+      this.maxTextSize = 0;
+      if ('auto' in this.rules) {
+        this.canWal = this.rules.auto.canWal;
+        if (!this.rules.auto.canFile) {
+          this.canFile = false;
+        } else {
+          this.minFileSize = this.rules.auto.canFile.minFileSize;
+          this.maxFileSize = this.rules.auto.canFile.maxFileSize;
+        }
+        if (!this.rules.auto.canText) {
+          this.canText = false;
+        } else {
+          this.minTextSize = this.rules.auto.canText.minTextLength;
+          this.maxTextSize = this.rules.auto.canText.maxTextLength;
+        }
+      }
+    }
+  }
+
   /** */
   override render() {
     console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal, this.profilesZvm);
@@ -460,27 +508,18 @@ export class InputBar extends LitElement {
 
     let addBtn = html``;
     let micBtn = html``;
-    if (this.showAddBtn) {
+    if (this.canFile) {
       micBtn = html`
-          <ui5-button id="micBtn" design="Transparent" icon="microphone"  tooltip=${msg('Voice Message')}
+          <ui5-button id="micBtn" design="Transparent" icon="microphone" tooltip=${msg('Voice Message')}
                       @click=${(_e: any) => {
                           const el = this.shadowRoot!.getElementById("micBtn") as HTMLElement;
                           this.micDialogElem.showAt(el);
                           //this.micDialogElem.show();
                       }}>
-          </ui5-button>        
+          </ui5-button>
       `;
-      addBtn = this.weServices
-        ? html`
-          <ui5-button id="addBtn" design="Transparent" icon="add"  tooltip=${msg('Attach WAL from pocket')}
-                      @click=${(_e: any) => {
-                          const settingsMenu = this.shadowRoot!.getElementById("addMenu") as Menu;
-                          const settingsBtn = this.shadowRoot!.getElementById("addBtn") as Button;
-                          settingsMenu.showAt(settingsBtn);
-                      }}>
-          </ui5-button>          
-        `
-        : html`
+
+      addBtn = html`
             <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
                         @click=${(_e:any) => {
                           let input = document.createElement('input');
@@ -490,10 +529,26 @@ export class InputBar extends LitElement {
                             this.inputElem.focus();
                           }
                           input.click();
-                        }}>          
-        `;
+                        }}>
+            </ui5-button>
+      `;
+    }
+    if (this.weServices && (this.canFile || this.canWal)) {
+      addBtn = html`
+          <ui5-button id="addBtn" design="Transparent" icon="add"  tooltip=${msg('Add Attachment')}
+                      @click=${(_e: any) => {
+          const settingsMenu = this.shadowRoot!.getElementById("addMenu") as Menu;
+          const settingsBtn = this.shadowRoot!.getElementById("addBtn") as Button;
+          settingsMenu.showAt(settingsBtn);
+        }}>
+          </ui5-button>          
+        `
     }
 
+
+    const placeholder = this.canText
+      ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextSize} ${msg('chars')})`
+      : msg('<Text message forbidden>');
 
     /** render all */
     return html`
@@ -505,11 +560,11 @@ export class InputBar extends LitElement {
             ${micBtn}
             <!-- TEXT AREA -->
             <ui5-textarea id="textMessageInput" mode="SingleSelect"
-                          placeholder=${`${msg("Message")} #${this.topic}, @ ${msg("to mention")}`}
+                          placeholder=${placeholder}
                           growing
                           growing-max-lines="3"
                           rows="1"
-                          maxlength="1000"
+                          .maxlength=${this.maxTextSize}
                           @keydown=${this.handleKeydown}
                           @input=${(_e:any) => this.requestUpdate()}
             ></ui5-textarea>
@@ -521,12 +576,11 @@ export class InputBar extends LitElement {
           </ui5-list>
         </ui5-popover>
         <!-- menu -->
-        <ui5-menu id="addMenu" header-text=${msg("Add")}
-                  @item-click=${(e: any) => this.onAddMenu(e)}>
-            <ui5-menu-item id="fileItem" text=${msg("Upload a File")} icon="attachment" starts-section></ui5-menu-item>             
+        <ui5-menu id="addMenu" header-text=${msg("Add")} @item-click=${(e: any) => this.onAddMenu(e)}>
+            <ui5-menu-item id="fileItem" ?disabled=${!this.canFile} text=${msg("Upload a File")} icon="attachment" starts-section></ui5-menu-item>             
             ${this.weServices? html`
-            <ui5-menu-item id="linkWalItem" text=${msg("Insert a WAL Link")} icon="chain-link" starts-section></ui5-menu-item>
-            <ui5-menu-item id="embedWalItem" text=${msg("Embed a WAL")} starts-section></ui5-menu-item>
+            <ui5-menu-item id="linkWalItem" ?disabled=${!this.canText} text=${msg("Insert a WAL Link")} icon="chain-link" starts-section></ui5-menu-item>
+            <ui5-menu-item id="embedWalItem" ?disabled=${!this.canWal} text=${msg("Embed a WAL")} starts-section></ui5-menu-item>
             ` : html``}
         </ui5-menu>
         <!-- CreateThreadDialog -->
