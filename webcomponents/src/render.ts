@@ -63,7 +63,7 @@ export function rules2str(rules: Rules): string {
     + (rules.auto.canText? msg('Text, ') : "")
     + (rules.auto.canFile? msg('File, ') : "")
     + (rules.auto.canWal? msg('WAL, ') : "")
-    + (rules.auto.allowedAgents.length > 0? msg('Restricted') : msg('All'))
+    + (rules.auto.allowedAgents.length > 0? msg('Restricted') : msg('Everyone'))
     + (rules.auto.maybeAgentCapPerDay? msg(', Capped') : "");
   }
   return msg('None');

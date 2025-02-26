@@ -1871,7 +1871,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div id="topicBar">
                     ${toggleLeftBtn}
                     ${maybeBackBtn}
-                    <div id="primaryTitle" style="font-size: 20px">${primaryTitle}</div>
+                    <div id="primaryTitle"
+                         @click=${(e: any) => {
+                           e.stopPropagation(); 
+                           if (this._selectedThreadHash) {
+                             this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {detail: {ppAh: this._selectedThreadHash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                           }
+                         }}>
+                      ${primaryTitle}
+                    </div>
                     <div style="flex-grow: 1"></div>
                     <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
                                style="border-radius: 10px; border: none; height: 32px;"
@@ -2618,7 +2626,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-weight: bold;
           box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197, 209, 208, 0);
         }
+        
+        #primaryTitle {
+          font-size: 20px;
+        }
 
+        #primaryTitle:hover {
+          text-decoration: underline;
+          cursor: pointer;
+        }
+        
         #dmSign {
           /*width: 50px;*/
           flex-direction: row;
