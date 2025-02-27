@@ -43,7 +43,7 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
       ? html`<ui5-avatar size=${size} class=${classArg} slot=${slot}>
                 <img .src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>`
-      : html`<ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+      : html`<ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
 }
 
 
