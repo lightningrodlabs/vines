@@ -25,7 +25,7 @@ export class RulesEdit extends LitElement {
   private manualRules: ManualRules = {
     instructions: '',
     allowedFlags: 0,
-    validators: []
+    moderators: []
   };
 
   @state()
@@ -223,7 +223,7 @@ export class RulesEdit extends LitElement {
       this.autoRules.allowedAgents = selectedAgents;
       this.rules = { auto: this.autoRules };
     } else if (this.rulesType === RulesType.Manual) {
-      this.manualRules.validators = selectedAgents;
+      this.manualRules.moderators = selectedAgents;
       this.rules = { manual: this.manualRules };
     }
   }
@@ -248,7 +248,7 @@ export class RulesEdit extends LitElement {
       const pair = this.profiles!.profiles.get(actionId)!;
       peerList.push(html`
         <ui5-mcb-item data-id=${agentId.b64} .text=${pair[0].nickname}
-                      ?selected=${this.manualRules.validators.some(a => a === agentId.hash)}>
+                      ?selected=${this.manualRules.moderators.some(a => a === agentId.hash)}>
         </ui5-mcb-item>
     `)};
 
@@ -372,7 +372,7 @@ export class RulesEdit extends LitElement {
                     </div>
                     
                     <div class="field-row">
-                        <ui5-label>Administrators:</ui5-label>
+                        <ui5-label>${msg('Moderators')}:</ui5-label>
                         <ui5-multi-combobox style="flex-grow:1;" @selection-change=${this.handleAgentSelectionChange}>
                             ${peerList}
                         </ui5-multi-combobox>

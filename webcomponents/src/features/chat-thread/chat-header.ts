@@ -6,9 +6,9 @@ import {
   DnaElement,
   intoAnyId,
 } from "@ddd-qc/lit-happ";
-import {determineSubjectPrefix, latestThreadName, truncate} from "../../utils";
+import {determineSubjectPrefix, latestThreadName} from "../../utils";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
-import {renderAvatar, renderProfileAvatar, rules2str} from "../../render";
+import {renderAvatar, renderModerators, renderProfileAvatar} from "../../render";
 import {beadJumpEvent, ShowRulesEvent, SpecialSubjectType} from "../../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../../styles";
@@ -90,7 +90,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  override render() {
+  override render(): any {
     console.log("<chat-header>.render()", this.threadHash, this._latestSubjectId);
     if (!this.threadHash) {
       return html`<div>Thread hash missing</div>`;
@@ -140,7 +140,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
-    const rulesStr = truncate(rules2str(thread.pp.rules), 200, true);
+    //const rulesStr = truncate(rules2str(thread.pp.rules), 200, true);
     /** render all */
     return html`
         <div id="chat-header">
@@ -149,12 +149,16 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <div class="subtext">${subText}</div>
           <!-- <div class="subtext">Purpose: ${thread.title}</div> -->
           <div class="subtext">
-              ${msg("Rules")}: 
               <span class="rules" 
                     @click=${(e:any) => {
                       e.preventDefault(); e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {detail: {ppAh: this.threadHash!, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-                    ${rulesStr}</span>
+                        this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {detail: {ppAh: this.threadHash!, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                    }}>
+                ${msg("Rules")}
+              </span>
+              |
+              ${msg("Moderators")}:
+              ${renderModerators(thread.pp.rules, this, this._dvm.profilesZvm.perspective)}
           </div>
         </div>
     `;
@@ -220,9 +224,12 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           margin: 5px 5px 10px 10px;
         }
         .subtext {
+          display: flex;
+          gap: 5px;
           color: #505459;
           /*margin-left:10px;*/
           margin-bottom:5px;
+          align-items: center;
         }        
       `,];
   }

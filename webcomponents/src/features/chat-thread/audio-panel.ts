@@ -3,6 +3,7 @@ import {customElement} from "lit/decorators.js";
 import {sharedStyles} from "../../styles";
 import {AudioRecorder, MIC_MIME_TYPE} from "./audio-recorder";
 import {msg} from "@lit/localize";
+import {formatFileSize} from "../../utils";
 
 
 /**
@@ -57,7 +58,9 @@ export class AudioPanel extends LitElement {
           <audio class="preview Audio" controls>
               <source .src=${this._maybeBlobUrl} type=${MIC_MIME_TYPE}>
               ${msg("Your browser does not support the audio element.")}
-          </audio>`;
+          </audio>
+          <span style="color:grey;font-size: small;">(${formatFileSize(this._maybeBlob!.size)})</span>
+    `;
     }
 
 

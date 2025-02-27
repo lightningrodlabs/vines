@@ -1,13 +1,12 @@
-import {html, css, TemplateResult} from 'lit';
+import {html, css} from 'lit';
 import { customElement, property} from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import { FileRules, Rules, RulesType, TextRules} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
+import {ZomeElement} from "@ddd-qc/lit-happ";
 import {formatFileSize} from "../../utils";
 import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {renderProfileAvatar} from "../../render";
-import {ShowProfileEvent} from "../../events";
+import {renderAvatars} from "../../render";
 
 
 
@@ -30,33 +29,6 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   @property()
   rules: Rules = {none: true};
 
-
-  /** */
-  private renderProfiles(agentHashes: Uint8Array[]): TemplateResult<1>[] {
-    let peerList: TemplateResult<1>[] = [];
-    const unknown = html`${msg('Unknown member')}`;
-    for (const agentId of agentHashes.map((hash) => new AgentId(hash))) {
-      const ah = this._zvm.perspective.profileByAgent.get(agentId);
-      console.log("renderProfiles", agentId, ah, this._zvm.perspective);
-      if (!ah) {
-        peerList.push(unknown);
-        continue;
-      }
-      const pair = this._zvm.perspective.profiles.get(ah);
-      const li = !pair
-        ? unknown
-        //: html`${pair![0].nickname}`;
-        : html`<div style="cursor:pointer"
-                      @click=${(e:any) => {
-                  e.stopPropagation();
-                  this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-              }}>${renderProfileAvatar(pair![0], "XS")}</div>`;
-      peerList.push(li);
-    }
-    return peerList;
-  }
-
-
   /** */
   private renderNoneRules() {
     return html`
@@ -71,7 +43,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private renderAutoRules() {
     const autoRules = 'auto' in this.rules ? this.rules.auto : null;
     if (!autoRules) return html``;
-    const peerList = this.renderProfiles(autoRules.allowedAgents);
+    const peerList = renderAvatars(autoRules.allowedAgents, this, this._zvm.perspective);
 
     console.log("renderAutoRules", autoRules);
     /** */
@@ -197,7 +169,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private renderManualRules() {
     const manualRules = 'manual' in this.rules ? this.rules.manual : null;
     if (!manualRules) return html``;
-    const peerList = this.renderProfiles(manualRules.validators);
+    const peerList = renderAvatars(manualRules.moderators, this, this._zvm.perspective);
     /** */
     return html`
             <div class="section">
@@ -213,11 +185,11 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     </div>
                                      
                     <div class="field-row">
-                        <div class="field-label">Administrators:</div>
+                        <div class="field-label">${msg('Moderators')}:</div>
                         <div class="field-value">
-                            ${manualRules.validators.length > 0
+                            ${manualRules.moderators.length > 0
       ? html`<div class="peers">${peerList}</div>`
-      : html`<ui5-text style="color:red">${msg('No administrators configured for this channel')}</ui5-text>`}
+      : html`<ui5-text style="color:red">${msg('No moderators set for this channel')}</ui5-text>`}
                         </div>
                     </div>
 

@@ -1,5 +1,5 @@
 use hdi::prelude::*;
-use crate::validation_app_entry::validate_app_entry;
+use crate::{validation_app_entry::validate_app_entry, validate_link::validate_create_link};
 
 
 ///
@@ -12,9 +12,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
          let creation_action = storeEntry.action.hashed.into_inner().0;
          return validate_entry(creation_action.clone(), storeEntry.entry, Some(creation_action.entry_type()));
       },
-      Op::RegisterCreateLink(_reg_create_link) => {
-         // FIXME return validate_create_link(reg_create_link.create_link);
-         Ok(ValidateCallbackResult::Valid)
+      Op::RegisterCreateLink(reg_create_link) => {
+         return validate_create_link(reg_create_link.create_link.hashed);
+         //Ok(ValidateCallbackResult::Valid)
       },
       Op::RegisterDeleteLink (_)=> Ok(ValidateCallbackResult::Valid),
       Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),

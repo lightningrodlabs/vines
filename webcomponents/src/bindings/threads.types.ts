@@ -315,7 +315,7 @@ export type Rules =
 export interface ManualRules {
   instructions: string
   allowedFlags: number
-  validators: AgentArray[]
+  moderators: AgentArray[]
 }
 
 export interface AutoRules {

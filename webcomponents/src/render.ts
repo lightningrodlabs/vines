@@ -1,5 +1,5 @@
-import {getInitials, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
-import {html, TemplateResult} from "lit";
+import {getInitials, ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {html, LitElement, TemplateResult} from "lit";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {determineBeadName, latestThreadName} from "./utils";
@@ -7,17 +7,9 @@ import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
 import {AgentId} from "@ddd-qc/lit-happ";
-import {beadJumpEvent, JumpEvent, threadJumpEvent} from "./events";
+import {beadJumpEvent, JumpEvent, ShowProfileEvent, threadJumpEvent} from "./events";
 import {msg} from "@lit/localize";
 import {Rules} from "./bindings/threads.types";
-
-
-
-/** */
-export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
-  const profile = loadProfile(profilesZvm, agentKey);
-  return renderProfileAvatar(profile, size, classArg, slotArg);
-}
 
 
 /** Get profile for agent, otherwise fetch it from DHT and return unknown Profile */
@@ -35,6 +27,13 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): Pro
 }
 
 
+/** */
+export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
+  const profile = loadProfile(profilesZvm, agentKey);
+  return renderProfileAvatar(profile, size, classArg, slotArg);
+}
+
+
 /** Render ui5-avatar with profile pic */
 export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
     const initials = getInitials(profile.nickname);
@@ -49,10 +48,44 @@ export function renderProfileAvatar(profile: ProfileMat, size: string, classArg:
 
 
 /** */
-export function rules2str(rules: Rules): string {
-  if ("none" in rules) {
-    return msg('None');
+export function renderAvatars(agentHashes: Uint8Array[], lit: LitElement, perspective: ProfilesAltPerspective): TemplateResult<1> {
+  let peerList: TemplateResult<1>[] = [];
+  const unknown = html`${msg('Unknown member')}`;
+  for (const agentId of agentHashes.map((hash) => new AgentId(hash))) {
+    const ah = perspective.profileByAgent.get(agentId);
+    console.log("renderProfiles", agentId, ah, perspective);
+    if (!ah) {
+      peerList.push(unknown);
+      continue;
+    }
+    const pair = perspective.profiles.get(ah);
+    const li = !pair
+      ? unknown
+      //: html`${pair![0].nickname}`;
+      : html`<div style="cursor:pointer"
+                      @click=${(e:any) => {
+        e.preventDefault(); e.stopPropagation();
+        lit.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+      }}>${renderProfileAvatar(pair![0], "XS")}</div>`;
+    peerList.push(li);
   }
+  return html`${peerList}`;
+}
+
+
+export function renderModerators(rules: Rules, lit: LitElement, perspective: ProfilesAltPerspective): TemplateResult<1> {
+  if ("manual" in rules) {
+    return renderAvatars(rules.manual.moderators, lit, perspective)
+  }
+  if ("auto" in rules) {
+    return html`<span>${msg('Automatic')}</span>`;
+  }
+  return html`<span>${msg('None')}</span>`;
+}
+
+
+/** */
+export function rules2str(rules: Rules): string {
    if ("manual" in rules) {
      const instructions = rules.manual.instructions.length > 0 ? rules.manual.instructions
        : msg("No instructions provided");

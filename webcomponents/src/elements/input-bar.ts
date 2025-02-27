@@ -26,6 +26,9 @@ import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
 import {Rules} from "../bindings/threads.types";
+import {toasty} from "../toast";
+import {formatFileSize} from "../utils";
+//import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 
 /**
@@ -188,10 +191,27 @@ export class InputBar extends LitElement {
   }
 
 
+  private validateText(text: string): boolean {
+    if (text.length < this.minTextSize) {
+      return false;
+    }
+    /** Check banned words */
+    // FIXME
+    /** */
+    return true;
+  }
+
   /** */
   private commitInput() {
     console.log(`Commit input value "${this.inputElem.value}"`);
+    /** Validate */
+    if (!this.validateText(this.inputElem.value)) {
+      // this.inputElem.valueState = ValueState.Error;
+      return;
+    }
+    /** Shoot */
     this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value!, file: this._file!, wal: this._wal!}, bubbles: true, composed: true}));
+    /** Clean-up */
     this.inputElem.value = "";
     this._cacheInputValue = "";
     this._file = undefined;
@@ -330,27 +350,20 @@ export class InputBar extends LitElement {
   }
 
 
-  // @ts-ignore
+  /** Rules */
   private canWal = true;
-  // @ts-ignore
   private canFile = true;
-  // @ts-ignore
   private canText = true;
-  // @ts-ignore
   private minFileSize = 0;
-  // @ts-ignore
   private maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
-  // @ts-ignore
   private minTextSize = 0;
-  // @ts-ignore
-  private maxTextSize = 0;
+  private maxTextSize = 16 * 1024;
 
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
+    /** Rules */
     if (changedProperties.has("rules")) {
-
-      /** */
         //const rulesType = getRuleType(this.rules);
       this.canWal = true;
       this.canFile = true;
@@ -358,7 +371,7 @@ export class InputBar extends LitElement {
       this.minFileSize = 0;
       this.maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
       this.minTextSize = 0;
-      this.maxTextSize = 0;
+      this.maxTextSize = 16 * 1024;
       if ('auto' in this.rules) {
         this.canWal = this.rules.auto.canWal;
         if (!this.rules.auto.canFile) {
@@ -376,6 +389,7 @@ export class InputBar extends LitElement {
       }
     }
   }
+
 
   /** */
   override render() {
@@ -485,6 +499,7 @@ export class InputBar extends LitElement {
           <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc; display: flex; flex-direction: row; align-items: center; margin-bottom: 3px;">
               <div style="margin-right:5px;">${msg("File")}:</div>
               ${fileNameElem}
+              <span style="margin-left:5px;font-size: small;">(${formatFileSize(this._file.size)})</span> 
               <ui5-button class="fileIcon" icon="edit" design="Transparent" tooltip=${msg('Rename file')}
                           style="margin-left:10px;"
                           @click=${(_e:any) => this._isEditing = !this._isEditing}></ui5-button>
@@ -524,10 +539,7 @@ export class InputBar extends LitElement {
                         @click=${(_e:any) => {
                           let input = document.createElement('input');
                           input.type = 'file';
-                          input.onchange = (e:any) => {
-                            this._file = e.target.files[0];
-                            this.inputElem.focus();
-                          }
+                          input.onchange = (e) => this.onAttachFile(e);
                           input.click();
                         }}>
             </ui5-button>
@@ -547,7 +559,9 @@ export class InputBar extends LitElement {
 
 
     const placeholder = this.canText
-      ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextSize} ${msg('chars')})`
+      ? this.maxTextSize > 0
+        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextSize} ${msg('chars')})`
+        : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`
       : msg('<Text message forbidden>');
 
     /** render all */
@@ -591,7 +605,11 @@ export class InputBar extends LitElement {
                                    "recording.opus",
                                    { type: MIC_MIME_TYPE, lastModified: Date.now() }
                            );
-                           this._file = file;
+                            if (file.size < this.minFileSize || file.size > this.maxFileSize) {
+                                toasty("Attach recording cancelled: Invalid file size");
+                            } else {
+                              this._file = file;
+                            }
                          this.micDialogElem.close(false);
                        }}
           ></audio-panel>
@@ -601,16 +619,27 @@ export class InputBar extends LitElement {
 
 
   /** */
+  onAttachFile(e:any) {
+    const file = e.target.files[0] as File;
+    console.log("onAttachFile()", file.size, this.minFileSize, this.maxFileSize)
+    if (file.size < this.minFileSize || file.size > this.maxFileSize) {
+      toasty("Attach File cancelled: Invalid file size");
+    } else {
+      this._file = e.target.files[0];
+    }
+    this.inputElem.focus();
+  }
+
+
+  /** */
   async onAddMenu(e:any): Promise<void> {
     console.log("AddMenu.item-click", e);
     switch (e.detail.item.id) {
       case "fileItem":
         let input = document.createElement('input');
+        input.accept = ""; // FIXME file types
         input.type = 'file';
-        input.onchange = (e:any) => {
-          this._file = e.target.files[0];
-          this.inputElem.focus();
-        }
+        input.onchange = (e) => this.onAttachFile(e);
         input.click();
       break;
       case "linkWalItem":

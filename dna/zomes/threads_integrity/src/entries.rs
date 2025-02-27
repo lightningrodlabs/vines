@@ -136,7 +136,7 @@ pub enum Rules {
 pub struct ManualRules {
     pub instructions: String,
     pub allowed_flags: u16,
-    pub validators: Vec<AgentPubKey>,
+    pub moderators: Vec<AgentPubKey>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

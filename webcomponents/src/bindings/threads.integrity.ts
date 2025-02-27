@@ -35,4 +35,6 @@ export enum ThreadsLinkType {
 	Favorite = 'Favorite',
 	Dm = 'Dm',
 	TitleFix = 'TitleFix',
+	Flagged = 'Flagged',
+	Banned = 'Banned',
 }

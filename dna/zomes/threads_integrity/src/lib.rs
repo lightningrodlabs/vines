@@ -8,6 +8,7 @@ mod entries;
 mod properties;
 mod validation_app_entry;
 mod validate;
+mod validate_link;
 
 pub use entries::*;
 pub use properties::*;
@@ -118,4 +119,6 @@ pub enum ThreadsLinkType {
     Favorite,
     Dm,
     TitleFix,
+    Flagged,
+    Banned,
 }
