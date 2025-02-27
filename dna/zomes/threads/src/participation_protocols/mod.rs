@@ -2,6 +2,7 @@
 mod probe_pps_from_subject;
 mod publish_participation_protocol;
 mod pp_title;
+mod rules;
 
 
 use hdi::hash_path::path::{Component};

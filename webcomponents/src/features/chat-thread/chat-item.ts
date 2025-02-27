@@ -2,7 +2,7 @@ import {html, css, PropertyValues} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import 'emoji-picker-element';
 
@@ -180,7 +180,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
       }
         break;
-      case "flagMessage": /* TODO */ break;
+      case "flagMessage":
+        this._dvm.threadsZvm.flagBead(this.hash).then(async () => {await delay(100); this.requestUpdate()});
+        toasty(msg("Message has been flagged"));
+        break;
     }
   }
 
@@ -255,6 +258,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //const isPersistent = false;
     const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
+    const isFlagged = this._dvm.threadsZvm.perspective.hasFlag(beadInfo.bead.ppAh, this.hash);
+    //console.log("isFlagged", isFlagged, this.hash);
     /** hide if prevBead is closer than a minute and same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
@@ -410,7 +415,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-      <div id="innerChatItem" style="position: relative">
+      <div id="innerChatItem" style="position: relative; ${isFlagged? "background: #fbc6c6" : ""}">
         ${isPersistent? html`` : html`<div class="grey-veil"></div>`}
         <!-- Vine row -->
         ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
@@ -489,7 +494,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                       ? html`<ui5-menu-item id="intoHrl" text=${msg("Add Message to Pocket")}></ui5-menu-item>`
                       : html`<ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>`}
                 ${downloadItem}
-                <ui5-menu-item id="flagMessage" disabled icon="flag" text=${msg("Report Message")}></ui5-menu-item>
+                <ui5-menu-item id="flagMessage" ?disabled=${!this._dvm.threadsZvm.isSelfModerator(beadInfo.bead.ppAh) || isFlagged} icon="flag" text=${msg("Report Message")}></ui5-menu-item>
 
             </ui5-menu>
         </div>

@@ -33,7 +33,10 @@ export enum NotifiableEvent {
   Reply = 'Reply',
   Fork = 'Fork',
   NewDmThread = 'NewDmThread',
+  Flagged = "Flagged",
+  Banned = "Banned",
 }
+
 
 /** */
 export type ThreadsAppTip = {

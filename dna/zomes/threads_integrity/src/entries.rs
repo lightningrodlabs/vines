@@ -8,6 +8,20 @@ pub enum BaseBeadKind {
     TextBead(TextBead),
 }
 impl BaseBeadKind {
+
+    pub fn from(entry: &Entry) -> Self {
+        if let Ok(any) = AnyBead::try_from(entry.clone()) {
+            return BaseBeadKind::AnyBead(any);
+        }
+        if let Ok(any) = TextBead::try_from(entry.clone()) {
+            return BaseBeadKind::TextBead(any);
+        }
+        if let Ok(any) = EntryBead::try_from(entry.clone()) {
+            return BaseBeadKind::EntryBead(any);
+        }
+        panic!("Entry not a bead");
+    }
+
     pub fn bead(&self) -> Bead {
         match self {
             BaseBeadKind::AnyBead(a) => a.bead.clone(),

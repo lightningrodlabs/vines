@@ -12,12 +12,46 @@ pub(crate) fn validate_app_entry(creation_action: EntryCreationAction, entry_ind
     ThreadsEntryTypes::EntryBead => {let ab = EntryBead::try_from(entry)?; return validate_bead(creation_action, BaseBeadKind::EntryBead(ab))},
     ThreadsEntryTypes::TextBead => {let ab = TextBead::try_from(entry)?; return validate_bead(creation_action, BaseBeadKind::TextBead(ab))},
     // ThreadsEntryTypes::EncryptedBead,
-    // ThreadsEntryTypes::ParticipationProtocol,
+    ThreadsEntryTypes::ParticipationProtocol => {let pp = ParticipationProtocol::try_from(entry)?; return validate_pp(creation_action, pp)},
     ThreadsEntryTypes::SemanticTopic => Ok(ValidateCallbackResult::Valid),
     ThreadsEntryTypes::GlobalLastProbeLog => Ok(ValidateCallbackResult::Valid),
     ThreadsEntryTypes::ThreadLastProbeLog => Ok(ValidateCallbackResult::Valid),
     _ => Ok(ValidateCallbackResult::Valid),
   }
+}
+
+
+///
+fn validate_pp(_creation_action: EntryCreationAction, pp: ParticipationProtocol) -> ExternResult<ValidateCallbackResult> {
+  /// Validate Rules
+  match pp.rules {
+    Rules::Manual(man) => {
+      /// at least one moderator
+      if man.moderators.len() == 0 {
+        return Ok(ValidateCallbackResult::Invalid("Invalid Manual Rules: Needs at least one moderator".to_string()));
+      }
+    },
+    Rules::Auto(auto) => {
+      /// at least one type
+      if !auto.can_wal && auto.can_text.is_none() && auto.can_file.is_none() {
+        return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Needs at least one allowed message type".to_string()));
+      }
+      /// text
+      if let Some(text_rules) = auto.can_text {
+        if text_rules.max_text_length <= text_rules.min_text_length && text_rules.max_text_length > 0 {
+          return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Max text length must be bigger than Min".to_string()));
+        }
+      }
+      /// file
+      if let Some(file_rules) = auto.can_file {
+        if file_rules.max_file_size <= file_rules.min_file_size && file_rules.max_file_size > 0 {
+          return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Max file size must be bigger than Min".to_string()));
+        }
+      }
+    },
+    _ => (),
+  }
+  Ok(ValidateCallbackResult::Valid)
 }
 
 

@@ -106,7 +106,7 @@ export function notification2JumpEvent(notif: ThreadsNotification): CustomEvent<
   let detail: JumpEvent = {
       type: MainViewType.Thread,
   };
-  if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event) {
+  if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event || NotifiableEvent.Banned) {
     detail.thread = notif.content;
   } else {
     detail.bead = notif.content;

@@ -469,6 +469,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       console.warn("pullAllBeads() Failed. Unknown thread:", ppAh);
       return [];
     }
+    /** Probe bans if manual rules */
+    await this.pullThreadModeration(ppAh);
     /** Probe */
     const [throttleError, maybe] = await catchThrottled(this.zomeProxy.findBeads(ppAh.hash));
     if (throttleError) {
@@ -485,6 +487,18 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  /** */
+  async pullThreadModeration(ppAh: ActionId) {
+    let thread = this._perspective.threads.get(ppAh);
+    /** Probe bans if manual rules */
+    if ('manual' in thread!.pp.rules) {
+      console.log("pullThreadModeration()", ppAh.short);
+      await this.zomeProxy.probeAllBanned(ppAh.hash);
+      await this.zomeProxy.probeAllFlagged(ppAh.hash);
+    }
+  }
+
+
   /** Get all beads from "now" and back until `limit` is reached or `startTime` is reached */
   async pullLatestBeads(ppAh: ActionId, begin_time?: Timestamp, end_time?: Timestamp, target_limit?: number): Promise<BeadLink[]> {
     console.log("pullLatestBeads()", ppAh);
@@ -498,6 +512,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       //}
       //thread = this._threads.get(ppAh);
     }
+    await this.pullThreadModeration(ppAh);
     /** Probe the latest beads */
     try {
       const [searchedInterval, beadLinks] = await this.zomeProxy.findLatestBeads(
@@ -1447,6 +1462,51 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  /** */
+  isSelfModerator(ppAh: ActionId): boolean {
+    console.log("isSelfModerator()", ppAh);
+    const thread = this._perspective.threads.get(ppAh);
+    if (!thread) { return false; }
+    if ("manual" in thread.pp.rules) {
+      const moderators: AgentPubKeyB64[] = thread.pp.rules.manual.moderators.map((m) => new AgentId(m).b64);
+      return moderators.includes(this.cell.address.agentId.b64);
+    }
+    return false;
+  }
+
+
+  /** */
+  async flagBead(beadAh: ActionId) {
+    await this.zomeProxy.flagBead(beadAh.hash);
+  }
+
+
+  /** */
+  private async attemptBan(ppAh: ActionId, author: AgentId) {
+    console.log("AttemptBan()", ppAh.short, author.short);
+    /* Grab rules */
+    const thread = this._perspective.threads.get(ppAh);
+    if (!thread) { return; }
+    if ('manual' in thread.pp.rules) {
+      /* count flags */
+      let infringements: Uint8Array[] = [];
+      const flags = this._perspective.flags.get(ppAh);
+      if (!flags) { return; }
+      for (const [linkAh, curBeadAh] of flags) {
+        const info = this._perspective.beads.get(curBeadAh);
+        if (info && author.equals(info[0].author)) {
+            infringements.push(linkAh.hash);
+          }
+      }
+      /* ban if limit reached */
+      console.log("AttemptBan() count", infringements.length , thread.pp.rules.manual.allowedFlags);
+      if (infringements.length > thread.pp.rules.manual.allowedFlags) {
+        await this.zomeProxy.banAgent({vilain: author.hash, pp_ah: ppAh.hash, infringements});
+      }
+    }
+  }
+
+
   /** -- Signaling / Notifying -- */
 
   /** */
@@ -1525,6 +1585,57 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           const emoji = decoder.decode(pulse.tag);
           //console.warn("EmojiReaction DeleteLink:", link.tag, emoji);
           this._perspective.unstoreEmojiReaction(baseAh, pulse.author, emoji);
+        }
+      }
+      break;
+      case ThreadsLinkType.Banned: {
+        const ppAh = new ActionId(pulse.base.b64);
+        const agent = AgentId.from(pulse.target.b64);
+        if (StateChangeType.Create == pulse.state) {
+          this._perspective.storeBan(ppAh, agent);
+          if (pulse.validatedBy != ValidatedBy.None) {
+            this._perspective.setPersistent(pulse.create_link_hash.b64);
+          }
+          if (pulse.isNew && isAuthorSelf) {
+            /** Notify bead author that they have been banned */
+            if (this._canNotify && !this.cell.address.agentId.equals(agent)) {
+              await this.zomeProxy.notifyPeer({
+                content: ppAh.hash,
+                who: agent.hash,
+                event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Banned),
+              });
+            }
+          }
+        }
+      }
+      break;
+      case ThreadsLinkType.Flagged: {
+        const ppAh = new ActionId(pulse.base.b64);
+        const beadAh = new ActionId(pulse.target.b64);
+        /** Delete */
+        // TODO
+        // if (StateChangeType.Delete == pulse.state) {
+        //   this._perspective.unstoreFlag(ppAh, targetAh);
+        // }
+        /** Create */
+        if (StateChangeType.Create == pulse.state) {
+          this._perspective.storeFlag(ppAh, beadAh, pulse.create_link_hash);
+          if (pulse.validatedBy != ValidatedBy.None) {
+            this._perspective.setPersistent(pulse.create_link_hash.b64);
+          }
+          if (pulse.isNew && isAuthorSelf) {
+            let author = await this.getRecordAuthor(intoDhtId(beadAh.b64));
+            /** Notify bead author that it has been flagged */
+            if (this._canNotify && !this.cell.address.agentId.equals(author)) {
+              await this.zomeProxy.notifyPeer({
+                content: beadAh.hash,
+                who: author.hash,
+                event_index: getIndexByVariant(NotifiableEvent, NotifiableEvent.Flagged),
+              });
+            }
+            /** Check if self should ban author */
+            await this.attemptBan(ppAh, author);
+          }
         }
       }
       break;

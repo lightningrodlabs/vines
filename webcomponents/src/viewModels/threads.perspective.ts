@@ -49,6 +49,10 @@ export type ThreadsSnapshot = {
   favorites: ActionHashB64[],
   /** (ppAh, ppMat, title, ts, author) */
   pps: [ActionHashB64, ParticipationProtocol, string, Timestamp, AgentPubKeyB64][],
+  /** (ppAh, agents) */
+  bans: [ActionHashB64, AgentPubKeyB64[]][],
+  /** (ppAh, beads) */
+  flags: [ActionHashB64, ActionHashB64[]][],
   /** beadAh -> [BeadInfoMat, TypedBeadMat] */
   beads: [ActionHashB64, BeadInfo, TypedBeadMat][],
   /** bead_ah -> [agent, emojis[]][] */
@@ -70,6 +74,8 @@ function print(self: ThreadsSnapshot): void {
   console.log("  -         hiddens:", self.hiddens.length);
   console.log("  -       favorites:", self.favorites.length);
   console.log("  -             pps:", self.pps.length);
+  console.log("  -            bans:", self.bans.flat().length);
+  console.log("  -           flags:", self.flags.flat().length);
   console.log("  -           beads:", self.beads.length);
   console.log("  -  emojiReactions:", self.emojiReactions.length);
   console.log("  - appletSubjTypes:", self.appletSubjectTypes.length);
@@ -84,6 +90,8 @@ export type ThreadsPerspectiveComparable = {
   hiddens: number,
   favorites: number,
   threads: number,
+  bans: number,
+  flags: number,
   threadTitles: string[],
   beads: number,
   emojiReactions: number,
@@ -120,7 +128,11 @@ export class ThreadsPerspective {
   threads: ActionIdMap<Thread> = new ActionIdMap();
   /** beadAh -> [BeadInfo, TypedBead] */
   beads: ActionIdMap<[BeadInfo, TypedBeadMat]> = new ActionIdMap();
-  /** beadAh -> [agent, emoji][] */
+  /** ppAh -> agents */
+  bans: ActionIdMap<AgentId[]> = new ActionIdMap();
+  /** ppAh -> linkAh, beadAh)[] */
+  flags: ActionIdMap<[ActionId, ActionId][]> = new ActionIdMap();
+  /** beadAh -> (agent -> emoji[]) */
   emojiReactions: ActionIdMap<AgentIdMap<string[]>> = new ActionIdMap();
   /** AppletId -> PathEntryHash -> subjectType */
   appletSubjectTypes: EntryIdMap<EntryIdMap<string>> = new EntryIdMap();
@@ -175,6 +187,8 @@ export class ThreadsPerspective {
       hiddens: Object.keys(this.hiddens).length,
       favorites: this.favorites.length,
       threads: this.threads.size,
+      bans: this.bans.size,
+      flags: this.flags.size,
       threadTitles: Array.from(this.threads.values()).map((thread) => thread.title),
       beads: this.beads.size,
       emojiReactions: this.emojiReactions.size,
@@ -377,6 +391,7 @@ export class ThreadsPerspective {
     return bead.value;
   }
 
+
   /** */
   getLatestThread(): [ActionId, Thread] | undefined {
     let res: [ActionId, Thread] | undefined = undefined;
@@ -386,6 +401,37 @@ export class ThreadsPerspective {
       }
     });
     return res;
+  }
+
+
+  /** */
+  hasBan(ppAh: ActionId, agent: AgentId): boolean {
+    if (!ppAh || !agent) {
+      return false;
+    }
+    const bans = this.bans.get(ppAh);
+    if (bans) {
+      for (const a of bans) {
+        if (agent.equals(a)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
+  /** */
+  hasFlag(ppAh: ActionId, beadAh: ActionId): boolean {
+    const flags = this.flags.get(ppAh);
+    if (flags) {
+      for (const [_linkAh, curBeadAh] of flags) {
+        if (beadAh.equals(curBeadAh)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
 
@@ -681,6 +727,8 @@ export class ThreadsPerspective {
       hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
       favorites: this.favorites.map((id) => id.b64),
       pps,
+      bans: Array.from(this.bans.entries()).map(([ppAh, agents]) => [ppAh.b64, agents.map((a) => a.b64)]),
+      flags: Array.from(this.flags.entries()).map(([ppAh, pairs]) => [ppAh.b64, pairs.map(([_lh, beadAh]) => beadAh.b64)]),
       beads: Array.from(this.beads.entries()).map(([beadAh, [beadInfo, typed]]) => [beadAh.b64, beadInfo, typed]),
       emojiReactions,
       appletSubjectTypes,
@@ -950,6 +998,37 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
+  storeBan(ppAh: ActionId, agent: AgentId) {
+    console.debug("storeBan()", ppAh.short, agent.short);
+    if (this.hasBan(ppAh, agent)) {
+      return;
+    }
+    let bans = this.bans.get(ppAh);
+    if (!bans) {
+      bans = [];
+    }
+    bans.push(agent);
+    this.bans.set(ppAh, bans);
+  }
+
+
+  /** */
+  storeFlag(ppAh: ActionId, beadAh: ActionId, linkAh: ActionId) {
+    console.debug("storeFlag()", ppAh.short, beadAh.short);
+    if (this.hasFlag(ppAh, beadAh)) {
+      return;
+    }
+    let flags = this.flags.get(ppAh);
+    //console.debug("storeFlag() count", flags);
+    if (!flags) {
+      flags = [];
+    }
+    flags.push([linkAh, beadAh]);
+    this.flags.set(ppAh, flags);
+  }
+
+
+  /** */
   storeEmojiReaction(beadAh: ActionId, agent: AgentId, emoji: string) {
     console.debug("storeEmojiReaction()", emoji, beadAh.short, agent.short);
     if (this.hasEmojiReaction(beadAh, agent, emoji)) {
@@ -1147,6 +1226,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   }
 
 
+  /** */
   print(): void {
     console.log("ThreadsPerspective:");
     console.log("  -       appletIds:", this.appletIds.length);
@@ -1156,6 +1236,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     console.log("  -         hiddens:", Object.keys(this.hiddens).length);
     console.log("  -       favorites:", this.favorites.length);
     console.log("  -         threads:", this.threads.size);
+    console.log("  -            bans:", this.bans.size);
+    console.log("  -           flags:", this.flags.size);
     console.log("  -           beads:", this.beads.size);
     console.log("  -  emojiReactions:", this.emojiReactions.size);
   }

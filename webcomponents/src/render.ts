@@ -174,6 +174,31 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         }
     }
     break;
+    case NotifiableEvent.Banned: {
+      jump = threadJumpEvent(ah);
+      const maybeThread = threadsZvm.perspective.threads.get(ah);
+      title = msg("Banned from channel");
+      if (maybeThread)  {
+        content = latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
+        // content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
+      }
+    }
+    break;
+    case NotifiableEvent.Flagged: {
+      jump = beadJumpEvent(ah);
+      const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
+      if (!beadInfo) {
+        title = msg("Message has been flagged");
+      } else {
+        const typedBead = threadsZvm.perspective.getBaseBead(ah);
+        const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+        if (maybeThread) {
+          title = msg("Message has been flagged") + " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
+        }
+        content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
+      }
+    }
+    break;
     case NotifiableEvent.NewDmThread: {
       title = msg("New DM channel");
     }

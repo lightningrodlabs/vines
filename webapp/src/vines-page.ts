@@ -1349,6 +1349,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
 
+        const isSelfBanned = this._dvm.threadsZvm.perspective.hasBan(this._selectedThreadHash, this.cell.address.agentId);
+        const canDisplayInput = !isEditOther && !isSelfBanned;
+
         const threadView = this.multi
             ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this._selectedBeadAh}></chat-thread-multi-view>`
             : html`<chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
@@ -1376,7 +1379,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
             <vines-input-bar id="input-bar" contenteditable="true"
-                             style="display: ${isEditOther? "none":""}"
+                             style="display: ${!canDisplayInput? "none":""}"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}

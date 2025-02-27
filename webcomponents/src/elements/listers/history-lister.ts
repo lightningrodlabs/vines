@@ -182,7 +182,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
     //console.log("<topics-lister>.render() threads", threads);
     if (!threads || threads.length == 0) {
       threads = [html`<div class="threadItem">
-                 <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No channel history')}</span>
+                 <span style="margin-left:28px;margin-right:10px;color:grey">${msg('None')}</span>
             </div>`];
     }
 
@@ -194,7 +194,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                      this.collapsed = e.target.collapsed;                      
                    }}>
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
-                <span style="width: 1.2rem; height: 1.2rem">${msg("History")}</span>
+                <span style="width: 1.2rem; height: 1.2rem">${msg("Recently Viewed")}</span>
             </div>
         ${threads}
         </ui5-panel>

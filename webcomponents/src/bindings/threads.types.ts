@@ -205,6 +205,12 @@ export interface UpdatePpTitleInput {
   newTitle: string
 }
 
+export interface BanAgentInput {
+  vilain: AgentArray
+  pp_ah: ActionArray
+  infringements: ActionArray[]
+}
+
 /** Input to the notify call */
 export interface PublishTopicInput {
   appletId: string
