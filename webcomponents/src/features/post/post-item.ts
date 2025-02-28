@@ -181,8 +181,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   async onTextComment(inputText: string) {
     const commentThreadAh = await this.getCommentThread();
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.address.agentId);
-    console.log("onTextComment() ah:", ah);
+    await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, commentThreadAh, this.cell.address.agentId);
   }
 
 

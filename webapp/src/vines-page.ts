@@ -711,12 +711,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     const otherAgent: AgentId = sub.hash;
     console.log("onDmTextMessage() otherAgent", otherAgent)
-    let beadAh = await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
-    console.log("onDmTextMessage() beadAh", beadAh, this._dvm.threadsZvm.perspective.threads);
+    await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     this._replyToAh = undefined;
     this._selectedBeadAh = undefined;
     //await delay(1000);
-    this.dispatchEvent(beadJumpEvent(beadAh));
+    //this.dispatchEvent(beadJumpEvent(beadAh));
+    const dmThreadAh = this._dvm.threadsZvm.perspective.dmAgents.get(otherAgent);
+    if (dmThreadAh) {
+      this.dispatchEvent(threadJumpEvent(dmThreadAh));
+    }
   }
 
 

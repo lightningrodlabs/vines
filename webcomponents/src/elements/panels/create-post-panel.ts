@@ -7,14 +7,14 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {filesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {determineSubjectName, getThisAppletId} from "../../utils";
-import {NotifySetting, Subject, ThreadsEntryType} from "../../bindings/threads.types";
+//import {determineSubjectName, getThisAppletId} from "../../utils";
+import {NotifySetting, /*Subject,*/ ThreadsEntryType} from "../../bindings/threads.types";
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@theweave/api";
 import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
-import {SpecialSubjectType} from "../../events";
+//import {SpecialSubjectType} from "../../events";
 import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 
 
@@ -71,15 +71,15 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
-  private async afterCreate(beadAh: ActionId, createdMainThread: boolean) {
-    /** Create comment thread and  get notifications for your own post */
-    const commentPpAh = await this.createCommentThread(beadAh);
-    await this._dvm.threadsZvm.publishNotifSetting(commentPpAh, NotifySetting.AllMessages);
-    /** */
-    this.dispatchEvent(new CustomEvent<PostCreatedEvent>('created', {detail: {beadAh, createdMainThread}, bubbles: true, composed: true}));
-    this._creating = false;
-  }
+  // /** */
+  // private async afterCreate(beadAh: ActionId, createdMainThread: boolean) {
+  //   /** Create comment thread and  get notifications for your own post */
+  //   const commentPpAh = await this.createCommentThread(beadAh);
+  //   await this._dvm.threadsZvm.publishNotifSetting(commentPpAh, NotifySetting.AllMessages);
+  //   /** */
+  //   this.dispatchEvent(new CustomEvent<PostCreatedEvent>('created', {detail: {beadAh, createdMainThread}, bubbles: true, composed: true}));
+  //   this._creating = false;
+  // }
 
 
   /** */
@@ -93,12 +93,12 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       return;
     }
     /** Before */
-    const [mainThreadAh, createdMainThread] = await this.beforeCreate();
+    const [mainThreadAh, _createdMainThread] = await this.beforeCreate();
     /** Create */
-    let beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.address.agentId);
+    /*let beadAh =*/ await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, content, mainThreadAh, this.cell.address.agentId);
     inputElem.value = "";
     /** After */
-    this.afterCreate(beadAh, createdMainThread)
+    // FIXME: this.afterCreate(beadAh, createdMainThread)
   }
 
 
@@ -114,14 +114,14 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
         return;
       }
       /** Before */
-      const [mainThreadAh, createdMainThread] = await this.beforeCreate();
+      const [mainThreadAh, _createdMainThread] = await this.beforeCreate();
       /** Create */
       this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents,async (eh) => {
         console.log("<create-post-panel> startPublishFile callback", eh);
-        const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, mainThreadAh);
+        /*const beadAh =*/ await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, mainThreadAh);
         this._splitObj = undefined;
         /** After */
-        await this.afterCreate(beadAh, createdMainThread);
+        // FIXME await this.afterCreate(beadAh, createdMainThread);
       });
     }
     input.click();
@@ -137,28 +137,28 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     }
     console.log("onCreateHrl()", weaveUrlFromWal(maybeWal), maybeWal);
     /** Before */
-    const [mainThreadAh, createdMainThread] = await this.beforeCreate();
+    const [mainThreadAh, _createdMainThread] = await this.beforeCreate();
     /** Create */
     // TODO: make sure hrl is an entryHash
-    const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, mainThreadAh);
+    /*const beadAh =*/ await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, mainThreadAh);
     /** After */
-    this.afterCreate(beadAh, createdMainThread);
+    // FIXMe this.afterCreate(beadAh, createdMainThread);
   }
 
 
-  /** */
-  private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
-    console.debug("createCommentThread()", beadAh);
-    const subject: Subject = {
-      address: beadAh.b64,
-      name: "",
-      typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
-      appletId: getThisAppletId(this.weServices),
-      dnaHashB64: this.cell.address.dnaId.b64,
-    };
-    subject.name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
-    return this._dvm.publishCommentThread(subject);
-  }
+  // /** */
+  // private async createCommentThread(beadAh: ActionId): Promise<ActionId> {
+  //   console.debug("createCommentThread()", beadAh);
+  //   const subject: Subject = {
+  //     address: beadAh.b64,
+  //     name: "",
+  //     typeName: SpecialSubjectType.Post, // ThreadsEntryType.TextBead,
+  //     appletId: getThisAppletId(this.weServices),
+  //     dnaHashB64: this.cell.address.dnaId.b64,
+  //   };
+  //   subject.name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices);
+  //   return this._dvm.publishCommentThread(subject);
+  // }
 
 
   /** */

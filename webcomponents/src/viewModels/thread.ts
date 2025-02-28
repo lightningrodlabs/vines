@@ -219,6 +219,17 @@ export class Thread {
     console.debug(`getFirst(${n}): found `, res.length, res);
     return res;
   }
+
+  /** Return all items after date */
+  getSince(ts: Timestamp): BeadLinkMaterialized[] {
+    let res = [];
+    let it = this.beadLinksTree.ge(ts);
+    while (it.value) {
+      res.push(it.value);
+      it.next();
+    }
+    return res;
+  }
 }
 
 

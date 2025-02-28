@@ -38,6 +38,7 @@ import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
+import {toasty} from "../toast";
 
 
 /** */
@@ -336,17 +337,17 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- (un)Publish / Edit -- */
 
   /** */
-  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx): Promise<ActionId> {
+  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx)/*: Promise<ActionId>*/ {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
-      return this.publishDm(isDmThread, beadType, content, prevBead, weServices);
+      /*return*/  await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
     }
-    return this.publishTypedBead(beadType, content, ppAh, author, prevBead);
+    /*return*/ await this.publishTypedBead(beadType, content, ppAh, author, prevBead);
   }
 
 
   /** */
-  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx): Promise<ActionId> {
+  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx)/*: Promise<ActionId>*/ {
     const dmAh = this.threadsZvm.perspective.dmAgents.get(otherAgent);
     /** Create or grab DmThread */
     let ppAh: ActionId;
@@ -360,19 +361,39 @@ export class ThreadsDvm extends DnaViewModel {
     const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
     const base = bead2base(typed, beadType);
     const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
-    let beadAh = await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
-    return beadAh;
+    /*let beadAh =*/ await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
+    //return beadAh;
   }
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId): Promise<ActionId> {
+  passRateLimit(ppAh: ActionId): boolean {
+    const thread = this.threadsZvm.perspective.threads.get(ppAh);
+    if (thread && thread?.pp.limitations.maybeAgentRateLimiting) {
+      const rate = thread?.pp.limitations.maybeAgentRateLimiting;
+      const beads = thread.getSince(rate[1]);
+      if (beads.length < rate[0]) {
+        return true;
+      }
+      const mines = beads
+        .map((blm) => this.threadsZvm.perspective.beads.get(blm.beadAh))
+        .filter((pair) => pair && pair[0].author.equals(this.cell.address.agentId));
+      return mines.length < rate[0];
+    }
+    return true;
+  }
+
+  /** */
+  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId) {
+    /** Check rate limit */
+    if (!this.passRateLimit(ppAh)) {
+      // TODO: should not do toast in DVM but instead return failure return code and have caller act
+      toasty("Publish message failed: Rate limit reached");
+    }
     /** */
-    let [ah, _time_anchor, _creation_ts, _typed] = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
+    await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
     /** Erase saved input */
     this._perspective.threadInputs.delete(ppAh);
-    /** */
-    return ah;
   }
 
 

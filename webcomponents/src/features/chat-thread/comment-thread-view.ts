@@ -196,8 +196,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       return;
     }
     /** Publish */
-    const ah = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
-    console.log("onCreateComment() ah:", ah);
+    await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
   }
 
 
