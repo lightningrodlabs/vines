@@ -3,7 +3,7 @@ import { customElement, property} from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {formatFileSize} from "../../utils";
+import {formatDuration, formatFileSize} from "../../utils";
 import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {renderAvatars} from "../../render";
 import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
@@ -31,20 +31,22 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     const peerList = renderAvatars(this.limitations.allowedAgents, this, this._zvm.perspective);
 
     console.log("renderLimitations()", this.limitations);
+
+
     /** */
     return html`
             <div class="section">
                     <div class="field-row">
-                        <div class="field-label">Limit per Day:</div>
+                        <div class="field-label">Message Limit:</div>
                         <div class="field-value">
-                            ${!!this.limitations.maybeAgentCapPerDay
-      ? html`<span>${this.limitations.maybeAgentCapPerDay}</span>`
+                            ${!!this.limitations.maybeAgentRateLimiting
+      ? html`<span>${this.limitations.maybeAgentRateLimiting[0]} ${msg('per')} ${formatDuration(this.limitations.maybeAgentRateLimiting[1])}</span>`
       : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>No limit`}
                         </div>
                     </div>
 
                     <div class="field-row">
-                        <div class="field-label">Allowed Members:</div>
+                        <div class="field-label">Participants:</div>
                         <div class="field-value">
                             ${this.limitations.allowedAgents.length > 0
                               ? html`<div class="peers">${peerList}</div>`

@@ -69,6 +69,25 @@ export function truncate(str: string, n: number, useWordBoundary: boolean): stri
 };
 
 
+
+export function formatDuration(us: number): string {
+  const seconds = Math.floor(us / 1000 / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) {
+    return `${days} day${days > 1 ? 's' : ''}${hours % 24 > 0 ? `, ${hours % 24} hr${hours % 24 > 1 ? 's' : ''}` : ''}`;
+  } else if (hours > 0) {
+    return `${hours} hour${hours > 1 ? 's' : ''}${minutes % 60 > 0 ? `, ${minutes % 60} min` : ''}`;
+  } else if (minutes > 0) {
+    return `${minutes} min${seconds % 60 > 0 ? `, ${seconds % 60} sec` : ''}`;
+  } else {
+    return `${seconds} sec`;
+  }
+}
+
+
 /** */
 export function timeSince(date: Date): string {
   var seconds = Math.floor((new Date().valueOf() - date.valueOf()) / 1000);

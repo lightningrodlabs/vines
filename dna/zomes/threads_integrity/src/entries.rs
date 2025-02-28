@@ -155,7 +155,7 @@ pub struct Limitations {
     pub can_text: Option<TextLimits>,
     pub allowed_agents: Vec<AgentPubKey>,
     // pub maybe_shared_cap_per_day: Option<u16>, // Not implemented
-    pub maybe_agent_cap_per_day: Option<u16>,
+    pub maybe_agent_rate_limiting: Option<(u16, Timestamp)>,
 }
 
 
@@ -185,7 +185,7 @@ impl Default for Limitations {
             can_text: Some(TextLimits::default()),
             allowed_agents: Vec::default(),
             //maybe_shared_cap_per_day: None,
-            maybe_agent_cap_per_day: None,
+            maybe_agent_rate_limiting: None,
         }
     }
 }

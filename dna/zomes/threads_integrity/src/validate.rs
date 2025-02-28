@@ -5,7 +5,7 @@ use crate::{validation_app_entry::validate_app_entry, validate_link::validate_cr
 ///
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
-   //debug!("*** DeliveryIntegrityZome.validate() op = {:?}", op);
+   //debug!("*** ThreadsIntegrityZome.validate() op = {:?}", op);
    match op {
       Op::StoreRecord ( _ ) => Ok(ValidateCallbackResult::Valid),
       Op::StoreEntry(storeEntry) => {

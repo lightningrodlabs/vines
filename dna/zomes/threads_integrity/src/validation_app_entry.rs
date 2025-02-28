@@ -6,6 +6,7 @@ use crate::*;
 pub(crate) fn validate_app_entry(creation_action: EntryCreationAction, entry_index: EntryDefIndex, entry: Entry)
   -> ExternResult<ValidateCallbackResult>
 {
+  //debug!("*** ThreadsIntegrityZome.validate_app_entry() {:?}", entry_index);
   let variant = entry_index_to_variant(entry_index)?;
   return match variant {
     ThreadsEntryTypes::AnyBead => {let ab = AnyBead::try_from(entry)?; return validate_bead(creation_action, BaseBeadKind::AnyBead(ab))},
@@ -23,12 +24,16 @@ pub(crate) fn validate_app_entry(creation_action: EntryCreationAction, entry_ind
 
 ///
 fn validate_pp(_creation_action: EntryCreationAction, pp: ParticipationProtocol) -> ExternResult<ValidateCallbackResult> {
-  /// Validate Moderatoion
   /// at least one moderator
   if pp.moderation.moderators.len() == 0  && (pp.moderation.instructions.len() > 0 || pp.moderation.allowed_flags > 0) {
     return Ok(ValidateCallbackResult::Invalid("Invalid Moderation Rules: Needs at least one moderator".to_string()));
   }
-
+  /// rate limit must be > 0 if any
+  if let Some(rate_limit) = pp.limitations.maybe_agent_rate_limiting {
+    if rate_limit.0 == 0 || rate_limit.1.0 == 0 {
+      return Ok(ValidateCallbackResult::Invalid("Invalid Rate limit: Must be > 0".to_string()));
+    }
+  }
   /// at least one message type
   if !pp.limitations.can_wal && pp.limitations.can_text.is_none() && pp.limitations.can_file.is_none() {
     return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Needs at least one allowed message type".to_string()));
@@ -52,6 +57,7 @@ fn validate_pp(_creation_action: EntryCreationAction, pp: ParticipationProtocol)
 
 ///
 fn validate_bead(creation_action: EntryCreationAction, base: BaseBeadKind) -> ExternResult<ValidateCallbackResult> {
+  debug!("*** ThreadsIntegrityZome.validate_bead() {:?}", base);
   let bead = base.bead();
   let author = creation_action.author();
   /// Grab Rules
@@ -70,37 +76,40 @@ fn validate_bead(creation_action: EntryCreationAction, base: BaseBeadKind) -> Ex
   /// Check shared cap
   /// FIXME
   /// Check agent cap
-  check_agent_cap(creation_action.prev_action(), author, &pp.limitations, sah.action_address())?;
-  /// Check bead type
-  match base {
-    BaseBeadKind::AnyBead(_ab) => {
-      if !pp.limitations.can_wal {
-        return Ok(ValidateCallbackResult::Invalid("WAL type not allowed".to_string()));
-      }
-    },
-    BaseBeadKind::EntryBead(eb) => {
-      let Some(fileRules) = pp.limitations.can_file else {
-        return Ok(ValidateCallbackResult::Invalid("File type not allowed".to_string()));
-      };
-      return validate_entry_bead(fileRules, eb)
-    },
-    BaseBeadKind::TextBead(tb) => {
-      let Some(textRules) = pp.limitations.can_text else {
-        return Ok(ValidateCallbackResult::Invalid("Text type not allowed".to_string()));
-      };
-      return validate_text_bead(textRules, tb)
-    },
+  let check = check_agent_cap(creation_action.timestamp(), creation_action.prev_action(), author, &pp.limitations, sah.action_address())?;
+  if let  ValidateCallbackResult::Valid = check {
+    /// Check bead type
+    match base {
+      BaseBeadKind::AnyBead(_ab) => {
+        if !pp.limitations.can_wal {
+          return Ok(ValidateCallbackResult::Invalid("WAL type not allowed".to_string()));
+        }
+      },
+      BaseBeadKind::EntryBead(eb) => {
+        let Some(fileRules) = pp.limitations.can_file else {
+          return Ok(ValidateCallbackResult::Invalid("File type not allowed".to_string()));
+        };
+        return validate_entry_bead(fileRules, eb)
+      },
+      BaseBeadKind::TextBead(tb) => {
+        let Some(textRules) = pp.limitations.can_text else {
+          return Ok(ValidateCallbackResult::Invalid("Text type not allowed".to_string()));
+        };
+        return validate_text_bead(textRules, tb)
+      },
+    }
   }
   /// Done
-  Ok(ValidateCallbackResult::Valid)
+  Ok(check)
 }
 
 
 ///
-pub fn check_agent_cap(prev_ah: &ActionHash, author: &AgentPubKey, rules: &Limitations, pp_ah: &ActionHash) -> ExternResult<ValidateCallbackResult> {
-  let Some(agent_limit) = rules.maybe_agent_cap_per_day else {
+pub fn check_agent_cap(now: &Timestamp, prev_ah: &ActionHash, author: &AgentPubKey, rules: &Limitations, pp_ah: &ActionHash) -> ExternResult<ValidateCallbackResult> {
+  let Some(rate_limit) = rules.maybe_agent_rate_limiting else {
     return Ok(ValidateCallbackResult::Valid);
   };
+  debug!("check_agent_cap() limit: {:?}", rate_limit);
   /// Get all agent beads on this thread
   let mut hash_set = HashSet::new();
   hash_set.insert(pp_ah.to_owned());
@@ -111,18 +120,26 @@ pub fn check_agent_cap(prev_ah: &ActionHash, author: &AgentPubKey, rules: &Limit
   };
   /// Get all authors create bead entries since thread was created
   let chain = must_get_agent_activity(author.to_owned(), filter)?;
+  debug!("check_agent_cap() chain: {}", chain.len());
   let create_beads: Vec<Create> = chain.iter()
+    // Only creates
     .filter_map(|activity| match &activity.action.hashed.content {
       Action::Create(create) => Some(create.clone()),
       _ => None,
     })
+    // Only beads
     .filter(|create| {
       create.entry_type == EntryType::App(ThreadsEntryTypes::EntryBead.try_into().unwrap())
         || create.entry_type == EntryType::App(ThreadsEntryTypes::AnyBead.try_into().unwrap())
         || create.entry_type == EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap())
     })
+    // Only one day old
+    .filter(|create| {
+      (now.0 - create.timestamp.0) < rate_limit.1.0 // 10 * 1000  * 1000 //24 * 60 * 60 * 1000 * 1000
+    })
     .collect();
-  if create_beads.len() < agent_limit as usize {
+  debug!("check_agent_cap() create_beads: {}", create_beads.len());
+  if create_beads.len() < rate_limit.0 as usize {
     return Ok(ValidateCallbackResult::Valid);
   }
   /// Filter beads for this thread only
@@ -149,8 +166,9 @@ pub fn check_agent_cap(prev_ah: &ActionHash, author: &AgentPubKey, rules: &Limit
       continue;
     }
   }
+  debug!("check_agent_cap() bead_count: {}", bead_count);
   ///
-  if bead_count > agent_limit {
+  if bead_count >= rate_limit.0 {
     let msg = format!("Message cap reached by agent");
     return Ok(ValidateCallbackResult::Invalid(msg));
   }

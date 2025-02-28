@@ -19,6 +19,10 @@ export class RulesEdit extends LitElement {
   @property()
   profiles!: ProfilesAltPerspective;
 
+
+  @state()
+  private canRateLimit: boolean = false;
+
   @state()
   private canModerate: boolean = false;
 
@@ -43,6 +47,16 @@ export class RulesEdit extends LitElement {
   @state()
   private fileTypeInput: string = '';
 
+
+
+  /** -- Methods -- */
+
+  private handleCanRateLimitChange(e: CustomEvent) {
+    this.canRateLimit = (e.target as any).checked;
+    if (this.canRateLimit && !this.limitations.maybeAgentRateLimiting) {
+      this.limitations.maybeAgentRateLimiting = [10, 24 * 60 * 60 * 1000 * 1000] // default: 10 per day
+    }
+  }
 
   private handleCanModerateChange(e: CustomEvent) {
     this.canModerate = (e.target as any).checked;
@@ -70,12 +84,17 @@ export class RulesEdit extends LitElement {
     this.requestUpdate();
   }
 
-  private handleAgentCapChange(e: CustomEvent) {
+  private handleAgentRateCapChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
-      this.limitations.maybeAgentCapPerDay = value;
-    } else {
-      delete this.limitations.maybeAgentCapPerDay;
+      this.limitations.maybeAgentRateLimiting![0] = value;
+    }
+  }
+
+  private handleAgentRateTsChange(e: CustomEvent) {
+    const value = parseInt((e.target as any).value);
+    if (!isNaN(value) && value >= 0) {
+      this.limitations.maybeAgentRateLimiting![1] = value * 60 * 60 * 1000 * 1000;
     }
   }
 
@@ -216,17 +235,27 @@ export class RulesEdit extends LitElement {
                 <ui5-panel header-text=${msg('Configuration')} fixed style="border: 1px solid #e1e1e1;">
                     
                     <div class="field-row">
-                        <ui5-label>${msg('Allowed participants')}:</ui5-label>
+                        <ui5-label>${msg('Participants')}:</ui5-label>
                         <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="everyone">
                             ${peerList}
                         </ui5-multi-combobox>
                     </div>
 
                     <div class="field-row">
-                        <ui5-label>Message cap per day:</ui5-label>
-                        <ui5-input type="number" value=${this.limitations.maybeAgentCapPerDay || ''}
-                                   placeholder="No limit" @change=${this.handleAgentCapChange}>
-                        </ui5-input>
+                        <ui5-label>Rate limit:</ui5-label>
+                        <ui5-switch ?checked=${!!this.limitations.maybeAgentRateLimiting } @change=${this.handleCanRateLimitChange}></ui5-switch>
+                        ${this.canRateLimit? html`
+                            <ui5-input type="number" style="max-width: 50px" 
+                                       .value=${this.limitations.maybeAgentRateLimiting![0]}
+                                       placeholder="n" @change=${this.handleAgentRateCapChange}>
+                            </ui5-input>
+                            ${msg('messages per')}
+                            <ui5-input type="number" style="max-width: 50px"
+                                       .value=${this.limitations.maybeAgentRateLimiting![1] / 60 / 60 / 1000 / 1000}
+                                       placeholder="x" @change=${this.handleAgentRateTsChange}>
+                            </ui5-input>
+                            ${msg('hour')}
+                        ` : html``}
                     </div>
 
                     <!-- <div style="margin-top:15px;">${msg('Message Types')}</div> -->

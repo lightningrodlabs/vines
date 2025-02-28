@@ -319,7 +319,7 @@ export interface Limitations {
   canFile?: FileLimits
   canText?: TextLimits
   allowedAgents: AgentArray[]
-  maybeAgentCapPerDay?: number
+  maybeAgentRateLimiting?: [number, Timestamp]
 }
 
 export interface TextLimits {

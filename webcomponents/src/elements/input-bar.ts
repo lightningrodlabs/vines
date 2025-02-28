@@ -562,7 +562,7 @@ export class InputBar extends LitElement {
 
     const placeholder = this.canText
       ? this.maxTextSize > 0
-        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextSize} ${msg('chars')})`
+        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextSize} ${msg('characters')})`
         : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`
       : msg('<Text message forbidden>');
 
