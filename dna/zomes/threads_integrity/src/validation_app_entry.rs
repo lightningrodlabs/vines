@@ -23,34 +23,29 @@ pub(crate) fn validate_app_entry(creation_action: EntryCreationAction, entry_ind
 
 ///
 fn validate_pp(_creation_action: EntryCreationAction, pp: ParticipationProtocol) -> ExternResult<ValidateCallbackResult> {
-  /// Validate Rules
-  match pp.rules {
-    Rules::Manual(man) => {
-      /// at least one moderator
-      if man.moderators.len() == 0 {
-        return Ok(ValidateCallbackResult::Invalid("Invalid Manual Rules: Needs at least one moderator".to_string()));
-      }
-    },
-    Rules::Auto(auto) => {
-      /// at least one type
-      if !auto.can_wal && auto.can_text.is_none() && auto.can_file.is_none() {
-        return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Needs at least one allowed message type".to_string()));
-      }
-      /// text
-      if let Some(text_rules) = auto.can_text {
-        if text_rules.max_text_length <= text_rules.min_text_length && text_rules.max_text_length > 0 {
-          return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Max text length must be bigger than Min".to_string()));
-        }
-      }
-      /// file
-      if let Some(file_rules) = auto.can_file {
-        if file_rules.max_file_size <= file_rules.min_file_size && file_rules.max_file_size > 0 {
-          return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Max file size must be bigger than Min".to_string()));
-        }
-      }
-    },
-    _ => (),
+  /// Validate Moderatoion
+  /// at least one moderator
+  if pp.moderation.moderators.len() == 0  && (pp.moderation.instructions.len() > 0 || pp.moderation.allowed_flags > 0) {
+    return Ok(ValidateCallbackResult::Invalid("Invalid Moderation Rules: Needs at least one moderator".to_string()));
   }
+
+  /// at least one message type
+  if !pp.limitations.can_wal && pp.limitations.can_text.is_none() && pp.limitations.can_file.is_none() {
+    return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Needs at least one allowed message type".to_string()));
+  }
+  /// text
+  if let Some(text_rules) = pp.limitations.can_text {
+    if text_rules.max_text_length <= text_rules.min_text_length && text_rules.max_text_length > 0 {
+      return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Max text length must be bigger than Min".to_string()));
+    }
+  }
+  /// file
+  if let Some(file_rules) = pp.limitations.can_file {
+    if file_rules.max_file_size <= file_rules.min_file_size && file_rules.max_file_size > 0 {
+      return Ok(ValidateCallbackResult::Invalid("Invalid Auto Rules: Max file size must be bigger than Min".to_string()));
+    }
+  }
+
   Ok(ValidateCallbackResult::Valid)
 }
 
@@ -68,33 +63,29 @@ fn validate_bead(creation_action: EntryCreationAction, base: BaseBeadKind) -> Ex
   let pp = ParticipationProtocol::try_from(pp_entry.content)?;
   /// Fail if manual rules and author has been banned
   /// FIXME
-  /// Ok if not Auto Rules
-  let Rules::Auto(rules) = pp.rules else {
-    return Ok(ValidateCallbackResult::Valid);
-  };
   /// Check if author is allowed
-  if !rules.allowed_agents.is_empty() && !rules.allowed_agents.contains(author) {
+  if !pp.limitations.allowed_agents.is_empty() && !pp.limitations.allowed_agents.contains(author) {
     return Ok(ValidateCallbackResult::Invalid("Author not allowed".to_string()));
   }
   /// Check shared cap
   /// FIXME
   /// Check agent cap
-  check_agent_cap(creation_action.prev_action(), author, &rules, sah.action_address())?;
+  check_agent_cap(creation_action.prev_action(), author, &pp.limitations, sah.action_address())?;
   /// Check bead type
   match base {
     BaseBeadKind::AnyBead(_ab) => {
-      if !rules.can_wal {
+      if !pp.limitations.can_wal {
         return Ok(ValidateCallbackResult::Invalid("WAL type not allowed".to_string()));
       }
     },
     BaseBeadKind::EntryBead(eb) => {
-      let Some(fileRules) = rules.can_file else {
+      let Some(fileRules) = pp.limitations.can_file else {
         return Ok(ValidateCallbackResult::Invalid("File type not allowed".to_string()));
       };
       return validate_entry_bead(fileRules, eb)
     },
     BaseBeadKind::TextBead(tb) => {
-      let Some(textRules) = rules.can_text else {
+      let Some(textRules) = pp.limitations.can_text else {
         return Ok(ValidateCallbackResult::Invalid("Text type not allowed".to_string()));
       };
       return validate_text_bead(textRules, tb)
@@ -106,7 +97,7 @@ fn validate_bead(creation_action: EntryCreationAction, base: BaseBeadKind) -> Ex
 
 
 ///
-pub fn check_agent_cap(prev_ah: &ActionHash, author: &AgentPubKey, rules: &AutoRules, pp_ah: &ActionHash) -> ExternResult<ValidateCallbackResult> {
+pub fn check_agent_cap(prev_ah: &ActionHash, author: &AgentPubKey, rules: &Limitations, pp_ah: &ActionHash) -> ExternResult<ValidateCallbackResult> {
   let Some(agent_limit) = rules.maybe_agent_cap_per_day else {
     return Ok(ValidateCallbackResult::Valid);
   };
@@ -169,7 +160,7 @@ pub fn check_agent_cap(prev_ah: &ActionHash, author: &AgentPubKey, rules: &AutoR
 
 
 ///
-pub fn validate_entry_bead(rules: FileRules, eb: EntryBead) -> ExternResult<ValidateCallbackResult> {
+pub fn validate_entry_bead(rules: FileLimits, eb: EntryBead) -> ExternResult<ValidateCallbackResult> {
   /// Check type
   if !rules.allowed_file_types.is_empty() && !rules.allowed_file_types.contains(&eb.source_type) {
     let msg = format!("File type '{}' is not allowed", eb.source_type);
@@ -188,7 +179,7 @@ pub fn validate_entry_bead(rules: FileRules, eb: EntryBead) -> ExternResult<Vali
 
 
 ///
-pub fn validate_text_bead(rules: TextRules, tb: TextBead) -> ExternResult<ValidateCallbackResult> {
+pub fn validate_text_bead(rules: TextLimits, tb: TextBead) -> ExternResult<ValidateCallbackResult> {
   /// Check length limit
   if tb.value.len() < rules.min_text_length as usize {
     let msg = format!("Text message is too short: {}", tb.value.len());

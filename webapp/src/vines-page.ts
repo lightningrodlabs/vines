@@ -170,7 +170,7 @@ import {
   beadJumpEvent, catchThrottled,
   CommentRequest,
   CommentThreadView,
-  ConfirmDialog, determinerGroupProfile,
+  ConfirmDialog, defaultLimitations, defaultModeration, determinerGroupProfile,
   doodle_flowers,
   EditTopicRequest,
   FavoritesEvent,
@@ -533,7 +533,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const sub = this.shadowRoot!.getElementById("rulesPanel") as RulesView;
     const thread = this._dvm.threadsZvm.perspective.threads.get(e.detail.ppAh);
     if (thread) {
-      sub.rules = thread.pp.rules;
+      sub.limitations = thread.pp.limitations;
+      sub.moderation = thread.pp.moderation;
       sub.requestUpdate();
       popover.showAt(elem);
     }
@@ -676,7 +677,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this.weServices? new EntryId(this.weServices.appletIds[0]!) : THIS_APPLET_ID,
       this._createTopicHash,
       purpose,
-      rulesEdit.rules,
+      rulesEdit.limitations,
+      rulesEdit.moderation,
     );
     /** cleanup */
     input.value = "";
@@ -1081,8 +1083,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     };
     const pp: ParticipationProtocol = {
         purpose: "comment",
-        rules: {none:true},
         subject,
+        limitations: defaultLimitations(),
+        moderation: defaultModeration(),
     };
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
@@ -1378,12 +1381,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             style="border:none; padding:0px"
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
+            ${canDisplayInput? html`
             <vines-input-bar id="input-bar" contenteditable="true"
-                             style="display: ${!canDisplayInput? "none":""}"
                              .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
-                             .rules=${this._selectedThreadHash? this.threadsPerspective.threads.get(this._selectedThreadHash)?.pp.rules: {none:true}}
+                             .limitations=${this._selectedThreadHash? this.threadsPerspective.threads.get(this._selectedThreadHash)?.pp.limitations : defaultLimitations()}
                              @input=${async (e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
@@ -1391,9 +1394,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                if (e.detail.file && this._selectedThreadHash) await this.onCreateFileMessage(this._selectedThreadHash, e.detail.file);                               
                                this._replyToAh = undefined;
                                this._selectedBeadAh = undefined;
-                             }}
-            ></vines-input-bar>`
-            }
+                             }}></vines-input-bar>` : html`<div style="min-height: 20px;"></div>`}
+            `}
         `;
       }
     }
@@ -1435,7 +1437,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           @download=${(e: CustomEvent<EntryId>) => {console.log("download", e.detail.b64); this._filesDvm.downloadFile(e.detail)}}
               ></file-table>
             </div>
-        </cell-context>          
+        </cell-context>
       `;
     }
 

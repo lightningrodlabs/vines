@@ -1,21 +1,14 @@
 import {html, css} from 'lit';
 import { customElement, property} from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
-import { FileRules, Rules, RulesType, TextRules} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {formatFileSize} from "../../utils";
 import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {renderAvatars} from "../../render";
+import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
+import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 
-
-
-export function getRuleType(rules: Rules): RulesType {
-  if ('none' in rules) return RulesType.None;
-  if ('auto' in rules) return RulesType.Auto;
-  if ('manual' in rules) return RulesType.Manual;
-  return RulesType.None;
-}
 
 
 @customElement('rules-view')
@@ -27,33 +20,25 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
 
   @property()
-  rules: Rules = {none: true};
+  moderation: Moderation = defaultModeration();
 
-  /** */
-  private renderNoneRules() {
-    return html`
-            <div class="section">
-                  <ui5-text>${msg('No specific rules have been set for this channel.')}</ui5-text>
-            </div>
-        `;
-  }
+  @property()
+  limitations: Limitations = defaultLimitations();
 
 
   /** */
-  private renderAutoRules() {
-    const autoRules = 'auto' in this.rules ? this.rules.auto : null;
-    if (!autoRules) return html``;
-    const peerList = renderAvatars(autoRules.allowedAgents, this, this._zvm.perspective);
+  private renderLimitations() {
+    const peerList = renderAvatars(this.limitations.allowedAgents, this, this._zvm.perspective);
 
-    console.log("renderAutoRules", autoRules);
+    console.log("renderLimitations()", this.limitations);
     /** */
     return html`
             <div class="section">
                     <div class="field-row">
                         <div class="field-label">Limit per Day:</div>
                         <div class="field-value">
-                            ${!!autoRules.maybeAgentCapPerDay
-      ? html`<span>${autoRules.maybeAgentCapPerDay}</span>`
+                            ${!!this.limitations.maybeAgentCapPerDay
+      ? html`<span>${this.limitations.maybeAgentCapPerDay}</span>`
       : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>No limit`}
                         </div>
                     </div>
@@ -61,7 +46,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     <div class="field-row">
                         <div class="field-label">Allowed Members:</div>
                         <div class="field-value">
-                            ${autoRules.allowedAgents.length > 0
+                            ${this.limitations.allowedAgents.length > 0
                               ? html`<div class="peers">${peerList}</div>`
                               : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>Everyone`
                             }
@@ -71,13 +56,13 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     <div class="field-row">
                         <div class="field-label">WAL Embeds:</div>
                         <div class="field-value">
-                            ${autoRules.canWal
+                            ${this.limitations.canWal
                                     ? html`<ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled`
                                     : html`<ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled`}
                         </div>
                     </div>
                 
-                    ${autoRules.canFile ? this.renderFileRules(autoRules.canFile) : html`
+                    ${this.limitations.canFile ? this.renderFileRules(this.limitations.canFile) : html`
                         <div class="field-row">
                             <div class="field-label">File Messages:</div>
                             <div class="field-value">
@@ -87,7 +72,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                         </div>
                     `}
 
-                    ${autoRules.canText ? this.renderTextRules(autoRules.canText) : html`
+                    ${this.limitations.canText ? this.renderTextRules(this.limitations.canText) : html`
                         <div class="field-row">
                             <div class="field-label">Text Messages:</div>
                             <div class="field-value">
@@ -102,7 +87,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
 
   /** */
-  private renderFileRules(fileRules: FileRules) {
+  private renderFileRules(fileRules: FileLimits) {
     return html`
             <div class="field-row">
                 <div class="field-label">File Messages:</div>
@@ -134,7 +119,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
 
   /** */
-  private renderTextRules(textRules: TextRules) {
+  private renderTextRules(textRules: TextLimits) {
     return html`
             <div class="field-row">
                 <div class="field-label">Text Messages:</div>
@@ -166,18 +151,16 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
 
   /** */
-  private renderManualRules() {
-    const manualRules = 'manual' in this.rules ? this.rules.manual : null;
-    if (!manualRules) return html``;
-    const peerList = renderAvatars(manualRules.moderators, this, this._zvm.perspective);
+  private renderModeration() {
+    const peerList = renderAvatars(this.moderation.moderators, this, this._zvm.perspective);
     /** */
     return html`
             <div class="section">
                     <div class="field-row">
                         <div class="field-label">Instructions:</div>
                         <div class="field-value">
-                            ${manualRules.instructions ? html`
-                                <pre>${manualRules.instructions}</pre>
+                            ${this.moderation.instructions ? html`
+                                <pre>${this.moderation.instructions}</pre>
                             ` : html`
                                 <ui5-text>No instructions provided</ui5-text>
                             `}
@@ -187,7 +170,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     <div class="field-row">
                         <div class="field-label">${msg('Moderators')}:</div>
                         <div class="field-value">
-                            ${manualRules.moderators.length > 0
+                            ${this.moderation.moderators.length > 0
       ? html`<div class="peers">${peerList}</div>`
       : html`<ui5-text style="color:red">${msg('No moderators set for this channel')}</ui5-text>`}
                         </div>
@@ -195,7 +178,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
                 <div class="field-row">
                     <div class="field-label">Infringements allowed:</div>
-                    <div class="field-value">${manualRules.allowedFlags}</div>
+                    <div class="field-value">${this.moderation.allowedFlags}</div>
                 </div>
                 
             </div>
@@ -205,31 +188,23 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   override render() {
-    console.log("<ruled-edit>.render()", this.rules);
-    const ruleType = getRuleType(this.rules);
-
-    const style = ruleType === RulesType.None
-      ? 'color: #ab9776; background: rgb(235 234 159)'
-      : ruleType === RulesType.Auto
-        ? 'color: purple; background: rgb(229 201 249)'
-        : 'color: #4d4de7; background: rgb(208 237 255)';
-    const scheme = ruleType === RulesType.None ? '1' : ruleType === RulesType.Auto ? '4' : '6';
+    console.log("<ruled-edit>.render()", this.moderation, this.limitations);
 
     /** */
     return html`
       <div slot="header" style="display: flex">
           <ui5-title level="H3">${msg('Rules')}</ui5-title>
           <div style="flex-grow: 1"></div>
-          <ui5-badge color-scheme=${scheme} style=${style}>${ruleType}</ui5-badge>
       </div>
       
       <div class="section"></div>
-      
-      ${ruleType === RulesType.Auto ? this.renderAutoRules() : ''}
-      ${ruleType === RulesType.Manual ? this.renderManualRules() : ''}
-      ${ruleType === RulesType.None ? this.renderNoneRules() : ''}
+      <div style="display:flex; flex-direction: row">
+          ${this.renderLimitations()}
+          ${this.moderation.moderators.length > 0? this.renderModeration() : html``}
+      </div>
     `;
   }
+
 
 
   /** */

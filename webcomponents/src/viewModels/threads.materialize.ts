@@ -1,7 +1,7 @@
 import {
   AnyBead, BaseBeadKind, Bead,
   EncryptedBead,
-  EntryBead,
+  EntryBead, Limitations, Moderation,
   ParticipationProtocol, Subject,
   TextBead,
   ThreadsEntryType
@@ -250,3 +250,31 @@ export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadTyp
   return typed;
 }
 
+
+/** */
+export function defaultModeration(): Moderation {
+  return {
+    instructions: "",
+    moderators: [],
+    allowedFlags: 0,
+  } as Moderation;
+}
+
+
+/** */
+export function defaultLimitations(): Limitations {
+  return {
+    canWal: true,
+    canFile: {
+      allowedFileTypes: [],
+      minFileSize: 0,
+      maxFileSize: 16 * 1024 * 1024, // FIXME take dna setting
+    },
+    canText: {
+    bannedWords: [],
+    minTextLength: 0,
+    maxTextLength: 15 * 1024 * 1024, // websocket limit minus other fields size,
+  },
+    allowedAgents: [],
+  } as Limitations;
+}

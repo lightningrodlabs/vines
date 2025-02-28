@@ -15,6 +15,7 @@ import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@theweave/api";
 import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
 import {SpecialSubjectType} from "../../events";
+import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 
 
 export interface PostCreatedEvent {
@@ -53,7 +54,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     let createdMainThread = false;
     if (!mainThreads || mainThreads.length == 0) {
       const appletId = this.weServices? new EntryId(this.weServices.appletIds[0]!) : THIS_APPLET_ID;
-      const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_ID, "main", {none:true});
+      const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(appletId, MAIN_TOPIC_ID, "main", defaultLimitations(), defaultModeration());
       mainThreadAh = ppAh;
       console.log("<create-post-panel>.onCreate()", mainThreadAh)
       /** Make sure agent subscribed to notifications for main thread */

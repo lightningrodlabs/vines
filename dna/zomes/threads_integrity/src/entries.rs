@@ -102,7 +102,8 @@ pub struct SemanticTopic {
 pub struct ParticipationProtocol {
     pub purpose: String,
     pub subject: Subject,
-    pub rules: Rules,
+    pub moderation: Moderation,
+    pub limitations: Limitations,
 }
 
 
@@ -137,17 +138,10 @@ pub struct ThreadLastProbeLog {
 
 ///-------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Rules {
-    None(bool), // useless bool just here for easier serialization
-    Auto(AutoRules),
-    Manual(ManualRules),
-}
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ManualRules {
+pub struct Moderation {
     pub instructions: String,
     pub allowed_flags: u16,
     pub moderators: Vec<AgentPubKey>,
@@ -155,10 +149,10 @@ pub struct ManualRules {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AutoRules {
+pub struct Limitations {
     pub can_wal: bool,
-    pub can_file: Option<FileRules>,
-    pub can_text: Option<TextRules>,
+    pub can_file: Option<FileLimits>,
+    pub can_text: Option<TextLimits>,
     pub allowed_agents: Vec<AgentPubKey>,
     // pub maybe_shared_cap_per_day: Option<u16>, // Not implemented
     pub maybe_agent_cap_per_day: Option<u16>,
@@ -167,7 +161,7 @@ pub struct AutoRules {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TextRules {
+pub struct TextLimits {
     pub banned_words: Vec<String>,
     pub min_text_length: u32, // FIXME: must be < than MAX
     pub max_text_length: u32,
@@ -176,19 +170,19 @@ pub struct TextRules {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FileRules {
+pub struct FileLimits {
     pub allowed_file_types: Vec<String>, /// Empty means no limitation
     pub min_file_size: u32, // FIXME: must be < than MAX
     pub max_file_size: u32, // Not possible to enforce currently because validation cant grab entry from a different zome
 }
 
 
-impl Default for AutoRules {
+impl Default for Limitations {
     fn default() -> Self {
         Self {
             can_wal: true,
-            can_file: Some(FileRules::default()),
-            can_text: Some(TextRules::default()),
+            can_file: Some(FileLimits::default()),
+            can_text: Some(TextLimits::default()),
             allowed_agents: Vec::default(),
             //maybe_shared_cap_per_day: None,
             maybe_agent_cap_per_day: None,
@@ -197,7 +191,7 @@ impl Default for AutoRules {
 }
 
 
-impl Default for TextRules {
+impl Default for TextLimits {
     fn default() -> Self {
         Self {
             banned_words: Vec::default(),
@@ -208,19 +202,12 @@ impl Default for TextRules {
 }
 
 
-impl Default for FileRules {
+impl Default for FileLimits {
     fn default() -> Self {
         Self {
             allowed_file_types: Vec::default(),
             min_file_size: 0,
             max_file_size: 0,
         }
-    }
-}
-
-
-impl Default for Rules {
-    fn default() -> Self {
-        Rules::None(true)
     }
 }

@@ -294,7 +294,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
     /** render item */
     return html`
-        <sl-tooltip content=${fileDesc.name} style="--show-delay:1000">
+        <sl-tooltip content=${fileDesc.name} hoist style="--show-delay:1000">
             ${item}
         </sl-tooltip>
     `;

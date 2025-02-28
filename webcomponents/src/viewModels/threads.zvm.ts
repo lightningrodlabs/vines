@@ -10,11 +10,11 @@ import {
   EncryptedBead,
   EntryBead,
   GetLatestBeadsInput,
-  GlobalLastProbeLog,
+  GlobalLastProbeLog, Limitations, Moderation,
   NotifyPeerInput,
   NotifySetting,
   ParticipationProtocol,
-  PublishTopicInput, Rules,
+  PublishTopicInput,
   SemanticTopic,
   SetNotifySettingInput,
   Subject,
@@ -53,7 +53,7 @@ import {
   base2typed,
   BaseBeadType,
   BeadInfo,
-  BeadType,
+  BeadType, defaultLimitations, defaultModeration,
   dematerializeEntryBead,
   dematerializeTypedBead,
   EncryptedBeadContent,
@@ -490,8 +490,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async pullThreadModeration(ppAh: ActionId) {
     let thread = this._perspective.threads.get(ppAh);
-    /** Probe bans if manual rules */
-    if ('manual' in thread!.pp.rules) {
+    /** Probe bans if moderation is enabled */
+    if (thread!.pp.moderation.moderators.length > 0) {
       console.log("pullThreadModeration()", ppAh.short);
       await this.zomeProxy.probeAllBanned(ppAh.hash);
       await this.zomeProxy.probeAllFlagged(ppAh.hash);
@@ -594,7 +594,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     };
     const pp: ParticipationProtocol = {
       purpose: "EDIT",
-      rules: {none:true}, // FIXME // msg("Only text messsages from the original message author are allowed"),
+      limitations: defaultLimitations(), // FIXME Only original message author is allowed to write
+      moderation: defaultModeration(),
       subject,
     }
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
@@ -764,8 +765,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string, rules: Rules): Promise<[Timestamp, ActionId]> {
-    console.log("publishThreadFromSemanticTopic()", appletId, rules);
+  async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string, limitations: Limitations, moderation: Moderation): Promise<[Timestamp, ActionId]> {
+    console.log("publishThreadFromSemanticTopic()", appletId, purpose);
     const [semTopicTitle, _semAuthor] = this._perspective.semanticTopics.get(topicAh)!;
     const subject: Subject = {
       address: topicAh.b64,
@@ -776,7 +777,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     };
     const pp: ParticipationProtocol = {
       purpose,
-      rules,
+      limitations,
+      moderation,
       subject,
     }
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
@@ -1467,8 +1469,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.log("isSelfModerator()", ppAh);
     const thread = this._perspective.threads.get(ppAh);
     if (!thread) { return false; }
-    if ("manual" in thread.pp.rules) {
-      const moderators: AgentPubKeyB64[] = thread.pp.rules.manual.moderators.map((m) => new AgentId(m).b64);
+    if (thread.pp.moderation.moderators.length > 0) {
+      const moderators: AgentPubKeyB64[] = thread.pp.moderation.moderators.map((m) => new AgentId(m).b64);
       return moderators.includes(this.cell.address.agentId.b64);
     }
     return false;
@@ -1487,7 +1489,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /* Grab rules */
     const thread = this._perspective.threads.get(ppAh);
     if (!thread) { return; }
-    if ('manual' in thread.pp.rules) {
+    if (thread.pp.moderation.moderators.length > 0) {
       /* count flags */
       let infringements: Uint8Array[] = [];
       const flags = this._perspective.flags.get(ppAh);
@@ -1499,8 +1501,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           }
       }
       /* ban if limit reached */
-      console.log("AttemptBan() count", infringements.length , thread.pp.rules.manual.allowedFlags);
-      if (infringements.length > thread.pp.rules.manual.allowedFlags) {
+      console.log("AttemptBan() count", infringements.length , thread.pp.moderation.allowedFlags);
+      if (infringements.length > thread.pp.moderation.allowedFlags) {
         await this.zomeProxy.banAgent({vilain: author.hash, pp_ah: ppAh.hash, infringements});
       }
     }

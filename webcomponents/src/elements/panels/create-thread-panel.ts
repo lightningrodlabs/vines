@@ -45,7 +45,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
     this._creating = true;
     try {
       const purpose = (this.shadowRoot!.getElementById("purposeInput") as Input).value;
-      const rules = (this.shadowRoot!.getElementById("rulesEdit") as RulesEdit).rules;
+      const rulesEdit = this.shadowRoot!.getElementById("rulesEdit") as RulesEdit;
       const wurl = (this.shadowRoot!.getElementById("wurlInput") as Input).value;
       const wal0 = weaveUrlToWal(wurl);
       const [dnaId, dhtId] = hrl2Id(wal0.hrl);
@@ -61,8 +61,9 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       console.log("@create event subject name", subject.name);
       const pp: ParticipationProtocol = {
         purpose,
-        rules,
         subject,
+        moderation: rulesEdit.moderation,
+        limitations: rulesEdit.limitations,
       };
       const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
       const wal: WAL = {

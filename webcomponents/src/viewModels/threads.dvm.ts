@@ -21,8 +21,15 @@ import {
   VINES_DEFAULT_ROLE_NAME,
 } from "../bindings/threads.types";
 import {
-  BaseBeadType, bead2base,
-  BeadType, EncryptedBeadContent, ThreadsAppTip, ThreadsNotification, ThreadsNotificationTip,
+  BaseBeadType,
+  bead2base,
+  BeadType,
+  defaultLimitations,
+  defaultModeration,
+  EncryptedBeadContent,
+  ThreadsAppTip,
+  ThreadsNotification,
+  ThreadsNotificationTip,
   TypedContent,
 } from "./threads.materialize";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
@@ -373,9 +380,9 @@ export class ThreadsDvm extends DnaViewModel {
   async publishCommentThread(subject: Subject/*, subject_name: string*/): Promise<ActionId> {
     const pp: ParticipationProtocol = {
       purpose: "comment",
-      rules: {none:true}, // FIXME
       subject,
-      //subject_name,
+      moderation: defaultModeration(),
+      limitations: defaultLimitations(),
     };
     const [_creation_ts, ppAh] = await this.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;

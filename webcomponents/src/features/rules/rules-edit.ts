@@ -1,54 +1,41 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
-import {AutoRules, FileRules, ManualRules, Rules, RulesType, TextRules} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {AgentId} from "@ddd-qc/lit-happ";
 import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
+import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
+import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 
 @customElement('rules-edit')
 export class RulesEdit extends LitElement {
 
   @property()
-  rules: Rules = { none: true };
+  moderation: Moderation = defaultModeration();
+
+  @property()
+  limitations: Limitations = defaultLimitations();
 
   @property()
   profiles!: ProfilesAltPerspective;
 
+  @state()
+  private canModerate: boolean = false;
 
   @state()
-  private rulesType: RulesType = RulesType.None;
-
-
-
-  @state()
-  private manualRules: ManualRules = {
-    instructions: '',
-    allowedFlags: 0,
-    moderators: []
-  };
-
-  @state()
-  private textRules: TextRules = {
+  private textRules: TextLimits = {
     bannedWords: [],
     minTextLength: 0,
     maxTextLength: 1000
   };
 
   @state()
-  private fileRules: FileRules = {
+  private fileRules: FileLimits = {
     allowedFileTypes: [],
     minFileSize: 0,
     maxFileSize: 16777216, // 16MiB default FIXME grab DNA settings
   };
 
-  @state()
-  private autoRules: AutoRules = {
-    allowedAgents: [],
-    canWal: true,
-    canFile: this.fileRules,
-    canText: this.textRules,
-  };
 
   @state()
   private bannedWordInput: string = '';
@@ -57,65 +44,47 @@ export class RulesEdit extends LitElement {
   private fileTypeInput: string = '';
 
 
-
-  /** */
-  private handleTypeChange(e: CustomEvent) {
-    const selectedValue = (e.detail.selectedOption as HTMLInputElement).value as RulesType;
-    console.log("<rules-edit> handleTypeChange", selectedValue, e);
-    this.rulesType = selectedValue;
-
-    if (selectedValue === RulesType.None) {
-      this.rules = { none: true };
-    } else if (selectedValue === RulesType.Auto) {
-      this.rules = { auto: this.autoRules };
-    } else if (selectedValue === RulesType.Manual) {
-      this.rules = { manual: this.manualRules };
-    }
-
-    this.requestUpdate();
+  private handleCanModerateChange(e: CustomEvent) {
+    this.canModerate = (e.target as any).checked;
   }
 
-
   private handleAutoCanWalChange(e: CustomEvent) {
-    this.autoRules.canWal = (e.target as any).checked;
-    this.rules = { auto: this.autoRules };
+    this.limitations.canWal = (e.target as any).checked;
   }
 
   private handleAutoCanFileChange(e: CustomEvent) {
     if ((e.target as any).checked) {
-      this.autoRules.canFile = this.fileRules;
+      this.limitations.canFile = this.fileRules;
     } else {
-      delete this.autoRules.canFile;
+      delete this.limitations.canFile;
     }
-    this.rules = { auto: this.autoRules };
+    this.requestUpdate();
   }
 
   private handleAutoCanTextChange(e: CustomEvent) {
     if ((e.target as any).checked) {
-      this.autoRules.canText = this.textRules;
+      this.limitations.canText = this.textRules;
     } else {
-      delete this.autoRules.canText;
+      delete this.limitations.canText;
     }
-    this.rules = { auto: this.autoRules };
+    this.requestUpdate();
   }
 
   private handleAgentCapChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
-      this.autoRules.maybeAgentCapPerDay = value;
+      this.limitations.maybeAgentCapPerDay = value;
     } else {
-      delete this.autoRules.maybeAgentCapPerDay;
+      delete this.limitations.maybeAgentCapPerDay;
     }
-    this.rules = { auto: this.autoRules };
   }
 
   private addBannedWord() {
     if (this.bannedWordInput.trim()) {
       this.textRules.bannedWords.push(this.bannedWordInput.trim());
       this.bannedWordInput = '';
-      if (this.autoRules.canText) {
-        this.autoRules.canText = { ...this.textRules };
-        this.rules = { auto: { ...this.autoRules } };
+      if (this.limitations.canText) {
+        this.limitations.canText = { ...this.textRules };
       }
       this.requestUpdate();
     }
@@ -123,9 +92,8 @@ export class RulesEdit extends LitElement {
 
   private removeBannedWord(word: string) {
     this.textRules.bannedWords = this.textRules.bannedWords.filter(w => w !== word);
-    if (this.autoRules.canText) {
-      this.autoRules.canText = { ...this.textRules };
-      this.rules = { auto: { ...this.autoRules } };
+    if (this.limitations.canText) {
+      this.limitations.canText = { ...this.textRules };
     }
     this.requestUpdate();
   }
@@ -134,9 +102,8 @@ export class RulesEdit extends LitElement {
     if (this.fileTypeInput.trim()) {
       this.fileRules.allowedFileTypes.push(this.fileTypeInput.trim());
       this.fileTypeInput = '';
-      if (this.autoRules.canFile) {
-        this.autoRules.canFile = { ...this.fileRules };
-        this.rules = { auto: { ...this.autoRules } };
+      if (this.limitations.canFile) {
+        this.limitations.canFile = { ...this.fileRules };
       }
       this.requestUpdate();
     }
@@ -144,9 +111,8 @@ export class RulesEdit extends LitElement {
 
   private removeFileType(type: string) {
     this.fileRules.allowedFileTypes = this.fileRules.allowedFileTypes.filter(t => t !== type);
-    if (this.autoRules.canFile) {
-      this.autoRules.canFile = { ...this.fileRules };
-      this.rules = { auto: { ...this.autoRules } };
+    if (this.limitations.canFile) {
+      this.limitations.canFile = { ...this.fileRules };
     }
     this.requestUpdate();
   }
@@ -155,9 +121,8 @@ export class RulesEdit extends LitElement {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
       this.textRules.minTextLength = value;
-      if (this.autoRules.canText) {
-        this.autoRules.canText = { ...this.textRules };
-        this.rules = { auto: { ...this.autoRules } };
+      if (this.limitations.canText) {
+        this.limitations.canText = { ...this.textRules };
       }
     }
   }
@@ -166,9 +131,8 @@ export class RulesEdit extends LitElement {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
       this.textRules.maxTextLength = value;
-      if (this.autoRules.canText) {
-        this.autoRules.canText = { ...this.textRules };
-        this.rules = { auto: { ...this.autoRules } };
+      if (this.limitations.canText) {
+        this.limitations.canText = { ...this.textRules };
       }
     }
   }
@@ -177,9 +141,8 @@ export class RulesEdit extends LitElement {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
       this.fileRules.minFileSize = value;
-      if (this.autoRules.canFile) {
-        this.autoRules.canFile = { ...this.fileRules };
-        this.rules = { auto: { ...this.autoRules } };
+      if (this.limitations.canFile) {
+        this.limitations.canFile = { ...this.fileRules };
       }
     }
   }
@@ -188,23 +151,20 @@ export class RulesEdit extends LitElement {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
       this.fileRules.maxFileSize = value;
-      if (this.autoRules.canFile) {
-        this.autoRules.canFile = { ...this.fileRules };
-        this.rules = { auto: { ...this.autoRules } };
+      if (this.limitations.canFile) {
+        this.limitations.canFile = { ...this.fileRules };
       }
     }
   }
 
   private handleInstructionsChange(e: CustomEvent) {
-    this.manualRules.instructions = (e.target as any).value;
-    this.rules = { manual: this.manualRules };
+    this.moderation.instructions = (e.target as any).value;
   }
 
   private handleAllowedFlagsChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
     if (!isNaN(value) && value >= 0) {
-      this.manualRules.allowedFlags = value;
-      this.rules = { manual: this.manualRules };
+      this.moderation.allowedFlags = value;
     }
   }
 
@@ -219,57 +179,44 @@ export class RulesEdit extends LitElement {
       selectedAgents.push(agentId.hash);
     }
 
-    if (this.rulesType === RulesType.Auto) {
-      this.autoRules.allowedAgents = selectedAgents;
-      this.rules = { auto: this.autoRules };
-    } else if (this.rulesType === RulesType.Manual) {
-      this.manualRules.moderators = selectedAgents;
-      this.rules = { manual: this.manualRules };
-    }
+    this.limitations.allowedAgents = selectedAgents;
   }
 
-  private dispatchRulesSavedEvent() {
-    this.dispatchEvent(new CustomEvent('rules-saved', {
-      detail: {
-        rules: this.rules
-      },
-      bubbles: true,
-      composed: true
-    }));
+  private handleModeratorSelectionChange(e: CustomEvent) {
+    const selectedItems = e.detail.items;
+    const selectedAgents: Uint8Array[] = [];
+    console.log("handleModeratorSelectionChange", e, selectedItems);
+
+    for (const item of selectedItems) {
+      const agentHashB64 = item.getAttribute('data-id');
+      const agentId = new AgentId(agentHashB64);
+      selectedAgents.push(agentId.hash);
+    }
+    this.moderation.moderators = selectedAgents;
   }
 
 
   /** */
   override render() {
-    console.log("<ruled-edit>.render()", this.rules, this.rulesType);
+    console.log("<ruled-edit>.render()", this.moderation, this.limitations);
 
     let peerList = [];
     for (const [agentId, actionId] of this.profiles!.profileByAgent.entries()) {
       const pair = this.profiles!.profiles.get(actionId)!;
       peerList.push(html`
         <ui5-mcb-item data-id=${agentId.b64} .text=${pair[0].nickname}
-                      ?selected=${this.manualRules.moderators.some(a => a === agentId.hash)}>
+                      ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>
         </ui5-mcb-item>
     `)};
 
+
+    /** */
     return html`
-        <ui5-title level="H3">${msg('Rules')}</ui5-title>        
             <div class="form-section">
-                
-                <div class="field-row">
-                    <ui5-label>Type:</ui5-label>
-                    <ui5-select @change=${this.handleTypeChange}>
-                        <ui5-option value=${RulesType.None} ?selected=${this.rulesType === RulesType.None}>None</ui5-option>
-                        <ui5-option value=${RulesType.Auto} ?selected=${this.rulesType === RulesType.Auto}>Auto</ui5-option>
-                        <ui5-option value=${RulesType.Manual} ?selected=${this.rulesType === RulesType.Manual}>Manual</ui5-option>
-                    </ui5-select>
-                </div>
-            
-            ${this.rulesType === RulesType.Auto ? html`
-                <ui5-panel header="Auto Rules Configuration" style="border: 1px solid #e1e1e1;">
+                <ui5-panel header-text=${msg('Configuration')} fixed style="border: 1px solid #e1e1e1;">
                     
                     <div class="field-row">
-                        <ui5-label>${msg('Allow list:')}</ui5-label>
+                        <ui5-label>${msg('Allowed participants')}:</ui5-label>
                         <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="everyone">
                             ${peerList}
                         </ui5-multi-combobox>
@@ -277,7 +224,7 @@ export class RulesEdit extends LitElement {
 
                     <div class="field-row">
                         <ui5-label>Message cap per day:</ui5-label>
-                        <ui5-input type="number" value=${this.autoRules.maybeAgentCapPerDay || ''}
+                        <ui5-input type="number" value=${this.limitations.maybeAgentCapPerDay || ''}
                                    placeholder="No limit" @change=${this.handleAgentCapChange}>
                         </ui5-input>
                     </div>
@@ -286,17 +233,17 @@ export class RulesEdit extends LitElement {
                     
                     <div class="field-row">
                         <ui5-label style="font-size: large">WAL Embeds</ui5-label>
-                        <ui5-switch ?checked=${this.autoRules.canWal} @change=${this.handleAutoCanWalChange}></ui5-switch>
-                        <!-- <ui5-checkbox ?checked=${this.autoRules.canWal} @change=${this.handleAutoCanWalChange}></ui5-checkbox> -->
+                        <ui5-switch ?checked=${this.limitations.canWal} @change=${this.handleAutoCanWalChange}></ui5-switch>
+                        <!-- <ui5-checkbox ?checked=${this.limitations.canWal} @change=${this.handleAutoCanWalChange}></ui5-checkbox> -->
                     </div>
                     
                     <div class="field-row">
                         <ui5-label style="font-size: large">File Messages</ui5-label>
-                        <ui5-switch ?checked=${this.autoRules.canFile} @change=${this.handleAutoCanFileChange}></ui5-switch>
-                            <!--<ui5-checkbox ?checked=${!!this.autoRules.canFile} @change=${this.handleAutoCanFileChange}></ui5-checkbox> -->
+                        <ui5-switch ?checked=${this.limitations.canFile} @change=${this.handleAutoCanFileChange}></ui5-switch>
+                            <!--<ui5-checkbox ?checked=${!!this.limitations.canFile} @change=${this.handleAutoCanFileChange}></ui5-checkbox> -->
                     </div>
                     
-                    ${this.autoRules.canFile ? html`
+                    ${this.limitations.canFile? html`
                         <div class="sub-section">
                             <div class="field-row">
                                 <ui5-label>Permitted File Types:</ui5-label>
@@ -324,11 +271,11 @@ export class RulesEdit extends LitElement {
                     
                     <div class="field-row" style="margin-top:20px">
                         <ui5-label style="font-size: large;">Text Messages</ui5-label>
-                        <ui5-switch ?checked=${this.autoRules.canText} @change=${this.handleAutoCanTextChange}></ui5-switch>
-                        <!-- <ui5-checkbox ?checked=${!!this.autoRules.canText} @change=${this.handleAutoCanTextChange}></ui5-checkbox> -->
+                        <ui5-switch ?checked=${this.limitations.canText} @change=${this.handleAutoCanTextChange}></ui5-switch>
+                        <!-- <ui5-checkbox ?checked=${!!this.limitations.canText} @change=${this.handleAutoCanTextChange}></ui5-checkbox> -->
                     </div>
                     
-                    ${this.autoRules.canText? html`
+                    ${this.limitations.canText? html`
                         <div class="sub-section">
                             <div class="field-row">
                                 <ui5-label>Banned Words:</ui5-label>
@@ -354,38 +301,35 @@ export class RulesEdit extends LitElement {
                         </div>
                     ` : ''}
                 </ui5-panel>
-            ` : ''}
-
-            
-            ${this.rulesType === RulesType.Manual ? html`
-                <ui5-panel header="Manual Rules Configuration" style="border: 1px solid #e1e1e1;">
-                    <div class="field-row">
-                        <ui5-label>Instructions:</ui5-label>
-                        <ui5-textarea placeholder="Enter instructions here..." 
-                            value=${this.manualRules.instructions} @change=${this.handleInstructionsChange}>
-                        </ui5-textarea>
-                    </div>
-                    
-                    <div class="field-row">
-                        <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
-                        <ui5-input type="number" value=${this.manualRules.allowedFlags} @change=${this.handleAllowedFlagsChange}></ui5-input>
-                    </div>
-                    
-                    <div class="field-row">
-                        <ui5-label>${msg('Moderators')}:</ui5-label>
-                        <ui5-multi-combobox style="flex-grow:1;" @selection-change=${this.handleAgentSelectionChange}>
-                            ${peerList}
-                        </ui5-multi-combobox>
-                    </div>
-                </ui5-panel>
-            ` : ''}
-
-            <!--
-            <div class="actions">
-                <ui5-button design="Emphasized" @click=${() => this.dispatchRulesSavedEvent()}>${msg('Save')}</ui5-button>
-                <ui5-button design="Transparent">${msg('Cancel')}</ui5-button>
             </div>
-            -->
+            <div class="form-section" style="min-width: 500px">
+                <ui5-panel header-text=${msg('Moderation')} fixed style="border: 1px solid #e1e1e1;">
+
+                    <div class="field-row" >
+                        <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
+                        <ui5-switch ?checked=${this.canModerate} @change=${this.handleCanModerateChange}></ui5-switch>
+                    </div>
+                    
+                    ${this.canModerate? html`
+                      <div class="field-row">
+                          <ui5-label>${msg('Moderators')}:</ui5-label>
+                          <ui5-multi-combobox style="flex-grow:1;" @selection-change=${this.handleModeratorSelectionChange}>
+                              ${peerList}
+                          </ui5-multi-combobox>
+                      </div>
+                      <div class="field-row">
+                          <ui5-label>Instructions:</ui5-label>
+                          <ui5-textarea placeholder="Enter instructions here..." 
+                              value=${this.moderation.instructions} @change=${this.handleInstructionsChange}>
+                          </ui5-textarea>
+                      </div>
+                      <div class="field-row">
+                          <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
+                          <ui5-input type="number" value=${this.moderation.allowedFlags} @change=${this.handleAllowedFlagsChange}></ui5-input>
+                      </div>
+                    ` : ''}
+                    
+                </ui5-panel>
             </div>                
         `;
   }
@@ -397,7 +341,8 @@ export class RulesEdit extends LitElement {
       sharedStyles,
       css`
         :host {
-          display: block;
+          display: flex;
+          gap: 20px;
           font-family: var(--sapFontFamily, "72", "72full", Arial, Helvetica, sans-serif);
           color: var(--sapTextColor, #32363a);
           margin-top: 1em;

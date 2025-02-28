@@ -9,7 +9,7 @@ import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materia
 import {AgentId} from "@ddd-qc/lit-happ";
 import {beadJumpEvent, JumpEvent, ShowProfileEvent, threadJumpEvent} from "./events";
 import {msg} from "@lit/localize";
-import {Rules} from "./bindings/threads.types";
+
 
 
 /** Get profile for agent, otherwise fetch it from DHT and return unknown Profile */
@@ -73,34 +73,31 @@ export function renderAvatars(agentHashes: Uint8Array[], lit: LitElement, perspe
 }
 
 
-export function renderModerators(rules: Rules, lit: LitElement, perspective: ProfilesAltPerspective): TemplateResult<1> {
-  if ("manual" in rules) {
-    return renderAvatars(rules.manual.moderators, lit, perspective)
-  }
-  if ("auto" in rules) {
-    return html`<span>${msg('Automatic')}</span>`;
+export function renderModerators(moderators: Uint8Array[], lit: LitElement, perspective: ProfilesAltPerspective): TemplateResult<1> {
+  if (moderators.length > 0) {
+    return renderAvatars(moderators, lit, perspective)
   }
   return html`<span>${msg('None')}</span>`;
 }
 
 
-/** */
-export function rules2str(rules: Rules): string {
-   if ("manual" in rules) {
-     const instructions = rules.manual.instructions.length > 0 ? rules.manual.instructions
-       : msg("No instructions provided");
-    return msg('Manual') + ": " + instructions;
-  }
-  if ("auto" in rules) {
-    return msg('Auto') + ": "
-    + (rules.auto.canText? msg('Text, ') : "")
-    + (rules.auto.canFile? msg('File, ') : "")
-    + (rules.auto.canWal? msg('WAL, ') : "")
-    + (rules.auto.allowedAgents.length > 0? msg('Restricted') : msg('Everyone'))
-    + (rules.auto.maybeAgentCapPerDay? msg(', Capped') : "");
-  }
-  return msg('None');
-}
+// /** */
+// export function rules2str(rules: Rules): string {
+//    if ("manual" in rules) {
+//      const instructions = rules.manual.instructions.length > 0 ? rules.manual.instructions
+//        : msg("No instructions provided");
+//     return msg('Manual') + ": " + instructions;
+//   }
+//   if ("auto" in rules) {
+//     return msg('Auto') + ": "
+//     + (rules.auto.canText? msg('Text, ') : "")
+//     + (rules.auto.canFile? msg('File, ') : "")
+//     + (rules.auto.canWal? msg('WAL, ') : "")
+//     + (rules.auto.allowedAgents.length > 0? msg('Restricted') : msg('Everyone'))
+//     + (rules.auto.maybeAgentCapPerDay? msg(', Capped') : "");
+//   }
+//   return msg('None');
+// }
 
 
 /** Return [notifTitle, notifBody, jumpEvent] */
@@ -170,7 +167,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
             // const subject = this.getSubject(subjectHash);
             // title = "New thread about a " + subject.typeName;
             title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
-            content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
+            //content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
         }
     }
     break;

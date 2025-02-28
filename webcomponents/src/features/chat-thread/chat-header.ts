@@ -158,7 +158,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
               </span>
               |
               ${msg("Moderators")}:
-              ${renderModerators(thread.pp.rules, this, this._dvm.profilesZvm.perspective)}
+              ${renderModerators(thread.pp.moderation.moderators, this, this._dvm.profilesZvm.perspective)}
           </div>
         </div>
     `;

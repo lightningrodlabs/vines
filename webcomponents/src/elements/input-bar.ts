@@ -25,9 +25,10 @@ import {WAL, weaveUrlFromWal} from "@theweave/api";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
-import {Rules} from "../bindings/threads.types";
 import {toasty} from "../toast";
 import {formatFileSize} from "../utils";
+import {Limitations} from "../bindings/threads.types";
+import {defaultLimitations} from "../viewModels/threads.materialize";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 
@@ -43,7 +44,8 @@ export class InputBar extends LitElement {
   @property() cachedInput: string = '';
 
   @property() background?: string;
-  @property() rules: Rules = {none: true};
+  @property() limitations: Limitations = defaultLimitations();
+
   @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
@@ -363,30 +365,30 @@ export class InputBar extends LitElement {
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
     /** Rules */
-    if (changedProperties.has("rules")) {
+    if (changedProperties.has("limitations")) {
+      console.log("<input-bar> limitations", this.limitations);
         //const rulesType = getRuleType(this.rules);
-      this.canWal = true;
       this.canFile = true;
       this.canText = true;
       this.minFileSize = 0;
       this.maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
       this.minTextSize = 0;
       this.maxTextSize = 16 * 1024;
-      if ('auto' in this.rules) {
-        this.canWal = this.rules.auto.canWal;
-        if (!this.rules.auto.canFile) {
-          this.canFile = false;
-        } else {
-          this.minFileSize = this.rules.auto.canFile.minFileSize;
-          this.maxFileSize = this.rules.auto.canFile.maxFileSize;
-        }
-        if (!this.rules.auto.canText) {
-          this.canText = false;
-        } else {
-          this.minTextSize = this.rules.auto.canText.minTextLength;
-          this.maxTextSize = this.rules.auto.canText.maxTextLength;
-        }
+
+      this.canWal = this.limitations.canWal;
+      if (!this.limitations.canFile) {
+        this.canFile = false;
+      } else {
+        this.minFileSize = this.limitations.canFile.minFileSize;
+        this.maxFileSize = this.limitations.canFile.maxFileSize;
       }
+      if (!this.limitations.canText) {
+        this.canText = false;
+      } else {
+        this.minTextSize = this.limitations.canText.minTextLength;
+        this.maxTextSize = this.limitations.canText.maxTextLength;
+      }
+
     }
   }
 

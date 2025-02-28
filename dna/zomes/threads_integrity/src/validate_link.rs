@@ -24,12 +24,12 @@ pub fn validate_create_link(create_link: HoloHashed<CreateLink>) -> ExternResult
 
   match link_type {
     ThreadsLinkType::Flagged => {
-      let rules = get_manual_rules(&create_link)?;
+      let rules = get_moderation_rules(&create_link)?;
       /// Only moderators can flag content
       return is_moderator(&rules, &create_link.author);
     },
     ThreadsLinkType::Banned => {
-      let rules = get_manual_rules(&create_link)?;
+      let rules = get_moderation_rules(&create_link)?;
       /// Only moderators can ban members
       let is_mod = is_moderator(&rules, &create_link.author)?;
       if let ValidateCallbackResult::Valid = is_mod {
@@ -44,20 +44,17 @@ pub fn validate_create_link(create_link: HoloHashed<CreateLink>) -> ExternResult
 
 
 ///
-fn get_manual_rules(create_link: &HoloHashed<CreateLink>) -> ExternResult<ManualRules> {
+fn get_moderation_rules(create_link: &HoloHashed<CreateLink>) -> ExternResult<Moderation> {
   let ah = create_link.base_address.clone().into_action_hash().unwrap();
   let pp_record = must_get_valid_record(ah.clone())?;
   let pp: ParticipationProtocol = get_typed_from_record(pp_record)?;
-  let Rules::Manual(man) = pp.rules else {
-    return Err(wasm_error!("{}", format!("ParticipationProtocol should have Manual Rules: {}", ah)));
-  };
-  Ok(man)
+  Ok(pp.moderation)
 }
 
 
 
 ///
-fn is_moderator(rules: &ManualRules, candidat: &AgentPubKey) -> ExternResult<ValidateCallbackResult> {
+fn is_moderator(rules: &Moderation, candidat: &AgentPubKey) -> ExternResult<ValidateCallbackResult> {
   if !rules.moderators.contains(candidat) {
     return Ok(ValidateCallbackResult::Invalid("Agent is not a Moderator for this ParticipationProtocol".to_string()));
   }
@@ -66,7 +63,7 @@ fn is_moderator(rules: &ManualRules, candidat: &AgentPubKey) -> ExternResult<Val
 
 
 ///
-fn has_flagged_been_reached(rules: &ManualRules, create_link: &HoloHashed<CreateLink>) -> ExternResult<ValidateCallbackResult> {
+fn has_flagged_been_reached(rules: &Moderation, create_link: &HoloHashed<CreateLink>) -> ExternResult<ValidateCallbackResult> {
   let vilain = create_link.target_address.clone().into_agent_pub_key().unwrap();
   let tag_data = create_link.tag.clone().into_inner();
   let links: Vec<ActionHash> = decode(&tag_data)
