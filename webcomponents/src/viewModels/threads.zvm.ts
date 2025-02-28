@@ -1509,6 +1509,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  /** */
+  canParticipate(ppAh: ActionId, agent: AgentId): boolean {
+    const isBanned = this._perspective.hasBan(ppAh, agent);
+    const thread = this._perspective.threads.get(ppAh)!;
+    const isAllowed = thread.pp.limitations.allowedAgents.length == 0
+      || thread.pp.limitations.allowedAgents.map((hash) => new AgentId(hash).b64).includes(agent.b64)
+    return isAllowed && !isBanned;
+  }
+
+
+
   /** -- Signaling / Notifying -- */
 
   /** */

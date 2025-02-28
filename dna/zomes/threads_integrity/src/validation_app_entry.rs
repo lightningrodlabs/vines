@@ -67,7 +67,7 @@ fn validate_bead(creation_action: EntryCreationAction, base: BaseBeadKind) -> Ex
   };
   let pp_entry = must_get_entry(pp_create.entry_hash.to_owned())?;
   let pp = ParticipationProtocol::try_from(pp_entry.content)?;
-  /// Fail if manual rules and author has been banned
+  /// Fail if there is moderation and author has been banned
   /// FIXME
   /// Check if author is allowed
   if !pp.limitations.allowed_agents.is_empty() && !pp.limitations.allowed_agents.contains(author) {

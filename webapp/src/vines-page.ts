@@ -1355,8 +1355,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
 
-        const isSelfBanned = this._dvm.threadsZvm.perspective.hasBan(this._selectedThreadHash, this.cell.address.agentId);
-        const canDisplayInput = !isEditOther && !isSelfBanned;
+        const canParticipate = this._dvm.threadsZvm.canParticipate(this._selectedThreadHash, this.cell.address.agentId);
+        const canDisplayInput = !isEditOther && canParticipate;
 
         const threadView = this.multi
             ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this._selectedBeadAh}></chat-thread-multi-view>`
@@ -1474,7 +1474,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          .selectedThreadHash=${this._selectedThreadHash}
                          @createThreadClicked=${(e : CustomEvent<ActionId>) => {
           this._createTopicHash = e.detail;
-          this.createThreadDialogElem.show()
+          this.createThreadDialogElem.show();
           }}></my-threads-lister>
         `;
       break;
@@ -2210,7 +2210,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
                         </ui5-input>
                     </div>
-                    <rules-edit id="rulesEdit" .profiles=${this._dvm.profilesZvm.perspective}></rules-edit>
+                    <rules-edit id="rulesEdit"></rules-edit>
                 </section>
                 <div slot="footer" style:
                 "display:flex;">

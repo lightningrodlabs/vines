@@ -256,6 +256,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
     //const isPersistent = false;
+    const canParticipate = this._dvm.threadsZvm.canParticipate(beadInfo.bead.ppAh, this.cell.address.agentId);
     const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
     const isFlagged = this._dvm.threadsZvm.perspective.hasFlag(beadInfo.bead.ppAh, this.hash);
@@ -467,7 +468,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->
-            ${this.nomenu || !isPersistent ? html`` : html`<div id="buttonsPop">${sideButtons}</div>`}
+            ${this.nomenu || !isPersistent || !canParticipate ? html`` : html`<div id="buttonsPop">${sideButtons}</div>`}
             <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                 <emoji-picker class="light" style="display: block"
                               @emoji-click=${(event: any) => {

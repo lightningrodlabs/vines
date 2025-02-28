@@ -1,24 +1,24 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
-import {AgentId} from "@ddd-qc/lit-happ";
-import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
+import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
+import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
 import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 
 @customElement('rules-edit')
-export class RulesEdit extends LitElement {
+export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm> {
+
+  constructor() {
+    super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
+  }
 
   @property()
   moderation: Moderation = defaultModeration();
 
   @property()
   limitations: Limitations = defaultLimitations();
-
-  @property()
-  profiles!: ProfilesAltPerspective;
-
 
   @state()
   private canRateLimit: boolean = false;
@@ -217,11 +217,11 @@ export class RulesEdit extends LitElement {
 
   /** */
   override render() {
-    console.log("<ruled-edit>.render()", this.moderation, this.limitations);
+    console.log("<ruled-edit>.render()", this.moderation, this.limitations, this._zvm.perspective.profiles.size);
 
     let peerList = [];
-    for (const [agentId, actionId] of this.profiles!.profileByAgent.entries()) {
-      const pair = this.profiles!.profiles.get(actionId)!;
+    for (const [agentId, actionId] of this._zvm.perspective.profileByAgent.entries()) {
+      const pair = this._zvm.perspective.profiles.get(actionId)!;
       peerList.push(html`
         <ui5-mcb-item data-id=${agentId.b64} .text=${pair[0].nickname}
                       ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>

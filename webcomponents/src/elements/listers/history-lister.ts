@@ -194,7 +194,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                      this.collapsed = e.target.collapsed;                      
                    }}>
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
-                <span style="width: 1.2rem; height: 1.2rem">${msg("Recently Viewed")}</span>
+                <span style="height: 1.2rem">${msg("Recently Viewed")}</span>
             </div>
         ${threads}
         </ui5-panel>
