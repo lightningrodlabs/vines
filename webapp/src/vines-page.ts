@@ -34,6 +34,7 @@ import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/MenuItem.js";
 import '@ui5/webcomponents/dist/MultiComboBox.js';
+import '@ui5/webcomponents/dist/MultiComboBoxItem.js';
 import "@ui5/webcomponents/dist/MultiInput.js";
 import '@ui5/webcomponents/dist/features/InputSuggestions.js';
 import "@ui5/webcomponents/dist/Option.js";

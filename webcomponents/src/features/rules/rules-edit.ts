@@ -1,4 +1,4 @@
-import { html, css } from 'lit';
+import {html, css, LitElement} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
@@ -46,6 +46,132 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   @state()
   private fileTypeInput: string = '';
+
+
+
+  //private commonMimeTypes = ["application", "audio", "image", "video", "text", "binary", "other"];
+
+  private mimeTypes = [
+    //{ value: 'application/json', text: 'JSON (application/json)' },
+    //{ value: 'application/xml', text: 'XML (application/xml)' },
+    //{ value: 'text/html', text: 'HTML (text/html)' },
+    { value: 'text/plain', text: 'Text' },
+    { value: 'application/pdf', text: 'PDF' },
+    //{ value: 'application/msword', text: 'Word (application/msword)' },
+    //{ value: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', text: 'Word (DOCX)' },
+    //{ value: 'application/vnd.ms-excel', text: 'Excel (application/vnd.ms-excel)' },
+    //{ value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', text: 'Excel (XLSX)' },
+    { value: 'image/*', text: 'Image' },
+    //{ value: 'image/jpeg', text: 'JPEG Image (image/jpeg)' },
+    //{ value: 'image/png', text: 'PNG Image (image/png)' },
+    //{ value: 'image/gif', text: 'GIF Image (image/gif)' },
+    //{ value: 'image/svg+xml', text: 'SVG Image (image/svg+xml)' },
+    { value: 'audio/*', text: 'Audio' },
+   // { value: 'audio/mpeg', text: 'MP3 Audio (audio/mpeg)' },
+    { value: 'video/*', text: 'Video' },
+    //{ value: 'video/mp4', text: 'MP4 Video (video/mp4)' },
+    { value: 'application/zip', text: 'ZIP' }
+  ];
+
+  @property({ type: Array })
+  selectedTypes: string[] = [];
+
+
+  /**
+   * Add a type to selected types
+   * @param {string} value - The MIME type value to add
+   */
+  addType(value:any) {
+    if (!this.selectedTypes.includes(value)) {
+      this.selectedTypes = [...this.selectedTypes, value];
+      //this.dispatchSelectionChange();
+    }
+  }
+
+  /**
+   * Remove a type from selected types
+   * @param {string} value - The MIME type value to remove
+   */
+  removeType(value:any) {
+    this.selectedTypes = this.selectedTypes.filter(type => type !== value);
+    //this.dispatchSelectionChange();
+  }
+
+  /**
+   * Handle selection changes in the multi-combo box
+   * @param {Event} e - The selection-change event
+   */
+  handleSelectionChange(e:any) {
+    console.log("handleSelectionChange()", e.detail.items);
+    if (e.detail.items.selectedTypes) {
+      this.selectedTypes = e.detail.items.selectedTypes;
+      //const selector = this.shadowRoot!.getElementById("mimeSelector") as LitElement;
+      //selector.requestUpdate();
+    }
+    //this.dispatchSelectionChange();
+  }
+
+  /**
+   * Clear all selected types
+   */
+  clearAll() {
+    this.selectedTypes = [];
+    //this.dispatchSelectionChange();
+  }
+
+
+  renderMimeSelector() {
+    return html`
+      <div class="selector-container">
+          
+        <div id="mimeSelector" class="selector-header">
+          <ui5-button
+            design="Transparent"
+            @click=${this.clearAll}
+            ?disabled=${this.selectedTypes.length === 0}>
+            ${msg('Clear All')}
+          </ui5-button>
+        </div>
+        
+        <div class="combo-box-container">
+          <ui5-multi-combobox
+            placeholder="all"
+            @selection-change=${this.handleSelectionChange}
+            style="width: 100%;"
+          >
+            ${this.mimeTypes.map(type => html`
+              <ui5-mcb-item
+                text=${type.text}
+                value=${type.value}
+                ?selected=${this.selectedTypes.includes(type.value)}
+              ></ui5-mcb-item>
+            `)}
+          </ui5-multi-combobox>
+        </div>
+        
+        ${this.selectedTypes.length > 0 ? html`
+          <div class="selected-types">
+            <ui5-label>Selected File Types:</ui5-label>
+            <div>
+              ${this.selectedTypes.map(type => {
+      const typeObj = this.mimeTypes.find(t => t.value === type);
+      return html`
+                  <span class="type-chip">
+                    ${typeObj ? typeObj.text : type}
+                    <button @click=${() => this.removeType(type)}>×</button>
+                  </span>
+                `;
+    })}
+            </div>
+          </div>
+        ` : html`
+          <div class="selected-types">
+            <ui5-label>No File types selected</ui5-label>
+          </div>
+        `}
+      </div>
+    `;
+  }
 
 
 
@@ -279,6 +405,13 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                                 <ui5-input value=${this.fileTypeInput} placeholder="all" @change=${(e: CustomEvent) => this.fileTypeInput = (e.target as any).value}></ui5-input>
                                 <ui5-button @click=${this.addFileType}>Add</ui5-button> 
                             </div>
+
+                            <div class="field-row">
+                                <ui5-label>Permitted File Types:</ui5-label>
+                                ${this.renderMimeSelector()}
+                            </div>
+                            
+                            
                             
                             <div class="token-list">
                                 ${this.fileRules.allowedFileTypes.map(type => html`
