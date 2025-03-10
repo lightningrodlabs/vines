@@ -177,20 +177,30 @@ pub fn check_agent_cap(now: &Timestamp, prev_ah: &ActionHash, author: &AgentPubK
 }
 
 
-///
+/// TODO: For validation to work, it would required holochain to allow to grab the Manifest from Files cell and check its values.
+/// TODO: Other solution would be to add sub_type and size fields to EntryBead.
 pub fn validate_entry_bead(rules: FileLimits, eb: EntryBead) -> ExternResult<ValidateCallbackResult> {
-  /// Check type
-  if !rules.allowed_file_types.is_empty() && !rules.allowed_file_types.contains(&eb.source_type) {
-    let msg = format!("File type '{}' is not allowed", eb.source_type);
-    return Ok(ValidateCallbackResult::Invalid(msg));
-  }
-  /// FIXME: Check size limit
+
+  /// FIXME: Not allowed in HDI
   // let response = call(
-  //   CallTargetCell::OtherRole(input.role_name.clone()),
-  //   ZomeName::from(input.zome_name.clone()),
+  //   CallTargetCell::OtherRole(eb.source_role.clone()),
+  //   ZomeName::from(eb.source_zome.clone()),
   //   "get_any_record".into(),
   //   None,
-  //   input.eh.clone())?;
+  //   eb.source_eh.clone())?;
+
+  // Check subtype
+  if !rules.allowed_file_types.is_empty() && !rules.allowed_file_types.contains(&eb.source_sub_type) {
+    let msg = format!("File type '{}' is not allowed on this thread. Allowed types: {:?}", eb.source_sub_type, rules.allowed_file_types);
+    return Ok(ValidateCallbackResult::Invalid(msg));
+  }
+
+  /// Check size limit
+  if eb.source_size < rules.min_file_size || eb.source_size > rules.max_file_size {
+    let msg = format!("File size of {} bytes is not allowed on this thread. Allowed size range: [{} ; {}] bytes", eb.source_size, rules.min_file_size, rules.max_file_size);
+    return Ok(ValidateCallbackResult::Invalid(msg));
+  }
+
   /// Done
   Ok(ValidateCallbackResult::Valid)
 }

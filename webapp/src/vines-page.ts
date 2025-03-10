@@ -672,7 +672,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     /** Check Rules */
-    const rulesEdit = this.shadowRoot!.getElementById("rulesEdit") as RulesEdit;
+    let rulesEdit = this.shadowRoot!.getElementById("rulesEdit") as RulesEdit;
     /** Publish */
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishThreadFromSemanticTopic(
       this.weServices? new EntryId(this.weServices.appletIds[0]!) : THIS_APPLET_ID,
@@ -683,6 +683,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     );
     /** cleanup */
     input.value = "";
+    rulesEdit.reset();
     this.createThreadDialogElem.close(false);
     /** Jump to new thread */
     this.dispatchEvent(threadJumpEvent(ppAh));
@@ -1098,10 +1099,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async onCreateFileMessage(ppAh: ActionId, file: File) {
-    console.log("onCreateFileMessage()", file.name, this._filesDvm);
+    console.log("onCreateFileMessage()", file.name, file, this._filesDvm);
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
       console.debug("<vines-page> startPublishFile callback", eh);
-      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, eh, ppAh, undefined, this._replyToAh, this.weServices);
+      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, ppAh, undefined, this._replyToAh, this.weServices);
       console.debug("onCreateFileMessage() ah", ah);
       this._splitObj = undefined;
     });

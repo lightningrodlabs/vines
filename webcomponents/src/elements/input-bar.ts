@@ -29,6 +29,7 @@ import {toasty} from "../toast";
 import {formatFileSize} from "../utils";
 import {Limitations} from "../bindings/threads.types";
 import {defaultLimitations} from "../viewModels/threads.materialize";
+//import {handledMimeTypes} from "../features/rules/rules-edit";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 
@@ -394,6 +395,21 @@ export class InputBar extends LitElement {
 
 
   /** */
+  pickFile() {
+    let accept = "";
+    for (const k of this.limitations.canFile!.allowedFileTypes) {
+      accept += k + ", "
+    }
+    console.log("pickFile()", this.limitations.canFile, accept);
+    let input = document.createElement('input');
+    input.accept = accept;
+    input.type = 'file';
+    input.onchange = (e) => this.onAttachFile(e);
+    input.click();
+  }
+
+
+  /** */
   override render() {
     console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal, this.profilesZvm);
 
@@ -538,12 +554,7 @@ export class InputBar extends LitElement {
 
       addBtn = html`
             <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
-                        @click=${(_e:any) => {
-                          let input = document.createElement('input');
-                          input.type = 'file';
-                          input.onchange = (e) => this.onAttachFile(e);
-                          input.click();
-                        }}>
+                        @click=${(_e:any) => { this.pickFile()}}>
             </ui5-button>
       `;
     }
@@ -635,14 +646,10 @@ export class InputBar extends LitElement {
 
   /** */
   async onAddMenu(e:any): Promise<void> {
-    console.log("AddMenu.item-click", e);
+    console.log("AddMenu.item-click", e, this.limitations.canWal, this.limitations.canFile);
     switch (e.detail.item.id) {
       case "fileItem":
-        let input = document.createElement('input');
-        input.accept = ""; // FIXME file types
-        input.type = 'file';
-        input.onchange = (e) => this.onAttachFile(e);
-        input.click();
+        this.pickFile();
       break;
       case "linkWalItem":
         const maybeWalLink = await this.weServices.assets.userSelectAsset();

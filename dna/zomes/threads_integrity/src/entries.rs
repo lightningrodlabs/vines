@@ -49,9 +49,11 @@ pub struct Bead {
 pub struct EntryBead {
     pub bead: Bead,
     pub source_eh: EntryHash,
-    pub source_type: String,
-    pub source_zome: String,
     pub source_role: String,
+    pub source_zome: String,
+    pub source_type: String,
+    pub source_sub_type: String,
+    pub source_size: u32,
 }
 
 

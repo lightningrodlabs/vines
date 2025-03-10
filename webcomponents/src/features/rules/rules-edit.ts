@@ -7,6 +7,18 @@ import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
 import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 
+
+/** */
+export const handledMimeTypes: Object = {
+  "text/plain": "Text",
+  "application/pdf": "PDF",
+  "image/*": "Image",
+  "audio/*": "Audio",
+  "video/*": "Video",
+  "application/zip": 'Zip',
+}
+
+
 @customElement('rules-edit')
 export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm> {
 
@@ -48,33 +60,30 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private fileTypeInput: string = '';
 
 
-
-  //private commonMimeTypes = ["application", "audio", "image", "video", "text", "binary", "other"];
-
-  private mimeTypes = [
-    //{ value: 'application/json', text: 'JSON (application/json)' },
-    //{ value: 'application/xml', text: 'XML (application/xml)' },
-    //{ value: 'text/html', text: 'HTML (text/html)' },
-    { value: 'text/plain', text: 'Text' },
-    { value: 'application/pdf', text: 'PDF' },
-    //{ value: 'application/msword', text: 'Word (application/msword)' },
-    //{ value: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', text: 'Word (DOCX)' },
-    //{ value: 'application/vnd.ms-excel', text: 'Excel (application/vnd.ms-excel)' },
-    //{ value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', text: 'Excel (XLSX)' },
-    { value: 'image/*', text: 'Image' },
-    //{ value: 'image/jpeg', text: 'JPEG Image (image/jpeg)' },
-    //{ value: 'image/png', text: 'PNG Image (image/png)' },
-    //{ value: 'image/gif', text: 'GIF Image (image/gif)' },
-    //{ value: 'image/svg+xml', text: 'SVG Image (image/svg+xml)' },
-    { value: 'audio/*', text: 'Audio' },
-   // { value: 'audio/mpeg', text: 'MP3 Audio (audio/mpeg)' },
-    { value: 'video/*', text: 'Video' },
-    //{ value: 'video/mp4', text: 'MP4 Video (video/mp4)' },
-    { value: 'application/zip', text: 'ZIP' }
-  ];
-
   @property({ type: Array })
   selectedTypes: string[] = [];
+
+
+  /** Set back to initial values */
+  reset() {
+    this.moderation = defaultModeration();
+    this.limitations = defaultLimitations();
+    this.canRateLimit = false;
+    this.canModerate = false;
+    this.textRules = {
+      bannedWords: [],
+      minTextLength: 0,
+      maxTextLength: 1000
+    }
+    this.fileRules = {
+      allowedFileTypes: [],
+      minFileSize: 0,
+      maxFileSize: 16777216, // 16MiB default FIXME grab DNA settings
+    };
+    this.bannedWordInput = '';
+    this.fileTypeInput = '';
+    this.selectedTypes = [];
+  }
 
 
   /**
@@ -104,7 +113,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   handleSelectionChange(e:any) {
     console.log("handleSelectionChange()", e.detail.items);
     if (e.detail.items) {
-      this.selectedTypes = e.detail.items.map((mcb:any) => mcb.text);
+      this.selectedTypes = e.detail.items.map((mcb:any) => mcb.value);
       this.fileRules.allowedFileTypes = this.selectedTypes;
       //const selector = this.shadowRoot!.getElementById("mimeCombobox") as LitElement;
       //selector.requestUpdate();
@@ -379,11 +388,11 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                                                         @selection-change=${this.handleSelectionChange}
                                                         style="width: 100%;"
                                                             >
-                                                                ${this.mimeTypes.map(type => html`
+                                                              ${Object.entries(handledMimeTypes).map(([k, v]) => html`
                                       <ui5-mcb-item
-                                        text=${type.text}
-                                        value=${type.value}
-                                        ?selected=${this.selectedTypes.includes(type.value)}
+                                        .text=${v}
+                                        .value=${k}
+                                        ?selected=${this.selectedTypes.includes(k)}
                                       ></ui5-mcb-item>
                                     `)}
                                     </ui5-multi-combobox>

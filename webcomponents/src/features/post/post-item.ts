@@ -414,7 +414,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     const commentThreadAh = await this.getCommentThread();
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
       console.log("<create-post-panel> startPublishFile callback", eh);
-      /*let ah = await */ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, eh, commentThreadAh);
+      /*let ah = await */ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, commentThreadAh);
       this._splitObj = undefined;
     });
     console.log("onUploadComment()", this._splitObj);

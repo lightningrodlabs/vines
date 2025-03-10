@@ -17,13 +17,15 @@ import {Timestamp} from "@holochain/client";
 export type TypedBaseBead = EntryBead | AnyBead | TextBead;
 export type TypedBead = TypedBaseBead | EncryptedBead;
 
-export type TypedContent = string | WAL | EntryId;
+export type TypedContent = string | WAL | FileContent;
 
 export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead
 export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
 
 export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentId}
 
+
+export type FileContent = {eh: EntryId, size: number, type: string}
 
 
 /**  */
@@ -135,6 +137,8 @@ export interface EntryBeadMat {
   sourceType: string,
   sourceRole: string,
   sourceZome: string,
+  sourceSubType: string
+  sourceSize: number
 }
 export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
   return {
@@ -143,6 +147,8 @@ export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
     sourceType: bead.sourceType,
     sourceRole: bead.sourceRole,
     sourceZome: bead.sourceZome,
+    sourceSubType: bead.sourceSubType,
+    sourceSize: bead.sourceSize
   }
 }
 export function dematerializeEntryBead(bead: EntryBeadMat): EntryBead {
@@ -152,6 +158,8 @@ export function dematerializeEntryBead(bead: EntryBeadMat): EntryBead {
     sourceType: bead.sourceType,
     sourceRole: bead.sourceRole,
     sourceZome: bead.sourceZome,
+    sourceSubType: bead.sourceSubType,
+    sourceSize: bead.sourceSize
   }
 }
 

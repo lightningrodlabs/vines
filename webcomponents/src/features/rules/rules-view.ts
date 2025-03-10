@@ -8,6 +8,7 @@ import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {renderAvatars} from "../../render";
 import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
 import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
+import {handledMimeTypes} from "./rules-edit";
 
 
 
@@ -105,7 +106,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     <div class="field-label">Allowed Types:</div>
                     <div class="field-value badge-container">
                         ${fileRules.allowedFileTypes.length > 0
-      ? fileRules.allowedFileTypes.map(fileType => html`<ui5-badge color-scheme="info" style="background: rgb(57 57 57);">${fileType}</ui5-badge>`)
+      ? fileRules.allowedFileTypes.map(fileType => html`<ui5-badge color-scheme="info" style="background: rgb(57 57 57);">${(handledMimeTypes as any)[fileType]}</ui5-badge>`)
       : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>All file types allowed`}
                     </div>
                 </div>
@@ -237,7 +238,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
         }
         .field-label {
           font-weight: bold;
-          min-width: 180px;
+          min-width: 150px;
           color: var(--sapContent_LabelColor, #6a6d70);
         }
         .field-value {

@@ -57,7 +57,7 @@ import {
   dematerializeEntryBead,
   dematerializeTypedBead,
   EncryptedBeadContent,
-  EntryBeadMat,
+  EntryBeadMat, FileContent,
   materializeBead,
   materializeTypedBead,
   NotifiableEvent,
@@ -664,13 +664,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         [bead_ah, global_time_anchor] = await this.zomeProxy.publishTextBeadAt({textBead: typed, creationTime});
         break;
       case ThreadsEntryType.EntryBead: {
+        const fileContent = content as FileContent;
         const input: AddEntryAsBeadInput = {
-          eh: (content as EntryId).hash,
+          eh: fileContent.eh.hash,
           bead: nextBead,
           zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
           roleName: "rFiles", // FILES_CELL_NAME
           originalCreationTime: creationTime,
           originalAuthor: author.hash,
+          subType: fileContent.type,
+          size: fileContent.size,
         };
         [bead_ah, typed, global_time_anchor, bucket_ts] = await this.zomeProxy.publishEntryAsBead(input);
       }
@@ -1430,13 +1433,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         return {value: content as string, bead} as TextBead;
         break;
       case ThreadsEntryType.EntryBead:
+        const fileContent = content as FileContent;
         const entryInfo: AddEntryAsBeadInput = {
-          eh: (content as EntryId).hash,
+          eh: fileContent.eh.hash,
           bead,
           zomeName: "zFiles", // FilesProxy.DEFAULT_ZOME_NAME,
           roleName: "rFiles", // FILES_CELL_NAME
           // creationTime,
           // author,
+          subType: fileContent.type,
+          size: fileContent.size,
         };
         const [entry_bead, _creation_ts] = await this.zomeProxy.createEntryBead(entryInfo);
         return entry_bead;

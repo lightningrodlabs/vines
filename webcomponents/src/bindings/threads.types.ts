@@ -104,6 +104,8 @@ export interface AddEntryAsBeadInput {
   zomeName: string
   originalCreationTime?: Timestamp
   originalAuthor?: AgentArray
+  subType: string
+  size: number
 }
 
 export interface GetLatestBeadsInput {
@@ -250,9 +252,11 @@ export interface Bead {
 export interface EntryBead {
   bead: Bead
   sourceEh: EntryArray
-  sourceType: string
-  sourceZome: string
   sourceRole: string
+  sourceZome: string
+  sourceType: string
+  sourceSubType: string
+  sourceSize: number
 }
 
 /**  */

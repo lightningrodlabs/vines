@@ -36,6 +36,9 @@ pub struct AddEntryAsBeadInput {
     pub zome_name: String,
     pub original_creation_time: Option<Timestamp>,
     pub original_author: Option<AgentPubKey>,
+    // Hack for validating file size and type ; should actually grab values from the record
+    pub sub_type: String,
+    pub size: u32,
 }
 
 
@@ -68,19 +71,23 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
     let maybeRecord: Option<Record> = decode_response(response)?;
     //let maybeRecord = get(input.ah.clone(), GetOptions::content())?;
     let Some(record) = maybeRecord
-    else { return error("No record found at given EntryHash")};
+        else { return error("No record found at given EntryHash")};
     let creation_time = input.original_creation_time.unwrap_or(record.action().timestamp()); //   ah_time
     let Some(entry_type) = record.action().entry_type()
-    else { return error("No entry found at given EntryHash")};
+        else { return error("No entry found at given EntryHash")};
     let EntryType::App(entry_def) = entry_type
-    else { return error("No AppEntryDef found at given EntryHash")};
+        else { return error("No AppEntryDef found at given EntryHash")};
     let bead_type = format!("{}::{}", entry_def.zome_index, entry_def.entry_index.0);
+
+    /// Done
     let entry_bead = EntryBead {
     bead: input.bead.clone(),
     source_role: input.role_name,
     source_zome: input.zome_name,
     source_eh: input.eh,
     source_type: bead_type.clone(),
+    source_sub_type: input.sub_type,
+    source_size: input.size,
     };
     Ok((entry_bead, creation_time))
 }
