@@ -90,26 +90,28 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   private renderFileRules(fileRules: FileLimits) {
+    console.log("renderFileRules()", fileRules);
     return html`
             <div class="field-row">
-                <div class="field-label">File Messages:</div>
+                <div class="field-label">${msg('File Messages:')}</div>
                 <div class="field-value">
-                    <ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled
+                    <ui5-icon name="accept" class="icon-true"></ui5-icon> 
+                    ${msg('Enabled')}
                 </div>
             </div>
             
             <div class="field-group">
                 <div class="field-row">
-                    <div class="field-label">Allowed File Types:</div>
+                    <div class="field-label">Allowed Types:</div>
                     <div class="field-value badge-container">
                         ${fileRules.allowedFileTypes.length > 0
-      ? fileRules.allowedFileTypes.map(type => html`<ui5-badge color-scheme="info">${type}</ui5-badge>`)
+      ? fileRules.allowedFileTypes.map(fileType => html`<ui5-badge color-scheme="info" style="background: rgb(57 57 57);">${fileType}</ui5-badge>`)
       : html`<ui5-icon name="accept" class="icon-true"></ui5-icon>All file types allowed`}
                     </div>
                 </div>
                 
                 <div class="field-row">
-                    <div class="field-label">File Size Limits:</div>
+                    <div class="field-label">Size Limits:</div>
                     <div class="field-value">
                         Min: ${formatFileSize(fileRules.minFileSize)} | 
                         Max: ${formatFileSize(fileRules.maxFileSize)}
@@ -190,7 +192,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   override render() {
-    console.log("<ruled-edit>.render()", this.moderation, this.limitations);
+    console.log("<ruled-view>.render()", this.moderation, this.limitations);
 
     /** */
     return html`

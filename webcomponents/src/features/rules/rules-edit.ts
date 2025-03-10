@@ -1,4 +1,4 @@
-import {html, css, LitElement} from 'lit';
+import {html, css} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
@@ -103,74 +103,30 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
    */
   handleSelectionChange(e:any) {
     console.log("handleSelectionChange()", e.detail.items);
-    if (e.detail.items.selectedTypes) {
-      this.selectedTypes = e.detail.items.selectedTypes;
-      //const selector = this.shadowRoot!.getElementById("mimeSelector") as LitElement;
+    if (e.detail.items) {
+      this.selectedTypes = e.detail.items.map((mcb:any) => mcb.text);
+      this.fileRules.allowedFileTypes = this.selectedTypes;
+      //const selector = this.shadowRoot!.getElementById("mimeCombobox") as LitElement;
       //selector.requestUpdate();
+    } else {
+      this.selectedTypes = [];
+      this.fileRules.allowedFileTypes = [];
     }
+    if (this.limitations.canFile) {
+      this.limitations.canFile = { ...this.fileRules };
+    }
+    console.log("handleSelectionChange() end", this.fileRules.allowedFileTypes, this.limitations.canFile);
     //this.dispatchSelectionChange();
   }
 
   /**
    * Clear all selected types
    */
-  clearAll() {
+  clearAllMime() {
     this.selectedTypes = [];
+    //const selector = this.shadowRoot!.getElementById("mimeCombobox") as LitElement;
+    //selector.requestUpdate();
     //this.dispatchSelectionChange();
-  }
-
-
-  renderMimeSelector() {
-    return html`
-      <div class="selector-container">
-          
-        <div id="mimeSelector" class="selector-header">
-          <ui5-button
-            design="Transparent"
-            @click=${this.clearAll}
-            ?disabled=${this.selectedTypes.length === 0}>
-            ${msg('Clear All')}
-          </ui5-button>
-        </div>
-        
-        <div class="combo-box-container">
-          <ui5-multi-combobox
-            placeholder="all"
-            @selection-change=${this.handleSelectionChange}
-            style="width: 100%;"
-          >
-            ${this.mimeTypes.map(type => html`
-              <ui5-mcb-item
-                text=${type.text}
-                value=${type.value}
-                ?selected=${this.selectedTypes.includes(type.value)}
-              ></ui5-mcb-item>
-            `)}
-          </ui5-multi-combobox>
-        </div>
-        
-        ${this.selectedTypes.length > 0 ? html`
-          <div class="selected-types">
-            <ui5-label>Selected File Types:</ui5-label>
-            <div>
-              ${this.selectedTypes.map(type => {
-      const typeObj = this.mimeTypes.find(t => t.value === type);
-      return html`
-                  <span class="type-chip">
-                    ${typeObj ? typeObj.text : type}
-                    <button @click=${() => this.removeType(type)}>×</button>
-                  </span>
-                `;
-    })}
-            </div>
-          </div>
-        ` : html`
-          <div class="selected-types">
-            <ui5-label>No File types selected</ui5-label>
-          </div>
-        `}
-      </div>
-    `;
   }
 
 
@@ -400,24 +356,40 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     
                     ${this.limitations.canFile? html`
                         <div class="sub-section">
+                            <!--
                             <div class="field-row">
                                 <ui5-label>Permitted File Types:</ui5-label>
                                 <ui5-input value=${this.fileTypeInput} placeholder="all" @change=${(e: CustomEvent) => this.fileTypeInput = (e.target as any).value}></ui5-input>
                                 <ui5-button @click=${this.addFileType}>Add</ui5-button> 
                             </div>
 
-                            <div class="field-row">
-                                <ui5-label>Permitted File Types:</ui5-label>
-                                ${this.renderMimeSelector()}
-                            </div>
-                            
-                            
-                            
+                                                                                  
                             <div class="token-list">
                                 ${this.fileRules.allowedFileTypes.map(type => html`
                                     <ui5-token @click=${() => this.removeFileType(type)} text=${type}></ui5-token>
                                 `)}
+                            </div>                            
+                            -->
+                            
+                            <div class="field-row">
+                                <ui5-label>Permitted File Types:</ui5-label>
+                                <div style="max-width: 250px">
+                                    <ui5-multi-combobox id="mimeCombobox"
+                                                        placeholder="all"
+                                                        @selection-change=${this.handleSelectionChange}
+                                                        style="width: 100%;"
+                                                            >
+                                                                ${this.mimeTypes.map(type => html`
+                                      <ui5-mcb-item
+                                        text=${type.text}
+                                        value=${type.value}
+                                        ?selected=${this.selectedTypes.includes(type.value)}
+                                      ></ui5-mcb-item>
+                                    `)}
+                                    </ui5-multi-combobox>
+                                </div>
                             </div>
+
                             
                             <div class="field-row">
                                 <ui5-label>Min File Size (bytes):</ui5-label>
@@ -548,6 +520,11 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
           flex-wrap: wrap;
           gap: 0.5rem;
           margin-top: 0.5rem;
+        }
+
+        .combo-box-container {
+          margin-bottom: 1rem;
+          max-width: 400px;
         }
       `];
   }

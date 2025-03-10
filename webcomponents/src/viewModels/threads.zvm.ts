@@ -766,7 +766,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
   async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string, limitations: Limitations, moderation: Moderation): Promise<[Timestamp, ActionId]> {
-    console.log("publishThreadFromSemanticTopic()", appletId, purpose);
+    console.log("publishThreadFromSemanticTopic()", appletId, purpose, limitations, moderation);
     const [semTopicTitle, _semAuthor] = this._perspective.semanticTopics.get(topicAh)!;
     const subject: Subject = {
       address: topicAh.b64,
