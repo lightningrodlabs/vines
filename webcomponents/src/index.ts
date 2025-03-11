@@ -13,6 +13,8 @@ export * from './elements/peer-list';
 export * from './elements/copy-wal-button';
 export * from './elements/graph';
 
+export * from './features/timezone/timezone-picker';
+
 export * from './features/rules/rules-edit';
 export * from './features/rules/rules-view';
 

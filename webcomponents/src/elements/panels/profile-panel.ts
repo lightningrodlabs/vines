@@ -11,6 +11,7 @@ import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 import {renderProfileAvatar, ts2day} from "../../render";
 import {toasty} from "../../toast";
 import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
+import {formatTimezone} from "../../features/timezone/utils";
 
 
 /**
@@ -83,8 +84,13 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
                           }}></ui5-button>
             </div>
             <hr style="width: 100%"/>
+              
             <h5>${msg('Language')}</h5>
             <div class="info">${this._profile.fields['lang']}</div>
+
+            <h5>${msg('Timezone')}</h5>
+            <div class="info">${this._profile.fields['timezone']? formatTimezone(this._profile.fields['timezone'], false) : 'UTC'}</div>
+              
             <h5>${msg('Member since')}</h5>
             <div class="info">${ts2day(timestamp)}</div>
             ${!this.hash.equals(this.cell.address.agentId)? html`
@@ -115,6 +121,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
       h5 {
         text-transform: uppercase;
         margin: 0px;
+        margin-top:5px;
       }
 
       .info {

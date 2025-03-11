@@ -439,7 +439,7 @@ export class VinesApp extends HappMultiElement {
     console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = html`
-          ${doodle_bg}          
+        ${doodle_bg}          
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:400px;">
           <h1 style="font-family:arial; color:#5804A8; z-index:1;">
               <img src="icon.png" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>

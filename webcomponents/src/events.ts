@@ -92,6 +92,7 @@ export type JumpEvent = {
   bead?: ActionId,
   agent?: AgentId,
   //dna?: DnaId,
+  history?: boolean,
 }
 
 

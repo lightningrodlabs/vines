@@ -255,6 +255,13 @@ export class EditProfile extends LitElement {
     console.log({colorPicker});
     fields['color'] = colorPicker.value? colorPicker.value : "";
 
+
+    /** Timezone */
+    const timezonePicker = this.shadowRoot!.getElementById("timezonePicker") as any;
+    console.log({timezonePicker});
+    fields['timezone'] = timezonePicker.value? timezonePicker.value : 'UTC';
+
+
     const profile: ProfileMat = {
       fields,
       nickname,
@@ -306,7 +313,7 @@ export class EditProfile extends LitElement {
         <div class="column">
 
           <!-- Use row-reverse so input field is focused first -->  
-          <div class="row" style="justify-content: center; margin-bottom: 12px; align-self: start;flex-direction: row-reverse;" >
+          <div class="row" style="flex-direction: row-reverse;" >
               <ui5-input
                       id="nickname-field"
                       outlined required
@@ -326,22 +333,26 @@ export class EditProfile extends LitElement {
             ${this.renderAvatar()}
           </div>
 
-          <div class="row" style="justify-content: center; margin-bottom: 18px; align-self: start;" >
+          <div class="row" style="margin-bottom: 18px; align-items: center;">
               <span style="font-size:18px;padding-right:10px;padding-top:5px;">${msg('Color')}:</span>
               <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format="hex"
                                .value=${this.profile && this.profile.fields['color']? this.profile.fields['color'] : getRandomHexColor() }></sl-color-picker>
           </div>
 
-            <div class="row" style="justify-content: center; margin-bottom: 8px; align-self: start;" >
+            <div class="row">
                 <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
                 <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
                     <sl-radio value="en">🇬🇧</sl-radio>
                     <sl-radio value="fr-fr">🇫🇷</sl-radio>
                 </sl-radio-group>
             </div>
+            
+          <timezone-picker id="timezonePicker"></timezone-picker>
+            
+            
       </section>
       
-      <div slot="footer" style="display:flex;">
+      <div slot="footer" style="display:flex; margin-top: 10px;">
           <ui5-button
                   style="flex:1; margin-right:6px; margin-top:15px;"
                   design="Emphasized"
@@ -373,7 +384,12 @@ export class EditProfile extends LitElement {
     .row {
       display: flex;
       flex-direction: row;
+      justify-content: center; 
+      margin-bottom: 8px; 
+      align-self: start;
+      gap: 5px;
     }
+    
     .column {
       display: flex;
       flex-direction: column;
