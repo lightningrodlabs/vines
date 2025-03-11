@@ -1190,12 +1190,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             }
           }
           // Add to stack
-          //console.log!("onJump() Add to stack", this._selectedThreadHash, this._threadStack);
-          if (this._threadStack.length == 0 || !this._threadStack![this._threadStack!.length - 1]!.equals(this._selectedThreadHash!)) {
-            this._threadStack.push(this._selectedThreadHash!);
-            if (this._threadStack.length > 20) {
-              this._threadStack.shift();
+          //console.log!("onJump() Add to stack?", e.detail.history, this._selectedThreadHash, this._threadStack);
+          if (!e.detail.history) {
+            if (this._threadStack.length == 0 || !this._threadStack![this._threadStack!.length - 1]!.equals(this._selectedThreadHash!)) {
+              //console.log!("onJump() Add to stack: yes");
+              this._threadStack.push(this._selectedThreadHash!);
+              if (this._threadStack.length > 20) {
+                this._threadStack.shift();
+              }
+              const hl = this.shadowRoot!.getElementById("hisLister") as LitElement;
+              hl.requestUpdate();
             }
+          } else {
+            // TODO: Put on top of stack?
           }
         }
         this._selectedBeadAh = e.detail.bead;

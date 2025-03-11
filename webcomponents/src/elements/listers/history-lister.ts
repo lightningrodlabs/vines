@@ -165,7 +165,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                  ${threadIsNew || notifCount? "color: #359C07;" : ""}
                  ${isSelected? "background:#4684FD;color:#444;" : ""}
                  "
-                 @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                 @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh, true))}>
                 ${badge}
                 <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
                 ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"

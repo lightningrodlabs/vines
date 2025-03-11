@@ -39,6 +39,9 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private canModerate: boolean = false;
 
   @state()
+  private canLimit: boolean = false;
+
+  @state()
   private textRules: TextLimits = {
     bannedWords: [],
     minTextLength: 0,
@@ -70,6 +73,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     this.limitations = defaultLimitations();
     this.canRateLimit = false;
     this.canModerate = false;
+    this.canLimit = false;
     this.textRules = {
       bannedWords: [],
       minTextLength: 0,
@@ -151,6 +155,10 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   private handleCanModerateChange(e: CustomEvent) {
     this.canModerate = (e.target as any).checked;
+  }
+
+  private handleCanLimitChange(e: CustomEvent) {
+    this.canLimit = (e.target as any).checked;
   }
 
   private handleAutoCanWalChange(e: CustomEvent) {
@@ -322,9 +330,15 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
     /** */
     return html`
-            <div class="form-section">
-                <ui5-panel header-text=${msg('Configuration')} fixed style="border: 1px solid #e1e1e1;">
+            <div class="form-section" style="min-width: 500px">
+                <ui5-panel header-text=${msg('Restrictions')} fixed style="border: 1px solid #e1e1e1;">
+
+                    <div class="field-row" >
+                        <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
+                        <ui5-switch ?checked=${this.canLimit} @change=${this.handleCanLimitChange}></ui5-switch>
+                    </div>
                     
+                  ${this.canLimit? html`
                     <div class="field-row">
                         <ui5-label>${msg('Participants')}:</ui5-label>
                         <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="everyone">
@@ -443,6 +457,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             </div>
                         </div>
                     ` : ''}
+                  `: ''}
                 </ui5-panel>
             </div>
             <div class="form-section" style="min-width: 500px">
