@@ -1,15 +1,15 @@
-import {getInitials, ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {getInitials, ProfilesAltPerspective, ProfilesAltZvm, ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {html, LitElement, TemplateResult} from "lit";
-import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {Profile, Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {determineBeadName, latestThreadName} from "./utils";
 import {FilesDvm} from "@ddd-qc/files";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
-import {AgentId} from "@ddd-qc/lit-happ";
+import {AgentId, delay} from "@ddd-qc/lit-happ";
 import {beadJumpEvent, JumpEvent, ShowProfileEvent, threadJumpEvent} from "./events";
 import {msg} from "@lit/localize";
-
+import {doodle_flowers} from "./doodles";
 
 
 /** Get profile for agent, otherwise fetch it from DHT and return unknown Profile */
@@ -229,4 +229,46 @@ export function ts2day(ts: number): string {
   const formattedDate = `${month} ${day}, ${year}`;
 
   return formattedDate;
+}
+
+
+export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAltZvm, weProfilesDvm?: ProfilesDvm) {
+  const profileCount = profilesZvm.perspective.agents.length;
+  return html`
+      <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
+          ${doodle_flowers}
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:400px;">
+          <h1 style="font-family:arial; color:#5804A8; z-index:1;">
+              <img src="icon.png" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
+              Vines
+          </h1>
+          <div>${profileCount} ${profileCount > 1 ? msg('Members') : msg('Member')}</div>
+          <div style="align-items: center; z-index:1;">
+              <ui5-card id="profileCard">
+                  <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
+                  <vines-edit-profile
+                          .profile=${weProfilesDvm?.profilesZvm.getMyProfile()}
+                          @save-profile=${async (e: CustomEvent<ProfileMat>) => {
+                              console.log("createMyProfile()", e.detail);
+                              try {
+                                  await profilesZvm.createMyProfile(e.detail);
+                              } catch (e: any) {
+                                  console.warn("Failed creating my Profile", e);
+                                  return;
+                              }
+                              /** Wait for perspective to update */
+                              /** TODO: add a timeout */
+                              let maybeMeProfile: Profile | undefined = undefined;
+                              do {
+                                  maybeMeProfile = profilesZvm.getMyProfile();
+                                  await delay(20);
+                              } while (!maybeMeProfile)
+                              /** */
+                              parent.requestUpdate();
+                          }}
+                  ></vines-edit-profile>
+              </ui5-card>
+          </div>
+      </div>`;
 }

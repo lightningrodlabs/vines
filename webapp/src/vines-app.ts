@@ -17,7 +17,7 @@ import {
   HappMultiElement,
   HvmDef,
   DvmDef,
-  DnaViewModel, pascal, delay, ActionId, Cell,
+  DnaViewModel, pascal, ActionId, Cell,
 } from "@ddd-qc/lit-happ";
 import {
   ThreadsDvm,
@@ -28,7 +28,6 @@ import {
   cardStyleTemplate,
   JumpEvent,
   VINES_DEFAULT_ROLE_NAME,
-  doodle_flowers,
   onlineLoadedContext,
   toasty, hrl2Id, allFilesContext,
 } from "@vines/elements";
@@ -42,9 +41,10 @@ import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
-import {Profile, Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {renderWelcomeScreen} from "@vines/elements";
 
 import "./vines-page"
+
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -192,6 +192,8 @@ export class VinesApp extends HappMultiElement {
     this.addEventListener('jump', this.onJump);
     // @ts-ignore
     this.addEventListener('copy', this.onCopy);
+    // @ts-ignore
+    this.addEventListener('lang-selected', this.onLang);
   }
 
   override disconnectedCallback() {
@@ -200,6 +202,8 @@ export class VinesApp extends HappMultiElement {
     this.removeEventListener('jump', this.onJump);
     // @ts-ignore
     this.removeEventListener('copy', this.onCopy);
+    // @ts-ignore
+    this.removeEventListener('lang-selected', this.onLang);
   }
 
 
@@ -299,6 +303,13 @@ export class VinesApp extends HappMultiElement {
       this._weServices.assets.assetToPocket({hrl});
     }
     toasty(msg("Copied WAL to clipboard"));
+  }
+
+
+  /** Open Vines App if jump requested from a non-main view */
+  async onLang(e: CustomEvent) {
+    console.log("set locale", e.detail);
+    setLocale(e.detail);
   }
 
 
@@ -426,11 +437,6 @@ export class VinesApp extends HappMultiElement {
       }
     }
 
-    const doodle_bg =  html `
-      <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
-        ${doodle_flowers}
-      </div>
-    `;
 
     /** Import profile from Moss */
     const profilesZvm = this.threadsDvm(0).profilesZvm; // FIXME
@@ -438,44 +444,7 @@ export class VinesApp extends HappMultiElement {
     const maybeMyProfile = profilesZvm.getMyProfile();
     console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
-      guardedView = html`
-        ${doodle_bg}          
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:400px;">
-          <h1 style="font-family:arial; color:#5804A8; z-index:1;">
-              <img src="icon.png" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
-              Vines
-          </h1>
-          <div style="align-items: center; z-index:1;">
-            <ui5-card id="profileCard">
-              <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
-              <vines-edit-profile
-                  .profile=${this._weProfilesDvm?.profilesZvm.getMyProfile()}
-                  @save-profile=${async (e: CustomEvent<ProfileMat>) => {
-                    console.log("createMyProfile()", e.detail);
-                    try {
-                      await profilesZvm.createMyProfile(e.detail);
-                    } catch(e:any) {
-                      console.warn("Failed creating my Profile", e);
-                      return;
-                    }
-                    /** Wait for perspective to update */
-                    /** TODO: add a timeout */
-                    let maybeMeProfile: Profile | undefined = undefined;
-                    do {
-                        maybeMeProfile = profilesZvm.getMyProfile();
-                        await delay(20);
-                    } while (!maybeMeProfile)
-                    /** */
-                    this.requestUpdate();
-                  }}
-                  @lang-selected=${(e: CustomEvent) => {
-                    console.log("set locale", e.detail);
-                    setLocale(e.detail)
-                  }}
-              ></vines-edit-profile>
-            </ui5-card>
-          </div>
-        </div>`;
+      guardedView = renderWelcomeScreen(this, profilesZvm, this._weProfilesDvm);
     }
 
     console.log("<vines-app>.render() cells length:", this.cells.length, this.isMainView);

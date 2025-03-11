@@ -1788,7 +1788,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
-                    <ui5-button icon="picture" design="Transparent"  tooltip=${msg("View Files")}
+                    <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
                                 style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
                     </ui5-button>                     

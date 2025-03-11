@@ -146,10 +146,7 @@ export class EditProfile extends LitElement {
   /** */
   renderAvatar() {
     return html`
-      <div
-        style="width: 80px; height: 80px; justify-content: center;"
-        class="row"
-      >
+      <div style="height: 80px; justify-content: center;" class="row">
         ${this._avatar
           ? html`
               <div class="column" style="align-items: center; ">

@@ -3,8 +3,9 @@ export * from './utils';
 export * from './styles';
 export * from './doodles';
 export * from './events';
-export * from './toast';
+export * from './render';
 export * from './search';
+export * from './toast';
 
 export * from './elements/emoji-bar';
 export * from './elements/input-bar';
