@@ -39,6 +39,24 @@ export function formatFileSize(bytes: number): string {
 }
 
 
+/**
+ * Extract the main type from the MIME type
+ * MIME types are formatted as 'type/subtype; parameter=value'
+ */
+export function simplifyMimeType(mimeType: string): string {
+  const match = mimeType.match(/^([a-z]+)\//i);
+  if (!match || match.length < 2) {
+    throw new Error(`Invalid MIME type format: '${mimeType}'`);
+  }
+  const mainType = match[1]!.toLowerCase();
+  // Only simplify for audio, video, or image types
+  if (mainType === 'audio' || mainType === 'video' || mainType === 'image') {
+    return `${mainType}/*`;
+  }
+  // For all other types, return the original MIME type
+  return mimeType;
+}
+
 
 /** */
 export function type2ui5Icon(type: FileType): string {

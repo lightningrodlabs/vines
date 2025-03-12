@@ -190,7 +190,7 @@ import {
   ParticipationProtocol,
   ProfilePanel, RulesEdit, RulesView,
   searchFieldStyleTemplate,
-  ShowProfileEvent, ShowRulesEvent,
+  ShowProfileEvent, ShowRulesEvent, simplifyMimeType,
   SpecialSubjectType,
   Subject,
   THIS_APPLET_ID,
@@ -1102,8 +1102,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onCreateFileMessage()", file.name, file, this._filesDvm);
     this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
       console.debug("<vines-page> startPublishFile callback", eh);
-      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, ppAh, undefined, this._replyToAh, this.weServices);
-      console.debug("onCreateFileMessage() ah", ah);
+      const type = simplifyMimeType(file.type);
+      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: file.size, type}, ppAh, undefined, this._replyToAh, this.weServices);
+      console.debug("onCreateFileMessage() ah", ah, type);
       this._splitObj = undefined;
     });
     console.debug("onCreateFileMessage()", this._splitObj);
