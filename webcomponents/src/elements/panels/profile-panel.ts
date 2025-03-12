@@ -8,10 +8,10 @@ import "@shoelace-style/shoelace/dist/components/radio/radio.js";
 import "@shoelace-style/shoelace/dist/components/radio-group/radio-group.js"
 import {Profile as ProfileMat, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
-import {renderProfileAvatar, ts2day} from "../../render";
+import {renderProfileAvatar} from "../../render";
 import {toasty} from "../../toast";
 import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
-import {formatTimezone} from "../../features/timezone/utils";
+import {formatTime, formatTimezone} from "../../features/timezone/utils";
 
 
 /**
@@ -60,6 +60,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash)! : 0;
     const avatar = renderProfileAvatar(this._profile, "XL");
 
+    const timezone = this._zvm.getMyProfile()!.fields['timezone']!;
     /** */
     return html`
           <div style="background: ${this._profile.fields['color']}; width: 100%; height: 70px;"></div>
@@ -92,7 +93,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <div class="info">${this._profile.fields['timezone']? formatTimezone(this._profile.fields['timezone'], false) : 'UTC'}</div>
               
             <h5>${msg('Member since')}</h5>
-            <div class="info">${ts2day(timestamp)}</div>
+            <div class="info">${formatTime(timestamp, timezone)}</div>
             ${!this.hash.equals(this.cell.address.agentId)? html`
               <vines-input-bar
                     .profilesZvm=${this._zvm}

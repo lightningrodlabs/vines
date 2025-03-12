@@ -6,12 +6,13 @@ import {ThreadsDvm} from "../../viewModels/threads.dvm";
 //import {ThreadsPerspective} from "../viewModels/threads.perspective";
 import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {ts2day} from "../../render";
+//import {ts2day} from "../../render";
 import {onlineLoadedContext, weClientContext} from "../../contexts";
 import {Thread} from "../../viewModels/thread";
 import {sharedStyles} from "../../styles";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {determinerGroupProfile} from "../../utils";
+import {ts2day} from "../timezone/utils";
 
 
 /**
@@ -260,7 +261,10 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
         // }
 
         let timeHr = html``;
-        const day = ts2day(blm.creationTime);
+        const day = ts2day(blm.creationTime); // FIXME
+        //const myTimeZone = (this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
+        //const day = formatTime(blm.creationTime, myTimeZone);
+
         if (day != currentDay) {
           currentDay = day;
           timeHr = html`

@@ -70,52 +70,6 @@ export function truncate(str: string, n: number, useWordBoundary: boolean): stri
 
 
 
-export function formatDuration(us: number): string {
-  const seconds = Math.floor(us / 1000 / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days} day${days > 1 ? 's' : ''}${hours % 24 > 0 ? `, ${hours % 24} hr${hours % 24 > 1 ? 's' : ''}` : ''}`;
-  } else if (hours > 0) {
-    return `${hours} hour${hours > 1 ? 's' : ''}${minutes % 60 > 0 ? `, ${minutes % 60} min` : ''}`;
-  } else if (minutes > 0) {
-    return `${minutes} min${seconds % 60 > 0 ? `, ${seconds % 60} sec` : ''}`;
-  } else {
-    return `${seconds} sec`;
-  }
-}
-
-
-/** */
-export function timeSince(date: Date): string {
-  var seconds = Math.floor((new Date().valueOf() - date.valueOf()) / 1000);
-  var interval = seconds / 31536000;
-
-  if (interval > 1) {
-    return Math.floor(interval) + " years";
-  }
-  interval = seconds / 2592000;
-  if (interval > 1) {
-    return Math.floor(interval) + " months";
-  }
-  interval = seconds / 86400;
-  if (interval > 1) {
-    return Math.floor(interval) + " days";
-  }
-  interval = seconds / 3600;
-  if (interval > 1) {
-    return Math.floor(interval) + " hours";
-  }
-  interval = seconds / 60;
-  if (interval > 1) {
-    return Math.floor(interval) + " minutes";
-  }
-  return Math.floor(seconds) + " seconds";
-}
-
-
 
 /** Return list of agents mentionned in a string */
 export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId[] {

@@ -16,7 +16,7 @@ import {
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {md} from "../../markdown/md";
-import {timeSince, weaveUrlToWal} from "../../utils";
+import {weaveUrlToWal} from "../../utils";
 import {toasty} from "../../toast";
 import {renderAvatar} from "../../render";
 import {filesContext, weClientContext} from "../../contexts";
@@ -25,6 +25,7 @@ import {sharedStyles} from "../../styles";
 import {Hrl, weaveUrlFromWal} from "@theweave/api";
 import {ShowEmojiEvent, ShowProfileEvent} from "../../events";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
+import {timeSince} from "../timezone/utils";
 
 
 /**

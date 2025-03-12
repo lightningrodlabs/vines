@@ -6,9 +6,10 @@ import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-import {ts2day} from "../../render";
+//import {ts2day} from "../../render";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
+import {formatTime} from "../timezone/utils";
 
 
 /**
@@ -266,8 +267,11 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           </div>
           `;
         }
-        const day = ts2day(blm.creationTime);
-        const canShowTimeHr = day != currentDay;
+        //const day = ts2day(blm.creationTime);
+        const myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
+        const day = formatTime(blm.creationTime, myTimeZone);
+
+      const canShowTimeHr = day != currentDay;
         if (canShowTimeHr) {
           currentDay = day;
           /** NEW & TIME */

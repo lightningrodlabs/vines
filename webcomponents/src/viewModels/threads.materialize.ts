@@ -276,13 +276,17 @@ export function defaultLimitations(): Limitations {
     canFile: {
       allowedFileTypes: [],
       minFileSize: 0,
-      maxFileSize: 16 * 1024 * 1024, // FIXME take dna setting
+      maxFileSize: DEFAULT_MAX_FILE_SIZE // FIXME take dna setting
     },
     canText: {
     bannedWords: [],
     minTextLength: 0,
-    maxTextLength: 15 * 1024 * 1024, // websocket limit minus other fields size,
+    maxTextLength: DEFAULT_MAX_TEXT_LENGTH,
   },
     allowedAgents: [],
   } as Limitations;
 }
+
+
+export const DEFAULT_MAX_FILE_SIZE = 16 * 1024 * 1024; // FIXME take dna setting
+export const DEFAULT_MAX_TEXT_LENGTH = 10 * 1000;

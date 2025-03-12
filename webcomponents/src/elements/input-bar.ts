@@ -28,7 +28,7 @@ import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
 import {toasty} from "../toast";
 import {formatFileSize} from "../utils";
 import {Limitations} from "../bindings/threads.types";
-import {defaultLimitations} from "../viewModels/threads.materialize";
+import {DEFAULT_MAX_FILE_SIZE, DEFAULT_MAX_TEXT_LENGTH, defaultLimitations} from "../viewModels/threads.materialize";
 //import {handledMimeTypes} from "../features/rules/rules-edit";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
@@ -358,9 +358,9 @@ export class InputBar extends LitElement {
   private canFile = true;
   private canText = true;
   private minFileSize = 0;
-  private maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
+  private maxFileSize = DEFAULT_MAX_FILE_SIZE; // FIXME: get DNA setting
   private minTextSize = 0;
-  private maxTextSize = 16 * 1024;
+  private maxTextLength = DEFAULT_MAX_TEXT_LENGTH;
 
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
@@ -372,9 +372,9 @@ export class InputBar extends LitElement {
       this.canFile = true;
       this.canText = true;
       this.minFileSize = 0;
-      this.maxFileSize = 16 * 1024 * 1024; // FIXME: get DNA setting
+      this.maxFileSize = DEFAULT_MAX_FILE_SIZE; // FIXME: get DNA setting
       this.minTextSize = 0;
-      this.maxTextSize = 16 * 1024;
+      this.maxTextLength = DEFAULT_MAX_TEXT_LENGTH;
 
       this.canWal = this.limitations.canWal;
       if (!this.limitations.canFile) {
@@ -387,7 +387,7 @@ export class InputBar extends LitElement {
         this.canText = false;
       } else {
         this.minTextSize = this.limitations.canText.minTextLength;
-        this.maxTextSize = this.limitations.canText.maxTextLength;
+        this.maxTextLength = this.limitations.canText.maxTextLength;
       }
 
     }
@@ -570,10 +570,9 @@ export class InputBar extends LitElement {
         `
     }
 
-
     const placeholder = this.canText
-      ? this.maxTextSize > 0
-        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextSize} ${msg('characters')})`
+      ? this.maxTextLength > 0 && this.maxTextLength != DEFAULT_MAX_TEXT_LENGTH
+        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextLength} ${msg('characters')})`
         : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`
       : msg('<Text message forbidden>');
 
@@ -591,7 +590,7 @@ export class InputBar extends LitElement {
                           growing
                           growing-max-lines="3"
                           rows="1"
-                          .maxlength=${this.maxTextSize}
+                          .maxlength=${this.maxTextLength}
                           @keydown=${this.handleKeydown}
                           @input=${(_e:any) => this.requestUpdate()}
             ></ui5-textarea>

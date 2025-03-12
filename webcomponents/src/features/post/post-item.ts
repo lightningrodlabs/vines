@@ -279,8 +279,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
     let sideButtons= [/*starButton,*/ bellButton, menuButton];
 
+    const timeZone = this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-    const date_str = date.toLocaleString('en-US', {hour12: false});
+    const date_str = date.toLocaleString('en-US', {hour12: false, timeZone });
     const agentName = this._dvm.profilesZvm.perspective.getProfile(beadInfo.author)? this._dvm.profilesZvm.perspective.getProfile(beadInfo.author)!.nickname : "unknown";
 
     let commentLine = "";

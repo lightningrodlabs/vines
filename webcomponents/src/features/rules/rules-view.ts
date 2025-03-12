@@ -3,12 +3,13 @@ import { customElement, property} from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
 import {ZomeElement} from "@ddd-qc/lit-happ";
-import {formatDuration, formatFileSize} from "../../utils";
+import {formatFileSize} from "../../utils";
 import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {renderAvatars} from "../../render";
 import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
 import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 import {handledMimeTypes} from "./rules-edit";
+import {formatDuration} from "../timezone/utils";
 
 
 

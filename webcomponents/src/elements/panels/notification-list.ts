@@ -4,7 +4,7 @@ import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
-import {timeSince, truncate} from "../../utils";
+import {truncate} from "../../utils";
 import {composeNotificationTitle, renderAvatar} from "../../render";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
@@ -14,6 +14,7 @@ import {notification2JumpEvent} from "../../events";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {composeFeedNotificationTitle} from "../../utils_feed";
 import {NotifiableEvent} from "../../viewModels/threads.materialize";
+import {timeSince} from "../../features/timezone/utils";
 
 
 /**
@@ -78,7 +79,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
         /** Timestamp */
         const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const date_str = date.toLocaleString('en-US', {hour12: false});
-        const date_str = timeSince(date) + " ago";
+        const date_str = timeSince(date) + " ago"; // FIXME: localize
         const title = truncate(notifTitle, 120, true);
         /** */
         return html`

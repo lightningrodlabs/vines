@@ -88,8 +88,9 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       return [content, undefined, undefined];
     }
     const typedBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
+    const timeZone = this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-    const date_str = date.toLocaleString('en-US', {hour12: false});
+    const date_str = date.toLocaleString('en-US', {hour12: false, timeZone});
     switch(beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
         const tm = typedBead as TextBeadMat;

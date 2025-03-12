@@ -5,7 +5,12 @@ import {msg} from "@lit/localize";
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {FileLimits, Limitations, Moderation, TextLimits} from "../../bindings/threads.types";
-import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
+import {
+  DEFAULT_MAX_FILE_SIZE,
+  DEFAULT_MAX_TEXT_LENGTH,
+  defaultLimitations,
+  defaultModeration
+} from "../../viewModels/threads.materialize";
 
 
 /** */
@@ -45,14 +50,14 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private textRules: TextLimits = {
     bannedWords: [],
     minTextLength: 0,
-    maxTextLength: 1000
+    maxTextLength: DEFAULT_MAX_TEXT_LENGTH
   };
 
   @state()
   private fileRules: FileLimits = {
     allowedFileTypes: [],
     minFileSize: 0,
-    maxFileSize: 16777216, // 16MiB default FIXME grab DNA settings
+    maxFileSize: DEFAULT_MAX_FILE_SIZE, // FIXME grab DNA settings
   };
 
 
@@ -77,12 +82,12 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     this.textRules = {
       bannedWords: [],
       minTextLength: 0,
-      maxTextLength: 1000
+      maxTextLength: DEFAULT_MAX_TEXT_LENGTH,
     }
     this.fileRules = {
       allowedFileTypes: [],
       minFileSize: 0,
-      maxFileSize: 16777216, // 16MiB default FIXME grab DNA settings
+      maxFileSize: DEFAULT_MAX_FILE_SIZE, // FIXME grab DNA settings
     };
     this.bannedWordInput = '';
     this.fileTypeInput = '';
@@ -322,7 +327,8 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     for (const [agentId, actionId] of this._zvm.perspective.profileByAgent.entries()) {
       const pair = this._zvm.perspective.profiles.get(actionId)!;
       peerList.push(html`
-        <ui5-mcb-item data-id=${agentId.b64} .text=${pair[0].nickname}
+        <ui5-mcb-item data-id=${agentId.b64} 
+                      .text=${pair[0].nickname}
                       ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>
         </ui5-mcb-item>
     `)};
@@ -382,7 +388,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             <!--
                             <div class="field-row">
                                 <ui5-label>Permitted File Types:</ui5-label>
-                                <ui5-input value=${this.fileTypeInput} placeholder="all" @change=${(e: CustomEvent) => this.fileTypeInput = (e.target as any).value}></ui5-input>
+                                <ui5-input .value=${this.fileTypeInput} placeholder="all" @change=${(e: CustomEvent) => this.fileTypeInput = (e.target as any).value}></ui5-input>
                                 <ui5-button @click=${this.addFileType}>Add</ui5-button> 
                             </div>
 
@@ -416,12 +422,12 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             
                             <div class="field-row">
                                 <ui5-label>Min File Size (bytes):</ui5-label>
-                                <ui5-input type="number" value=${this.fileRules.minFileSize} @change=${this.handleFileMinSizeChange}></ui5-input>
+                                <ui5-input type="number" .value=${this.fileRules.minFileSize} @change=${this.handleFileMinSizeChange}></ui5-input>
                             </div>
                             
                             <div class="field-row">
                                 <ui5-label>Max File Size (bytes):</ui5-label>
-                                <ui5-input type="number" value=${this.fileRules.maxFileSize} @change=${this.handleFileMaxSizeChange}></ui5-input>
+                                <ui5-input type="number" .value=${this.fileRules.maxFileSize} @change=${this.handleFileMaxSizeChange}></ui5-input>
                             </div>
                         </div>
                     ` : ''}
@@ -436,7 +442,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                         <div class="sub-section">
                             <div class="field-row">
                                 <ui5-label>Banned Words:</ui5-label>
-                                <ui5-input value=${this.bannedWordInput} @change=${(e: CustomEvent) => this.bannedWordInput = (e.target as any).value}></ui5-input>
+                                <ui5-input .value=${this.bannedWordInput} @change=${(e: CustomEvent) => this.bannedWordInput = (e.target as any).value}></ui5-input>
                                 <ui5-button @click=${this.addBannedWord}>Add</ui5-button>
                             </div>
                             
@@ -448,12 +454,12 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             
                             <div class="field-row">
                                 <ui5-label>Min Text Length:</ui5-label>
-                                <ui5-input type="number" value=${this.textRules.minTextLength} @change=${this.handleTextMinLengthChange}></ui5-input>
+                                <ui5-input type="number" .value=${this.textRules.minTextLength} @change=${this.handleTextMinLengthChange}></ui5-input>
                             </div>
                             
                             <div class="field-row">
                                 <ui5-label>Max Text Length:</ui5-label>
-                                <ui5-input type="number" value=${this.textRules.maxTextLength} @change=${this.handleTextMaxLengthChange}></ui5-input>
+                                <ui5-input type="number" .value=${this.textRules.maxTextLength} @change=${this.handleTextMaxLengthChange}></ui5-input>
                             </div>
                         </div>
                     ` : ''}
@@ -478,12 +484,12 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                       <div class="field-row">
                           <ui5-label>Instructions:</ui5-label>
                           <ui5-textarea placeholder="Enter instructions here..." 
-                              value=${this.moderation.instructions} @change=${this.handleInstructionsChange}>
+                              .value=${this.moderation.instructions} @change=${this.handleInstructionsChange}>
                           </ui5-textarea>
                       </div>
                       <div class="field-row">
                           <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
-                          <ui5-input type="number" value=${this.moderation.allowedFlags} @change=${this.handleAllowedFlagsChange}></ui5-input>
+                          <ui5-input type="number" .value=${this.moderation.allowedFlags} @change=${this.handleAllowedFlagsChange}></ui5-input>
                       </div>
                     ` : ''}
                     
