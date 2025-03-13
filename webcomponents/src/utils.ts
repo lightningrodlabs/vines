@@ -46,7 +46,8 @@ export function formatFileSize(bytes: number): string {
 export function simplifyMimeType(mimeType: string): string {
   const match = mimeType.match(/^([a-z]+)\//i);
   if (!match || match.length < 2) {
-    throw new Error(`Invalid MIME type format: '${mimeType}'`);
+    //throw new Error(`Invalid MIME type format: '${mimeType}'`);
+    return mimeType;
   }
   const mainType = match[1]!.toLowerCase();
   // Only simplify for audio, video, or image types

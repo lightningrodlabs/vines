@@ -29,7 +29,7 @@ import {
   JumpEvent,
   VINES_DEFAULT_ROLE_NAME,
   onlineLoadedContext,
-  toasty, hrl2Id, allFilesContext,
+  toasty, hrl2Id, allFilesContext, networkCallerContext,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import { msg, localized } from '@lit/localize';
@@ -240,8 +240,13 @@ export class VinesApp extends HappMultiElement {
     const allFilesDvm = this.hvms.map(([_proxy, hvm]) => hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm)
     // @ts-ignore
     /*let _filesProvider =*/ new ContextProvider(this, allFilesContext, allFilesDvm);
+    /** */
+    this.networkCaller?.setCapacity(20);
+    this.networkCaller?.setCellAddr(this.threadsDvm(0).cell.address);
+    //this.networkCaller?.startCallLoop(1000);
+    // @ts-ignore
+    new ContextProvider(this, networkCallerContext, this.networkCaller);
   }
-
 
 
   /** */
@@ -277,7 +282,7 @@ export class VinesApp extends HappMultiElement {
   async onDumpNetworkLogs(_e:any) {
     console.log("onDumpNetworkLogs()")
     //await this.networkInfoAll();
-    //this.dumpNetworkInfoLogs();
+    this.networkCaller?.dumpNetworkInfoLogs();
   }
 
 

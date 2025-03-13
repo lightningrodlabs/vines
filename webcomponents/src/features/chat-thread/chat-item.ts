@@ -405,7 +405,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
-    const timeZone = this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
+    let timeZone = "UTC";
+    if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
+      timeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;
+    };
     const date = new Date(baseBeadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false, timeZone });
     const time_str = date.getHours().toString().padStart(2, '0').slice(-2) + ":" + date.getMinutes().toString().padStart(2, '0').slice(-2);

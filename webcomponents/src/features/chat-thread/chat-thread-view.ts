@@ -268,7 +268,10 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           `;
         }
         //const day = ts2day(blm.creationTime);
-        const myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
+        let myTimeZone = "UTC";
+        if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
+          myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;
+        };
         const day = formatTime(blm.creationTime, myTimeZone);
 
       const canShowTimeHr = day != currentDay;

@@ -2,12 +2,11 @@ import {css, html, LitElement} from "lit";
 import {customElement, property} from "lit/decorators.js";
 
 import '@weblogin/trendchart-elements';
-import {AppProxy} from "@ddd-qc/cell-proxy";
 import {NetworkInfo, Timestamp} from "@holochain/client";
-import {delay} from "@ddd-qc/lit-happ";
-
+import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
+import {consume} from "@lit/context";
+import {networkCallerContext} from "../../contexts";
 import Switch from "@ui5/webcomponents/dist/Switch";
-
 
 /**
  * @element
@@ -15,46 +14,40 @@ import Switch from "@ui5/webcomponents/dist/Switch";
 @customElement("network-health-panel")
 export class NetworkHealthPanel extends LitElement {
 
-  @property() appProxy!: AppProxy;
+  @consume({ context: networkCallerContext, subscribe: true })
+  @property() networkCaller!: NetworkCaller;
 
-  /* Auto update */
-  override updated() {
-    const enableSwitch = this.shadowRoot!.getElementById("enableSwitch") as Switch;
-    if (enableSwitch && enableSwitch.checked) {
-      this.onQueryNetworkInfo(undefined);
-    }
+  /** After first render only */
+  override async firstUpdated() {
+    /** Register loop callback */
+    this.networkCaller!.addCallback((info: NetworkInfo) => {
+      console.log("networkInfo:", info);
+      this.requestUpdate();
+    });
+    /** Start looping */
+    this.onSwitchNetworkInfo(undefined);
   }
+
+
+  async onSwitchNetworkInfo(_e:any) {
+    console.log("onLoopNetworkInfo()");
+    const el = this.shadowRoot!.getElementById("enableSwitch") as Switch;
+    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {detail: el? el.checked: true, bubbles: true, composed: true}));
+  }
+
 
   /** */
   override render() {
-    console.log("<network-health>.render()",  !!this.appProxy);
+    console.log("<network-health>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
 
-    if (!this.appProxy)  {
-      return html`no app proxy found via context`;
+    if (!this.networkCaller)  {
+      return html`no networkCaller set`;
     }
 
-    const allNetworkLogs = this.appProxy.networkInfoLogs;
+    const allNetworkLogs = this.networkCaller.networkInfoLogs;
 
     //const queryBtn = html`<ui5-button @click=${this.onQueryNetworkInfo}>Query</ui5-button>`
     const queryBtn = html``;
-
-    const enableSwitch = html`<ui5-switch id="enableSwitch" @change=${this.onQueryNetworkInfo}></ui5-switch>`;
-
-    // if (Object.keys(allNetworkLogs).length == 0) {
-    //   return html`no logs available ${enableSwitch}`;
-    // }
-
-    // /* Grab rVines cell */
-    // let cellLogs: [Timestamp, NetworkInfo][] = [];
-    // for (const [cellIdStr, infoPair] of Object.entries(allNetworkLogs)) {
-    //     const hcls  = this._appProxy.getLocations(str2CellId(cellIdStr));
-    //     const cellName = this._appProxy.getCellName(hcls[0]);
-    //     console.log("<network-health>.render() cellName", cellName);
-    //     if (cellName == VINES_DEFAULT_ROLE_NAME) {
-    //       cellLogs = infoPair;
-    //       break;
-    //     }
-    // }
 
     let latestInfo = {
       fetch_pool_info: {
@@ -68,19 +61,11 @@ export class NetworkHealthPanel extends LitElement {
       completed_rounds_since_last_time_queried: 0,
     }
     let cellLogs: [Timestamp, NetworkInfo][] = [[0, latestInfo]];
-
-    if (Object.keys(allNetworkLogs).length != 0) {
-      cellLogs = Object.entries(allNetworkLogs)[0]![1];
-
-      if (cellLogs.length > 20) {
-        cellLogs = cellLogs.slice(-20);
-      }
-      if (cellLogs.length != 0) {
-        //return html`no logs found ${enableSwitch}`;
-        latestInfo = cellLogs[cellLogs.length - 1]![1];
-      }
+    if (allNetworkLogs.length != 0) {
+      cellLogs = allNetworkLogs;
+      latestInfo = allNetworkLogs[allNetworkLogs.length - 1]![1];
     }
-    //const latestInfo = cellLogs[cellLogs.length - 1][1];
+
 
     const arcPct = (latestInfo.arc_size * 100).toFixed(0);
     const fetchKB = (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
@@ -92,7 +77,6 @@ export class NetworkHealthPanel extends LitElement {
     //const lineValues = "[0,1,2,50,10,85,20,5,48]"; // testing values
     const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
     //console.log("<network-health>.render()", lineValues);
-
 
     /** */
     return html`
@@ -119,7 +103,7 @@ export class NetworkHealthPanel extends LitElement {
                 <span>Arc</span>
               </div>
           </div>
-          ${enableSwitch}
+          <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch>
         </div>
         <div id="fetch">
           <div class="title">
@@ -134,16 +118,6 @@ export class NetworkHealthPanel extends LitElement {
         </div>
         ${queryBtn}
     `;
-
-  }
-
-
-  /** */
-  async onQueryNetworkInfo(_e:any) {
-    console.log("onQueryNetworkInfo()")
-    this.dispatchEvent(new CustomEvent('queryNetworkInfo', {detail: null, bubbles: true, composed: true}));
-    await delay(2000)
-    this.requestUpdate();
   }
 
 

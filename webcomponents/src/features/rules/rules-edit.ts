@@ -326,6 +326,9 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     let peerList = [];
     for (const [agentId, actionId] of this._zvm.perspective.profileByAgent.entries()) {
       const pair = this._zvm.perspective.profiles.get(actionId)!;
+      if (!pair) {
+        continue;
+      }
       peerList.push(html`
         <ui5-mcb-item data-id=${agentId.b64} 
                       .text=${pair[0].nickname}

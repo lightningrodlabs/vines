@@ -22,10 +22,10 @@ import "@ui5/webcomponents/dist/AvatarGroup.js"
 import "@ui5/webcomponents/dist/Badge.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/Button.js";
-import '@ui5/webcomponents/dist/CheckBox.js';
-import "@ui5/webcomponents/dist/CustomListItem.js";
 import "@ui5/webcomponents/dist/Card.js";
 import "@ui5/webcomponents/dist/CardHeader.js";
+import '@ui5/webcomponents/dist/CheckBox.js';
+import "@ui5/webcomponents/dist/CustomListItem.js";
 import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
@@ -182,7 +182,7 @@ import {
   HideEvent, ICollapsable,
   InputBar,
   JumpEvent, latestThreadName,
-  MainViewType, multiJumpEvent,
+  MainViewType, multiJumpEvent, networkCallerContext,
   NotifiableEvent,
   NotifySetting,
   onlineLoadedContext,
@@ -223,7 +223,8 @@ import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
-import {HoloHashB64, Timestamp} from "@holochain/client";
+import {HoloHashB64, NetworkInfo, Timestamp} from "@holochain/client";
+import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -253,6 +254,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @consume({ context: filesContext, subscribe: true })
   _filesDvm!: FilesDvm;
+
+  @consume({ context: networkCallerContext, subscribe: true })
+  @property() networkCaller!: NetworkCaller;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -384,6 +388,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('mouseup', this.handleMouse);
     // @ts-ignore
     this.addEventListener('copy', this.onCopy); // For debugging
+    // @ts-ignore
+    this.addEventListener('loop-network-info', this.onLoopNetworkInfo);
   }
 
   override disconnectedCallback() {
@@ -409,6 +415,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('mouseup', this.handleMouse);
     // @ts-ignore
     this.removeEventListener('copy', this.onCopy);
+    // @ts-ignore
+    this.removeEventListener('loop-network-info', this.onLoopNetworkInfo);
+  }
+
+
+  /** */
+  onLoopNetworkInfo(_e:any) {
+    console.log("onLoopNetworkInfo()")
+    if (!this.networkCaller?.isLooping()) {
+      console.log("Start loop")
+      this.networkCaller?.startCallLoop(1000);
+    } else {
+      this.networkCaller?.stopCallLoop();
+    }
   }
 
 
@@ -744,9 +764,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  private _canSpin = false;
+
   /** After first render only */
   override async firstUpdated() {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
+
+    /** Register loop callback */
+    this.networkCaller!.addCallback((info: NetworkInfo) => {
+      //console.log("networkInfo:", info);
+      const toggled = this._canSpin != info.fetch_pool_info.op_bytes_to_fetch > 0;
+      if (toggled) {
+        this._canSpin = info.fetch_pool_info.op_bytes_to_fetch > 0;
+        this.requestUpdate();
+      }
+    });
 
     /** Start observing the div */
     const dmList = this.shadowRoot!.getElementById("dmLister") as HTMLElement;
@@ -1572,11 +1604,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
                     </ui5-avatar>
                     <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;"
-                         @click=${() => {
-                          const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                          const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
-                          popover.showAt(btn);
-                        }}>
+                         @click=${ async (e:any) => {
+                             e.preventDefault(); e.stopPropagation();
+                             const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                             const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
+                             /** Generate and add QR code */
+                             const existingImg = popover.querySelector('img')
+                             if (!existingImg) {
+                                 let generateQR: string;
+                                 try {
+                                     generateQR = await QRCode.toDataURL(this.cell.shareCode);
+                                     const img = document.createElement('img');
+                                     img.src = generateQR;
+                                     popover.append(img);
+                                 } catch (err) {
+                                     console.error(err);
+                                 }
+                             }
+                             popover.showAt(btn);
+                         }}>
                         <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem;color:#1B2A39DB">${groupProfile.name}</div>
                         <div style="font-size: 0.66rem;color:grey; text-decoration: underline;">
                             <ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
@@ -1590,26 +1636,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             </span>
                         </div>
                     </div>
-                    <ui5-button id="shareBtn" icon="share-2" tooltip=${msg("Share Network")}
-                                design="Transparent"  style="margin-top:10px;"
+                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
+                                class=${this._canSpin? "spinning" : ""}
+                                design="Transparent" tooltip=${msg("Network")}
+                                style="margin-top:10px;"
                                 @click=${ async (e:any) => {
                                   e.preventDefault(); e.stopPropagation();
-                                  const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                                  const btn = this.shadowRoot!.getElementById("shareBtn") as HTMLElement;
-                                  /** Generate and add QR code */
-                                  const existingImg = popover.querySelector('img')
-                                  if (!existingImg) {
-                                      let generateQR: string;
-                                      try {
-                                          generateQR = await QRCode.toDataURL(this.cell.shareCode);
-                                          const img = document.createElement('img');
-                                          img.src = generateQR;
-                                          popover.append(img);
-                                      } catch (err) {
-                                          console.error(err);
-                                      }
-                                  }
-                                  popover.showAt(btn);                                  
+                                  const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                                  const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
+                                  popover.showAt(btn);
                                 }}>
                     </ui5-button>
                     <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
@@ -1841,7 +1876,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <network-health-panel .appProxy=${this.appProxy}></network-health-panel>
+                        <network-health-panel></network-health-panel>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
@@ -2361,6 +2396,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           background: #F6FAFC;
         }
 
+        .spinning {
+          animation: spin 2s linear infinite; /* Adjust duration and easing */
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
         abbr {
           text-decoration: none;
         }
