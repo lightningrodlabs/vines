@@ -1,14 +1,15 @@
 import {css, html, /*PropertyValues,*/ TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, ActionIdMap, ZomeElement} from "@ddd-qc/lit-happ";
-import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import {ActionId, ActionIdMap, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
+import {renderAvatar} from "../../render";
+import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 
 
 /** */
@@ -21,10 +22,10 @@ export interface ICollapsable {
  *
  */
 @customElement("topics-lister")
-export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> implements ICollapsable {
+export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> implements ICollapsable {
 
   constructor() {
-    super(ThreadsZvm.DEFAULT_ZOME_NAME);
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
   /** -- Properties -- */
@@ -37,24 +38,26 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
 
   @property() selectedThreadHash?: ActionId;
 
+  /** Observed perspective from zvm */
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  threadsPerspective!: ThreadsPerspective;
+
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
 
   /** -- Methods -- */
 
-  // /** Don't update during online loading */
-  // override shouldUpdate(changedProperties: PropertyValues<this>) {
-  //   const shouldnt = !super.shouldUpdate(changedProperties);
-  //   if (shouldnt) {
-  //     return false;
-  //   }
-  //   /** Don't update during loading */
-  //   if (changedProperties.has("perspective") && !this.onlineLoaded) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
+  /** In dvmUpdated() this._dvm is not already set */
+  protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
+    console.debug("<topics-lister>.dvmUpdated()");
+    /** Subscribe to ThreadsZvm */
+    if (oldDvm) {
+      oldDvm.threadsZvm.unsubscribe(this);
+    }
+    newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+  }
+
 
 
   @state() collapsed: ActionIdMap<boolean> = new ActionIdMap<boolean>();
@@ -89,9 +92,9 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
 
   /** */
   override render() {
-    console.log("<topics-lister>.render()", this.collapsed, this.perspective.semanticTopics.size, this.perspective.semanticTopics);
+    console.log("<topics-lister>.render()", this.collapsed, this.threadsPerspective.semanticTopics.size, this.threadsPerspective.semanticTopics);
 
-    let pairs = Array.from(this.perspective.semanticTopics.entries());
+    let pairs = Array.from(this.threadsPerspective.semanticTopics.entries());
     if (this.alphabetical) {
       pairs = pairs.sort((a, b) => {
         return a[1][0].localeCompare(b[1][0]);
@@ -100,51 +103,51 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
       pairs = pairs.reverse();
     }
     let treeItems = pairs.map(([topicAh, [title, author]]) => {
-      const isSubjectHidden = this._zvm.perspective.hiddens[topicAh.b64]? this._zvm.perspective.hiddens[topicAh.b64] : false;
+      const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
       /** Skip if hidden */
       if (isSubjectHidden && !this.showArchivedTopics) {
         return;
       }
       /** Render threads for Topic */
       let threads: TemplateResult<1>[] = [];
-      let topicThreads = this.perspective.getSubjectThreads(topicAh);
+      let topicThreads = this.threadsPerspective.getSubjectThreads(topicAh);
       if (topicThreads == undefined) {
         topicThreads = [];
       } else {
         if (this.alphabetical) {
           topicThreads = topicThreads.sort((a, b) => {
-            const threadA = this.perspective.threads.get(a)!;
-            const nameA = latestThreadName(threadA.title, threadA.pp, this._zvm);
-            const threadB = this.perspective.threads.get(b)!;
-            const nameB = latestThreadName(threadB.title, threadB.pp, this._zvm);
+            const threadA = this.threadsPerspective.threads.get(a)!;
+            const nameA = latestThreadName(threadA.title, threadA.pp, this._dvm.threadsZvm);
+            const threadB = this.threadsPerspective.threads.get(b)!;
+            const nameB = latestThreadName(threadB.title, threadB.pp, this._dvm.threadsZvm);
             return nameA.localeCompare(nameB);
           });
         } else {
           topicThreads = topicThreads.sort((a, b) => {
-            const nameA = this.perspective.threads.get(a)!.creationTime
-            const nameB = this.perspective.threads.get(b)!.creationTime;
+            const nameA = this.threadsPerspective.threads.get(a)!.creationTime
+            const nameB = this.threadsPerspective.threads.get(b)!.creationTime;
             return nameB - nameA
           });
         }
         threads = topicThreads.map((ppAh) => {
-          const thread = this.perspective.threads.get(ppAh);
+          const thread = this.threadsPerspective.threads.get(ppAh);
           if (!thread) {
             return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
           }
           //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-          const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
-          const maybeUnreadThread = this.perspective.unreads.get(ppAh);
+          const isThreadHidden = this.threadsPerspective.hiddens[ppAh.b64]? this.threadsPerspective.hiddens[ppAh.b64] : false;
+          const maybeUnreadThread = this.threadsPerspective.unreads.get(ppAh);
           const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
-          const threadIsNew = this.perspective.newThreads.has(ppAh);
+          const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
           if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return html``;
           }
           /** Determine badge & buttons */
-          const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
+          const maybeCommentThread: ActionId | null = this.threadsPerspective.getCommentThreadForSubject(ppAh);
           let hasUnreadComments = false;
           if (maybeCommentThread != null) {
-            hasUnreadComments = this.perspective.unreads.has(maybeCommentThread);
+            hasUnreadComments = this.threadsPerspective.unreads.has(maybeCommentThread);
           }
           //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
@@ -169,7 +172,7 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
 
           /** 'new', 'notif' or 'unread' badge to display */
           let badge = html`<ui5-badge>0</ui5-badge>`;
-          let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
+          let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
             badge = html`
                 <ui5-badge class="notifBadge">${msg("new")}</ui5-badge>`;
@@ -201,17 +204,29 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
                                       this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh}, bubbles: true, composed: true}));
                                   }}></ui5-button>`;
 
+          /** Create avatar for each current participant */
+          let avatarGrp = html``;
+          const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
+          if (agents.length > 0) {
+            //console.log("Authors' Avatar", Object.keys(authors).length);
+            let avatars = agents.map((agentId) => {
+              return renderAvatar(this._dvm.profilesZvm, agentId, "XS", "");
+            });
+            avatarGrp = html`<ui5-avatar-group type="Group" style="width:fit-content;max-width:52px;">${avatars}</ui5-avatar-group>`;
+          }
+          /** render topic thread */
           return html`
               <sl-tooltip content=${thread.title} style="--show-delay:1000">
                 <div id=${ppAh.b64} class="threadItem" 
                      style="
-                     font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
-                     ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                     ${isSelected? "background:#4684FD;color:#444;" : ""}
+                       font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
+                       ${threadIsNew || notifCount? "color: #359C07;" : ""}
+                       ${isSelected? "background:#4684FD;color:#444;" : ""}
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
+                    ${avatarGrp}
                     ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                                 style="border:none;display: none"
                                 @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
@@ -224,11 +239,11 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
           `})
       }
       /* */
-      const newSubjects = this._zvm.perspective.getNewSubjects();
-      const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
+      const newSubjects = this.threadsPerspective.getNewSubjects();
+      const unreadSubjects = this.threadsPerspective.getUnreadSubjects();
 
       /** Render Topic */
-      const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(topicAh);
+      const maybeCommentThread: ActionId | null = this.threadsPerspective.getCommentThreadForSubject(topicAh);
       const topicIsNew = newSubjects.get(topicAh.b64) != undefined;
       let topicHasUnreadComments = false;
       if (maybeCommentThread != null) {
@@ -265,8 +280,8 @@ export class TopicsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> im
           /** Agregate count of unread beads on all topic's threads */
           let count = 0;
           for (const topicPpAh of topicThreads) {
-            if (this.perspective.unreads.get(topicPpAh)) {
-              count += this.perspective.unreads.get(topicPpAh)![1].length;
+            if (this.threadsPerspective.unreads.get(topicPpAh)) {
+              count += this.threadsPerspective.unreads.get(topicPpAh)![1].length;
             }
           }
           if (count > 0) {

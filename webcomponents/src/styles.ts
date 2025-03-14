@@ -142,10 +142,15 @@ export const sharedStyles = css`
     padding-left: 5px;
     margin-right: 5px;
   }
+
   .threadItem:hover {
     background: rgb(222, 232, 255);
   }
 
+  .threadItem:hover > ui5-avatar-group {
+    display: none !important;
+  }
+  
   .threadItem:hover > ui5-button {
     display: block !important;
   }
