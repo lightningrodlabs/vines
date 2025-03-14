@@ -1929,11 +1929,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const beadAh = pulse.ah;
     const beadType = pulse.entryType as BeadType;
     const typedMat = materializeTypedBead(typed, beadType);
-    console.log("handleBeadEntry()", beadType, pulse.ah.short, typedMat);
+    console.log("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.short, typedMat);
     /** Store Bead */
     const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;
     await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew && !author.equals(this.cell.address.agentId));
+    // /** Dev test: Signal a 2nd entry */
+    // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
+    //   pulse.ah = await ActionId.random();
+    //   pulse.eh = await EntryId.random();
+    //   await this.broadcastTip({Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))});
+    // }
     /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
     if (pulse.isNew && this.cell.address.agentId.equals(from)) {
@@ -1986,6 +1992,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** Handle AppTip */
   private _missingLinkAhs: ActionIdMap<ThreadsNotificationTip> = new ActionIdMap();
   private _intervalId: any | undefined = undefined;
+
   override handleAppTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
     const appTip = this._decoder.decode(serTip) as ThreadsAppTip;
     if (appTip.type != "notification") {
