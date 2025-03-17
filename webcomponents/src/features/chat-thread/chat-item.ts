@@ -243,7 +243,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
+    console.debug("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
     this._renderCount += 1;
 
     if (!this.hash) {
@@ -420,6 +420,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
       <div id="innerChatItem" style="position: relative; ${isFlagged? "background: #fbc6c6" : ""}">
+        <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
         ${isPersistent? html`` : html`<div class="grey-veil"></div>`}
         <!-- Vine row -->
         ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
@@ -499,7 +500,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                       : html`<ui5-menu-item id="intoHrl" icon="chain-link" text=${msg("Copy Message Link")}></ui5-menu-item>`}
                 ${downloadItem}
                 <ui5-menu-item id="flagMessage" ?disabled=${!this._dvm.threadsZvm.isSelfModerator(beadInfo.bead.ppAh) || isFlagged} icon="flag" text=${msg("Report Message")}></ui5-menu-item>
-
             </ui5-menu>
         </div>
 

@@ -167,7 +167,7 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
       }
     }
   }
-  console.log("latestThreadName", curSubjectId.short, latestSubjectId.short, threadsZvm.perspective.subjects);
+  //console.log("latestThreadName", curSubjectId.short, latestSubjectId.short, threadsZvm.perspective.subjects);
   return `${determineSubjectPrefix(subjectType)} ${subjectName}: ${threadTitle}`;
 }
 

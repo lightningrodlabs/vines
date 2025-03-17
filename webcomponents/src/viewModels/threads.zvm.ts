@@ -477,7 +477,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return [];
     }
     const [interval, beadLinks] = maybe;
-    console.log("pullAllBeads()", TimeInterval.new(interval).toStringSec(), beadLinks)
+    console.log("pullAllBeads()", beadLinks.length, TimeInterval.new(interval).toStringSec(), beadLinks)
     /** Fetch */
     await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval));
     thread.setHasSearchedOldestBead();
@@ -891,7 +891,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async fetchTypedBead(beadAh: ActionId, beadType: BeadType/*, canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
-    if (this._perspective.getBeadInfo(beadAh)) {
+    if (this._perspective.getBeadInfo(beadAh) && this._perspective.isPersistent(beadAh.b64)) {
       return;
     }
     try {
@@ -923,7 +923,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     /** fetch each Bead */
     for (const bl of beadLinks) {
-      console.log("fetchBeads()", bl.beadType)
+      //console.log("fetchBeads()", bl.beadType)
       await this.fetchTypedBead(new ActionId(bl.beadAh), bl.beadType as BeadType/*, false, bl.creationTime*/);
     }
     thread.addProbedInterval(probedInterval);
@@ -1078,6 +1078,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
     /** pre */
     if (this._perspective.getBeadInfo(beadAh)) {
+      if (!this._perspective.isPersistent(beadAh.b64) && isPersistent) {
+        this._perspective.setPersistent(beadAh.b64);
+      }
       return;
     }
     if (!typedBead) {
@@ -1472,7 +1475,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   isSelfModerator(ppAh: ActionId): boolean {
-    console.log("isSelfModerator()", ppAh);
+    //console.log("isSelfModerator()", ppAh);
     const thread = this._perspective.threads.get(ppAh);
     if (!thread) { return false; }
     if (thread.pp.moderation.moderators.length > 0) {
@@ -1726,7 +1729,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   protected override async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
-    console.log("ThreadsZvm.handleEntryPulse()", pulse, from.short);
+    console.debug("ThreadsZvm.handleEntryPulse()", pulse, pulse.ah.b64, from.b64);
     //const isSignalFromSelf = this.cell.address.agentId.equals(from);
     const isEntryFromSelf = this.cell.address.agentId.equals(pulse.author);
 
@@ -1929,7 +1932,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const beadAh = pulse.ah;
     const beadType = pulse.entryType as BeadType;
     const typedMat = materializeTypedBead(typed, beadType);
-    console.log("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.short, typedMat);
+    console.debug("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.b64, typedMat);
     /** Store Bead */
     const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;

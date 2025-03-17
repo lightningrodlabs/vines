@@ -248,7 +248,7 @@ export class ThreadsPerspective {
 
   /** */
   isPersistent(hash: AnyDhtHashB64): boolean {
-    console.log("Persistent: is?", hash, this.persistentStorageMap.has(hash));
+    console.debug("Persistent: is?", hash, this.persistentStorageMap.has(hash));
     return this.persistentStorageMap.has(hash);
   }
 

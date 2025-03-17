@@ -1,8 +1,8 @@
-import {css, html, PropertyValues, TemplateResult} from "lit";
+import {css, html, LitElement, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {repeat} from 'lit/directives/repeat.js'
 import {property, state, customElement} from "lit/decorators.js";
-import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, delay, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {BeadLink} from "../../bindings/threads.types";
@@ -11,6 +11,7 @@ import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {formatTime} from "../timezone/utils";
+import {ActionHashB64} from "@holochain/client";
 
 
 /**
@@ -48,11 +49,15 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   @consume({ context: onlineLoadedContext, subscribe: true })
   onlineLoaded!: boolean;
 
-  private _prevThread: string = ""
+
 
   /** -- State variables -- */
 
   @state() _loading = true;
+
+  private _prevThread: string = ""
+
+  @state() private _tempBeads: Set<ActionHashB64> = new Set();
 
 
   /** -- Methods -- */
@@ -144,6 +149,24 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       this.style.background = "#ececec";
     } else {
       this.style.background = "inherit";
+    }
+    /** Check for persistency change */
+    if (this._tempBeads.size > 0) {
+      await this._dvm.threadsZvm.pullAllBeads(this.threadHash); // FIXME: grab only latest for this thread?
+      for (const beadAhB64 of this._tempBeads) {
+        if (this._dvm.threadsZvm.perspective.isPersistent(beadAhB64)) {
+          this._tempBeads.delete(beadAhB64);
+          const chatItem = this.shadowRoot!.getElementById(beadAhB64) as LitElement;
+          console.debug("Became persistent", beadAhB64, chatItem)
+          if (chatItem) {
+            chatItem.requestUpdate();
+          }
+        }
+      }
+      if (this._tempBeads.size > 0) {
+        await delay(1000);
+        this.requestUpdate();
+      }
     }
   }
 
@@ -265,10 +288,15 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     // <!-- ${chatItems.reverse()} -->
     /** render all (in reverse) */
     return html`
-        <div>${this._renderCount}</div>
+        <!-- <div>${this._renderCount}</div> -->
         <!-- render chat items -->
-        <div style="display: flex;flex-direction: column;">
+        <div style="display: flex; flex-direction: column;">
         ${repeat(all, (blm) => blm.beadAh.b64, (blm) => {
+            /** Check if temp bead */
+            if (!this._dvm.threadsZvm.perspective.isPersistent(blm.beadAh.b64)) {
+                this._tempBeads.add(blm.beadAh.b64);
+            }
+            /** */
             let hr: TemplateResult<1> | undefined = undefined;
             /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
             if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
