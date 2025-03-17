@@ -11,7 +11,7 @@ import {ThreadsZvm} from "./threads.zvm";
 import {
   AppSignal, Signal, SignalType,
   SignalCb,
-  Timestamp, ActionHashB64
+  Timestamp, ActionHashB64, AgentPubKeyB64
 } from "@holochain/client";
 import {
   ParticipationProtocol,
@@ -54,7 +54,7 @@ export type ThreadsDnaPerspective = {
   /** */
   signaledNotifications: ThreadsNotification[],
   /** track who is currently typing per thread */
-  typings: ActionIdMap<AgentId[]>,
+  typings: ActionIdMap<Set<AgentPubKeyB64>>,
   /** track my un-acked beads */
   myUnsharedBeads: Set<ActionHashB64>,
   ackRequests: ActionIdMap<AgentId>,
@@ -350,14 +350,26 @@ export class ThreadsDvm extends DnaViewModel {
       case "App": {
         const serAppTip = (tip as TipProtocolVariantApp).App;
         const appTip = this._decoder.decode(serAppTip) as ThreadsAppTip;
-        console.log("ThreadsDvm.handleTip() appTip", appTip);
+        //console.log("ThreadsDvm.handleTip() appTip", appTip);
         switch (appTip.type) {
           case "subject":
             //console.warn("latestThreadName Received subject", appTip.data?.address);
             //this.threadsZvm.storeSubject(appTip.data!);
           break;
-          case "typing":
-            // FIXME
+          case "typing": {
+              console.log("ThreadsDvm.handleTip() typing text-input", appTip.data);
+              const ppAh =  appTip.data!.thread!;
+              const is = appTip.data!.is;
+              if (!this._perspective.typings.has(ppAh)) {
+                this._perspective.typings.set(ppAh, new Set());
+              }
+              const prev = this._perspective.typings.get(ppAh)!;
+              if (is) {
+                prev.add(from.b64);
+              } else {
+                prev.delete(from.b64);
+              }
+            }
             break
           case "ack":
             console.debug("ThreadsDvm.handleTip() Removing from myUnsharedBeads", appTip.data);
@@ -471,6 +483,21 @@ export class ThreadsDvm extends DnaViewModel {
     return true;
   }
 
+
+  /** */
+  setThreadInput(ppAh: ActionId, value: string) {
+    if (!value) {
+      this._perspective.threadInputs.delete(ppAh);
+      /*await*/ this.signalTyping(ppAh, false);
+      return;
+    }
+    if (!this._perspective.threadInputs.has(ppAh)) {
+      this.signalTyping(ppAh, true);
+    }
+    this._perspective.threadInputs.set(ppAh, value);
+  }
+
+
   /** */
   async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId) {
     /** Check rate limit */
@@ -481,7 +508,8 @@ export class ThreadsDvm extends DnaViewModel {
     /** */
     await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
     /** Erase saved input */
-    this._perspective.threadInputs.delete(ppAh);
+    this.setThreadInput(ppAh, "");
+
   }
 
 

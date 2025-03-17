@@ -50,6 +50,7 @@ export class InputBar extends LitElement {
   @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
+  @state() private _prevInputValue: string = "";
   @state() private _file: File | undefined = undefined;
   @state() private _wal: WAL | undefined = undefined;
 
@@ -166,6 +167,13 @@ export class InputBar extends LitElement {
       //console.warn("<vines-input-bar> updated() cachedInput", this.cachedInput, this.inputElem);
       this.inputElem.value = this.cachedInput;
     }
+    /** Check if input value changed */
+    console.debug("<input-bar>.updated() text-input",this._prevInputValue);
+    if (this.inputElem && this.inputElem.value != this._prevInputValue) {
+      this._prevInputValue = this.inputElem.value;
+      this.dispatchEvent(new CustomEvent<string>("text-input", {detail: this.inputElem.value, bubbles: true, composed: true}));
+    }
+    /** */
     if (this.background) {
       const elem = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
       elem.style.background = this.background;
@@ -286,7 +294,7 @@ export class InputBar extends LitElement {
 
   /** */
   handleKeydown(e:any) {
-    //console.log("keydown", e);
+    console.log("keydown", e);
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     if (isSuggesting) {
@@ -302,6 +310,7 @@ export class InputBar extends LitElement {
         e.preventDefault();
         this.commitInput();
       }
+      return;
     }
   }
 

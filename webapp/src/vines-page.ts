@@ -390,6 +390,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.addEventListener('copy', this.onCopy); // For debugging
     // @ts-ignore
     this.addEventListener('loop-network-info', this.onLoopNetworkInfo);
+    // @ts-ignore
+    this.addEventListener('text-input', this.onTextInput);
   }
 
   override disconnectedCallback() {
@@ -417,6 +419,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('copy', this.onCopy);
     // @ts-ignore
     this.removeEventListener('loop-network-info', this.onLoopNetworkInfo);
+    // @ts-ignore
+    this.removeEventListener('text-input', this.onTextInput);
   }
 
 
@@ -429,6 +433,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     } else {
       this.networkCaller?.stopCallLoop();
     }
+  }
+
+
+  onTextInput(e: CustomEvent<string>) {
+    console.log("onTextInput() text-input", e.detail);
+    this._dvm.setThreadInput(this._selectedThreadHash!, e.detail);
   }
 
 
@@ -1079,7 +1089,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._selectedCommentThreadHash && this._canShowComments) {
       const commentView = this.shadowRoot!.getElementById("comment-view") as CommentThreadView;
       if (commentView) {
-        this._dvm.perspective.threadInputs.set(new ActionId(this._selectedCommentThreadHash.b64), commentView.value);
+        this._dvm.setThreadInput(new ActionId(this._selectedCommentThreadHash.b64), commentView.value);
       }
     }
     /** */
@@ -1188,7 +1198,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
     if (inputBar && maybePrevThreadId) {
       //console.warn("<vines-page>.onJump() cachedInput Storing input-bar:", inputBar.value, maybePrevThreadId.short)
-      this._dvm.perspective.threadInputs.set(maybePrevThreadId, inputBar.value);
+      this._dvm.setThreadInput(maybePrevThreadId, inputBar.value);
       inputBar.setValue("");
     }
 
@@ -1404,6 +1414,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this._selectedBeadAh}></chat-thread-multi-view>`
             : html`<chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
 
+        let typingMsg = "";
+        const typers =this._dvm.perspective.typings.get(this._selectedThreadHash);
+        //console.debug("text-input typers", typers);
+        if (typers) {
+          if (typers.size > 0) {
+            for (const typer of typers) {
+              const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(new AgentId(typer));
+              const nickname = maybeProfile ? maybeProfile.nickname : msg("Unknown");
+              typingMsg += nickname + ", "
+            }
+            typingMsg = typingMsg.slice(0, -2);
+            typingMsg += msg(" is typing...");
+          }
+        }
         centerSide = html`
             <presence-panel .hash=${this._selectedThreadHash}></presence-panel>
             ${threadView}
@@ -1439,7 +1463,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                if (e.detail.file && this._selectedThreadHash) await this.onCreateFileMessage(this._selectedThreadHash, e.detail.file);                               
                                this._replyToAh = undefined;
                                this._selectedBeadAh = undefined;
-                             }}></vines-input-bar>` : html`<div style="min-height: 20px;"></div>`}
+                             }}></vines-input-bar>
+                ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
+            ` : html`<div style="min-height: 20px;"></div>`}
             `}
         `;
       }
@@ -2698,6 +2724,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           cursor: pointer;
         }
         
+        #typing-div {
+          padding-left: 40px;
+          padding-bottom: 10px;
+          margin-top: -5px;
+          font-size: small;
+        }
         #dmSign {
           /*width: 50px;*/
           flex-direction: row;

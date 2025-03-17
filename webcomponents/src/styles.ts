@@ -128,6 +128,10 @@ export const sharedStyles = css`
     padding: 0px;
     display: none;
   }
+  
+  .red {
+    border: 1px solid red;
+  }
 
   .threadItem {
     display: flex;
