@@ -20,8 +20,8 @@ export class NetworkHealthPanel extends LitElement {
   /** After first render only */
   override async firstUpdated() {
     /** Register loop callback */
-    this.networkCaller!.addCallback((info: NetworkInfo) => {
-      console.log("networkInfo:", info);
+    this.networkCaller!.addCallback((_info: NetworkInfo) => {
+      //console.log("networkInfo:", info);
       this.requestUpdate();
     });
     /** Start looping */
@@ -38,7 +38,7 @@ export class NetworkHealthPanel extends LitElement {
 
   /** */
   override render() {
-    console.log("<network-health>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
+    //console.log("<network-health>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
 
     if (!this.networkCaller)  {
       return html`no networkCaller set`;

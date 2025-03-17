@@ -287,6 +287,19 @@ export function defaultLimitations(): Limitations {
   } as Limitations;
 }
 
+/** */
+export function defaultCommentLimitations(): Limitations {
+  return {
+    canWal: false,
+    canText: {
+      bannedWords: [],
+      minTextLength: 0,
+      maxTextLength: DEFAULT_MAX_TEXT_LENGTH,
+    },
+    allowedAgents: [],
+  } as Limitations;
+}
+
 
 export const DEFAULT_MAX_FILE_SIZE = 16 * 1024 * 1024; // FIXME take dna setting
 export const DEFAULT_MAX_TEXT_LENGTH = 10 * 1000;

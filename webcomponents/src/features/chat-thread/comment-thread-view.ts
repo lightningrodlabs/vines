@@ -30,6 +30,7 @@ import {InputBar} from "../../elements/input-bar";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
+import {defaultCommentLimitations} from "../../viewModels/threads.materialize";
 
 
 
@@ -191,12 +192,22 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async onCreateComment(e: VinesInputEvent) {
     const thread = this.threadsPerspective.threads.get(this.threadHash!);
-    if (!thread || !e.text) {
-      console.error("Missing Comment thread");
+    if (!thread) {
+      console.error("Missing Comment thread", e, thread);
       return;
     }
     /** Publish */
-    await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
+    if (e.text) {
+      await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
+    }
+    // if (e.wal) {
+    //   await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, e.wal, this.threadHash!, this.cell.address.agentId);
+    // }
+    // if (e.file) {
+    //   await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, e.file, this.threadHash!, this.cell.address.agentId);
+    // }
+    /** */
+    throw Promise.reject("Missing message content");
   }
 
 
@@ -276,6 +287,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       maybeInput = html`
           <vines-input-bar id="input-bar"
                            topic="thread"
+                           .limitations=${defaultCommentLimitations()}
                            .profilesZvm=${this._dvm.profilesZvm}
                            .cachedInput=${this.perspective.threadInputs.get(this.threadHash)? this.perspective.threadInputs.get(this.threadHash) : ""}
                            @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
