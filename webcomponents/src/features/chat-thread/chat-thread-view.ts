@@ -156,6 +156,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
       for (const beadAhB64 of this._tempBeads) {
         if (this._dvm.threadsZvm.perspective.isPersistent(beadAhB64)) {
           this._tempBeads.delete(beadAhB64);
+          ///** Tell author that we have it */
+          //this._dvm.ackAuthor(beadAhB64);
+          /** Update corresponding chat-item */
           const chatItem = this.shadowRoot!.getElementById(beadAhB64) as LitElement;
           console.debug("Became persistent", beadAhB64, chatItem)
           if (chatItem) {

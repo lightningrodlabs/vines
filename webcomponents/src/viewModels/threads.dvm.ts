@@ -2,16 +2,16 @@ import {
   ActionId,
   ActionIdMap,
   AgentId,
-  AgentIdMap,
-  DnaViewModel, TipProtocol, TipProtocolVariantApp,
+  AgentIdMap, delay,
+  DnaViewModel, EntryPulse, materializeEntryPulse, TipProtocol, TipProtocolVariantApp,
   ZomeSignal,
-  ZomeSignalProtocol, ZomeSignalProtocolType
+  ZomeSignalProtocol, ZomeSignalProtocolType, ZomeViewModel
 } from "@ddd-qc/lit-happ";
 import {ThreadsZvm} from "./threads.zvm";
 import {
   AppSignal, Signal, SignalType,
   SignalCb,
-  Timestamp
+  Timestamp, ActionHashB64
 } from "@holochain/client";
 import {
   ParticipationProtocol,
@@ -53,7 +53,12 @@ export type ThreadsDnaPerspective = {
   initialGlobalProbeLogTs: Timestamp;
   /** */
   signaledNotifications: ThreadsNotification[],
-
+  /** track who is currently typing per thread */
+  typings: ActionIdMap<AgentId[]>,
+  /** track my un-acked beads */
+  myUnsharedBeads: Set<ActionHashB64>,
+  ackRequests: ActionIdMap<AgentId>,
+  /** */
   importing: boolean,
 }
 
@@ -116,6 +121,9 @@ export class ThreadsDvm extends DnaViewModel {
     initialThreadProbeLogTss: new ActionIdMap(),
     initialGlobalProbeLogTs:  0,
     signaledNotifications: [],
+    typings: new ActionIdMap(),
+    myUnsharedBeads: new Set(),
+    ackRequests: new ActionIdMap(),
     importing: false,
   }
 
@@ -218,11 +226,37 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentId): Promise<void> {
+    console.log("ThreadsDvm.handleThreadsSignal()", threadsSignal, from.b64);
     /* Update agent's known presence */
     this.storePresence(from);
     /** */
     if (ZomeSignalProtocolType.Tip in threadsSignal) {
       return this.handleTip(threadsSignal.Tip as TipProtocol, from);
+    }
+    if (ZomeSignalProtocolType.Entry in threadsSignal) {
+      const entryPulseMat = materializeEntryPulse(threadsSignal.Entry as EntryPulse, (this.threadsZvm.constructor as typeof ZomeViewModel).ENTRY_TYPES);
+      switch(entryPulseMat.entryType) {
+        case ThreadsEntryType.EncryptedBead:
+        case ThreadsEntryType.AnyBead:
+        case ThreadsEntryType.EntryBead:
+        case ThreadsEntryType.TextBead:
+          console.log("ThreadsDvm.handleThreadsSignal() Bead", entryPulseMat, this._perspective.ackRequests);
+          /** Mark by bead as unshared */
+          if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
+              console.log("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
+              this._perspective.myUnsharedBeads.add(entryPulseMat.ah.b64);
+          }
+          /** ack author that we have it */
+          if (entryPulseMat.state == "Create"
+             && !entryPulseMat.author.equals(this.cell.address.agentId)
+             && this._perspective.ackRequests.has(entryPulseMat.ah)) {
+            console.log("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
+            await this.ackAuthor(entryPulseMat.ah.b64);
+            this._perspective.ackRequests.delete(entryPulseMat.ah);
+          }
+        break;
+        default: break;
+      }
     }
   }
 
@@ -236,6 +270,29 @@ export class ThreadsDvm extends DnaViewModel {
     await this.threadsZvm.broadcastTip({App: serTip}, agents);
   }
 
+
+  /** */
+  async ackAuthor(beadAh: ActionHashB64) {
+    console.log("ThreadsDvm.ackAuthor()", beadAh);
+    const beadId = new ActionId(beadAh);
+    const maybe = this.threadsZvm.perspective.beads.get(beadId);
+    if (!maybe) {
+      throw Promise.reject("Missing bead we wanted to AckAuthor about");
+    }
+    const author = maybe[0].author;
+    const tip: ThreadsAppTip = {type: "ack", data: beadId};
+    const serTip = this._encoder.encode(tip);
+    await this.threadsZvm.broadcastTip({App: serTip}, [author]);
+  }
+
+
+  /** */
+  async signalTyping(thread: ActionId, is: boolean) {
+    console.log("ThreadsDvm.signalTyping()", thread, is);
+    const tip: ThreadsAppTip = {type: "typing", data: {thread, is}};
+    const serTip = this._encoder.encode(tip);
+    await this.threadsZvm.broadcastTip({App: serTip}, this.allCurrentOthers());
+  }
 
   /** */
   addSignaledNotif(notifTip: ThreadsNotificationTip) {
@@ -261,20 +318,51 @@ export class ThreadsDvm extends DnaViewModel {
     // }
     /* Handle signal */
     const type = Object.keys(tip)[0];
-    console.log("handleTip()", type, from);
+    console.log("ThreadsDvm.handleTip()", type, from);
     switch (type) {
       case "Ping":
       case "Pong":
         break;
+      case "Entry": {
+        if (ZomeSignalProtocolType.Entry in tip) {
+          const entryPulseMat = materializeEntryPulse(tip.Entry as EntryPulse, (this.threadsZvm.constructor as typeof ZomeViewModel).ENTRY_TYPES);
+          switch(entryPulseMat.entryType) {
+            case ThreadsEntryType.EncryptedBead:
+            case ThreadsEntryType.AnyBead:
+            case ThreadsEntryType.EntryBead:
+            case ThreadsEntryType.TextBead:
+              console.log("ThreadsDvm.handleTip() Bead", entryPulseMat);
+              /** Store new bead as ack request */
+              if (entryPulseMat.isNew && entryPulseMat.state == "Create") {
+                if (!entryPulseMat.author.equals(this.cell.address.agentId)) {
+                  console.log("ThreadsDvm.handleTip() Adding to ackRequest", entryPulseMat);
+                  this._perspective.ackRequests.set(entryPulseMat.ah, entryPulseMat.author);
+                  await delay(1000);
+                  /* await */ this.threadsZvm.fetchUnknownBead(entryPulseMat.ah);
+                }
+              }
+              break;
+            default: break;
+          }
+        }
+      }
+      break;
       case "App": {
         const serAppTip = (tip as TipProtocolVariantApp).App;
         const appTip = this._decoder.decode(serAppTip) as ThreadsAppTip;
-        console.log("handleTip() appTip", appTip);
+        console.log("ThreadsDvm.handleTip() appTip", appTip);
         switch (appTip.type) {
           case "subject":
             //console.warn("latestThreadName Received subject", appTip.data?.address);
             //this.threadsZvm.storeSubject(appTip.data!);
           break;
+          case "typing":
+            // FIXME
+            break
+          case "ack":
+            console.debug("ThreadsDvm.handleTip() Removing from myUnsharedBeads", appTip.data);
+            this._perspective.myUnsharedBeads.delete(appTip.data!.b64);
+            break;
           case "string":
             console.warn(`TIP APP STRING: "${appTip.data}"`);
             //this.threadsZvm.storeSubject(appTip.data!);

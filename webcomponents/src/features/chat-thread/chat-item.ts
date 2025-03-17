@@ -422,6 +422,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       <div id="innerChatItem" style="position: relative; ${isFlagged? "background: #fbc6c6" : ""}">
         <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
         ${isPersistent? html`` : html`<div class="grey-veil"></div>`}
+        ${this._dvm.perspective.myUnsharedBeads.has(this.hash.b64)? html`<div class="green-veil"></div>` : html`` }
         <!-- Vine row -->
         ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
         <!-- main horizontal div (row) -->
@@ -613,6 +614,16 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         .innerItem {
           margin-top: 5px;
           margin-bottom: 10px;
+        }
+
+        .green-veil {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(137, 217, 131, 0.33);
+          z-index: 800;
         }
 
         .grey-veil {

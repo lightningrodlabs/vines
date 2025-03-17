@@ -54,7 +54,13 @@ export type ThreadsAppTip = {
   type: "subject", // not used
   data: Subject | null
 } | {
-  type: "string",
+  type: "ack", // tell author we received its data from gossip
+  data: ActionId | null
+} | {
+  type: "typing", // tell others if we are typing in thread input bar
+  data: {thread: ActionId, is: boolean} | null
+} | {
+  type: "string", // any
   data: string | null
 }
 
