@@ -1,5 +1,6 @@
 import {css, html, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
+import {repeat} from 'lit/directives/repeat.js'
 import {property, state, customElement} from "lit/decorators.js";
 import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -247,39 +248,48 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
     const all = thread.getAll();
 
+    //const day = ts2day(blm.creationTime);
+    let myTimeZone = "UTC";
+    if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
+      myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;
+    };
+
+
     let passedLog = false;
     let currentDay = "";
     let prevBeadAh: ActionId | undefined = undefined;
     const newStr = msg("new").toUpperCase(); // prettyTimestamp(initialProbeLogTs);
     const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
 
-    // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
-    let chatItems = Object.values(all).map((blm) => {
-        let hr: TemplateResult<1> | undefined = undefined;
-        /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
-        if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
-          passedLog = true;
-          /** NEW */
-          hr = html`
+
+    // <!-- ${chatItems.reverse()} -->
+    /** render all (in reverse) */
+    return html`
+        <div>${this._renderCount}</div>
+        <!-- render chat items -->
+        <div style="display: flex;flex-direction: column;">
+        ${repeat(all, (blm) => blm.beadAh.b64, (blm) => {
+            let hr: TemplateResult<1> | undefined = undefined;
+            /** 'new' <hr> if bead is older than initial latest ProbeLogTime */
+            if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
+                passedLog = true;
+                /** NEW */
+                hr = html`
           <div style="display: flex; flex-direction: row; align-items: center; margin-right: 5px;">
               <div style="border-top: 2px dotted #33A000; flex-grow: 1; height: 0px"></div>                  
               <div style="width: fit-content; background: #33A000; color:white; font-size:small; border-radius:3px; padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">${newStr}</div>
           </div>
           `;
-        }
-        //const day = ts2day(blm.creationTime);
-        let myTimeZone = "UTC";
-        if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
-          myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;
-        };
-        const day = formatTime(blm.creationTime, myTimeZone);
+            }
 
-      const canShowTimeHr = day != currentDay;
-        if (canShowTimeHr) {
-          currentDay = day;
-          /** NEW & TIME */
-          if (hr) {
-            hr = html`
+            const day = formatTime(blm.creationTime, myTimeZone);
+
+            const canShowTimeHr = day != currentDay;
+            if (canShowTimeHr) {
+                currentDay = day;
+                /** NEW & TIME */
+                if (hr) {
+                    hr = html`
                 <div style="display:flex; flex-direction:row; margin-bottom:2px;">
                     <hr class="timeHr" style="border-bottom: 2px dotted #33A000;"/>
                     <div style="font-size:14px; color:#33A000; padding-left:3px; padding-right:3px;">
@@ -289,36 +299,30 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                     <div style="width: fit-content; background: #33A000; color:white; font-size:small; border-radius:3px; padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">${newStr}</div>
                 </div>
             `;
-          } else {
-            /** TIME */
-            hr = html`
-                <div style="display:flex; flex-direction:row; margin-bottom:2px;">
-                    <hr class="timeHr"/>
-                    <div style="font-size:14px; color:#868686; padding-left:3px; padding-right:3px;">
-                        ${day}
-                    </div>
-                    <hr class="timeHr"/>
-                </div>
-            `;
-          }
-        }
+                } else {
+                  /** TIME */
+                  hr = html`
+                  <div style="display:flex; flex-direction:row; margin-bottom:2px;">
+                      <hr class="timeHr"/>
+                      <div style="font-size:14px; color:#868686; padding-left:3px; padding-right:3px;">
+                          ${day}
+                      </div>
+                      <hr class="timeHr"/>
+                  </div>
+                `;
+                }
+            }
 
-        const chatItem = html`
+            const chatItem = html`
               <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh} .canEdit=${false}
                          tabindex="-1"
                          style="${this.beadAh && blm.beadAh.equals(this.beadAh) ? "background:#c4f2b07a" : ""}">
               </chat-item>`;
-        prevBeadAh = blm.beadAh;
-        /** Render chatItem */
-        return html`${chatItem}${hr}`;
-      }
-    );
-
-
-    /** render all (in reverse) */
-    return html`
-        <!-- <div>${this._renderCount}</div> -->
-        ${chatItems.reverse()}
+            prevBeadAh = blm.beadAh;
+            /** Render chatItem */
+            return html`${hr}${chatItem}`;
+        })}
+        </div>
         ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
         ${maybeHeader}
     `;
