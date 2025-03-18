@@ -51,7 +51,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     /** Load file when hash changed */
     // @ts-ignore: _dvm for first update
-    if (changedProperties.has("hash") || changedProperties.has("_dvm")) {
+    if (changedProperties.has("hash") || changedProperties.has("_dvm") || !this._manifest) {
       this._canRetry = true;
       /** Load file from Cache or grab it from DHT if it's small */
       const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;

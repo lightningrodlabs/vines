@@ -1450,6 +1450,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             style="border:none; padding:0px"
                             @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
             </div>
+            ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
             ${canDisplayInput? html`
             <vines-input-bar id="input-bar" contenteditable="true"
                              .profilesZvm=${this._dvm.profilesZvm}
@@ -1464,7 +1465,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                this._replyToAh = undefined;
                                this._selectedBeadAh = undefined;
                              }}></vines-input-bar>
-                ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
             ` : html`<div style="min-height: 20px;"></div>`}
             `}
         `;
@@ -2725,10 +2725,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
         
         #typing-div {
-          padding-left: 40px;
-          padding-bottom: 10px;
-          margin-top: -5px;
+          padding-left: 70px;
+          padding-bottom: 5px;
           font-size: small;
+          color: #5a69b5;
         }
         #dmSign {
           /*width: 50px;*/
