@@ -111,6 +111,21 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  override updated() {
+    /** Request ack if peers are online */
+    if (this._dvm.perspective.myUnsharedBeads.has(this.hash.b64)) {
+      const others = this._dvm.allCurrentOthers();
+      if (others.length > 0) {
+        this._dvm.requestAck(this.hash, others.slice(0, 5));
+      } else {
+        /** Otherwise check again in 5 secs */
+        delay(5000).then(() => this.requestUpdate())
+      }
+    }
+  }
+
+
+  /** */
   private async loadBead() {
     await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
     await this._dvm.threadsZvm.pullEmojiReactions(this.hash);
@@ -300,6 +315,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         ? html`<ui5-menu-item id="downloadItem" text=${msg("Add WAL to Pocket")}></ui5-menu-item>`
         : html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
     }
+
+    if (isFlagged) {
+      item = html`<span class="flagged">${msg("<Content has been flagged by a moderator>")}</span>`;
+    }
     /** Determine the comment button to display depending on current comments for this message */
     const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
     let commentThread = html``;
@@ -419,7 +438,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-      <div id="innerChatItem" style="position: relative; ${isFlagged? "background: #fbc6c6" : ""}">
+      <div id="innerChatItem" style="position: relative;">
         <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
         ${isPersistent? html`` : html`<div class="grey-veil"></div>`}
         ${this._dvm.perspective.myUnsharedBeads.has(this.hash.b64)? html`<div class="green-veil"></div>` : html`` }
@@ -473,7 +492,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <emoji-bar .hash=${this.hash}></emoji-bar>
             </div>
             <!-- Popovers -->
-            ${this.nomenu || !isPersistent || !canParticipate ? html`` : html`<div id="buttonsPop">${sideButtons}</div>`}
+            ${this.nomenu || !isPersistent || !canParticipate || isFlagged? html`` : html`<div id="buttonsPop">${sideButtons}</div>`}
             <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                 <emoji-picker class="light" style="display: block"
                               @emoji-click=${(event: any) => {
@@ -616,13 +635,17 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           margin-bottom: 10px;
         }
 
+        .flagged {
+          color: grey;
+          text-decoration: italic;
+        }
         .green-veil {
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: rgba(137, 217, 131, 0.33);
+          background-color: rgba(205, 222, 205, 0.33);
           z-index: 800;
         }
 

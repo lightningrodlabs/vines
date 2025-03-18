@@ -1877,7 +1877,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @item-click=${(e: any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
-                        <ui5-menu-item id="syncItem" text=${msg("Probe peers for content")} icon="download-from-cloud" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
@@ -1888,6 +1887,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
                                        starts-section></ui5-menu-item>
                         ` : html`
+                        <ui5-menu-item id="syncItem" text=${msg("Probe peers for content")} icon="download-from-cloud" starts-section></ui5-menu-item>
                         <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
                                        starts-section></ui5-menu-item>
                         <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
@@ -1903,16 +1903,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <network-health-panel></network-health-panel>
-                        <div slot="footer"
-                             style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
+                        <div slot="footer" style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
-                            <ui5-button slot="footer" design="Emphasized" @click=${() => {
+                            <ui5-button @click=${() => { this._filesDvm.probeAll(); this._dvm.probeAll();}}>${msg('Sync')}</ui5-button>
+                            <ui5-button design="Emphasized" @click=${() => {
                                 const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
                                 if (popover.isOpen()) {
                                     popover.close();
                                 }
-                            }}
-                            >${msg('Close')}
+                            }}>
+                                ${msg('Close')}
                             </ui5-button>
                         </div>
                     </ui5-popover>

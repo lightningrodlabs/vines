@@ -270,6 +270,14 @@ export class ThreadsDvm extends DnaViewModel {
     await this.threadsZvm.broadcastTip({App: serTip}, agents);
   }
 
+  /** */
+  async requestAck(beadAh: ActionId, others: AgentId[]) {
+    console.log("ThreadsDvm.requestAck()", beadAh);
+    const tip: ThreadsAppTip = {type: "ackRequest", data: beadAh};
+    const serTip = this._encoder.encode(tip);
+    await this.threadsZvm.broadcastTip({App: serTip}, others);
+  }
+
 
   /** */
   async ackAuthor(beadAh: ActionHashB64) {
@@ -277,7 +285,9 @@ export class ThreadsDvm extends DnaViewModel {
     const beadId = new ActionId(beadAh);
     const maybe = this.threadsZvm.perspective.beads.get(beadId);
     if (!maybe) {
-      throw Promise.reject("Missing bead we wanted to AckAuthor about");
+      //throw Promise.reject("Missing bead we wanted to AckAuthor about");
+      console.warn("AckAuthor aborted. Missing bead we wanted to AckAuthor about.")
+      return;
     }
     const author = maybe[0].author;
     const tip: ThreadsAppTip = {type: "ack", data: beadId};
@@ -375,6 +385,12 @@ export class ThreadsDvm extends DnaViewModel {
             console.debug("ThreadsDvm.handleTip() Removing from myUnsharedBeads", appTip.data);
             this._perspective.myUnsharedBeads.delete(appTip.data!.b64);
             break;
+          case "ackRequest":
+            console.debug("ThreadsDvm.handleTip() ackRequest", appTip.data);
+            if (this.threadsZvm.perspective.beads.get(appTip.data!)) {
+              /*await*/ this.ackAuthor(appTip.data!.b64);
+            }
+            break;
           case "string":
             console.warn(`TIP APP STRING: "${appTip.data}"`);
             //this.threadsZvm.storeSubject(appTip.data!);
@@ -414,7 +430,7 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
-  /** */
+  /** Return list of agents with known presence not older than 5 minutes */
   allCurrentOthers(startingAgents?: AgentId[], thread?: ActionId): AgentId[] {
     const agents = startingAgents? startingAgents : Array.from(this._perspective.agentPresences.keys());
     console.log("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread);

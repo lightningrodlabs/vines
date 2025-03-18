@@ -8,6 +8,7 @@ import {consume} from "@lit/context";
 import {networkCallerContext} from "../../contexts";
 import Switch from "@ui5/webcomponents/dist/Switch";
 
+
 /**
  * @element
  */
@@ -16,6 +17,7 @@ export class NetworkHealthPanel extends LitElement {
 
   @consume({ context: networkCallerContext, subscribe: true })
   @property() networkCaller!: NetworkCaller;
+
 
   /** After first render only */
   override async firstUpdated() {
@@ -29,6 +31,7 @@ export class NetworkHealthPanel extends LitElement {
   }
 
 
+  /** */
   async onSwitchNetworkInfo(_e:any) {
     console.log("onLoopNetworkInfo()");
     const el = this.shadowRoot!.getElementById("enableSwitch") as Switch;
@@ -45,9 +48,6 @@ export class NetworkHealthPanel extends LitElement {
     }
 
     const allNetworkLogs = this.networkCaller.networkInfoLogs;
-
-    //const queryBtn = html`<ui5-button @click=${this.onQueryNetworkInfo}>Query</ui5-button>`
-    const queryBtn = html``;
 
     let latestInfo = {
       fetch_pool_info: {
@@ -116,7 +116,6 @@ export class NetworkHealthPanel extends LitElement {
           <tc-line values=${lineValues} tooltip="@V KB" min="0">
           </tc-line>
         </div>
-        ${queryBtn}
     `;
   }
 

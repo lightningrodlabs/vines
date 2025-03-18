@@ -54,6 +54,9 @@ export type ThreadsAppTip = {
   type: "subject", // not used
   data: Subject | null
 } | {
+  type: "ackRequest", // ask for an Ack
+  data: ActionId | null
+} | {
   type: "ack", // tell author we received its data from gossip
   data: ActionId | null
 } | {
