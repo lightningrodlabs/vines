@@ -100,14 +100,14 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         class="showBtn"
                         @click=${async (e:any) => {
                             e.stopPropagation();
-                            this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: otherAgent}, bubbles: true, composed: true}));
+                            this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: otherAgent, type: "DM"}, bubbles: true, composed: true}));
                         }}></ui5-button>
         ` : html`
                   <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                               class="showBtn"
                               @click=${async (e:any) => {
                                   e.stopPropagation();
-                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: otherAgent}, bubbles: true, composed: true}));
+                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: otherAgent, type: "DM"}, bubbles: true, composed: true}));
                               }}></ui5-button>`;
 
           return html`

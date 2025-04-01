@@ -68,8 +68,8 @@ export enum SpecialSubjectType {
 
 
 export type HideEvent = {
-  address: AnyId, // Action = pp ; Entry = Topic ; AgentId dm
-  //type: string,
+  address: AnyId, // Action = pp or Topic ; AgentId dm
+  type: string,
   hide: boolean
 }
 

@@ -194,14 +194,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                             class="showBtn" style="${isSelected? "color:#444;" : ""}"
                             @click=${async (e:any) => {
                                 e.stopPropagation();
-                                this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh}, bubbles: true, composed: true}));
+                                this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
                             }}></ui5-button>
             ` : html`
                       <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                   class="showBtn" style="${isSelected? "color:#444;" : ""}"
                                   @click=${async (e:any) => {
                                       e.stopPropagation();
-                                      this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh}, bubbles: true, composed: true}));
+                                      this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
                                   }}></ui5-button>`;
 
           /** Create avatar for each current participant */
@@ -296,14 +296,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e:any) => {
                           e.stopPropagation();
-                          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: topicAh}, bubbles: true, composed: true}));
+                          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: topicAh, type: "Topic"}, bubbles: true, composed: true}));
                       }}"></ui5-button>
       ` : html`
           <ui5-button id=${"hide-" + topicAh.b64} icon="hide" tooltip="Hide" design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e:any) => {
                           e.stopPropagation();
-                          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: topicAh}, bubbles: true, composed: true}));
+                          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: topicAh, type: "Topic"}, bubbles: true, composed: true}));
                       }}"></ui5-button>
       `;
 

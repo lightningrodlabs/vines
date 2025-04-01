@@ -147,14 +147,14 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                         class="showBtn" style="${isSelected? "color:#444;" : ""}"
                         @click=${async (e:any) => {
                             e.stopPropagation();
-                            this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh}, bubbles: true, composed: true}));
+                            this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
                         }}></ui5-button>
         ` : html`
                   <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                               class="showBtn" style="${isSelected? "color:#444;" : ""}"
                               @click=${async (e:any) => {
                                   e.stopPropagation();
-                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh}, bubbles: true, composed: true}));
+                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
                               }}></ui5-button>`;
 
       return html`

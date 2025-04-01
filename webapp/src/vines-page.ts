@@ -540,11 +540,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Topic or Channel */
     const dhtId = intoDhtId(e.detail.address.b64);
-    const type = e.detail.address.hashType == HoloHashType.Entry? msg("Topic") : msg("Channel");
+    const type = e.detail.type == "Topic" ? msg("Topic") : msg("Channel");
     dialog.title = `${verb} ${type}?`;
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
-        await this._dvm.threadsZvm.hideSubject(dhtId);
+          await this._dvm.threadsZvm.hideSubject(dhtId);
         toasty(`${type} ${msg("hidden")}`);
       } else {
         await this._dvm.threadsZvm.unhideSubject(dhtId);
