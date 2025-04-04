@@ -315,8 +315,16 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
       //console.log("<topics-lister>.render() threads", threads);
       if (threads.length == 0) {
-        threads = [html`<div class="threadItem" style="background: #F6FAFC; cursor: default">
-                   <span style="margin-left:28px;margin-right:10px;color:grey;">${msg('No channels found')}</span>
+        threads = [html`<div class="threadItem" style="background: #F6FAFC; cursor: default; display: flex; flex-direction: column">
+                   <span style="color:grey;">${msg('No channels found')}</span>
+                    <span class="linky" style="text-decoration: underline; font-size: small"
+                          @click=${async (e:any) => {
+                              e.stopPropagation(); e.preventDefault();
+                              await this.updateComplete;
+                              this.dispatchEvent(new CustomEvent<ActionId>('createThreadClicked', {detail: topicAh, bubbles: true, composed: true}));
+                          }}
+                    >
+                        ${msg('Create channel')}</span>
               </div>`];
       }
 
@@ -364,7 +372,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                             design="Transparent" 
                             style="color:grey"
                             @click=${async (e:any) => {
-                              e.stopPropagation(); //console.log("topic clicked:", title);
+                              e.stopPropagation(); e.preventDefault();
                               await this.updateComplete;
                               this.dispatchEvent(new CustomEvent<ActionId>('createThreadClicked', {detail: topicAh, bubbles: true, composed: true}));
                             }}>

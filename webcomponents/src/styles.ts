@@ -36,6 +36,15 @@ export const sharedStyles = css`
     padding: 0px 3px 0px 2px;
     text-decoration: none;
   }
+
+  .linky {
+    color: blue;
+  }
+
+  .linky:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
   
   .subjectName {
     font-style: italic;

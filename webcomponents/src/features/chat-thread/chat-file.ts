@@ -367,16 +367,6 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
         }
 
-
-        .linky {
-          color: blue;
-        }
-
-        .linky:hover {
-          text-decoration: underline;
-          cursor: pointer;
-        }
-
       `,];
   }
 }
