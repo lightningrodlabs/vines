@@ -15,7 +15,7 @@ import {md} from "../../markdown/md";
 import {codeStyles} from "../../markdown/code-css";
 import {determineBeadName, weaveUrlToWal} from "../../utils";
 import {toasty} from "../../toast";
-import {beadJumpEvent, ShowProfileEvent} from "../../events";
+import {beadJumpEvent} from "../../events";
 import {renderAvatar} from "../../render";
 import {filesContext, weClientContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
@@ -176,7 +176,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  override render() {
+  override render(): TemplateResult<1> {
     console.log("<side-item>.render()", this.hash, this.deletable);
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     const [content, author, date] = this.renderContent();
@@ -190,12 +190,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
          @click=${(e:any) => {console.log("sideItem clicked", this.hash); e.stopPropagation(); this.dispatchEvent(beadJumpEvent(this.hash))}}>
         <div class="avatarRow">
-            <div @click=${(e:any) => {
-                e.stopPropagation();
-                if (author) this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-            }}>
-                ${author? renderAvatar(this._dvm.profilesZvm, author, "XS") : ""}                
-            </div>
+            ${author? renderAvatar(this, this._dvm.profilesZvm, author, "XS") : ""}
             <div class="nameColumn" style="display:flex; flex-direction:column;">
                 <span class="sideAgentName">${agentName}</span>
                 <span class="sideChatDate"> ${date}</span>

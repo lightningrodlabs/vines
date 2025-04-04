@@ -1,4 +1,4 @@
-import {html} from "lit";
+import {html, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -62,11 +62,11 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
     const filteredInbox = this.threadsPerspective.filteredInbox();
     //console.log("<notification-list> filteredInbox", filteredInbox);
-    let notifsLi = filteredInbox.map(
+    let notifsLi: TemplateResult<1>[] = filteredInbox.map(
       ([linkAh, notif]) => {
         /* Skip New DM Notif. Used only for code not UI */
         if (notif.event == NotifiableEvent.NewDmThread) {
-          return;
+          return html``;
         }
         /** Content */
         const [notifTitle, notifBody, _jump] = this.feed
@@ -87,7 +87,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
               show-close
               title-text=${title} 
               @close=${async (_e:any) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
-              ${renderAvatar(this._dvm.profilesZvm, author, "XS")}
+              ${renderAvatar(this, this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
               <ui5-notification-action text="Jump" slot="actions" @click=${(_e:any) => this.dispatchEvent(notification2JumpEvent(notif))}>

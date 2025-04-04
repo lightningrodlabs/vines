@@ -6,7 +6,6 @@ import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {loadProfile, renderAvatar, renderProfileAvatar,} from "../../render";
 //import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
-import {ShowProfileEvent} from "../../events";
 
 
 /**
@@ -56,7 +55,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
 
     let all: TemplateResult<1>;
     if (!this.opened) {
-      let avatars = agents.map((agent) => renderAvatar(this._dvm.profilesZvm, agent, "XS"))
+      let avatars = agents.map((agent) => renderAvatar(this, this._dvm.profilesZvm, agent, "XS"))
       let more: TemplateResult<1> = html``;
       if (agents.length > 4) {
         avatars = avatars.slice(0, 4);
@@ -73,14 +72,10 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
     } else {
       const profiles = agents.map((agent) => {
         const profile = loadProfile(this._dvm.profilesZvm, agent);
-        const avatar = renderProfileAvatar(profile, "XS");
+        const avatar = renderProfileAvatar(this, agent, profile, "XS", "avatar");
         return html`
           <div style="display:flex; flex-direction:row; align-items: center; gap:8px;">
-            <div class="avatar"  style="cursor: pointer" @click=${(e:any) => {
-                e.stopPropagation(); e.preventDefault();
-                this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: agent, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-                ${avatar}
-            </div>
+            ${avatar}
             <div>${profile.nickname}</div>
           </div>
         `;

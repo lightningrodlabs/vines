@@ -82,17 +82,28 @@ export class AudioPanel extends LitElement {
         ${preview}
         ${recordBtn}
         <div style="display: flex; flex-direction:row-reverse; gap: 10px; margin-top: 10px;">
-          <ui5-button style="margin-top:5px" @click=${(_e:any) => {
+          <ui5-button style="margin-top:5px" @click=${async (_e:any) => {
+            console.log("CANCELED", this._recorder.isRecording);
+              if (this._recorder.isRecording) {
+                  await this.stopRec();
+              }
               this._recorder.releaseMedia();
+              this._maybeBlob = undefined;
+              this._maybeBlobUrl = undefined;
               this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
+              this.requestUpdate();
           }}>
               ${msg("Cancel")}
           </ui5-button>
             <ui5-button style="margin-top:5px" design="Emphasized"
                         ?disabled=${!this._maybeBlob}
-                        @click=${(_e:any) => {
+                        @click=${ async (_e:any) => {
+                if (this._recorder.isRecording) {
+                  await this.stopRec();
+                }
                 this._recorder.releaseMedia();
                 this.dispatchEvent(new CustomEvent('mic', {detail: this._maybeBlob, bubbles: true, composed: true}));
+                this.requestUpdate();
             }}>
                 ${msg("Attach")}
             </ui5-button>            

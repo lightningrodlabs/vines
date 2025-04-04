@@ -1453,7 +1453,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
             ${canDisplayInput? html`
             <vines-input-bar id="input-bar" contenteditable="true"
-                             .profilesZvm=${this._dvm.profilesZvm}
                              .topic=${topic}
                              .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
                              .limitations=${this._selectedThreadHash? this.threadsPerspective.threads.get(this._selectedThreadHash)?.pp.limitations : defaultLimitations()}
@@ -1482,7 +1481,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     setLocale(lang);
 
-    const avatar = renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "S");
+    const avatar = renderAvatar(this, this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
     /** Render File View */
     if (this._mainView == MainViewType.Files) {
@@ -1838,18 +1837,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${leftSide}                
                 <div style="flex-grow: 1"></div>
                 <div id="profile-row">
-                    <div id="profile-div"
-                         style="display: flex; flex-direction: row; cursor:pointer;flex-grow:1;min-width: 0; margin-left:2px"
-                         @click=${(e: any) => {
-                             e.stopPropagation();
-                             this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
-                                 detail: {
-                                     agentId: this.cell.address.agentId,
-                                     x: e.clientX,
-                                     y: e.clientY
-                                 }, bubbles: true, composed: true
-                             }));
-                         }}>
+                    <div style="display: flex; flex-direction:row; flex-grow:1; min-width: 0; margin-left:2px">
                         ${avatar}
                         <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
                             <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;color:#1B2A39ED;">
@@ -2111,7 +2099,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
             <ui5-dialog id="view-agents-dialog" header-text=${msg('Members')}>
-                <peer-list
+                <peer-list self
                         @avatar-clicked=${async (e: any) => {
                             e.stopPropagation();
                             console.log("@avatar-clicked", e.detail);

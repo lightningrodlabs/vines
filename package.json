@@ -134,13 +134,13 @@
     "typescript": "~5.2.0"
   },
   "dependencies": {
-    "@holochain/client": "=0.18.0-rc.1",
+    "@holochain/client": "=0.18.0",
     "@theweave/api": "=0.4.0-alpha.3",
     "@theweave/elements": "=0.3.0",
-    "@ddd-qc/cell-proxy": "=0.31.6",
-    "@ddd-qc/lit-happ": "=0.31.8",
-    "@ddd-qc/profiles-dvm": "=0.31.1",
-    "@ddd-qc/we-utils": "=0.31.1",
+    "@ddd-qc/cell-proxy": "=0.31.10",
+    "@ddd-qc/lit-happ": "=0.31.10",
+    "@ddd-qc/profiles-dvm": "=0.31.10",
+    "@ddd-qc/we-utils": "=0.31.10",
     "@ddd-qc/files": "=0.6.4",
     "@ddd-qc/delivery": "=0.18.1",
     "@ddd-qc/path-explorer": "0.9.0",

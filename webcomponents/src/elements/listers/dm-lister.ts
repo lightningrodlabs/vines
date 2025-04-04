@@ -1,4 +1,4 @@
-import {css, html} from "lit";
+import {css, html, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -47,7 +47,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  override render() {
+  override render(): TemplateResult<1> {
     console.log("<dm-lister>.render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
 
     let treeItems = Array.from(this.threadsPerspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
@@ -56,7 +56,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //console.log("<dm-lister>.render() hide subjectEh?", subjectEh, otherAgent);
       const isThreadHidden = this.threadsPerspective.hiddens[subjectEh.b64]? this.threadsPerspective.hiddens[subjectEh.b64] : false;
       if (isThreadHidden && !this.showArchived) {
-        return;
+        return html``;
       }
       /** Render DM thread */
       const maybe = this.threadsPerspective.threads.get(ppAh);
@@ -119,7 +119,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                      "
                      @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
-                    ${renderProfileAvatar(otherProfile, 'XS')}
+                    ${renderProfileAvatar(this, otherAgent, otherProfile, 'XS')}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
                     <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
                                      style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>

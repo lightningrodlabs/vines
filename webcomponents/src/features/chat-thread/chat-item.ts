@@ -1,4 +1,4 @@
-import {html, css, PropertyValues} from "lit";
+import {html, css, PropertyValues, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
@@ -213,15 +213,17 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh)!;
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
+    let prevAgent: AgentId | null = null;
     if (prevBeadInfo) {
       const maybePrevProfile = this._dvm.profilesZvm.perspective.getProfile(prevBeadInfo.author);
       if (maybePrevProfile) {
-        prevProfile = maybePrevProfile
+        prevProfile = maybePrevProfile;
+        prevAgent = prevBeadInfo.author;
       }
     }
     //console.log(`hasFarPrev`, this.hash, hasFarPrev, beadInfo.bead.prevBeadAh, this.prevBeadAh)
 
-    const topVineRow = hasFarPrev? html`
+    const topVineRow: TemplateResult<1> = hasFarPrev? html`
         <div class="topRow" style="display: flex; flex-direction: row; gap: 5px; font-size: small; align-items: center; color: #2c6ea8; ">
           <div class="vineColumn" style="display: flex; flex-direction: column;">
             <div class="topVine" style="flex-grow:1;">
@@ -233,7 +235,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <div class="vine replyVine"></div>
             </div>
           </div>
-          ${renderProfileAvatar(prevProfile, "XS", "replyAvatar")}
+          ${renderProfileAvatar(this, prevAgent, prevProfile, "XS", "replyAvatar")}
           <div id="prevAuthor"                     
                @click=${(e:any) => {
                   e.stopPropagation();
@@ -257,7 +259,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  override render() {
+  override render(): TemplateResult<1> {
     console.debug("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
     this._renderCount += 1;
 
@@ -335,7 +337,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       const isUnread = this.threadsPerspective.unreads.has(maybeCommentThread);
       const commentLinkColor = isUnread ? "#33A000" : "#2C74FF";
       const thread = this.threadsPerspective.threads.get(maybeCommentThread)!;
-      const threadAvatar = renderAvatar(this._dvm.profilesZvm, thread.author, "XS");
+      const threadAvatar = renderAvatar(this, this._dvm.profilesZvm, thread.author, "XS");
       if (thread.beadLinksTree.length > 0) {
         /** Grab all authors */
         let authors: Record<string, number> = {};
@@ -353,7 +355,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         /** Create avatar for each author */
           //console.log("Authors' Avatar", Object.keys(authors).length);
         let avatars = Object.keys(authors).map((author) => {
-            return renderAvatar(this._dvm.profilesZvm, new AgentId(author), "XS", "");
+            return renderAvatar(this, this._dvm.profilesZvm, new AgentId(author), "XS", "");
           });
 
         const avatarGroup = Object.keys(authors).length > 1
@@ -459,12 +461,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                }
              }}>
             <!-- avatar column -->
-            <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;"
-                    @click=${(e:any) => {
-                      e.stopPropagation();
-                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: baseBeadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-                    }}>
-              ${hidemeta? html`` : renderAvatar(this._dvm.profilesZvm, baseBeadInfo.author, "S")}
+            <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;">
+              ${hidemeta? html`` : renderAvatar(this, this._dvm.profilesZvm, baseBeadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px; position: relative;">
                   <div class="${hidemeta? "no-minutes":"minutes"}" style="position: absolute;">${time_str}</div>
                   <div style="flex-grow:1;"></div>
@@ -646,7 +644,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           height: 100%;
           background-color: rgba(205, 222, 205, 0.33);
-          z-index: 800;
+          z-index: 99;
         }
 
         .grey-veil {
@@ -656,7 +654,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           height: 100%;
           background-color: rgba(222, 222, 222, 0.33);
-          z-index: 800;
+          z-index: 99;
         }
 
         .chatItem {

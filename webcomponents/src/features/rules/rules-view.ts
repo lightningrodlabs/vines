@@ -30,7 +30,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   private renderLimitations() {
-    const peerList = renderAvatars(this.limitations.allowedAgents, this, this._zvm.perspective);
+    const peerList = renderAvatars(this, this.limitations.allowedAgents, this._zvm.perspective);
 
     console.log("renderLimitations()", this.limitations);
 
@@ -158,7 +158,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   private renderModeration() {
-    const peerList = renderAvatars(this.moderation.moderators, this, this._zvm.perspective);
+    const peerList = renderAvatars(this, this.moderation.moderators, this._zvm.perspective);
     /** */
     return html`
             <div class="section">

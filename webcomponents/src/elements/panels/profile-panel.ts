@@ -58,7 +58,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
       return html`<h3 style="margin:10px; color:#cc2525;">Missing Profile</h3>`;
     }
     const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash)! : 0;
-    const avatar = renderProfileAvatar(this._profile, "XL");
+    const avatar = renderProfileAvatar(this, this.hash, this._profile, "XL");
 
     const timezone = this._zvm.getMyProfile()!.fields['timezone']!;
     /** */
@@ -112,7 +112,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
       :host {
         display: flex;
         flex-direction: column;
-        min-width: 330px;
+        min-width: 450px;
       }
 
       h3 {

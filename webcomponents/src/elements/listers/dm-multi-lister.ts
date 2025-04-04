@@ -123,7 +123,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
                      "
                    @click=${(_e: any) => this.dispatchEvent(multiJumpEvent(ppAh, otherAgent))}>
                   ${badge}
-                  ${renderProfileAvatar(otherProfile, 'XS')}
+                  ${renderProfileAvatar(this, otherAgent, otherProfile, 'XS')}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
                   <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
                                    style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>

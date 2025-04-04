@@ -1,5 +1,5 @@
-import {html, css} from "lit";
-import { customElement } from "lit/decorators.js";
+import {html, css, TemplateResult} from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { localized, msg } from '@lit/localize';
 
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
@@ -23,6 +23,9 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   }
 
 
+  @property({type: Boolean}) self: boolean = false;
+
+
   /** */
   override render() {
     console.log("<peer-list>.render()", this.perspective);
@@ -36,10 +39,10 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     /** Build peer list */
     const profiles: [AgentId, ProfileMat, Timestamp][] = [];
     for (const [agentId, profileId] of this.perspective.profileByAgent.entries()) {
-      // // exclude self
-      // if (agentId.equals(this.cell.address.agentId)) {
-      //   continue;
-      // }
+      /* exclude self */
+      if (!this.self && agentId.equals(this.cell.address.agentId)) {
+        continue;
+      }
       const pair = this.perspective.profiles.get(profileId);
       if (!pair) {
         continue;
@@ -48,18 +51,16 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     }
 
     /** render each peer */
-    const peers = profiles
+    const peers: TemplateResult<1>[] = profiles
       .map(([agentId, profile, _ts]) => {
         return html`
           <li class="folk" 
-              style="display:flex; align-items:center"
+              style="display:flex; align-items:center; flex-direction: row"
               @click=${(_e:any) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }))}
           >
-            <span>
-                ${renderProfileAvatar(profile, "S")}
-              <span style="margin-left:4px;margin-right:7px;font-size:16px;font-weight:bold;-webkit-text-stroke:0.1px black;">
-                ${profile.nickname}
-              </span>
+            ${renderProfileAvatar(this, null, profile, "S")}
+            <span style="margin-left:10px; margin-right:7px; font-size:16px; font-weight:bold; -webkit-text-stroke:0.1px black;">
+              ${profile.nickname}
             </span>
           </li>`
       })

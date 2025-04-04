@@ -74,7 +74,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <div id="chat-header">
-          ${renderProfileAvatar(profile, "L")}
+          ${renderProfileAvatar(this, otherAgent, profile, "L")}
           <h2 style="display: flex; align-items: center">
               ${profile.nickname}
               ${copyBtn}
@@ -127,7 +127,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       console.log("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
-        const avatarElem = renderAvatar(this._dvm.profilesZvm, subjectBead.author, "S");
+        const avatarElem = renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "S");
         title = html`${msg("About")} <span class="subjectName">${threadName}</span> from ${avatarElem}`;
         subText = html`${msg("This is the start of comment thread about chat message")} 
                       <span style="color:blue; cursor:pointer" 
@@ -158,7 +158,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
               </span>
               |
               ${msg("Moderators")}:
-              ${renderModerators(thread.pp.moderation.moderators, this, this._dvm.profilesZvm.perspective)}
+              ${renderModerators(this, thread.pp.moderation.moderators, this._dvm.profilesZvm.perspective)}
           </div>
         </div>
     `;

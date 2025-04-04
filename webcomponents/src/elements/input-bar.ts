@@ -1,4 +1,4 @@
-import {css, html, LitElement, PropertyValues, TemplateResult} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {property, state, customElement} from "lit/decorators.js";
 import {consume} from "@lit/context";
 
@@ -16,7 +16,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import {renderAvatar} from "../render";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 import {msg} from "@lit/localize";
-import {AgentId} from "@ddd-qc/lit-happ";
+import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 import {VinesInputEvent} from "../events";
 import {weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -29,6 +29,8 @@ import {toasty} from "../toast";
 import {formatFileSize} from "../utils";
 import {Limitations} from "../bindings/threads.types";
 import {DEFAULT_MAX_FILE_SIZE, DEFAULT_MAX_TEXT_LENGTH, defaultLimitations} from "../viewModels/threads.materialize";
+import {formatTime} from "../features/timezone/utils";
+import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
 //import {handledMimeTypes} from "../features/rules/rules-edit";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
@@ -37,17 +39,21 @@ import {DEFAULT_MAX_FILE_SIZE, DEFAULT_MAX_TEXT_LENGTH, defaultLimitations} from
  * @element
  */
 @customElement("vines-input-bar")
-export class InputBar extends LitElement {
+export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm> {
 
-  /** Properties */
+  /** */
+  constructor() {
+    super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
+  }
+
+
+  /** -- Properties -- */
 
   @property() topic: string = '';
   @property() cachedInput: string = '';
 
   @property() background?: string;
   @property() limitations: Limitations = defaultLimitations();
-
-  @property({type: Object}) profilesZvm!: ProfilesAltZvm;
 
   @state() private _cacheInputValue: string = "";
   @state() private _prevInputValue: string = "";
@@ -420,7 +426,8 @@ export class InputBar extends LitElement {
 
   /** */
   override render() {
-    console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal, this.profilesZvm);
+    console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal);
+    const me =this._zvm.cell.address.agentId;
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
@@ -435,14 +442,14 @@ export class InputBar extends LitElement {
       const filter = lastWord.slice(1);
       /** Filter suggestions */
       let suggestionItems = Object.entries(this._specialProfiles);
-      if (this.profilesZvm) {
-        for (const agent of this.profilesZvm.perspective.agents) {
-          const profile = this.profilesZvm.perspective.getProfile(agent);
+
+        for (const agent of this.perspective.agents) {
+          const profile = this.perspective.getProfile(agent);
           if (profile) {
             suggestionItems.push([agent.b64, profile])
           }
         }
-      }
+
       let suggestionKeys = suggestionItems.map(([agentKey, _profile]) => agentKey);
 
       /** Filter */
@@ -483,9 +490,9 @@ export class InputBar extends LitElement {
           </ui5-li>`;
           }
           const agentId = new AgentId(key);
-          if (agentId.equals(this.profilesZvm.cell.address.agentId)) return html``;
+          if (agentId.equals(me)) return html``;
           /** Grab and display profile */
-          const profile = this.profilesZvm.perspective.getProfile(agentId);
+          const profile = this._zvm.perspective.getProfile(agentId);
           //const profile = this._dummyProfiles[key];
           if (!profile) return html``;
           return html`             
@@ -494,7 +501,7 @@ export class InputBar extends LitElement {
                   e.preventDefault();
                   this.suggestionSelected(profile.nickname);
                   }}>
-              ${renderAvatar(this.profilesZvm, new AgentId(key), "XS", "chatAvatar", "imageContent")}
+              ${renderAvatar(this, this._zvm, new AgentId(key), "XS", "chatAvatar", "imageContent")}
               ${profile.nickname}
           </ui5-li>`;
         });
@@ -619,11 +626,15 @@ export class InputBar extends LitElement {
             ` : html``}
         </ui5-menu>
         <!-- CreateThreadDialog -->
-        <ui5-popover id="mic-dialog" header-text=${msg("Create voice message")} placement-type="Top">
+        <ui5-popover id="mic-dialog" header-text=${msg("Create voice message")} placement-type="Top" @close=${() => console.debug("FIXME: Modal doesnt work properly so can't detect if user clicks outside of popover...")}>
           <audio-panel @close=${() => this.micDialogElem.close(false)}
                        @mic=${(e:any) => {
+                           const myProfile = this._zvm.getMyProfile()!;
+                           //const day = format(Date.now() * 1000, "yyyy-MMMM-dd-HH.mm");
+                           const day = formatTime(Date.now() * 1000, myProfile.fields["timezone"]!);
+                           const filename = `${this.topic}-${myProfile.nickname}-${day}.opus`;
                            const file = new File([e.detail],
-                                   "recording.opus",
+                                   filename,
                                    { type: MIC_MIME_TYPE, lastModified: Date.now() }
                            );
                             if (file.size < this.minFileSize || file.size > this.maxFileSize) {

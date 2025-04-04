@@ -98,11 +98,12 @@ export async function getAssetInfo(
             //const pp = (await threadsProxy.fetchPp(actionId.hash))!; // FIXME: handle null
             //console.log("Vines/we-applet: pp", pp);
             const title = await threadsProxy.getPpTitle(actionId.hash);
-            return {
+            const info: AssetInfo = {
                 icon_src: wrapPathInSvg(mdiCommentTextMultiple),
-                //name: pp[0].purpose,
-                name: title,
+                name: title
             };
+            console.debug("Where/we-applet: pp info FOUND", info);
+            return info;
         break;
         case ThreadsEntryType.SemanticTopic:
             console.log("Feed/we-applet: SemanticTopic", wal);

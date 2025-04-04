@@ -933,10 +933,6 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           text-decoration: none;
         }
 
-        #profile-div:hover {
-          background: rgba(214, 226, 245, 0.8);
-          outline: 1px solid darkblue;
-        }
 
         #create-post-dialog::part(content) {
           padding: 0px;

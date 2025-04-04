@@ -28,27 +28,40 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): Pro
 
 
 /** */
-export function renderAvatar(profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
+export function renderAvatar(parent: LitElement, profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
   const profile = loadProfile(profilesZvm, agentKey);
-  return renderProfileAvatar(profile, size, classArg, slotArg);
+  return renderProfileAvatar(parent, agentKey, profile, size, classArg, slotArg);
 }
 
 
-/** Render ui5-avatar with profile pic */
-export function renderProfileAvatar(profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
+/** Render ui5-avatar with profile pic or initials
+ * Provide agentKey to trigger a 'show-profile event'
+ */
+export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null, profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
     const initials = getInitials(profile.nickname);
     const avatarUrl = profile.fields['avatar'];
     const slot = slotArg? slotArg : "";
-    return avatarUrl
-      ? html`<ui5-avatar size=${size} class=${classArg} slot=${slot}>
+    const avatar = avatarUrl
+      ? html`<ui5-avatar size=${size} class=${classArg}>
                 <img .src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>`
-      : html`<ui5-avatar size=${size} class=${classArg} slot=${slot} shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+      : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+    return html`
+        <div style="cursor:pointer" slot=${slot}
+             @click=${(e: any) => {
+             if (agentKey) {
+              e.stopPropagation();e.preventDefault();
+                parent.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: agentKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+              }
+            }}>
+          ${avatar}
+        </div>
+    `
 }
 
 
 /** */
-export function renderAvatars(agentHashes: Uint8Array[], lit: LitElement, perspective: ProfilesAltPerspective): TemplateResult<1> {
+export function renderAvatars(parent: LitElement, agentHashes: Uint8Array[], perspective: ProfilesAltPerspective): TemplateResult<1> {
   let peerList: TemplateResult<1>[] = [];
   const unknown = html`${msg('Unknown member')}`;
   for (const agentId of agentHashes.map((hash) => new AgentId(hash))) {
@@ -62,20 +75,16 @@ export function renderAvatars(agentHashes: Uint8Array[], lit: LitElement, perspe
     const li = !pair
       ? unknown
       //: html`${pair![0].nickname}`;
-      : html`<div style="cursor:pointer"
-                      @click=${(e:any) => {
-        e.preventDefault(); e.stopPropagation();
-        lit.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-      }}>${renderProfileAvatar(pair![0], "XS")}</div>`;
+      : html`<div style="cursor:pointer">${renderProfileAvatar(parent, agentId, pair![0], "XS")}</div>`;
     peerList.push(li);
   }
   return html`${peerList}`;
 }
 
 
-export function renderModerators(moderators: Uint8Array[], lit: LitElement, perspective: ProfilesAltPerspective): TemplateResult<1> {
+export function renderModerators(parent: LitElement, moderators: Uint8Array[], perspective: ProfilesAltPerspective): TemplateResult<1> {
   if (moderators.length > 0) {
-    return renderAvatars(moderators, lit, perspective)
+    return renderAvatars(parent, moderators, perspective)
   }
   return html`<span>${msg('None')}</span>`;
 }

@@ -185,7 +185,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  override render() {
+  override render(): TemplateResult<1> {
     console.log("<post-comment-item>.render()", this.hash);
 
     const [content, author, date] = this.renderContent();
@@ -204,7 +204,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
                       this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
                     }
                 }}>
-                ${author? renderAvatar(this._dvm.profilesZvm, author, "XS") : html``}
+                ${author? renderAvatar(this, this._dvm.profilesZvm, author, "XS") : html``}
             </div>
         </div>
         <div id="sideContentColumn">

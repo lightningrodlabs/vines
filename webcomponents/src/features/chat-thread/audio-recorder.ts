@@ -46,6 +46,7 @@ export class AudioRecorder {
   }
 
 
+  /** */
   releaseMedia(): void {
     if (this.mediaStream) {
       // Stop all tracks in the stream
@@ -54,7 +55,6 @@ export class AudioRecorder {
       });
       this.mediaStream = null;
     }
-
     this.mediaRecorder = null;
   }
 

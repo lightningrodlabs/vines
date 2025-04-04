@@ -288,7 +288,6 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           <vines-input-bar id="input-bar"
                            topic="thread"
                            .limitations=${defaultCommentLimitations()}
-                           .profilesZvm=${this._dvm.profilesZvm}
                            .cachedInput=${this.perspective.threadInputs.get(this.threadHash)? this.perspective.threadInputs.get(this.threadHash) : ""}
                            @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
     }

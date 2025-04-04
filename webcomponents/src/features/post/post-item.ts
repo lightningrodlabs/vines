@@ -1,4 +1,4 @@
-import {html, css, PropertyValues} from "lit";
+import {html, css, PropertyValues, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
@@ -217,7 +217,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  override render() {
+  override render(): TemplateResult<1> {
     console.log("<post-item>.render()", this.hash, !!this._filesDvm, !!this.weServices, !!this.threadsPerspective);
     if (!this.hash) {
       return html`<div>No post selected</div>`;
@@ -305,7 +305,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                   @click=${(e:any) => {
                     e.stopPropagation();
                     this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: beadInfo.author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-            ${renderAvatar(this._dvm.profilesZvm, beadInfo.author, "XS")}
+            ${renderAvatar(this, this._dvm.profilesZvm, beadInfo.author, "XS")}
           </div>
           <!-- Info column -->
           <div style="display:flex; flex-direction:column; gap:0px; flex-grow:1;overflow:auto">
@@ -355,12 +355,11 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
         </div>
         <!-- Input Row -->
         <div id="inputRow" style="display:${this._canShowComment? "flex" : "none"};">
-            ${renderAvatar(this._dvm.profilesZvm, this.cell.address.agentId, "XS")}
+            ${renderAvatar(this, this._dvm.profilesZvm, this.cell.address.agentId, "XS")}
             ${this._splitObj? html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>` : html`
             <vines-input-bar id="input-bar"
                              style="flex-grow:1;"
                              background="#eee"
-                             .profilesZvm=${this._dvm.profilesZvm}
                              topic="comment"
                              .cachedInput=${this._dvm.perspective.threadInputs.get(this.hash)? this._dvm.perspective.threadInputs.get(this.hash) : ""}
                              @input=${ async(e: CustomEvent<VinesInputEvent>) => {

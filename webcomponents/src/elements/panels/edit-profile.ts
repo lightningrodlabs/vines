@@ -144,7 +144,7 @@ export class EditProfile extends LitElement {
 
 
   /** */
-  renderAvatar() {
+  renderAvatarPicker() {
     return html`
       <div style="height: 80px; justify-content: center;" class="row">
         ${this._avatar
@@ -327,7 +327,7 @@ export class EditProfile extends LitElement {
                       }}>
                   <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>                  
               </ui5-input>
-            ${this.renderAvatar()}
+            ${this.renderAvatarPicker()}
           </div>
 
           <div class="row" style="margin-bottom: 18px; align-items: center;">
