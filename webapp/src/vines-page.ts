@@ -1617,6 +1617,46 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const profileCount = this._dvm.profilesZvm.perspective.agents.length;
 
+
+    /* Custom Segmented buttons */
+    const segBtns = !this.weServices? html`` : html`
+          <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 3px 10px; border-radius: 5px; padding: 3px;">
+              <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
+                  e.preventDefault(); e.stopPropagation();
+                  this._listerToShow = "topics-option";
+                  const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                  topicsBtn.classList.add("selected");
+                  const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                  toolsBtn.classList.remove("selected");
+                  const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                  mineBtn.classList.remove("selected");
+                  this.requestUpdate();
+              }}>${msg('Topics')}</div>
+      <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
+                              e.preventDefault(); e.stopPropagation();
+                              this._listerToShow = "tools-option";
+                              const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                              topicsBtn.classList.remove("selected");
+                              const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                              toolsBtn.classList.add("selected");
+                              const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                              mineBtn.classList.remove("selected");
+                              this.requestUpdate();
+                          }}>${msg('Tools')}</div>
+      <div id="mineBtn" class="listerbtn" @click=${(e:any) => {
+                              e.preventDefault(); e.stopPropagation();
+                              this._listerToShow = "mine-option";
+                              const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                              topicsBtn.classList.remove("selected");
+                              const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                              toolsBtn.classList.remove("selected");
+                              const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                              mineBtn.classList.add("selected");
+                              this.requestUpdate();
+                          }}>${msg('My')}</div>                    
+      </div>`;
+
+
     /** Show Cross-view or group-view */
     const topLeft = html`
                 <div id="group-div">
@@ -1678,44 +1718,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${(_e:any) => this._canShowLeft = false}>
                     </ui5-button>
                 </div>
-                
-                <!-- Custom Segmented buttons -->
-                ${!this.weServices? html`` : html`
-                <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 10px 10px; border-radius: 5px; padding: 3px;">
-                    <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
-                        e.preventDefault(); e.stopPropagation();
-                        this._listerToShow = "topics-option";
-                        const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                        topicsBtn.classList.add("selected");
-                        const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                        toolsBtn.classList.remove("selected");
-                        const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                        mineBtn.classList.remove("selected");
-                        this.requestUpdate();
-                    }}>${msg('Topics')}</div>
-                    <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
-                        e.preventDefault(); e.stopPropagation();
-                        this._listerToShow = "tools-option";
-                        const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                        topicsBtn.classList.remove("selected");
-                        const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                        toolsBtn.classList.add("selected");
-                        const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                        mineBtn.classList.remove("selected");
-                        this.requestUpdate();
-                    }}>${msg('Tools')}</div>
-                    <div id="mineBtn" class="listerbtn" @click=${(e:any) => {
-                        e.preventDefault(); e.stopPropagation();
-                        this._listerToShow = "mine-option";
-                        const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                        topicsBtn.classList.remove("selected");
-                        const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                        toolsBtn.classList.remove("selected");
-                        const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                        mineBtn.classList.add("selected");
-                        this.requestUpdate();
-                    }}>${msg('My')}</div>                    
-                </div>`}
+
 
                 <!-- Action buttons -->
                 <div style="display:flex; flex-direction:row; margin-right: 5px;">
@@ -1766,7 +1769,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("filteredInbox", filteredInbox);
 
 
-    const dmSign = html`<div id="dmSign" style="cursor: pointer; z-index: 100" @click=${() => {
+    const dmSign = html`<div id="dmSign" style="cursor: pointer; z-index: 100" 
+                                                @click=${() => {
         const div = this.shadowRoot!.getElementById("listerGroup") as HTMLElement;
         if (div) {
             div.scrollTop = div.scrollHeight - div.clientHeight;
@@ -1836,6 +1840,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}; position: relative">
                 ${leftSide}                
                 <div style="flex-grow: 1"></div>
+                ${segBtns}
                 <div id="profile-row">
                     <div style="display: flex; flex-direction:row; flex-grow:1; min-width: 0; margin-left:2px">
                         ${avatar}
@@ -2422,12 +2427,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         abbr {
           text-decoration: none;
         }
-
-        #profile-div:hover {
-          /*background: rgba(214, 226, 245, 0.8);*/
-          outline: 1px solid #1010a6;
-        }
-
+        
         .reply-info {
           /*background: #b4c4be;*/
           margin: 0px 10px -9px 10px;
@@ -2724,7 +2724,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           border-radius: 20px;
           background: #8f8f8f;
           position: absolute;
-          bottom: 70px;
+          bottom: 100px;
           left: 90px;
           display: none;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
