@@ -423,7 +423,7 @@ export class VinesApp extends HappMultiElement {
             cancel: () => Promise<void>;
             reject: (reason: any) => Promise<void>;
           };
-          if (creatableViewInfo.name == "thread") {
+          if (creatableViewInfo.name.toLowerCase() == "thread") {
             view = html`<creatable-thread-panel 
                     @create=${async (e: CustomEvent<WAL>) => {
                         console.log("@create event", e.detail);
