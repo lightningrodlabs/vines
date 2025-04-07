@@ -387,6 +387,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
   /** */
+  unstoreNewThread(ah: ActionId | undefined | null) {
+    if (ah && this._perspective.newThreads.has(ah)) {
+      this._perspective.unstoreNewThread(ah);
+      this.notifySubscribers();
+    }
+  }
+
+
+  /** */
   async probeAllLatest(): Promise<void> {
     const latest = await this.zomeProxy.probeAllLatest(this._perspective.globalProbeLogTs);
     await this.commitUpdateGlobalLog(latest.searchedInterval.end);

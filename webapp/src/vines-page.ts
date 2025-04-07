@@ -1253,6 +1253,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       break;
     }
     /*await*/ this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
+    this._dvm.threadsZvm.unstoreNewThread(this._selectedThreadHash);
   }
 
 

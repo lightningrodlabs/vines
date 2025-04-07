@@ -82,7 +82,6 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   onClickEditTopic(topicHash: ActionId, subjectName: string) {
     this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', { detail: {topicHash, subjectName}, bubbles: true, composed: true }));
   }
-
   /** */
   onClickEditChannel(ppAh: ActionId) {
     this.dispatchEvent(new CustomEvent<ActionId>('edit-channel-clicked', { detail: ppAh, bubbles: true, composed: true }));
@@ -399,14 +398,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     }
 
     /** render all */
-    return html`
-        ${treeItems}
-        <!-- <ui5-button design="Emphasized"
-                    style="margin: auto;"
-                    @click=${(_e:any) => this.dispatchEvent(new CustomEvent<boolean>('createNewTopic', {detail: true, bubbles: true, composed: true}))}>
-            ${msg('Create new Topic')}
-        </ui5-button> -->
-    `
+    return html`${treeItems}`
   }
 
 

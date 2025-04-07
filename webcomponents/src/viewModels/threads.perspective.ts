@@ -771,6 +771,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
+  unstoreNewThread(ah: ActionId) {
+    this.newThreads.delete(ah);
+  }
+
+
+  /** */
   storeAllUnreads(list: ActionIdMap<[AnyId, [ActionId, Timestamp][]]>) {
     this.unreads.clear();
     for (const [ah, map] of list.entries()) {
