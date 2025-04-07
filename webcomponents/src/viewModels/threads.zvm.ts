@@ -118,6 +118,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   private _decoder= new Decoder(HOLOCHAIN_ID_EXT_CODEC);
 
 
+  //threadsDvm(): ThreadsDvm { return this._dvmParent as ThreadsDvm }
+
+
   /** -- Perspective -- */
 
   private _perspective: ThreadsPerspectiveMutable = new ThreadsPerspectiveMutable();

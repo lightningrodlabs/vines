@@ -963,7 +963,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** Add already stored beads */
     for (const [beadAh, [info, _typed]] of this.beads.entries()) {
       if (info.bead.ppAh.equals(ppAh)) {
-        this.storeBeadInThread(beadAh, info, false, info.beadType);
+        this.storeBeadInThread(beadAh, info, isNew, info.beadType); // Note: If thread is new then all known beads for this thread are also new
       }
     }
     if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {

@@ -46,7 +46,7 @@ export type ThreadsDnaPerspective = {
   /* agentId -> (Timestamp, threadAh) */
   agentPresences: AgentIdMap<[number, ActionId | null]>,
   /** ppAh -> string */
-  threadInputs: ActionIdMap<String>,
+  threadInputs: ActionIdMap<string>,
   /** ppAh -> Timestamp */
   initialThreadProbeLogTss: ActionIdMap<Timestamp>,
   /** */

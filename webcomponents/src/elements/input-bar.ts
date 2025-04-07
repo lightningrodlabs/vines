@@ -14,9 +14,8 @@ import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderAvatar} from "../render";
-import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm/dist/profilesAlt.zvm";
 import {msg} from "@lit/localize";
-import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {VinesInputEvent} from "../events";
 import {weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -27,10 +26,9 @@ import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
 import {toasty} from "../toast";
 import {formatFileSize} from "../utils";
-import {Limitations} from "../bindings/threads.types";
-import {DEFAULT_MAX_FILE_SIZE, DEFAULT_MAX_TEXT_LENGTH, defaultLimitations} from "../viewModels/threads.materialize";
+import {DEFAULT_MAX_TEXT_LENGTH, defaultLimitations} from "../viewModels/threads.materialize";
 import {formatTime} from "../features/timezone/utils";
-import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
+import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 //import {handledMimeTypes} from "../features/rules/rules-edit";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
@@ -39,21 +37,24 @@ import {ProfilesAltPerspective} from "@ddd-qc/profiles-dvm";
  * @element
  */
 @customElement("vines-input-bar")
-export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm> {
+export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
-  /** */
   constructor() {
-    super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
+    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
 
   /** -- Properties -- */
 
   @property() topic: string = '';
-  @property() cachedInput: string = '';
+  //@property() cachedInput: string = '';
 
   @property() background?: string;
-  @property() limitations: Limitations = defaultLimitations();
+
+  @property() hash?: ActionId;
+
+
+  //@property() limitations: Limitations = defaultLimitations();
 
   @state() private _cacheInputValue: string = "";
   @state() private _prevInputValue: string = "";
@@ -112,12 +113,13 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     this.removeEventListener('paste', this.onPaste);
   }
 
+
   /**  */
   onPaste(e: ClipboardEvent) {
     e.preventDefault();
     //console.log("<vines-input-bar>.onPaste()", e);
     const text = e.clipboardData?.getData('text/plain');
-    if (text) {
+    if (text && this.inputElem) {
       //console.log('<vines-input-bar>.onPaste() text:', text);
       /** Get the text content before and after cursor */
       const nativeTextarea = this.inputElem.shadowRoot!.querySelector("textarea") as unknown as HTMLInputElement;
@@ -145,6 +147,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     }
   }
 
+
   /** -- Methods -- */
 
   /** */
@@ -169,9 +172,15 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   /** */
   override updated(changedProperties: PropertyValues) {
     /* Set cached input */
-    if (changedProperties.has("cachedInput") && this.inputElem && this.inputElem.value == "" && this.cachedInput != "") {
+    if (changedProperties.has("hash") && this.inputElem && this.inputElem.value == "") {
       //console.warn("<vines-input-bar> updated() cachedInput", this.cachedInput, this.inputElem);
-      this.inputElem.value = this.cachedInput;
+      this.inputElem.value = "";
+      if (this.hash) {
+        const maybe = this.perspective.threadInputs.get(this.hash);
+        if (maybe) {
+          this.inputElem.value = maybe;
+        }
+      }
     }
     /** Check if input value changed */
     console.debug("<input-bar>.updated() text-input",this._prevInputValue);
@@ -185,12 +194,13 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       elem.style.background = this.background;
       elem.style.borderRadius = "20px";
     }
-
+    /** */
     const maybeEdit = this.shadowRoot!.getElementById("filename-input") as Input;
     if (maybeEdit) {
       maybeEdit.focus();
     }
   }
+
 
   /** */
   private suggestionSelected(nickname?: string) {
@@ -208,32 +218,45 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   }
 
 
-  private validateText(text: string): boolean {
-    if (text.length < this.minTextSize) {
-      return false;
+  private validateText(text: string): string {
+    if (text.length < this._limitations.canText!.minTextLength) {
+      return msg("Text too short");
     }
     /** Check banned words */
-    // FIXME
+    const words = text.split(/\s+/);
+    for (const banned of this._limitations.canText!.bannedWords) {
+      if (words.includes(banned)) {
+        return msg("Banned word used") + ": " + banned;
+      }
+    }
     /** */
-    return true;
+    return "";
   }
 
   /** */
   private commitInput() {
-    console.log(`Commit input value "${this.inputElem.value}"`);
+    console.log(`Commit input`);
     /** Validate */
-    if (!this.validateText(this.inputElem.value)) {
-      // this.inputElem.valueState = ValueState.Error;
-      return;
+    if (this.inputElem) {
+      const reason = this.validateText(this.inputElem.value);
+      if (reason) {
+        // this.inputElem.valueState = ValueState.Error;
+        toasty(msg(`Invalid message: ${reason}`));
+        return;
+      }
     }
+
+    const text = this.inputElem? this.inputElem.value : undefined;
+
     /** Shoot */
-    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text: this.inputElem.value!, file: this._file!, wal: this._wal!}, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text, file: this._file!, wal: this._wal!}, bubbles: true, composed: true}));
     /** Clean-up */
-    this.inputElem.value = "";
+    if (this.inputElem) this.inputElem.value = "";
     this._cacheInputValue = "";
     this._file = undefined;
     this._wal = undefined;
     this._isEditing = false;
+    this.requestUpdate();
   }
 
 
@@ -313,7 +336,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
           /* add newline to input.value?? */
       } else {
         console.log("keydown keyCode ENTER", this.inputElem.value);
-        e.preventDefault();
+        e.stopPropagation(); e.preventDefault();
         this.commitInput();
       }
       return;
@@ -368,43 +391,17 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   }
 
 
-  /** Rules */
-  private canWal = true;
-  private canFile = true;
-  private canText = true;
-  private minFileSize = 0;
-  private maxFileSize = DEFAULT_MAX_FILE_SIZE; // FIXME: get DNA setting
-  private minTextSize = 0;
-  private maxTextLength = DEFAULT_MAX_TEXT_LENGTH;
-
+  /** Restrictions */
+  private _limitations = defaultLimitations();
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    /** Rules */
-    if (changedProperties.has("limitations")) {
-      console.log("<input-bar> limitations", this.limitations);
-        //const rulesType = getRuleType(this.rules);
-      this.canFile = true;
-      this.canText = true;
-      this.minFileSize = 0;
-      this.maxFileSize = DEFAULT_MAX_FILE_SIZE; // FIXME: get DNA setting
-      this.minTextSize = 0;
-      this.maxTextLength = DEFAULT_MAX_TEXT_LENGTH;
-
-      this.canWal = this.limitations.canWal;
-      if (!this.limitations.canFile) {
-        this.canFile = false;
-      } else {
-        this.minFileSize = this.limitations.canFile.minFileSize;
-        this.maxFileSize = this.limitations.canFile.maxFileSize;
-      }
-      if (!this.limitations.canText) {
-        this.canText = false;
-      } else {
-        this.minTextSize = this.limitations.canText.minTextLength;
-        this.maxTextLength = this.limitations.canText.maxTextLength;
-      }
-
+    //console.debug("<vines-input-bar>.willUpdate()", changedProperties.has("hash"), this.hash);
+    if (this.hash) {
+      this._limitations = this._dvm.threadsZvm.perspective.threads.get(this.hash!)!.pp.limitations;
+      console.log("<input-bar> limitations", this._limitations);
+    } else {
+      this._limitations = defaultLimitations();
     }
   }
 
@@ -412,10 +409,10 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   /** */
   pickFile() {
     let accept = "";
-    for (const k of this.limitations.canFile!.allowedFileTypes) {
+    for (const k of this._limitations.canFile!.allowedFileTypes) {
       accept += k + ", "
     }
-    console.log("pickFile()", this.limitations.canFile, accept);
+    console.log("pickFile()", this._limitations.canFile, accept);
     let input = document.createElement('input');
     input.accept = accept;
     input.type = 'file';
@@ -426,8 +423,8 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
   /** */
   override render() {
-    console.log("<vines-input-bar>.render() 2", this.cachedInput, this._wal);
-    const me =this._zvm.cell.address.agentId;
+    console.log("<vines-input-bar>.render() 2", this._wal);
+    const me =this._dvm.cell.address.agentId;
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
@@ -443,8 +440,8 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       /** Filter suggestions */
       let suggestionItems = Object.entries(this._specialProfiles);
 
-        for (const agent of this.perspective.agents) {
-          const profile = this.perspective.getProfile(agent);
+        for (const agent of this._dvm.profilesZvm.perspective.agents) {
+          const profile = this._dvm.profilesZvm.perspective.getProfile(agent);
           if (profile) {
             suggestionItems.push([agent.b64, profile])
           }
@@ -492,7 +489,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
           const agentId = new AgentId(key);
           if (agentId.equals(me)) return html``;
           /** Grab and display profile */
-          const profile = this._zvm.perspective.getProfile(agentId);
+          const profile = this._dvm.profilesZvm.perspective.getProfile(agentId);
           //const profile = this._dummyProfiles[key];
           if (!profile) return html``;
           return html`             
@@ -501,7 +498,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
                   e.preventDefault();
                   this.suggestionSelected(profile.nickname);
                   }}>
-              ${renderAvatar(this, this._zvm, new AgentId(key), "XS", "chatAvatar", "imageContent")}
+              ${renderAvatar(this, this._dvm.profilesZvm, new AgentId(key), "XS", "chatAvatar", "imageContent")}
               ${profile.nickname}
           </ui5-li>`;
         });
@@ -530,7 +527,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         : html`<div>${this._file.name}</div>`;
 
       fileElem = html`
-          <div style="margin-left: 35px; height: 20px; margin-top: 5px; color: #4141cc; display: flex; flex-direction: row; align-items: center; margin-bottom: 3px;">
+          <div class="file-row">
               <div style="margin-right:5px;">${msg("File")}:</div>
               ${fileNameElem}
               <span style="margin-left:5px;font-size: small;">(${formatFileSize(this._file.size)})</span> 
@@ -557,9 +554,9 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
     let addBtn = html``;
     let micBtn = html``;
-    if (this.canFile) {
+    if (this._limitations.canFile) {
       micBtn = html`
-          <ui5-button id="micBtn" design="Transparent" icon="microphone" tooltip=${msg('Voice Message')}
+          <ui5-button id="micBtn" design="Transparent" icon="microphone" tooltip=${msg('Create Voice Message')}
                       @click=${(_e: any) => {
                           const el = this.shadowRoot!.getElementById("micBtn") as HTMLElement;
                           this.micDialogElem.showAt(el);
@@ -574,7 +571,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             </ui5-button>
       `;
     }
-    if (this.weServices && (this.canFile || this.canWal)) {
+    if (this.weServices && (this._limitations.canFile || this._limitations.canWal)) {
       addBtn = html`
           <ui5-button id="addBtn" design="Transparent" icon="add"  tooltip=${msg('Add Attachment')}
                       @click=${(_e: any) => {
@@ -586,32 +583,41 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         `
     }
 
-    const placeholder = this.canText
-      ? this.maxTextLength > 0 && this.maxTextLength != DEFAULT_MAX_TEXT_LENGTH
-        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${this.maxTextLength} ${msg('characters')})`
-        : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`
-      : msg('<Text message forbidden>');
+    let inputPlaceholder = msg('<Text message forbidden>');
+    if (this._limitations.canText) {
+      const maxTextLength = this._limitations.canText!.maxTextLength;
+      inputPlaceholder = maxTextLength > 0 && maxTextLength != DEFAULT_MAX_TEXT_LENGTH
+        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${maxTextLength} ${msg('characters')})`
+        : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`;
+    }
+
+    const canSend = this.inputElem && this.inputElem.value.length > 0 || this._file || this._wal;
 
     /** render all */
     return html`
-        ${fileElem}
-        ${walElem}
-        <ui5-bar id="inputBar" design="FloatingFooter">
-            <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
-            ${addBtn}
-            ${micBtn}
-            <!-- TEXT AREA -->
-            <ui5-textarea id="textMessageInput" mode="SingleSelect"
-                          placeholder=${placeholder}
-                          growing
-                          growing-max-lines="3"
-                          rows="1"
-                          .maxlength=${this.maxTextLength}
-                          @keydown=${this.handleKeydown}
-                          @input=${(_e:any) => this.requestUpdate()}
-            ></ui5-textarea>
-            <!-- <ui5-button design="Transparent" slot="endContent" icon="delete"></ui5-button> -->
-        </ui5-bar>
+        <div id="input-bar" style="${this._limitations.canText? "" : "width:fit-content;"}">
+          ${fileElem}
+          ${walElem}
+          <ui5-bar id="inputBar" design="FloatingFooter">
+              <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
+              ${addBtn}
+              ${micBtn}
+              <!-- TEXT AREA -->
+              ${this._limitations.canText? html`
+              <ui5-textarea id="textMessageInput" mode="SingleSelect"
+                            placeholder=${inputPlaceholder}
+                            growing
+                            growing-max-lines="3"
+                            rows="1"
+                            .maxlength=${this._limitations.canText!.maxTextLength}
+                            @keydown=${this.handleKeydown}
+                            @input=${(_e:any) => this.requestUpdate()}
+              ></ui5-textarea>`:html``}
+              <ui5-button slot="${this._limitations.canText? "endContent": ""}" design="Emphasized" icon="paper-plane" tooltip=${msg("Send")}
+                          ?disabled=${!canSend}
+                          @click=${() => this.commitInput()}></ui5-button>
+          </ui5-bar>
+        </div>
         <ui5-popover id="pop" hide-arrow allow-target-overlap placement-type="Top" horizontal-align="Stretch" initial-focus="textMessageInput">
           <ui5-list id="agent-list">
               ${agentItems}
@@ -619,17 +625,17 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         </ui5-popover>
         <!-- menu -->
         <ui5-menu id="addMenu" header-text=${msg("Add")} @item-click=${(e: any) => this.onAddMenu(e)}>
-            <ui5-menu-item id="fileItem" ?disabled=${!this.canFile} text=${msg("Upload a File")} icon="attachment" starts-section></ui5-menu-item>             
+            <ui5-menu-item id="fileItem" ?disabled=${!this._limitations.canFile} text=${msg("Upload a File")} icon="attachment" starts-section></ui5-menu-item>             
             ${this.weServices? html`
-            <ui5-menu-item id="linkWalItem" ?disabled=${!this.canText} text=${msg("Insert a WAL Link")} icon="chain-link" starts-section></ui5-menu-item>
-            <ui5-menu-item id="embedWalItem" ?disabled=${!this.canWal} text=${msg("Embed a WAL")} starts-section></ui5-menu-item>
+            <ui5-menu-item id="linkWalItem" ?disabled=${!this._limitations.canText} text=${msg("Insert a WAL Link")} icon="chain-link" starts-section></ui5-menu-item>
+            <ui5-menu-item id="embedWalItem" ?disabled=${!this._limitations.canWal} text=${msg("Embed a WAL")} starts-section></ui5-menu-item>
             ` : html``}
         </ui5-menu>
         <!-- CreateThreadDialog -->
-        <ui5-popover id="mic-dialog" header-text=${msg("Create voice message")} placement-type="Top" @close=${() => console.debug("FIXME: Modal doesnt work properly so can't detect if user clicks outside of popover...")}>
+        <ui5-popover id="mic-dialog" header-text=${msg("Create Voice Message")} placement-type="Top" @close=${() => console.debug("FIXME: Modal doesnt work properly so can't detect if user clicks outside of popover...")}>
           <audio-panel @close=${() => this.micDialogElem.close(false)}
                        @mic=${(e:any) => {
-                           const myProfile = this._zvm.getMyProfile()!;
+                           const myProfile = this._dvm.profilesZvm.getMyProfile()!;
                            //const day = format(Date.now() * 1000, "yyyy-MMMM-dd-HH.mm");
                            const day = formatTime(Date.now() * 1000, myProfile.fields["timezone"]!);
                            const filename = `${this.topic}-${myProfile.nickname}-${day}.opus`;
@@ -637,7 +643,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
                                    filename,
                                    { type: MIC_MIME_TYPE, lastModified: Date.now() }
                            );
-                            if (file.size < this.minFileSize || file.size > this.maxFileSize) {
+                            if (file.size < this._limitations.canFile!.minFileSize || file.size > this._limitations.canFile!.maxFileSize) {
                                 toasty("Attach recording cancelled: Invalid file size");
                             } else {
                               this._file = file;
@@ -653,19 +659,20 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   /** */
   onAttachFile(e:any) {
     const file = e.target.files[0] as File;
-    console.log("onAttachFile()", file.size, this.minFileSize, this.maxFileSize)
-    if (file.size < this.minFileSize || file.size > this.maxFileSize) {
+    const fileLimits = this._limitations.canFile!;
+    console.log("onAttachFile()", file.size, fileLimits.minFileSize, fileLimits.maxFileSize)
+    if (file.size < fileLimits.minFileSize || file.size > fileLimits.maxFileSize) {
       toasty("Attach File cancelled: Invalid file size");
     } else {
       this._file = e.target.files[0];
     }
-    this.inputElem.focus();
+    if (this.inputElem) this.inputElem.focus();
   }
 
 
   /** */
   async onAddMenu(e:any): Promise<void> {
-    console.log("AddMenu.item-click", e, this.limitations.canWal, this.limitations.canFile);
+    console.log("AddMenu.item-click", e, this._limitations.canWal, this._limitations.canFile);
     switch (e.detail.item.id) {
       case "fileItem":
         this.pickFile();
@@ -673,7 +680,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       case "linkWalItem":
         const maybeWalLink = await this.weServices.assets.userSelectAsset();
         console.log("maybeWalLink", maybeWalLink);
-        if (maybeWalLink) {
+        if (maybeWalLink && this.inputElem) {
           this.inputElem.value += weaveUrlFromWal(maybeWalLink);
         }
       break;
@@ -681,7 +688,7 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         const maybeWal = await this.weServices.assets.userSelectAsset();
         console.log("maybeWal", maybeWal);
         this._wal = maybeWal;
-        this.inputElem.focus();
+        if (this.inputElem) this.inputElem.focus();
       break;
     }
   }
@@ -692,14 +699,33 @@ export class InputBar extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     return [
       css`
         :host {
-          background: beige;
+          /*background: beige;*/
         }
 
+        #input-bar {
+          margin: auto;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          border-radius: 20px;          
+        }
+        
         ui5-avatar {
           margin-top: 9px;
           margin-left: 15px;
         }
 
+        .file-row {
+          margin-left: 35px;
+          height: 25px;
+          margin-top: 5px;
+          margin-right: 5px;
+          padding-top: 5px;
+          color: #4141cc;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          margin-bottom: 3px;
+        }
+        
         #pop {
           /*background: #e3e3e3;*/
           box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;

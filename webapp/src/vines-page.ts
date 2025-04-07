@@ -1455,8 +1455,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ${canDisplayInput? html`
             <vines-input-bar id="input-bar" contenteditable="true"
                              .topic=${topic}
-                             .cachedInput=${this.perspective.threadInputs.get(this._selectedThreadHash)? this.perspective.threadInputs.get(this._selectedThreadHash) : ""}
-                             .limitations=${this._selectedThreadHash? this.threadsPerspective.threads.get(this._selectedThreadHash)?.pp.limitations : defaultLimitations()}
+                             .hash=${this._selectedThreadHash}
                              @input=${async (e: CustomEvent<VinesInputEvent>) => {
                                e.stopPropagation(); e.preventDefault(); 
                                if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
@@ -2616,8 +2615,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         vines-input-bar {
           margin: 3px 10px 10px 10px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-          border-radius: 20px;
         }
 
         #topicBar {

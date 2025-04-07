@@ -26,7 +26,7 @@ export type ShowEmojiEvent = {
 }
 
 export interface VinesInputEvent {
-  text?: string,
+  text: string | undefined,
   file?: File,
   wal?: WAL,
 }

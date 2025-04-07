@@ -30,7 +30,6 @@ import {InputBar} from "../../elements/input-bar";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
-import {defaultCommentLimitations} from "../../viewModels/threads.materialize";
 
 
 
@@ -287,8 +286,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       maybeInput = html`
           <vines-input-bar id="input-bar"
                            topic="thread"
-                           .limitations=${defaultCommentLimitations()}
-                           .cachedInput=${this.perspective.threadInputs.get(this.threadHash)? this.perspective.threadInputs.get(this.threadHash) : ""}
+                           .hash=${this.threadHash}
                            @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
     }
 
