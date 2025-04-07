@@ -315,7 +315,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
       //console.log("<topics-lister>.render() threads", threads);
       if (threads.length == 0) {
-        threads = [html`<div class="threadItem" style="background: #F6FAFC; cursor: default; display: flex; flex-direction: column">
+        //const tBgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "#c3f9c5bd" : "#F6FAFC";
+        const tBgColor = "#F6FAFC";
+        threads = [html`<div class="threadItem" style="cursor: default; display: flex; flex-direction: column; background: ${tBgColor}">
                    <span style="color:grey;">${msg('No channels found')}</span>
                     <span class="linky" style="text-decoration: underline; font-size: small"
                           @click=${async (e:any) => {
@@ -336,8 +338,10 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       }  else {
         this.collapsed.set(topicAh, false);
       }
+      const bgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "background:#c3f9c5bd" : "";
       return html`
           <ui5-panel id=${topicAh.b64} ?collapsed=${collapsed}
+                     style="${bgColor}"
                      @toggle=${(e:any) => {
                        //console.log("<topics-lister> TOGGLED", e.target.collapsed);
                        this.collapsed.set(topicAh, e.target.collapsed);
@@ -360,7 +364,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                        if (edit) edit.style.display = "none";
                      }}>
             <!-- header -->
-            <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
+            <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
                 <ui5-button id=${"edit-" + topicAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"

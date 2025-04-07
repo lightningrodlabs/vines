@@ -58,6 +58,8 @@ export type ThreadsDnaPerspective = {
   /** track my un-acked beads */
   myUnsharedBeads: Set<ActionHashB64>,
   ackRequests: ActionIdMap<AgentId>,
+  /** my newly created topic */
+  myNewestTopic: null | ActionId,
   /** */
   importing: boolean,
 }
@@ -123,6 +125,7 @@ export class ThreadsDvm extends DnaViewModel {
     signaledNotifications: [],
     typings: new ActionIdMap(),
     myUnsharedBeads: new Set(),
+    myNewestTopic: null,
     ackRequests: new ActionIdMap(),
     importing: false,
   }
@@ -253,6 +256,16 @@ export class ThreadsDvm extends DnaViewModel {
             console.log("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
             await this.ackAuthor(entryPulseMat.ah.b64);
             this._perspective.ackRequests.delete(entryPulseMat.ah);
+          }
+        break;
+        case ThreadsEntryType.ParticipationProtocol:
+          if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
+            this._perspective.myNewestTopic = null;
+          }
+          break;
+        case ThreadsEntryType.SemanticTopic:
+          if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
+            this._perspective.myNewestTopic = entryPulseMat.ah;
           }
         break;
         default: break;

@@ -2192,7 +2192,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-label for="topicTitleInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="topicTitleInput" @keydown=${(e: any) => {
                             if (e.keyCode === 13) {
-                                e.preventDefault();
+                                e.stopPropagation(); e.preventDefault();
                                 this.onCreateTopic(e);
                             }
                         }}>
