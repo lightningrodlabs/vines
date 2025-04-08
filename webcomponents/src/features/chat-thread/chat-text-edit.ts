@@ -62,7 +62,6 @@ export class ChatTextEdit extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     const value = this._zvm.perspective.getLatestEdit(this.hash);
     /** render all */
-    //                               @input=${(_e:any) => this.requestUpdate()}
     return html`<ui5-textarea id="chat-text-edit" 
                               .value=${value}
                               growing

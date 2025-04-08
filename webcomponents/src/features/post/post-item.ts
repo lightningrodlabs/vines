@@ -361,9 +361,9 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
                              style="flex-grow:1;"
                              background="#eee"
                              topic="comment"
-                             .hash=${this.hash}
-                             @input=${ async(e: CustomEvent<VinesInputEvent>) => {
-                               e.stopPropagation(); e.preventDefault(); 
+                             .threadHash=${this.hash}
+                             @vines-input-commit=${ async(e: CustomEvent<VinesInputEvent>) => {
+                               e.stopPropagation(); /*e.preventDefault();*/ 
                                if (e.detail.text) await this.onTextComment(e.detail.text);
                                if (e.detail.file) this.onFileComment(e.detail.file);
                                if (e.detail.wal)  this.onHrlComment(e.detail.wal);

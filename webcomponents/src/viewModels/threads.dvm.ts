@@ -7,7 +7,7 @@ import {
   ZomeSignal,
   ZomeSignalProtocol, ZomeSignalProtocolType, ZomeViewModel
 } from "@ddd-qc/lit-happ";
-import {ThreadsZvm} from "./threads.zvm";
+import {catchThrottled, ThreadsZvm} from "./threads.zvm";
 import {
   AppSignal, Signal, SignalType,
   SignalCb,
@@ -274,6 +274,7 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
+  /** */
   private async broadcastLocation(to?: AgentId[]) {
     const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
     const serTip = this._encoder.encode(locTip);
@@ -283,12 +284,13 @@ export class ThreadsDvm extends DnaViewModel {
     await this.threadsZvm.broadcastTip({App: serTip}, agents);
   }
 
+
   /** */
   async requestAck(beadAh: ActionId, others: AgentId[]) {
     console.log("ThreadsDvm.requestAck()", beadAh);
     const tip: ThreadsAppTip = {type: "ackRequest", data: beadAh};
     const serTip = this._encoder.encode(tip);
-    await this.threadsZvm.broadcastTip({App: serTip}, others);
+    await catchThrottled(this.threadsZvm.broadcastTip({App: serTip}, others));
   }
 
 
@@ -314,7 +316,7 @@ export class ThreadsDvm extends DnaViewModel {
     console.log("ThreadsDvm.signalTyping()", thread, is);
     const tip: ThreadsAppTip = {type: "typing", data: {thread, is}};
     const serTip = this._encoder.encode(tip);
-    await this.threadsZvm.broadcastTip({App: serTip}, this.allCurrentOthers());
+    await catchThrottled(this.threadsZvm.broadcastTip({App: serTip}, this.allCurrentOthers()));
   }
 
   /** */
@@ -477,6 +479,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx)/*: Promise<ActionId>*/ {
+    console.log("ThreadsDvm.publishDm()", content);
     const dmAh = this.threadsZvm.perspective.dmAgents.get(otherAgent);
     /** Create or grab DmThread */
     let ppAh: ActionId;
@@ -514,7 +517,8 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  setThreadInput(ppAh: ActionId, value: string) {
+  storeThreadInput(ppAh: ActionId, value: string) {
+    console.debug("ThreadsDvm.storeThreadInput()", value);
     if (!value) {
       this._perspective.threadInputs.delete(ppAh);
       /*await*/ this.signalTyping(ppAh, false);
@@ -536,9 +540,6 @@ export class ThreadsDvm extends DnaViewModel {
     }
     /** */
     await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
-    /** Erase saved input */
-    this.setThreadInput(ppAh, "");
-
   }
 
 

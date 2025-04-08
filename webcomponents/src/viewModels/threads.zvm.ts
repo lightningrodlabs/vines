@@ -53,7 +53,7 @@ import {
   base2typed,
   BaseBeadType,
   BeadInfo,
-  BeadType, defaultLimitations, defaultModeration,
+  BeadType, defaultModeration,
   dematerializeEntryBead,
   dematerializeTypedBead,
   EncryptedBeadContent,
@@ -597,6 +597,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   async publishEditThread(beadAh: ActionId): Promise<[Timestamp, ActionId]> {
     console.log("publishEditThread()", beadAh);
+    const beadInfo = this._perspective.getBeadInfo(beadAh)!;
     const subject: Subject = {
       address: beadAh.b64,
       name: "",
@@ -604,9 +605,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       appletId: THIS_APPLET_ID.b64,
       dnaHashB64: this.cell.address.dnaId.b64,
     };
+    let limitations = this._perspective.threads.get(beadInfo.bead.ppAh)!.pp.limitations;
+    limitations.allowedAgents = [beadInfo.author.hash];
     const pp: ParticipationProtocol = {
       purpose: "EDIT",
-      limitations: defaultLimitations(), // FIXME Only original message author is allowed to write
+      limitations,
       moderation: defaultModeration(),
       subject,
     }
@@ -646,6 +649,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async publishTypedBead(type: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId) : Promise<[ActionId, string, number, TypedBead]> {
+    console.log("ThreadsZvm.publishTypedBead()", content);
     const creation_time = Date.now() * 1000;
     const nextBead = await this.createNextBead(ppAh, prevBead);
     const beadAuthor = author? author : this.cell.address.agentId;
@@ -1125,9 +1129,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
         this.fetchUnknownBead(beadInfo.bead.prevBeadAh);
       }
+      /** Store in perspective */
+      this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isPersistent, isNew, innerPair);
     }
-    /** Store in perspective */
-    this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isPersistent, isNew, innerPair);
   }
 
 

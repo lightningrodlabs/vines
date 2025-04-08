@@ -481,7 +481,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 </div>
                 ${item}
                 ${this.canEdit? html`<div style="font-size: small; margin-top:-2px; margin-bottom:5px">
-                    ${msg("escape to")} <span class="linky" @click=${() => this.canEdit = false}>${msg("cancel")}</span> • ${msg("enter to")} <span class="linky" @click=${async() => {
+                    ${msg("escape to")} <span class="linky" @click=${() => this.canEdit = false}>${msg("cancel")}</span> • ${msg("enter to")} <span class="linky"
+                                                                                                                                                    @click=${async() => {
                       this.canEdit = false;
                       const elem = this.shadowRoot!.getElementById("text-edit") as ChatTextEdit;
                     /*let ah =*/ await this._dvm.threadsZvm.editMyTextBead(this.hash, elem.value);

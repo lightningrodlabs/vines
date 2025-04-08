@@ -15,9 +15,8 @@ import {latestThreadName} from "../../utils";
 import "../../elements/input-bar";
 import {consume} from "@lit/context";
 import {filesContext, weClientContext} from "../../contexts";
-import {ThreadsEntryType} from "../../bindings/threads.types";
 import {doodle_weave} from "../../doodles";
-import {beadJumpEvent, SpecialSubjectType, threadJumpEvent, VinesInputEvent} from "../../events";
+import {beadJumpEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 
 import {sharedStyles} from "../../styles";
 
@@ -188,26 +187,28 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
 
-  /** */
-  async onCreateComment(e: VinesInputEvent) {
-    const thread = this.threadsPerspective.threads.get(this.threadHash!);
-    if (!thread) {
-      console.error("Missing Comment thread", e, thread);
-      return;
-    }
-    /** Publish */
-    if (e.text) {
-      await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
-    }
-    // if (e.wal) {
-    //   await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, e.wal, this.threadHash!, this.cell.address.agentId);
-    // }
-    // if (e.file) {
-    //   await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, e.file, this.threadHash!, this.cell.address.agentId);
-    // }
-    /** */
-    throw Promise.reject("Missing message content");
-  }
+  // /** */
+  // async onCreateComment(e: VinesInputEvent) {
+  //   const thread = this.threadsPerspective.threads.get(this.threadHash!);
+  //   if (!thread) {
+  //     console.error("Missing Comment thread", e, thread);
+  //     return;
+  //   }
+  //   /** Publish */
+  //   if (e.text) {
+  //     await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, e.text, this.threadHash!, this.cell.address.agentId);
+  //   }
+  //   if (e.wal) {
+  //     await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, e.wal, this.threadHash!, this.cell.address.agentId);
+  //     return;
+  //   }
+  //   if (e.file) {
+  //     await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {eh: e.eh, size: e.file.size, type: e.file.type}, this.threadHash!, this.cell.address.agentId);
+  //     return;
+  //   }
+  //   /** */
+  //   throw Promise.reject("Missing message content");
+  // }
 
 
   /** */
@@ -283,11 +284,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
     let maybeInput = html``;
     if (this.showInput) {
-      maybeInput = html`
-          <vines-input-bar id="input-bar"
-                           topic="thread"
-                           .hash=${this.threadHash}
-                           @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}></vines-input-bar>`
+      // @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}
+      maybeInput = html`<vines-input-bar id="input-bar" topic="thread" .threadHash=${this.threadHash}></vines-input-bar>`;
     }
 
     const titleTip = "Type: " + subjectType;

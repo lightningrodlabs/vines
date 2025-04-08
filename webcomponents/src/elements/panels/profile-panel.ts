@@ -95,7 +95,8 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             <h5>${msg('Member since')}</h5>
             <div class="info">${formatTime(timestamp, timezone)}</div>
             ${!this.hash.equals(this.cell.address.agentId)? html`
-              <vines-input-bar .topic=${this._profile.nickname}></vines-input-bar>
+              <h5 style="margin-bottom: 3px;">${msg('Send Direct Message')}</h5>
+              <vines-input-bar .topic=${this._profile.nickname} .agentHash=${this.hash}></vines-input-bar>
             `:html``}
           </div>
           <div style="position:absolute; top:10px; left:10px">${avatar}</div>

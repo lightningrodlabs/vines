@@ -170,7 +170,6 @@ import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 import {
   beadJumpEvent, catchThrottled,
   CommentRequest,
-  CommentThreadView,
   ConfirmDialog, defaultLimitations, defaultModeration, determinerGroupProfile,
   doodle_flowers,
   EditTopicRequest,
@@ -208,7 +207,7 @@ import {
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
-import {FrameNotification, Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
+import {FrameNotification, Hrl} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -391,7 +390,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // @ts-ignore
     this.addEventListener('loop-network-info', this.onLoopNetworkInfo);
     // @ts-ignore
-    this.addEventListener('text-input', this.onTextInput);
+    this.addEventListener('vines-input-commit', this.onInputCommit);
   }
 
   override disconnectedCallback() {
@@ -420,7 +419,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // @ts-ignore
     this.removeEventListener('loop-network-info', this.onLoopNetworkInfo);
     // @ts-ignore
-    this.removeEventListener('text-input', this.onTextInput);
+    this.removeEventListener('vines-input-commit', this.onInputCommit);
   }
 
 
@@ -436,12 +435,55 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  onTextInput(e: CustomEvent<string>) {
-    console.log("onTextInput() text-input", e.detail);
-    this._dvm.setThreadInput(this._selectedThreadHash!, e.detail);
+  /** */
+  async onInputCommit(e: CustomEvent<VinesInputEvent>) {
+    console.log("onInputCommit()", e.detail);
+    let ppAh = e.detail.ppAh;
+    /** DM */
+    if (e.detail.agent) {
+      await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
+      return;
+    }
+    /** Determine replyToAh */
+    let replyToAh = this._replyToAh;
+    if (!this._selectedThreadHash || this._selectedThreadHash != ppAh) {
+      replyToAh = undefined;
+    }
+    this._selectedBeadAh = undefined;
+    this._replyToAh = undefined;
+    /** Cleanup */
+    /* Create Text Message */
+    if (e.detail.text) {
+      if (this._currentCommentRequest) {
+        ppAh = await this.publishCommentThread(this._currentCommentRequest);
+        this._currentCommentRequest = undefined;
+      }
+      if (!ppAh) {
+        console.error("No thread selected");
+        return;
+      }
+      await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
+    }
+    /* Create Wal Message */
+    if (e.detail.wal) {
+      //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
+      // TODO: make sure hrl is an entryHash
+      await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
+    }
+    /* Create File Message */
+    if (e.detail.file) {
+      console.log("<vines-page>.onCreateFileMessage()", e.detail.file.name, e.detail.file, this._filesDvm);
+      this._splitObj = await this._filesDvm.startPublishFile(e.detail.file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
+        console.debug("<vines-page> startPublishFile callback", eh);
+        const type = simplifyMimeType(e.detail.file!.type);
+        await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: e.detail.file!.size, type}, ppAh, undefined, replyToAh, this.weServices);
+        this._splitObj = undefined;
+      });
+    }
   }
 
 
+  /** */
   handleMouse(event: any) {
     // Handle the back/forward button press
     //console.log('handleMouse()', event);
@@ -721,28 +763,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onCreateTextMessage(inputText: string) {
-    console.log("onCreateTextMessage", inputText, this._dvm.profilesZvm)
-    let ppAh = this._selectedThreadHash;
-    if (this._currentCommentRequest) {
-      ppAh = await this.publishCommentThread(this._currentCommentRequest);
-      this._currentCommentRequest = undefined;
-    }
-    if (!ppAh) {
-      console.error("No thread selected");
-      return;
-    }
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.TextBead, inputText, ppAh, undefined, this._replyToAh, this.weServices);
-    console.log("onCreateTextMessage() ah", ah, this._replyToAh);
-  }
-
-
-  /** */
-  async onDmTextMessage(inputText: string) {
-    console.log("onDmTextMessage()", inputText, this._dvm.profilesZvm)
+  async publishDmFromProfilePanel(inputText: string) {
+    console.log("<vines-page>.publishDmFromProfilePanel()", inputText, this._dvm.profilesZvm)
     const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     const otherAgent: AgentId = sub.hash;
-    console.log("onDmTextMessage() otherAgent", otherAgent)
+    console.log("publishDmFromProfilePanel() otherAgent", otherAgent)
     await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     this._replyToAh = undefined;
     this._selectedBeadAh = undefined;
@@ -752,19 +777,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (dmThreadAh) {
       this.dispatchEvent(threadJumpEvent(dmThreadAh));
     }
-  }
-
-
-  /** */
-  async onCreateHrlMessage(wal: WAL) {
-    if (!wal || !this._selectedThreadHash) {
-      return;
-    }
-    console.log("onCreateHrlMessage()", weaveUrlFromWal(wal));
-    //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
-    // TODO: make sure hrl is an entryHash
-    let ah = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, wal, this._selectedThreadHash, undefined, this._replyToAh, this.weServices);
-    console.log("onCreateHrlMessage() ah", ah);
   }
 
 
@@ -1085,13 +1097,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async showSideCommentThread(commentThreadAh: ActionId, subjectName: string) {
-    /** Save input field before switching */
-    if (this._selectedCommentThreadHash && this._canShowComments) {
-      const commentView = this.shadowRoot!.getElementById("comment-view") as CommentThreadView;
-      if (commentView) {
-        this._dvm.setThreadInput(new ActionId(this._selectedCommentThreadHash.b64), commentView.value);
-      }
-    }
+    // /** Save input field before switching */
+    // if (this._selectedCommentThreadHash && this._canShowComments) {
+    //   const commentView = this.shadowRoot!.getElementById("comment-view") as CommentThreadView;
+    //   if (commentView) {
+    //     this._dvm.storeThreadInput(new ActionId(this._selectedCommentThreadHash.b64), commentView.value);
+    //   }
+    // }
     /** */
     this._canShowComments = true;
     this._selectedCommentThreadHash = commentThreadAh;
@@ -1139,20 +1151,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  /** */
-  async onCreateFileMessage(ppAh: ActionId, file: File) {
-    console.log("onCreateFileMessage()", file.name, file, this._filesDvm);
-    this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
-      console.debug("<vines-page> startPublishFile callback", eh);
-      const type = simplifyMimeType(file.type);
-      let ah = await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: file.size, type}, ppAh, undefined, this._replyToAh, this.weServices);
-      console.debug("onCreateFileMessage() ah", ah, type);
-      this._splitObj = undefined;
-    });
-    console.debug("onCreateFileMessage()", this._splitObj);
-  }
-
-
   // /** */
   // async onPopState(e: CustomEvent<PopStateEvent>) {
   //   console.log("onPopState()", e);
@@ -1194,13 +1192,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this._selectedAgent = undefined;
 
 
-    /** Cache and reset input-bar */
-    const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
-    if (inputBar && maybePrevThreadId) {
-      //console.warn("<vines-page>.onJump() cachedInput Storing input-bar:", inputBar.value, maybePrevThreadId.short)
-      this._dvm.setThreadInput(maybePrevThreadId, inputBar.value);
-      inputBar.setValue("");
-    }
+    // /** Cache and reset input-bar text */
+    // const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+    // if (inputBar && maybePrevThreadId) {
+    //   console.warn("<vines-page>.onJump() cachedInput Storing input-bar:", inputBar.value, maybePrevThreadId.short)
+    //   this._dvm.storeThreadInput(maybePrevThreadId, inputBar.value);
+    // }
 
     /** Set new state */
     this._mainView = e.detail.type;
@@ -1453,17 +1450,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
             ${canDisplayInput? html`
-            <vines-input-bar id="input-bar" contenteditable="true"
+            <vines-input-bar id="input-bar"
                              .topic=${topic}
-                             .hash=${this._selectedThreadHash}
-                             @input=${async (e: CustomEvent<VinesInputEvent>) => {
-                               e.stopPropagation(); e.preventDefault(); 
-                               if (e.detail.text) await this.onCreateTextMessage(e.detail.text);
-                               if (e.detail.wal) await this.onCreateHrlMessage(e.detail.wal);
-                               if (e.detail.file && this._selectedThreadHash) await this.onCreateFileMessage(this._selectedThreadHash, e.detail.file);                               
-                               this._replyToAh = undefined;
-                               this._selectedBeadAh = undefined;
-                             }}></vines-input-bar>
+                             .threadHash=${this._selectedThreadHash}></vines-input-bar>
             ` : html`<div style="min-height: 20px;"></div>`}
             `}
         `;
@@ -2153,10 +2142,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
                 <profile-panel id="profilePanel"
                                @edit-profile=${(_e: any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}
-                               @input=${(e: CustomEvent<VinesInputEvent>) => {
-                                   e.preventDefault();
+                               @vines-input-commit=${(e: CustomEvent<VinesInputEvent>) => {
+                                   e.stopPropagation(); /*e.preventDefault();*/
                                    if (!e.detail.text) throw Error("Missing text in input event");
-                                   this.onDmTextMessage(e.detail.text);
+                                   this.publishDmFromProfilePanel(e.detail.text);
                                    const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
                                    if (profilePopElem.isOpen()) {
                                        profilePopElem.close();
@@ -2190,12 +2179,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <section>
                     <div>
                         <ui5-label for="topicTitleInput">${msg("Title")}:</ui5-label>
-                        <ui5-input id="topicTitleInput" @keydown=${(e: any) => {
-                            if (e.keyCode === 13) {
-                                e.stopPropagation(); e.preventDefault();
-                                this.onCreateTopic(e);
-                            }
-                        }}>
+                        <ui5-input id="topicTitleInput"
+                                   @keydown=${(e: any) => {
+                                      if (e.keyCode === 13) {
+                                          e.stopPropagation(); /*e.preventDefault();*/
+                                          this.onCreateTopic(e);
+                                      }
+                                  }}>
                             <div id="topicErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
@@ -2214,12 +2204,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <section>
                     <div>
                         <ui5-label for="editChannelTitleInput">${msg("Title")}:</ui5-label>
-                        <ui5-input id="editChannelTitleInput" @keydown=${(e: any) => {
-                            if (e.keyCode === 13) {
-                              e.preventDefault();
-                              this.onEditChannel(e);
-                            }
-                          }}>
+                        <ui5-input id="editChannelTitleInput" 
+                                   @keydown=${(e: any) => {
+                                      if (e.keyCode === 13) {
+                                        /*e.preventDefault();*/
+                                        this.onEditChannel(e);
+                                      }
+                                    }}>
                           <div id="editChannelErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
@@ -2239,12 +2230,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <section>
                     <div>
                         <ui5-label for="editTopicTitleInput">${msg("Title")}:</ui5-label>
-                        <ui5-input id="editTopicTitleInput" @keydown=${(e: any) => {
-                            if (e.keyCode === 13) {
-                                e.preventDefault();
-                                this.onEditTopic(e);
-                            }
-                        }}>
+                        <ui5-input id="editTopicTitleInput"
+                                   @keydown=${(e: any) => {
+                                        if (e.keyCode === 13) {
+                                            /*e.preventDefault();*/
+                                            this.onEditTopic(e);
+                                        }
+                                    }}>
                             <div id="editTopicErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
@@ -2267,7 +2259,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-input id="threadPurposeInput"
                                    @keydown=${async (e: any) => {
                                        if (e.keyCode === 13) {
-                                           e.preventDefault();
+                                           /*e.preventDefault();*/
                                            await this.onCreateThread(e);
                                        }
                                    }}>

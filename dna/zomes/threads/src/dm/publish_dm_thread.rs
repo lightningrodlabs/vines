@@ -21,10 +21,16 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
   if me == input.other_agent {
     return zome_error!("Cannot DM self");
   }
+
+  // Only text in DMs (reason: files are not encrypted and wals are niche use case difficult to manage UI wise)
+  let mut limitations = Limitations::default();
+  limitations.can_wal = false;
+  limitations.can_file = None;
+
   /// Create PP
   let pp = ParticipationProtocol {
     purpose: "Private conversation".to_string(),
-    limitations: Limitations::default(),
+    limitations,
     moderation: Moderation::default(),
     //subject_name: "agent".to_string(),
     subject: Subject {

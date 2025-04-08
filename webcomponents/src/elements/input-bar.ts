@@ -26,7 +26,10 @@ import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
 import {toasty} from "../toast";
 import {formatFileSize} from "../utils";
-import {DEFAULT_MAX_TEXT_LENGTH, defaultLimitations} from "../viewModels/threads.materialize";
+import {
+  DEFAULT_MAX_TEXT_LENGTH,
+  defaultCommentLimitations,
+} from "../viewModels/threads.materialize";
 import {formatTime} from "../features/timezone/utils";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 //import {handledMimeTypes} from "../features/rules/rules-edit";
@@ -47,21 +50,19 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Properties -- */
 
   @property() topic: string = '';
-  //@property() cachedInput: string = '';
 
   @property() background?: string;
 
-  @property() hash?: ActionId;
+  @property() threadHash?: ActionId;
+  @property() agentHash?: AgentId; // special case when DM-ing before DM thread was created
 
-
-  //@property() limitations: Limitations = defaultLimitations();
-
-  @state() private _cacheInputValue: string = "";
+  @state() private _stashedInputValue: string = ""; // Used for mention pop-up
   @state() private _prevInputValue: string = "";
+
   @state() private _file: File | undefined = undefined;
   @state() private _wal: WAL | undefined = undefined;
 
-  @state() private _isEditing: boolean = false;
+  @state() private _isEditingFileName: boolean = false;
 
   @consume({ context: weClientContext, subscribe: true })
   weServices!: WeServicesEx;
@@ -86,15 +87,17 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
   get value(): string {
-    //console.log("<vines-input-var>.value()", this.inputElem? this.inputElem.value : "<no elem>");
+    //console.debug("<vines-input-bar>.value()", this.inputElem? this.inputElem.value : "<no elem>");
     if (this.inputElem) {
       return this.inputElem.value;
     }
     return "";
   }
   setValue(v: string): void {
+    console.debug("<vines-input-bar>.setValue()", v);
     if (this.inputElem) {
       this.inputElem.value = v;
+      this.requestUpdate();
       //console.log("<vines-input-var> (jump) setValue to", v);
     }
   }
@@ -117,13 +120,13 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /**  */
   onPaste(e: ClipboardEvent) {
     e.preventDefault();
-    //console.log("<vines-input-bar>.onPaste()", e);
+    console.debug("<vines-input-bar>.onPaste()", e);
     const text = e.clipboardData?.getData('text/plain');
     if (text && this.inputElem) {
       //console.log('<vines-input-bar>.onPaste() text:', text);
       /** Get the text content before and after cursor */
       const nativeTextarea = this.inputElem.shadowRoot!.querySelector("textarea") as unknown as HTMLInputElement;
-      console.log("<vines-input-bar>.onPaste() input", nativeTextarea.selectionStart, nativeTextarea.selectionEnd);
+      //console.log("<vines-input-bar>.onPaste() input", nativeTextarea.selectionStart, nativeTextarea.selectionEnd);
       const textBeforeCursor = this.value.substring(0, nativeTextarea.selectionStart!);
       const textAfterCursor = this.value.substring(nativeTextarea.selectionEnd!);
       /** Done */
@@ -163,36 +166,54 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
       const pop = this.shadowRoot!.getElementById('pop') as HTMLElement;
       const list = pop.querySelector("#agent-list") as HTMLElement;
-      console.log("#agent-list", pop, list);
+      //console.log("<vines-input-bar> #agent-list", pop, list);
       list.shadowRoot!.appendChild(suggestionListTemplate.content.cloneNode(true));
+    }
+    /** Set initial background */
+    if (this.background) {
+      const elem = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
+      elem.style.background = this.background;
+      elem.style.borderRadius = "20px";
     }
   }
 
 
+
+  private _limitations = defaultCommentLimitations();
+
   /** */
-  override updated(changedProperties: PropertyValues) {
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+    console.debug("<vines-input-bar>.willUpdate()", changedProperties.has("threadHash"), this.threadHash, this.agentHash, changedProperties);
+    /** Set Restrictions */
+    if (this.threadHash) {
+      this._limitations = this._dvm.threadsZvm.perspective.threads.get(this.threadHash!)!.pp.limitations;
+      //console.debug("<vines-input-bar> limitations", this._limitations);
+    } else {
+      this._limitations = defaultCommentLimitations();
+    }
     /* Set cached input */
-    if (changedProperties.has("hash") && this.inputElem && this.inputElem.value == "") {
-      //console.warn("<vines-input-bar> updated() cachedInput", this.cachedInput, this.inputElem);
+    if ((changedProperties.has("threadHash") || changedProperties.has("agentHash")) && this.inputElem /*&& this.inputElem.value == ""*/) {
+      console.debug("<vines-input-bar>.willUpdate() restore cached input. current:", this.inputElem.value);
       this.inputElem.value = "";
-      if (this.hash) {
-        const maybe = this.perspective.threadInputs.get(this.hash);
+      if (this.threadHash) {
+        const maybe = this.perspective.threadInputs.get(this.threadHash);
         if (maybe) {
           this.inputElem.value = maybe;
         }
       }
     }
-    /** Check if input value changed */
-    console.debug("<input-bar>.updated() text-input",this._prevInputValue);
-    if (this.inputElem && this.inputElem.value != this._prevInputValue) {
+  }
+
+
+  /** */
+  override updated(_changedProperties: PropertyValues) {
+    /** Tip if input value changed */
+    const current = this.inputElem? this.inputElem.value : "";
+    console.debug(`<vines-input-bar>.updated() text-input "${this._prevInputValue}"`, current);
+    if (this.inputElem && this.threadHash && current != this._prevInputValue) {
       this._prevInputValue = this.inputElem.value;
-      this.dispatchEvent(new CustomEvent<string>("text-input", {detail: this.inputElem.value, bubbles: true, composed: true}));
-    }
-    /** */
-    if (this.background) {
-      const elem = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
-      elem.style.background = this.background;
-      elem.style.borderRadius = "20px";
+      this._dvm.storeThreadInput(this.threadHash, this.inputElem.value);
     }
     /** */
     const maybeEdit = this.shadowRoot!.getElementById("filename-input") as Input;
@@ -208,16 +229,17 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (nickname[0] == '@') {
         nickname = nickname.slice(1);
       }
-      this.inputElem.value = this._cacheInputValue + nickname + " "
+      this.inputElem.value = this._stashedInputValue + nickname + " "
     }
     this.inputElem.focus();
     if (this.popoverElem.isOpen()) {
       this.popoverElem.close();
     }
-    this._cacheInputValue = "";
+    this._stashedInputValue = "";
   }
 
 
+  /** */
   private validateText(text: string): string {
     if (text.length < this._limitations.canText!.minTextLength) {
       return msg("Text too short");
@@ -233,9 +255,10 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return "";
   }
 
+
   /** */
   private commitInput() {
-    console.log(`Commit input`);
+    console.log(`<vines-input-bar> Commit input`);
     /** Validate */
     if (this.inputElem) {
       const reason = this.validateText(this.inputElem.value);
@@ -245,17 +268,22 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
     }
-
+    /** Shoot event */
     const text = this.inputElem? this.inputElem.value : undefined;
-
-    /** Shoot */
-    this.dispatchEvent(new CustomEvent<VinesInputEvent>('input', {detail: {text, file: this._file!, wal: this._wal!}, bubbles: true, composed: true}));
+    const event: VinesInputEvent = {
+      ppAh: this.threadHash!,
+      agent: this.agentHash!,
+      text,
+      file: this._file!,
+      wal: this._wal!,
+    };
+    this.dispatchEvent(new CustomEvent<VinesInputEvent>('vines-input-commit', {detail: event, bubbles: true, composed: true}));
     /** Clean-up */
     if (this.inputElem) this.inputElem.value = "";
-    this._cacheInputValue = "";
+    this._stashedInputValue = "";
     this._file = undefined;
     this._wal = undefined;
-    this._isEditing = false;
+    this._isEditingFileName = false;
     this.requestUpdate();
   }
 
@@ -314,7 +342,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /* Enter or Tab: select current */
     if (e.keyCode === 9 || e.keyCode === 13) {
-      console.log("selected item", items[i], items[i]!.outerText);
+      console.log("<vines-input-bar> selected item", items[i], items[i]!.outerText);
       this.suggestionSelected(items[i]!.outerText);
       e.preventDefault();
     }
@@ -323,7 +351,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   handleKeydown(e:any) {
-    console.log("keydown", e);
+    console.log("<vines-input-bar> keydown", this.threadHash, this.popoverElem && this.popoverElem.isOpen(), e);
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     if (isSuggesting) {
@@ -332,10 +360,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Enter: commit message */
     if (e.keyCode === 13) {
-      if (e.shiftKey) {
-          /* add newline to input.value?? */
-      } else {
-        console.log("keydown keyCode ENTER", this.inputElem.value);
+      if (!e.shiftKey) {
+        console.log("<vines-input-bar> keydown keyCode ENTER", this.inputElem.value);
         e.stopPropagation(); e.preventDefault();
         this.commitInput();
       }
@@ -369,6 +395,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** */
   focusInput() {
     if (this.inputElem) {
       this.inputElem.focus();
@@ -387,22 +414,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       type: this._file!.type,
       lastModified: this._file!.lastModified,
     });
-    this._isEditing = false;
-  }
-
-
-  /** Restrictions */
-  private _limitations = defaultLimitations();
-  /** */
-  protected override willUpdate(changedProperties: PropertyValues<this>) {
-    super.willUpdate(changedProperties);
-    //console.debug("<vines-input-bar>.willUpdate()", changedProperties.has("hash"), this.hash);
-    if (this.hash) {
-      this._limitations = this._dvm.threadsZvm.perspective.threads.get(this.hash!)!.pp.limitations;
-      console.log("<input-bar> limitations", this._limitations);
-    } else {
-      this._limitations = defaultLimitations();
-    }
+    this._isEditingFileName = false;
   }
 
 
@@ -412,7 +424,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     for (const k of this._limitations.canFile!.allowedFileTypes) {
       accept += k + ", "
     }
-    console.log("pickFile()", this._limitations.canFile, accept);
+    console.log("<vines-input-bar> pickFile()", this._limitations.canFile, accept);
     let input = document.createElement('input');
     input.accept = accept;
     input.type = 'file';
@@ -423,12 +435,13 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-input-bar>.render() 2", this._wal);
+    const input = this.inputElem? this.inputElem.value : "";
+    console.log("<vines-input-bar>.render()", this.threadHash, this.agentHash, input);
     const me =this._dvm.cell.address.agentId;
 
     /** check & enable suggestion popover */
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
-    const input = this.inputElem? this.inputElem.value : "";
+
     const endsWithWhitespace = input.length != input.trimEnd().length;
     const words = this.splitByWordsAndPunctuation(input); //input.trim().split(/\s+/);
     const lastWord = words.length > 0 ? words[words.length - 1]! : "";
@@ -505,10 +518,10 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** */
       if (this.popoverElem && !isSuggesting) {
         this.popoverElem.showAt(this.inputElem as any as HTMLElement);
-        this._cacheInputValue = this.inputElem.value;
+        this._stashedInputValue = this.inputElem.value;
         if (lastWordIsMention && lastWord.length > 2) {
           //console.log("_cacheInputValue inputElem", this.inputElem.value, lastWord, lastWord.length - 1)
-          this._cacheInputValue = this.inputElem.value.slice(0, -(lastWord.length - 1));
+          this._stashedInputValue = this.inputElem.value.slice(0, -(lastWord.length - 1));
           //console.log("_cacheInputValue after", this._cacheInputValue)
         }
       }
@@ -522,7 +535,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let fileElem = html``;
     if (this._file) {
-      const fileNameElem = this._isEditing
+      const fileNameElem = this._isEditingFileName
         ? html`<ui5-input id="filename-input" .value=${this._file.name} @change=${(_e:any) => this.onEditFile()}></ui5-input>`
         : html`<div>${this._file.name}</div>`;
 
@@ -533,9 +546,9 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               <span style="margin-left:5px;font-size: small;">(${formatFileSize(this._file.size)})</span> 
               <ui5-button class="fileIcon" icon="edit" design="Transparent" tooltip=${msg('Rename file')}
                           style="margin-left:10px;"
-                          @click=${(_e:any) => this._isEditing = !this._isEditing}></ui5-button>
+                          @click=${(_e:any) => this._isEditingFileName = !this._isEditingFileName}></ui5-button>
               <ui5-button class="fileIcon trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
-                          @click=${(_e:any) => {this._file = undefined; this._isEditing = false;}}></ui5-button>
+                          @click=${(_e:any) => {this._file = undefined; this._isEditingFileName = false;}}></ui5-button>
           </div>
       `;
     }
@@ -591,7 +604,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`;
     }
 
-    const canSend = this.inputElem && this.inputElem.value.length > 0 || this._file || this._wal;
+    const canSend = (this.inputElem && this.inputElem.value.length > 0) || this._file || this._wal;
 
     /** render all */
     return html`
@@ -609,9 +622,12 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             growing
                             growing-max-lines="3"
                             rows="1"
-                            .maxlength=${this._limitations.canText!.maxTextLength}
+                            .maxlength=${this._limitations.canText!.maxTextLength == 0? DEFAULT_MAX_TEXT_LENGTH : this._limitations.canText!.maxTextLength}
                             @keydown=${this.handleKeydown}
-                            @input=${(_e:any) => this.requestUpdate()}
+                            @input=${(_e:any) => {
+                              console.debug("<vines-input-bar> input input event");
+                              this.requestUpdate();
+                            }}
               ></ui5-textarea>`:html``}
               <ui5-button slot="${this._limitations.canText? "endContent": ""}" design="Emphasized" icon="paper-plane" tooltip=${msg("Send")}
                           ?disabled=${!canSend}
@@ -660,35 +676,36 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   onAttachFile(e:any) {
     const file = e.target.files[0] as File;
     const fileLimits = this._limitations.canFile!;
-    console.log("onAttachFile()", file.size, fileLimits.minFileSize, fileLimits.maxFileSize)
+    console.log("<vines-input-bar> onAttachFile()", file.size, fileLimits.minFileSize, fileLimits.maxFileSize)
     if (file.size < fileLimits.minFileSize || file.size > fileLimits.maxFileSize) {
       toasty("Attach File cancelled: Invalid file size");
     } else {
       this._file = e.target.files[0];
     }
-    if (this.inputElem) this.inputElem.focus();
+    this.focusInput();
   }
 
 
   /** */
   async onAddMenu(e:any): Promise<void> {
-    console.log("AddMenu.item-click", e, this._limitations.canWal, this._limitations.canFile);
+    console.log("<vines-input-bar> AddMenu.item-click", e, this._limitations.canWal, this._limitations.canFile);
     switch (e.detail.item.id) {
       case "fileItem":
         this.pickFile();
       break;
       case "linkWalItem":
         const maybeWalLink = await this.weServices.assets.userSelectAsset();
-        console.log("maybeWalLink", maybeWalLink);
+        console.log("<vines-input-bar> maybeWalLink", maybeWalLink);
         if (maybeWalLink && this.inputElem) {
           this.inputElem.value += weaveUrlFromWal(maybeWalLink);
+          this.requestUpdate();
         }
       break;
       case "embedWalItem":
         const maybeWal = await this.weServices.assets.userSelectAsset();
-        console.log("maybeWal", maybeWal);
+        console.log("<vines-input-bar> maybeWal", maybeWal);
         this._wal = maybeWal;
-        if (this.inputElem) this.inputElem.focus();
+        this.focusInput();
       break;
     }
   }
