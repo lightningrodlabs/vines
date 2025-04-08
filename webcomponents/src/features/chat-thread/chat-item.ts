@@ -31,6 +31,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {AnyBeadMat, BeadInfo, EntryBeadMat} from "../../viewModels/threads.materialize";
 import {ChatTextEdit} from "./chat-text-edit";
+import {sharedStyles} from "../../styles";
 
 
 /**
@@ -549,6 +550,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   static override get styles() {
     //const VINE_COLOR = "rgb(108, 176, 70)";
     return [
+      sharedStyles,
       css`
         :host {
           max-width: 100%;

@@ -188,7 +188,7 @@ import {
   parseSearchInput,
   ParticipationProtocol,
   ProfilePanel, RulesEdit, RulesView,
-  searchFieldStyleTemplate,
+  searchFieldStyleTemplate, sharedStyles,
   ShowProfileEvent, ShowRulesEvent, simplifyMimeType,
   SpecialSubjectType,
   Subject,
@@ -2404,6 +2404,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   static override get styles() {
     return [
+      sharedStyles,
       css`
         :host {
           /*background: #FBFCFD;*/
@@ -2418,14 +2419,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
-        
+
         abbr {
           text-decoration: none;
         }
-        
+
         .reply-info {
           /*background: #b4c4be;*/
           margin: 0px 10px -9px 10px;
@@ -2546,7 +2551,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #uploadCard {
           margin: auto;
-          margin-bottom: 10px; 
+          margin-bottom: 10px;
           border-radius: 10px;
           /*margin-left:10px;*/
           min-width: 350px;
@@ -2643,8 +2648,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #membersCount:hover {
-          color:black;
+          color: black;
         }
+
         #topicBar ui5-button:hover {
           background: #e6e6e6;
         }
@@ -2701,7 +2707,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-weight: bold;
           box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197, 209, 208, 0);
         }
-        
+
         #primaryTitle {
           font-size: 20px;
         }
@@ -2710,13 +2716,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           text-decoration: underline;
           cursor: pointer;
         }
-        
+
         #typing-div {
           padding-left: 70px;
           padding-bottom: 5px;
           font-size: small;
           color: #5a69b5;
         }
+
         #dmSign {
           /*width: 50px;*/
           flex-direction: row;
@@ -2727,7 +2734,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           left: 90px;
           display: none;
           box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
-          padding:10px;
+          padding: 10px;
         }
       `,
 

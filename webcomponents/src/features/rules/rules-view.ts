@@ -31,9 +31,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   /** */
   private renderLimitations() {
     const peerList = renderAvatars(this, this.limitations.allowedAgents, this._zvm.perspective);
-
-    console.log("renderLimitations()", this.limitations);
-
+    //console.log("renderLimitations()", this.limitations);
 
     /** */
     return html`
@@ -92,7 +90,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   private renderFileRules(fileRules: FileLimits) {
-    console.log("renderFileRules()", fileRules);
+    //console.log("renderFileRules()", fileRules);
     return html`
             <div class="field-row">
                 <div class="field-label">${msg('File Messages:')}</div>

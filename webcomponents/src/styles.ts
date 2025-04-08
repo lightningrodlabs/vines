@@ -3,17 +3,17 @@ import { css } from 'lit';
 
 /* p NEEDED because markdownit() generates <p> */
 export const sharedStyles = css`
-  
+
   blockquote {
     border-left: 4px solid #d1e15d;
     padding: 0px 5px 2px 12px;
     margin: 10px 0px 0px 0px;
   }
-  
+
   mark {
     padding: 0px 2px 0px 2px;
   }
-  
+
   code {
     background: #8080801a;
     padding: 5px;
@@ -23,7 +23,7 @@ export const sharedStyles = css`
   pre > code {
     display: block;
   }
-  
+
   p {
     margin: 0px;
     white-space: pre-wrap;
@@ -32,7 +32,7 @@ export const sharedStyles = css`
   }
 
   .chatAvatar:hover {
-    border: 1px solid red;
+    border: 1px solid rgba(128, 128, 88, 0.84);
   }
 
   .mention {
@@ -49,13 +49,13 @@ export const sharedStyles = css`
     text-decoration: underline;
     cursor: pointer;
   }
-  
+
   .subjectName {
     font-style: italic;
     background: #fbfbfb9c;
     padding: 4px;
   }
-  
+
   .sideAgentName {
     font-family: "72";
     color: rgb(64, 64, 64);
@@ -95,31 +95,31 @@ export const sharedStyles = css`
 
   .sideItem:hover {
     background: rgba(255, 255, 255, 0.80);
-    cursor:pointer;
+    cursor: pointer;
   }
 
   .fail {
     background: #fdd;
   }
-  
+
   .timeHr {
-    border: none; 
-    border-bottom: 2px dashed #dadada; 
-    flex-grow: 1; 
+    border: none;
+    border-bottom: 2px dashed #dadada;
+    flex-grow: 1;
     height: 0px;
   }
 
   /** Lister */
-  
+
   ui5-badge {
     min-width: 1.7rem;
     margin-top: 3px;
     background: rgb(183, 183, 183);
     color: rgb(232, 232, 232);
   }
-  
+
   ui5-badge:hover {
-    cursor:pointer;
+    cursor: pointer;
   }
 
 
@@ -135,13 +135,13 @@ export const sharedStyles = css`
     border: none;
     min-width: 40px;
   }
-  
+
   .showBtn {
     border: none;
     padding: 0px;
     display: none;
   }
-  
+
   .red {
     border: 1px solid red;
   }
@@ -154,7 +154,7 @@ export const sharedStyles = css`
     cursor: pointer;
     color: #484848;
     background: #F6FAFC;
-    border-radius:5px;
+    border-radius: 5px;
     margin-left: -2px;
     padding-left: 5px;
     margin-right: 5px;
@@ -167,7 +167,7 @@ export const sharedStyles = css`
   .threadItem:hover > ui5-avatar-group {
     display: none !important;
   }
-  
+
   .threadItem:hover > ui5-button {
     display: block !important;
   }
@@ -175,7 +175,7 @@ export const sharedStyles = css`
   .threadItem:hover > copy-wal-button {
     display: block !important;
   }
-  
+
   chat-item:hover {
     background: #d8e2f6;
   }

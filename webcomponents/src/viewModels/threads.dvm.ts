@@ -448,7 +448,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** Return list of agents with known presence not older than 5 minutes */
   allCurrentOthers(startingAgents?: AgentId[], thread?: ActionId): AgentId[] {
     const agents = startingAgents? startingAgents : Array.from(this._perspective.agentPresences.keys());
-    console.log("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread);
+    //console.log("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread);
     const currentTime: number = Math.floor(Date.now() / 1000);
     const filtered = agents
       .filter((key) => !key.equals(this.cell.address.agentId))
@@ -460,7 +460,7 @@ export class ThreadsDvm extends DnaViewModel {
         }
         return (currentTime - pair[0]) < 5 * 60; // 5 minutes
       });
-    console.log("allCurrentOthers() filtered = ", filtered.length);
+    //console.log("allCurrentOthers() filtered = ", filtered.length);
     return filtered;
   }
 
