@@ -2406,6 +2406,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     toasty(msg("All marked 'read' and cleared Inbox"));
     await this._dvm.threadsZvm.commitAllProbeLogs();
     await this._dvm.threadsZvm.flushInbox();
+    /** */
+    this._dvm.threadsZvm.flushNewAndUnreads();
+
   }
 
 

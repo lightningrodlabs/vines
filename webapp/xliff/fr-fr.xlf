@@ -82,18 +82,6 @@
   <source>Retry</source>
   <target>Réessayer</target>
 </trans-unit>
-<trans-unit id="sd980d545359db490">
-  <source>Import Profile into Vines</source>
-  <target>Importer le Profile dans Vines</target>
-</trans-unit>
-<trans-unit id="sa0ca791d0f13f0e5">
-  <source>Archive</source>
-  <target>Archiver</target>
-</trans-unit>
-<trans-unit id="sf71a90bc017f1e80">
-  <source>Unarchive</source>
-  <target>Désarchiver</target>
-</trans-unit>
 <trans-unit id="s35e45311a57818f9">
   <source>DM channel</source>
   <target>Canal privé</target>
@@ -109,10 +97,6 @@
 <trans-unit id="s0b7ae9543c001867">
   <source>Reply</source>
   <target>Réponse</target>
-</trans-unit>
-<trans-unit id="s73910a76da4b2fce">
-  <source>Comments about</source>
-  <target>Commentaires sur</target>
 </trans-unit>
 <trans-unit id="s8d3230f4441c5b0e">
   <source>Replying to</source>
@@ -153,22 +137,6 @@
 <trans-unit id="s382a2aa3984474dd">
   <source>Create</source>
   <target>Créer</target>
-</trans-unit>
-<trans-unit id="s06aa213afe598b85">
-  <source>DM channel archived</source>
-  <target>Canal de message privé archivé</target>
-</trans-unit>
-<trans-unit id="sfa717ce31133b962">
-  <source>DM channel unarchived</source>
-  <target>Canal de message privé désarchivé</target>
-</trans-unit>
-<trans-unit id="se17417fb33768153">
-  <source>archived</source>
-  <target>Archivé</target>
-</trans-unit>
-<trans-unit id="s6142d3768b017d6c">
-  <source>Unarchived</source>
-  <target>Désarchivé</target>
 </trans-unit>
 <trans-unit id="s7f845078d7a5c0b5">
   <source>from</source>
@@ -250,9 +218,6 @@
 <trans-unit id="sd332c0ffa9a5a912">
   <source>Sort alphabetically</source>
 </trans-unit>
-<trans-unit id="s9bd37c4afb69d679">
-  <source>View/Hide Archived</source>
-</trans-unit>
 <trans-unit id="sbdeedc1c60306b35">
   <source>Messages</source>
 </trans-unit>
@@ -297,6 +262,54 @@
 </trans-unit>
 <trans-unit id="sa2d505555b6701a8">
   <source>Copied WAL to clipboard</source>
+</trans-unit>
+<trans-unit id="s9df212d89cab196d">
+  <source>Hide</source>
+</trans-unit>
+<trans-unit id="sa3443b99ecf186ea">
+  <source>Unhide</source>
+</trans-unit>
+<trans-unit id="se6bcb10cfdfb85eb">
+  <source>DM channel hidden</source>
+</trans-unit>
+<trans-unit id="s235efeb83fe49aa0">
+  <source>DM channel unhidden</source>
+</trans-unit>
+<trans-unit id="sa000c4df231528b9">
+  <source>hidden</source>
+</trans-unit>
+<trans-unit id="sf80f86fa152c1f52">
+  <source>unhidden</source>
+</trans-unit>
+<trans-unit id="sc592307ea80f16b9">
+  <source>Unknown</source>
+</trans-unit>
+<trans-unit id="s50fa3befe81809d0">
+  <source> is typing...</source>
+</trans-unit>
+<trans-unit id="s130936e19bad7808">
+  <source>Uploading file:</source>
+</trans-unit>
+<trans-unit id="s0487f33d9ddaabde">
+  <source>About</source>
+</trans-unit>
+<trans-unit id="s751678adb0aa2b23">
+  <source>Member</source>
+</trans-unit>
+<trans-unit id="s9feb1a1345ccc3e5">
+  <source>Network</source>
+</trans-unit>
+<trans-unit id="s716a6024e3fe999c">
+  <source>Show</source>
+</trans-unit>
+<trans-unit id="s3a9ab9fa945006eb">
+  <source>hidden Topics &amp; Channels</source>
+</trans-unit>
+<trans-unit id="s05073d2537b45d1a">
+  <source>Sync</source>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
 </trans-unit>
 </body>
 </file>

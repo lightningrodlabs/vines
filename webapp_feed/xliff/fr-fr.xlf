@@ -6,12 +6,6 @@
   <source>Create new Topic</source>
   <target>Créer nouveau Sujet</target>
 </trans-unit>
-<trans-unit id="sfe757acedad7705f">
-  <source>Hide Archived Topics</source>
-</trans-unit>
-<trans-unit id="s2db3b734e400a772">
-  <source>View Archived Topics</source>
-</trans-unit>
 <trans-unit id="sfeddbc6c931b7ad7">
   <source>Mark all as read</source>
 </trans-unit>
@@ -80,6 +74,12 @@
 </trans-unit>
 <trans-unit id="s8933f1bb82275307">
   <source>All marked 'read' and cleared Inbox</source>
+</trans-unit>
+<trans-unit id="s627167bb8ab349db">
+  <source>Hide Topics</source>
+</trans-unit>
+<trans-unit id="s54c8e1d3117493be">
+  <source>Unhide Topics</source>
 </trans-unit>
 </body>
 </file>

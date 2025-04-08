@@ -413,7 +413,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         newThreads.push([ppAh, intoAnyId(subject_hash)]);
       }
     }
-    //console.log("probeAllLatest:     newThreads", newThreads);
+    console.log("probeAllLatest() newThreads", newThreads.length);
     this._perspective.storeAllNewThreads(newThreads);
 
     /* unreadThreads: Map new beads to their threads */
@@ -1002,6 +1002,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     for (const [linkAh, _pair] of this._perspective.getAllNotifications()) {
       await this.deleteNotification(linkAh);
     }
+  }
+
+
+  flushNewAndUnreads() {
+    this._perspective.unreads.clear();
+    this._perspective.newThreads.clear();
+    this.notifySubscribers();
   }
 
 

@@ -168,7 +168,7 @@ export class ThreadsPerspective {
   //private _threadsByName: Dictionary<ActionId> = {};
 
   /** New = Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
-  /** A subject is new if a new thread has found for it and no older threads for this subject has been found */
+  /** A subject is new if a new thread has been found for it and no older threads for this subject has been found */
   /* ppAh -> SubjectHash */
   newThreads: ActionIdMap<AnyId> = new ActionIdMap();
   /** Unread messages by thread. Unread thread = Has "new" beads */
@@ -763,7 +763,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeAllNewThreads(list: [ActionId, AnyId][]) {
-    this.newThreads.clear();
+    //this.newThreads.clear();
     for (const [ah, subjectHash] of list) {
       this.newThreads.set(ah, subjectHash);
     }
@@ -938,7 +938,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean): ParticipationProtocol {
-    console.debug(`storeThread() thread "${ppAh.short}"`, author.short, pp);
+    console.debug(`storeThread() thread "${ppAh.short}"`, author.short, isNew, pp);
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
     }
@@ -975,6 +975,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     } else {
       /** isNew */
       if (isNew) {
+        console.debug(`storeThread() newThreads "${ppAh.short}"`);
         this.newThreads.set(ppAh, subjectAddr);
       }
       /** threadsPerSubject */
@@ -1085,9 +1086,10 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeGlobalLog(latestGlobalLogTime: Timestamp) {
+    console.log("storeGlobalLog() newThreads cleared")
     this.globalProbeLogTs = latestGlobalLogTime;
-    this.unreads.clear();
-    this.newThreads.clear();
+    //this.unreads.clear();
+    //this.newThreads.clear();
   }
 
 

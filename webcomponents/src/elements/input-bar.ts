@@ -264,7 +264,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const reason = this.validateText(this.inputElem.value);
       if (reason) {
         // this.inputElem.valueState = ValueState.Error;
-        toasty(msg(`Invalid message: ${reason}`));
+        toasty(msg("Invalid message") + ": " + reason);
         return;
       }
     }
