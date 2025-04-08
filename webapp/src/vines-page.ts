@@ -1,7 +1,7 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
-  ActionId,
+  ActionId, AgentIdMap,
   delay,
   DnaElement,
   EntryId,
@@ -1419,12 +1419,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             : html`<chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
 
         let typingMsg = "";
-        const typers =this._dvm.perspective.typings.get(this._selectedThreadHash);
+        let typers: AgentIdMap<Timestamp> | undefined = this._dvm.perspective.typings.get(this._selectedThreadHash);
         //console.debug("text-input typers", typers);
         if (typers) {
-          if (typers.size > 0) {
-            for (const typer of typers) {
-              const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(new AgentId(typer));
+          /* Filter old signals */
+          const now = Date.now();
+          const typersArray = Array.from(typers.entries())
+            .filter(([typer, ts]) => {
+            console.debug("typer", typer, now, ts, now - ts);
+            return now - ts < 20 * 1000;
+          });
+          /* Concat names */
+          if (typersArray.length > 0) {
+            for (const [typer, _ts] of typers) {
+              const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(typer);
               const nickname = maybeProfile ? maybeProfile.nickname : msg("Unknown");
               typingMsg += nickname + ", "
             }

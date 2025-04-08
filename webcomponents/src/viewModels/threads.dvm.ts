@@ -11,7 +11,7 @@ import {catchThrottled, ThreadsZvm} from "./threads.zvm";
 import {
   AppSignal, Signal, SignalType,
   SignalCb,
-  Timestamp, ActionHashB64, AgentPubKeyB64
+  Timestamp, ActionHashB64
 } from "@holochain/client";
 import {
   ParticipationProtocol,
@@ -54,7 +54,8 @@ export type ThreadsDnaPerspective = {
   /** */
   signaledNotifications: ThreadsNotification[],
   /** track who is currently typing per thread */
-  typings: ActionIdMap<Set<AgentPubKeyB64>>,
+  /** ppAh -> (AgentId -> last seen timestamp) */
+  typings: ActionIdMap<AgentIdMap<Timestamp>>,
   /** track my un-acked beads */
   myUnsharedBeads: Set<ActionHashB64>,
   ackRequests: ActionIdMap<AgentId>,
@@ -386,13 +387,13 @@ export class ThreadsDvm extends DnaViewModel {
               const ppAh =  appTip.data!.thread!;
               const is = appTip.data!.is;
               if (!this._perspective.typings.has(ppAh)) {
-                this._perspective.typings.set(ppAh, new Set());
+                this._perspective.typings.set(ppAh, new AgentIdMap<Timestamp>());
               }
               const prev = this._perspective.typings.get(ppAh)!;
               if (is) {
-                prev.add(from.b64);
+                prev.set(from, Date.now());
               } else {
-                prev.delete(from.b64);
+                prev.delete(from);
               }
             }
             break
@@ -524,9 +525,9 @@ export class ThreadsDvm extends DnaViewModel {
       /*await*/ this.signalTyping(ppAh, false);
       return;
     }
-    if (!this._perspective.threadInputs.has(ppAh)) {
+    //if (!this._perspective.threadInputs.has(ppAh)) {
       this.signalTyping(ppAh, true);
-    }
+    //}
     this._perspective.threadInputs.set(ppAh, value);
   }
 

@@ -210,7 +210,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             //console.log("Authors' Avatar", Object.keys(authors).length);
             const typings = this._dvm.perspective.typings.get(ppAh);
             let avatars = agents.map((agentId) => {
-              return renderAvatar(this, this._dvm.profilesZvm, agentId, "XS", typings && typings.has(agentId.b64)? "red" : "");
+              return renderAvatar(this, this._dvm.profilesZvm, agentId, "XS", typings && typings.has(agentId)? "red" : "");
             });
             avatarGrp = html`<ui5-avatar-group type="Group" style="width:fit-content;max-width:52px;">${avatars}</ui5-avatar-group>`;
           }
