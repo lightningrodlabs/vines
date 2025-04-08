@@ -31,6 +31,10 @@ export const sharedStyles = css`
     display: inline;
   }
 
+  .chatAvatar:hover {
+    border: 1px solid red;
+  }
+
   .mention {
     background: #c6ddf594;
     padding: 0px 3px 0px 2px;

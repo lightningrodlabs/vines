@@ -100,8 +100,8 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     try {
       const manifestEh = entryBead.sourceEh;
-      console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash);
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
+      console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash, !!this._manifest);
       if (!this._manifest || this._manifest.description.size > maxSize) {
         console.debug("<chat-file>.loadFile() stopped", this._manifest);
         this._loading = false;
@@ -182,7 +182,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
     }
     if (this._loading) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Large" active style="min-height: 100px;"></ui5-busy-indicator>`;
     }
     if (!this._manifest) {
       return html`
@@ -223,9 +223,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-li>
         </ui5-list>`;
     }
+
+    const MAX_VIEWABLE_SIZE = 100 * 1024 * 1024;
     const fileDesc = filePprm.description;
     const fileType = kind2Type(fileDesc.kind_info);
-    const isViewable = fileType == FileType.Image || fileType == FileType.Audio || fileType == FileType.Video || fileType == FileType.Text || fileType == FileType.Pdf;
+    const isViewableType = fileType == FileType.Image || fileType == FileType.Audio || fileType == FileType.Video || fileType == FileType.Text || fileType == FileType.Pdf;
+    const isViewable = isViewableType && fileDesc.size < MAX_VIEWABLE_SIZE;
 
     /** Default file render (any big file) */
     let item = html`
@@ -240,7 +243,10 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-li>
         </ui5-list>
         ${isViewable? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
-             @click=${(e:any)=> {e.preventDefault(); e.stopPropagation(); this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize * 20)}}>
+             @click=${(e:any)=> {
+               e.preventDefault(); e.stopPropagation(); 
+               this.loadFileData(MAX_VIEWABLE_SIZE);
+             }}>
             ${msg('View')}
         </div>` : html``}        
     `;

@@ -324,6 +324,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** File upload */
   @state() private _splitObj: SplitObject | undefined = undefined;
+  @state() _uploadingFile: boolean = false;
+
 
   /** Notifications */
   private _lastKnownNotificationIndex = 0;
@@ -473,12 +475,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /* Create File Message */
     if (e.detail.file) {
       console.log("<vines-page>.onCreateFileMessage()", e.detail.file.name, e.detail.file, this._filesDvm);
+      this._uploadingFile = true;
+      this.requestUpdate();
       this._splitObj = await this._filesDvm.startPublishFile(e.detail.file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
         console.debug("<vines-page> startPublishFile callback", eh);
         const type = simplifyMimeType(e.detail.file!.type);
         await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: e.detail.file!.size, type}, ppAh, undefined, replyToAh, this.weServices);
         this._splitObj = undefined;
+        this._uploadingFile = false;
       });
+      //console.log("<vines-page>.onCreateFileMessage() requestUpdate()");
     }
   }
 
@@ -1429,10 +1435,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         centerSide = html`
             <presence-panel .hash=${this._selectedThreadHash}></presence-panel>
             ${threadView}
-            ${uploadState? html`
+            ${uploadState || this._uploadingFile? html`
               <div id="uploadCard">
-                <div style="padding:5px;">Uploading ${uploadState.file.name}</div>
-                <ui5-progress-indicator style="width:100%;" value=${pct}></ui5-progress-indicator>
+                <div style="padding:5px;">${msg('Uploading file:')} ${uploadState? uploadState.file.name : "..."}</div>
+                <ui5-progress-indicator style="width:100%;" value=${uploadState? pct : 0}></ui5-progress-indicator>
               </div>
             ` : html`
             <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
@@ -2540,6 +2546,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #uploadCard {
           margin: auto;
+          margin-bottom: 10px; 
+          border-radius: 10px;
           /*margin-left:10px;*/
           min-width: 350px;
           width: 90%;
@@ -2548,6 +2556,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: column;
           border: 1px solid black;
           background: beige;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
         }
 
         #group-div {
