@@ -7,7 +7,7 @@ use zome_utils::*;
 #[hdk_extern]
 pub fn pull_applets(_:()) -> ExternResult<Vec<String>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  debug!("get_applets()");
+  debug!("START");
   let tp = Path::from(format!("{}", ROOT_ANCHOR_SUBJECTS))
     .typed(ThreadsLinkType::SubjectPath)?;
   let children = tp_children_paths(&tp)?;
@@ -22,6 +22,6 @@ pub fn pull_applets(_:()) -> ExternResult<Vec<String>> {
     debug!("appletId: {:?}", appletId);
     appletIds.push(appletId);
   };
-  debug!("appletIds: {:?}", appletIds);
+  debug!("END ; appletIds: {:?}", appletIds);
   Ok(appletIds)
 }

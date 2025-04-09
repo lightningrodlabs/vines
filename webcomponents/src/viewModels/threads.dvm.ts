@@ -552,6 +552,7 @@ export class ThreadsDvm extends DnaViewModel {
       moderation: defaultModeration(),
       limitations: defaultLimitations(),
     };
+    console.debug("ThreadsDvm.publishCommentThread() appletId", subject.appletId);
     const [_creation_ts, ppAh] = await this.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }

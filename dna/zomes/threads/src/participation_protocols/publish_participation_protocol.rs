@@ -19,7 +19,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   /// Add subject to Subjects PathTree and create "Protocols" link
   let subject_tp = get_subject_tp(pp.subject.clone())?;
   subject_tp.ensure()?;
-  debug!("{} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
+  debug!("subject_tp: {} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
   create_link(
     subject_tp.path_entry_hash()?,

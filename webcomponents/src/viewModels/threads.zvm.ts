@@ -369,6 +369,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** Get all SubjectTypes for a AppletId */
   async pullAppletSubjectTypes(appletId: EntryId): Promise<void> {
     //const appletHash = decodeHashFromBase64(appletId);
+    console.debug("pullAppletSubjectTypes() appletId", appletId);
     let subjectTypesRaw = await this.zomeProxy.findSubjectTypesForApplet(appletId.b64);
     this._perspective.storeSubjectTypesForApplet(appletId, subjectTypesRaw);
     this.notifySubscribers();
@@ -613,6 +614,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       moderation: defaultModeration(),
       subject,
     }
+    console.debug("ThreadsZvm.publishEditThread() appletId", pp.subject.appletId);
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
     /** */
     return [ts, new ActionId(pp_ah)];
@@ -778,6 +780,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[Timestamp, ActionId]> {
+    console.log("publishParticipationProtocol() appletId", pp.subject.appletId);
     const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
     return [ts, new ActionId(pp_ah)];
   }
@@ -785,7 +788,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
   async publishThreadFromSemanticTopic(appletId: EntryId, topicAh: ActionId, purpose: string, limitations: Limitations, moderation: Moderation): Promise<[Timestamp, ActionId]> {
-    console.log("publishThreadFromSemanticTopic()", appletId, purpose, limitations, moderation);
+    console.log("publishThreadFromSemanticTopic() appletId", appletId.b64, purpose, limitations, moderation);
     const [semTopicTitle, _semAuthor] = this._perspective.semanticTopics.get(topicAh)!;
     const subject: Subject = {
       address: topicAh.b64,

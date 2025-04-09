@@ -792,11 +792,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeSubjectTypesForApplet(appletId: EntryId, raw: [string, Uint8Array][]) {
+    console.log("storeSubjectTypesForApplet() appletId", appletId.b64, raw.length);
     let subjectTypes: EntryIdMap<string> = new EntryIdMap();
     for (const [subjectType, pathEh] of raw) {
       subjectTypes.set(new EntryId(pathEh), subjectType);
     }
-    console.log("storeSubjectTypesForApplet()", appletId, subjectTypes);
+    console.log("storeSubjectTypesForApplet() appletId subjectTypes", subjectTypes);
     this.appletSubjectTypes.set(appletId, subjectTypes);
   }
 

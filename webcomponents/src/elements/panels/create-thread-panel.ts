@@ -58,7 +58,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
         appletId: new EntryId(attLocInfo!.appletHash).b64,
       }
       subject.name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices!);
-      console.log("@create event subject name", subject.name);
+      console.log("@create event subject", subject.name, subject.appletId);
       const pp: ParticipationProtocol = {
         purpose,
         subject,

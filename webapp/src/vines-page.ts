@@ -1152,6 +1152,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         limitations: defaultLimitations(),
         moderation: defaultModeration(),
     };
+    console.debug("publishCommentThread() appletId", subject.appletId);
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }
@@ -1342,10 +1343,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /**  */
+  async pullLatestAppletInfos() {
+    console.log("pullLatestAppletInfos()", !!this.weServices);
+    if (this.weServices) {
+      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds();
+      console.log("pullLatestAppletInfos() appletIds", appletIds);
+      for (const appletId of appletIds) {
+        await this.weServices.appletInfo(appletId.b64);
+      }
+    }
+  }
+
 
   /** */
   override render() {
-    console.log("<vines-page>.render()", this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, this._splitObj, /*this._dvm.profilesZvm,*/ this._dvm.threadsZvm.perspective);
+    console.log("<vines-page>.render()", this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, !!this._splitObj);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     if (this.perspective.importing) {
@@ -1637,6 +1650,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               }}>${msg('Topics')}</div>
       <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
                               e.preventDefault(); e.stopPropagation();
+                              /** Get and Cache appletInfo for each known applet */
+                              /*await*/ this.pullLatestAppletInfos();      
+                              /** */
                               this._listerToShow = "tools-option";
                               const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
                               topicsBtn.classList.remove("selected");

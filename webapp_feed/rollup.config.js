@@ -19,9 +19,9 @@ const DIST_FOLDER = "dist"
 export default {
   input: "index.html",
   output: {
-    entryFileNames: "[hash].js",
-    chunkFileNames: "[hash].js",
-    assetFileNames: "[hash][extname]",
+    entryFileNames: "index.js",
+    //chunkFileNames: "[hash].js",
+    assetFileNames: "assets[extname]",
     format: "es",
     dir: DIST_FOLDER,
   },

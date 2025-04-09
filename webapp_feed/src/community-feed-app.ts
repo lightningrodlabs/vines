@@ -41,7 +41,7 @@ import {
   VINES_DEFAULT_ROLE_NAME,
   weaveUrlToWal,
   weClientContext,
-  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType, hrl2Id,
+  getMainThread, MAIN_SEMANTIC_TOPIC, SpecialSubjectType, hrl2Id, defaultModeration, defaultLimitations,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {localized, msg} from '@lit/localize';
@@ -224,7 +224,7 @@ export class CommunityFeedApp extends HappElement {
     //   await this.hvm.probeAll();
     // }
 
-    await this.networkInfoAll(); // FIXME: should propable store result in class field
+    //await this.networkInfoAll(); // FIXME: should propable store result in class field
 
 
     /** Make sure main topic and thread exists */
@@ -273,8 +273,8 @@ export class CommunityFeedApp extends HappElement {
   /** */
   async onDumpNetworkLogs(_e:any) {
     console.log("<community-feed-app>.onDumpNetworkLogs()")
-    await this.networkInfoAll();
-    this.dumpNetworkInfoLogs();
+    //await this.networkInfoAll();
+    //this.dumpNetworkInfoLogs();
   }
 
 
@@ -372,12 +372,13 @@ export class CommunityFeedApp extends HappElement {
 
     //let view = html`<slot></slot>`;
     // FIXME: should propable store networkInfoLogs in class field
+    //                       .networkInfoLogs=${this.appProxy.networkInfoLogs}
+    // @queryNetworkInfo=${(_e:any) => this.networkInfoAll()}
     let view = html`
             <community-feed-page
                       .selectedPostAh=${this._selectedPostAh}
-                      .networkInfoLogs=${this.appProxy.networkInfoLogs} 
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${(_e:any) => this.networkInfoAll()}
+                      
             ></community-feed-page>`;
     if (this.appletView) {
       console.log("<community-feed-app> appletView", this.appletView);
@@ -448,7 +449,9 @@ export class CommunityFeedApp extends HappElement {
                         //console.log("@create event subject_name", subject_name);                        
                         const pp: ParticipationProtocol = {
                             purpose: e.detail.purpose,
-                            rules: e.detail.rules,
+                            //rules: e.detail.rules,
+                            moderation: defaultModeration(),
+                            limitations: defaultLimitations(),
                             subject,
                         };
                         const [_ts, ppAh] = await this.threadsDvm.threadsZvm.publishParticipationProtocol(pp);

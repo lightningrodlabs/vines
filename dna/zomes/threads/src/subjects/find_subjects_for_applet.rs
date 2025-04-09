@@ -13,7 +13,7 @@ pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, 
   }
   let tp = get_applet_tp(applet_id.clone())?;
   let children = tp_children_paths(&tp)?;
-  debug!("get_subjects_for_dna() found {} children", children.len());
+  debug!("find_subjects_for_applet() found {} children", children.len());
   let mut input = FindSubjectsInput { applet_id, subject_type: "".to_string() };
   let mut res = Vec::new();
   for child_tp in children {
@@ -21,6 +21,7 @@ pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, 
     let mut ahs = find_subjects_by_type(input.clone()).unwrap();
     res.append(&mut ahs);
   }
+  debug!("find_subjects_for_applet() res: {:?}", res);
   Ok(res)
 }
 
