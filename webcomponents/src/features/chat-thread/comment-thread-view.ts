@@ -285,7 +285,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     let maybeInput = html``;
     if (this.showInput) {
       // @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}
-      maybeInput = html`<vines-input-bar id="input-bar" topic="thread" .threadHash=${this.threadHash}></vines-input-bar>`;
+      maybeInput = html`<vines-input-bar id="input-bar" nosend topic="thread" .threadHash=${this.threadHash}></vines-input-bar>`;
     }
 
     const titleTip = "Type: " + subjectType;

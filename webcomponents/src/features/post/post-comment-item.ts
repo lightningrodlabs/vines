@@ -4,7 +4,7 @@ import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import {ActionId, AgentId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, delay, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
@@ -214,7 +214,14 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           </div>
           <div class="underRow">
               <div>${date_str}</div>
-              <div id="likeBtn" class="textBtn" @click=${(e:any) => this.dispatchEvent(new CustomEvent<ShowEmojiEvent>('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}))}>${msg('Like')}</div>
+              <div id="likeBtn" class="textBtn" 
+                   @click=${async (e:any) => {
+                     this.dispatchEvent(new CustomEvent<ShowEmojiEvent>('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
+                     await delay(5 * 100);
+                     this.requestUpdate();
+                   }}>
+                  ${msg('Like')}
+              </div>
               <div class="textBtn" @click=${(_e:any) => this.copyMessageLink()}>${msg('Share')}</div>
               <div style="flex-grow: 1;"></div>
               <emoji-bar .hash=${this.hash} style="margin-top:2px;"></emoji-bar>

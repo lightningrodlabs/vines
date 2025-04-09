@@ -533,14 +533,15 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId) {
+  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId): Promise<ActionId> {
     /** Check rate limit */
     if (!this.passRateLimit(ppAh)) {
       // TODO: should not do toast in DVM but instead return failure return code and have caller act
       toasty("Publish message failed: Rate limit reached");
     }
     /** */
-    await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
+    const res = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
+    return res[0]
   }
 
 

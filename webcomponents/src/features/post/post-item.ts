@@ -163,7 +163,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
     if (!commentThreadAh) {
       await delay(200); // avoid throttle issue
       const threads = await this._dvm.threadsZvm.pullSubjectThreads(this.hash);
-      //console.debug("getCommentThread(), threads", threads);
+      console.debug("getCommentThread(), threads", threads);
       Array.from(threads.entries()).map(([ppAh, [pp, _ts, _auth]]) => {
         if (pp.purpose == "comment") {
           commentThreadAh = ppAh;
@@ -233,7 +233,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
       postContent = html`<chat-text class="contentItem" .hash=${this.hash}></chat-text>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
-      postContent = html`<chat-file class="contentItem" .hash=${this.hash.b64}></chat-file>`;
+      postContent = html`<chat-file class="contentItem" style="margin: auto;" .hash=${this.hash.b64}></chat-file>`;
     }
     if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
       postContent = html`<chat-wal class="contentItem" .hash=${this.hash}></chat-wal>`;
@@ -359,6 +359,7 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
             ${this._splitObj? html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>` : html`
             <vines-input-bar id="input-bar"
                              style="flex-grow:1;"
+                             nosend
                              background="#eee"
                              topic="comment"
                              .threadHash=${this.hash}

@@ -53,6 +53,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @property() background?: string;
 
+  @property({type: Boolean}) nosend: boolean = false;
+
   @property() threadHash?: ActionId;
   @property() agentHash?: AgentId; // special case when DM-ing before DM thread was created
 
@@ -186,7 +188,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     super.willUpdate(changedProperties);
     console.debug("<vines-input-bar>.willUpdate()", changedProperties.has("threadHash"), this.threadHash, this.agentHash, changedProperties);
     /** Set Restrictions */
-    if (this.threadHash) {
+    if (this.threadHash && this._dvm.threadsZvm.perspective.threads.get(this.threadHash!)) {
       this._limitations = this._dvm.threadsZvm.perspective.threads.get(this.threadHash!)!.pp.limitations;
       //console.debug("<vines-input-bar> limitations", this._limitations);
     } else {
@@ -629,9 +631,9 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               this.requestUpdate();
                             }}
               ></ui5-textarea>`:html``}
-              <ui5-button slot="${this._limitations.canText? "endContent": ""}" design="Emphasized" icon="paper-plane" tooltip=${msg("Send")}
+              ${this.nosend? html`` : html`<ui5-button slot="${this._limitations.canText? "endContent": ""}" design="Emphasized" icon="paper-plane" tooltip=${msg("Send")}
                           ?disabled=${!canSend}
-                          @click=${() => this.commitInput()}></ui5-button>
+                          @click=${() => this.commitInput()}></ui5-button>`}
           </ui5-bar>
         </div>
         <ui5-popover id="pop" hide-arrow allow-target-overlap placement-type="Top" horizontal-align="Stretch" initial-focus="textMessageInput">
