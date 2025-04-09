@@ -12,6 +12,11 @@ import {HoloHashB64} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
 
 
+/** MAIN TOPIC is hardcoded */
+export const MAIN_TOPIC_ID: ActionId = ActionId.empty(77); // 'M'
+export const MAIN_SEMANTIC_TOPIC = "Channels";
+
+
 /** */
 export function hrl2Id(hrl: Hrl): [DnaId, DhtId] {
   return [new DnaId(hrl[0]), intoDhtId(hrl[1])]
@@ -260,7 +265,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
         const pair = threadsZvm.perspective.semanticTopics.get(new ActionId(subject.address));
         if (!pair) {
           //semTopic = (await threadsZvm.zomeProxy.fetchTopic(decodeHashFromBase64(subject.address))).title;
-          return "{Unknown Topic}";
+          return "{Unknown Category}";
         }
         return pair[0];
         break;

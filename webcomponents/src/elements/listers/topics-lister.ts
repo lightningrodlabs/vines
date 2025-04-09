@@ -88,7 +88,6 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   }
 
 
-
   /** */
   override render() {
     console.log("<topics-lister>.render()", this.collapsed, this.threadsPerspective.semanticTopics.size, this.threadsPerspective.semanticTopics);
@@ -262,7 +261,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                             style="border:none;display: none"
                             @click="${(_e:any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`
             : html`
-                <ui5-button id=${"cmt-" + topicAh.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Topic")} design="Transparent"
+                <ui5-button id=${"cmt-" + topicAh.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Category")} design="Transparent"
                             style="border:none; padding:0px;display: none" 
                             @click="${(_e:any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`;
       }
@@ -371,7 +370,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                         @click=${(_e:any) => this.onClickEditTopic(topicAh, title)}></ui5-button>
                 ${topicHideBtn}                
                 ${topicCommentButton}
-                <ui5-button icon="add" tooltip=${msg("Create a new channel for this Topic")}
+                <ui5-button icon="add" tooltip=${msg("Create a new Channel for this Category")}
                             design="Transparent" 
                             style="color:grey"
                             @click=${async (e:any) => {

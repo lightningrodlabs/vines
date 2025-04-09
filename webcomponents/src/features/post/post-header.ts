@@ -11,7 +11,8 @@ import {ThreadsEntryType} from "../../bindings/threads.types";
 import {weClientContext} from "../../contexts";
 import {consume} from "@lit/context";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
+import {getMainThread} from "../../utils_feed";
+import {MAIN_TOPIC_ID} from "../../utils";
 
 
 /**

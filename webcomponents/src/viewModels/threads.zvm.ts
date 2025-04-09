@@ -77,13 +77,12 @@ import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
 //import {prettyTimestamp} from "@ddd-qc/files";
 import {Decoder, Encoder} from "@msgpack/msgpack";
-import {getThisAppletId, parseMentions, weaveUrlToWal} from "../utils";
+import {getThisAppletId, MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID, parseMentions, weaveUrlToWal} from "../utils";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
 import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
 import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
-import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils_feed";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsDvm} from "./threads.dvm";
 import {THIS_APPLET_ID} from "../contexts";
@@ -282,7 +281,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** -- */
 
-  /** Feed App specific */
+  /** */
   storeMainTopic() {
     this._perspective.storeSemanticTopic(MAIN_TOPIC_ID, MAIN_SEMANTIC_TOPIC, this.cell.address.agentId);
   }
@@ -1742,6 +1741,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   /** */
   _authorCache: AnyIdMap<AgentId> = new AnyIdMap<AgentId>();
   async getRecordAuthor(dh: DhtId): Promise<AgentId> {
+    /* Skip MAIN_TOPIC_ID */
+    if (dh.equals(MAIN_TOPIC_ID)) {
+      return this.cell.address.agentId;
+    }
+    /* */
     const maybe = this._authorCache.get(dh.b64);
     if (maybe) {
       return maybe;

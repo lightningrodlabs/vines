@@ -588,7 +588,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Topic or Channel */
     const dhtId = intoDhtId(e.detail.address.b64);
-    const type = e.detail.type == "Topic" ? msg("Topic") : msg("Channel");
+    const type = e.detail.type == "Topic" ? msg("Category") : msg("Channel");
     dialog.title = `${verb} ${type}?`;
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
@@ -746,7 +746,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Check subject */
     if (!this._createTopicHash) {
-      console.warn("Missing topic hash");
+      console.warn("Missing Topic hash");
       return;
     }
     /** Check Rules */
@@ -1777,7 +1777,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
                     <ui5-button icon="accept" design="Transparent" style="height:18px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
                     ${this._listerToShow == "topics-option" ? html`
-                        <ui5-button icon="add" design="Transparent" style="height:18px;" tooltip=${msg("Create new Topic")} 
+                        <ui5-button icon="add" design="Transparent" style="height:18px;" tooltip=${msg("Create New Category")} 
                                     @click=${(_e:any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
                     </div>
                 </div>
@@ -2205,7 +2205,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               </sl-dialog>
             </cell-context>
             <!-- Create Topic Dialog -->
-            <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Topic')}>
+            <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>
                 <section>
                     <div>
                         <ui5-label for="topicTitleInput">${msg("Title")}:</ui5-label>
@@ -2256,7 +2256,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </ui5-dialog>            
             <!-- EditTopicDialog -->
-            <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Topic')}>
+            <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Category')}>
                 <section>
                     <div>
                         <ui5-label for="editTopicTitleInput">${msg("Title")}:</ui5-label>

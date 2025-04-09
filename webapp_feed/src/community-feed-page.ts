@@ -682,7 +682,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
                           }}>
               </ui5-button>
               <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
-                        <ui5-menu-item id="createTopic" text=${msg("Create new Topic")} icon="add"></ui5-menu-item>
+                        <ui5-menu-item id="createTopic" text=${msg("Create New Category")} icon="add"></ui5-menu-item>
                         ${this._canViewArchivedSubjects
                             ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Topics")} icon="hide"></ui5-menu-item>`
                             : html`<ui5-menu-item id="viewArchived" text=${msg("Unhide Topics")} icon="show"></ui5-menu-item>`}

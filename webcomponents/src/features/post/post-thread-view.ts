@@ -7,7 +7,8 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../../contexts";
-import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
+import {getMainThread} from "../../utils_feed";
+import {MAIN_TOPIC_ID} from "../../utils";
 
 
 /**

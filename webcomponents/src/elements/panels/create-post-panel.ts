@@ -13,9 +13,10 @@ import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {FilesDvm, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@theweave/api";
-import {getMainThread, MAIN_TOPIC_ID} from "../../utils_feed";
+import {getMainThread} from "../../utils_feed";
 //import {SpecialSubjectType} from "../../events";
 import {defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
+import {MAIN_TOPIC_ID} from "../../utils";
 
 
 export interface PostCreatedEvent {
