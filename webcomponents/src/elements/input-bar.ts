@@ -32,6 +32,7 @@ import {
 } from "../viewModels/threads.materialize";
 import {formatTime} from "../features/timezone/utils";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
+import {prettyFileSize} from "@ddd-qc/files";
 //import {handledMimeTypes} from "../features/rules/rules-edit";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
@@ -679,11 +680,17 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const file = e.target.files[0] as File;
     const fileLimits = this._limitations.canFile!;
     console.log("<vines-input-bar> onAttachFile()", file.size, fileLimits.minFileSize, fileLimits.maxFileSize)
-    if (file.size < fileLimits.minFileSize || file.size > fileLimits.maxFileSize) {
-      toasty("Attach File cancelled: Invalid file size");
-    } else {
-      this._file = e.target.files[0];
+    if (file.size > fileLimits.maxFileSize /*|| file.size > this._filesDvm.dnaProperties.maxParcelSize*/) {
+      toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(fileLimits.maxFileSize)}`);
+      this.focusInput();
+      return;
     }
+    if (file.size < fileLimits.minFileSize) {
+      toasty(`Error: File is too small ${prettyFileSize(file.size)}. Minimum file size: ${prettyFileSize(fileLimits.minFileSize)}`);
+      this.focusInput();
+      return;
+    }
+    this._file = e.target.files[0];
     this.focusInput();
   }
 

@@ -11,12 +11,13 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {NotifySetting, Subject, /*Subject,*/ ThreadsEntryType} from "../../bindings/threads.types";
 import {ActionId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
-import {FilesDvm, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, splitFile, SplitObject} from "@ddd-qc/files";
 import {weaveUrlFromWal} from "@theweave/api";
 import {getMainThread} from "../../utils_feed";
 //import {SpecialSubjectType} from "../../events";
 import {BeadType, defaultLimitations, defaultModeration} from "../../viewModels/threads.materialize";
 import {MAIN_TOPIC_ID} from "../../utils";
+import {toasty} from "../../toast";
 
 
 export interface PostCreatedEvent {
@@ -112,6 +113,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onCreateFile() {
+    this._splitObj = undefined;
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = async (e:any) => {
@@ -124,12 +126,19 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       /** Before */
       const [mainThreadAh, createdMainThread] = await this.beforeCreate();
       /** Create */
-      this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents,async (eh) => {
-        console.log("<create-post-panel> startPublishFile callback", eh);
-        const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, mainThreadAh);
-        this._splitObj = undefined;
-        /** After */
-        await this.afterCreate(beadAh, ThreadsEntryType.EntryBead, createdMainThread);
+      splitFile(file, this._filesDvm.dnaProperties.maxChunkSize).then((obj) => {
+        this._splitObj = obj;
+        const succeeded = this._filesDvm.startPublishFile(file, obj, [], this._dvm.profilesZvm.perspective.agents,
+          async (eh) => {
+          console.log("<create-post-panel> startPublishFile callback", eh);
+          const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, mainThreadAh);
+          this._splitObj = undefined;
+          /** After */
+          await this.afterCreate(beadAh, ThreadsEntryType.EntryBead, createdMainThread);
+        });
+        if (!succeeded) {
+          toasty("Failed to load file");
+        }
       });
     }
     input.click();

@@ -1,5 +1,6 @@
 import {html, css} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import {consume} from "@lit/context";
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
@@ -11,6 +12,10 @@ import {
   defaultLimitations,
   defaultModeration
 } from "../../viewModels/threads.materialize";
+import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
+import {filesContext} from "../../contexts";
+import Input from "@ui5/webcomponents/dist/Input";
+import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 
 /** */
@@ -27,24 +32,20 @@ export const handledMimeTypes: Object = {
 @customElement('rules-edit')
 export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm> {
 
+  /* */
   constructor() {
     super(ProfilesAltZvm.DEFAULT_ZOME_NAME);
   }
 
-  @property()
-  moderation: Moderation = defaultModeration();
+  @property() moderation: Moderation = defaultModeration();
+  @property() limitations: Limitations = defaultLimitations();
+  @property({ type: Array }) selectedTypes: string[] = [];
 
-  @property()
-  limitations: Limitations = defaultLimitations();
-
-  @state()
-  private canRateLimit: boolean = false;
-
-  @state()
-  private canModerate: boolean = false;
-
-  @state()
-  private canLimit: boolean = false;
+  @state() private canRateLimit: boolean = false;
+  @state() private canModerate: boolean = false;
+  @state() private canLimit: boolean = false;
+  @state() private bannedWordInput: string = '';
+  @state() private fileTypeInput: string = '';
 
   @state()
   private textRules: TextLimits = {
@@ -61,16 +62,11 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   };
 
 
-  @state()
-  private bannedWordInput: string = '';
-
-  @state()
-  private fileTypeInput: string = '';
+  @consume({ context: filesContext, subscribe: true })
+  _filesDvm!: FilesDvm;
 
 
-  @property({ type: Array })
-  selectedTypes: string[] = [];
-
+  /** -- Methods -- */
 
   /** Set back to initial values */
   reset() {
@@ -151,6 +147,21 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** -- Methods -- */
 
+
+  /** */
+  isValid(): boolean {
+    const input = this.shadowRoot!.getElementById("maxFileInput") as Input;
+    if (!input) {
+      return true;
+    }
+    console.debug("<rules-edit>.isValid()", input.valueState);
+    if (input.valueState == ValueState.Error) {
+      return false;
+    }
+    return true;
+  }
+
+  /** */
   private handleCanRateLimitChange(e: CustomEvent) {
     this.canRateLimit = (e.target as any).checked;
     if (this.canRateLimit && !this.limitations.maybeAgentRateLimiting) {
@@ -272,12 +283,28 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   private handleFileMaxSizeChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
-    if (!isNaN(value) && value >= 0) {
-      this.fileRules.maxFileSize = value;
-      if (this.limitations.canFile) {
-        this.limitations.canFile = { ...this.fileRules };
-      }
+    console.debug("handleFileMaxSizeChange()", value);
+    /** Check for errors */
+    const input = this.shadowRoot!.getElementById("maxFileInput") as Input;
+    const errorMsg = this.shadowRoot!.getElementById("maxErrorMsg") as HTMLElement;
+    if (isNaN(value) || value < 0) {
+      console.error("Invalid file size", value);
+      input.valueState = ValueState.Error;
+      errorMsg.textContent = msg("Invalid file size");
+      return;
     }
+    if (value >= this._filesDvm.dnaProperties.maxParcelSize) {
+      input.valueState = ValueState.Error;
+      errorMsg.textContent = msg("Maximum allowed is") + " " + prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)
+      return;
+    }
+    /** */
+    this.fileRules.maxFileSize = value;
+    if (this.limitations.canFile) {
+      this.limitations.canFile = { ...this.fileRules };
+    }
+    input.valueState = ValueState.None;
+
   }
 
   private handleInstructionsChange(e: CustomEvent) {
@@ -430,7 +457,9 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             
                             <div class="field-row">
                                 <ui5-label>Max File Size (bytes):</ui5-label>
-                                <ui5-input type="number" .value=${this.fileRules.maxFileSize} @change=${this.handleFileMaxSizeChange}></ui5-input>
+                                <ui5-input id="maxFileInput" type="number" .value=${this.fileRules.maxFileSize} @change=${this.handleFileMaxSizeChange}>
+                                    <div id="maxErrorMsg" slot="valueStateMessage"></div>
+                                </ui5-input>
                             </div>
                         </div>
                     ` : ''}

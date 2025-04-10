@@ -477,12 +477,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page>.onCreateFileMessage()", e.detail.file.name, e.detail.file, this._filesDvm);
       this._uploadingFile = true;
       this.requestUpdate();
-      this._splitObj = await this._filesDvm.startPublishFile(e.detail.file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
-        console.debug("<vines-page> startPublishFile callback", eh);
-        const type = simplifyMimeType(e.detail.file!.type);
-        await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {eh, size: e.detail.file!.size, type}, ppAh, undefined, replyToAh, this.weServices);
-        this._splitObj = undefined;
-        this._uploadingFile = false;
+      splitFile(e.detail.file, this._filesDvm.dnaProperties.maxChunkSize).then((obj) => {
+        this._splitObj = obj;
+        const succeeded = this._filesDvm.startPublishFile(e.detail.file!, obj, [], this._dvm.profilesZvm.perspective.agents,
+          async (eh) => {
+              console.debug("<vines-page> startPublishFile callback", eh);
+              const type = simplifyMimeType(e.detail.file!.type);
+              await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {
+                eh,
+                size: e.detail.file!.size,
+                type
+              }, ppAh, undefined, replyToAh, this.weServices);
+              this._splitObj = undefined;
+              this._uploadingFile = false;
+            });
+        if (!succeeded) {
+          toasty(msg("Failed to load file"));
+        }
       });
       //console.log("<vines-page>.onCreateFileMessage() requestUpdate()");
     }
@@ -656,6 +667,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const input = this.shadowRoot!.getElementById(inputId) as Input;
     const name = input.value.trim();
     let childDivs = input.querySelectorAll('div');
+    console.debug("validateTitle()", inputId);
     /** Must be different from previous */
     if (prev && prev == name) {
       input.valueState = ValueState.Error;
@@ -731,6 +743,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Check purpose */
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
     const purpose = input.value.trim();
+
     if (purpose.length < 1) {
       input.valueState = ValueState.Error;
       return;
@@ -742,6 +755,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const errorMsg = this.shadowRoot!.getElementById("channelErrorMsg") as HTMLElement;
       console.log("ValidateTopic() channel", errorMsg);
       errorMsg.textContent = msg("Invalid characters");
+      return;
+    }
+    /** Check Rules */
+    const rules = this.shadowRoot!.getElementById("rulesEdit") as RulesEdit;
+    if (!rules.isValid()) {
       return;
     }
     /** Check subject */
@@ -760,6 +778,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       rulesEdit.moderation,
     );
     /** cleanup */
+    input.valueState = ValueState.None;
     input.value = "";
     rulesEdit.reset();
     this.createThreadDialogElem.close(false);
@@ -1515,7 +1534,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
             <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px; margin-top:10px;">
               <div style="display: flex; flex-direction: row; gap:15px;">
-                  <ui5-button icon="upload-to-cloud" design="Emphasized" @click=${(_e:any) => this.openFile()}>${msg("Upload File")}</ui5-button>
+                  <ui5-button icon="upload-to-cloud" design="Emphasized" 
+                              ?disabled=${!!this._file}
+                              @click=${() => this.openFile()}>${this._file? msg("Uploading...") : msg("Upload File")}</ui5-button>
               </div>
               <file-table type="group" notag view nolocal noselect
                           style="flex-grow: 1;"
@@ -2282,10 +2303,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </ui5-dialog>
             <!-- CreateThreadDialog -->
-            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create new channel")}>
+            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create New Channel")}>
                 <section>
                     <div>
-                        <ui5-label for="threadPurposeInput">${msg("Purpose")}:</ui5-label>
+                        <ui5-label for="threadPurposeInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="threadPurposeInput"
                                    @keydown=${async (e: any) => {
                                        if (e.keyCode === 13) {
@@ -2298,10 +2319,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                     <rules-edit id="rulesEdit"></rules-edit>
                 </section>
-                <div slot="footer" style:
-                "display:flex;">
+                <div slot="footer" style="display:flex;">
                 <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                            @click=${async (e: any) => await this.onCreateThread(e)}>
+                            @click=${async (e:any) => await this.onCreateThread(e)}>
                     ${msg("Create")}
                 </ui5-button>
                 <ui5-button style="margin-top:5px" @click=${(_e: any) => this.createThreadDialogElem.close(false)}>
@@ -2339,28 +2359,39 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  @state() private _file: File | undefined = undefined;
+
   /** */
   private openFile() {
     console.log("<vines-page>.openFile()");
+    this._file = undefined;
     var input = document.createElement('input');
     input.type = 'file';
-    input.onchange = async (e:any) => {
-      console.log("<vines-page> target download file", e);
+    input.oncancel = async (_e:any) => {
+      console.log("<vines-page>.openFile() Canceled");
+    }
+    input.onchange = (e:any) => {
+      console.log("<vines-page>.openFile() target download file", e.target.files, e);
       const file = e.target.files[0];
       if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
         toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
         return;
       }
-      /*const splitObj =*/ await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
-      const maybeSplitObj = await this._filesDvm.startPublishFile(file, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents, async (_manifestEh) => {
-        toasty(msg("File successfully shared") + ": " + file.name);
-        console.log("<vines-page> File upload complet. requesting update.");
-        await delay(50); // required
-        this.requestUpdate();
+      this._file = file;
+      splitFile(file, this._filesDvm.dnaProperties.maxChunkSize).then((splitObj) => {
+        const succeeded = this._filesDvm.startPublishFile(file, splitObj, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents,
+            async (_manifestEh) => {
+            toasty(msg("File successfully shared") + ": " + file.name);
+            console.log("<vines-page>.openFile() File upload complet. requesting update.");
+            this._file = undefined;
+            await delay(50); // required
+            this.requestUpdate();
+          });
+        if (!succeeded) {
+          this._file = undefined;
+          toasty(msg("Error: File already shared to group or stored locally"));
+        }
       });
-      if (!maybeSplitObj) {
-        toasty(msg("Error: File already shared to group or stored locally"));
-      }
     }
     input.click();
   }

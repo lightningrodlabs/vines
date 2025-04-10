@@ -25,7 +25,7 @@ roles:
       modifiers:
         properties:
           maxChunkSize: 524288
-          maxParcelSize: 104857600
+          maxParcelSize: 1073741824
           maxParcelNameLength: 256
           minParcelNameLength: 1
           maxTagNameLength: 32

@@ -11,7 +11,7 @@ import {renderAvatar} from "../../render";
 import {filesContext, onlineLoadedContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, WAL, weaveUrlFromWal} from "@theweave/api";
-import {FilesDvm, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, splitFile, SplitObject} from "@ddd-qc/files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
@@ -413,12 +413,13 @@ export class PostItem extends DnaElement<unknown, ThreadsDvm> {
   async onFileComment(file: File) {
     console.log("target upload file", file);
     const commentThreadAh = await this.getCommentThread();
-    this._splitObj = await this._filesDvm.startPublishFile(file, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
+    this._splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
+    const succeeded = await this._filesDvm.startPublishFile(file, this._splitObj, [], this._dvm.profilesZvm.perspective.agents, async (eh) => {
       console.log("<create-post-panel> startPublishFile callback", eh);
       /*let ah = await */ this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, commentThreadAh);
       this._splitObj = undefined;
     });
-    console.log("onUploadComment()", this._splitObj);
+    console.log("onUploadComment()", succeeded, this._splitObj);
   }
 
 

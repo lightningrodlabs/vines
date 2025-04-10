@@ -6,7 +6,6 @@ import {creatables} from "./appletServices/creatables";
 import {getAssetInfo} from "./appletServices/getAssetInfo";
 import {setupFeedEntryView, devtestNames} from "./devtest";
 import {search} from "./appletServices/search";
-import {bindAsset} from "./appletServices/bindAsset";
 
 
 /** */
