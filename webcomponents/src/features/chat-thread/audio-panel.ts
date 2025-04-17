@@ -27,6 +27,7 @@ export class AudioPanel extends LitElement {
       await this._recorder.initialize();
     }
     this._recorder.startRecording();
+    this.startTimer();
     this.dispatchEvent(new CustomEvent<boolean>('rec', {detail: true, bubbles: true, composed: true}));
   }
 
@@ -38,9 +39,39 @@ export class AudioPanel extends LitElement {
       this._maybeBlobUrl = undefined;
     }
     this._maybeBlobUrl = URL.createObjectURL(this._maybeBlob);
+    this.stopTimer();
     this.dispatchEvent(new CustomEvent<boolean>('rec', {detail: false, bubbles: true, composed: true}));
 
     //this._recorder.save(this._maybeBlob);
+  }
+
+  private _startTime: number = 0;
+  private _elapsed: string = '00:00';
+  private _intervalId: number | undefined = undefined;
+
+  startTimer() {
+    this._startTime = Date.now();
+    this.updateElapsedTime();
+    this._intervalId = window.setInterval(() => {
+      this.updateElapsedTime();
+    }, 1000);
+  }
+
+  stopTimer() {
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      this._intervalId = undefined;
+    }
+  }
+
+
+  updateElapsedTime() {
+    const elapsed = Math.floor((Date.now() - this._startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+
+    this._elapsed = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    this.requestUpdate();
   }
 
 
@@ -72,7 +103,10 @@ export class AudioPanel extends LitElement {
 
     /** isRecording state */
     if (this._recorder.isRecording) {
-      preview = html`<div class="preview">${msg("Recording in progess...")}</div>`;
+      preview = html`
+          <div class="preview">${msg("Recording in progess...")}</div>
+          <div id="timer" class="timer">${this._elapsed}</div>
+      `;
       recordBtn = html`
           <ui5-button icon="stop" design="Negative"
                       style="border-radius: 50%; width: 60px; height: 60px"
