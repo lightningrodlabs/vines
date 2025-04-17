@@ -28,7 +28,7 @@ import {
   ActionIdMap,
   AgentId,
   AnyId,
-  AnyIdMap,
+  AnyIdMap, dematerializeEntryPulse,
   DhtId,
   DnaId,
   enc64,
@@ -1970,12 +1970,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;
     await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew && !author.equals(this.cell.address.agentId));
-    // /** Dev test: Signal a 2nd entry */
-    // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
-    //   pulse.ah = await ActionId.random();
-    //   pulse.eh = await EntryId.random();
-    //   await this.broadcastTip({Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))});
-    // }
+    /** Dev test: Signal a 2nd entry */
+    if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
+      pulse.ah = await ActionId.random();
+      pulse.eh = await EntryId.random();
+      await this.broadcastTip({Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))});
+    }
     /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
     if (pulse.isNew && this.cell.address.agentId.equals(from)) {

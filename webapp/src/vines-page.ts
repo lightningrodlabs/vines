@@ -743,7 +743,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onCreateThread(_e:any) {
+  async onCreateThread() {
     console.debug("onCreateThread()");
     /** Check purpose */
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
@@ -767,7 +767,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!rules.isValid()) {
       return;
     }
-    /** Check subject */
+    /** Check Subject */
     if (!this._createTopicHash) {
       console.warn("Missing Topic hash");
       return;
@@ -777,6 +777,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const confirmRulesView = this.shadowRoot!.getElementById("confirm-rules-view") as RulesView;
     confirmRulesView.limitations = rulesEdit.limitations;
     confirmRulesView.moderation = rulesEdit.moderation;
+    /** Create directly if default rules */
+    if (rulesEdit.isDefault) {
+      this.onConfirmedCreateThread();
+      return;
+    }
     /** Display Confirm Dialog */
     this.confirmThreadDialogElem.headerText = msg("Confirm new channel") + ": " + purpose;
     this.confirmThreadDialogElem.show();
@@ -784,7 +789,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
   /** */
-  async onConfirmedCreateThread(_e:any) {
+  async onConfirmedCreateThread() {
     /** Grab data */
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
     const purpose = input.value.trim();
@@ -2332,7 +2337,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              @keydown=${async (e: any) => {
                                  if (e.keyCode === 13) {
                                      /*e.preventDefault();*/
-                                     await this.onCreateThread(e);
+                                     await this.onCreateThread();
                                  }
                              }}>
                       <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
@@ -2342,10 +2347,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               </section>
               <div slot="footer" style="display:flex;gap:10px;">
                 <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                            @click=${async (e:any) => await this.onCreateThread(e)}>
+                            @click=${async () => await this.onCreateThread()}>
                     ${msg("Create")}
                 </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${(_e: any) => this.createThreadDialogElem.close(false)}>
+                <ui5-button style="margin-top:5px" @click=${() => this.createThreadDialogElem.close(false)}>
                     ${msg("Cancel")}
                 </ui5-button>
             </div>
@@ -2361,10 +2366,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </section> 
             <div slot="footer" style="display:flex;gap:10px;">
                 <ui5-button id="confirmThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                            @click=${async (e:any) => await this.onConfirmedCreateThread(e)}>
+                            @click=${async () => await this.onConfirmedCreateThread()}>
                     ${msg("Confirm")}
                 </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${(_e: any) => this.confirmThreadDialogElem.close(false)}>
+                <ui5-button style="margin-top:5px" @click=${() => this.confirmThreadDialogElem.close(false)}>
                     ${msg("Cancel")}
                 </ui5-button>
             </div>

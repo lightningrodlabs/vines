@@ -66,6 +66,9 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   _filesDvm!: FilesDvm;
 
 
+  get isDefault(): boolean {return this.canLimit == false && this.canModerate == false}
+
+
   /** -- Methods -- */
 
   /** Set back to initial values */

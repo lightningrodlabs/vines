@@ -438,20 +438,37 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(baseBeadInfo.author);
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
+    const isUnshared = this._dvm.perspective.myUnsharedBeads.has(this.hash.b64);
+
+    let pbInfo = undefined;
+    if (isUnshared) {
+      pbInfo = html`
+          <sl-tooltip content=${msg("Message has not been received by any peer yet")}>
+            <ui5-icon class="pb-icon" name="alert" style="color:#097b12b8"></ui5-icon>
+          </sl-tooltip>
+      `;
+    }
+    if (!isPersistent) {
+      pbInfo = html`
+          <sl-tooltip content=${msg("Message has not been received via gossip yet")}>
+              <ui5-icon class="pb-icon" name="alert" style="color:#ff0000b8;"></ui5-icon>
+          </sl-tooltip>
+      `;
+    }
 
     /** render all */
     return html`
       <div id="innerChatItem" style="position: relative;">
         <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
         ${isPersistent? html`` : html`<div class="grey-veil"></div>`}
-        ${this._dvm.perspective.myUnsharedBeads.has(this.hash.b64)? html`<div class="green-veil"></div>` : html`` }
+        ${isUnshared? html`<div class="green-veil"></div>` : html`` }
         <!-- Vine row -->
         ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
         <!-- main horizontal div (row) -->
         <div id=${"chat-item__" + this.hash.b64} class="chatItem"
              @mouseenter=${(_e:any) => {
                  const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
-                 if (popover) {
+                 if (popover && !isUnshared && isPersistent) {
                      popover.style.display = "block";
                  }
               }}
@@ -465,7 +482,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;">
               ${hidemeta? html`` : renderAvatar(this, this._dvm.profilesZvm, baseBeadInfo.author, "S")}
               <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px; position: relative;">
-                  <div class="${hidemeta? "no-minutes":"minutes"}" style="position: absolute;">${time_str}</div>
+                  <div class="${hidemeta && !pbInfo? "no-minutes":"minutes"}" style="position: absolute; left:5px;">
+                      ${time_str}
+                      ${hidemeta? pbInfo : html``}
+                  </div>
                   <div style="flex-grow:1;"></div>
                   <div class="vine"></div>
               </div>
@@ -475,7 +495,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <div id="nameRow" style="display:flex; flex-direction:row; align-items: flex-end">
                     ${hidemeta? html`` : html`
                         <span id="agentName">${agentName}</span>
-                        <span class="chatDate"> ${date_str}</span>
+                        <span class="chatDate">${date_str}</span>
+                        ${pbInfo}
                     `}
                     <span style="flex-grow: 1"></span>
                     <span id="nameEnd" style="width:10px"></span>
@@ -647,7 +668,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           height: 100%;
           background-color: rgba(205, 222, 205, 0.33);
-          z-index: 99;
+          /*z-index: 50;*/
         }
 
         .grey-veil {
@@ -657,7 +678,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           height: 100%;
           background-color: rgba(222, 222, 222, 0.33);
-          z-index: 99;
+          /*z-index: 50;*/
         }
 
         .chatItem {
@@ -704,6 +725,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         .no-minutes {
           padding-left: 10px;
+          left:5px;
           font-size: 0px;
           color: grey;
           padding-top: 1px;
@@ -715,6 +737,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         .minutes {
           font-size: 0px;
+        }
+        
+        .pb-icon {
+          margin-left:10px;
+        }
+        .pb-icon:hover {
+          cursor: pointer;
         }
       `,];
   }

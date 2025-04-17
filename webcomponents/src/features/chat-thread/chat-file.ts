@@ -276,7 +276,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           break;
         case FileType.Audio:
           item = html`
-              <audio class="preview Audio" controls>
+              <audio class="preview Audio" style="z-index: 51" controls>
                   <source src=${this._maybeBlobUrl} type=${mime}>
                   ${msg("Your browser does not support the audio element.")}
               </audio>
