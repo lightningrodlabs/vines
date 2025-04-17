@@ -28,7 +28,7 @@ import {
   ActionIdMap,
   AgentId,
   AnyId,
-  AnyIdMap, dematerializeEntryPulse,
+  AnyIdMap, delay, dematerializeEntryPulse,
   DhtId,
   DnaId,
   enc64,
@@ -400,6 +400,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** */
   async probeAllLatest(): Promise<void> {
+    //console.log("ThreadsZvm.probeAllLatest()");
     const latest = await this.zomeProxy.probeAllLatest(this._perspective.globalProbeLogTs);
     await this.commitUpdateGlobalLog(latest.searchedInterval.end);
 
@@ -1786,23 +1787,32 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
           this._perspective.storeSemanticTopic(pulse.ah, semTopic.title, pulse.author);
         }
         if (StateChangeType.Update == pulse.state) {
-          console.log("Update SemanticTopic", pulse);
+          console.log("ThreadsZvm Update SemanticTopic", pulse);
           this._perspective.updateSemanticTopic(pulse.ah, pulse.origAh!, semTopic.title, pulse.author);
         }
         break;
       case ThreadsEntryType.ParticipationProtocol:
         const pp= this._decoder.decode(pulse.bytes) as ParticipationProtocol;
+        /** Skip signal only pp */
+        if (pulse.validatedBy == ValidatedBy.None) {
+          console.debug("ThreadsZvm PP received via signal. Don't show and look for gossip");
+          delay(2000).then(async () => {
+            await this.probeAllInner();
+          });
+          return;
+        }
         /** Skip DM PP's for other agents */
         if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
           const forAgent = new AgentId(pp.subject.address);
           if (!isEntryFromSelf && !this.cell.address.agentId.equals(forAgent)) {
-            console.debug("DM PP not for  me");
+            console.debug("DM PP not for me");
             return;
           }
         }
         /** */
         if (StateChangeType.Create == pulse.state) {
           const maybeTitle = this._channelTitleCache.get(pulse.ah);
+          // @ts-ignore
           this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
           /** grab latest title edit */
           this.zomeProxy.getPpTitle(pulse.ah.hash).catch(() => {});
@@ -1824,6 +1834,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                   });
                 }
               }
+              ///** Dev test: Signal a fake 2nd thread */
+              //pulse.ah = await ActionId.random();
+              //pulse.eh = await EntryId.random();
+              //await this.broadcastTip({Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))});
             }
             // Should be set when receiving inbox item
             // else {
@@ -1887,8 +1901,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       }
       if (this._missingLinkAhs.size == 0) {
         console.debug!("handleInboxLink() clearInterval");
-        clearInterval(this._intervalId);
-        this._intervalId = undefined;
+        clearInterval(this._notifLoopIntervalId);
+        this._notifLoopIntervalId = undefined;
       }
     }
     /** Form ThreadsNotification */
@@ -1970,12 +1984,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;
     await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew && !author.equals(this.cell.address.agentId));
-    /** Dev test: Signal a 2nd entry */
-    if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
-      pulse.ah = await ActionId.random();
-      pulse.eh = await EntryId.random();
-      await this.broadcastTip({Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))});
-    }
+    // /** Dev test: Signal a 2nd entry */
+    // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
+    //   pulse.ah = await ActionId.random();
+    //   pulse.eh = await EntryId.random();
+    //   await this.broadcastTip({Entry: dematerializeEntryPulse(pulse, Object.values(ThreadsEntryType))});
+    // }
     /** Check if I need to notify peers */
     let notifs: NotifyPeerInput[] = [];
     if (pulse.isNew && this.cell.address.agentId.equals(from)) {
@@ -2027,7 +2041,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
   /** Handle AppTip */
   private _missingLinkAhs: ActionIdMap<ThreadsNotificationTip> = new ActionIdMap();
-  private _intervalId: any | undefined = undefined;
+  private _notifLoopIntervalId: any | undefined = undefined;
 
   override handleAppTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
     const appTip = this._decoder.decode(serTip) as ThreadsAppTip;
@@ -2036,13 +2050,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
     /** Handle Notification Tip */
     const notifTip = appTip.data;
-    console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._intervalId);
+    console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._notifLoopIntervalId);
     /** Poll interval until we get it from DHT */
     if (this.isMainView && !this._missingLinkAhs.has(notifTip.link_ah)) {
       this._missingLinkAhs.set(notifTip.link_ah, notifTip);
-      if (!this._intervalId) {
+      if (!this._notifLoopIntervalId) {
         this.zomeProxy.probeInbox();
-        this._intervalId = setInterval(() => {
+        this._notifLoopIntervalId = setInterval(() => {
           console.log("Polling Inbox for Missing links...");
           this.zomeProxy.probeInbox();
         }, 5000);

@@ -133,6 +133,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
           }
           //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
+          const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(ppAh.b64);
           const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
           const isThreadHidden = this.threadsPerspective.hiddens[ppAh.b64]? this.threadsPerspective.hiddens[ppAh.b64] : false;
           const maybeUnreadThread = this.threadsPerspective.unreads.get(ppAh);
@@ -172,8 +173,11 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           let badge = html`<ui5-badge>0</ui5-badge>`;
           let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
-            badge = html`
-                <ui5-badge class="notifBadge">${msg("new")}</ui5-badge>`;
+            if (isPersistent) {
+              badge = html`<ui5-badge class="notifBadge">${msg("new")}</ui5-badge>`;
+            } else {
+              badge = html`<ui5-badge class="tempBadge">${msg("temp")}</ui5-badge>`;
+            }
           } else {
             if (notifCount > 0) {
               badge = html`
@@ -270,7 +274,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       /** 'new', 'notif' and 'unread' badge to display */
       let topicBadge = html``;
       if (topicIsNew) {
-        topicBadge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
+        topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${msg('new')}</ui5-badge>`;
       } else {
         let notifCount = 0; // FIXME: Get real notif count
         if (notifCount > 0) {
