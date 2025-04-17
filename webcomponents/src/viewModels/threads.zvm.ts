@@ -28,7 +28,7 @@ import {
   ActionIdMap,
   AgentId,
   AnyId,
-  AnyIdMap, delay, dematerializeEntryPulse,
+  AnyIdMap, delay,
   DhtId,
   DnaId,
   enc64,
