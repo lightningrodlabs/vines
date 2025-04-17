@@ -1668,7 +1668,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
                   mineBtn.classList.remove("selected");
                   this.requestUpdate();
-              }}>${msg('Topics')}</div>
+              }}>${msg('Channels')}</div>
       <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
                               e.preventDefault(); e.stopPropagation();
                               /** Get and Cache appletInfo for each known applet */
@@ -1794,7 +1794,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} 
                                 @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
                     <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" 
-                                tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Topics & Channels")} 
+                                tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Categories & Channels")} 
                                 @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
                     <ui5-button icon="accept" design="Transparent" style="height:18px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
                     ${this._listerToShow == "topics-option" ? html`

@@ -308,7 +308,7 @@ export class ThreadsDvm extends DnaViewModel {
     const author = maybe[0].author;
     const tip: ThreadsAppTip = {type: "ack", data: beadId};
     const serTip = this._encoder.encode(tip);
-    await this.threadsZvm.sendAppTip(serTip, author, "zThreads");
+    await catchThrottled(this.threadsZvm.sendAppTip(serTip, author, "zThreads"));
   }
 
 

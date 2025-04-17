@@ -482,7 +482,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       return [];
     }
     /** Probe bans if manual rules */
-    await this.pullThreadModeration(ppAh);
+    const [throttleError0, _] = await catchThrottled(this.pullThreadModeration(ppAh));
+    if (throttleError0) {
+      return [];
+    }
     /** Probe */
     const [throttleError, maybe] = await catchThrottled(this.zomeProxy.findBeads(ppAh.hash));
     if (throttleError) {

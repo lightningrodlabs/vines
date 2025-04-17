@@ -18,12 +18,16 @@ export class AudioPanel extends LitElement {
   private _maybeBlobUrl: string | undefined = undefined;
 
 
+  get isRecording(): boolean {return this._recorder.isRecording}
+
+
   /** */
   async startRec() {
     if (!this._recorder.initialized) {
       await this._recorder.initialize();
     }
     this._recorder.startRecording();
+    this.dispatchEvent(new CustomEvent<boolean>('rec', {detail: true, bubbles: true, composed: true}));
   }
 
 
@@ -34,6 +38,8 @@ export class AudioPanel extends LitElement {
       this._maybeBlobUrl = undefined;
     }
     this._maybeBlobUrl = URL.createObjectURL(this._maybeBlob);
+    this.dispatchEvent(new CustomEvent<boolean>('rec', {detail: false, bubbles: true, composed: true}));
+
     //this._recorder.save(this._maybeBlob);
   }
 

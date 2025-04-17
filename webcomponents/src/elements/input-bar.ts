@@ -33,6 +33,7 @@ import {
 import {formatTime} from "../features/timezone/utils";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {prettyFileSize} from "@ddd-qc/files";
+import {AudioPanel} from "../features/chat-thread/audio-panel";
 //import {handledMimeTypes} from "../features/rules/rules-edit";
 //import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
@@ -571,8 +572,10 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let addBtn = html``;
     let micBtn = html``;
     if (this._limitations.canFile) {
+      const maybePanel = this.shadowRoot!.getElementById("audio-panel") as AudioPanel;
       micBtn = html`
           <ui5-button id="micBtn" design="Transparent" icon="microphone" tooltip=${msg('Create Voice Message')}
+                      style="color: ${maybePanel && maybePanel.isRecording? "red": ""}"
                       @click=${(_e: any) => {
                           const el = this.shadowRoot!.getElementById("micBtn") as HTMLElement;
                           this.micDialogElem.showAt(el);
@@ -652,7 +655,9 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </ui5-menu>
         <!-- CreateThreadDialog -->
         <ui5-popover id="mic-dialog" header-text=${msg("Create Voice Message")} placement-type="Top" @close=${() => console.debug("FIXME: Modal doesnt work properly so can't detect if user clicks outside of popover...")}>
-          <audio-panel @close=${() => this.micDialogElem.close(false)}
+          <audio-panel id="audio-panel" 
+                       @close=${() => {this.micDialogElem.close(false); this.requestUpdate();}}
+                       @rec=${() => {this.requestUpdate();}}
                        @mic=${(e:any) => {
                            const myProfile = this._dvm.profilesZvm.getMyProfile()!;
                            //const day = format(Date.now() * 1000, "yyyy-MMMM-dd-HH.mm");
@@ -668,6 +673,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               this._file = file;
                             }
                          this.micDialogElem.close(false);
+                           this.requestUpdate();
                        }}
           ></audio-panel>
         </ui5-popover>
