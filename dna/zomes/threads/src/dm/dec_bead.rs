@@ -31,8 +31,8 @@ pub fn decrypt_my_bead(enc_bead: EncryptedBead) -> ExternResult<BaseBeadKind> {
   debug!("decrypt_my_bead() {:?}", enc_bead);
   /// Decrypt
   let data = ed_25519_x_salsa20_poly1305_decrypt(
-    agent_info()?.agent_latest_pubkey,
-    agent_info()?.agent_latest_pubkey,
+    agent_info()?.agent_initial_pubkey,
+    agent_info()?.agent_initial_pubkey,
     enc_bead.for_self,
   )?;
   /// Deserialize
@@ -53,7 +53,7 @@ pub fn decrypt_bead(input: DecryptBeadInput) -> ExternResult<BaseBeadKind> {
   debug!("decrypt_bead() {:?}", input);
   /// Decrypt
   let data = ed_25519_x_salsa20_poly1305_decrypt(
-    agent_info()?.agent_latest_pubkey,
+    agent_info()?.agent_initial_pubkey,
     input.other_agent,
     input.enc_bead.for_other,
   )?;

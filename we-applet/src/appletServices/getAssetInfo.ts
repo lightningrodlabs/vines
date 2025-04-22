@@ -21,7 +21,7 @@ export async function getAssetInfo(
   appletClient: AppClient,
   wal: WAL,
   recordInfo?: RecordInfo,
-): Promise<AssetInfo> {
+): Promise<AssetInfo | undefined> {
     if (!recordInfo) {
         throw new Error(`Vines/we-applet/getAssetInfo(): Missing recordInfo`);
     }

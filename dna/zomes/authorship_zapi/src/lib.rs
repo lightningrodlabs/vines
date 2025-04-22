@@ -27,7 +27,7 @@ pub fn call_authorship_zome<I: Serialize + Debug>(fn_name: &str, payload: I) -> 
 /// Use when 'call' is not allowed. ex: during a post_commit()
 pub fn call_remote_authorship_zome<I: Serialize + Debug>(fn_name: &str, payload: I) -> ExternResult<ZomeCallResponse> {
    return call_remote(
-      agent_info()?.agent_latest_pubkey,
+      agent_info()?.agent_initial_pubkey,
       "zAuthorship",
       fn_name.to_string().into(),
       None,

@@ -266,6 +266,8 @@ export class VinesApp extends HappMultiElement {
   override async perspectiveInitializedOnline(): Promise<void> {
     this._onlineLoaded = true;
     this._onlineLoadedProvider.setValue(true);
+    //this.requestUpdate();
+    console.log("<threads-app> perspectiveInitializedOnline() DONE")
   }
 
 
@@ -283,7 +285,7 @@ export class VinesApp extends HappMultiElement {
   async onDumpNetworkLogs(_e:any) {
     console.log("onDumpNetworkLogs()")
     //await this.networkInfoAll();
-    this.networkCaller?.dumpNetworkInfoLogs();
+    this.networkCaller?.dumpNetworkMetricsLogs();
   }
 
 

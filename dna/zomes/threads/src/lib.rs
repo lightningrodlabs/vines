@@ -54,7 +54,7 @@ fn get_data_type(input: GetDataTypeInput) -> ExternResult<String> {
     CallTargetCell::OtherRole(role)
   } else {
     if let Some(dna) = input.dna {
-      let cell_id = CellId::new(dna, agent_info()?.agent_latest_pubkey);
+      let cell_id = CellId::new(dna, agent_info()?.agent_initial_pubkey);
       CallTargetCell::OtherCell(cell_id)
     } else {
       CallTargetCell::Local

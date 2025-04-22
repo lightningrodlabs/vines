@@ -39,7 +39,7 @@ pub fn update_pp_title(input: UpdatePpTitleInput) -> ExternResult<ActionHash> {
   /// Make sur pp exists
   let record = get_record(input.pp_ah.clone().into())?;
   /// Make sure we are author
-  if record.action().author() != &agent_info()?.agent_latest_pubkey {
+  if record.action().author() != &agent_info()?.agent_initial_pubkey {
     return error("Only PP author can update its title");
   }
   /// Get previous title updates

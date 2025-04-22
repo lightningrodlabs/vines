@@ -134,7 +134,7 @@ import {
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
-import {NetworkInfo, Timestamp} from "@holochain/client";
+import {Timestamp} from "@holochain/client";
 import {FrameNotification, GroupProfile} from "@theweave/api";
 import {consume} from "@lit/context";
 
@@ -239,8 +239,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   @property() selectedPostAh?: ActionId;
 
-  @property({type: Object})
-  networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
+  // @property({type: Object})
+  // networkInfoLogs: Record<CellIdStr, [Timestamp, NetworkInfo][]> = {};
 
   //@property() appletId: AppletId;
 

@@ -13,7 +13,7 @@ pub fn delete_semantic_topic(ah: ActionHash) -> ExternResult<ActionHash> {
   /// Make sure Topic does already exists
   let (record, _old) = get_typed_and_record::<SemanticTopic>(ah.into())?;
   /// Make sure its same author
-  if agent_info()?.agent_latest_pubkey != record.action().author().to_owned() {
+  if agent_info()?.agent_initial_pubkey != record.action().author().to_owned() {
     return error("Only original author can change topic title");
   }
   ///

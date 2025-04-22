@@ -62,7 +62,7 @@ pub fn publish_notify_setting(input: SetNotifySettingInput) -> ExternResult<Opti
 ///
 #[hdk_extern]
 pub fn pull_my_notify_settings(pp_ah: ActionHash) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
-    return pull_notify_settings((pp_ah, agent_info()?.agent_latest_pubkey));
+    return pull_notify_settings((pp_ah, agent_info()?.agent_initial_pubkey));
 }
 
 

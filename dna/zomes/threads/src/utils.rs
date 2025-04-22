@@ -27,7 +27,7 @@ pub fn comp2appletHash(comp: &Component) -> ExternResult<EntryHash> {
   let str = &hash_str[1..]; //remove the starting 'u' char added during string::try_from()
   let raw_hash = base64::decode_config(str, base64::URL_SAFE_NO_PAD)
     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
-  let eh = EntryHash::from_raw_39(raw_hash)
+  let eh = EntryHash::try_from_raw_39(raw_hash)
     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
   Ok(eh)
 }

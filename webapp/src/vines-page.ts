@@ -222,7 +222,7 @@ import {setLocale} from "./localization";
 import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
-import {HoloHashB64, NetworkInfo, Timestamp} from "@holochain/client";
+import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 
 
@@ -844,11 +844,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
 
     /** Register loop callback */
-    this.networkCaller!.addCallback((info: NetworkInfo) => {
-      //console.log("networkInfo:", info);
-      const toggled = this._canSpin != info.fetch_pool_info.op_bytes_to_fetch > 0;
+    this.networkCaller!.addCallback((metrics: NetworkMetrics) => {
+      console.log("<vines-page>.networkCaller callback", metrics);
+
+      let total = 0;
+      for (const peerUrls of Object.values(metrics.fetch_state_summary.pending_requests)) {
+        total += peerUrls.length;
+      }
+
+      const toggled = this._canSpin != total > 0;
       if (toggled) {
-        this._canSpin = info.fetch_pool_info.op_bytes_to_fetch > 0;
+        this._canSpin = total > 0;
         this.requestUpdate();
       }
     });

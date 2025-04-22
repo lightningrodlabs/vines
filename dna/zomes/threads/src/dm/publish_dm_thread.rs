@@ -17,7 +17,7 @@ pub struct PublishDmThreadInput {
 #[feature(zits_blocking)]
 pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let me = agent_info()?.agent_latest_pubkey;
+  let me = agent_info()?.agent_initial_pubkey;
   if me == input.other_agent {
     return zome_error!("Cannot DM self");
   }

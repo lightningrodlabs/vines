@@ -48,8 +48,8 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
       '  COMB =': 'window.COMB =',
       delimiters: ['', ''],
     }),
-    builtins(),
-    commonjs({}),
+    builtins(), // required for crypto
+    commonjs({/*transformMixedEsModules: true*/}),
     copy({
       copyOnce: true,
       targets: [

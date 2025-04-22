@@ -2,7 +2,7 @@ import {css, html, LitElement} from "lit";
 import {customElement, property} from "lit/decorators.js";
 
 import '@weblogin/trendchart-elements';
-import {NetworkInfo, Timestamp} from "@holochain/client";
+import {NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {consume} from "@lit/context";
 import {networkCallerContext} from "../../contexts";
@@ -22,7 +22,7 @@ export class NetworkHealthPanel extends LitElement {
   /** After first render only */
   override async firstUpdated() {
     /** Register loop callback */
-    this.networkCaller!.addCallback((_info: NetworkInfo) => {
+    this.networkCaller!.addCallback((_info: NetworkMetrics) => {
       //console.log("networkInfo:", info);
       this.requestUpdate();
     });
@@ -47,30 +47,32 @@ export class NetworkHealthPanel extends LitElement {
       return html`no networkCaller set`;
     }
 
-    const allNetworkLogs = this.networkCaller.networkInfoLogs;
+    const allNetworkLogs = this.networkCaller.networkMetricsLogs;
 
-    let latestInfo = {
-      fetch_pool_info: {
-        op_bytes_to_fetch: 0,
-        num_ops_to_fetch: 0,
+    let latestInfo: NetworkMetrics = {
+      fetch_state_summary: {
+        pending_requests: {},
+        peers_on_backoff: new Map(),
       },
-      current_number_of_peers: 0,
-      arc_size: 0,
-      total_network_peers: 0,
-      bytes_since_last_time_queried: 0,
-      completed_rounds_since_last_time_queried: 0,
+      gossip_state_summary: {
+        accepted_rounds: [],
+        dht_summary: {},
+        peer_meta: {},
+      },
+      local_agents: [],
     }
-    let cellLogs: [Timestamp, NetworkInfo][] = [[0, latestInfo]];
+    // @ts-ignore
+    let cellLogs: [Timestamp, NetworkMetrics][] = [[0, latestInfo]];
     if (allNetworkLogs.length != 0) {
       cellLogs = allNetworkLogs;
       latestInfo = allNetworkLogs[allNetworkLogs.length - 1]![1];
     }
 
 
-    const arcPct = (latestInfo.arc_size * 100).toFixed(0);
-    const fetchKB = (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
+    const arcPct = 1.0; // FIXME (latestInfo.arc_size * 100).toFixed(0);
+    const fetchKB = Object.values(latestInfo.fetch_state_summary.pending_requests).length; // FIXME (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
 
-    const allFetchKBs = cellLogs.map(([_ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
+    const allFetchKBs: number[] = []; // FIXME cellLogs.map(([_ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
 
     const startingZero = allFetchKBs.length > 1? "" : "0,"
 
@@ -78,16 +80,18 @@ export class NetworkHealthPanel extends LitElement {
     const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
     //console.log("<network-health>.render()", lineValues);
 
+    const peerCount = Object.keys(latestInfo.gossip_state_summary.peer_meta).length; // FIXME
+
     /** */
     return html`
         <div id="pies">
           <div class="item">
             <div class="chart">
-                <tc-pie id="peer-pie" values="[${latestInfo.current_number_of_peers}]" shape-size="6" .max=${latestInfo.total_network_peers} static=""></tc-pie>
+                <tc-pie id="peer-pie" values="[${peerCount}]" shape-size="6" .max=${peerCount} static=""></tc-pie>
                 <ui5-icon class="pie-icon" name="person-placeholder"></ui5-icon>
             </div>
             <div>
-              <span>${latestInfo.current_number_of_peers} / ${latestInfo.total_network_peers}</span>
+              <span>${peerCount} / ${peerCount}</span>
               <br/>
               <span>Peers</span>
             </div>

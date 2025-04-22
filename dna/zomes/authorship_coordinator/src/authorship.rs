@@ -29,7 +29,7 @@ impl AuthorshipLog {
 #[feature(zits_blocking)]
 pub fn ascribe_target(input: AscribeTargetInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    //let me = agent_info()?.agent_latest_pubkey;
+    //let me = agent_info()?.agent_initial_pubkey;
     // if input.maybe_original_author == me {
     //     return error("Original author is already the author. No need to create a link");
     // }

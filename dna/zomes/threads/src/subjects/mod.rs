@@ -18,7 +18,7 @@ pub fn link_subject_to_pp(subject: &Subject, pp_ah: &ActionHash, index_time: Tim
   let raw_subject_hash = holo_hash_decode_unchecked(&subject.address)
     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
   if subject.type_name == "AgentPubKey" {
-    let subject_hash = HoloHash::<hash_type::Agent>::from_raw_39(raw_subject_hash)
+    let subject_hash = HoloHash::<hash_type::Agent>::try_from_raw_39(raw_subject_hash)
       .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     create_link(
       subject_hash,
@@ -28,7 +28,7 @@ pub fn link_subject_to_pp(subject: &Subject, pp_ah: &ActionHash, index_time: Tim
       //str2tag(&ta.anchor), // Store Anchor in Tag
     )?;
   } else {
-    let subject_hash = AnyLinkableHash::from_raw_39(raw_subject_hash)
+    let subject_hash = AnyLinkableHash::try_from_raw_39(raw_subject_hash)
       .map_err(|e| wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
     create_link(
       subject_hash,

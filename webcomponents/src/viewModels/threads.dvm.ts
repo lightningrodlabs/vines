@@ -160,14 +160,14 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** Store probeLog timestamp upon first load of app */
   override async initializePerspectiveOnline(): Promise<void> {
-    console.log("ThreadsDvm.initializePerspectiveOffline() override")
+    console.log("ThreadsDvm.initializePerspectiveOnline() override")
     await super.initializePerspectiveOnline();
     this._perspective.initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
         this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
     this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
-    console.log("ThreadsDvm.initializePerspectiveOffline() override persp =", this.perspective)
+    console.log("ThreadsDvm.initializePerspectiveOnline() override persp =", this.perspective)
   }
 
 
@@ -214,10 +214,10 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   handleSignal(ssignal: Signal) {
     console.log("ThreadsDvm.handleSignal()", ssignal);
-    if (!(SignalType.App in ssignal)) {
+    if (SignalType.App != ssignal.type) {
       return;
     }
-    const appSignal: AppSignal = ssignal.App;
+    const appSignal: AppSignal = ssignal.value;
     if (!("pulses" in (appSignal.payload as Object))) {
       return;
     }

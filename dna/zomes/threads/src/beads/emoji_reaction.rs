@@ -18,7 +18,7 @@ pub fn publish_reaction(input: ReactionInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     // TODO: Check input string is a proper emoji. (todo also in validation)
     //debug!("add_reaction({:?}) to {}", input.emoji, input.bead_ah);
-    let me = agent_info()?.agent_latest_pubkey;
+    let me = agent_info()?.agent_initial_pubkey;
     let author = input.from.unwrap_or(me);
     let _ = create_link(input.bead_ah, author, ThreadsLinkType::EmojiReaction, str2tag(&input.emoji))?;
     Ok(())
@@ -30,7 +30,7 @@ pub fn publish_reaction(input: ReactionInput) -> ExternResult<()> {
 #[feature(zits_blocking)]
 pub fn unpublish_reaction(input: ReactionInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let me = agent_info()?.agent_latest_pubkey;
+    let me = agent_info()?.agent_initial_pubkey;
     let links = get_links(link_input(input.bead_ah, ThreadsLinkType::EmojiReaction, Some(str2tag(&input.emoji))))?;
     let my_reactions: Vec<Link> = links.into_iter().filter(|link| AgentPubKey::try_from(link.target.clone()).unwrap() == me).collect();
     for reaction_link in my_reactions {

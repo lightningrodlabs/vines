@@ -2,7 +2,6 @@
 manifest_version: "1"
 name: dThreads
 integrity:
-  origin_time: 2023-09-25T13:55:49.200Z
   # WARN: properties might be overridden in the happ.yaml
   properties:
     maxTopicNameLength: 32

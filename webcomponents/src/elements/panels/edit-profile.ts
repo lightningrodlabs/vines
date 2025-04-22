@@ -1,5 +1,5 @@
 import { html, css, LitElement } from 'lit';
-import { property, query, state, customElement } from 'lit/decorators.js';
+import { property, state, customElement } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
 
 import Input from "@ui5/webcomponents/dist/Input";
@@ -88,12 +88,19 @@ export class EditProfile extends LitElement {
   @state() private _avatar: string | undefined;
 
 
-  @query('#nickname-field')
-  private _nicknameField!: Input;
+  // @query('#nickname-field')
+  // private _nicknameField!: Input;
+  //
+  // @query('#avatar-file-picker')
+  // private _avatarFilePicker!: HTMLInputElement;
 
-  @query('#avatar-file-picker')
-  private _avatarFilePicker!: HTMLInputElement;
+  get nicknameField(): Input {
+    return this.shadowRoot!.getElementById("nickname-field") as Input;
+  }
 
+  get avatarFilePicker(): HTMLInputElement {
+    return this.shadowRoot!.getElementById("avatar-file-picker") as HTMLInputElement;
+  }
 
   /** -- Methods -- */
 
@@ -110,7 +117,7 @@ export class EditProfile extends LitElement {
 
   /** */
   async onKeyUp(e:any) {
-    //console.log("<edit-profile>.onKeyUp()", e.keyCode);
+    console.log("<edit-profile>.onKeyUp()", e.keyCode);
     if (e.keyCode === 13 && this.shouldSaveButtonBeEnabled()) {
       e.stopPropagation();
       this.fireSaveProfile();
@@ -127,18 +134,18 @@ export class EditProfile extends LitElement {
 
   /** */
   onAvatarUploaded() {
-    if (this._avatarFilePicker.files && this._avatarFilePicker.files[0]) {
+    if (this.avatarFilePicker.files && this.avatarFilePicker.files[0]) {
       const reader = new FileReader();
       reader.onload = e => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
           this._avatar = resizeAndExport(img);
-          this._avatarFilePicker.value = '';
+          this.avatarFilePicker.value = '';
         };
         img.src = e.target?.result as string;
       };
-      reader.readAsDataURL(this._avatarFilePicker.files[0]);
+      reader.readAsDataURL(this.avatarFilePicker.files[0]);
     }
   }
 
@@ -167,7 +174,7 @@ export class EditProfile extends LitElement {
                   <div class="column" style="align-items: center;">
                   <ui5-button
                     icon="add"
-                    @click=${() => this._avatarFilePicker.click()}
+                    @click=${() => this.avatarFilePicker.click()}
                     style="margin-bottom: 4px;"
                   ></ui5-button>
                   <span class="placeholder label">${msg('Avatar')}</span>
@@ -180,7 +187,7 @@ export class EditProfile extends LitElement {
 
   /** */
   shouldSaveButtonBeEnabled() {
-    if (!this._nicknameField || !this._nicknameField.value) {
+    if (!this.nicknameField || !this.nicknameField.value) {
       return false;
     }
     if (this.avatarMode === 'avatar-required' && !this._avatar) {
@@ -222,22 +229,23 @@ export class EditProfile extends LitElement {
 
   /** */
   fireSaveProfile() {
-    if (!this._nicknameField.value) {
-      this._nicknameField.valueState = ValueState.Error;
+    console.log("<edit-profile>.fireSaveProfile()");
+    if (!this.nicknameField.value) {
+      this.nicknameField.valueState = ValueState.Error;
       return;
     }
-    const nickname = this._nicknameField.value.trim();
+    const nickname = this.nicknameField.value.trim();
     const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
     const isValid = regex.test(nickname);
     if (!isValid) {
-      this._nicknameField.valueState = ValueState.Error;
+      this.nicknameField.valueState = ValueState.Error;
       const errorMsg = this.shadowRoot!.getElementById("errorMsg") as HTMLElement;
       errorMsg.textContent = msg("Bad characters");
       return;
     }
     const fields: Record<string, string> = this.getAdditionalFieldsValues();
 
-    console.log("fireSaveProfile()", fields);
+    console.log("<edit-profile>fireSaveProfile()", fields);
 
     /** avatar */
     fields['avatar'] = this._avatar? this._avatar : "";
@@ -319,10 +327,10 @@ export class EditProfile extends LitElement {
                       .value=${this.profile?.nickname || ''}
                       style="margin-left: 8px;"
                       @input=${(_e:any) => {
-                        if (this._nicknameField.value.length > 0) {
-                            this._nicknameField.valueState = ValueState.None;
+                        if (this.nicknameField.value.length > 0) {
+                            this.nicknameField.valueState = ValueState.None;
                         } else {
-                            this._nicknameField.valueState = ValueState.Error;
+                            this.nicknameField.valueState = ValueState.Error;
                         }
                       }}>
                   <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>                  

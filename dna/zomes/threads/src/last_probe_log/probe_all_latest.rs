@@ -57,7 +57,7 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
           debug!("new Thread found: {} > {}", item_tag.ts_us, searched_interval.begin);
         }
       } else {
-        let pp_ah: ActionHash = ActionHash::from_raw_39(item_tag.custom_data).unwrap();
+        let pp_ah: ActionHash = ActionHash::try_from_raw_39(item_tag.custom_data).unwrap();
         let bl = BeadLink {
           creation_time: item_tag.ts_us, //creation_time: link.timestamp,
           bead_ah: ActionHash::try_from(link.target).unwrap(),

@@ -202,7 +202,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     const firstDvm: ThreadsDvm = this._dvms.get(firstDnaId)!;
     //const firstThread = firstDvm.threadsZvm.perspective.getParticipationProtocol(firstPpAh)!;
     const firstThread = firstDvm.threadsZvm.perspective.threads.get(firstPpAh)!;
-    const mergedThread = new Thread(firstThread.pp, undefined, firstDvm.cell.dnaModifiers.origin_time, firstThread.creationTime, firstThread.author);
+    const mergedThread = new Thread(firstThread.pp, undefined, /* FIXME firstDvm.cell.dnaModifiers.origin_time*/ 0, firstThread.creationTime, firstThread.author);
     console.log("<chat-thread-multi-view> mergedThread start", mergedThread);
     const dnaIdMap: ActionIdMap<DnaId> = new ActionIdMap();
     const groupNames: string[] = [];

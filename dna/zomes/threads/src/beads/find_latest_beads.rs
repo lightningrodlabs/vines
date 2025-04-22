@@ -22,7 +22,7 @@ pub struct GetLatestBeadsInput {
 pub fn find_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Convert arguments
-  let origin_time = dna_info()?.modifiers.origin_time;
+  let origin_time: Timestamp = hdk::prelude::Timestamp(0); // FIXME dna_info()?.modifiers.origin_time;
   let pp_comp = hash2comp(input.pp_ah.clone());
   let begin = input.begin_time.unwrap_or(origin_time);
   let end = input.end_time.unwrap_or(sys_time().unwrap());

@@ -8,7 +8,7 @@ fn create_encrypted_bead<T>(typed_bead: T, bead_type: &str, other_agent: AgentPu
   where
     T: serde::Serialize + Clone + Sized + std::fmt::Debug
 {
-  let me = agent_info()?.agent_latest_pubkey;
+  let me = agent_info()?.agent_initial_pubkey;
   /// Serialize
   let data: XSalsa20Poly1305Data = bincode::serialize(&typed_bead).unwrap().into();
   /// Encrypt

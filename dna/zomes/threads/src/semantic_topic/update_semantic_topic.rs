@@ -32,7 +32,7 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<ActionHash
       return error("Topic title is same");
   }
   // /// Make sure its same author
-  // if agent_info()?.agent_latest_pubkey != record.action().author().to_owned() {
+  // if agent_info()?.agent_initial_pubkey != record.action().author().to_owned() {
   //   return error("Only original author can change topic title");
   // }
 

@@ -21,7 +21,7 @@ pub fn publish_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
     //     let _ = delete_link(link_ah)?;
     // }
     /// Set new setting
-    let new_link_ah = create_link(agent_info()?.agent_latest_pubkey, bead_ah, ThreadsLinkType::Favorite, LinkTag::from(()))?;
+    let new_link_ah = create_link(agent_info()?.agent_initial_pubkey, bead_ah, ThreadsLinkType::Favorite, LinkTag::from(()))?;
     /// Done
     Ok(new_link_ah)
 }
@@ -32,7 +32,7 @@ pub fn publish_favorite(bead_ah: ActionHash) -> ExternResult<ActionHash> {
 #[feature(zits_blocking)]
 pub fn unpublish_favorite(bead_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
+    let me = AnyLinkableHash::from(agent_info()?.agent_initial_pubkey);
     let links = get_links(link_input(me, ThreadsLinkType::Favorite, None))?;
     let ah = AnyLinkableHash::from(bead_ah);
     for link in links {
@@ -49,7 +49,7 @@ pub fn unpublish_favorite(bead_ah: ActionHash) -> ExternResult<()> {
 #[hdk_extern]
 pub fn probe_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let me = AnyLinkableHash::from(agent_info()?.agent_latest_pubkey);
+    let me = AnyLinkableHash::from(agent_info()?.agent_initial_pubkey);
     let links = get_links(link_input(me, ThreadsLinkType::Favorite, None))?;
     let mut res = Vec::new();
     for link in links.clone() {

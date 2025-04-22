@@ -20,7 +20,7 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     debug!("notify_peer(): {:?}", input);
     // Don't notify self
-    if input.who == agent_info()?.agent_latest_pubkey {
+    if input.who == agent_info()?.agent_initial_pubkey {
         return Ok(());
     }
     let tag = LinkTag::from(vec![input.event_index]);
@@ -34,7 +34,7 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
 #[hdk_extern]
 pub fn probe_inbox(_ : ()) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let me = agent_info()?.agent_latest_pubkey;
+    let me = agent_info()?.agent_initial_pubkey;
     let links = get_links(link_input(me, ThreadsLinkType::Inbox, None))?;
     /// Emit Signal
     emit_links_signal(links)?;

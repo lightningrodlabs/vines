@@ -28,7 +28,7 @@ export async function createVinesApplet(renderInfo: RenderInfo, weServices: Weav
     //throw Error("cross-group-view not implemented by Vines");
     console.log("createVinesApplet() crossViewInfo", crossViewInfo);
     for (const [appletHash, appletClients] of crossViewInfo.applets.entries()) {
-      const appWs = appletClients.appletClient as AppWebsocket;
+      const appWs = appletClients.appletClient as unknown as AppWebsocket; // WARN not sure about "unknown"
       const [profilesHcl, profilesAppProxy] = await createProfilesCellProxy(appletClients.profilesClient);
       const appletGroup: AppletGroup = {
         appWs,

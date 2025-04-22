@@ -8,7 +8,7 @@ use zome_signals::*;
 #[hdk_extern]
 fn find_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHash>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
+  let links = get_links(link_input(agent_info()?.agent_initial_pubkey, ThreadsLinkType::Hide, None))?;
   for link in links.iter() {
     if link.target.clone() == subjectHash {
       return Ok(Some(link.create_link_hash.clone()));
@@ -23,7 +23,7 @@ fn find_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHas
 #[feature(zits_blocking)]
 fn hide_subject(subjectHash: AnyLinkableHash) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return create_link(agent_info()?.agent_latest_pubkey, subjectHash, ThreadsLinkType::Hide, LinkTag::from(()));
+  return create_link(agent_info()?.agent_initial_pubkey, subjectHash, ThreadsLinkType::Hide, LinkTag::from(()));
 }
 
 
@@ -43,7 +43,7 @@ fn unhide_subject(subjectHash: AnyLinkableHash) -> ExternResult<()> {
 #[hdk_extern]
 fn probe_all_hiddens(_: ()) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let links = get_links(link_input(agent_info()?.agent_latest_pubkey, ThreadsLinkType::Hide, None))?;
+  let links = get_links(link_input(agent_info()?.agent_initial_pubkey, ThreadsLinkType::Hide, None))?;
   /// Emit Signal
   emit_links_signal(links)?;
   ///

@@ -951,7 +951,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       return this.threads.get(ppAh)!.pp;
     }
     const subjectAddr = intoAnyId(pp.subject.address);
-    const thread = new Thread(pp, maybeTitle, cell.dnaModifiers.origin_time, creationTime, author);
+    const thread = new Thread(pp, maybeTitle, /*FIXME cell.dnaModifiers.origin_time*/ 0, creationTime, author);
     console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${creationTime}"`);
     /** Add already stored log */
     const maybeLog = this._tempThreadLogs.get(ppAh);
