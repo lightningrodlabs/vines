@@ -26,6 +26,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     preferBuiltins: false,
     browser: true,
     exportConditions: ['browser', HAPP_BUILD_MODE === 'Debug' ? 'development' : ''],
+    dedupe: ['lit'],
   },
 
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
