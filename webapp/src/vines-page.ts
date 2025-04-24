@@ -152,7 +152,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {AgentId, AppProxy, Dictionary, LinkableId} from "@ddd-qc/cell-proxy";
+import {AgentId, AppProxy, MyDictionary, LinkableId} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -657,11 +657,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Update -- */
 
-   /** DEBUG */
-   protected override async willUpdate(changedProperties: PropertyValues<this>) {
-    super.willUpdate(changedProperties);
-     console.log("<vines-page>.willUpdate()", changedProperties);
-   }
+   // /** DEBUG */
+   // protected override async willUpdate(changedProperties: PropertyValues<this>) {
+   //  super.willUpdate(changedProperties);
+   //   console.log("<vines-page>.willUpdate()", changedProperties);
+   // }
 
 
   /** -- Update -- */
@@ -1070,7 +1070,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async setMyProfile(nickname: string, avatar?: string, color?: string) {
     console.log("updateProfile() called:", nickname)
-    const fields: Dictionary<string> = {};
+    const fields: MyDictionary<string> = {};
     if (color) fields['color'] = color;
     if (avatar) fields['avatar'] = avatar;
     try {

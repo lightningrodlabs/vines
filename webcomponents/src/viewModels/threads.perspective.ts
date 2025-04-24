@@ -5,7 +5,7 @@ import {
   AgentId,
   AgentIdMap,
   AnyId,
-  Dictionary,
+  MyDictionary,
   DnaId,
   EntryId,
   EntryIdMap,
@@ -121,7 +121,7 @@ export class ThreadsPerspective {
   semanticTopics: ActionIdMap<[string, AgentId]> = new ActionIdMap();
   bannedSemanticTopics: ActionId[] = [];
   /** Any hash -> isHidden */
-  hiddens: Dictionary<boolean> = {};
+  hiddens: MyDictionary<boolean> = {};
   /** */
   favorites: ActionId[] = [];
   /** ppAh -> Thread */
@@ -149,7 +149,7 @@ export class ThreadsPerspective {
 
   /** -- Notification Inbox -- */
   /** linkAh -> [agent, beadAh] */
-  //mentions: Dictionary<[AgentPubKeyB64, ActionHashB64]>,
+  //mentions: MyDictionary<[AgentPubKeyB64, ActionHashB64]>,
   /** linkAh -> (ppAh, notif) */
   inbox: ActionIdMap<[ActionId, ThreadsNotification]> = new ActionIdMap();
   /** ppAh -> (author, linkAh)[] */
@@ -165,7 +165,7 @@ export class ThreadsPerspective {
   /** PathEntryHash -> [DnaId, SubjectHash][] */
   subjectsPerType: EntryIdMap<[DnaId, AnyId][]> = new EntryIdMap();
   ///* name string -> ppAh */
-  //private _threadsByName: Dictionary<ActionId> = {};
+  //private _threadsByName: MyDictionary<ActionId> = {};
 
   /** New = Found when doing probeAllLatest(), i.e. created since last GlobalProbeLog */
   /** A subject is new if a new thread has been found for it and no older threads for this subject has been found */

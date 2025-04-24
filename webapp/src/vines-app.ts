@@ -1,7 +1,7 @@
-import {html, css} from "lit";
+import {html, css, PropertyValues} from "lit";
 import { state, customElement } from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
-import {PropertyValues} from "lit/development";
+import { msg, localized } from '@lit/localize';
 import {
   AdminWebsocket,
   Signal,
@@ -32,7 +32,6 @@ import {
   toasty, hrl2Id, allFilesContext, networkCallerContext,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import { msg, localized } from '@lit/localize';
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";

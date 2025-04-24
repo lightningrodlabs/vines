@@ -82,7 +82,7 @@ import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
 import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
-import {Dictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
+import {MyDictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsDvm} from "./threads.dvm";
 import {THIS_APPLET_ID} from "../contexts";
@@ -1231,7 +1231,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** -- Subjects -- */
     /** Create mapping between subject hash and subject type */
     const ppAhs = snapshot.pps.map((tuple) => tuple[0]);
-    const entryAsSubjects: Dictionary<ThreadsEntryType> = {};
+    const entryAsSubjects: MyDictionary<ThreadsEntryType> = {};
     for (const [subjectHash, _subject] of Object.values(snapshot.subjects)) {
       if (ppAhs.includes(subjectHash)) {
         entryAsSubjects[subjectHash] = ThreadsEntryType.ParticipationProtocol;

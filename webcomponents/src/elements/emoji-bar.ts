@@ -3,7 +3,7 @@ import {property, customElement} from "lit/decorators.js";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {Dictionary} from "@ddd-qc/cell-proxy";
+import {MyDictionary} from "@ddd-qc/cell-proxy";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 
 /**
@@ -51,7 +51,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       return html``;
     }
     /** Pair vec into map */
-    let emojiMap: Dictionary<AgentId[]> = {}
+    let emojiMap: MyDictionary<AgentId[]> = {}
     for (const [agent, emojis] of reactions) {
       for (const emoji of emojis) {
         if (!emojiMap[emoji]) {

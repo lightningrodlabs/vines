@@ -116,7 +116,7 @@ import 'css-doodle';
 
 import {css, html, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import {DnaElement, HappBuildModeType, Dictionary, ActionId, EntryId, DnaId} from "@ddd-qc/lit-happ";
+import {DnaElement, HappBuildModeType, MyDictionary, ActionId, EntryId, DnaId} from "@ddd-qc/lit-happ";
 
 import {
   CommentRequest, composeFeedNotificationTitle,
@@ -424,7 +424,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async setMyProfile(nickname: string, avatar?: string, color?: string) {
     console.log("updateProfile() called:", nickname)
-    const fields: Dictionary<string> = {};
+    const fields: MyDictionary<string> = {};
     if (color) fields['color'] = color;
     if (avatar) fields['avatar'] = avatar;
     try {

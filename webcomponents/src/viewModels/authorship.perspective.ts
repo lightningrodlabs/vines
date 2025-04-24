@@ -3,7 +3,7 @@ import {
   AnyIdMap,
   assertAllDefined,
   assertIsDefined,
-  Dictionary,
+  MyDictionary,
   intoLinkableId,
   LinkableId
 } from "@ddd-qc/lit-happ";
@@ -15,7 +15,7 @@ import {AnyLinkableHashB64} from "@ddd-qc/path-explorer/dist/utils";
 /**  */
 export interface AuthorshipSnapshot {
   /** type -> Hash, timestamp, Author */
-  all: Dictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]>,
+  all: MyDictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]>,
 }
 
 
@@ -23,7 +23,7 @@ export interface AuthorshipSnapshot {
 export class AuthorshipPerspective {
   ascribedTypes: string[] = [];
   /** typeName -> (hash -> original author) */
-  logsByType: Dictionary<LinkableId[]> = {};
+  logsByType: MyDictionary<LinkableId[]> = {};
   /** hash -> original author */
   allLogs: AnyIdMap<[Timestamp, AgentId]> = new AnyIdMap();
 
@@ -42,7 +42,7 @@ export class AuthorshipPerspective {
 
   /** TODO: deep copy */
   makeSnapshot(): AuthorshipSnapshot {
-    let all: Dictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]> = {};
+    let all: MyDictionary<[AnyLinkableHashB64, Timestamp, AgentPubKeyB64][]> = {};
     for (const [type, hashs] of Object.entries(this.logsByType)) {
       all[type] = [];
       for (const hash of hashs) {
