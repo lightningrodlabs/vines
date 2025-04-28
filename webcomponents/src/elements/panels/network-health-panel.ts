@@ -69,58 +69,65 @@ export class NetworkHealthPanel extends LitElement {
     }
 
 
-    const arcPct = 1.0; // FIXME (latestInfo.arc_size * 100).toFixed(0);
+    //const _arcPct = 1.0; // FIXME (latestInfo.arc_size * 100).toFixed(0);
     const fetchKB = Object.values(latestInfo.fetch_state_summary.pending_requests).length; // FIXME (latestInfo.fetch_pool_info.op_bytes_to_fetch / 1024).toFixed(0);
 
-    const allFetchKBs: number[] = []; // FIXME cellLogs.map(([_ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
+    //const allFetchKBs: number[] = []; // FIXME cellLogs.map(([_ts, info]) => info.fetch_pool_info.op_bytes_to_fetch / 1024)
 
-    const startingZero = allFetchKBs.length > 1? "" : "0,"
+    //const startingZero = allFetchKBs.length > 1? "" : "0,"
 
-    //const lineValues = "[0,1,2,50,10,85,20,5,48]"; // testing values
-    const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
+    ////const lineValues = "[0,1,2,50,10,85,20,5,48]"; // testing values
+    //const lineValues = "[" + startingZero + allFetchKBs.join(", ") + "]";
     //console.log("<network-health>.render()", lineValues);
 
     const peerCount = Object.keys(latestInfo.gossip_state_summary.peer_meta).length; // FIXME
 
-    /** */
     return html`
-        <div id="pies">
-          <div class="item">
-            <div class="chart">
-                <tc-pie id="peer-pie" values="[${peerCount}]" shape-size="6" .max=${peerCount} static=""></tc-pie>
-                <ui5-icon class="pie-icon" name="person-placeholder"></ui5-icon>
-            </div>
-            <div>
-              <span>${peerCount} / ${peerCount}</span>
-              <br/>
-              <span>Peers</span>
-            </div>
-          </div>
-          <div class="item">
-              <div class="chart">
-                  <tc-pie id="arc-pie" values="[${arcPct}]" shape-size="6" max="100" static=""></tc-pie>
-                  <ui5-icon class="pie-icon" name="cloud"></ui5-icon>
-              </div>
-              <div>
-                <span>${arcPct}%</span>
-                <br/>
-                <span>Arc</span>
-              </div>
-          </div>
-          <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch>
-        </div>
-        <div id="fetch">
-          <div class="title">
-              <div id="fetch-title">
-                <div>${fetchKB} KB</div>
-                <div>Expected data</div>
-              </div>
-              <ui5-icon name="product" style="height: 1.5rem; width: 1.5rem;"></ui5-icon>
-          </div>
-          <tc-line values=${lineValues} tooltip="@V KB" min="0">
-          </tc-line>
-        </div>
-    `;
+        <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch>
+    <div>
+        fetchKB: ${fetchKB} ;
+        peerCount: ${peerCount}
+    </div>`;
+
+    //
+    // /** */
+    // return html`
+    //     <div id="pies">
+    //       <div class="item">
+    //         <div class="chart">
+    //             <tc-pie id="peer-pie" values="[${peerCount}]" shape-size="6" .max=${peerCount} static=""></tc-pie>
+    //             <ui5-icon class="pie-icon" name="person-placeholder"></ui5-icon>
+    //         </div>
+    //         <div>
+    //           <span>${peerCount} / ${peerCount}</span>
+    //           <br/>
+    //           <span>Peers</span>
+    //         </div>
+    //       </div>
+    //       <div class="item">
+    //           <div class="chart">
+    //               <tc-pie id="arc-pie" values="[${arcPct}]" shape-size="6" max="100" static=""></tc-pie>
+    //               <ui5-icon class="pie-icon" name="cloud"></ui5-icon>
+    //           </div>
+    //           <div>
+    //             <span>${arcPct}%</span>
+    //             <br/>
+    //             <span>Arc</span>
+    //           </div>
+    //       </div>
+    //       <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch>
+    //     </div>
+    //     <div id="fetch">
+    //       <div class="title">
+    //           <div id="fetch-title">
+    //             <div>${fetchKB} KB</div>
+    //             <div>Expected data</div>
+    //           </div>
+    //           <ui5-icon name="product" style="height: 1.5rem; width: 1.5rem;"></ui5-icon>
+    //       </div>
+    //       <!-- <tc-line values=${lineValues} tooltip="@V KB" min="0"></tc-line> -->
+    //     </div>
+    // `;
   }
 
 

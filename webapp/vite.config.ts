@@ -28,7 +28,7 @@ export default defineConfig({
   define: {
     '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
     'process.env.HAPP_BUILD_MODE': JSON.stringify(HAPP_BUILD_MODE),
-    'process.env.HAPP_ENV': JSON.stringify("DevtestWe"),
+    'process.env.HAPP_ENV': JSON.stringify("Browser"),
     'process.env.APPLET_VIEW': JSON.stringify(APPLET_VIEW),
     "process.env.HC_APP_PORT": JSON.stringify(process.env.HC_APP_PORT),
     "process.env.HC_ADMIN_PORT": JSON.stringify(process.env.HC_ADMIN_PORT) || undefined,
@@ -36,7 +36,7 @@ export default defineConfig({
   },
   build: {
     emptyOutDir: true,
-    minify: false,
+    //minify: false,
     outDir: DIST_FOLDER,
     rollupOptions: {
       output: {
