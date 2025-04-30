@@ -2,14 +2,18 @@
 
 // @ts-ignore
 import {
+/** api/common.ts */
 // @ts-ignore
-WebsocketConnectionOptions, KitsuneAgent, KitsuneSpace, HoloHashB64, AgentPubKeyB64, DnaHashB64, WasmHashB64, EntryHashB64, ActionHashB64, AnyDhtHashB64, InstalledAppId, Signature, CellId, DnaProperties, RoleName, InstalledCell, Timestamp, Duration, HoloHashed, NetworkInfo, FetchPoolInfo,
+WebsocketConnectionOptions, WsClientOptions, HolochainError, CloneIdHelper,
+/** types.ts */
+// @ts-ignore
+KitsuneAgent, KitsuneSpace, HoloHashB64, AgentPubKeyB64, DnaHashB64, WasmHashB64, EntryHashB64, ActionHashB64, AnyDhtHashB64, InstalledAppId, Signature, CellId, DnaProperties, RoleName, InstalledCell, Timestamp, Duration, HoloHashed, FetchPoolInfo,
 /** hdk/action.ts */
 // @ts-ignore
-SignedActionHashed, RegisterAgentActivity, ActionHashed, ActionType, Action, NewEntryAction, Dna, AgentValidationPkg, InitZomesComplete, CreateLink, DeleteLink, OpenChain, CloseChain, Update, Delete, Create,
+SignedAction, SignedActionHashed, RegisterAgentActivity, ActionHashed, ActionType, Action, NewEntryAction, Dna, AgentValidationPkg, InitZomesComplete, CreateLink, DeleteLink, OpenChain, CloseChain, Update, Delete, Create,
 /** hdk/capabilities.ts */
 // @ts-ignore
-CapSecret, CapClaim, GrantedFunctionsType, GrantedFunctions, ZomeCallCapGrant, CapAccessType, CapAccess, CapGrant,
+CapSecret, CapClaim, GrantedFunctionsType, GrantedFunctions, ZomeCallCapGrant, CapAccess, CapGrant,
 ///** hdk/countersigning.ts */
 //CounterSigningSessionData,
 //PreflightRequest,
@@ -21,7 +25,7 @@ CapSecret, CapClaim, GrantedFunctionsType, GrantedFunctions, ZomeCallCapGrant, C
 //CountersigningAgentState,
 /** hdk/dht-ops.ts */
 // @ts-ignore
-DhtOpType, DhtOp, getDhtOpType, getDhtOpAction, getDhtOpEntry, getDhtOpSignature,
+ChainOpType, DhtOp, WarrantOp, ChainOp, Warrant, ChainIntegrityWarrant, ValidationType, ActionHashAndSig,
 /** hdk/entry.ts */
 // @ts-ignore
 EntryVisibility, AppEntryDef, EntryType, EntryContent, Entry,
@@ -34,7 +38,8 @@ Record as HcRecord, RecordEntry as HcRecordEntry,
 ZomeIndex, LinkType, LinkTag, RateWeight, RateBucketId, RateUnits, Link,
 /** api/admin/types.ts */
 // @ts-ignore
-InstalledAppInfoStatus, DeactivationReason, DisabledAppReason, StemCell, ProvisionedCell, ClonedCell, CellType, CellInfo, AppInfo, MembraneProof, FunctionName, ZomeName, ZomeDefinition, IntegrityZome, CoordinatorZome, DnaDefinition, ResourceBytes, ResourceMap, CellProvisioningStrategy, CellProvisioning, DnaVersionSpec, DnaVersionFlexible, AppRoleDnaManifest, AppRoleManifest, AppManifest, AppBundle, AppBundleSource, NetworkSeed, ZomeLocation,
+// YamlProperties
+Zomes, WasmCode, DisabledAppReason, AppInfoStatus, StemCell, ProvisionedCell, ClonedCell, CellType, CellInfo, AppInfo, MembraneProof, MemproofMap, RoleSettingsMap, RoleSettings, DnaModifiersOpt, DnaModifiers, FunctionName, ZomeName, ZomeDefinition, IntegrityZome, CoordinatorZome, DnaDefinition, ResourceBytes, ResourceMap, CellProvisioningStrategy, CellProvisioning, DnaVersionSpec, DnaVersionFlexible, AppRoleDnaManifest, AppRoleManifest, AppManifest, AppBundle, AppBundleSource, NetworkSeed, AppStatusFilter, AppInterfaceInfo, AgentInfoSigned, ZomeLocation, DnaManifest,
 } from '@holochain/client';
 
 
@@ -63,7 +68,7 @@ import {
 DhtOpHashB64, DhtOpHash,
 /** DnaFile */
 // @ts-ignore
-DnaFile, DnaDef, Zomes, WasmCode,
+DnaFile, DnaDef,
 /** entry-details */
 // @ts-ignore
 EntryDetails, RecordDetails, Details, DetailsType, EntryDhtStatus,

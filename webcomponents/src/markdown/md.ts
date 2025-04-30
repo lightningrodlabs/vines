@@ -26,6 +26,7 @@ md.linkify
   .add('weave:', 'http:')
   .add('weave-0.12:', 'http:')
   .add('weave-0.13:', 'http:')
+  .add('weave-0.14:', 'http:')
   /** MENTION */
   .add('@', {
     // @ts-ignore
@@ -61,7 +62,7 @@ md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
   const url = new URL(href);
   //console.log("link_open() url", url);
   const scheme = url.protocol;
-  if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:") {
+  if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:" || scheme == "weave-0.14:") {
     try {
       //console.log("link_open() wal", href);
       return `<wurl-link wurl="${href}">`
@@ -87,7 +88,7 @@ md.renderer.rules.link_close = function(tokens, idx, options, env, self) {
   if (href) {
     const url = new URL(href);
     const scheme = url.protocol;
-    if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:") {
+    if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:" || scheme == "weave-0.14:") {
       return "</wurl-link>";
     }
   }
