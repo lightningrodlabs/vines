@@ -9,7 +9,7 @@
     "localize:build": "lit-localize build",
     "build": "vite build",
     "build:watch": "vite build --watch",
-    "start": "vite --port $(port) --clearScreen false"
+    "start": "vite --port $UI_PORT --clearScreen false"
   },
   "devDependencies": {
     "@types/qrcode": "~1.5.5",

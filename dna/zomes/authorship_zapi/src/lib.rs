@@ -23,19 +23,6 @@ pub fn call_authorship_zome<I: Serialize + Debug>(fn_name: &str, payload: I) -> 
 }
 
 
-/// Helper function for calling the zome via inter-zome call.
-/// Use when 'call' is not allowed. ex: during a post_commit()
-pub fn call_remote_authorship_zome<I: Serialize + Debug>(fn_name: &str, payload: I) -> ExternResult<ZomeCallResponse> {
-   return call_remote(
-      agent_info()?.agent_initial_pubkey,
-      "zAuthorship",
-      fn_name.to_string().into(),
-      None,
-      payload,
-   );
-}
-
-
 // ////
 // pub fn call_authorship_post_commit(signedActionList: Vec<SignedActionHashed>) -> ExternResult<()> {
 //    let zome_names = dna_info()?.zome_names;

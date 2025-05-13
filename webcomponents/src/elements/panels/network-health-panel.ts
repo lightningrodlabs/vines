@@ -84,10 +84,14 @@ export class NetworkHealthPanel extends LitElement {
 
     return html`
         <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch>
-    <div>
-        fetchKB: ${fetchKB} ;
-        peerCount: ${peerCount}
-    </div>`;
+        <div>
+            pending_requests: ${fetchKB} ;
+            peerCount: ${peerCount}
+        </div>
+        <!--<div>${JSON.stringify(latestInfo.fetch_state_summary)}</div>-->
+        <!--<div>${JSON.stringify(latestInfo.gossip_state_summary)}</div>-->
+        <!--<div>${JSON.stringify(latestInfo.local_agents)}</div>-->
+    `;
 
     //
     // /** */
@@ -139,7 +143,7 @@ export class NetworkHealthPanel extends LitElement {
           display: flex;
           flex-direction: column;
           gap: 12px;
-          width: 280px;
+          width: 580px;
           padding-right: 5px;
           /*overflow: clip;*/
         }
