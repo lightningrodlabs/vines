@@ -22,6 +22,7 @@ Experimental app for single feed conversation a-la Facebook group.
 5. `npm run install:submodules`
 5. `npm run install:hash-zome`
 5. `npm run build:localize`
+5. `npm run build:files`
 
 ### Web
 #### Vines
