@@ -845,7 +845,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Register loop callback */
     this.networkCaller!.addCallback((metrics: NetworkMetrics) => {
-      console.log("<vines-page>.networkCaller callback", metrics);
+      //console.log("<vines-page>.networkCaller callback", metrics);
 
       let total = 0;
       for (const peerUrls of Object.values(metrics.fetch_state_summary.pending_requests)) {
