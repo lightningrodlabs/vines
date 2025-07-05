@@ -340,6 +340,12 @@ export class ThreadsDvm extends DnaViewModel {
       timestamp: notifTip.timestamp,
       content: new ActionId(notifTip.content.b64),
     }
+    if (notif.author !== undefined && notif.author !== null && !(notif.author instanceof AgentId)) {
+      let x = (notif.author as AgentId).b64
+      if (x) {
+        notif.author  = new AgentId(x)
+      }
+    }
     this._perspective.signaledNotifications.push(notif);
   }
 
