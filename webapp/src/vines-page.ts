@@ -170,7 +170,7 @@ import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 import {
   beadJumpEvent, catchThrottled,
   CommentRequest,
-  ConfirmDialog, defaultLimitations, defaultModeration, determinerGroupProfile,
+  ConfirmDialog, defaultLimitations, defaultModeration,
   doodle_flowers,
   EditTopicRequest,
   FavoritesEvent,
@@ -1034,8 +1034,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (canPopup) {
         toasty(notifTitle + " " + message, jump, this);
       }
+
       /** Weave Notification */
       if (this.weServices) {
+
         const myNotif: FrameNotification = {
           title: notifTitle,
           body: message,
@@ -1048,6 +1050,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           //forAgents?: AgentPubKey[];
         }
         weNotifs.push(myNotif);
+
       }
       this._lastKnownNotificationIndex += 1;
     }
@@ -1590,7 +1593,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("<vines-page>.render() notifSettings", notifSetting, this._selectedThreadHash);
 
     /** Group Info */
-    const groupProfile = determinerGroupProfile(this._dvm.dnaProperties, [this.weServices, 0]);
+//    const groupProfile = determinerGroupProfile(this._dvm.dnaProperties, [this.weServices, 0]);
 
     /** Get network info for this cell */
     //const sId = this.cell.address.str;
@@ -1731,72 +1734,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Show Cross-view or group-view */
     const topLeft = html`
-                <div id="group-div">
-                    <ui5-avatar size="S" class="chatAvatar"
-                                @click=${() => {
-                            const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                            const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
-                            popover.showAt(btn);
-                          }}>
-                        <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
-                    </ui5-avatar>
-                    <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:12px;margin-left:5px;flex-grow: 1;min-width: 0;"
-                         @click=${ async (e:any) => {
-                             e.preventDefault(); e.stopPropagation();
-                             const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                             const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
-                             /** Generate and add QR code */
-                             const existingImg = popover.querySelector('img')
-                             if (!existingImg) {
-                                 let generateQR: string;
-                                 try {
-                                     generateQR = await QRCode.toDataURL(this.cell.shareCode);
-                                     const img = document.createElement('img');
-                                     img.src = generateQR;
-                                     popover.append(img);
-                                 } catch (err) {
-                                     console.error(err);
-                                 }
-                             }
-                             popover.showAt(btn);
-                         }}>
-                        <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;font-size:1.25rem;color:#1B2A39DB">${groupProfile.name}</div>
-                        <div style="font-size: 0.66rem;color:grey; text-decoration: underline;">
-                            <ui5-icon name="group" style="height: 0.75rem;margin-right:3px"></ui5-icon>
-                            <span id="membersCount" @click=${async (e: any) => {
-                                e.stopPropagation();
-                                await this.updateComplete;
-                                const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-                                dialog.show();
-                            }}>
-                                ${profileCount} ${profileCount > 1 ? msg('Members') : msg('Member')}
-                            </span>
-                        </div>
-                    </div>
-                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
-                                class=${this._canSpin? "spinning" : ""}
-                                design="Transparent" tooltip=${msg("Network")}
-                                style="margin-top:10px;"
-                                @click=${ async (e:any) => {
-                                  e.preventDefault(); e.stopPropagation();
-                                  const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                                  const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
-                                  popover.showAt(btn);
-                                }}>
-                    </ui5-button>
-                    <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
-                                icon="slim-arrow-left"
-                                style="margin-top:10px;"
-                                @click=${(_e:any) => this._canShowLeft = false}>
-                    </ui5-button>
-                </div>
+
 
 
                 <!-- Action buttons -->
-                <div style="display:flex; flex-direction:row; margin-right: 5px;">
-                    <div style="flex-grow: 1;"></div>
-                    <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; border-radius: 10px; margin-right: 5px">
-                    <ui5-button icon="expand-all" design="Transparent" style="height:18px;" tooltip=${msg("Expand All")} @click=${(_e:any) => {
+                <div style="display:flex; flex-direction:row; padding: 0 5px;">
+                 
+                    <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; width:100%; justify-content:space-between; padding-bottom:6px; padding-top:6px">
+                    ${this._listerToShow == "topics-option" ? html`
+                        <ui5-button icon="add" design="Transparent" style="height:30px;" tooltip=${msg("Create New Category")} 
+                                    @click=${(_e:any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
+                    <ui5-button icon="expand-all" design="Transparent" style="height:30px;" tooltip=${msg("Expand All")} @click=${(_e:any) => {
                       console.log("<topics-lister> EXPAND ALL")
                       this._collapseAll = false;
                       const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
@@ -1809,7 +1757,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       }
                         
                     }}></ui5-button>                    
-                    <ui5-button icon="collapse-all" design="Transparent" style="height:18px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => {
+                    <ui5-button icon="collapse-all" design="Transparent" style="height:30px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => {
                       console.log("<topics-lister> Collapse ALL")
                       this._collapseAll = true;
                       const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
@@ -1822,16 +1770,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         }                      
                     }}></ui5-button>
                     <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" 
-                                style="height:18px;" 
+                                style="height:30px;" 
                                 tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} 
                                 @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
-                    <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:18px;" 
+                    <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:30px;" 
                                 tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Categories & Channels")} 
                                 @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
-                    <ui5-button icon="accept" design="Transparent" style="height:18px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
-                    ${this._listerToShow == "topics-option" ? html`
-                        <ui5-button icon="add" design="Transparent" style="height:18px;" tooltip=${msg("Create New Category")} 
-                                    @click=${(_e:any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
+                    <ui5-button icon="accept" design="Transparent" style="height:30px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
+                    <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
+                        style="height:30px;"  
+                                icon="slim-arrow-left"
+                                @click=${(_e:any) => this._canShowLeft = false}>
+                    </ui5-button>
                     </div>
                 </div>
     `;
@@ -1917,11 +1867,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div style="display: flex; flex-direction:row; flex-grow:1; min-width: 0; margin-left:2px">
                         ${avatar}
                         <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-                            <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis;color:#1B2A39ED;">
-                                <abbr title=${this.cell.address.agentId.b64}>${myProfile.nickname}</abbr></div>
+                            
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
+                    <ui5-button icon="group" name="group" design="Transparent" style="margin-top:10px;"
+                          tooltip=${`${profileCount} ${profileCount != 1 ? msg('Members') : msg('Member')}`}
+                          @click=${async (e: any) => {
+                                e.stopPropagation();
+                                await this.updateComplete;
+                                const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
+                                dialog.show();
+                            }}
+                    ></ui5-button>
+
+
                     <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
                                 style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
@@ -1942,6 +1902,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @item-click=${(e: any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
+                        <ui5-menu-item id="shareNetwork" text=${msg("Share Network Seed")}
+                                       icon="cloud"> </ui5-menu-item>
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
@@ -1960,6 +1922,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                         `}
                     </ui5-menu>
+                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
+                                class=${this._canSpin? "spinning" : ""}
+                                design="Transparent" tooltip=${msg("Network")}
+                                style="margin-top:10px;"
+                                @click=${ async (e:any) => {
+                                  e.preventDefault(); e.stopPropagation();
+                                  const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                                  const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
+                                  popover.showAt(btn);
+                                }}>
+                    </ui5-button>
+
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">
                         <div slot="header"
@@ -2457,7 +2431,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
   }
 
-
+   async onShareNetwork(): Promise<void> {
+                             const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                             const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
+                             /** Generate and add QR code */
+                             const existingImg = popover.querySelector('img')
+                             if (!existingImg) {
+                                 let generateQR: string;
+                                 try {
+                                     generateQR = await QRCode.toDataURL(this.cell.shareCode);
+                                     const img = document.createElement('img');
+                                     img.src = generateQR;
+                                     popover.append(img);
+                                 } catch (err) {
+                                     console.error(err);
+                                 }
+                             }
+                             popover.showAt(btn);
+                         }
 
   /** */
   async onSettingsMenu(e:any): Promise<void> {
@@ -2466,6 +2457,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let content = "";
     switch (e.detail.item.id) {
       case "editProfileItem": this.profileDialogElem.show(); break;
+      case "shareNetwork":
+        await this.onShareNetwork()
+        break;
       // @ts-ignore
       case "exportAllItem":
         if (content == "") content = await this._dvm.exportAllPerspective();
@@ -2572,9 +2566,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #leftSide {
           /*background: #B9CCE7;*/
           /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */
-          width: 275px;
-          min-width: 275px;
-          max-width: 275px;
+          width: 288px;
+          min-width: 288px;
+          max-width: 288px;
           display: flex;
           flex-direction: column;
           /*gap:15px;*/
