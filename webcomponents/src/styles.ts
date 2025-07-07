@@ -133,7 +133,6 @@ export const sharedStyles = css`
     color: #ffffff;
     background: #359C07;
     border: none;
-    min-width: 40px;
   }
 
   .tempBadge {

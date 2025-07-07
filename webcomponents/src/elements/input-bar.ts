@@ -98,7 +98,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return "";
   }
   setValue(v: string): void {
-    console.debug("<vines-input-bar>.setValue()", v);
+//    console.debug("<vines-input-bar>.setValue()", v);
     if (this.inputElem) {
       this.inputElem.value = v;
       this.requestUpdate();
@@ -124,7 +124,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /**  */
   onPaste(e: ClipboardEvent) {
     e.preventDefault();
-    console.debug("<vines-input-bar>.onPaste()", e);
+    // console.debug("<vines-input-bar>.onPaste()", e);
     const text = e.clipboardData?.getData('text/plain');
     if (text && this.inputElem) {
       //console.log('<vines-input-bar>.onPaste() text:', text);
@@ -188,7 +188,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.debug("<vines-input-bar>.willUpdate()", changedProperties.has("threadHash"), this.threadHash, this.agentHash, changedProperties);
+    //console.debug("<vines-input-bar>.willUpdate()", changedProperties.has("threadHash"), this.threadHash, this.agentHash, changedProperties);
     /** Set Restrictions */
     if (this.threadHash && this._dvm.threadsZvm.perspective.threads.get(this.threadHash!)) {
       this._limitations = this._dvm.threadsZvm.perspective.threads.get(this.threadHash!)!.pp.limitations;
@@ -198,7 +198,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /* Set cached input */
     if ((changedProperties.has("threadHash") || changedProperties.has("agentHash")) && this.inputElem /*&& this.inputElem.value == ""*/) {
-      console.debug("<vines-input-bar>.willUpdate() restore cached input. current:", this.inputElem.value);
+      //console.debug("<vines-input-bar>.willUpdate() restore cached input. current:", this.inputElem.value);
       this.inputElem.value = "";
       if (this.threadHash) {
         const maybe = this.perspective.threadInputs.get(this.threadHash);
@@ -214,7 +214,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   override updated(_changedProperties: PropertyValues) {
     /** Tip if input value changed */
     const current = this.inputElem? this.inputElem.value : "";
-    console.debug(`<vines-input-bar>.updated() text-input "${this._prevInputValue}"`, current);
+    //console.debug(`<vines-input-bar>.updated() text-input "${this._prevInputValue}"`, current);
     if (this.inputElem && this.threadHash && current != this._prevInputValue) {
       this._prevInputValue = this.inputElem.value;
       this._dvm.storeThreadInput(this.threadHash, this.inputElem.value);
@@ -355,7 +355,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   handleKeydown(e:any) {
-    console.log("<vines-input-bar> keydown", this.threadHash, this.popoverElem && this.popoverElem.isOpen(), e);
+    //console.log("<vines-input-bar> keydown", this.threadHash, this.popoverElem && this.popoverElem.isOpen(), e);
     const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     if (isSuggesting) {
@@ -365,7 +365,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Enter: commit message */
     if (e.keyCode === 13) {
       if (!e.shiftKey) {
-        console.log("<vines-input-bar> keydown keyCode ENTER", this.inputElem.value);
+        //console.log("<vines-input-bar> keydown keyCode ENTER", this.inputElem.value);
         e.stopPropagation(); e.preventDefault();
         this.commitInput();
       }
@@ -440,7 +440,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   override render() {
     const input = this.inputElem? this.inputElem.value : "";
-    console.log("<vines-input-bar>.render()", this.threadHash, this.agentHash, input);
+    //console.log("<vines-input-bar>.render()", this.threadHash, this.agentHash, input);
     const me =this._dvm.cell.address.agentId;
 
     /** check & enable suggestion popover */
@@ -631,7 +631,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             .maxlength=${this._limitations.canText!.maxTextLength == 0? DEFAULT_MAX_TEXT_LENGTH : this._limitations.canText!.maxTextLength}
                             @keydown=${this.handleKeydown}
                             @input=${(_e:any) => {
-                              console.debug("<vines-input-bar> input input event");
+                              //console.debug("<vines-input-bar> input input event");
                               this.requestUpdate();
                             }}
               ></ui5-textarea>`:html``}

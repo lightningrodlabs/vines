@@ -174,7 +174,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
             if (isPersistent) {
-              badge = html`<ui5-badge class="notifBadge">${msg("new")}</ui5-badge>`;
+              badge = html`<ui5-badge class="notifBadge" title="new channel!">${notifCount}</ui5-badge>`;
             } else {
               badge = html`<ui5-badge class="tempBadge">${msg("temp")}</ui5-badge>`;
             }

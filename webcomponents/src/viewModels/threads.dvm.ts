@@ -179,6 +179,16 @@ export class ThreadsDvm extends DnaViewModel {
     if (this.cell.address.agentId.equals(from)) {
       return;
     }
+    if (thread !== undefined && thread !== null && !(thread instanceof ActionId)) {
+      let x = (thread as ActionId).b64
+      if (x) {
+        thread = new ActionId(x)
+      }
+      else {
+        return
+      }
+    }
+
     const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
     let newest: [number, ActionId | null] = [currentTimeInSeconds, thread !== undefined? thread : null];
     let current = this._perspective.agentPresences.get(from);
@@ -314,7 +324,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async signalTyping(thread: ActionId, is: boolean) {
-    console.log("ThreadsDvm.signalTyping()", thread, is);
+    //console.log("ThreadsDvm.signalTyping()", thread, is);
     const tip: ThreadsAppTip = {type: "typing", data: {thread, is}};
     const serTip = this._encoder.encode(tip);
     await catchThrottled(this.threadsZvm.broadcastTip({App: serTip}, this.allCurrentOthers()));
@@ -329,6 +339,12 @@ export class ThreadsDvm extends DnaViewModel {
       author: notifTip.author,
       timestamp: notifTip.timestamp,
       content: new ActionId(notifTip.content.b64),
+    }
+    if (notif.author !== undefined && notif.author !== null && !(notif.author instanceof AgentId)) {
+      let x = (notif.author as AgentId).b64
+      if (x) {
+        notif.author  = new AgentId(x)
+      }
     }
     this._perspective.signaledNotifications.push(notif);
   }
@@ -457,7 +473,16 @@ export class ThreadsDvm extends DnaViewModel {
         const pair = this._perspective.agentPresences.get(key);
         if (!pair) return false;
         if (thread) {
-          if (pair[1] == null || !pair[1]?.equals(thread)) return false;
+          try {
+            if (pair[1] == null) return false;
+            let x = pair[1] //new ActionId(pair[1].b64)
+            if (!x.equals(thread)) return false;
+          } catch(e) {
+            console.log("pair[1]", pair[1])
+            console.log("thread", thread)
+            console.log("pair[1] instanceof AgentId", pair[1] instanceof AgentId)
+            return false
+          }
         }
         return (currentTime - pair[0]) < 5 * 60; // 5 minutes
       });
@@ -519,7 +544,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   storeThreadInput(ppAh: ActionId, value: string) {
-    console.debug("ThreadsDvm.storeThreadInput()", value);
+    //console.debug("ThreadsDvm.storeThreadInput()", value);
     if (!value) {
       this._perspective.threadInputs.delete(ppAh);
       /*await*/ this.signalTyping(ppAh, false);
