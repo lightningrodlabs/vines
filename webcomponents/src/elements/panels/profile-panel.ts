@@ -55,7 +55,14 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     }
     this._profile = this.perspective.getProfile(this.hash);
     if (!this._profile) {
-      return html`<h3 style="margin:10px; color:#cc2525;">Missing Profile</h3>`;
+      return this.hash.equals(this.cell.address.agentId)? html`
+        <h3 style="margin:10px; color:#cc2525;width:fit-content;">Please Setup Your Profile 
+                  <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")} style="margin-right: 5px;"
+                  @click=${(e:any) => {
+                  e.stopPropagation();
+                  this.dispatchEvent(new CustomEvent('edit-profile', { detail: null, bubbles: true, composed: true }));
+              }}></ui5-button>
+        </h3>` : html`<h3 style="margin:10px; color:#cc2525;">Missing Profile </h3>`
     }
     const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash)! : 0;
     const avatar = renderProfileAvatar(this, this.hash, this._profile, "XL");
