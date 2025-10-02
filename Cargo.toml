@@ -17,9 +17,10 @@ rust-version = "1.75.0"
 edition = "2021"
 
 [workspace.dependencies]
-serde = { version = "=1.0.203", default-features = false }
-hdi = { version = "=0.6.2", default-features = false }
-hdk = { version = "=0.5.2", default-features = false }
+serde = { version = "=1.0.219", default-features = false }
+holochain_serialized_bytes = "=0.0.56"
+hdi = { version = "=0.6.6", default-features = false }
+hdk = { version = "=0.5.6", default-features = false }
 
 zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-5.0" }
 zome_signals = { git = "https://github.com/ddd-mtl/zome-signals", branch = "hdk-5.0" }

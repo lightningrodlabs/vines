@@ -64,7 +64,7 @@ pub fn query_global_log(_ : ()) -> ExternResult<Option<(ActionHash, GlobalLastPr
   /// If no updated found return the create
   if records.is_empty() {
     let record = create_records[0].clone();
-    emit_new_entry_signal(record.clone(), false)?;
+    attest_entry_created(record.clone(), false)?;
     let typed = get_typed_from_record::<GlobalLastProbeLog>(record.clone())?;
     return Ok(Some((record.action_address().to_owned(), typed)));
   }

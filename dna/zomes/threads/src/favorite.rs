@@ -58,7 +58,7 @@ pub fn probe_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
         res.push(bead_ah)
     }
     /// Emit signal
-    emit_links_signal(links)?;
+    attest_links(links)?;
     /// Default
     Ok(res)
 }

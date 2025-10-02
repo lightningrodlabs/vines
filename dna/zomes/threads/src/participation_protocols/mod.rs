@@ -21,7 +21,7 @@ pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, T
     return Ok(None);
   };
   /// Emit Signal
-  emit_new_entry_signal(record.clone(), false)?;
+  attest_entry_created(record.clone(), false)?;
   ///
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {

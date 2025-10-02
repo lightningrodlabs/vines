@@ -37,7 +37,7 @@ pub fn probe_inbox(_ : ()) -> ExternResult<()> {
     let me = agent_info()?.agent_initial_pubkey;
     let links = get_links(link_input(me, ThreadsLinkType::Inbox, None))?;
     /// Emit Signal
-    emit_links_signal(links)?;
+    attest_links(links)?;
     /// Done
     Ok(())
 }

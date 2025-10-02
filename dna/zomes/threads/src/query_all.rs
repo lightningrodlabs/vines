@@ -23,7 +23,7 @@ pub fn query_all(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_pps(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-  query_all_typed::<ParticipationProtocol>(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap())?;
+  attest_all_local_typed::<ParticipationProtocol>(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap())?;
    Ok(())
 }
 
@@ -32,7 +32,7 @@ pub fn query_pps(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_semantic_topics(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   query_all_typed::<SemanticTopic>(ThreadsEntryTypes::SemanticTopic.try_into().unwrap())?;
+   attest_all_local_typed::<SemanticTopic>(ThreadsEntryTypes::SemanticTopic.try_into().unwrap())?;
    /// Done
    Ok(())
 }
@@ -42,7 +42,7 @@ pub fn query_semantic_topics(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_any_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   query_all_typed::<AnyBead>(ThreadsEntryTypes::AnyBead.try_into().unwrap())?;
+   attest_all_local_typed::<AnyBead>(ThreadsEntryTypes::AnyBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -50,7 +50,7 @@ pub fn query_any_beads(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_entry_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   query_all_typed::<EntryBead>(ThreadsEntryTypes::EntryBead.try_into().unwrap())?;
+   attest_all_local_typed::<EntryBead>(ThreadsEntryTypes::EntryBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -58,7 +58,7 @@ pub fn query_entry_beads(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_text_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   query_all_typed::<TextBead>(ThreadsEntryTypes::TextBead.try_into().unwrap())?;
+   attest_all_local_typed::<TextBead>(ThreadsEntryTypes::TextBead.try_into().unwrap())?;
    Ok(())
 }
 
@@ -67,6 +67,6 @@ pub fn query_text_beads(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_enc_beads(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-   query_all_typed::<EncryptedBead>(ThreadsEntryTypes::EncryptedBead.try_into().unwrap())?;
+   attest_all_local_typed::<EncryptedBead>(ThreadsEntryTypes::EncryptedBead.try_into().unwrap())?;
    Ok(())
 }

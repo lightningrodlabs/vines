@@ -14,6 +14,7 @@ strum = "0.26"
 strum_macros = "0.26"
 
 serde.workspace = true
+holochain_serialized_bytes.workspace = true
 hdk.workspace = true
 
 zome_utils.workspace = true

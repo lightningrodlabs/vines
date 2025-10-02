@@ -53,7 +53,7 @@ fn probe_all_flagged(pp_ah: ActionHash) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(pp_ah, ThreadsLinkType::Flagged, None))?;
   /// Emit Signal
-  emit_links_signal(links)?;
+  attest_links(links)?;
   ///
   Ok(())
 }
@@ -64,7 +64,7 @@ fn probe_all_banned(pp_ah: ActionHash) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(pp_ah, ThreadsLinkType::Banned, None))?;
   /// Emit Signal
-  emit_links_signal(links)?;
+  attest_links(links)?;
   ///
   Ok(())
 }

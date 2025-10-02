@@ -2,7 +2,7 @@
 use hdk::prelude::*;
 use zome_utils::*;
 use threads_integrity::*;
-use zome_signals::emit_links_signal;
+use zome_signals::*;
 
 
 /// Return ppAhs and timestamp of its index-time
@@ -29,7 +29,7 @@ pub fn probe_pps_from_subject_hash(lh: AnyLinkableHash) -> ExternResult<Vec<(Act
     })
     .collect();
   /// Emit signal
-  emit_links_signal(links)?;
+  attest_links(links)?;
   /// Done
   Ok(ahs)
 }

@@ -45,7 +45,7 @@ fn probe_all_hiddens(_: ()) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(agent_info()?.agent_initial_pubkey, ThreadsLinkType::Hide, None))?;
   /// Emit Signal
-  emit_links_signal(links)?;
+  attest_links(links)?;
   ///
   Ok(())
 }

@@ -47,7 +47,7 @@ pub fn pull_reactions(bead_ah: ActionHash) -> ExternResult<()> {
     let links = get_links(link_input(bead_ah.clone(), ThreadsLinkType::EmojiReaction, None))?;
     debug!("pull_reactions() found {} for {}", links.len(), bead_ah.clone());
     /// Emit Signal
-    emit_links_signal(links)?;
+    attest_links(links)?;
     ///
     Ok(())
 }

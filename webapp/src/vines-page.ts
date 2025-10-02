@@ -1880,8 +1880,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 dialog.show();
                             }}
                     ></ui5-button>
-
-
                     <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
                                 style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
@@ -1890,6 +1888,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="margin-top:10px; ${this._mainView == MainViewType.Favorites ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
                     </ui5-button>
+                  <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
+                              class=${this._canSpin? "spinning" : ""}
+                              design="Transparent" tooltip=${msg("Network")}
+                              style="margin-top:10px;"
+                              @click=${ async (e:any) => {
+                                e.preventDefault(); e.stopPropagation();
+                                const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                                const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
+                                popover.showAt(btn);
+                              }}>
+                  </ui5-button>                  
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
                                 @click=${(_e: any) => {
@@ -1922,17 +1931,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                         `}
                     </ui5-menu>
-                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
-                                class=${this._canSpin? "spinning" : ""}
-                                design="Transparent" tooltip=${msg("Network")}
-                                style="margin-top:10px;"
-                                @click=${ async (e:any) => {
-                                  e.preventDefault(); e.stopPropagation();
-                                  const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                                  const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
-                                  popover.showAt(btn);
-                                }}>
-                    </ui5-button>
 
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover">

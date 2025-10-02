@@ -80,7 +80,7 @@ pub fn pull_notify_settings(pair: (ActionHash, AgentPubKey)) -> ExternResult<(No
         }
     }
     /// Emit Signal
-    emit_links_signal(links)?;
+    attest_links(links)?;
     /// Default
     Ok((NotifySetting::MentionsOnly, None))
 }
@@ -99,7 +99,7 @@ pub fn pull_pp_notify_settings(pp_ah: ActionHash) -> ExternResult<Vec<(AgentPubK
         res.push((agent, setting, link.create_link_hash.to_owned()))
     }
     /// Emit Signal
-    emit_links_signal(links)?;
+    attest_links(links)?;
     /// Default
     Ok(res)
 }

@@ -10,7 +10,7 @@ pub fn probe_dm_threads(_: ()) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let links = get_links(link_input(agent_info()?.agent_initial_pubkey, ThreadsLinkType::Dm, None))?;
   /// Emit signal
-  emit_links_signal(links)?;
+  attest_links(links)?;
   ///
   Ok(())
 }

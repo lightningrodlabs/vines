@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use zome_signals::emit_links_signal;
+use zome_signals::*;
 use threads_integrity::*;
 use zome_utils::*;
 
@@ -13,7 +13,7 @@ pub fn get_pp_title(pp_ah: ActionHash) -> ExternResult<String> {
   let (_eh, pp) = get_typed_from_ah::<ParticipationProtocol>(pp_ah.clone())?;
   /// Get previous title updates
   let title_links = get_links(link_input(pp_ah, ThreadsLinkType::TitleFix, None))?;
-  emit_links_signal(title_links.clone())?;
+  attest_links(title_links.clone())?;
   /// Done
   return match title_links.last() {
     None => Ok(pp.purpose),
