@@ -1422,6 +1422,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           ></ui5-busy-indicator>`;
     }
 
+    const netLogCount = this.networkCaller.networkMetricsLogs.length;
+    const peerCount = netLogCount > 0
+        ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
+        : 0;
+
     let uploadState;
     if (this._splitObj) {
       uploadState = this._filesDvm.perspective.uploadStates[this._splitObj.dataHash];
@@ -1871,17 +1876,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
-                    <ui5-button icon="group" name="group" design="Transparent" style="margin-top:10px;position:relative;"
-                          tooltip=${`${profileCount} ${profileCount != 1 ? msg('Members') : msg('Member')}`}
-                          @click=${async (e: any) => {
-                                e.stopPropagation();
-                                await this.updateComplete;
-                                const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-                                dialog.show();
-                            }}
-                    >                                
-                      <span class="memberNumberBadge">${profileCount}</span>
-                    </ui5-button>
                     <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
                                 style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
@@ -1890,6 +1884,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="margin-top:10px; ${this._mainView == MainViewType.Favorites ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
                     </ui5-button>
+                  <ui5-button icon="group" name="group" design="Transparent" style="margin-top:10px;position:relative;"
+                              tooltip=${`${profileCount} ${profileCount != 1 ? msg('Members') : msg('Member')}`}
+                              @click=${async (e: any) => {
+                                e.stopPropagation();
+                                await this.updateComplete;
+                                const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
+                                dialog.show();
+                              }}
+                  >
+                    <span class="memberNumberBadge">${peerCount + 1} / ${profileCount}</span>
+                  </ui5-button>                  
                   <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
                               class=${this._canSpin? "spinning" : ""}
                               design="Transparent" tooltip=${msg("Network")}

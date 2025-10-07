@@ -8,7 +8,7 @@ import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJ
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
-import {renderAvatar} from "../../render";
+import {renderAvatar, renderAvatarGroup} from "../../render";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 
 
@@ -206,17 +206,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                                       this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
                                   }}></ui5-button>`;
 
-          /** Create avatar for each current participant */
-          let avatarGrp = html``;
+          /** Create avatar group */
           const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
-          if (agents.length > 0) {
-            //console.log("Authors' Avatar", Object.keys(authors).length);
-            const typings = this._dvm.perspective.typings.get(ppAh);
-            let avatars = agents.map((agentId) => {
-              return renderAvatar(this, this._dvm.profilesZvm, agentId, "XS", typings && typings.has(agentId)? "red" : "");
-            });
-            avatarGrp = html`<ui5-avatar-group type="Group" style="width:fit-content;max-width:52px;">${avatars}</ui5-avatar-group>`;
-          }
+          const avatarGrp = Object.values(agents).length > 0
+              ? Object.values(agents).length > 1
+                  ? renderAvatarGroup(this._dvm.profilesZvm, agents)
+                  : renderAvatar(this, this._dvm.profilesZvm, agents[0]!, "XS")
+              : html``;
+
           /** render topic thread */
           return html`
               <sl-tooltip content=${thread.title} style="--show-delay:1000">

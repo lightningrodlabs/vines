@@ -60,6 +60,26 @@ export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null
 }
 
 
+export function renderAvatarGroup(profilesZvm: ProfilesAltZvm, agents: AgentId[], size: string = "XS", classArg: string = "grpAvatar") {
+    if (agents.length < 2) {
+        console.warn("avatarGroup() too few agents", agents.length);
+        return html``;
+    }
+    // typings.has(agentId)? "red" : ""
+    //console.log("Authors' Avatar", Object.keys(authors).length);
+    let avatars = Object.values(agents).map((agent) => {
+        const profile = loadProfile(profilesZvm, agent);
+        const initials = getInitials(profile.nickname);
+        const avatarUrl = profile.fields['avatar'];
+        return avatarUrl
+            ? html`<ui5-avatar size=${size} class=${classArg}>
+                <img .src=${avatarUrl} style="object-fit: cover;">
+              </ui5-avatar>`
+            : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+    });
+    return html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>`;
+}
+
 /** */
 export function renderAvatars(parent: LitElement, agentHashes: Uint8Array[], perspective: ProfilesAltPerspective): TemplateResult<1> {
   let peerList: TemplateResult<1>[] = [];
