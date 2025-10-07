@@ -138,11 +138,6 @@ export interface AddManyTextBeadAtInput {
   count: number
 }
 
-export interface AppStringTip {
-  type_type: string
-  data: string
-}
-
 export interface DecryptBeadInput {
   encBead: EncryptedBead
   otherAgent: AgentArray

@@ -55,7 +55,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
           const value = (typedBead as any).value? (typedBead as any).value as string : "<entry>";
           const str = value.substring(0, 16) + (value.length > 16 ? '...' : '');
           const bead = (typedBead as any).bead as BeadMat;
-          console.log("<vines-graph>.updated() bead", blm.beadAh.b64);
+          console.debug("<vines-graph>.updated() bead", blm.beadAh.b64);
           const node = {data: {id: blm.beadAh.b64, ts: blm.creationTime, type: blm.beadType, label: str}};
           elements.push(node);
           const edge = {data: {source: bead.prevBeadAh.b64, target: blm.beadAh.b64}};
@@ -63,7 +63,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
           /** */
           const prevBead = this.threadsPerspective.getBead(bead.prevBeadAh);
           if (!prevBead && !bead.prevBeadAh.equals(bead.ppAh)) {
-            console.log("<vines-graph>.updated() bead ghost", bead.prevBeadAh.b64);
+            console.debug("<vines-graph>.updated() bead ghost", bead.prevBeadAh.b64);
             const ghostNode = {data: {id: bead.prevBeadAh.b64, ts: blm.creationTime - 1, type: 'Ghost', label: "<missing bead>"}};
             elements.push(ghostNode);
           }
@@ -79,7 +79,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
   //override firstUpdated() {
   override updated() {
     const container = this.shadowRoot!.getElementById('cy');
-    console.log("<vines-graph>.updated()", !!container);
+    console.debug("<vines-graph>.updated()", !!container);
     /** default tree */
     let elements: ElementDefinition[] = [
       { // node a
@@ -96,7 +96,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
     /** Thread tree */
     if (this.threadHash) {
       elements = this.toCytoscape();
-      console.log("<vines-graph>.updated() elements", elements.length);
+      console.debug("<vines-graph>.updated() elements", elements.length);
     }
 
     /** */
@@ -175,7 +175,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-graph>.render()", this.threadHash);
+    console.debug("<vines-graph>.render()", this.threadHash);
     return html`<div id="cy"></div>`;
   }
 

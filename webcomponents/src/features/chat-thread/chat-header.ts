@@ -91,7 +91,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render(): any {
-    console.log("<chat-header>.render()", this.threadHash, this._latestSubjectId);
+    console.debug("<chat-header>.render()", this.threadHash, this._latestSubjectId);
     if (!this.threadHash) {
       return html`<div>Thread hash missing</div>`;
     }
@@ -99,7 +99,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!thread) {
       return html`<div>No thread found</div>`;
     }
-    console.log("<chat-header>.render() thread", thread);
+    console.debug("<chat-header>.render() thread", thread);
     const maybeDmThread = this._dvm.threadsZvm.isThreadDm(this.threadHash);
     if (maybeDmThread) {
       return this.renderDmThreadHeader(maybeDmThread);
@@ -124,7 +124,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       title = html`${msg("Welcome to")} ${threadName} !`;
       subText = html`${msg("This is the start of a channel about topic")} ${thread.title}`;
     } else {
-      console.log("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
+      console.debug("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "S");

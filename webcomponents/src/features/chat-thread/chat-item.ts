@@ -206,7 +206,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderTopVine(beadInfo: BeadInfo) {
-    console.log("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
+    console.debug("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
     const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh)
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {

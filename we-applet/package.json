@@ -6,10 +6,10 @@
     "build"       : "vite build",
     "build:watch" : "vite build --watch",
     "dist"        : "rm -rf dist && npm run build",
-    "devtest"     : "npm run build && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run new-sandbox\" \"sleep 7 && npm run start:ui\"",
-    "devtest:pp"  : "npm run build && cross-env HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ParticipationProtocol' concurrently \"npm run new-sandbox\" \"npm run start:ui\"",
+    "devtest"     : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' concurrently \"npm run new-sandbox\" \"sleep 5 && npm run start:ui\"",
+    "devtest:pp"  : "UI_PORT=$(port) HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) HAPP_BUILD_MODE='Debug' APPLET_VIEW='ParticipationProtocol' concurrently \"npm run new-sandbox\" \"sleep 5 && npm run start:ui\"",
     "new-sandbox" : "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | ../$npm_package_config_bin/hc s --piped -f=$HC_ADMIN_PORT generate ../artifacts/vines.happ --run=$HC_APP_PORT -a VinesApplet network mem",
-    "start:ui"    : "vite --port $(port) --clearScreen false"
+    "start:ui"    : "vite --port $UI_PORT --clearScreen false"
   },
   "devDependencies": {
     "vite": "^4.5.2",

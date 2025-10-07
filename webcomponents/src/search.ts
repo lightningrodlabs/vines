@@ -48,7 +48,7 @@ function splitStringAtFirstColon(input: string): string[] {
 
 /** */
 export function parseSearchInput(input: string, profilesPerspective: ProfilesAltPerspective/*, threadsPerspective: ThreadsPerspective*/): SearchParameters {
-  console.log("parseSearchInput() input", input);
+  console.debug("parseSearchInput() input", input);
   const sanitized = input.trim()//.replace(/[^a-zA-Z0-9:"\-,]/g, ' ');
   const quoted = splitSpacesExcludeQuotesDetailed(sanitized);
   const words = mergeSearchKeywords(quoted);
@@ -181,7 +181,7 @@ export function splitSpacesExcludeQuotes(string: string): string[] {
 
 /** Have ['from:', 'quoated content'] become ['from:"quoated content"'] */
 function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
-  console.log("quotes", quotes);
+  console.debug("quotes", quotes);
   let result: string[] = [];
   let i = 0;
   while(i < quotes.length) {

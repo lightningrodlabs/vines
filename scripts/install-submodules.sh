@@ -18,7 +18,7 @@ if [ "$hcversion" == "hc" ] || [ "$hcversion" == "" ] ; then
   echo Missing \"hc-version\" field in \"package.json\".
   exit 1
 fi
-hdkversion=hdk-${hcversion:2}
+hdkversion=hdk-${hcversion:2:-1}0 #trim last char and set to 0 instead
 echo Getting branch: $hdkversion
 
 echo \* Create 'submodules' folder
@@ -28,10 +28,6 @@ cd submodules
 
 echo \* Download Files repo
 git clone -b $hdkversion --depth 1 https://github.com/lightningrodlabs/files.git
-
-echo \* Download latest install scripts
-git clone --depth 1 https://github.com/ddd-mtl/hc-prebuilt
-
 
 cd ..
 echo

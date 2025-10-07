@@ -1871,7 +1871,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
-                    <ui5-button icon="group" name="group" design="Transparent" style="margin-top:10px;"
+                    <ui5-button icon="group" name="group" design="Transparent" style="margin-top:10px;position:relative;"
                           tooltip=${`${profileCount} ${profileCount != 1 ? msg('Members') : msg('Member')}`}
                           @click=${async (e: any) => {
                                 e.stopPropagation();
@@ -1879,7 +1879,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
                                 dialog.show();
                             }}
-                    ></ui5-button>
+                    >                                
+                      <span class="memberNumberBadge">${profileCount}</span>
+                    </ui5-button>
                     <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
                                 style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
@@ -2761,6 +2763,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: row;
           gap: 3px;
           align-items: center
+        }
+
+        .memberNumberBadge {
+          /*position: absolute;*/
+          border-radius: 50%;
+          padding: 2px 5px;
+          font-size: 10px;
+          font-weight: bold;
+          text-align: center;          
+          /*top: 5px;
+          right: 8px;*/          
+          background: #559eee;
+          color: white;
+          /*border-radius: 10px;
+          padding: 1px 9px;
+          font-size: 10px;
+          font-weight: bold;*/
+          z-index: 10;
         }
 
         .numberBadge {

@@ -1583,7 +1583,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     console.log("castNotificationTip()", notificationTip, agent/*, notification.author*/);
     const notifTip: ThreadsAppTip = {type: "notification", data: notificationTip};
     const serTip = this._encoder.encode(notifTip);
-    await this.broadcastTip({App: serTip}, [agent]);
+    await this.broadcastTip({AppCustom: serTip}, [agent]);
     return;
   }
 
@@ -2039,11 +2039,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /** Handle AppTip */
+  /** Handle AppCustomTip */
   private _missingLinkAhs: ActionIdMap<ThreadsNotificationTip> = new ActionIdMap();
   private _notifLoopIntervalId: any | undefined = undefined;
 
-  override handleAppTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
+  override handleCustomTip(serTip: Uint8Array, from: AgentId): ZomeSignalProtocol | undefined {
     const appTip = this._decoder.decode(serTip) as ThreadsAppTip;
     if (appTip.type != "notification") {
       return;

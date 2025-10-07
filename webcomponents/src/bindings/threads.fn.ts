@@ -85,7 +85,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"pull_all_subjects",
 	"pull_applets",
 	"cast_tip",
-	"call_app_tip",
+	"synchronize_tip",
 ];
 
 

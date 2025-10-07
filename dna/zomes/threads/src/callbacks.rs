@@ -3,25 +3,6 @@ use zome_utils::*;
 use threads_integrity::*;
 use zome_signals::*;
 
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AppStringTip {
-   #[serde(rename = "type")]
-   type_type: String,
-   data: String,
-}
-
-pub fn emit_string_tip(str: &str) {
-   let app_tip = AppStringTip {
-      type_type: "string".to_string(),
-      data: str.to_string(),
-   };
-   let data = encode(&app_tip).unwrap();
-   let tip: TipProtocol = TipProtocol::App(UnsafeBytes::from(data).into());
-   let _ = emit_zome_signal(vec![ZomeSignalProtocol::Tip(tip)]);
-}
-
-
 #[hdk_extern]
 pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
    debug!("genesis_self_check() CALLED");
@@ -30,7 +11,7 @@ pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateC
       return Ok(ValidateCallbackResult::Invalid("No properties".into()))
    };
    /// Emit init done tip
-   emit_string_tip("genesis_self_check");
+   let _ = emit_zome_signal(vec![ZomeSignalProtocol::Tip(TipProtocol::AppValue(("genesis_self_check".to_string(), "done".to_string())))]);
    ///
    return properties.validate();
 }
@@ -48,7 +29,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
    );
    create_cap_grant(cap_grant_entry)?;
    /// Emit init done tip
-   emit_string_tip("Threads init() DONE");
+   let _ = emit_zome_signal(vec![ZomeSignalProtocol::Tip(TipProtocol::AppValue(("init".to_string(), "done".to_string())))]);
    /// Done
    Ok(InitCallbackResult::Pass)
 }
