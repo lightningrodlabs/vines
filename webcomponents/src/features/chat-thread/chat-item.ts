@@ -6,7 +6,7 @@ import {ActionId, AgentId, delay, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import 'emoji-picker-element';
 
-import {renderAvatar, renderProfileAvatar} from "../../render";
+import {renderAvatar, renderAvatarGroup, renderAvatars, renderProfileAvatar} from "../../render";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {
   beadJumpEvent,
@@ -332,7 +332,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const hasComments = maybeCommentThread && this.threadsPerspective.threads.get(maybeCommentThread);
     if (hasComments) {
       commentButton = html`              
-          <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;"
+          <ui5-button icon="discussion" tooltip=${msg("View comments on the side")} design="Transparent" style="border:none;z-index:100;"
                        @click="${(_e:any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, baseBeadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = this.threadsPerspective.unreads.has(maybeCommentThread);
@@ -353,15 +353,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           }
           authors[beadInfo.author.b64] += 1;
         }
-        /** Create avatar for each author */
-          //console.log("Authors' Avatar", Object.keys(authors).length);
-        let avatars = Object.keys(authors).map((author) => {
-            return renderAvatar(this, this._dvm.profilesZvm, new AgentId(author), "XS", "");
-          });
-
-        const avatarGroup = Object.keys(authors).length > 1
-          ? html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>`
-          : html`${avatars}`;
+        /** Create avatar group */
+        const agents = Object.keys(authors).map((author) => new AgentId(author));
+        const avatarGroup = Object.values(agents).length > 0
+          ? Object.values(agents).length > 1
+            ? renderAvatarGroup(this._dvm.profilesZvm, agents)
+            : renderAvatar(this, this._dvm.profilesZvm, agents[0]!, "XS")
+          : html``;
 
         commentThread = html`
                 ${avatarGroup}
@@ -659,7 +657,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         .flagged {
           color: grey;
-          text-decoration: italic;
+          font-style: italic;
         }
         .green-veil {
           position: absolute;
