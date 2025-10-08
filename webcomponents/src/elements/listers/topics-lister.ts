@@ -170,7 +170,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           }
 
           /** 'new', 'notif' or 'unread' badge to display */
-          let badge = html`<ui5-badge>0</ui5-badge>`;
+          //let badge = html`<ui5-badge>0</ui5-badge>`;
+          let badge = html`<div style="width: 26px"></div>`;
           let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
             if (isPersistent) {

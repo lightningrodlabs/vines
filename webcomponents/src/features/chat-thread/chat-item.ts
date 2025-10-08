@@ -442,7 +442,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (isUnshared) {
       pbInfo = html`
           <sl-tooltip content=${msg("Message has not been received by any peer yet")}>
-            <ui5-icon class="pb-icon" name="alert" style="color:#097b12b8"></ui5-icon>
+            <ui5-icon class="pb-icon not-received" name="alert"></ui5-icon>
           </sl-tooltip>
       `;
     }

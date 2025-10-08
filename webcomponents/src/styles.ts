@@ -1,190 +1,195 @@
 import { css } from 'lit';
 
 
-/* p NEEDED because markdownit() generates <p> */
+/** Common styles */
 export const sharedStyles = css`
 
-  blockquote {
-    border-left: 4px solid #d1e15d;
-    padding: 0px 5px 2px 12px;
-    margin: 10px 0px 0px 0px;
-  }
+    .not-received {
+        color: rgb(161, 147, 7)
+    }
 
-  mark {
-    padding: 0px 2px 0px 2px;
-  }
+    blockquote {
+        border-left: 4px solid #d1e15d;
+        padding: 0px 5px 2px 12px;
+        margin: 10px 0px 0px 0px;
+    }
 
-  code {
-    background: #8080801a;
-    padding: 5px;
-    /*display: block;*/
-  }
+    mark {
+        padding: 0px 2px 0px 2px;
+    }
 
-  pre > code {
-    display: block;
-  }
+    code {
+        background: #8080801a;
+        padding: 5px;
+        /*display: block;*/
+    }
 
-  p {
-    margin: 0px;
-    white-space: pre-wrap;
-    overflow: auto;
-    display: inline;
-  }
+    pre > code {
+        display: block;
+    }
 
-  .chatAvatar:hover {
-    border: 1px solid rgba(128, 128, 88, 0.84);
-  }
+    /* p NEEDED because markdownit() generates <p> */
+    p {
+        margin: 0px;
+        white-space: pre-wrap;
+        overflow: auto;
+        display: inline;
+    }
 
-  .mention {
-    background: #c6ddf594;
-    padding: 0px 3px 0px 2px;
-    text-decoration: none;
-  }
+    .chatAvatar:hover {
+        border: 1px solid rgba(128, 128, 88, 0.84);
+    }
 
-  .linky {
-    color: blue;
-  }
+    .mention {
+        background: #c6ddf594;
+        padding: 0px 3px 0px 2px;
+        text-decoration: none;
+    }
 
-  .linky:hover {
-    text-decoration: underline;
-    cursor: pointer;
-  }
+    .linky {
+        color: blue;
+    }
 
-  .subjectName {
-    font-style: italic;
-    background: #fbfbfb9c;
-    padding: 4px;
-  }
+    .linky:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
 
-  .sideAgentName {
-    font-family: "72";
-    color: rgb(64, 64, 64);
-    font-weight: bold;
-  }
+    .subjectName {
+        font-style: italic;
+        background: #fbfbfb9c;
+        padding: 4px;
+    }
 
-  .sideChatDate {
-    font-size: smaller;
-    color: #6c6c6c;
-  }
+    .sideAgentName {
+        font-family: "72";
+        color: rgb(64, 64, 64);
+        font-weight: bold;
+    }
 
-  .avatarRow {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    padding-top: 6px;
-  }
+    .sideChatDate {
+        font-size: smaller;
+        color: #6c6c6c;
+    }
 
-  .nameColumn {
-    /*padding-top:5px; */
-  }
+    .avatarRow {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        padding-top: 6px;
+    }
 
-  .sideContentRow {
-    padding-left: 3px;
-    padding-bottom: 10px;
-    padding-top: 5px;
-    color: #2f2f2f;
-  }
+    .nameColumn {
+        /*padding-top:5px; */
+    }
 
-  .sideItem {
-    background: white;
-    display: flex;
-    flex-direction: column;
-    padding: 5px;
-    border-bottom: 1px solid #dbdada;
-  }
+    .sideContentRow {
+        padding-left: 3px;
+        padding-bottom: 10px;
+        padding-top: 5px;
+        color: #2f2f2f;
+    }
 
-  .sideItem:hover {
-    background: rgba(255, 255, 255, 0.80);
-    cursor: pointer;
-  }
+    .sideItem {
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 5px;
+        border-bottom: 1px solid #dbdada;
+    }
 
-  .fail {
-    background: #fdd;
-  }
+    .sideItem:hover {
+        background: rgba(255, 255, 255, 0.80);
+        cursor: pointer;
+    }
 
-  .timeHr {
-    border: none;
-    border-bottom: 2px dashed #dadada;
-    flex-grow: 1;
-    height: 0px;
-  }
+    .fail {
+        background: #fdd;
+    }
 
-  /** Lister */
+    .timeHr {
+        border: none;
+        border-bottom: 2px dashed #dadada;
+        flex-grow: 1;
+        height: 0px;
+    }
 
-  ui5-badge {
-    min-width: 1.7rem;
-    margin-top: 3px;
-    background: rgb(183, 183, 183);
-    color: rgb(232, 232, 232);
-  }
+    /** Lister */
 
-  ui5-badge:hover {
-    cursor: pointer;
-  }
+    ui5-badge {
+        min-width: 1.7rem;
+        margin-top: 3px;
+        background: rgb(183, 183, 183);
+        color: rgb(232, 232, 232);
+    }
+
+    ui5-badge:hover {
+        cursor: pointer;
+    }
 
 
-  .unreadBadge {
-    background: #342D1F;
-    color: white;
-    border: none;
-  }
+    .unreadBadge {
+        background: #342D1F;
+        color: white;
+        border: none;
+    }
 
-  .notifBadge {
-    color: #ffffff;
-    background: #359C07;
-    border: none;
-  }
+    .notifBadge {
+        color: #ffffff;
+        background: #359C07;
+        border: none;
+    }
 
-  .tempBadge {
-    color: #ffffff;
-    background: #a8a187;
-    border: none;
-    min-width: 40px;
-  }
+    .tempBadge {
+        color: #ffffff;
+        background: #a8a187;
+        border: none;
+        min-width: 40px;
+    }
 
-  .showBtn {
-    border: none;
-    padding: 0px;
-    display: none;
-  }
+    .showBtn {
+        border: none;
+        padding: 0px;
+        display: none;
+    }
 
-  .red {
-    border: 1px solid red;
-  }
+    .red {
+        border: 1px solid red;
+    }
 
-  .threadItem {
-    display: flex;
-    /*overflow: hidden;*/
-    align-items: center;
-    height: 36px;
-    cursor: pointer;
-    color: #484848;
-    background: #F6FAFC;
-    border-radius: 5px;
-    margin-left: -2px;
-    padding-left: 5px;
-    margin-right: 5px;
-  }
+    .threadItem {
+        display: flex;
+        /*overflow: hidden;*/
+        align-items: center;
+        height: 36px;
+        cursor: pointer;
+        color: #484848;
+        background: #F6FAFC;
+        border-radius: 5px;
+        margin-left: -2px;
+        padding-left: 5px;
+        margin-right: 5px;
+    }
 
-  .threadItem:hover {
-    background: rgb(222, 232, 255);
-  }
+    .threadItem:hover {
+        background: rgb(222, 232, 255);
+    }
 
-  .threadItem:hover > ui5-avatar-group {
-    display: none !important;
-  }
+    .threadItem:hover > ui5-avatar-group {
+        display: none !important;
+    }
 
-  .threadItem:hover > ui5-button {
-    display: block !important;
-  }
+    .threadItem:hover > ui5-button {
+        display: block !important;
+    }
 
-  .threadItem:hover > copy-wal-button {
-    display: block !important;
-  }
+    .threadItem:hover > copy-wal-button {
+        display: block !important;
+    }
 
-  chat-item:hover {
-    background: #d8e2f6;
-  }
+    chat-item:hover {
+        background: #d8e2f6;
+    }
 `;
 
 

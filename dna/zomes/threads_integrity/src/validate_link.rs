@@ -72,7 +72,7 @@ fn has_flagged_been_reached(rules: &Moderation, create_link: &HoloHashed<CreateL
   for link_ah in &links {
     let sah = must_get_action(link_ah.clone())?;
     let Action::CreateLink(create_flag_link) = sah.action() else {
-      return Err(wasm_error!("{}", format!("LinkTag does not hold an CreateLinke ActionHash. {}", link_ah)));
+      return Err(wasm_error!("{}", format!("LinkTag does not hold an CreateLink ActionHash. {}", link_ah)));
     };
     /// Make sure link target entry is author is same as ban target
     let entry = must_get_valid_record(create_flag_link.target_address.clone().into_action_hash().unwrap())?;

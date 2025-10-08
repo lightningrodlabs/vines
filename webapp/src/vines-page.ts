@@ -1893,7 +1893,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 dialog.show();
                               }}
                   >
-                    <span class="memberNumberBadge">${peerCount + 1} / ${profileCount}</span>
+                    <span class="memberNumberBadge ${peerCount == 0? "memberNumberBadgeKO" : ""}">${peerCount + 1} / ${profileCount}</span>
                   </ui5-button>                  
                   <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
                               class=${this._canSpin? "spinning" : ""}
@@ -2770,22 +2770,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           align-items: center
         }
 
+        .memberNumberBadgeKO {
+          background: #bb3314 !important;
+        }
+
         .memberNumberBadge {
           /*position: absolute;*/
-          border-radius: 50%;
-          padding: 2px 5px;
+          border-radius: 10px;
+          padding: 2px 6px;
           font-size: 10px;
           font-weight: bold;
-          text-align: center;          
+          text-align: center;
           /*top: 5px;
-          right: 8px;*/          
+          right: 8px;*/
           background: #559eee;
           color: white;
           /*border-radius: 10px;
           padding: 1px 9px;
           font-size: 10px;
           font-weight: bold;*/
-          z-index: 10;
         }
 
         .numberBadge {
