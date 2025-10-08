@@ -11,6 +11,7 @@ node_modules/
 dist/
 .cargo/
 .hc*
+.kitsune2_bootstrap_srv
 dna/workdir/dna*/*.dna
 dna/workdir/happ*/*.happ
 webapp/webhapp.workdir/*.webhapp
