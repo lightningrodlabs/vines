@@ -43,6 +43,7 @@ import {DEFAULT_THREADS_DEF} from "./happDef";
 import {renderWelcomeScreen} from "@vines/elements";
 
 import "./vines-page"
+import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals";
 
 
 //import Button from "@ui5/webcomponents/dist/Button";
@@ -367,7 +368,7 @@ export class VinesApp extends HappMultiElement {
 
     const appProxy = this.hvms[0]![0];
 
-    // TODO: should propable store networkInfoLogs in class field
+    // TODO: should probably store networkInfoLogs in class field
     let view = html`
             <vines-page
                       .appProxy=${appProxy}
@@ -452,6 +453,10 @@ export class VinesApp extends HappMultiElement {
     console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (this._hasWeProfile && !maybeMyProfile) {
       guardedView = renderWelcomeScreen(this, profilesZvm, this._weProfilesDvm);
+    } else {
+      if (!maybeMyProfile && HAPP_BUILD_MODE == HappBuildModeType.Debug) {
+        /*await*/ profilesZvm.createMyProfile({nickname: "dev", fields: {lang: "en"} });
+      }
     }
 
     console.log("<vines-app>.render() cells length:", this.cells.length, this.isMainView);
