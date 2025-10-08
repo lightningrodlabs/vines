@@ -71,20 +71,12 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
 
   /** */
-  onClickCommentPp(maybeCommentThread: ActionId | null, ppAh: ActionId, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: ppAh, subjectType: SpecialSubjectType.ParticipationProtocol, subjectName, viewType: "side"}, bubbles: true, composed: true }));
-  }
-  /** */
   onClickCommentTopic(maybeCommentThread: ActionId | null, topicAh: ActionId, subjectName: string) {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: topicAh, subjectType: SpecialSubjectType.SemanticTopic, subjectName, viewType: "side"}, bubbles: true, composed: true }));
   }
   /** */
   onClickEditTopic(topicHash: ActionId, subjectName: string) {
     this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', { detail: {topicHash, subjectName}, bubbles: true, composed: true }));
-  }
-  /** */
-  onClickEditChannel(ppAh: ActionId) {
-    this.dispatchEvent(new CustomEvent<ActionId>('edit-channel-clicked', { detail: ppAh, bubbles: true, composed: true }));
   }
 
 
@@ -142,36 +134,10 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
             return html``;
           }
-          /** Determine badge & buttons */
-          const maybeCommentThread: ActionId | null = this.threadsPerspective.getCommentThreadForSubject(ppAh);
-          let hasUnreadComments = false;
-          if (maybeCommentThread != null) {
-            hasUnreadComments = this.threadsPerspective.unreads.has(maybeCommentThread);
-          }
-          //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
-
-          let commentButton = html``;
-          if (hasUnreadComments) {
-            commentButton = html`
-                <ui5-button icon="comment" tooltip=${msg("View comments")}
-                            style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                            design="Negative"
-                            @click="${(_e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}"></ui5-button>`;
-          } else {
-            commentButton = maybeCommentThread != null
-              ? html`
-                  <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
-                              style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                              @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}}></ui5-button>`
-              : html`
-                  <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
-                              style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                              @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}}></ui5-button>`;
-          }
 
           /** 'new', 'notif' or 'unread' badge to display */
           //let badge = html`<ui5-badge>0</ui5-badge>`;
-          let badge = html`<div style="width: 26px"></div>`;
+          let badge = html`<div style="min-width: 26px"></div>`;
           let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
             if (isPersistent) {
@@ -228,13 +194,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
                     ${avatarGrp}
-                    ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
-                                style="border:none;display: none"
-                                @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
-                    <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
-                                     style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>
-                    ${hideShowBtn}                  
-                    ${commentButton}
+                    ${hideShowBtn}                
                 </div>
               </sl-tooltip>
           `})

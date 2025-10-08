@@ -61,6 +61,7 @@ export class CopyWalButton extends LitElement {
       return html`
           <ui5-button icon="chain-link" design="Transparent" 
                       tooltip=${tooltip}
+                      style="color: inherit;"
                       @click=${this.onClick}>
           </ui5-button>
       `;

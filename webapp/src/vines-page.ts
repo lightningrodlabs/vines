@@ -68,6 +68,7 @@ import SegmentedButtonItem from "@ui5/webcomponents/dist/SegmentedButtonItem";
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
 import "@ui5/webcomponents-icons/dist/add.js"
+import "@ui5/webcomponents-icons/dist/add-folder.js"
 import "@ui5/webcomponents-icons/dist/add-favorite.js"
 import "@ui5/webcomponents-icons/dist/accept.js"
 import "@ui5/webcomponents-icons/dist/alphabetical-order.js"
@@ -224,6 +225,7 @@ import {mdiInformationOutline} from "@mdi/js";
 import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
 import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
+import {Thread} from "@vines/elements/dist/viewModels/thread";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -1657,7 +1659,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
 
 
-    const hisLister = html`
+    let hisLister = html`
         <history-lister id="hisLister"
                 ?collapsed=${this._collapseAll}
                 .showArchived=${this._canViewArchivedSubjects}
@@ -1665,7 +1667,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 .threadStack=${this._threadStack}
          ></history-lister>
     `;
-
+    hisLister = html``;
 
     const toggleLeftBtn = html`
         <ui5-button icon="menu2" tooltip=${msg("Show side panel")}
@@ -1677,17 +1679,52 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
 
     let maybeBackBtn = html``;
+    let commentButton = html``;
+    let thread: Thread | undefined = undefined;
     if (this._selectedThreadHash) {
-      const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
-      if (thread && (
-        thread.pp.subject.typeName == SpecialSubjectType.EntryBead
-      || thread.pp.subject.typeName == SpecialSubjectType.TextBead
-      || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
-      || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead)) {
-        const subjectAh = new ActionId(thread.pp.subject.address);
-        const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
-        if (subjectBead) {
-          maybeBackBtn = html`<ui5-button icon="nav-back" slot="startButton" @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
+      thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
+      if (thread) {
+        /* Get subject and set back button */
+        if (thread.pp.subject.typeName == SpecialSubjectType.EntryBead
+            || thread.pp.subject.typeName == SpecialSubjectType.TextBead
+            || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
+            || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead) {
+          const subjectAh = new ActionId(thread.pp.subject.address);
+          const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
+          if (subjectBead) {
+            maybeBackBtn = html`
+              <ui5-button icon="nav-back" slot="startButton"
+                          @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
+          }
+        }
+
+        /** Determine comment button */
+        const maybeCommentThread: ActionId | null = this.threadsPerspective.getCommentThreadForSubject(this._selectedThreadHash);
+        let hasUnreadComments = false;
+        if (maybeCommentThread != null) {
+          hasUnreadComments = this.threadsPerspective.unreads.has(maybeCommentThread);
+        }
+        const commentClickedEvent = { detail: {maybeCommentThread, subjectId: this._selectedThreadHash, subjectType: SpecialSubjectType.ParticipationProtocol, subjectName: thread!.title, viewType: "side"}, bubbles: true, composed: true } as CustomEvent<CommentRequest>;
+        //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
+        if (hasUnreadComments) {
+          commentButton = html`
+            <ui5-button icon="comment" tooltip=${msg("View comments")}
+                        design="Negative"
+                        @click="${(_e: any) => this.onCommentingClicked(commentClickedEvent)}"></ui5-button>`;
+        } else {
+          commentButton = maybeCommentThread != null
+              ? html`
+                <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
+                            @click=${(e: any) => {
+                              e.stopPropagation();
+                              this.onCommentingClicked(commentClickedEvent)
+                            }}></ui5-button>`
+              : html`
+                <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
+                            @click=${(e: any) => {
+                              e.stopPropagation();
+                              this.onCommentingClicked(commentClickedEvent)
+                            }}></ui5-button>`;
         }
       }
     }
@@ -1747,7 +1784,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                  
                     <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; width:100%; justify-content:space-between; padding-bottom:6px; padding-top:6px">
                     ${this._listerToShow == "topics-option" ? html`
-                        <ui5-button icon="add" design="Transparent" style="height:30px;" tooltip=${msg("Create New Category")} 
+                        <ui5-button icon="add-folder" design="Transparent" style="height:30px;" tooltip=${msg("Create New Category")} 
                                     @click=${(_e:any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
                     <ui5-button icon="expand-all" design="Transparent" style="height:30px;" tooltip=${msg("Expand All")} @click=${(_e:any) => {
                       console.log("<topics-lister> EXPAND ALL")
@@ -1811,7 +1848,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </div>
         <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
           <!-- Messages -->
-          <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+          <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;margin-top: 30px;">
               <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
               <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
               <span style="flex-grow: 1"></span>
@@ -2003,6 +2040,40 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          }}>
                       ${primaryTitle}
                     </div>
+                  ${this._selectedThreadHash === undefined || !thread
+                      ? html``
+                      : html`
+                        <div id="topBarChannelBtns" style="margin-left: 25px; display: flex;">
+                          
+                          ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + this._selectedThreadHash.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
+                                @click=${(_e:any) => {/*await */this.onEditChannelClicked({ detail: this._selectedThreadHash!, bubbles: true, composed: true } as CustomEvent<ActionId>)}}></ui5-button>` : html``}
+
+                          <ui5-button id="notifSettingsBtn"
+                                                  icon="bell"
+                                                  tooltip=${msg('Notifications Settings')}
+                                                  @click=${() => {
+                              console.log("notifSettingsBtn.click()");
+                              const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
+                              if (popover.isOpen()) {
+                                popover.close();
+                                return;
+                              }
+                              const shellbar = this.shadowRoot!.getElementById("topicBar");
+                              if (!shellbar) {
+                                console.error("Missing topicBar HTML Element");
+                              }
+                              popover.showAt(shellbar!);
+                            }}>
+                          </ui5-button>
+                          
+                          <copy-wal-button .dnaId=${this.cell.address.dnaId} 
+                                           .hash=${this._selectedThreadHash} 
+                                           name=${msg("Channel")}
+                                           style="color: #464646; display: block;"></copy-wal-button>
+                          ${commentButton}
+                      </div>
+                      `
+                  }                  
                     <div style="flex-grow: 1"></div>
                     <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
                                style="border-radius: 10px; border: none; height: 32px;"
@@ -2045,26 +2116,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-input>
                     <div style="flex-grow: 1"></div>
                     <div id="topBarBtnGroup">
-                        ${this._selectedThreadHash === undefined ? html`` :
-                                html`
-                                    <ui5-button id="notifSettingsBtn"
-                                                icon="bell"
-                                                tooltip=${msg('Notifications Settings')}
-                                                @click=${() => {
-                                                    console.log("notifSettingsBtn.click()");
-                                                    const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
-                                                    if (popover.isOpen()) {
-                                                        popover.close();
-                                                        return;
-                                                    }
-                                                    const shellbar = this.shadowRoot!.getElementById("topicBar");
-                                                    if (!shellbar) {
-                                                        console.error("Missing topicBar HTML Element");
-                                                    }
-                                                    popover.showAt(shellbar!);
-                                                }}>
-                                    </ui5-button>`
-                        }
                         ${
                             HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : /*html``*/
                                     html`<ui5-button icon="developer-settings" @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
