@@ -96,35 +96,10 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
       if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
         return html``;
       }
-      /** Determine badge & buttons */
-      const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
-      let hasUnreadComments = false;
-      if (maybeCommentThread != null) {
-        hasUnreadComments = this.perspective.unreads.has(maybeCommentThread);
-      }
-      //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
-
-      let commentButton = html``;
-      if (hasUnreadComments) {
-        commentButton = html`
-            <ui5-button icon="comment" tooltip=${msg("View comments")}
-                        style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                        design="Negative"
-                        @click="${(_e:any) => this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}"></ui5-button>`;
-      } else {
-        commentButton = maybeCommentThread != null
-          ? html`
-              <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
-                          style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                          @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}}></ui5-button>`
-          : html`
-              <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
-                          style="border:none; display:none; ${isSelected? "color:#444;" : ""}"
-                          @click=${(e:any) => {e.stopPropagation(); this.onClickCommentPp(maybeCommentThread, ppAh, thread.title)}}></ui5-button>`;
-      }
 
       /** 'new', 'notif' or 'unread' badge to display */
-      let badge = html`<ui5-badge>0</ui5-badge>`;
+      //let badge = html`<ui5-badge>0</ui5-badge>`;
+      let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
@@ -171,10 +146,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                 ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                             style="border:none;display: none"
                             @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
-                <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
-                                 style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>
-                ${hideShowBtn}                  
-                ${commentButton}
+                ${hideShowBtn}
             </div>
           </sl-tooltip>
     `});

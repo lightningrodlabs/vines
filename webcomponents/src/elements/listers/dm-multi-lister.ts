@@ -80,8 +80,8 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
       /** Determine badge & buttons */
 
       /** 'new', 'notif' or 'unread' badge to display */
-      let badge = html`
-          <ui5-badge>0</ui5-badge>`;
+      // let badge = html`<ui5-badge>0</ui5-badge>`;
+      let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = dvm.threadsZvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
@@ -125,8 +125,6 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
                   ${badge}
                   ${renderProfileAvatar(this, otherAgent, otherProfile, 'XS')}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${otherProfile.nickname}</span>
-                  <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${ppAh} name=${msg("Channel")}
-                                   style="border:none; display: none; ${isSelected? "color:#444;" : ""}"></copy-wal-button>
                   ${hideShowBtn}
               </div>
           </sl-tooltip>

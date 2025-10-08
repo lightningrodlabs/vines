@@ -119,8 +119,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       // }
 
       /** 'new', 'notif' or 'unread' badge to display */
-      let badge = html`
-            <ui5-badge>0</ui5-badge>`;
+      //let badge = html`<ui5-badge>0</ui5-badge>`;
+      let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`

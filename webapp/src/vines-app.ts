@@ -29,7 +29,7 @@ import {
   JumpEvent,
   VINES_DEFAULT_ROLE_NAME,
   onlineLoadedContext,
-  toasty, hrl2Id, allFilesContext, networkCallerContext,
+  toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
@@ -455,7 +455,7 @@ export class VinesApp extends HappMultiElement {
       guardedView = renderWelcomeScreen(this, profilesZvm, this._weProfilesDvm);
     } else {
       if (!maybeMyProfile && HAPP_BUILD_MODE == HappBuildModeType.Debug) {
-        /*await*/ profilesZvm.createMyProfile({nickname: "dev", fields: {lang: "en"} });
+        /*await*/ profilesZvm.createMyProfile({nickname: generateRandomName(), fields: {lang: "en", color: getRandomHexColor()}});
       }
     }
 

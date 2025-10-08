@@ -19,7 +19,6 @@ export class FavoritesItem extends LitElement {
   /** Hash of bead to display */
   @property() hash!: ActionId;
 
-
   /** */
   override render() {
     console.log("<favorites-item>.render()", this.hash);

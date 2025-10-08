@@ -34,6 +34,32 @@ export function status2color(status: string): string {
   }
 }
 
+export function getRandomHexColor(): string {
+  // Generate a random integer between 0 and 255 for each color component (R, G, B)
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+
+  // Convert each component to a two-digit hexadecimal string
+  const rHex = r.toString(16).padStart(2, '0');
+  const gHex = g.toString(16).padStart(2, '0');
+  const bHex = b.toString(16).padStart(2, '0');
+
+  // Combine the hexadecimal components into one string with a '#' prefix
+  return `#${rHex}${gHex}${bHex}`;
+}
+
+export function generateRandomName(length: number = 2): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return result;
+}
+
 
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';

@@ -701,7 +701,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .chatDate {
-          margin: 0px 0px 0px 10px;
+          margin: 0px 0px 3px 10px;
           font-size: 12px;
           color: gray;
         }

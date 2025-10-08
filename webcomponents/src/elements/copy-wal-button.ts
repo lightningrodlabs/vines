@@ -79,10 +79,10 @@ export class CopyWalButton extends LitElement {
         }
 
         .logo {
-          width: 28px;
-          height: 28px;
-          background-color: #2b5ea6;
-          margin: 3px;
+          width: 26px;
+          height: 26px;
+          background-color: #464646;
+          margin: 5px;
           -webkit-mask: url(add-to-pocket.svg) no-repeat center / contain;
           mask: url(add-to-pocket.svg) no-repeat center / contain;
         }

@@ -433,13 +433,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   onLoopNetworkInfo(_e:any) {
-    console.log("onLoopNetworkInfo()")
+    console.debug("<vines-page> onLoopNetworkInfo()")
     if (!this.networkCaller?.isLooping()) {
-      console.log("Start loop")
+      console.debug("<vines-page> Start loop")
       this.networkCaller?.startCallLoop(1000);
     } else {
       this.networkCaller?.stopCallLoop();
     }
+    this.networkCaller?.addCallback((_metrics) => {
+      const elem = this.shadowRoot!.getElementById("peer-status") as LitElement;
+      if (elem) elem.requestUpdate();
+    });
   }
 
 
@@ -1302,7 +1306,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 this._threadStack.shift();
               }
               const hl = this.shadowRoot!.getElementById("hisLister") as LitElement;
-              hl.requestUpdate();
+              if (hl) hl.requestUpdate();
             }
           } else {
             // TODO: Put on top of stack?
@@ -1423,11 +1427,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               style="margin:auto; width:100%; height:100%; color:#05b92f"
           ></ui5-busy-indicator>`;
     }
-
-    const netLogCount = this.networkCaller.networkMetricsLogs.length;
-    const peerCount = netLogCount > 0
-        ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
-        : 0;
 
     let uploadState;
     if (this._splitObj) {
@@ -1794,7 +1793,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           lister.collapseAll(false);
                       }
                       const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                      if (lister) {
+                      if (lister && hisLister) {
                           hisLister.collapseAll(false);
                       }
                         
@@ -1807,7 +1806,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           lister.collapseAll(true);
                       }
                         const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                        if (lister) {
+                        if (lister && hisLister) {
                             hisLister.collapseAll(true);
                         }                      
                     }}></ui5-button>
@@ -1930,7 +1929,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 dialog.show();
                               }}
                   >
-                    <span class="memberNumberBadge ${peerCount == 0? "memberNumberBadgeKO" : ""}">${peerCount + 1} / ${profileCount}</span>
+                    <peer-status-badge id="peer-status"></peer-status-badge">
                   </ui5-button>                  
                   <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
                               class=${this._canSpin? "spinning" : ""}
@@ -2160,12 +2159,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Right" hide-arrow
+                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Left" hide-arrow
                              header-text=${msg("Notification settings for this channel")}>
                     <div style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")}
                                           @change=${(_e: any) => this.onNotifSettingsChange()}
-                                          ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}><
+                                          ?checked=${(notifSetting == NotifySetting.AllMessages) as Boolean}>
                         </ui5-radio-button>
                         <ui5-radio-button id="notifSettingsMentions" name="GroupA"
                                           text=${msg("Mentions and Replies Only")}
@@ -2820,28 +2819,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           gap: 3px;
           align-items: center
         }
-
-        .memberNumberBadgeKO {
-          background: #bb3314 !important;
-        }
-
-        .memberNumberBadge {
-          /*position: absolute;*/
-          border-radius: 10px;
-          padding: 2px 6px;
-          font-size: 10px;
-          font-weight: bold;
-          text-align: center;
-          /*top: 5px;
-          right: 8px;*/
-          background: #559eee;
-          color: white;
-          /*border-radius: 10px;
-          padding: 1px 9px;
-          font-size: 10px;
-          font-weight: bold;*/
-        }
-
+        
         .numberBadge {
           /*position: absolute;
           top: 5px;

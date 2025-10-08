@@ -99,10 +99,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         return false;
       }
       const tp = changedProperties.get("threadsPerspective")!;
-      const newThread = JSON.stringify(tp.threads.get(this.threadHash));
-      const isEqual = this._prevThread == newThread;
-      //console.log("<chat-thread-view>.shouldUpdate() tp", isEqual, this._prevThread, newThread);
-      this._prevThread = newThread;
+      let isEqual = false;
+      if (tp) {
+        const newThread = JSON.stringify(tp.threads.get(this.threadHash));
+        isEqual = this._prevThread == newThread;
+        //console.log("<chat-thread-view>.shouldUpdate() tp", isEqual, this._prevThread, newThread);
+        this._prevThread = newThread;
+      }
       /** update only if something changed and we are not currently loading all the beads */
       return isFirstPerspective || !this._loading && !isEqual;
     }
