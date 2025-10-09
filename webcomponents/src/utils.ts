@@ -121,7 +121,7 @@ export function truncate(str: string, n: number, useWordBoundary: boolean): stri
 
 
 
-/** Return list of agents mentionned in a string */
+/** Return the list of agents mentioned in a string */
 export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId[] {
   const mentions = tokenizeMentions(str);
   /** Handle special mentions */
