@@ -22,5 +22,7 @@ jobs:
           path: artifacts
       # Display artifacts folder
       - name: Display artifacts folder
-        run: ls
+        run: |
+          pwd
+          ls -la
         working-directory: artifacts
