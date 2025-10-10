@@ -76,5 +76,4 @@ jobs:
       # "upload" artifacts
       - uses: actions/upload-artifact@master
         with:
-          name: all-happ-artifact
-          path: artifacts/
+          path: artifacts
