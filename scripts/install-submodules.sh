@@ -8,7 +8,7 @@ echo Executing \"$0\".
 
 # Check pre-conditions
 if [ $# != 1 ]; then
-  echo 1>&2 "$0: Aborting. Missing argument: holochain version"
+  echo 1>&2 "$0: Aborting. Missing argument: Holochain version"
   exit 2
 fi
 

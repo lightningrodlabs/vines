@@ -1,4 +1,4 @@
-name: Release x64
+name: release-on-tag
 
 on:
   push:
@@ -10,8 +10,7 @@ jobs:
     uses: ./.github/workflows/build-webhapps.yml
     secrets: inherit
 
-  # upload the artifacts
-  upload-assets:
+  upload-artifacts:
     needs: call-build
     runs-on: ubuntu-latest
     steps:

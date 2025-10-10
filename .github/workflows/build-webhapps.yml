@@ -13,16 +13,16 @@ jobs:
         shell: bash
         run: |
           npm install
-      # Download submodules
-      - name: Download submodules
-        shell: bash
-        run: |
-          npm run install:submodules
       # install rust tools
       - name: install rust tools
         shell: bash
         run: |
           npm run install:rust
+      # Download submodules
+      - name: Download submodules
+        shell: bash
+        run: |
+          npm run install:submodules
       # install hc tool
       - name: Install hc tool
         shell: bash
@@ -32,6 +32,11 @@ jobs:
       - name: Install hash-zome
         run: |
           npm run install:hash-zome
+      # Build Files happ
+      - name: Build Files happ
+        shell: bash
+        run: |
+          npm run build:files
       # Build happ
       - name: Build happ
         shell: bash
@@ -53,11 +58,11 @@ jobs:
       # Package we-applet
       - name: Package we-applet
         shell: bash
-        run: |       
+        run: |
           npm run package:we
       # Regroup artifacts
       - name: Regroup artifacts
-        run: |       
+        run: |
           cp target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm ./artifacts
           cp target/wasm32-unknown-unknown/release/threads_zome.wasm ./artifacts
       # List uploaded files
