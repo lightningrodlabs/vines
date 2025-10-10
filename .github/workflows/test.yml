@@ -20,6 +20,7 @@ jobs:
       - uses: actions/download-artifact@v5
         with:
           name: artifacts
+          path: artifacts
       # Display artifacts folder
       - name: Display artifacts folder
         run: |
