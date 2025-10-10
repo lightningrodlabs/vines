@@ -42,6 +42,11 @@ jobs:
         shell: bash
         run: |
           CARGO_NET_GIT_FETCH_WITH_CLI=true npm run build:happ
+      # Localize
+      - name: Localize
+        run: |
+          npm run extract:localize
+          npm run build:localize
       # Build webapp
       - name: Build webapp
         run: |
