@@ -4,6 +4,7 @@ import {sharedStyles} from "../../styles";
 import {AudioRecorder, MIC_MIME_TYPE} from "./audio-recorder";
 import {msg} from "@lit/localize";
 import {formatFileSize} from "../../utils";
+import {MicEvent} from "../../events";
 
 
 /**
@@ -81,23 +82,27 @@ export class AudioPanel extends LitElement {
 
     /** Default state */
     let recordBtn = html`
-        <ui5-button icon="microphone" design="Emphasized" 
+        <ui5-button icon="microphone" design="Emphasized"
                     style="border-radius: 50%; width: 60px; height: 60px"
-                    @click=${async () => {await this.startRec(); this.requestUpdate()}}
+                    @click=${async () => {
+                        await this.startRec();
+                        this.requestUpdate()
+                    }}
         ></ui5-button>
     `;
-    let preview = html`<div class="preview">${msg("(Press record button to start recording)")}</div>`;
+    let preview = html`
+        <div class="preview">${msg("(Press record button to start recording)")}</div>`;
 
 
     /** preview */
     if (this._maybeBlobUrl) {
-    preview = html`
+      preview = html`
           <audio class="preview Audio" controls>
               <source .src=${this._maybeBlobUrl} type=${MIC_MIME_TYPE}>
               ${msg("Your browser does not support the audio element.")}
           </audio>
           <span style="color:grey;font-size: small;">(${formatFileSize(this._maybeBlob!.size)})</span>
-    `;
+      `;
     }
 
 
@@ -111,9 +116,9 @@ export class AudioPanel extends LitElement {
           <ui5-button icon="stop" design="Negative"
                       style="border-radius: 50%; width: 60px; height: 60px"
                       @click=${async () => {
-              await this.stopRec();
-              this.requestUpdate();
-          }}></ui5-button>`;
+                          await this.stopRec();
+                          this.requestUpdate();
+                      }}></ui5-button>`;
     }
 
 
@@ -122,35 +127,60 @@ export class AudioPanel extends LitElement {
         ${preview}
         ${recordBtn}
         <div style="display: flex; flex-direction:row-reverse; gap: 10px; margin-top: 10px;">
-          <ui5-button style="margin-top:5px" @click=${async (_e:any) => {
-            console.log("CANCELED", this._recorder.isRecording);
-              if (this._recorder.isRecording) {
-                  await this.stopRec();
-              }
-              this._recorder.releaseMedia();
-              this._maybeBlob = undefined;
-              this._maybeBlobUrl = undefined;
-              this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
-              this.requestUpdate();
-          }}>
-              ${msg("Cancel")}
-          </ui5-button>
-            <ui5-button style="margin-top:5px" design="Emphasized"
-                        ?disabled=${!this._maybeBlob}
-                        @click=${ async (_e:any) => {
+            <ui5-button style="margin-top:5px" @click=${async (_e: any) => {
+                console.log("CANCELED", this._recorder.isRecording);
                 if (this._recorder.isRecording) {
-                  await this.stopRec();
+                    await this.stopRec();
                 }
                 this._recorder.releaseMedia();
-                this.dispatchEvent(new CustomEvent('mic', {detail: this._maybeBlob, bubbles: true, composed: true}));
+                this._maybeBlob = undefined;
+                this._maybeBlobUrl = undefined;
+                this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
                 this.requestUpdate();
             }}>
+                ${msg("Cancel")}
+            </ui5-button>
+            <ui5-button style="margin-top:5px"
+                        ?disabled=${!this._maybeBlob}
+                        @click=${async (_e: any) => {
+                            if (this._recorder.isRecording) {
+                                await this.stopRec();
+                            }
+                            this._recorder.releaseMedia();
+                            this.dispatchEvent(new CustomEvent<MicEvent>('mic', {
+                                detail: {
+                                    blob: this._maybeBlob,
+                                    canSend: false,
+                                },
+                                bubbles: true,
+                                composed: true
+                            }));
+                            this.requestUpdate();
+                        }}>
                 ${msg("Attach")}
-            </ui5-button>            
+            </ui5-button>
+            <ui5-button style="margin-top:5px" design="Emphasized"
+                        ?disabled=${!this._maybeBlob}
+                        @click=${async (_e: any) => {
+                            if (this._recorder.isRecording) {
+                                await this.stopRec();
+                            }
+                            this._recorder.releaseMedia();
+                            this.dispatchEvent(new CustomEvent<MicEvent>('mic', {
+                                detail: {
+                                    blob: this._maybeBlob,
+                                    canSend: true,
+                                },
+                                bubbles: true,
+                                composed: true
+                            }));
+                            this.requestUpdate();
+                        }}>
+                ${msg("Send")}
+            </ui5-button>
         </div>
     `;
   }
-
 
 
   /** */
@@ -158,19 +188,19 @@ export class AudioPanel extends LitElement {
     return [
       sharedStyles,
       css`
-        :host {
-          min-width: 300px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          align-items: center;
-        }
-        
-        .preview {
-          height: 54px;
-          line-height: 54px;
-          text-align: center;
-        }
+          :host {
+              min-width: 300px;
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              align-items: center;
+          }
+
+          .preview {
+              height: 54px;
+              line-height: 54px;
+              text-align: center;
+          }
       `,];
   }
 }

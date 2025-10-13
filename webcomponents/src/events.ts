@@ -19,6 +19,11 @@ export type ViewEmbedEvent = {
   mime: string,
 }
 
+export type MicEvent = {
+  blob: any,
+  canSend: boolean,
+}
+
 export type ShowEmojiEvent = {
   bead: ActionId,
   x: number,
@@ -107,8 +112,8 @@ export enum MainViewType {
 
 export function notification2JumpEvent(notif: ThreadsNotification): CustomEvent<JumpEvent> {
   let detail: JumpEvent = {
-      type: MainViewType.Thread,
-      history: undefined,
+    type: MainViewType.Thread,
+    history: undefined,
   };
   if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event || NotifiableEvent.Banned) {
     detail.thread = notif.content;
@@ -119,26 +124,48 @@ export function notification2JumpEvent(notif: ThreadsNotification): CustomEvent<
 }
 
 
-
 /** */
 export function beadJumpEvent(bead: ActionId): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {bead, type: MainViewType.Thread, history: undefined}, bubbles: true, composed: true});
+  return new CustomEvent<JumpEvent>('jump', {
+    detail: {bead, type: MainViewType.Thread, history: undefined},
+    bubbles: true,
+    composed: true
+  });
 }
 
 export function threadJumpEvent(ah: ActionId, history?: boolean): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {thread: ah, type: MainViewType.Thread, history}, bubbles: true, composed: true});
+  return new CustomEvent<JumpEvent>('jump', {
+    detail: {thread: ah, type: MainViewType.Thread, history},
+    bubbles: true,
+    composed: true
+  });
 }
 
 export function multiJumpEvent(thread: ActionId, agent: AgentId): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {thread, agent, type: MainViewType.MultiThread, history: undefined}, bubbles: true, composed: true});
+  return new CustomEvent<JumpEvent>('jump', {
+    detail: {
+      thread,
+      agent,
+      type: MainViewType.MultiThread,
+      history: undefined
+    }, bubbles: true, composed: true
+  });
 }
 
 export function favoritesJumpEvent(): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {type: MainViewType.Favorites, history: undefined}, bubbles: true, composed: true});
+  return new CustomEvent<JumpEvent>('jump', {
+    detail: {type: MainViewType.Favorites, history: undefined},
+    bubbles: true,
+    composed: true
+  });
 }
 
 export function filesJumpEvent(): CustomEvent<JumpEvent> {
-  return new CustomEvent<JumpEvent>('jump', {detail: {type: MainViewType.Files, history: undefined}, bubbles: true, composed: true});
+  return new CustomEvent<JumpEvent>('jump', {
+    detail: {type: MainViewType.Files, history: undefined},
+    bubbles: true,
+    composed: true
+  });
 }
 
 export function favoritesEvent(beadAh: ActionId, canAdd: boolean): CustomEvent<FavoritesEvent> {
