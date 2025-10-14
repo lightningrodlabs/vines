@@ -1,7 +1,7 @@
 import {html, css, PropertyValues} from "lit";
-import { state, customElement } from "lit/decorators.js";
+import {state, customElement} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
-import { msg, localized } from '@lit/localize';
+import {msg, localized} from '@lit/localize';
 import {
   AdminWebsocket,
   Signal,
@@ -77,7 +77,7 @@ export class VinesApp extends HappMultiElement {
 
   @state() private _offlineLoaded = false;
   @state() private _onlineLoaded = false;
-           private _onlineLoadedProvider?: any;
+  private _onlineLoadedProvider?: any;
   @state() private _hasHolochainFailed: boolean | undefined = undefined;
   @state() private _hasWeProfile = false;
 
@@ -136,7 +136,7 @@ export class VinesApp extends HappMultiElement {
     adminWs: AdminWebsocket | undefined,
     isMulti: boolean,
     appletGroups: AppletGroup[],
-  ) : Promise<VinesApp> {
+  ): Promise<VinesApp> {
     if (appletGroups.length == 0) {
       throw Error("Needs at lest one appletGroup");
     }
@@ -145,7 +145,8 @@ export class VinesApp extends HappMultiElement {
     const appletIds = appletGroups.map((group) => group.appletId);
     app._weServices = new WeServicesEx(weServices, appletIds);
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
-    /*let _weProvider =*/ new ContextProvider(app, weClientContext, app._weServices);
+    /*let _weProvider =*/
+    new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<thread-app>.fromWe()", appletGroups);
     await app.createWeProfilesDvm(appletGroups[0]!.profilesAppProxy, appletGroups[0]!.profilesHcl);
@@ -236,10 +237,12 @@ export class VinesApp extends HappMultiElement {
     /** Provide Files DVM context  */
     console.log(`\t\tProviding context "${filesContext}" | in host `, this);
     // @ts-ignore
-    /*let _filesProvider =*/ new ContextProvider(this, filesContext, this.filesDvm(0));
+    /*let _filesProvider =*/
+    new ContextProvider(this, filesContext, this.filesDvm(0));
     const allFilesDvm = this.hvms.map(([_proxy, hvm]) => hvm.getDvm(FilesDvm.DEFAULT_BASE_ROLE_NAME)! as FilesDvm)
     // @ts-ignore
-    /*let _filesProvider =*/ new ContextProvider(this, allFilesContext, allFilesDvm);
+    /*let _filesProvider =*/
+    new ContextProvider(this, allFilesContext, allFilesDvm);
     /** */
     this.networkCaller?.setCapacity(20);
     this.networkCaller?.setCellAddr(this.threadsDvm(0).cell.address);
@@ -252,7 +255,7 @@ export class VinesApp extends HappMultiElement {
   /** */
   override async perspectiveInitializedOffline(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOffline()");
-    for (let i = 0; i < this.hvms.length; i+= 1) {
+    for (let i = 0; i < this.hvms.length; i += 1) {
       this.threadsDvm(i).threadsZvm.storeMainTopic();
       const maybeProfile = await this.threadsDvm(i).profilesZvm.findProfile(this.filesDvm(i).cell.address.agentId);
       console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm(i).cell.address.agentId);
@@ -282,7 +285,7 @@ export class VinesApp extends HappMultiElement {
 
 
   /** */
-  async onDumpNetworkLogs(_e:any) {
+  async onDumpNetworkLogs(_e: any) {
     console.log("onDumpNetworkLogs()")
     //await this.networkInfoAll();
     this.networkCaller?.dumpNetworkMetricsLogs();
@@ -293,7 +296,8 @@ export class VinesApp extends HappMultiElement {
   async onJump(e: CustomEvent<JumpEvent>) {
     //console.log("<vines-app>.onJump()", e.detail);
     if ((e.detail.thread || e.detail.bead) && this.appletView && this.appletView.type != "main" && this._weServices) {
-      /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
+      /* await */
+      this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
     }
   }
 
@@ -324,42 +328,44 @@ export class VinesApp extends HappMultiElement {
   /** */
   private onRetryHolochain() {
     window.location.reload();
-      // const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
-      // btn.disabled = true;
-      // const allAppEntryTypes = await this.threadsDvm(0).fetchAllEntryDefs(); // FIXME 0
-      // if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
-      //   console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
-      //   btn.disabled = false;
-      // } else {
-      //   this._hasHolochainFailed = false;
-      // }
+    // const btn = this.shadowRoot!.getElementById("retryBtn") as Button;
+    // btn.disabled = true;
+    // const allAppEntryTypes = await this.threadsDvm(0).fetchAllEntryDefs(); // FIXME 0
+    // if (Object.values(allAppEntryTypes[THREADS_DEFAULT_COORDINATOR_ZOME_NAME]!).length == 0) {
+    //   console.warn(`No entries found for ${THREADS_DEFAULT_COORDINATOR_ZOME_NAME}`);
+    //   btn.disabled = false;
+    // } else {
+    //   this._hasHolochainFailed = false;
+    // }
   }
 
   /** */
   override render() {
-    console.log("<vines-app>.render()", !this._hasHolochainFailed,  this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
+    console.log("<vines-app>.render()", !this._hasHolochainFailed, this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
-      return html `
-        <ui5-busy-indicator delay="0" size="Medium" active
-                            style="margin:auto; width:100%; height:50%; color:#ff4343"
-        ></ui5-busy-indicator>
+      return html`
+          <ui5-busy-indicator delay="0" size="Medium" active
+                              style="margin:auto; width:100%; height:50%; color:#ff4343"
+          ></ui5-busy-indicator>
       `;
     }
-    if(this._hasHolochainFailed || this.hvms.length == 0) {
+    if (this._hasHolochainFailed || this.hvms.length == 0) {
       return html`
-      <div style="display: flex; flex-direction: column">
-        <div style="width: auto; height: auto; font-size: 3rem;">${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};</div>
-        <ui5-button id="retryBtn" design="Emphasized"
-                    style="max-width:300px"
-                    @click=${async (_e:any) => this.onRetryHolochain()}>
-          ${msg('Retry')}
-        </ui5-button>
-      </div>
+          <div style="display: flex; flex-direction: column">
+              <div style="width: auto; height: auto; font-size: 3rem;">
+                  ${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};
+              </div>
+              <ui5-button id="retryBtn" design="Emphasized"
+                          style="max-width:300px"
+                          @click=${async (_e: any) => this.onRetryHolochain()}>
+                  ${msg('Retry')}
+              </ui5-button>
+          </div>
       `;
     }
     if (!this._offlineLoaded) {
-      return html `
+      return html`
           <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:50%; color:#f3bb2c"
           ></ui5-busy-indicator>
@@ -370,17 +376,17 @@ export class VinesApp extends HappMultiElement {
 
     // TODO: should probably store networkInfoLogs in class field
     let view = html`
-            <vines-page
-                      .appProxy=${appProxy}
-                      @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                      @queryNetworkInfo=${(_e:any) => this.networkInfoAll() }
-            ></vines-page>`;
+        <vines-page
+                .appProxy=${appProxy}
+                @dumpNetworkLogs=${this.onDumpNetworkLogs}
+                @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
+        ></vines-page>`;
     if (this.appletView) {
       console.log("<vines-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
           /** N/A */
-        break;
+          break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
         case "asset":
@@ -401,23 +407,27 @@ export class VinesApp extends HappMultiElement {
             case ThreadsEntryType.ParticipationProtocol:
               const ppAh = new ActionId(dhtId.b64);
               console.log("asset ppAh:", ppAh);
-              view = html`<comment-thread-view assetview .threadHash=${ppAh}  style="height: 100%;" showInput="true"></comment-thread-view>`;
-            break;
+              view = html`
+                  <comment-thread-view assetview .threadHash=${ppAh} style="height: 100%;"
+                                       showInput="true"></comment-thread-view>`;
+              break;
             case ThreadsEntryType.EncryptedBead:
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
-                const beadAh = new ActionId(dhtId.b64);
-                // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
-                view = html`<chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
+              const beadAh = new ActionId(dhtId.b64);
+              // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
+              view = html`
+                  <chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
               break
             case ThreadsEntryType.SemanticTopic:
-              view = html`<div>{SemanticTopic}</div>`
+              view = html`
+                  <div>{SemanticTopic}</div>`
               break
             default:
               throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);
           }
-        break;
+          break;
         case "creatable":
           const creatableViewInfo = this.appletView as {
             type: "creatable";
@@ -427,18 +437,19 @@ export class VinesApp extends HappMultiElement {
             reject: (reason: any) => Promise<void>;
           };
           if (creatableViewInfo.name.toLowerCase() == "thread") {
-            view = html`<creatable-thread-panel 
-                    @create=${async (e: CustomEvent<WAL>) => {
-                        console.log("@create event", e.detail);
-                        await creatableViewInfo.resolve(e.detail);
-                      }}
-                    @cancel=${(_e:any) => creatableViewInfo.cancel()}
-                    @reject=${(e: CustomEvent<any>) => creatableViewInfo.reject(e.detail)}
-            ></creatable-thread-panel>`;
+            view = html`
+                <creatable-thread-panel
+                        @create=${async (e: CustomEvent<WAL>) => {
+                            console.log("@create event", e.detail);
+                            await creatableViewInfo.resolve(e.detail);
+                        }}
+                        @cancel=${(_e: any) => creatableViewInfo.cancel()}
+                        @reject=${(e: CustomEvent<any>) => creatableViewInfo.reject(e.detail)}
+                ></creatable-thread-panel>`;
           } else {
             throw new Error(`Unhandled creatable type ${creatableViewInfo.name}.`)
           }
-        break;
+          break;
         default:
           console.error("Unknown applet-view type", this.appletView);
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
@@ -455,7 +466,8 @@ export class VinesApp extends HappMultiElement {
       guardedView = renderWelcomeScreen(this, profilesZvm, this._weProfilesDvm);
     } else {
       if (!maybeMyProfile && HAPP_BUILD_MODE == HappBuildModeType.Debug) {
-        /*await*/ profilesZvm.createMyProfile({nickname: generateRandomName(), fields: {lang: "en", color: getRandomHexColor()}});
+        /*await*/
+        profilesZvm.createMyProfile({nickname: generateRandomName(), fields: {lang: "en", color: getRandomHexColor()}});
       }
     }
 
@@ -472,9 +484,9 @@ export class VinesApp extends HappMultiElement {
     /** Render all Multi */
     return html`
         <cell-context .cell=${this.threadsDvm(0).cell}>
-          <cell-multi-context .cells=${this.cells}>
-              <vines-page multi="true"></vines-page>
-          </cell-multi-context>
+            <cell-multi-context .cells=${this.cells}>
+                <vines-page multi="true"></vines-page>
+            </cell-multi-context>
         </cell-context>
     `;
 
@@ -496,7 +508,7 @@ export class VinesApp extends HappMultiElement {
         #profileCard {
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
         }
-        
+
         .column {
           display: flex;
           flex-direction: column;
@@ -507,7 +519,7 @@ export class VinesApp extends HappMultiElement {
         }
 
         ui5-card::part(region) {
-          padding:10px;
+          padding: 10px;
         }
       `,
 
