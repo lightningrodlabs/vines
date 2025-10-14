@@ -16,14 +16,16 @@ export async function setupVinesApplet(): Promise<LitElement> {
   try {
     APPLET_VIEW = process.env.APPLET_VIEW!;
     //console.log(`HAPP_ENV defined by process.ENV: "${happEnv}"`);
-  } catch (e:any) {
+  } catch (e: any) {
   }
   console.log("Vines we-applet setup() APPLET_VIEW", APPLET_VIEW);
-  switch(APPLET_VIEW) {
-    case ThreadsEntryType.ParticipationProtocol: return setupVinesEntryView();
+  switch (APPLET_VIEW) {
+    case ThreadsEntryType.ParticipationProtocol:
+      return setupVinesEntryView();
     //case ThreadsEntryType.ParticipationProtocol: return setupThreadsBlockView();
     case "main":
-    default: return setupVinesMainView();
+    default:
+      return setupVinesMainView();
   }
 }
 

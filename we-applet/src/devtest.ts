@@ -7,38 +7,38 @@ import {ActionId, snake} from "@ddd-qc/cell-proxy";
 import {LitElement} from "lit";
 
 export const devtestNames: DevTestNames = {
-    installed_app_id: "VinesApplet",
-    provisionedRoleName: VINES_DEFAULT_ROLE_NAME,
+  installed_app_id: "VinesApplet",
+  provisionedRoleName: VINES_DEFAULT_ROLE_NAME,
 }
 
 export function setupVinessBlockView() {
-    // FIXME
+  // FIXME
 }
 
 
 /** */
 export async function setupVinesEntryView(): Promise<LitElement> {
-    console.log("setupVinesEntryView()");
-    const context: VinesAssetQuery = {
-        detail: "none",
-        subjectName: "DevTest subject",
-        subjectType: "unknown",
-    }
-    const appletView = createPpEntryRenderInfo(ActionId.empty(), context);
-    return setupDevtest(createVinesApplet, devtestNames, createDefaultWeServicesMock, appletView);
+  console.log("setupVinesEntryView()");
+  const context: VinesAssetQuery = {
+    detail: "none",
+    subjectName: "DevTest subject",
+    subjectType: "unknown",
+  }
+  const appletView = createPpEntryRenderInfo(ActionId.empty(), context);
+  return setupDevtest(createVinesApplet, devtestNames, createDefaultWeServicesMock, appletView);
 }
 
 
 /** */
 function createPpEntryRenderInfo(ppAh: ActionId, context: VinesAssetQuery): AssetViewInfo {
-    const assetViewInfo = emptyEntryAppletView as AssetViewInfo;
-    assetViewInfo.recordInfo = {
-        roleName: VINES_DEFAULT_ROLE_NAME,
-        integrityZomeName: THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
-        entryType: snake(ThreadsEntryType.ParticipationProtocol),
-    };
-    assetViewInfo.wal.hrl[1] = ppAh.hash;
-    assetViewInfo.wal.context = context;
+  const assetViewInfo = emptyEntryAppletView as AssetViewInfo;
+  assetViewInfo.recordInfo = {
+    roleName: VINES_DEFAULT_ROLE_NAME,
+    integrityZomeName: THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
+    entryType: snake(ThreadsEntryType.ParticipationProtocol),
+  };
+  assetViewInfo.wal.hrl[1] = ppAh.hash;
+  assetViewInfo.wal.context = context;
 
-    return assetViewInfo;
+  return assetViewInfo;
 }

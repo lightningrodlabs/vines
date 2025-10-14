@@ -77,7 +77,6 @@ export async function getAppId(appWs: AppWebsocket) {
 }
 
 
-
 /** */
 export async function createProfilesCellProxy(profilesClient: ProfilesClient): Promise<[HCL, ExternalAppProxy]> {
   /** -- ProfilesClient -- */
