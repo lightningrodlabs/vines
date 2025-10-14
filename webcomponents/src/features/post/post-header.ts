@@ -21,7 +21,7 @@ import {MAIN_TOPIC_ID} from "../../utils";
 @customElement("post-header")
 export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
 
@@ -31,7 +31,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  handleKeydown(e:any) {
+  handleKeydown(e: any) {
     // //console.log("keydown", e);
     // const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
     // //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
@@ -74,7 +74,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     return html`
         <div id="post-header">
           ${avatar}
-          <!-- <ui5-input placeholder=${msg('Whats up?')} @click=${(_e:any) => {}}></ui5-input> -->
+          <!-- <ui5-input placeholder=${msg('Whats up?')} @click=${(_e: any) => {}}></ui5-input> -->
           <ui5-textarea id="textMessageInput" mode="SingleSelect"
                         placeholder=${msg('Whats up?')}
                         growing
@@ -82,7 +82,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
                         rows="1"
                         maxlength="1000"
                         @keydown=${this.handleKeydown}
-                        @input=${(_e:any) => this.requestUpdate()}
+                        @input=${(_e: any) => this.requestUpdate()}
           ></ui5-textarea>
         </div>
     `;

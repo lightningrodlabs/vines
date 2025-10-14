@@ -34,14 +34,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   /** Hash of File bead to display */
   @property() hash!: ActionHashB64; // BeadAh. For some reason Lit errors if we use ActionId here.
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
   @state() private _loading = true;
   @state() private _manifest?: ParcelManifest;
-           private _file: File | null = null;
-           private _maybeBlobUrl: string | undefined = undefined;
-           private _canRetry = true;
+  private _file: File | null = null;
+  private _maybeBlobUrl: string | undefined = undefined;
+  private _canRetry = true;
 
 
   /** -- Methods -- */
@@ -79,11 +79,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     /** click file for preview */
     const maybeImg = this.shadowRoot!.getElementById("img-bead") as HTMLElement;
     if (maybeImg) {
-      maybeImg.addEventListener('click', (e:any) => {
-        e.stopPropagation(); e.preventDefault();
+      maybeImg.addEventListener('click', (e: any) => {
+        e.stopPropagation();
+        e.preventDefault();
         const mime = kind2mime(this._manifest!.description.kind_info);
         console.log("view-embed image clicked!", mime, this._maybeBlobUrl);
-        this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {detail: {blobUrl: this._maybeBlobUrl!, mime}, bubbles: true, composed: true}));
+        this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {
+          detail: {blobUrl: this._maybeBlobUrl!, mime},
+          bubbles: true,
+          composed: true
+        }));
       });
     }
   }
@@ -117,7 +122,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       }
       this._file = (await this._filesDvm.fetchFile(manifestEh))[1];
       this.loadBlob();
-    } catch(e) {
+    } catch (e) {
       this._loading = false;
       this._file = null;
     }
@@ -149,13 +154,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       };
       //reader.readAsDataURL(this._maybeFile);
       reader.readAsArrayBuffer(this._file!);
-    } catch(e:any) {
+    } catch (e: any) {
       console.warn("<chat-file>.loadFile() Loading file failed:", this.hash, e);
       this._loading = false;
       this._file = null;
     }
   }
-
 
 
   /** */
@@ -188,17 +192,18 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`
           <ui5-list id="fileList" style="max-width: 300px;">
               <ui5-li id="fileLi" class="fail" icon="synchronize"
-                      @click=${async (e:any) => {
-                          e.stopPropagation(); e.preventDefault();
-                          const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
-                          if (entryBead) {
-                            await this.probeForFileManifest(entryBead.sourceEh);
-                          }
-                      }}>
+                      @click=${async (e: any) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
+        if (entryBead) {
+          await this.probeForFileManifest(entryBead.sourceEh);
+        }
+      }}>
                   <abbr title=${msg('File hash: ') + this.hash} style="text-decoration: none;">${msg('Missing File')}</abbr>
               </ui5-li>
           </ui5-list>`;
-   }
+    }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
@@ -215,10 +220,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`
         <ui5-list id="fileList" style="max-width: 300px;">
           <ui5-li id="fileLi" class="fail" icon="synchronize"
-                  @click=${async (e:any) => {
-                      e.stopPropagation(); e.preventDefault();
-                      await this.probeForFileManifest(manifestEh);
-                  }}>
+                  @click=${async (e: any) => {
+        e.stopPropagation();
+        e.preventDefault();
+        await this.probeForFileManifest(manifestEh);
+      }}>
               <abbr title=${msg('File manifest hash: ') + manifestEh.b64} style="text-decoration: none;">${msg('File data not found')}</abbr>
           </ui5-li>
         </ui5-list>`;
@@ -234,19 +240,27 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     let item = html`
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
-                  @click=${(_e:any) => {this._filesDvm.downloadFile(entryBead.sourceEh); toasty(msg("File downloaded") + ": " + fileDesc.name);}}>
+                  @click=${(_e: any) => {
+      this._filesDvm.downloadFile(entryBead.sourceEh);
+      toasty(msg("File downloaded") + ": " + fileDesc.name);
+    }}>
             ${fileDesc.name}
             <!-- <ui5-button icon="show" 
                         style="height:30px;margin-left:10px"
-                        @click=${(e:any)=> {e.preventDefault(); e.stopPropagation(); this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize * 20)}}
+                        @click=${(e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize * 20)
+    }}
             ></ui5-button> -->              
           </ui5-li>
         </ui5-list>
         ${isViewable? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
-             @click=${(e:any)=> {
-               e.preventDefault(); e.stopPropagation(); 
-               this.loadFileData(MAX_VIEWABLE_SIZE);
-             }}>
+             @click=${(e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.loadFileData(MAX_VIEWABLE_SIZE);
+    }}>
             ${msg('View')}
         </div>` : html``}        
     `;

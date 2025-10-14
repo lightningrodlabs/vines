@@ -25,17 +25,17 @@ export class ConfirmDialog extends LitElement {
         <ui5-dialog id="confirm-dialog" header-text=${this.title}>
             <div class="footer">
                 <ui5-button style="margin-top:5px" design="Emphasized" 
-                            @click=${(_e:any) => {
-                                this.dispatchEvent(new CustomEvent<boolean>('confirmed', {detail: true, bubbles: true, composed: true}));
-                                const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
-                                dialog.close(false);
-                            }}>
+                            @click=${(_e: any) => {
+      this.dispatchEvent(new CustomEvent<boolean>('confirmed', {detail: true, bubbles: true, composed: true}));
+      const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
+      dialog.close(false);
+    }}>
                     ${msg('Confirm')}
                 </ui5-button>
                 <ui5-button style="margin-top:5px" @click=${() => {
-                      const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
-                      dialog.close(false);
-                    }}>
+      const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
+      dialog.close(false);
+    }}>
                   ${msg('Cancel')}
                 </ui5-button>
             </div>

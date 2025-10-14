@@ -34,14 +34,14 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** Hash of bead to focus */
   @property() beadAh?: ActionId;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
   // /** Observed perspective from zvm */
   // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   // threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: onlineLoadedContext, subscribe: true })
+  @consume({context: onlineLoadedContext, subscribe: true})
   onlineLoaded!: boolean;
 
 
@@ -122,11 +122,11 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
       const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
       if (beadItem) {
         const scrollY = beadItem.offsetTop - this.offsetTop;
-        this.scrollTo({ top: scrollY, behavior: 'smooth' });
+        this.scrollTo({top: scrollY, behavior: 'smooth'});
       }
     }
     /** Set background according to load state */
-    if (this._loading)  {
+    if (this._loading) {
       this.style.background = "#ececec";
     } else {
       this.style.background = "#FBFCFD";
@@ -239,7 +239,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
 
     /** render each bead */
-    //let passedLog = false;
+      //let passedLog = false;
     let currentDay = "";
     let prevBeadAh: ActionId | undefined = undefined;
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
@@ -281,7 +281,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
         let chatItem = html`
             <cell-context .cell=${this._dvms.get(dnaIdMap.get(blm.beadAh)!)!.cell}>
               <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
-                         style="${this.beadAh && blm.beadAh.equals(this.beadAh) ? "background:#c4f2b07a" : ""}">
+                         style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background:#c4f2b07a" : ""}">
               </chat-item>
             </cell-context>
         `;

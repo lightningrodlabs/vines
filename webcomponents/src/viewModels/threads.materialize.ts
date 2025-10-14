@@ -22,10 +22,13 @@ export type TypedContent = string | WAL | FileContent;
 export type BaseBeadType = ThreadsEntryType.TextBead | ThreadsEntryType.EntryBead | ThreadsEntryType.AnyBead
 export type BeadType = BaseBeadType | ThreadsEntryType.EncryptedBead;
 
-export interface EncryptedBeadContent {encBead: EncryptedBead, otherAgent: AgentId}
+export interface EncryptedBeadContent {
+  encBead: EncryptedBead,
+  otherAgent: AgentId
+}
 
 
-export type FileContent = {eh: EntryId, size: number, type: string}
+export type FileContent = { eh: EntryId, size: number, type: string }
 
 
 /**  */
@@ -61,14 +64,14 @@ export type ThreadsAppTip = {
   data: ActionId | null
 } | {
   type: "typing", // tell others if we are typing in thread input bar
-  data: {thread: ActionId, is: boolean} | null
+  data: { thread: ActionId, is: boolean } | null
 } | {
   type: "string", // any
   data: string | null
 }
 
 /**  */
-export type ThreadsNotificationTip  = {
+export type ThreadsNotificationTip = {
   event: NotifiableEvent,
   author: AgentId,
   timestamp: Timestamp,
@@ -124,12 +127,14 @@ export interface BeadMat {
   ppAh: ActionId,
   prevBeadAh: ActionId,
 }
+
 export function materializeBead(bead: Bead): BeadMat {
   return {
     ppAh: new ActionId(bead.ppAh),
     prevBeadAh: new ActionId(bead.prevBeadAh),
   }
 }
+
 export function dematerializeBead(bead: BeadMat): Bead {
   return {
     ppAh: bead.ppAh.hash,
@@ -149,6 +154,7 @@ export interface EntryBeadMat {
   sourceSubType: string
   sourceSize: number
 }
+
 export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
   return {
     bead: materializeBead(bead.bead),
@@ -160,6 +166,7 @@ export function materializeEntryBead(bead: EntryBead): EntryBeadMat {
     sourceSize: bead.sourceSize
   }
 }
+
 export function dematerializeEntryBead(bead: EntryBeadMat): EntryBead {
   return {
     bead: dematerializeBead(bead.bead),
@@ -179,12 +186,14 @@ export interface TextBeadMat {
   bead: BeadMat,
   value: string,
 }
+
 export function materializeTextBead(bead: TextBead): TextBeadMat {
   return {
     bead: materializeBead(bead.bead),
     value: bead.value,
   }
 }
+
 export function dematerializeTextBead(bead: TextBeadMat): TextBead {
   return {
     bead: dematerializeBead(bead.bead),
@@ -200,6 +209,7 @@ export interface AnyBeadMat {
   value: string,
   typeInfo: string,
 }
+
 export function materializeAnyBead(bead: AnyBead): AnyBeadMat {
   return {
     bead: materializeBead(bead.bead),
@@ -207,6 +217,7 @@ export function materializeAnyBead(bead: AnyBead): AnyBeadMat {
     typeInfo: bead.typeInfo,
   }
 }
+
 export function dematerializeAnyBead(bead: AnyBeadMat): AnyBead {
   return {
     bead: dematerializeBead(bead.bead),
@@ -233,11 +244,19 @@ export function base2typed(base: BaseBeadKind): [TypedBaseBead, BaseBeadType] {
 
 /** */
 export function bead2base(typed: TypedBaseBead, beadType: BaseBeadType): BaseBeadKind {
-  switch(beadType) {
-    case ThreadsEntryType.TextBead: return {TextBead: typed as TextBead}; break;
-    case ThreadsEntryType.AnyBead: return {AnyBead: typed as AnyBead}; break;
-    case ThreadsEntryType.EntryBead: return {EntryBead: typed as EntryBead}; break;
-    default: throw Error("Unknown bead type: " + beadType); break;
+  switch (beadType) {
+    case ThreadsEntryType.TextBead:
+      return {TextBead: typed as TextBead};
+      break;
+    case ThreadsEntryType.AnyBead:
+      return {AnyBead: typed as AnyBead};
+      break;
+    case ThreadsEntryType.EntryBead:
+      return {EntryBead: typed as EntryBead};
+      break;
+    default:
+      throw Error("Unknown bead type: " + beadType);
+      break;
   }
 }
 
@@ -245,24 +264,45 @@ export function bead2base(typed: TypedBaseBead, beadType: BaseBeadType): BaseBea
 /** */
 export function materializeTypedBead(typed: TypedBead, beadType: BeadType): TypedBeadMat {
   let typedMat: TypedBeadMat;
-  switch(beadType) {
-    case ThreadsEntryType.TextBead: typedMat = materializeTextBead(typed as TextBead); break;
-    case ThreadsEntryType.AnyBead: typedMat = materializeAnyBead(typed as AnyBead); break;
-    case ThreadsEntryType.EntryBead: typedMat = materializeEntryBead(typed as EntryBead); break;
-    case ThreadsEntryType.EncryptedBead: typedMat = typed as EncryptedBead; break;
-    default: throw Error("Unknown bead type: " + beadType); break;
+  switch (beadType) {
+    case ThreadsEntryType.TextBead:
+      typedMat = materializeTextBead(typed as TextBead);
+      break;
+    case ThreadsEntryType.AnyBead:
+      typedMat = materializeAnyBead(typed as AnyBead);
+      break;
+    case ThreadsEntryType.EntryBead:
+      typedMat = materializeEntryBead(typed as EntryBead);
+      break;
+    case ThreadsEntryType.EncryptedBead:
+      typedMat = typed as EncryptedBead;
+      break;
+    default:
+      throw Error("Unknown bead type: " + beadType);
+      break;
   }
   return typedMat;
 }
+
 /* */
 export function dematerializeTypedBead(typedMat: TypedBeadMat, beadType: BeadType): TypedBead {
   let typed: TypedBead;
-  switch(beadType) {
-    case ThreadsEntryType.TextBead: typed = dematerializeTextBead(typedMat as TextBeadMat); break;
-    case ThreadsEntryType.AnyBead: typed = dematerializeAnyBead(typedMat as AnyBeadMat); break;
-    case ThreadsEntryType.EntryBead: typed = dematerializeEntryBead(typedMat as EntryBeadMat); break;
-    case ThreadsEntryType.EncryptedBead: typed = typedMat as EncryptedBead; break;
-    default: throw Error("Unknown bead type: " + beadType); break;
+  switch (beadType) {
+    case ThreadsEntryType.TextBead:
+      typed = dematerializeTextBead(typedMat as TextBeadMat);
+      break;
+    case ThreadsEntryType.AnyBead:
+      typed = dematerializeAnyBead(typedMat as AnyBeadMat);
+      break;
+    case ThreadsEntryType.EntryBead:
+      typed = dematerializeEntryBead(typedMat as EntryBeadMat);
+      break;
+    case ThreadsEntryType.EncryptedBead:
+      typed = typedMat as EncryptedBead;
+      break;
+    default:
+      throw Error("Unknown bead type: " + beadType);
+      break;
   }
   return typed;
 }
@@ -288,10 +328,10 @@ export function defaultLimitations(): Limitations {
       maxFileSize: DEFAULT_MAX_FILE_SIZE // FIXME take dna setting
     },
     canText: {
-    bannedWords: [],
-    minTextLength: 0,
-    maxTextLength: DEFAULT_MAX_TEXT_LENGTH,
-  },
+      bannedWords: [],
+      minTextLength: 0,
+      maxTextLength: DEFAULT_MAX_TEXT_LENGTH,
+    },
     allowedAgents: [],
   } as Limitations;
 }

@@ -390,34 +390,34 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       codeStyles,
       sharedStyles,
       css`
-          :host {
-              padding-right: 5px;
-              padding-left: 5px;
-              max-height: 100%;
-              display: flex;
-              flex-direction: column;
-              flex-grow: 1;
-              position: relative;
-              z-index: 0;
-              height: 100%;
-          }
+        :host {
+          padding-right: 5px;
+          padding-left: 5px;
+          max-height: 100%;
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          position: relative;
+          z-index: 0;
+          height: 100%;
+        }
 
-          ui5-avatar:hover {
-              outline: 1px solid #62c547;
-          }
+        ui5-avatar:hover {
+          outline: 1px solid #62c547;
+        }
 
-          #list {
-              overflow: auto;
-              display: flex;
-              flex-direction: column;
-          }
+        #list {
+          overflow: auto;
+          display: flex;
+          flex-direction: column;
+        }
 
-          vines-input-bar {
-              border: none;
-              width: 100%;
-              margin-top: 8px;
-              margin-bottom: 10px;
-          }
+        vines-input-bar {
+          border: none;
+          width: 100%;
+          margin-top: 8px;
+          margin-bottom: 10px;
+        }
       `,
     ];
   }

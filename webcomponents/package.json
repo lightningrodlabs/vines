@@ -1,38 +1,38 @@
 {
-  "name": "@vines/elements",
-  "version": "0.1.0",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
-  "scripts": {
-    "lint": "eslint --ext .ts .",
-    "build": "rm -rf dist && tsc",
-    "build:watch": "tsc --watch --preserveWatchOutput",
-    "analyze": "lit-analyzer src --failFast",
+  "name"           : "@vines/elements",
+  "version"        : "0.1.0",
+  "main"           : "./dist/index.js",
+  "module"         : "./dist/index.js",
+  "typings"        : "./dist/index.d.ts",
+  "scripts"        : {
+    "lint"            : "eslint --ext .ts .",
+    "build"           : "rm -rf dist && tsc",
+    "build:watch"     : "tsc --watch --preserveWatchOutput",
+    "analyze"         : "lit-analyzer src --failFast",
     "localize:extract": "lit-localize extract",
-    "localize:build": "lit-localize build",
-    "test": "jest"
+    "localize:build"  : "lit-localize build",
+    "test"            : "jest"
   },
-  "type": "module",
+  "type"           : "module",
   "devDependencies": {
     "lit-analyzer": "^1.2.1",
-    "watch-cli": "^0.2.3"
+    "watch-cli"   : "^0.2.3"
   },
-  "dependencies": {
-    "markdown-it": "~14.0.0",
-    "markdown-it-emoji": "~3.0.0",
-    "markdown-it-mark": "~4.0.0",
-    "markdown-it-highlightjs": "~4.0.1",
+  "dependencies"   : {
+    "markdown-it"                     : "~14.0.0",
+    "markdown-it-emoji"               : "~3.0.0",
+    "markdown-it-mark"                : "~4.0.0",
+    "markdown-it-highlightjs"         : "~4.0.1",
     "@types/functional-red-black-tree": "^1.0.2",
-    "functional-red-black-tree": "^1.0.1",
-    "js-base64": "^3.7.3",
-    "emoji-picker-element": "1.21.0",
-    "css-doodle": "~0.38.4",
-    "timezone-picker": "~2.0.0-1",
-    "@ui5/webcomponents": "=1.13.3",
-    "@ui5/webcomponents-fiori": "=1.13.3",
-    "@ui5/webcomponents-icons": "=1.13.3",
-    "@shoelace-style/shoelace": "2.11.2",
-    "@weblogin/trendchart-elements": "^1.1.0"
+    "functional-red-black-tree"       : "^1.0.1",
+    "js-base64"                       : "^3.7.3",
+    "emoji-picker-element"            : "1.21.0",
+    "css-doodle"                      : "~0.38.4",
+    "timezone-picker"                 : "~2.0.0-1",
+    "@ui5/webcomponents"              : "=1.13.3",
+    "@ui5/webcomponents-fiori"        : "=1.13.3",
+    "@ui5/webcomponents-icons"        : "=1.13.3",
+    "@shoelace-style/shoelace"        : "2.11.2",
+    "@weblogin/trendchart-elements"   : "^1.1.0"
   }
 }

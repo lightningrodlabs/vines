@@ -62,7 +62,8 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** */
   override probeAllInner() {
-    /* await */ this.initializePerspectiveOnline();
+    /* await */
+    this.initializePerspectiveOnline();
   }
 
 

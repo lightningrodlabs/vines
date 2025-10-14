@@ -27,15 +27,15 @@ export class CopyWalButton extends LitElement {
 
   @property({type: Boolean}) force?: boolean = false;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
 
 
   onClick(e: any) {
-      e.stopPropagation();
-      e.preventDefault();
-      const hrl: Hrl = intoHrl(this.dnaId, this.hash);
-      this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
+    e.stopPropagation();
+    e.preventDefault();
+    const hrl: Hrl = intoHrl(this.dnaId, this.hash);
+    this.dispatchEvent(new CustomEvent<Hrl>('copy', {detail: hrl, bubbles: true, composed: true}))
 
   }
 

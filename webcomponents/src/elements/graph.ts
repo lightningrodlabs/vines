@@ -1,6 +1,6 @@
-import { html, css } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
-import { localized } from '@lit/localize';
+import {html, css} from 'lit';
+import {property, customElement} from 'lit/decorators.js';
+import {localized} from '@lit/localize';
 import cytoscape, {ElementDefinition} from 'cytoscape';
 import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../viewModels/threads.perspective";
@@ -45,7 +45,15 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
       return [];
     }
     let elements: ElementDefinition[] = [];
-    const rootNode = {data: { id: this.threadHash.b64, ts: thread.creationTime, label: thread.title, author: thread.author.b64, type: 'Thread'}};
+    const rootNode = {
+      data: {
+        id: this.threadHash.b64,
+        ts: thread.creationTime,
+        label: thread.title,
+        author: thread.author.b64,
+        type: 'Thread'
+      }
+    };
     elements.push(rootNode);
 
     thread.beadLinksTree.forEach(
@@ -53,7 +61,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
         const typedBead = this.threadsPerspective.getBead(blm.beadAh);
         if (typedBead) {
           const value = (typedBead as any).value? (typedBead as any).value as string : "<entry>";
-          const str = value.substring(0, 16) + (value.length > 16 ? '...' : '');
+          const str = value.substring(0, 16) + (value.length > 16? '...' : '');
           const bead = (typedBead as any).bead as BeadMat;
           console.debug("<vines-graph>.updated() bead", blm.beadAh.b64);
           const node = {data: {id: blm.beadAh.b64, ts: blm.creationTime, type: blm.beadType, label: str}};
@@ -64,7 +72,14 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
           const prevBead = this.threadsPerspective.getBead(bead.prevBeadAh);
           if (!prevBead && !bead.prevBeadAh.equals(bead.ppAh)) {
             console.debug("<vines-graph>.updated() bead ghost", bead.prevBeadAh.b64);
-            const ghostNode = {data: {id: bead.prevBeadAh.b64, ts: blm.creationTime - 1, type: 'Ghost', label: "<missing bead>"}};
+            const ghostNode = {
+              data: {
+                id: bead.prevBeadAh.b64,
+                ts: blm.creationTime - 1,
+                type: 'Ghost',
+                label: "<missing bead>"
+              }
+            };
             elements.push(ghostNode);
           }
         }
@@ -83,13 +98,13 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
     /** default tree */
     let elements: ElementDefinition[] = [
       { // node a
-        data: { id: 'a', name: 'bob'}
+        data: {id: 'a', name: 'bob'}
       },
       { // edge ab
-        data: { /*id: 'ab',*/ source: 'a', target: 'b' }
+        data: { /*id: 'ab',*/ source: 'a', target: 'b'}
       },
       { // node b
-        data: { id: 'b', name: 'michel' }
+        data: {id: 'b', name: 'michel'}
       },
     ];
 
@@ -170,7 +185,6 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
     //this._cy.fit()
     cy.pan({x: 300, y: 20})
   }
-
 
 
   /** */

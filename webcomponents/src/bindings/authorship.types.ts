@@ -2,18 +2,61 @@
 
 // @ts-ignore
 import {
-/** api/common.ts */
+  /** api/common.ts */
 // @ts-ignore
-WebsocketConnectionOptions, WsClientOptions, HolochainError, CloneIdHelper,
-/** types.ts */
+    WebsocketConnectionOptions,
+  WsClientOptions,
+  HolochainError,
+  CloneIdHelper,
+  /** types.ts */
 // @ts-ignore
-KitsuneAgent, KitsuneSpace, HoloHashB64, AgentPubKeyB64, DnaHashB64, WasmHashB64, EntryHashB64, ActionHashB64, AnyDhtHashB64, InstalledAppId, Signature, CellId, DnaProperties, RoleName, InstalledCell, Timestamp, Duration, HoloHashed, FetchPoolInfo,
-/** hdk/action.ts */
+    KitsuneAgent,
+  KitsuneSpace,
+  HoloHashB64,
+  AgentPubKeyB64,
+  DnaHashB64,
+  WasmHashB64,
+  EntryHashB64,
+  ActionHashB64,
+  AnyDhtHashB64,
+  InstalledAppId,
+  Signature,
+  CellId,
+  DnaProperties,
+  RoleName,
+  InstalledCell,
+  Timestamp,
+  Duration,
+  HoloHashed,
+  FetchPoolInfo,
+  /** hdk/action.ts */
 // @ts-ignore
-SignedAction, SignedActionHashed, RegisterAgentActivity, ActionHashed, ActionType, Action, NewEntryAction, Dna, AgentValidationPkg, InitZomesComplete, CreateLink, DeleteLink, OpenChain, CloseChain, Update, Delete, Create,
-/** hdk/capabilities.ts */
+    SignedAction,
+  SignedActionHashed,
+  RegisterAgentActivity,
+  ActionHashed,
+  ActionType,
+  Action,
+  NewEntryAction,
+  Dna,
+  AgentValidationPkg,
+  InitZomesComplete,
+  CreateLink,
+  DeleteLink,
+  OpenChain,
+  CloseChain,
+  Update,
+  Delete,
+  Create,
+  /** hdk/capabilities.ts */
 // @ts-ignore
-CapSecret, CapClaim, GrantedFunctionsType, GrantedFunctions, ZomeCallCapGrant, CapAccess, CapGrant,
+    CapSecret,
+  CapClaim,
+  GrantedFunctionsType,
+  GrantedFunctions,
+  ZomeCallCapGrant,
+  CapAccess,
+  CapGrant,
 ///** hdk/countersigning.ts */
 //CounterSigningSessionData,
 //PreflightRequest,
@@ -23,23 +66,79 @@ CapSecret, CapClaim, GrantedFunctionsType, GrantedFunctions, ZomeCallCapGrant, C
 //PreflightBytes,
 //Role,
 //CountersigningAgentState,
-/** hdk/dht-ops.ts */
+  /** hdk/dht-ops.ts */
 // @ts-ignore
-ChainOpType, DhtOp, WarrantOp, ChainOp, Warrant, ChainIntegrityWarrant, ValidationType, ActionHashAndSig,
-/** hdk/entry.ts */
+    ChainOpType,
+  DhtOp,
+  WarrantOp,
+  ChainOp,
+  Warrant,
+  ChainIntegrityWarrant,
+  ValidationType,
+  ActionHashAndSig,
+  /** hdk/entry.ts */
 // @ts-ignore
-EntryVisibility, AppEntryDef, EntryType, EntryContent, Entry,
-/** hdk/record.ts */
+    EntryVisibility,
+  AppEntryDef,
+  EntryType,
+  EntryContent,
+  Entry,
+  /** hdk/record.ts */
 // @ts-ignore
-Record as HcRecord, RecordEntry as HcRecordEntry,
-/** hdk/link.ts */
+    Record as HcRecord,
+  RecordEntry as HcRecordEntry,
+  /** hdk/link.ts */
 //AnyLinkableHash,
 // @ts-ignore
-ZomeIndex, LinkType, LinkTag, RateWeight, RateBucketId, RateUnits, Link,
-/** api/admin/types.ts */
+    ZomeIndex,
+  LinkType,
+  LinkTag,
+  RateWeight,
+  RateBucketId,
+  RateUnits,
+  Link,
+  /** api/admin/types.ts */
 // @ts-ignore
 // YamlProperties
-Zomes, WasmCode, DisabledAppReason, AppInfoStatus, StemCell, ProvisionedCell, ClonedCell, CellType, CellInfo, AppInfo, MembraneProof, MemproofMap, RoleSettingsMap, RoleSettings, DnaModifiersOpt, DnaModifiers, FunctionName, ZomeName, ZomeDefinition, IntegrityZome, CoordinatorZome, DnaDefinition, ResourceBytes, ResourceMap, CellProvisioningStrategy, CellProvisioning, DnaVersionSpec, DnaVersionFlexible, AppRoleDnaManifest, AppRoleManifest, AppManifest, AppBundle, AppBundleSource, NetworkSeed, AppStatusFilter, AppInterfaceInfo, AgentInfoSigned, ZomeLocation, DnaManifest,
+    Zomes,
+  WasmCode,
+  DisabledAppReason,
+  AppInfoStatus,
+  StemCell,
+  ProvisionedCell,
+  ClonedCell,
+  CellType,
+  CellInfo,
+  AppInfo,
+  MembraneProof,
+  MemproofMap,
+  RoleSettingsMap,
+  RoleSettings,
+  DnaModifiersOpt,
+  DnaModifiers,
+  FunctionName,
+  ZomeName,
+  ZomeDefinition,
+  IntegrityZome,
+  CoordinatorZome,
+  DnaDefinition,
+  ResourceBytes,
+  ResourceMap,
+  CellProvisioningStrategy,
+  CellProvisioning,
+  DnaVersionSpec,
+  DnaVersionFlexible,
+  AppRoleDnaManifest,
+  AppRoleManifest,
+  AppManifest,
+  AppBundle,
+  AppBundleSource,
+  NetworkSeed,
+  AppStatusFilter,
+  AppInterfaceInfo,
+  AgentInfoSigned,
+  ZomeLocation,
+  DnaManifest,
 } from '@holochain/client';
 
 
@@ -63,18 +162,18 @@ type ExternalArray = Uint8Array;
 
 // @ts-ignore
 import {
-/** Common */
+  /** Common */
 // @ts-ignore
-DhtOpHashB64, DhtOpHash,
-/** DnaFile */
+    DhtOpHashB64, DhtOpHash,
+  /** DnaFile */
 // @ts-ignore
-DnaFile, DnaDef,
-/** entry-details */
+    DnaFile, DnaDef,
+  /** entry-details */
 // @ts-ignore
-EntryDetails, RecordDetails, Details, DetailsType, EntryDhtStatus,
-/** Validation */
+    EntryDetails, RecordDetails, Details, DetailsType, EntryDhtStatus,
+  /** Validation */
 // @ts-ignore
-ValidationStatus, ValidationReceipt,
+    ValidationStatus, ValidationReceipt,
 } from '@holochain-open-dev/core-types';
 
 /**  */
@@ -113,11 +212,12 @@ export const ROOT_ANCHOR_UNKNOWN_AUTHOR = "__unknown_author";
  * -------------------------------------------------------------------------------------------------
  */
 export enum AuthorshipEntryType {
-	Bogus = 'Bogus',
+  Bogus = 'Bogus',
 }
-export type AuthorshipEntryVariantBogus = {Bogus: Bogus}
-export type AuthorshipEntry = 
- | AuthorshipEntryVariantBogus;
+
+export type AuthorshipEntryVariantBogus = { Bogus: Bogus }
+export type AuthorshipEntry =
+  | AuthorshipEntryVariantBogus;
 
 export interface Bogus {
   value: string

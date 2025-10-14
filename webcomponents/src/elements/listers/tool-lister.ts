@@ -48,16 +48,16 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   }
 
   /** ID of the applet to display threads of */
-   @state() _appletId?: EntryId;
+  @state() _appletId?: EntryId;
 
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
 
   @state() private _loading = false;
   @state() private _isHovered: EntryIdMap<boolean> = new EntryIdMap();
-           private _threadCreatableType?: CreatableType;
+  private _threadCreatableType?: CreatableType;
 
 
   /** */
@@ -80,7 +80,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     if (this.weServices) {
       const select = this.shadowRoot!.getElementById("lister-select") as unknown as Select;
       if (!this._appletId && select && select.options.length > 0) {
-          this._appletId = new EntryId(select.options[0]!.id);
+        this._appletId = new EntryId(select.options[0]!.id);
       }
     }
   }
@@ -91,7 +91,8 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     super.willUpdate(changedProperties);
     console.log("<tool-lister>.willUpdate() appletId", changedProperties, changedProperties.has("_appletId"));
     if (changedProperties.has("_appletId") && this._zvm) {
-      /*await*/ this.loadSubjectTypes();
+      /*await*/
+      this.loadSubjectTypes();
     }
   }
 
@@ -160,15 +161,20 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
 
   /** */
-  async clickTree(event:any) {
+  async clickTree(event: any) {
     console.log("<tool-lister> click event:", event.detail.item);
     let type;
     switch (event.detail.item.level) {
-      case 3: type = ThreadsEntryType.ParticipationProtocol; break;
-      case 2: type = "Subject"; break;
+      case 3:
+        type = ThreadsEntryType.ParticipationProtocol;
+        break;
+      case 2:
+        type = "Subject";
+        break;
       case 1:
       default:
-        type = "SubjectType"; break;
+        type = "SubjectType";
+        break;
 
     }
 
@@ -192,14 +198,18 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       maybeCommentThread, subjectId: subjectHash, subjectType, subjectName,
       viewType: viewType? viewType : "side",
     };
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: request, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
+      detail: request,
+      bubbles: true,
+      composed: true
+    }));
   }
 
 
   /** */
   async toggleTreeItem(event: any, _unreadSubjects: AnyId[]) {
     const busyIndicator = this.shadowRoot!.getElementById("busy") as BusyIndicator;
-    const toggledTreeItem = event.detail.item as TreeItem ; // get the node that is toggled
+    const toggledTreeItem = event.detail.item as TreeItem; // get the node that is toggled
     //const isTyped = !!this.root && typeof this.root == 'object';
     //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
 
@@ -236,12 +246,15 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
           //const dnaHash = toggledTreeItem['dnaHash'];
           console.log("calling weServices.assetInfo()", dnaId, subjectHash);
           try {
-            const assetLocInfo = await this.weServices.assets.assetInfo({hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)), context: null});
+            const assetLocInfo = await this.weServices.assets.assetInfo({
+              hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)),
+              context: null
+            });
             console.log("assetLocInfo", assetLocInfo);
             if (assetLocInfo) {
               newItem.text = assetLocInfo.assetInfo.name;
             }
-          } catch(e:any) {
+          } catch (e: any) {
             console.error("Couldn't find assetInfo:", e);
           }
         }
@@ -313,7 +326,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     //   return html `<div>No Applet selected</div>`;
     // }
     if (this._loading) {
-      return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
     let subjectTypes: EntryIdMap<string> = new EntryIdMap();
@@ -343,13 +356,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       if (isUnread) {
         commentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" class=${this._isHovered.get(pathEh)? "" : "transBtn"}
-                                             @click="${(_e:any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
+                                             @click="${(_e: any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
       } else {
         if (this._isHovered.get(pathEh)) {
           commentButton = html`
               <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread? msg("View comment thread") : msg("Create new comment thread")}"
                           design="Transparent"
-                          @click="${(_e:any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
+                          @click="${(_e: any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
         }
       }
 
@@ -390,10 +403,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     let inner = html`
         <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text=${msg("No SubjectTypes found")}
                   style="max-width:260px;"
-                  @item-toggle=${(e:any) => this.toggleTreeItem(e, unreadSubjects)}
+                  @item-toggle=${(e: any) => this.toggleTreeItem(e, unreadSubjects)}
                   @item-click=${this.clickTree}
-                  @item-mouseover=${(e:any) => {this._isHovered.set(e.detail.item.id, true); this.requestUpdate();}}
-                  @item-mouseout=${(e:any) => {this._isHovered.set(e.detail.item.id, false);}}
+                  @item-mouseover=${(e: any) => {
+      this._isHovered.set(e.detail.item.id, true);
+      this.requestUpdate();
+    }}
+                  @item-mouseout=${(e: any) => {this._isHovered.set(e.detail.item.id, false);}}
         >
           ${treeItems}
         </ui5-tree>      
@@ -404,11 +420,11 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       inner = html`
             <div style="color: grey; margin: auto;">${msg('No channels found')}</div>
             <ui5-button design="Emphasized"  ?disabled=${!this.weServices || !this._appletId}
-                        @click=${(_e:any) => {
-                          if (this.weServices && this._appletId) {
-                            this.weServices.openAppletMain(this._appletId.hash);
-                          }
-                        }}>
+                        @click=${(_e: any) => {
+        if (this.weServices && this._appletId) {
+          this.weServices.openAppletMain(this._appletId.hash);
+        }
+      }}>
                 ${msg('Go to Tool')}
             </ui5-button>
       `;
@@ -420,11 +436,11 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
         <div style="display:flex; flex-direction:column; gap:10px; padding:5px; width:100%">
           <ui5-select id="lister-select" style="margin:auto"
-                      @change=${(e:any) => {
-                          console.log("tool-lister change", e.detail.selectedOption, e);
-                          const idB64: string = e.detail.selectedOption.id;
-                          this._appletId = new EntryId(idB64);
-                      }}>
+                      @change=${(e: any) => {
+      console.log("tool-lister change", e.detail.selectedOption, e);
+      const idB64: string = e.detail.selectedOption.id;
+      this._appletId = new EntryId(idB64);
+    }}>
               ${appletOptions}
           </ui5-select>
           ${inner}

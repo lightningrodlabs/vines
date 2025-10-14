@@ -22,7 +22,6 @@ import {codeStyles} from "../../markdown/code-css";
 import {InputBar} from "../../elements/input-bar";
 
 
-
 /**
  * @element
  */
@@ -57,14 +56,14 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   // batchSize: number = 20
 
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
   /** -- State variables -- */
@@ -74,7 +73,7 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
 
   /** -- Getters -- */
 
-  get listElem() : HTMLElement {
+  get listElem(): HTMLElement {
     return this.shadowRoot!.getElementById("list-broken") as HTMLElement;
   }
 
@@ -123,7 +122,8 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //console.log("<post-comment-thread-view>.willUpdate()", changedProperties, !!this._dvm, this.threadHash);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
       this._loading = true;
-      /* await */ this.loadCommentThread();
+      /* await */
+      this.loadCommentThread();
     }
   }
 
@@ -188,14 +188,14 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
   override render() {
     console.log("<post-comment-thread-view>.render()", this.threadHash, this.subjectName);
 
-    const doodle_bg =  html `
+    const doodle_bg = html`
       <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
         ${doodle_weave}
       </div>
     `;
 
     if (!this.threadHash) {
-      return html `
+      return html`
         ${doodle_bg}
         <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
             ${msg('No comment thread selected')}
@@ -204,14 +204,14 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     }
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
-      return html `
+      return html`
         ${doodle_bg}
         <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Thread not found</div>
       `;
     }
 
     if (this._loading) {
-      return html `
+      return html`
         ${doodle_bg}
         <ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
       `;
@@ -240,13 +240,13 @@ export class PostCommentThreadView extends DnaElement<ThreadsDnaPerspective, Thr
     //<!-- @load-more=${this.onLoadMore}-->
 
     const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
-    const appletName = maybeAppletInfo ? maybeAppletInfo.appletName : "N/A";
-    console.log("<post-comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName, );
+    const appletName = maybeAppletInfo? maybeAppletInfo.appletName : "N/A";
+    console.log("<post-comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName,);
 
     /** render all */
     return html`
         <!-- thread -->
-        <div id="list" @show-profile=${(e:any) => console.log("onShowProfile div", e)}>
+        <div id="list" @show-profile=${(e: any) => console.log("onShowProfile div", e)}>
             ${commentItems}
         </div>
     `;

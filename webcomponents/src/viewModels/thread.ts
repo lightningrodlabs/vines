@@ -176,6 +176,7 @@ export class Thread {
 
 
   /** TODO API */
+
   /** CAUTIOUS between precise time and index-bucket rounded time */
 
   /** Return all items */

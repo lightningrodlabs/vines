@@ -34,17 +34,17 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   @property()
   wurl!: WeaveUrl;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
   // @property()
   // onlyIcon = false;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
-           private _vinesTypes: string = ""
-           private _assetName: string = ""
+  private _vinesTypes: string = ""
+  private _assetName: string = ""
   @state() private _toolName: string = ""
 
 
@@ -65,7 +65,8 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       this._vinesTypes = "";
       this._toolName = "";
       this._assetName = "";
-      /* await */ this.loadWal(this._zvm);
+      /* await */
+      this.loadWal(this._zvm);
     }
     return upper;
   }
@@ -127,11 +128,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           const thread = threadsZvm.perspective.threads.get(hash)!;
           this._assetName = latestThreadName(thread.title, thread.pp, threadsZvm);
           this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
-        } catch(e:any) {}
+        } catch (e: any) {}
         /** Try Bead */
         try {
           await threadsZvm.fetchUnknownBead(hash);
-        } catch(e:any) {
+        } catch (e: any) {
           //console.warn(`No bead found for wurl-link: ${e}`);
         }
         return;
@@ -165,7 +166,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           this._toolName = appletInfo.appletName;
         }
       }
-    } catch(e:any) {
+    } catch (e: any) {
       console.warn("Failed to load HRL", this.wurl, e);
     }
   }
@@ -175,13 +176,13 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   renderBadLink() {
     return html`
       <abbr .title=${this.wurl}><ui5-badge design="Set1" color-scheme="2" style="color:#b50202"
-          @click=${(_e:any) => {
-              navigator.clipboard.writeText(this.wurl);
-              if (this.weServices) {
-                  this.weServices.assets.assetToPocket(weaveUrlToWal(this.wurl));
-              }
-              toasty(msg("Copied WAL to clipboard"));
-          }}>${msg('Unknown HRL')}</ui5-badge></abbr>
+          @click=${(_e: any) => {
+      navigator.clipboard.writeText(this.wurl);
+      if (this.weServices) {
+        this.weServices.assets.assetToPocket(weaveUrlToWal(this.wurl));
+      }
+      toasty(msg("Copied WAL to clipboard"));
+    }}>${msg('Unknown HRL')}</ui5-badge></abbr>
     `;
   }
 
@@ -196,7 +197,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     let wal: WAL;
     try {
       wal = weaveUrlToWal(this.wurl)
-    } catch(e:any) {
+    } catch (e: any) {
       return this.renderBadLink();
     }
     if (!this._assetName || !this._toolName) {
@@ -209,7 +210,11 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const manifestEh = new EntryId(dhtId.b64);
       //return html`<file-button .hash=${new EntryId(dhtId.b64)}></file-button>`;
       return html`<ui5-badge  style="color:#5e5e6b; background: white; border: 1px solid #cbcbcb"
-                              @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(viewFileEvent(/*this._filesDvm.cell.address.dnaId,*/ manifestEh))}}>
+                              @click=${(e: any) => {
+        e.stopPropagation();
+        e.preventDefault();
+        this.dispatchEvent(viewFileEvent(/*this._filesDvm.cell.address.dnaId,*/ manifestEh))
+      }}>
           ${this._assetName}
           <ui5-icon slot="icon" name="attachment"></ui5-icon>
       </ui5-badge>`;
@@ -226,19 +231,20 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
         <!-- <sl-tooltip content="To ${this._toolName}"> -->
           <ui5-badge style="color:#2f4dc4d4; background: white; border: 1px solid #225699a3"
-                     @click=${(e:any) => {
-                       e.stopPropagation(); e.preventDefault();
-                       if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
-                         this.dispatchEvent(threadJumpEvent(hash))
-                         return;
-                       }
-                       if (this._vinesTypes == ThreadsEntryType.AnyBead) {
-                           this.dispatchEvent(beadJumpEvent(hash))
-                           return;
-                       }                       
-                       if (this.weServices) {
-                         this.weServices.openAsset(wal);
-                       }
+                     @click=${(e: any) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
+        this.dispatchEvent(threadJumpEvent(hash))
+        return;
+      }
+      if (this._vinesTypes == ThreadsEntryType.AnyBead) {
+        this.dispatchEvent(beadJumpEvent(hash))
+        return;
+      }
+      if (this.weServices) {
+        this.weServices.openAsset(wal);
+      }
     }}>
               ${this._assetName}
               <ui5-icon slot="icon" name="chain-link"></ui5-icon>              

@@ -20,7 +20,8 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): Pro
     profile = maybeAgent;
   } else {
     console.log("Profile not found for agent", agentKey, profilesZvm.perspective.profiles)
-    /* await */ profilesZvm.findProfile(agentKey);
+    /* await */
+    profilesZvm.findProfile(agentKey);
     //.then((profile) => {if (!profile) return; console.log("Found", profile.nickname)})
   }
   return profile;
@@ -28,7 +29,7 @@ export function loadProfile(profilesZvm: ProfilesAltZvm, agentKey: AgentId): Pro
 
 
 /** */
-export function renderAvatar(parent: LitElement, profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?:string): TemplateResult<1> {
+export function renderAvatar(parent: LitElement, profilesZvm: ProfilesAltZvm, agentKey: AgentId, size: string, classArg: string = "chatAvatar", slotArg?: string): TemplateResult<1> {
   const profile = loadProfile(profilesZvm, agentKey);
   return renderProfileAvatar(parent, agentKey, profile, size, classArg, slotArg);
 }
@@ -38,22 +39,29 @@ export function renderAvatar(parent: LitElement, profilesZvm: ProfilesAltZvm, ag
  * Provide agentKey to trigger a 'show-profile event'
  */
 export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null, profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
-    const initials = getInitials(profile.nickname);
-    const avatarUrl = profile.fields['avatar'];
-    const slot = slotArg? slotArg : "";
-    const avatar = avatarUrl
-      ? html`<ui5-avatar size=${size} class=${classArg}>
+  const initials = getInitials(profile.nickname);
+  const avatarUrl = profile.fields['avatar'];
+  const slot = slotArg? slotArg : "";
+  const avatar = avatarUrl
+    ? html`<ui5-avatar size=${size} class=${classArg}>
                 <img .src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>`
-      : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
-    return html`
+    : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+  return html`
         <div style="cursor:pointer; width:fit-content;" slot=${slot}
              @click=${(e: any) => {
-             if (agentKey) {
-              e.stopPropagation();e.preventDefault();
-                parent.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: agentKey, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-              }
-            }}>
+    if (agentKey) {
+      e.stopPropagation();
+      e.preventDefault();
+      parent.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
+        detail: {
+          agentId: agentKey,
+          x: e.clientX,
+          y: e.clientY
+        }, bubbles: true, composed: true
+      }));
+    }
+  }}>
           ${avatar}
         </div>
     `
@@ -61,23 +69,23 @@ export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null
 
 
 export function renderAvatarGroup(profilesZvm: ProfilesAltZvm, agents: AgentId[], size: string = "XS", classArg: string = "grpAvatar") {
-    if (agents.length < 2) {
-        console.warn("avatarGroup() too few agents", agents.length);
-        return html``;
-    }
-    // typings.has(agentId)? "red" : ""
-    //console.log("Authors' Avatar", Object.keys(authors).length);
-    let avatars = Object.values(agents).map((agent) => {
-        const profile = loadProfile(profilesZvm, agent);
-        const initials = getInitials(profile.nickname);
-        const avatarUrl = profile.fields['avatar'];
-        return avatarUrl
-            ? html`<ui5-avatar size=${size} class=${classArg}>
+  if (agents.length < 2) {
+    console.warn("avatarGroup() too few agents", agents.length);
+    return html``;
+  }
+  // typings.has(agentId)? "red" : ""
+  //console.log("Authors' Avatar", Object.keys(authors).length);
+  let avatars = Object.values(agents).map((agent) => {
+    const profile = loadProfile(profilesZvm, agent);
+    const initials = getInitials(profile.nickname);
+    const avatarUrl = profile.fields['avatar'];
+    return avatarUrl
+      ? html`<ui5-avatar size=${size} class=${classArg}>
                 <img .src=${avatarUrl} style="object-fit: cover;">
               </ui5-avatar>`
-            : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
-    });
-    return html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>`;
+      : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+  });
+  return html`<ui5-avatar-group type="Group" style="width: auto">${avatars}</ui5-avatar-group>`;
 }
 
 /** */
@@ -130,26 +138,26 @@ export function renderModerators(parent: LitElement, moderators: Uint8Array[], p
 
 
 /** Return [notifTitle, notifBody, jumpEvent] */
-export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string, CustomEvent<JumpEvent>] {
-    let title: string = "";
-    let content: string = "";
-    let jump: CustomEvent<JumpEvent> | undefined = undefined;
-    const ah = notif.content;
-    switch (notif.event) {
-      case NotifiableEvent.Mention: {
-        jump = beadJumpEvent(ah);
-        const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
-        title = msg("Mention");
-        if (beadInfo) {
-            const typedBead = threadsZvm.perspective.getBaseBead(ah);
-            const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
-            if (maybeThread) {
-                title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
-            }
-            content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
+export function composeNotificationTitle(notif: ThreadsNotification, threadsZvm: ThreadsZvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string, CustomEvent<JumpEvent>] {
+  let title: string = "";
+  let content: string = "";
+  let jump: CustomEvent<JumpEvent> | undefined = undefined;
+  const ah = notif.content;
+  switch (notif.event) {
+    case NotifiableEvent.Mention: {
+      jump = beadJumpEvent(ah);
+      const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
+      title = msg("Mention");
+      if (beadInfo) {
+        const typedBead = threadsZvm.perspective.getBaseBead(ah);
+        const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+        if (maybeThread) {
+          title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
         }
+        content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
+      }
     }
-    break;
+      break;
     case NotifiableEvent.NewBead: {
       jump = beadJumpEvent(ah);
       //console.log("composeNotificationTitle() NewBead", ah.short, threadsZvm)
@@ -162,8 +170,7 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         const dmThread = threadsZvm.isThreadDm(beadInfo.bead.ppAh);
         if (dmThread) {
           title = msg("DM received");
-        }
-        else {
+        } else {
           if (maybeThread) {
             title = msg("New message in") + " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
           }
@@ -171,45 +178,45 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
       }
     }
-    break;
+      break;
     case NotifiableEvent.Reply: {
       jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
-        if (!beadInfo) {
-            title = msg("Reply");
-        } else {
-          const typedBead = threadsZvm.perspective.getBaseBead(ah);
-            const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
-            if (maybeThread) {
-                title = msg("Reply in") + " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
-            }
-            content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
+      if (!beadInfo) {
+        title = msg("Reply");
+      } else {
+        const typedBead = threadsZvm.perspective.getBaseBead(ah);
+        const maybeThread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+        if (maybeThread) {
+          title = msg("Reply in") + " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
         }
+        content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
+      }
     }
-    break;
+      break;
     case NotifiableEvent.Fork: {
-        jump = threadJumpEvent(ah);
-        const maybeThread = threadsZvm.perspective.threads.get(ah);
-        title = msg("New channel");
-        if (maybeThread)  {
-            // const subjectHash = maybeThread.pp.subjectHash;
-            // const subject = this.getSubject(subjectHash);
-            // title = "New thread about a " + subject.typeName;
-            title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
-            //content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
-        }
+      jump = threadJumpEvent(ah);
+      const maybeThread = threadsZvm.perspective.threads.get(ah);
+      title = msg("New channel");
+      if (maybeThread) {
+        // const subjectHash = maybeThread.pp.subjectHash;
+        // const subject = this.getSubject(subjectHash);
+        // title = "New thread about a " + subject.typeName;
+        title += " " + latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
+        //content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
+      }
     }
-    break;
+      break;
     case NotifiableEvent.Banned: {
       jump = threadJumpEvent(ah);
       const maybeThread = threadsZvm.perspective.threads.get(ah);
       title = msg("Banned from channel");
-      if (maybeThread)  {
+      if (maybeThread) {
         content = latestThreadName(maybeThread.title, maybeThread.pp, threadsZvm);
         // content = msg("Rules") + ": " + rules2str(maybeThread.pp.rules);
       }
     }
-    break;
+      break;
     case NotifiableEvent.Flagged: {
       jump = beadJumpEvent(ah);
       const beadInfo = threadsZvm.perspective.getBaseBeadInfo(ah);
@@ -224,16 +231,16 @@ export function  composeNotificationTitle(notif: ThreadsNotification, threadsZvm
         content = determineBeadName(beadInfo.beadType, typedBead!, filesDvm, weServices);
       }
     }
-    break;
+      break;
     case NotifiableEvent.NewDmThread: {
       title = msg("New DM channel");
     }
-    break;
+      break;
     default:
       throw Error("Unhandled Event type");
       break;
-    }
-    return [title, content, jump!];
+  }
+  return [title, content, jump!];
 }
 
 
@@ -248,30 +255,30 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
               <img src="icon.png" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
               Vines
           </h1>
-          <div>${profileCount} ${profileCount > 1 ? msg('Members') : msg('Member')}</div>
+          <div>${profileCount} ${profileCount > 1? msg('Members') : msg('Member')}</div>
           <div style="align-items: center; z-index:1;">
               <ui5-card id="profileCard">
                   <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
                   <vines-edit-profile
                           .profile=${weProfilesDvm?.profilesZvm.getMyProfile()}
                           @save-profile=${async (e: CustomEvent<ProfileMat>) => {
-                              console.log("createMyProfile()", e.detail);
-                              try {
-                                  await profilesZvm.createMyProfile(e.detail);
-                              } catch (e: any) {
-                                  console.warn("Failed creating my Profile", e);
-                                  return;
-                              }
-                              /** Wait for perspective to update */
-                              /** TODO: add a timeout */
-                              let maybeMeProfile: Profile | undefined = undefined;
-                              do {
-                                  maybeMeProfile = profilesZvm.getMyProfile();
-                                  await delay(20);
-                              } while (!maybeMeProfile)
-                              /** */
-                              parent.requestUpdate();
-                          }}
+    console.log("createMyProfile()", e.detail);
+    try {
+      await profilesZvm.createMyProfile(e.detail);
+    } catch (e: any) {
+      console.warn("Failed creating my Profile", e);
+      return;
+    }
+    /** Wait for perspective to update */
+    /** TODO: add a timeout */
+    let maybeMeProfile: Profile | undefined = undefined;
+    do {
+      maybeMeProfile = profilesZvm.getMyProfile();
+      await delay(20);
+    } while (!maybeMeProfile)
+    /** */
+    parent.requestUpdate();
+  }}
                   ></vines-edit-profile>
               </ui5-card>
           </div>

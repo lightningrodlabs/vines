@@ -104,7 +104,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     /** */
     const [beadInfo, typedBead] = maybePair;
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
-    switch(beadInfo.beadType) {
+    switch (beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
         const tm = typedBead as TextBeadMat;
         const result = md.render(tm.value);
@@ -124,15 +124,15 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
             content = html`
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
-                   @click=${async (e:any) => {
-                    e.stopPropagation();
-                    if (!this.weServices) {
-                      console.error("WeServices missing");
-                      return;
-                    }
-                    await this.weServices.assets.assetInfo(wal);
-                    this.requestUpdate();
-                  }}>
+                   @click=${async (e: any) => {
+              e.stopPropagation();
+              if (!this.weServices) {
+                console.error("WeServices missing");
+                return;
+              }
+              await this.weServices.assets.assetInfo(wal);
+              this.requestUpdate();
+            }}>
                   <ui5-icon name="synchronize"></ui5-icon>
                   <span>${msg('Unknown Asset')}</span>
               </div>
@@ -141,7 +141,7 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
             content = html`
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e:any) => {if (this.weServices) this.weServices.openAsset(wal)}}>
+                   @click=${(_e: any) => {if (this.weServices) this.weServices.openAsset(wal)}}>
                   ${maybeInfo.assetInfo.name}
               </div>
           `;
@@ -157,10 +157,10 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
         if (maybePprm) {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                              @click=${(_e:any) => {
-                                this._filesDvm.downloadFile(manifestEh);
-                                toasty(`${msg("File downloaded")}: ${desc.name}`);
-                          }}>
+                              @click=${(_e: any) => {
+            this._filesDvm.downloadFile(manifestEh);
+            toasty(`${msg("File downloaded")}: ${desc.name}`);
+          }}>
                             ${msg("File")}: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;
         }
@@ -197,13 +197,19 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
     <div id="sideItem">
         <div id="avatarColumn">
             <div style="cursor:pointer"
-                @click=${(e:any) => {
-                    //console.log("sideItem onShowProfile clicked", beadAh);
-                    e.stopPropagation();
-                    if (author) {
-                      this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: author, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-                    }
-                }}>
+                @click=${(e: any) => {
+      //console.log("sideItem onShowProfile clicked", beadAh);
+      e.stopPropagation();
+      if (author) {
+        this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
+          detail: {
+            agentId: author,
+            x: e.clientX,
+            y: e.clientY
+          }, bubbles: true, composed: true
+        }));
+      }
+    }}>
                 ${author? renderAvatar(this, this._dvm.profilesZvm, author, "XS") : html``}
             </div>
         </div>
@@ -215,14 +221,20 @@ export class PostCommentItem extends DnaElement<unknown, ThreadsDvm> {
           <div class="underRow">
               <div>${date_str}</div>
               <div id="likeBtn" class="textBtn" 
-                   @click=${async (e:any) => {
-                     this.dispatchEvent(new CustomEvent<ShowEmojiEvent>('show-emoji', {detail: {bead: this.hash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-                     await delay(5 * 100);
-                     this.requestUpdate();
-                   }}>
+                   @click=${async (e: any) => {
+      this.dispatchEvent(new CustomEvent<ShowEmojiEvent>('show-emoji', {
+        detail: {
+          bead: this.hash,
+          x: e.clientX,
+          y: e.clientY
+        }, bubbles: true, composed: true
+      }));
+      await delay(5 * 100);
+      this.requestUpdate();
+    }}>
                   ${msg('Like')}
               </div>
-              <div class="textBtn" @click=${(_e:any) => this.copyMessageLink()}>${msg('Share')}</div>
+              <div class="textBtn" @click=${(_e: any) => this.copyMessageLink()}>${msg('Share')}</div>
               <div style="flex-grow: 1;"></div>
               <emoji-bar .hash=${this.hash} style="margin-top:2px;"></emoji-bar>
           </div>

@@ -1,6 +1,3 @@
-
-
-
 export function formatTime(date_or_ts: Date | number, timeZone: string): string {
   let date;
   if (typeof date_or_ts == 'number') {
@@ -46,11 +43,11 @@ export function formatDuration(us: number): string {
   const days = Math.floor(hours / 24);
 
   if (days > 0) {
-    return `${days} day${days > 1 ? 's' : ''}${hours % 24 > 0 ? `, ${hours % 24} hr${hours % 24 > 1 ? 's' : ''}` : ''}`;
+    return `${days} day${days > 1? 's' : ''}${hours % 24 > 0? `, ${hours % 24} hr${hours % 24 > 1? 's' : ''}` : ''}`;
   } else if (hours > 0) {
-    return `${hours} hour${hours > 1 ? 's' : ''}${minutes % 60 > 0 ? `, ${minutes % 60} min` : ''}`;
+    return `${hours} hour${hours > 1? 's' : ''}${minutes % 60 > 0? `, ${minutes % 60} min` : ''}`;
   } else if (minutes > 0) {
-    return `${minutes} min${seconds % 60 > 0 ? `, ${seconds % 60} sec` : ''}`;
+    return `${minutes} min${seconds % 60 > 0? `, ${seconds % 60} sec` : ''}`;
   } else {
     return `${seconds} sec`;
   }
@@ -133,7 +130,7 @@ export function formatTimezone(timeZone: string, withCurrentTime: boolean): stri
 /**
  * Get UTC offset for a timezone
  */
-export  function getUtcOffset(timeZone: string): string {
+export function getUtcOffset(timeZone: string): string {
   try {
     const date = new Date();
     const formatter = new Intl.DateTimeFormat('en-GB', {

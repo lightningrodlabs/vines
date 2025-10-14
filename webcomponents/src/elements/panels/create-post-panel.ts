@@ -37,10 +37,10 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
   @state() private _splitObj: SplitObject | undefined = undefined;
@@ -86,7 +86,11 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     const commentPpAh = await this._dvm.publishCommentThread(subject);
     await this._dvm.threadsZvm.publishNotifSetting(commentPpAh, NotifySetting.AllMessages);
     /** */
-    this.dispatchEvent(new CustomEvent<PostCreatedEvent>('created', {detail: {beadAh, createdMainThread}, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<PostCreatedEvent>('created', {
+      detail: {beadAh, createdMainThread},
+      bubbles: true,
+      composed: true
+    }));
     this._creating = false;
   }
 
@@ -116,7 +120,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     this._splitObj = undefined;
     var input = document.createElement('input');
     input.type = 'file';
-    input.onchange = async (e:any) => {
+    input.onchange = async (e: any) => {
       console.log("target upload file", e);
       /** Check */
       const file = e.target.files[0];
@@ -130,12 +134,16 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
         this._splitObj = obj;
         const succeeded = this._filesDvm.startPublishFile(file, obj, [], this._dvm.profilesZvm.perspective.agents,
           async (eh) => {
-          console.log("<create-post-panel> startPublishFile callback", eh);
-          const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {eh, size: file.size, type: file.type}, mainThreadAh);
-          this._splitObj = undefined;
-          /** After */
-          await this.afterCreate(beadAh, ThreadsEntryType.EntryBead, createdMainThread);
-        });
+            console.log("<create-post-panel> startPublishFile callback", eh);
+            const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.EntryBead, {
+              eh,
+              size: file.size,
+              type: file.type
+            }, mainThreadAh);
+            this._splitObj = undefined;
+            /** After */
+            await this.afterCreate(beadAh, ThreadsEntryType.EntryBead, createdMainThread);
+          });
         if (!succeeded) {
           toasty("Failed to load file");
         }
@@ -156,7 +164,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
     /** Before */
     const [mainThreadAh, createdMainThread] = await this.beforeCreate();
     /** Create */
-    // TODO: make sure hrl is an entryHash
+      // TODO: make sure hrl is an entryHash
     const beadAh = await this._dvm.publishTypedBead(ThreadsEntryType.AnyBead, maybeWal, mainThreadAh);
     /** After */
     this.afterCreate(beadAh, ThreadsEntryType.AnyBead, createdMainThread);
@@ -193,22 +201,26 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
           <div id="title">${msg('Create a post')}</div>
           <ui5-button icon="decline" design="Transparent" tooltip=${msg('Cancel')}
                       style="border-radius: 50%;"
-                      @click=${(_e:any) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}></ui5-button>
+                      @click=${(_e: any) => this.dispatchEvent(new CustomEvent('cancel', {
+      detail: null,
+      bubbles: true,
+      composed: true
+    }))}></ui5-button>
       </div>
       <ui5-textarea id="contentInput" placeholder=${msg('Whats up?')} growing></ui5-textarea>
       <div id="extraRow">
           ${this.weServices? html`
             <ui5-button design="Transparent" icon="add" tooltip=${msg('Attach WAL from pocket')}
-                        @click=${(_e:any) => this.onCreateHrl()}>
+                        @click=${(_e: any) => this.onCreateHrl()}>
             </ui5-button>` : html``}
         <ui5-button design="Transparent" icon="attachment" tooltip=${msg('Attach file')}
-                    @click=${(_e:any) => this.onCreateFile()}>
+                    @click=${(_e: any) => this.onCreateFile()}>
         </ui5-button>
       </div>          
       <div class="footer">
         <ui5-button design="Emphasized" 
                     .disabled=${!!this._splitObj}
-                    @click=${(_e:any) => this.onCreateText()}>${msg('Publish')}</ui5-button>
+                    @click=${(_e: any) => this.onCreateText()}>${msg('Publish')}</ui5-button>
       </div>
     `;
   }

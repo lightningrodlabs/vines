@@ -490,7 +490,7 @@ export class ThreadsPerspective {
         all.push(next);
         subjectId = next;
       }
-    } while(next);
+    } while (next);
     subjectId = subjectAnyId;
     let prev;
     do {
@@ -499,7 +499,7 @@ export class ThreadsPerspective {
         all.push(prev);
         subjectId = prev;
       }
-    } while(prev);
+    } while (prev);
     return all;
   }
 
@@ -510,7 +510,7 @@ export class ThreadsPerspective {
     do {
       next = this.subjectToLatest.get(subjectId.b64);
       if (next) subjectId = next;
-    } while(next);
+    } while (next);
     return subjectId;
   }
 
@@ -521,7 +521,7 @@ export class ThreadsPerspective {
     do {
       prev = this.subjectToOrig.get(subjectId.b64)
       if (prev) subjectId = prev;
-    } while(prev);
+    } while (prev);
     return subjectId;
   }
 
@@ -599,7 +599,7 @@ export class ThreadsPerspective {
     let newSubjects: AnyIdMap<Timestamp> = new AnyIdMap();
     for (const [origSubjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
       const subjectHash = this.getOrigSubject(intoAnyId(origSubjectHash)).b64;
-      const threads = this.threadsPerSubject.get(subjectHash)? this.threadsPerSubject.get(subjectHash)!: [];
+      const threads = this.threadsPerSubject.get(subjectHash)? this.threadsPerSubject.get(subjectHash)! : [];
       const pairs: [ActionId, Timestamp][] = threads.map((ppAh) => {
         const thread = this.threads.get(ppAh);
         if (!thread) {
@@ -739,7 +739,6 @@ export class ThreadsPerspective {
 }
 
 
-
 /** Perspective fields that are built from the Core perspective. There is no exclusif data. */
 export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
@@ -755,6 +754,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     console.log("Persistent: set", hash);
     this.persistentStorageMap.add(hash);
   }
+
   unsetPersistent(hash: AnyDhtHashB64) {
     console.log("Persistent: unset", hash);
     this.persistentStorageMap.delete(hash);
@@ -928,6 +928,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     this.favorites.push(beadAh);
   }
+
   /** */
   unstoreFavorite(beadAh: ActionId): void {
     if (!this.favorites.map((ah) => ah.b64).includes(beadAh.b64)) {
@@ -1096,6 +1097,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   private _tempThreadLogs: ActionIdMap<ThreadLastProbeLog> = new ActionIdMap();
+
   storeThreadLog(log: ThreadLastProbeLog) {
     const ppAh = new ActionId(log.ppAh);
     const thread = this.threads.get(ppAh);

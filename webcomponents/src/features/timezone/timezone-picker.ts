@@ -1,5 +1,5 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import {LitElement, html, css} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {allTimezones, formatTimezone} from "./utils";
 
@@ -11,16 +11,16 @@ import {allTimezones, formatTimezone} from "./utils";
 export class TimezonePicker extends LitElement {
 
 
-  @property({ type: String })
+  @property({type: String})
   label = 'Timezone';
 
-  @property({ type: String })
+  @property({type: String})
   value = '';
 
-  @property({ type: Boolean })
+  @property({type: Boolean})
   required = false;
 
-  @property({ type: Array })
+  @property({type: Array})
   popularTimezones = [
     'America/New_York',
     'America/Los_Angeles',
@@ -56,7 +56,6 @@ export class TimezonePicker extends LitElement {
       }
     }
   }
-
 
 
   /**

@@ -27,7 +27,6 @@ export interface SearchParameters {
 const searchKeywords = ["from:", "mentions:", "in:", "app:", "before:", "after:", "is:"]
 
 
-
 // function hasQuotes(input: string): boolean {
 //   const double = /^".*?"$/;
 //   return double.test(input);
@@ -71,7 +70,7 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesAlt
     //   continue;
     // }
     /** check for searchKeyword */
-    //const subs = word.split(":");
+      //const subs = word.split(":");
     const subs = splitStringAtFirstColon(word);
     if (subs.length != 2) {
       if (!result.keywords) {
@@ -85,7 +84,7 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesAlt
       case "from:":
         const author = subs[1];
         if (author && author != "") {
-          result.author = profilesPerspective.getAgent(author) ? profilesPerspective.getAgent(author)! : AgentId.empty();
+          result.author = profilesPerspective.getAgent(author)? profilesPerspective.getAgent(author)! : AgentId.empty();
         }
         break;
       case "mentions:":
@@ -116,7 +115,8 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesAlt
         break;
       //case "is:": break;
       //case "pinned:": break;
-      default: break;
+      default:
+        break;
 
     }
   }
@@ -156,13 +156,13 @@ export function splitSpacesExcludeQuotesDetailed(string: string): ParsedValue[] 
   while ((match = groupsRegex.exec(string))) {
     if (match[2]) {
       // Single-quoted group
-      matches.push({ type: 'single', value: match[2] });
+      matches.push({type: 'single', value: match[2]});
     } else if (match[1]) {
       // Double-quoted group
-      matches.push({ type: 'double', value: match[1] });
+      matches.push({type: 'double', value: match[1]});
     } else {
       // No quote group present
-      matches.push({ type: 'plain', value: match[0]! });
+      matches.push({type: 'plain', value: match[0]!});
     }
   }
 
@@ -184,7 +184,7 @@ function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
   console.debug("quotes", quotes);
   let result: string[] = [];
   let i = 0;
-  while(i < quotes.length) {
+  while (i < quotes.length) {
     const word = quotes[i]!.value;
     if (searchKeywords.includes(word) && i + 1 < quotes.length && quotes[i + 1]!.type != "plain") {
       result.push(word + quotes[i + 1]!.value);
@@ -201,10 +201,14 @@ function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
 /** ------------------------------------------- TEST -----------------------------------------------------------------*/
 
 const persp: ProfilesAltPerspectiveMutable = new ProfilesAltPerspectiveMutable();
-/*await*/ persp.generateRandomProfile("alex");
-/*await*/ persp.generateRandomProfile("bill-y");
-/*await*/ persp.generateRandomProfile("camille");
-/*await*/ persp.generateRandomProfile("tic tac");
+/*await*/
+persp.generateRandomProfile("alex");
+/*await*/
+persp.generateRandomProfile("bill-y");
+/*await*/
+persp.generateRandomProfile("camille");
+/*await*/
+persp.generateRandomProfile("tic tac");
 
 
 /** */
@@ -222,13 +226,13 @@ function testSeachParse(input: string, expectedOutput: SearchParameters): boolea
 export async function generateSearchTest() {
   let result = true;
 
-  result &&= testSeachParse("alex",  {keywords: ["alex"], canSearchHidden: false});
-  result &&= testSeachParse("   alex \t ",  {keywords: ["alex"], canSearchHidden: false});
+  result &&= testSeachParse("alex", {keywords: ["alex"], canSearchHidden: false});
+  result &&= testSeachParse("   alex \t ", {keywords: ["alex"], canSearchHidden: false});
   //result &&= testSeachParse("£ !alex ??",  {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('"alex"', {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('bill-y', {keywords: ["bill-y"], canSearchHidden: false});
-  result &&= testSeachParse("alex billy",  {keywords: ["alex", "billy"], canSearchHidden: false});
-  result &&= testSeachParse('"alex billy"',  {keywords: ["alex billy"], canSearchHidden: false});
+  result &&= testSeachParse("alex billy", {keywords: ["alex", "billy"], canSearchHidden: false});
+  result &&= testSeachParse('"alex billy"', {keywords: ["alex billy"], canSearchHidden: false});
   result &&= testSeachParse("from: alex", {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('alex billy', {keywords: ["alex", "billy"], canSearchHidden: false});
 
@@ -244,10 +248,20 @@ export async function generateSearchTest() {
   result &&= testSeachParse("before:2030-01-01", {beforeTs: 1893456000000000, canSearchHidden: false});
   result &&= testSeachParse("after:2020-01-01", {afterTs: 1577836800000000, canSearchHidden: false});
 
-  result &&= testSeachParse('before:"Tue, 06 Feb 2024 18:59:33 GMT"', {beforeTs: 1707245973000000, canSearchHidden: false});
+  result &&= testSeachParse('before:"Tue, 06 Feb 2024 18:59:33 GMT"', {
+    beforeTs: 1707245973000000,
+    canSearchHidden: false
+  });
 
   result &&= testSeachParse("before:2030-01-01 after:2020-01-01 golden from:camille mentions:bill-y lady",
-    {beforeTs: 1893456000000000, afterTs: 1577836800000000, keywords: ["golden", "lady"], mentionsAgentByName: "bill-y",  author: persp.getAgent("camille")!, canSearchHidden: false});
+    {
+      beforeTs: 1893456000000000,
+      afterTs: 1577836800000000,
+      keywords: ["golden", "lady"],
+      mentionsAgentByName: "bill-y",
+      author: persp.getAgent("camille")!,
+      canSearchHidden: false
+    });
 
   console.log("generateSearchTest() succeeded", result);
 }

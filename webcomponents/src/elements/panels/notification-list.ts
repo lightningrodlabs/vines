@@ -33,10 +33,10 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   filesDvm!: FilesDvm;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
   @property({type: Boolean}) feed = false
@@ -86,11 +86,11 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
           <ui5-li-notification 
               show-close
               title-text=${title} 
-              @close=${async (_e:any) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
+              @close=${async (_e: any) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
               ${renderAvatar(this, this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
-              <ui5-notification-action text="Jump" slot="actions" @click=${(_e:any) => this.dispatchEvent(notification2JumpEvent(notif))}>
+              <ui5-notification-action text="Jump" slot="actions" @click=${(_e: any) => this.dispatchEvent(notification2JumpEvent(notif))}>
               </ui5-notification-action>
               ${notifBody}
           </ui5-li-notification>

@@ -24,13 +24,25 @@ export function hrl2Id(hrl: Hrl): [DnaId, DhtId] {
 
 /** */
 export function status2color(status: string): string {
-  switch(status) {
-    case "primary": return "rgb(14, 165, 233)"; break;
-    case "neutral": return "rgb(113, 113, 122)"; break;
-    case "success": return "rgb(34, 197, 94)"; break;
-    case "warning": return "rgb(245, 158, 11)"; break;
-    case "danger": return "rgb(239, 68, 68)"; break;
-    default: return "rgb(0, 0, 0)"; break;
+  switch (status) {
+    case "primary":
+      return "rgb(14, 165, 233)";
+      break;
+    case "neutral":
+      return "rgb(113, 113, 122)";
+      break;
+    case "success":
+      return "rgb(34, 197, 94)";
+      break;
+    case "warning":
+      return "rgb(245, 158, 11)";
+      break;
+    case "danger":
+      return "rgb(239, 68, 68)";
+      break;
+    default:
+      return "rgb(0, 0, 0)";
+      break;
   }
 }
 
@@ -93,17 +105,28 @@ export function simplifyMimeType(mimeType: string): string {
 /** */
 export function type2ui5Icon(type: FileType): string {
   switch (type) {
-    case FileType.Document: return "document";
-    case FileType.Pdf: return "pdf-attachment";
-    case FileType.Text: return "document-text";
-    case FileType.Font: return "attachment-text-file";
-    case FileType.Image: return "attachment-photo";
-    case FileType.Video: return "attachment-video";
-    case FileType.Audio: return "attachment-audio";
-    case FileType.Zip: return "attachment-zip-file";
-    case FileType.Binary: return "document";
-    case FileType.Other: return "document";
-    default: return "document";
+    case FileType.Document:
+      return "document";
+    case FileType.Pdf:
+      return "pdf-attachment";
+    case FileType.Text:
+      return "document-text";
+    case FileType.Font:
+      return "attachment-text-file";
+    case FileType.Image:
+      return "attachment-photo";
+    case FileType.Video:
+      return "attachment-video";
+    case FileType.Audio:
+      return "attachment-audio";
+    case FileType.Zip:
+      return "attachment-zip-file";
+    case FileType.Binary:
+      return "document";
+    case FileType.Other:
+      return "document";
+    default:
+      return "document";
   }
   return "document";
 }
@@ -117,8 +140,6 @@ export function truncate(str: string, n: number, useWordBoundary: boolean): stri
     ? subString.slice(0, subString.lastIndexOf(" "))
     : subString) + "...";
 };
-
-
 
 
 /** Return the list of agents mentioned in a string */
@@ -135,28 +156,28 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
   if (!hasAll) {
     mentionedAgents = mentions
       .map((mentioned) => profilesZvm.perspective.getAgent(mentioned)!)
-      //.filter((el) => el != undefined);
+    //.filter((el) => el != undefined);
   }
   return mentionedAgents;
 }
 
 
 /** Return list of words that starts with '@' */
-function tokenizeMentions(str: string): string[]  {
+function tokenizeMentions(str: string): string[] {
   if (typeof str !== 'string') {
     throw new TypeError('expected a string');
   }
 
   var re = /(?:[\w_＠@][＠@])|[＠@]([\w_]{1,15})(?=$|[^\w_])/g;
-  var tokens: any = { input: str, output: str, matches: [] };
+  var tokens: any = {input: str, output: str, matches: []};
   var match;
 
   while ((match = re.exec(tokens.output))) {
     if (!match[1]) continue;
-    var token = { name: match[1], match: match };
+    var token = {name: match[1], match: match};
     tokens.matches.push(token);
   }
-  return tokens.matches.map((m:any) => m.name);
+  return tokens.matches.map((m: any) => m.name);
 };
 
 
@@ -181,7 +202,7 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
   const latestSubjectId = threadsZvm.perspective.getLatestSubject(curSubjectId);
   const latestSubject = threadsZvm.perspective.subjects.get(latestSubjectId.b64);
   if (!latestSubject) {
-    if(subjectType == SpecialSubjectType.SemanticTopic) {
+    if (subjectType == SpecialSubjectType.SemanticTopic) {
       let pair = threadsZvm.perspective.semanticTopics.get(ActionId.from(latestSubjectId));
       if (pair) {
         subjectName = pair[0];
@@ -190,7 +211,7 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
   } else {
     subjectName = latestSubject.name;
     /** Handle Edit message special case */
-    if(subjectType == SpecialSubjectType.TextBead && threadTitle == "EDIT") {
+    if (subjectType == SpecialSubjectType.TextBead && threadTitle == "EDIT") {
       const beadAh = ActionId.from(latestSubject.address);
       const tuple = threadsZvm.perspective.beads.get(beadAh);
       if (tuple) {
@@ -205,21 +226,39 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
 
 /**  */
 export function determineSubjectPrefix(type: SpecialSubjectType) {
-    switch (type) {
-      /** -- special types -- */
-      case SpecialSubjectType.ParticipationProtocol: return `🧵`; break;
-      case SpecialSubjectType.SubjectType: return `🧶`; break;
-      case SpecialSubjectType.AgentPubKey: return "🧑"; break;
-      /** -- Vines types -- */
-      case SpecialSubjectType.SemanticTopic: return `#`; break;
-      case SpecialSubjectType.TextBead: return "💬"; break;
-      case SpecialSubjectType.EntryBead: return "📎"; break;
-      case SpecialSubjectType.AnyBead:return "🔗"; break;
-      /** -- Feed types -- */
-      case SpecialSubjectType.Post: return ``; break;
-      /** other */
-      default: return ""; break;
-    }
+  switch (type) {
+    /** -- special types -- */
+    case SpecialSubjectType.ParticipationProtocol:
+      return `🧵`;
+      break;
+    case SpecialSubjectType.SubjectType:
+      return `🧶`;
+      break;
+    case SpecialSubjectType.AgentPubKey:
+      return "🧑";
+      break;
+    /** -- Vines types -- */
+    case SpecialSubjectType.SemanticTopic:
+      return `#`;
+      break;
+    case SpecialSubjectType.TextBead:
+      return "💬";
+      break;
+    case SpecialSubjectType.EntryBead:
+      return "📎";
+      break;
+    case SpecialSubjectType.AnyBead:
+      return "🔗";
+      break;
+    /** -- Feed types -- */
+    case SpecialSubjectType.Post:
+      return ``;
+      break;
+    /** other */
+    default:
+      return "";
+      break;
+  }
 }
 
 
@@ -246,7 +285,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
           }
         }
         return `{Unknown Applet}`;
-      break
+        break
       case SpecialSubjectType.AgentPubKey:
         // FIXME: grab agent name in profiles
         return `{Unknown AgentPubKey}`;
@@ -260,7 +299,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
         }
         return latestThreadName(thread.title, thread.pp, threadsZvm);
       }
-      break;
+        break;
       case SpecialSubjectType.SubjectType:
         if (weServices) {
           //let appletInfo = await weServices.appletInfo(decodeHashFromBase64(weServices.appletId));
@@ -273,7 +312,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
         } else {
           return `{${subject.typeName}}`;
         }
-      break;
+        break;
       /** -- Feed types -- */
       case SpecialSubjectType.Post: {
         const ah = new ActionId(subject.address);
@@ -285,7 +324,7 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
           return `{Unknown Post}`;
         }
       }
-      break;
+        break;
       /** -- Vines types -- */
       case SpecialSubjectType.SemanticTopic:
         const pair = threadsZvm.perspective.semanticTopics.get(new ActionId(subject.address));
@@ -311,11 +350,11 @@ export function determineSubjectName(subject: Subject, threadsZvm: ThreadsZvm, f
         const beadName = determineBeadName(subject.typeName as unknown as BeadType, typedMat, filesDvm, weServices);
         //console.log("determineSubjectName() beadName", beadName);
         return beadName;
-      break;
+        break;
       /** unknown */
       default:
         return `{Unknown '${subject.typeName}'}`;
-      break;
+        break;
     }
   } else {
     /** Unknown Asset */
@@ -353,7 +392,7 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
     /** TextBead: text content */
     case ThreadsEntryType.TextBead:
       return truncate((typedBead as TextBeadMat).value, charCount, true);
-    break;
+      break;
     /** EntryBead: Filename */
     case ThreadsEntryType.EntryBead:
       if (!filesDvm) {
@@ -365,7 +404,7 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<file>";
       }
       return pprm.description.name;
-    break;
+      break;
     /** AnyBead: assetInfo.name */
     case ThreadsEntryType.AnyBead:
       if (!weServices) {
@@ -378,21 +417,19 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<unknown asset>";
       }
       return attLocInfo.assetInfo.name;
-    break;
+      break;
     /** */
     default:
-    break;
+      break;
   }
   return "<unknown>";
 }
 
 
-
-
 /* Use weServices, otherwise try from dna properties */
 export function determinerGroupProfile(dnaProperties: ThreadsProperties, tuple?: [WeServicesEx, number]): GroupProfile {
   /** weServices */
-  if(tuple && tuple[0]) {
+  if (tuple && tuple[0]) {
     const weServices = tuple[0];
     const appletInfo = weServices.appletInfoCached(new EntryId(weServices.appletIds[tuple[1]]!));
     //console.log("get appletInfo", appletInfo);

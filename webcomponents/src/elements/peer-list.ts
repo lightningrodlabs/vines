@@ -1,6 +1,6 @@
 import {html, css, TemplateResult} from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { localized, msg } from '@lit/localize';
+import {customElement, property} from "lit/decorators.js";
+import {localized, msg} from '@lit/localize';
 
 import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
 
@@ -56,7 +56,11 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         return html`
           <li class="folk" 
               style="display:flex; align-items:center; flex-direction: row"
-              @click=${(_e:any) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', { detail: agentId, bubbles: true, composed: true }))}
+              @click=${(_e: any) => this.dispatchEvent(new CustomEvent<AgentId>('avatar-clicked', {
+          detail: agentId,
+          bubbles: true,
+          composed: true
+        }))}
           >
             ${renderProfileAvatar(this, null, profile, "S")}
             <span style="margin-left:10px; margin-right:7px; font-size:16px; font-weight:bold; -webkit-text-stroke:0.1px black;">

@@ -1,7 +1,7 @@
 /** Copied from markdown-it-emoji v3.0.0: light data */
 
 
-export function bare_emoji_plugin (md:any, options:any) {
+export function bare_emoji_plugin(md: any, options: any) {
   const defaults = {
     defs: {},
     shortcuts: {},
@@ -20,7 +20,7 @@ export function bare_emoji_plugin (md:any, options:any) {
 };
 
 
-export default function emoji_plugin (md:any, options:any) {
+export default function emoji_plugin(md: any, options: any) {
   const defaults = {
     defs: emojies_defs,
     shortcuts: emojies_shortcuts,
@@ -33,7 +33,7 @@ export default function emoji_plugin (md:any, options:any) {
 };
 
 
-function emoji_html(tokens:any, idx:any /*, options, env */) {
+function emoji_html(tokens: any, idx: any /*, options, env */) {
   return tokens[idx].content
 };
 
@@ -51,7 +51,7 @@ function emoji_replace(md, emojies, shortcuts, scanRE, replaceRE) {
   const ZPCc = new RegExp([ucm.Z.source, ucm.P.source, ucm.Cc.source].join('|'))
 
   // @ts-ignore
-  function splitTextToken (text, level, Token) {
+  function splitTextToken(text, level, Token) {
     let last_pos = 0
     const nodes = []
 
@@ -133,12 +133,12 @@ function emoji_replace(md, emojies, shortcuts, scanRE, replaceRE) {
 // and compile search regexp
 
 // @ts-ignore
-function quoteRE (str) {
+function quoteRE(str) {
   return str.replace(/[.?*+^$[\]\\(){}|-]/g, '\\$&')
 }
 
 // @ts-ignore
-export function normalize_opts (options) {
+export function normalize_opts(options) {
   let emojies = options.defs
 
   // Filter emojies by whitelist, if needed
@@ -349,32 +349,31 @@ const emojies_defs = {
 }
 
 
-
 const emojies_shortcuts = {
-  angry:            ['>:(', '>:-('],
-  blush:            [':")', ':-")'],
-  broken_heart:     ['</3', '<\\3'],
+  angry: ['>:(', '>:-('],
+  blush: [':")', ':-")'],
+  broken_heart: ['</3', '<\\3'],
   // :\ and :-\ not used because of conflict with markdown escaping
-  confused:         [':/', ':-/'], // twemoji shows question
-  cry:              [":'(", ":'-(", ':,(', ':,-('],
-  frowning:         [':(', ':-('],
-  heart:            ['<3'],
-  imp:              [']:(', ']:-('],
-  innocent:         ['o:)', 'O:)', 'o:-)', 'O:-)', '0:)', '0:-)'],
-  joy:              [":')", ":'-)", ':,)', ':,-)', ":'D", ":'-D", ':,D', ':,-D'],
-  kissing:          [':*', ':-*'],
-  laughing:         ['x-)', 'X-)'],
-  neutral_face:     [':|', ':-|'],
-  open_mouth:       [':o', ':-o', ':O', ':-O'],
-  rage:             [':@', ':-@'],
-  smile:            [':D', ':-D'],
-  smiley:           [':)', ':-)'],
-  smiling_imp:      [']:)', ']:-)'],
-  sob:              [":,'(", ":,'-(", ';(', ';-('],
+  confused: [':/', ':-/'], // twemoji shows question
+  cry: [":'(", ":'-(", ':,(', ':,-('],
+  frowning: [':(', ':-('],
+  heart: ['<3'],
+  imp: [']:(', ']:-('],
+  innocent: ['o:)', 'O:)', 'o:-)', 'O:-)', '0:)', '0:-)'],
+  joy: [":')", ":'-)", ':,)', ':,-)', ":'D", ":'-D", ':,D', ':,-D'],
+  kissing: [':*', ':-*'],
+  laughing: ['x-)', 'X-)'],
+  neutral_face: [':|', ':-|'],
+  open_mouth: [':o', ':-o', ':O', ':-O'],
+  rage: [':@', ':-@'],
+  smile: [':D', ':-D'],
+  smiley: [':)', ':-)'],
+  smiling_imp: [']:)', ']:-)'],
+  sob: [":,'(", ":,'-(", ';(', ';-('],
   stuck_out_tongue: [':P', ':-P'],
-  sunglasses:       ['8-)', 'B-)'],
-  sweat:            [',:(', ',:-('],
-  sweat_smile:      [',:)', ',:-)'],
-  unamused:         [':s', ':-S', ':z', ':-Z', ':$', ':-$'],
-  wink:             [';)', ';-)']
+  sunglasses: ['8-)', 'B-)'],
+  sweat: [',:(', ',:-('],
+  sweat_smile: [',:)', ',:-)'],
+  unamused: [':s', ':-S', ':z', ':-Z', ':$', ':-$'],
+  wink: [';)', ';-)']
 }

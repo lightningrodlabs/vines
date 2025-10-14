@@ -23,7 +23,6 @@ import {sharedStyles} from "../../styles";
 import {toasty} from "../../toast";
 
 
-
 /**
  * @element
  */
@@ -37,7 +36,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
 
   /** Observed perspective from zvm */
@@ -52,7 +51,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Getters -- */
 
-  get listElem() : List {
+  get listElem(): List {
     return this.shadowRoot!.getElementById("textList") as List;
   }
 
@@ -85,10 +84,10 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
 
     let beadLi = this._dvm.threadsZvm.perspective.favorites
       .map((beadAh) => html`<favorites-item .hash=${beadAh} deletable="true" 
-                                       @deleted=${async(_e:any) => {
-                                        await this._dvm.threadsZvm.removeFavorite(beadAh);
-                                        toasty(msg("Message removed from favorites"));
-                                    }}></favorites-item>`);
+                                       @deleted=${async (_e: any) => {
+        await this._dvm.threadsZvm.removeFavorite(beadAh);
+        toasty(msg("Message removed from favorites"));
+      }}></favorites-item>`);
 
     /** Different UI if no message found for thread */
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {

@@ -1,5 +1,5 @@
 import {html, css, TemplateResult} from 'lit';
-import { property, customElement } from 'lit/decorators.js';
+import {property, customElement} from 'lit/decorators.js';
 import {localized, msg} from '@lit/localize';
 
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
@@ -63,7 +63,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
       }
       /** */
       all = html`
-        <div id="small-group" @click=${(_e:any) => this.opened = true}>
+        <div id="small-group" @click=${(_e: any) => this.opened = true}>
             ${avatars}
             <ui5-icon name="group" style="margin-left:3px;"></ui5-icon>
             ${more}
@@ -86,7 +86,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
             <div style="display: flex; flex-direction: row; align-items: center; margin-bottom: 6px;">
                 <div>${msg("Who's here")}</div>
                 <div style="flex-grow:1"></div>
-                <div id="close" @click=${(_e:any) => this.opened = false}>${msg("Close")}</div>
+                <div id="close" @click=${(_e: any) => this.opened = false}>${msg("Close")}</div>
             </div>
             ${profiles}
         </div>

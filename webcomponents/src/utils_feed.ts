@@ -32,9 +32,8 @@ export function getMainThread(dvm: ThreadsDvm): ActionId | undefined {
 }
 
 
-
 /** Return [notifTitle, notifBody] */
-export function  composeFeedNotificationTitle(notif: ThreadsNotification, threadsDvm: ThreadsDvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
+export function composeFeedNotificationTitle(notif: ThreadsNotification, threadsDvm: ThreadsDvm, filesDvm: FilesDvm, weServices: WeServicesEx): [string, string] {
   let title: string = "";
   let content: string = "";
   const ah = notif.content;

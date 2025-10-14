@@ -91,7 +91,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     const timeZone = this._dvm.profilesZvm.getMyProfile()!.fields['timezone']!;
     const date = new Date(beadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false, timeZone});
-    switch(beadInfo.beadType) {
+    switch (beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
         const tm = typedBead as TextBeadMat;
         const result = md.render(tm.value);
@@ -111,11 +111,11 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             content = html`
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
-                   @click=${async (e:any) => {
-                    e.stopPropagation();
-                    await this.weServices?.assets.assetInfo(wal);
-                    this.requestUpdate();
-                  }}>
+                   @click=${async (e: any) => {
+              e.stopPropagation();
+              await this.weServices?.assets.assetInfo(wal);
+              this.requestUpdate();
+            }}>
                   <ui5-icon name="synchronize"></ui5-icon>
                   <span>${msg('Unknown Asset')}</span>
               </div>
@@ -123,7 +123,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           } else {
             content = html`
               <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
-                   @click=${(_e:any) => this.weServices?.openAsset(wal)}>
+                   @click=${(_e: any) => this.weServices?.openAsset(wal)}>
                   ${maybeInfo.assetInfo.name}
               </div>
           `;
@@ -139,10 +139,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         if (maybePprm) {
           const desc = maybePprm.description;
           content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                              @click=${(_e:any) => {
-                              this._filesDvm.downloadFile(manifestEh);
-                              toasty(msg("File downloaded") + ": " + desc.name);
-                          }}>
+                              @click=${(_e: any) => {
+            this._filesDvm.downloadFile(manifestEh);
+            toasty(msg("File downloaded") + ": " + desc.name);
+          }}>
                          ${msg("File")}: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;
         }
@@ -168,7 +168,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     /** */
     return html`
       <blockquote class="reply"
-           @click=${(e:any) => {e.stopPropagation(); this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))}}>
+           @click=${(e: any) => {
+      e.stopPropagation();
+      this.dispatchEvent(beadJumpEvent(beadInfo.bead.prevBeadAh))
+    }}>
           ${determineBeadName(prevBeadInfo!.beadType, prevBead!, this._filesDvm, this.weServices, 200)}
       </blockquote>
     `;
@@ -188,7 +191,11 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     /* render item */
     return html`
     <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
-         @click=${(e:any) => {console.log("sideItem clicked", this.hash); e.stopPropagation(); this.dispatchEvent(beadJumpEvent(this.hash))}}>
+         @click=${(e: any) => {
+      console.log("sideItem clicked", this.hash);
+      e.stopPropagation();
+      this.dispatchEvent(beadJumpEvent(this.hash))
+    }}>
         <div class="avatarRow">
             ${author? renderAvatar(this, this._dvm.profilesZvm, author, "XS") : ""}
             <div class="nameColumn" style="display:flex; flex-direction:column;">
@@ -197,7 +204,11 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             </div>
             <div style="flex-grow: 1"></div>
             ${this.deletable? html`<ui5-button icon="decline" design="Transparent"
-            @click=${(e:any) => {e.stopPropagation(); e.preventDefault(); this.dispatchEvent(new CustomEvent<boolean>('deleted', {detail: true, bubbles: true, composed: true}))}}></ui5-button>` : html``}
+            @click=${(e: any) => {
+      e.stopPropagation();
+      e.preventDefault();
+      this.dispatchEvent(new CustomEvent<boolean>('deleted', {detail: true, bubbles: true, composed: true}))
+    }}></ui5-button>` : html``}
         </div>
         ${beadInfo? this.renderPrevBead(beadInfo) : ""}
         <div class="sideContentRow">

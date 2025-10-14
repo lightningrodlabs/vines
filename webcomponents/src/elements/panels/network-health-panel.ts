@@ -15,7 +15,7 @@ import Switch from "@ui5/webcomponents/dist/Switch";
 @customElement("network-health-panel")
 export class NetworkHealthPanel extends LitElement {
 
-  @consume({ context: networkCallerContext, subscribe: true })
+  @consume({context: networkCallerContext, subscribe: true})
   @property() networkCaller!: NetworkCaller;
 
 
@@ -32,10 +32,14 @@ export class NetworkHealthPanel extends LitElement {
 
 
   /** */
-  async onSwitchNetworkInfo(_e:any) {
+  async onSwitchNetworkInfo(_e: any) {
     console.log("onLoopNetworkInfo()");
     const el = this.shadowRoot!.getElementById("enableSwitch") as Switch;
-    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {detail: el? el.checked: true, bubbles: true, composed: true}));
+    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+      detail: el? el.checked : true,
+      bubbles: true,
+      composed: true
+    }));
   }
 
 
@@ -43,7 +47,7 @@ export class NetworkHealthPanel extends LitElement {
   override render() {
     //console.log("<network-health>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
 
-    if (!this.networkCaller)  {
+    if (!this.networkCaller) {
       return html`no networkCaller set`;
     }
 
@@ -135,7 +139,7 @@ export class NetworkHealthPanel extends LitElement {
   }
 
 
-   /** */
+  /** */
   static override get styles() {
     return [
       css`

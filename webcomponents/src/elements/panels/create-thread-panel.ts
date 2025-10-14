@@ -29,10 +29,10 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Properties -- */
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
   @state() private _creating = false;
@@ -71,7 +71,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
         context: pp.subject.address,
       };
       this.dispatchEvent(new CustomEvent<WAL>('create', {detail: wal, bubbles: true, composed: true}))
-    } catch(e:any) {
+    } catch (e: any) {
       this.dispatchEvent(new CustomEvent<any>('reject', {detail: e, bubbles: true, composed: true}))
     }
     this._creating = false;
@@ -93,22 +93,26 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
           <div>
               <ui5-label for="wurlInput" required>Subject weaveURL:</ui5-label>
               <ui5-input id="wurlInput"></ui5-input>
-              <ui5-button icon="add" @click=${async (_e:any) => {
-                  const maybeWal = await this.weServices?.assets.userSelectAsset();
-                  if (!maybeWal) {
-                      return;
-                  }
-                  const input = this.shadowRoot!.getElementById("wurlInput") as Input;
-                  input.value = weaveUrlFromWal(maybeWal);
-              }}></ui5-button>              
+              <ui5-button icon="add" @click=${async (_e: any) => {
+      const maybeWal = await this.weServices?.assets.userSelectAsset();
+      if (!maybeWal) {
+        return;
+      }
+      const input = this.shadowRoot!.getElementById("wurlInput") as Input;
+      input.value = weaveUrlFromWal(maybeWal);
+    }}></ui5-button>              
           </div>          
       </section>
       <rules-edit id="rulesEdit"></rules-edit>
       <div slot="footer" class="footer">
-        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e:any) => this.onCreate()}>
+        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e: any) => this.onCreate()}>
             ${msg("Create")}
         </ui5-button>
-        <ui5-button style="margin-top:5px" @click=${(_e:any) => this.dispatchEvent(new CustomEvent('cancel', {detail: null, bubbles: true, composed: true}))}>
+        <ui5-button style="margin-top:5px" @click=${(_e: any) => this.dispatchEvent(new CustomEvent('cancel', {
+      detail: null,
+      bubbles: true,
+      composed: true
+    }))}>
             ${msg("Cancel")}
         </ui5-button>
       </div>

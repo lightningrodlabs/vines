@@ -39,10 +39,10 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   @property() selectedThreadHash?: ActionId;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   filesDvm!: FilesDvm;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
   @property({type: Boolean}) collapsed?: boolean = false;
@@ -92,12 +92,12 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       }
 
       /** Determine badge & buttons */
-      // const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
-      // let hasUnreadComments = false;
-      // if (maybeCommentThread != null) {
-      //   hasUnreadComments = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
-      // }
-      //console.log("<my-threads-view> maybeCommentThread", maybeCommentThread, hasUnreadComments);
+        // const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(ppAh);
+        // let hasUnreadComments = false;
+        // if (maybeCommentThread != null) {
+        //   hasUnreadComments = this._zvm.perspective.unreadThreads.has(maybeCommentThread);
+        // }
+        //console.log("<my-threads-view> maybeCommentThread", maybeCommentThread, hasUnreadComments);
 
       let commentButton = html``;
       // if (hasUnreadComments) {
@@ -119,7 +119,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       // }
 
       /** 'new', 'notif' or 'unread' badge to display */
-      //let badge = html`<ui5-badge>0</ui5-badge>`;
+        //let badge = html`<ui5-badge>0</ui5-badge>`;
       let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
@@ -137,18 +137,18 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         }
       }
 
-      const hideShowBtn = this.showArchivedSubjects && isThreadHidden ?
+      const hideShowBtn = this.showArchivedSubjects && isThreadHidden?
         html`
               <ui5-button icon="show" tooltip="Show" design="Transparent"
                           class="showBtn"
-                          @click=${async (_e:any) => {
+                          @click=${async (_e: any) => {
           await this._zvm.unhideSubject(ppAh);
           toasty(`${msg("Unarchived Subject")} "${thread.title}"`);
         }}></ui5-button>
           ` : html`
                     <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                                 class="showBtn"
-                                @click=${async (_e:any) => {
+                                @click=${async (_e: any) => {
           await this._zvm.hideSubject(ppAh);
           toasty(`${msg("Hidden Subject")} "${thread.title}"`);
         }}></ui5-button>`;
@@ -157,16 +157,16 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
             <sl-tooltip content=${thread.title} style="--show-delay:1000">
                 <div id=${ppAh.b64} class="threadItem"
                      style="
-                       font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
-                       ${threadIsNew || notifCount ? "color: #359C07;" : ""}
-                       ${isSelected ? "background:#DBDBDB" : ""}
+                       font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
+                       ${threadIsNew || notifCount? "color: #359C07;" : ""}
+                       ${isSelected? "background:#DBDBDB" : ""}
                        "
-                     @click=${(_e:any) => {
-                        const jump = threadJumpEvent(ppAh);
-                        this.dispatchEvent(jump);
-                     }}>
+                     @click=${(_e: any) => {
+        const jump = threadJumpEvent(ppAh);
+        this.dispatchEvent(jump);
+      }}>
                   ${badge}
-                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}">${thread.pp.purpose}</span>
+                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}">${thread.pp.purpose}</span>
                   <!-- ${hideShowBtn} -->
                   ${commentButton}
                 </div>
@@ -179,7 +179,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     /** Render Subject */
-    //const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(subjectId);
+      //const maybeCommentThread: ActionId | null = this._zvm.perspective.getCommentThreadForSubject(subjectId);
     const subjectIsNew = newSubjects.get(subjectId.b64) != undefined;
     // let subjectHasUnreadComments = false;
     // if (maybeCommentThread != null) {
@@ -236,19 +236,19 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** render subject sub-lister */
     return html`
           <ui5-panel id=${subjectId.b64} ?collapsed=${this.collapsed}
-                     @toggle=${(_e:any) => this.requestUpdate()}
-                     @mouseover=${(_e:any) => {
-                        const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
-                        const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
-                        if (hide) hide.style.display = "block";
-                        if (cmt) cmt.style.display = "block";
-                     }}
-                     @mouseout=${(_e:any) => {
-                        const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
-                        const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
-                        if (hide) hide.style.display = "none";
-                        if (cmt) cmt.style.display = "none";
-                     }}>
+                     @toggle=${(_e: any) => this.requestUpdate()}
+                     @mouseover=${(_e: any) => {
+      const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
+      const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
+      if (hide) hide.style.display = "block";
+      if (cmt) cmt.style.display = "block";
+    }}
+                     @mouseout=${(_e: any) => {
+      const hide = this.shadowRoot!.getElementById("hide-" + subjectId.b64);
+      const cmt = this.shadowRoot!.getElementById("cmt-" + subjectId.b64);
+      if (hide) hide.style.display = "none";
+      if (cmt) cmt.style.display = "none";
+    }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
@@ -272,8 +272,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     myBeads
       .filter(([beadInfo, _typed]) => !!this.perspective.threads.get(beadInfo.bead.ppAh))
       .map(([beadInfo, _typed]) => {
-      myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)!)
-    });
+        myBeadThreads.set(beadInfo.bead.ppAh, this.perspective.threads.get(beadInfo.bead.ppAh)!)
+      });
 
     const myThreads: ActionIdMap<Thread> = new ActionIdMap();
     Array.from(this.perspective.threads.entries())
@@ -286,7 +286,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     console.log("<my-threads-lister>     myThreads", myThreads.size, myThreads);
 
     /** concat (and dedup) */
-    //const allThreads = Object.assign({}, myThreads, myBeadThreads);
+      //const allThreads = Object.assign({}, myThreads, myBeadThreads);
     const allThreads = new ActionIdMap([...myThreads, ...myBeadThreads]);
     console.log("<my-threads-lister> allThreads", allThreads.size, allThreads);
 
@@ -373,18 +373,18 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       /** render appletSubLister */
       return html`
           <ui5-panel id=${appletId.b64} ?collapsed=${this.collapsed}
-                     @mouseover=${(_e:any) => {
-                         const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
-                         const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);
-                         if (hide) hide.style.display = "block";
-                         if (cmt) cmt.style.display = "block";
-                     }}
-                     @mouseout=${(_e:any) => {
-                         const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
-                         const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);
-                         if (hide) hide.style.display = "none";
-                         if (cmt) cmt.style.display = "none";
-                     }}>
+                     @mouseover=${(_e: any) => {
+        const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
+        const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);
+        if (hide) hide.style.display = "block";
+        if (cmt) cmt.style.display = "block";
+      }}
+                     @mouseout=${(_e: any) => {
+        const hide = this.shadowRoot!.getElementById("hide-" + appletId.b64);
+        const cmt = this.shadowRoot!.getElementById("cmt-" + appletId.b64);
+        if (hide) hide.style.display = "none";
+        if (cmt) cmt.style.display = "none";
+      }}>
               <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%; height:36px; font-size:18px; color:#663ef7">
                   <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${appletHasUnreadComments? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${appletName}</div>
                   ${appletCommentBtn}
@@ -404,7 +404,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       `;
     }
 
-    if (this._loading)  {
+    if (this._loading) {
       this.style.background = "#ececec";
     } else {
       this.style.background = "inherit";
@@ -413,7 +413,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** render all */
     return html`${appletSubListers}`
   }
-
 
 
   /** */

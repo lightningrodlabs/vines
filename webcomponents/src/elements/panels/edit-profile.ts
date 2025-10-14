@@ -1,6 +1,6 @@
-import { html, css, LitElement } from 'lit';
-import { property, state, customElement } from 'lit/decorators.js';
-import { localized, msg } from '@lit/localize';
+import {html, css, LitElement} from 'lit';
+import {property, state, customElement} from 'lit/decorators.js';
+import {localized, msg} from '@lit/localize';
 
 import Input from "@ui5/webcomponents/dist/Input";
 import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
@@ -57,17 +57,17 @@ export function resizeAndExport(img: HTMLImageElement) {
 export class EditProfile extends LitElement {
 
   /** The profile to be edited. */
-  @property({ type: Object })
+  @property({type: Object})
   profile: ProfileMat | undefined = undefined;
 
   /** Label for the save profile button. */
-  @property({ type: String, attribute: 'save-profile-label' })
+  @property({type: String, attribute: 'save-profile-label'})
   saveProfileLabel: string | undefined;
 
   @property()
   avatarMode: string = "";
 
-  @property({ type: Boolean })
+  @property({type: Boolean})
   allowCancel = false;
 
   @state() private _avatar: string | undefined;
@@ -94,6 +94,7 @@ export class EditProfile extends LitElement {
     super.connectedCallback();
     this.addEventListener('keyup', this.onKeyUp);
   }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('keyup', this.onKeyUp);
@@ -101,7 +102,7 @@ export class EditProfile extends LitElement {
 
 
   /** */
-  async onKeyUp(e:any) {
+  async onKeyUp(e: any) {
     console.log("<edit-profile>.onKeyUp()", e.keyCode);
     if (e.keyCode === 13 && this.shouldSaveButtonBeEnabled()) {
       e.stopPropagation();
@@ -140,7 +141,7 @@ export class EditProfile extends LitElement {
     return html`
       <div style="height: 80px; justify-content: center;" class="row">
         ${this._avatar
-          ? html`
+      ? html`
               <div class="column" style="align-items: center; ">
                 <sl-avatar
                   image=${this._avatar}
@@ -284,7 +285,7 @@ export class EditProfile extends LitElement {
     console.log({langRadioGroup});
     const lang = langRadioGroup.value;
     console.log("handleLangChange: lang =", lang);
-    this.dispatchEvent(new CustomEvent<string>('lang-selected', { detail: lang, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<string>('lang-selected', {detail: lang, bubbles: true, composed: true}));
   }
 
 
@@ -311,13 +312,13 @@ export class EditProfile extends LitElement {
                       .label=${msg('Nickname')}
                       .value=${this.profile?.nickname || ''}
                       style="margin-left: 8px;"
-                      @input=${(_e:any) => {
-                        if (this.nicknameField.value.length > 0) {
-                            this.nicknameField.valueState = ValueState.None;
-                        } else {
-                            this.nicknameField.valueState = ValueState.Error;
-                        }
-                      }}>
+                      @input=${(_e: any) => {
+      if (this.nicknameField.value.length > 0) {
+        this.nicknameField.valueState = ValueState.None;
+      } else {
+        this.nicknameField.valueState = ValueState.Error;
+      }
+    }}>
                   <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>                  
               </ui5-input>
             ${this.renderAvatarPicker()}
@@ -326,7 +327,7 @@ export class EditProfile extends LitElement {
           <div class="row" style="margin-bottom: 18px; align-items: center;">
               <span style="font-size:18px;padding-right:10px;padding-top:5px;">${msg('Color')}:</span>
               <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format="hex"
-                               .value=${this.profile && this.profile.fields['color']? this.profile.fields['color'] : getRandomHexColor() }></sl-color-picker>
+                               .value=${this.profile && this.profile.fields['color']? this.profile.fields['color'] : getRandomHexColor()}></sl-color-picker>
           </div>
 
             <div class="row">
@@ -350,13 +351,13 @@ export class EditProfile extends LitElement {
                   @click=${() => this.fireSaveProfile()}
           >${msg("Save Profile")}</ui5-button>          
             ${this.allowCancel
-              ? html`
+      ? html`
               <ui5-button
                 style="flex:1; margin-top:15px;"
                 @click=${() => this.fireCancel()}
               >${msg("Cancel")}</ui5-button>
               ` : html``
-            }
+    }
           </div>
       
         </div>

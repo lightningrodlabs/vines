@@ -13,7 +13,7 @@ import {SlDialog} from "@shoelace-style/shoelace";
 @customElement("view-embed-dialog")
 export class ViewEmbedDialog extends LitElement {
 
-  private _blobUrl: string  = "";
+  private _blobUrl: string = "";
   private _mime: string = "";
 
 

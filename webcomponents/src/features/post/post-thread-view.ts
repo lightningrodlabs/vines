@@ -42,7 +42,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: onlineLoadedContext, subscribe: true })
+  @consume({context: onlineLoadedContext, subscribe: true})
   onlineLoaded!: boolean;
 
 
@@ -124,7 +124,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
       const item = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
       if (item) {
         const scrollY = item.offsetTop - this.offsetTop;
-        this.scrollTo({ top: scrollY, behavior: 'smooth' });
+        this.scrollTo({top: scrollY, behavior: 'smooth'});
       }
     }
     ///** Set background according to load state */
@@ -183,7 +183,7 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  async onWheel(_event:any) {
+  async onWheel(_event: any) {
     //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
     if (this.clientHeight - this.scrollHeight == this.scrollTop) {
       await this.loadPreviousPosts();
@@ -208,27 +208,27 @@ export class PostThreadView extends DnaElement<unknown, ThreadsDvm> {
     let passedLog = false;
     let postItems = Object.values(thread.beadLinksTree.values)
       .map((blm) => {
-        /** 'new' if bead is older than initial latest ProbeLogTime */
-        const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this._mainThreadAh!);
-        if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
-          passedLog = true;
-        }
-        const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(blm.beadAh.b64);
-        if (this.favorites) {
-          if (!isFavorite) {
-            return;
+          /** 'new' if bead is older than initial latest ProbeLogTime */
+          const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this._mainThreadAh!);
+          if (!passedLog && initialProbeLogTs && blm.creationTime > initialProbeLogTs) {
+            passedLog = true;
           }
-        }
-        const bg_color = blm.beadAh == this.beadAh
-          ? "#c4f2b07a"
-          : isFavorite? "rgb(223, 246, 255)" : "";
-        return html`
+          const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(blm.beadAh.b64);
+          if (this.favorites) {
+            if (!isFavorite) {
+              return;
+            }
+          }
+          const bg_color = blm.beadAh == this.beadAh
+            ? "#c4f2b07a"
+            : isFavorite? "rgb(223, 246, 255)" : "";
+          return html`
             <post-item id=${(blm.beadAh.b64)} .hash=${(blm.beadAh)}
                        style="background: ${bg_color}"
             ></post-item>
         `;
-      }
-    )
+        }
+      )
       .filter((item) => !!item);
 
     console.debug("<post-thread-view>.render() postItems", postItems.length, postItems, this.favorites);

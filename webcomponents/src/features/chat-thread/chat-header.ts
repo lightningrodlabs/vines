@@ -28,7 +28,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** Hash of thread to display */
   @property() threadHash?: ActionId;
-  private  _latestSubjectId?: AnyId;
+  private _latestSubjectId?: AnyId;
 
   @property() groupNames?: string[];
 
@@ -67,7 +67,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
     let groups = ""
     if (this.groupNames) {
-      groups = ", " + msg("in groups") + " (" + this.groupNames.join(", ") +")";
+      groups = ", " + msg("in groups") + " (" + this.groupNames.join(", ") + ")";
     }
 
     //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e:any) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
@@ -79,8 +79,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
               ${profile.nickname}
               ${copyBtn}
               <ui5-button icon="number-sign" design="Transparent" tooltip=${msg("AgentPubKey") + ": " + otherAgent.b64}
-                          @click=${(_e:any) => {navigator.clipboard.writeText(otherAgent.b64); toasty(msg("Copied AgentPubKey to clipboard"));
-                          }}>
+                          @click=${(_e: any) => {
+      navigator.clipboard.writeText(otherAgent.b64);
+      toasty(msg("Copied AgentPubKey to clipboard"));
+    }}>
               </ui5-button>
           </h2>
           <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b>${groups}</div>
@@ -131,7 +133,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         title = html`${msg("About")} <span class="subjectName">${threadName}</span> from ${avatarElem}`;
         subText = html`${msg("This is the start of comment thread about chat message")} 
                       <span style="color:blue; cursor:pointer" 
-                            @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
+                            @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
                         ${threadName}
                       </span>`;
       } else {
@@ -150,10 +152,17 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           <!-- <div class="subtext">Purpose: ${thread.title}</div> -->
           <div class="subtext">
               <span class="rules" 
-                    @click=${(e:any) => {
-                      e.preventDefault(); e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {detail: {ppAh: this.threadHash!, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-                    }}>
+                    @click=${(e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {
+        detail: {
+          ppAh: this.threadHash!,
+          x: e.clientX,
+          y: e.clientY
+        }, bubbles: true, composed: true
+      }));
+    }}>
                 ${msg("Rules")}
               </span>
               |

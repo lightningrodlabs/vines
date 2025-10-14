@@ -85,9 +85,9 @@ export class AudioPanel extends LitElement {
         <ui5-button icon="microphone" design="Emphasized"
                     style="border-radius: 50%; width: 60px; height: 60px"
                     @click=${async () => {
-                        await this.startRec();
-                        this.requestUpdate()
-                    }}
+      await this.startRec();
+      this.requestUpdate()
+    }}
         ></ui5-button>
     `;
     let preview = html`
@@ -116,9 +116,9 @@ export class AudioPanel extends LitElement {
           <ui5-button icon="stop" design="Negative"
                       style="border-radius: 50%; width: 60px; height: 60px"
                       @click=${async () => {
-                          await this.stopRec();
-                          this.requestUpdate();
-                      }}></ui5-button>`;
+        await this.stopRec();
+        this.requestUpdate();
+      }}></ui5-button>`;
     }
 
 
@@ -128,54 +128,54 @@ export class AudioPanel extends LitElement {
         ${recordBtn}
         <div style="display: flex; flex-direction:row-reverse; gap: 10px; margin-top: 10px;">
             <ui5-button style="margin-top:5px" @click=${async (_e: any) => {
-                console.log("CANCELED", this._recorder.isRecording);
-                if (this._recorder.isRecording) {
-                    await this.stopRec();
-                }
-                this._recorder.releaseMedia();
-                this._maybeBlob = undefined;
-                this._maybeBlobUrl = undefined;
-                this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
-                this.requestUpdate();
-            }}>
+      console.log("CANCELED", this._recorder.isRecording);
+      if (this._recorder.isRecording) {
+        await this.stopRec();
+      }
+      this._recorder.releaseMedia();
+      this._maybeBlob = undefined;
+      this._maybeBlobUrl = undefined;
+      this.dispatchEvent(new CustomEvent('close', {detail: null, bubbles: true, composed: true}));
+      this.requestUpdate();
+    }}>
                 ${msg("Cancel")}
             </ui5-button>
             <ui5-button style="margin-top:5px"
                         ?disabled=${!this._maybeBlob}
                         @click=${async (_e: any) => {
-                            if (this._recorder.isRecording) {
-                                await this.stopRec();
-                            }
-                            this._recorder.releaseMedia();
-                            this.dispatchEvent(new CustomEvent<MicEvent>('mic', {
-                                detail: {
-                                    blob: this._maybeBlob,
-                                    canSend: false,
-                                },
-                                bubbles: true,
-                                composed: true
-                            }));
-                            this.requestUpdate();
-                        }}>
+      if (this._recorder.isRecording) {
+        await this.stopRec();
+      }
+      this._recorder.releaseMedia();
+      this.dispatchEvent(new CustomEvent<MicEvent>('mic', {
+        detail: {
+          blob: this._maybeBlob,
+          canSend: false,
+        },
+        bubbles: true,
+        composed: true
+      }));
+      this.requestUpdate();
+    }}>
                 ${msg("Attach")}
             </ui5-button>
             <ui5-button style="margin-top:5px" design="Emphasized"
                         ?disabled=${!this._maybeBlob}
                         @click=${async (_e: any) => {
-                            if (this._recorder.isRecording) {
-                                await this.stopRec();
-                            }
-                            this._recorder.releaseMedia();
-                            this.dispatchEvent(new CustomEvent<MicEvent>('mic', {
-                                detail: {
-                                    blob: this._maybeBlob,
-                                    canSend: true,
-                                },
-                                bubbles: true,
-                                composed: true
-                            }));
-                            this.requestUpdate();
-                        }}>
+      if (this._recorder.isRecording) {
+        await this.stopRec();
+      }
+      this._recorder.releaseMedia();
+      this.dispatchEvent(new CustomEvent<MicEvent>('mic', {
+        detail: {
+          blob: this._maybeBlob,
+          canSend: true,
+        },
+        bubbles: true,
+        composed: true
+      }));
+      this.requestUpdate();
+    }}>
                 ${msg("Send")}
             </ui5-button>
         </div>

@@ -2,7 +2,7 @@ import {css, html} from "lit";
 import {property, customElement} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {sharedStyles} from "../../styles";
 import {md} from "../../markdown/md";
@@ -40,11 +40,11 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     const beadInfo = this._zvm.perspective.getBeadInfo(this.hash)!;
     const maybe = this._zvm.perspective.getEditThread(this.hash);
-    const isEdited = maybe? maybe[1].beadLinksTree.length > 0: false;
+    const isEdited = maybe? maybe[1].beadLinksTree.length > 0 : false;
     let editedHtml = html``;
     if (isEdited) {
       editedHtml = html`<span class="edited" @click=${() => {
-          this.dispatchEvent(threadJumpEvent(maybe![0]));
+        this.dispatchEvent(threadJumpEvent(maybe![0]));
       }}>${msg("(edited)")}</span>`;
     }
     let value = this._zvm.perspective.getLatestEdit(this.hash);

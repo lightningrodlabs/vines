@@ -30,7 +30,7 @@ export class ChatTextEdit extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   }
 
   /** */
-  handleKeydown(e:any) {
+  handleKeydown(e: any) {
     //console.log("keydown", e);
     /** Enter: commit message */
     if (e.keyCode === 13) {
@@ -39,12 +39,18 @@ export class ChatTextEdit extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       } else {
         const elem = this.shadowRoot!.getElementById("chat-text-edit") as unknown as TextArea;
         console.log("<chat-text-edit> keydown keyCode ENTER", elem.value);
-        e.preventDefault(); e.stopPropagation();
-        this.dispatchEvent(new CustomEvent<string |null>('edit-bead', {detail: elem.value, bubbles: true, composed: true}));
+        e.preventDefault();
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent<string | null>('edit-bead', {
+          detail: elem.value,
+          bubbles: true,
+          composed: true
+        }));
       }
     } else if (e.keyCode == 27) {
-      e.preventDefault(); e.stopPropagation();
-      this.dispatchEvent(new CustomEvent<string |null>('edit-bead', {detail: null, bubbles: true, composed: true}));
+      e.preventDefault();
+      e.stopPropagation();
+      this.dispatchEvent(new CustomEvent<string | null>('edit-bead', {detail: null, bubbles: true, composed: true}));
     }
   }
 

@@ -1,5 +1,3 @@
-
-
 export const MIC_MIME_TYPE = 'audio/webm; codecs=opus';
 
 export class AudioRecorder {
@@ -10,7 +8,7 @@ export class AudioRecorder {
 
   get isRecording(): boolean {return this._isRecording;}
 
-  get initialized(): boolean{ return !!this.mediaRecorder;}
+  get initialized(): boolean { return !!this.mediaRecorder;}
 
 
   /** -- Methods -- */
@@ -27,7 +25,7 @@ export class AudioRecorder {
     };
 
     try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({audio: audioConstraints});
       this.mediaRecorder = new MediaRecorder(this.mediaStream, {
         mimeType: MIC_MIME_TYPE,
         audioBitsPerSecond: 12000
@@ -78,10 +76,10 @@ export class AudioRecorder {
 
     return new Promise((resolve) => {
       this.mediaRecorder!.addEventListener('stop', () => {
-        const audioBlob = new Blob(this.audioChunks, { type: MIC_MIME_TYPE });
+        const audioBlob = new Blob(this.audioChunks, {type: MIC_MIME_TYPE});
         this.audioChunks = [];
         resolve(audioBlob);
-      }, { once: true });
+      }, {once: true});
 
       this.mediaRecorder!.stop();
       this._isRecording = false;

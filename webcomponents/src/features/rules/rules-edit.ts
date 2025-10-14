@@ -1,5 +1,5 @@
 import {html, css} from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {consume} from "@lit/context";
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
@@ -39,7 +39,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   @property() moderation: Moderation = defaultModeration();
   @property() limitations: Limitations = defaultLimitations();
-  @property({ type: Array }) selectedTypes: string[] = [];
+  @property({type: Array}) selectedTypes: string[] = [];
 
   @state() private canRateLimit: boolean = false;
   @state() private canModerate: boolean = false;
@@ -62,7 +62,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   };
 
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
 
@@ -98,7 +98,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
    * Add a type to selected types
    * @param {string} value - The MIME type value to add
    */
-  addType(value:any) {
+  addType(value: any) {
     if (!this.selectedTypes.includes(value)) {
       this.selectedTypes = [...this.selectedTypes, value];
       //this.dispatchSelectionChange();
@@ -109,7 +109,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
    * Remove a type from selected types
    * @param {string} value - The MIME type value to remove
    */
-  removeType(value:any) {
+  removeType(value: any) {
     this.selectedTypes = this.selectedTypes.filter(type => type !== value);
     //this.dispatchSelectionChange();
   }
@@ -118,10 +118,10 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
    * Handle selection changes in the multi-combo box
    * @param {Event} e - The selection-change event
    */
-  handleSelectionChange(e:any) {
+  handleSelectionChange(e: any) {
     console.log("handleSelectionChange()", e.detail.items);
     if (e.detail.items) {
-      this.selectedTypes = e.detail.items.map((mcb:any) => mcb.value);
+      this.selectedTypes = e.detail.items.map((mcb: any) => mcb.value);
       this.fileRules.allowedFileTypes = this.selectedTypes;
       //const selector = this.shadowRoot!.getElementById("mimeCombobox") as LitElement;
       //selector.requestUpdate();
@@ -130,7 +130,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
       this.fileRules.allowedFileTypes = [];
     }
     if (this.limitations.canFile) {
-      this.limitations.canFile = { ...this.fileRules };
+      this.limitations.canFile = {...this.fileRules};
     }
     console.log("handleSelectionChange() end", this.fileRules.allowedFileTypes, this.limitations.canFile);
     //this.dispatchSelectionChange();
@@ -145,7 +145,6 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     //selector.requestUpdate();
     //this.dispatchSelectionChange();
   }
-
 
 
   /** -- Methods -- */
@@ -221,7 +220,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
       this.textRules.bannedWords.push(this.bannedWordInput.trim());
       this.bannedWordInput = '';
       if (this.limitations.canText) {
-        this.limitations.canText = { ...this.textRules };
+        this.limitations.canText = {...this.textRules};
       }
       this.requestUpdate();
     }
@@ -230,7 +229,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private removeBannedWord(word: string) {
     this.textRules.bannedWords = this.textRules.bannedWords.filter(w => w !== word);
     if (this.limitations.canText) {
-      this.limitations.canText = { ...this.textRules };
+      this.limitations.canText = {...this.textRules};
     }
     this.requestUpdate();
   }
@@ -240,7 +239,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
       this.fileRules.allowedFileTypes.push(this.fileTypeInput.trim());
       this.fileTypeInput = '';
       if (this.limitations.canFile) {
-        this.limitations.canFile = { ...this.fileRules };
+        this.limitations.canFile = {...this.fileRules};
       }
       this.requestUpdate();
     }
@@ -249,7 +248,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private removeFileType(type: string) {
     this.fileRules.allowedFileTypes = this.fileRules.allowedFileTypes.filter(t => t !== type);
     if (this.limitations.canFile) {
-      this.limitations.canFile = { ...this.fileRules };
+      this.limitations.canFile = {...this.fileRules};
     }
     this.requestUpdate();
   }
@@ -259,7 +258,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     if (!isNaN(value) && value >= 0) {
       this.textRules.minTextLength = value;
       if (this.limitations.canText) {
-        this.limitations.canText = { ...this.textRules };
+        this.limitations.canText = {...this.textRules};
       }
     }
   }
@@ -269,7 +268,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     if (!isNaN(value) && value >= 0) {
       this.textRules.maxTextLength = value;
       if (this.limitations.canText) {
-        this.limitations.canText = { ...this.textRules };
+        this.limitations.canText = {...this.textRules};
       }
     }
   }
@@ -279,7 +278,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     if (!isNaN(value) && value >= 0) {
       this.fileRules.minFileSize = value;
       if (this.limitations.canFile) {
-        this.limitations.canFile = { ...this.fileRules };
+        this.limitations.canFile = {...this.fileRules};
       }
     }
   }
@@ -304,7 +303,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     /** */
     this.fileRules.maxFileSize = value;
     if (this.limitations.canFile) {
-      this.limitations.canFile = { ...this.fileRules };
+      this.limitations.canFile = {...this.fileRules};
     }
     input.valueState = ValueState.None;
 
@@ -364,7 +363,9 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                       .text=${pair[0].nickname}
                       ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>
         </ui5-mcb-item>
-    `)};
+    `)
+    }
+    ;
 
 
     /** */
@@ -387,7 +388,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
                     <div class="field-row">
                         <ui5-label>Rate limit:</ui5-label>
-                        <ui5-switch ?checked=${!!this.limitations.maybeAgentRateLimiting } @change=${this.handleCanRateLimitChange}></ui5-switch>
+                        <ui5-switch ?checked=${!!this.limitations.maybeAgentRateLimiting} @change=${this.handleCanRateLimitChange}></ui5-switch>
                         ${this.canRateLimit? html`
                             <ui5-input type="number" style="max-width: 50px" 
                                        .value=${this.limitations.maybeAgentRateLimiting![0]}
@@ -498,7 +499,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             </div>
                         </div>
                     ` : ''}
-                  `: ''}
+                  ` : ''}
                 </ui5-panel>
             </div>
             <div class="form-section" style="min-width: 500px">

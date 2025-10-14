@@ -32,7 +32,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
 
   @property() threadStack?: ActionId[];
 
-  @consume({ context: onlineLoadedContext, subscribe: true })
+  @consume({context: onlineLoadedContext, subscribe: true})
   onlineLoaded!: boolean;
 
 
@@ -59,22 +59,47 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
 
   /** */
   onClickCommentPp(maybeCommentThread: ActionId | null, ppAh: ActionId, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: ppAh, subjectType: SpecialSubjectType.ParticipationProtocol, subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
+      detail: {
+        maybeCommentThread,
+        subjectId: ppAh,
+        subjectType: SpecialSubjectType.ParticipationProtocol,
+        subjectName,
+        viewType: "side"
+      }, bubbles: true, composed: true
+    }));
   }
+
   /** */
   onClickCommentTopic(maybeCommentThread: ActionId | null, topicAh: ActionId, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', { detail: {maybeCommentThread, subjectId: topicAh, subjectType: SpecialSubjectType.SemanticTopic, subjectName, viewType: "side"}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
+      detail: {
+        maybeCommentThread,
+        subjectId: topicAh,
+        subjectType: SpecialSubjectType.SemanticTopic,
+        subjectName,
+        viewType: "side"
+      }, bubbles: true, composed: true
+    }));
   }
+
   /** */
   onClickEditTopic(topicHash: ActionId, subjectName: string) {
-    this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', { detail: {topicHash, subjectName}, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<EditTopicRequest>('edit-topic-clicked', {
+      detail: {topicHash, subjectName},
+      bubbles: true,
+      composed: true
+    }));
   }
 
   /** */
   onClickEditChannel(ppAh: ActionId) {
-    this.dispatchEvent(new CustomEvent<ActionId>('edit-channel-clicked', { detail: ppAh, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<ActionId>('edit-channel-clicked', {
+      detail: ppAh,
+      bubbles: true,
+      composed: true
+    }));
   }
-
 
 
   /** */
@@ -98,7 +123,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
       }
 
       /** 'new', 'notif' or 'unread' badge to display */
-      //let badge = html`<ui5-badge>0</ui5-badge>`;
+        //let badge = html`<ui5-badge>0</ui5-badge>`;
       let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
@@ -116,40 +141,53 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
         }
       }
 
-      const hideShowBtn = this.showArchivedTopics && isThreadHidden ?
+      const hideShowBtn = this.showArchivedTopics && isThreadHidden?
         html`
             <ui5-button icon="show" tooltip="Show" design="Transparent"
                         class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                        @click=${async (e:any) => {
-                            e.stopPropagation();
-                            this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: false, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
-                        }}></ui5-button>
+                        @click=${async (e: any) => {
+          e.stopPropagation();
+          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+            detail: {
+              hide: false,
+              address: ppAh,
+              type: "Channel"
+            }, bubbles: true, composed: true
+          }));
+        }}></ui5-button>
         ` : html`
                   <ui5-button icon="hide" tooltip="Hide" design="Transparent"
                               class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                              @click=${async (e:any) => {
-                                  e.stopPropagation();
-                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {detail: {hide: true, address: ppAh, type: "Channel"}, bubbles: true, composed: true}));
-                              }}></ui5-button>`;
+                              @click=${async (e: any) => {
+          e.stopPropagation();
+          this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+            detail: {
+              hide: true,
+              address: ppAh,
+              type: "Channel"
+            }, bubbles: true, composed: true
+          }));
+        }}></ui5-button>`;
 
       return html`
           <sl-tooltip content=${thread.title} style="--show-delay:1000">
             <div id=${ppAh.b64} class="threadItem" 
                  style="
-                 font-weight:${hasNewBeads && !threadIsNew ? "bold" : "normal"}; 
+                 font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
                  ${threadIsNew || notifCount? "color: #359C07;" : ""}
                  ${isSelected? "background:#4684FD;color:#444;" : ""}
                  "
-                 @click=${(_e:any) => this.dispatchEvent(threadJumpEvent(ppAh, true))}>
+                 @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh, true))}>
                 ${badge}
-                <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected ? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
+                <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
                 ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                             style="border:none;display: none"
-                            @click=${(_e:any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
+                            @click=${(_e: any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
                 ${hideShowBtn}
             </div>
           </sl-tooltip>
-    `});
+    `
+    });
 
     //console.log("<topics-lister>.render() threads", threads);
     if (!threads || threads.length == 0) {
@@ -161,10 +199,10 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
     /** render all */
     return html`
         <ui5-panel ?collapsed=${this.collapsed}
-                   @toggle=${(e:any) => {
-                     //console.log("<history-lister> TOGGLED", e.target.collapsed); 
-                     this.collapsed = e.target.collapsed;                      
-                   }}>
+                   @toggle=${(e: any) => {
+      //console.log("<history-lister> TOGGLED", e.target.collapsed); 
+      this.collapsed = e.target.collapsed;
+    }}>
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%;">
                 <span style="height: 1.2rem">${msg("Recently Viewed")}</span>
             </div>

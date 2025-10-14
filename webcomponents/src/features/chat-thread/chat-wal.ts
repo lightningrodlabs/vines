@@ -30,11 +30,11 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** Hash of bead to display */
   @property() hash!: ActionId;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
   @state() private _appletInfo: AppletInfo | undefined = undefined;
-           private _assetLocAndInfo: AssetLocationAndInfo | undefined = undefined;
+  private _assetLocAndInfo: AssetLocationAndInfo | undefined = undefined;
 
 
   /** -- Methods -- */
@@ -48,7 +48,8 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       if (!changedProperties.get("hash")) {
         return false;
       }
-      /* await */ this.loadHrl(changedProperties.get("hash")!, this._zvm);
+      /* await */
+      this.loadHrl(changedProperties.get("hash")!, this._zvm);
     }
     return upper;
   }
@@ -71,7 +72,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       const wal = weaveUrlToWal(anyBead.value);
       this._assetLocAndInfo = await this.weServices.assets.assetInfo(wal);
       this._appletInfo = await this.weServices.appletInfo(this._assetLocAndInfo!.appletHash);
-    } catch(e:any) {
+    } catch (e: any) {
       console.warn("Failed to load HRL", hash, e);
       this._assetLocAndInfo = undefined;
       this._appletInfo = undefined;
@@ -101,7 +102,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`        
           <ui5-list id="fileList" class="listfail">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
-                  @click=${(_e:any) => this.loadHrl(this.hash, this._zvm)}>
+                  @click=${(_e: any) => this.loadHrl(this.hash, this._zvm)}>
               Failed to retrieve Asset
           </ui5-li>
       </ui5-list>
@@ -113,13 +114,13 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
         <ui5-list id="fileList" class="listfail">
             <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
-                    @click=${async (_e:any) => {
-                        await this._zvm.probeAllInner();
-                        const anyBead = this._zvm.perspective.getBaseBead(this.hash);
-                        if (anyBead) {
-                          this.requestUpdate();
-                        }
-                      }}>
+                    @click=${async (_e: any) => {
+        await this._zvm.probeAllInner();
+        const anyBead = this._zvm.perspective.getBaseBead(this.hash);
+        if (anyBead) {
+          this.requestUpdate();
+        }
+      }}>
                 Asset not found
             </ui5-li>
         </ui5-list>
@@ -142,7 +143,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
           <ui5-list id="fileList">
               <ui5-li id="fileLi" icon="chain-link" description=${this._appletInfo.appletName}
-                      @click=${(_e:any) => this.weServices.openAsset(weaveUrlToWal(anyBead.value))}>
+                      @click=${(_e: any) => this.weServices.openAsset(weaveUrlToWal(anyBead.value))}>
                   ${this._assetLocAndInfo.assetInfo.name}
               </ui5-li>
           </ui5-list>
@@ -153,7 +154,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     return html`
         <div id="fileList" style="min-height: 300px;">
             <wal-embed .src=${anyBead.value} style="width: 100%; height: 100%"
-                       @click=${(e:any)=> {e.stopPropagation()}}></wal-embed>
+                       @click=${(e: any) => {e.stopPropagation()}}></wal-embed>
         </div>
     `;
   }

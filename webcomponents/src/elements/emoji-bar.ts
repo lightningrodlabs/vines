@@ -27,7 +27,6 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
   threadsPerspective!: ThreadsPerspective;
 
 
-
   /**
    * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
@@ -76,7 +75,7 @@ export class EmojiBar extends DnaElement<unknown, ThreadsDvm> {
       tooltip = tooltip.substring(0, tooltip.length - 2);
       return html`
         <sl-tooltip content=${tooltip} placement="top">
-          <button class=${iReacted? "reacted" : ""} tooltip=${tooltip} @click=${(_e:any) => this.onClickEmoji(emoji, iReacted)}>
+          <button class=${iReacted? "reacted" : ""} tooltip=${tooltip} @click=${(_e: any) => this.onClickEmoji(emoji, iReacted)}>
             ${emoji} ${agents.length > 1? agents.length : ""}
           </button>
         </sl-tooltip>

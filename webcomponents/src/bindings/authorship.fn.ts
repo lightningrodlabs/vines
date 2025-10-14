@@ -5,26 +5,26 @@ import {ZomeName, FunctionName} from '@holochain/client';
 
 /** Array of all zome function names in "authorship" */
 export const authorshipFunctionNames: FunctionName[] = [
-	"entry_defs", 
-	"get_zome_info", 
-	"get_dna_info",
-	"ascribe_target",
-	"ascribe_app_entry",
-	"get_all_ascribed_types",
-	"get_author",
-	"get_all_ascribed_entries",
-	"get_ascribed_type_children",
-	"get_record_author",
+  "entry_defs",
+  "get_zome_info",
+  "get_dna_info",
+  "ascribe_target",
+  "ascribe_app_entry",
+  "get_all_ascribed_types",
+  "get_author",
+  "get_all_ascribed_entries",
+  "get_ascribed_type_children",
+  "get_record_author",
 ];
 
 
 /** Generate tuple array of function names with given zomeName */
 export function generateAuthorshipZomeFunctionsArray(zomeName: ZomeName): [ZomeName, FunctionName][] {
-   const fns: [ZomeName, FunctionName][] = [];
-   for (const fn of authorshipFunctionNames) {
-      fns.push([zomeName, fn]);
-   }
-   return fns;
+  const fns: [ZomeName, FunctionName][] = [];
+  for (const fn of authorshipFunctionNames) {
+    fns.push([zomeName, fn]);
+  }
+  return fns;
 }
 
 

@@ -11,7 +11,6 @@ import {AgentPubKeyB64, Timestamp} from "@holochain/client";
 import {AnyLinkableHashB64} from "@ddd-qc/path-explorer/dist/utils";
 
 
-
 /**  */
 export interface AuthorshipSnapshot {
   /** type -> Hash, timestamp, Author */
