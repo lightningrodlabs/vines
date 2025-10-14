@@ -31,7 +31,6 @@ import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
 
 
-
 /**
  * @element
  */
@@ -70,14 +69,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   // batchSize: number = 20
 
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
   /** -- State variables -- */
@@ -87,7 +86,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Getters -- */
 
-  get listElem() : HTMLElement {
+  get listElem(): HTMLElement {
     return this.shadowRoot!.getElementById("list-broken") as HTMLElement;
   }
 
@@ -135,7 +134,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     super.willUpdate(changedProperties);
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
       this._loading = true;
-      /* await */ this.loadCommentThread();
+      /* await */
+      this.loadCommentThread();
     }
   }
 
@@ -214,34 +214,35 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   override render() {
     console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
-    const doodle_bg =  html `
-      <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
-        ${doodle_weave}
-      </div>
+    const doodle_bg = html`
+        <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
+            ${doodle_weave}
+        </div>
     `;
     /** No threadHash */
     if (!this.threadHash) {
       return html`
-        ${doodle_bg}
-        <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
-            ${msg('No comment thread selected')}
-        </div>
+          ${doodle_bg}
+          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
+              ${msg('No comment thread selected')}
+          </div>
       `;
     }
     /** No thread */
     const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash);
     if (!thread) {
       return html`
-        ${doodle_bg}
-        <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Comment thread not found</div>
+          ${doodle_bg}
+          <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Comment thread not found</div>
       `;
     }
     /** Still loading */
     if (this._loading) {
       this.loadCommentThread();
       return html`
-        ${doodle_bg}
-        <ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
+          ${doodle_bg}
+          <ui5-busy-indicator delay="0" size="Medium" active
+                              style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
       `;
     }
 
@@ -257,7 +258,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       const isNew = !!initialProbeLogTs && initialProbeLogTs < beadInfo.creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
-      const item = html`<side-item .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
+      const item = html`
+          <side-item .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
       prevBeadAh = beadAh;
       return item;
     });
@@ -265,9 +267,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     /** Different UI if no message found for thread */
     if (beads.length == 0) {
       commentItems = [html`
-            <div style="font-weight: bold; color: #1e1e1ecc;">
-                ${this.showInput? "Add first message:" : "No messages found"}                       
-            </div>`]
+          <div style="font-weight: bold; color: #1e1e1ecc;">
+              ${this.showInput? "Add first message:" : "No messages found"}
+          </div>`]
     }
 
 
@@ -285,7 +287,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     let maybeInput = html``;
     if (this.showInput) {
       // @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}
-      maybeInput = html`<vines-input-bar id="input-bar" nosend topic="thread" .threadHash=${this.threadHash}></vines-input-bar>`;
+      maybeInput = html`
+          <vines-input-bar id="input-bar" nosend topic="" .threadHash=${this.threadHash}></vines-input-bar>`;
     }
 
     const titleTip = "Type: " + subjectType;
@@ -293,14 +296,18 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     let openInMainViewBtn = html``;
     if (!this.assetview) {
       openInMainViewBtn = html`
-        <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
-                    icon="journey-depart"
-                    style="margin-right:0px; -webkit-transform: scaleX(-1); transform: scaleX(-1);"
-                    @click=${(_e:any) => {
-                      this.dispatchEvent(threadJumpEvent(this.threadHash!));
-                      this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))
-                    }}>
-        </ui5-button>`;
+          <ui5-button design="Transparent" tooltip=${msg('Open in Main View')}
+                      icon="journey-depart"
+                      style="margin-right:0px; -webkit-transform: scaleX(-1); transform: scaleX(-1);"
+                      @click=${(_e: any) => {
+                          this.dispatchEvent(threadJumpEvent(this.threadHash!));
+                          this.dispatchEvent(new CustomEvent<null>("close", {
+                              detail: null,
+                              bubbles: true,
+                              composed: true
+                          }))
+                      }}>
+          </ui5-button>`;
     }
 
     /** render all */
@@ -308,64 +315,68 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         ${doodle_bg}
         <!-- Title row -->
         <h3 style="margin:10px; color:#021133;">
-          ${this.assetview? html`` : html`
-            <ui5-button design="Transparent" tooltip=${msg('Close')}
-                        icon="slim-arrow-right"
-                        style="margin-right:-5px;"
-                        @click=${(_e:any) => this.dispatchEvent(new CustomEvent<null>("close", {detail: null, bubbles: true, composed: true}))}>
-            </ui5-button>`}
-          ${openInMainViewBtn}
-          <!--<span>${msg('About')}</span> -->
-          <sl-tooltip content=${titleTip} style="--show-delay: 500;">
+            ${this.assetview? html`` : html`
+                <ui5-button design="Transparent" tooltip=${msg('Close')}
+                            icon="slim-arrow-right"
+                            style="margin-right:-5px;"
+                            @click=${(_e: any) => this.dispatchEvent(new CustomEvent<null>("close", {
+                                detail: null,
+                                bubbles: true,
+                                composed: true
+                            }))}>
+                </ui5-button>`}
+            ${openInMainViewBtn}
+                <!--<span>${msg('About')}</span> -->
+            <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
-                  @click=${(_e:any) => {
-                  console.log("<comment-thread-view> title click", thread.pp.subject);
-                  /** Use subject as WAL */
-                  // const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
-                  const dhtId = intoDhtId(thread.pp.subject.address);
-                  const wal: WAL = {hrl: intoHrl(new DnaId(thread.pp.subject.dnaHashB64), dhtId), context: null};
-                  /** Jump within app if subject is from Vines */
-                  if (this.cell.address.dnaId.equals(thread.pp.subject.dnaHashB64)) {
-                      switch(thread.pp.subject.typeName) {
-                          case SpecialSubjectType.AgentPubKey:
-                          case SpecialSubjectType.ParticipationProtocol: 
-                            this.dispatchEvent(threadJumpEvent(new ActionId(dhtId.b64))); 
-                            return; 
-                          break;
-                          case SpecialSubjectType.AnyBead:
-                          case SpecialSubjectType.TextBead:
-                          case SpecialSubjectType.EncryptedBead:
-                          case SpecialSubjectType.EntryBead:
-                            this.dispatchEvent(beadJumpEvent(new ActionId(dhtId.b64))); 
-                            return; 
-                          break;
-                          case SpecialSubjectType.Applet:
-                          case SpecialSubjectType.SubjectType:
-                          case SpecialSubjectType.SemanticTopic:
-                          case SpecialSubjectType.Post:
-                          default:
-                            break
+                  @click=${(_e: any) => {
+                      console.log("<comment-thread-view> title click", thread.pp.subject);
+                      /** Use subject as WAL */
+                              // const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
+                      const dhtId = intoDhtId(thread.pp.subject.address);
+                      const wal: WAL = {hrl: intoHrl(new DnaId(thread.pp.subject.dnaHashB64), dhtId), context: null};
+                      /** Jump within app if subject is from Vines */
+                      if (this.cell.address.dnaId.equals(thread.pp.subject.dnaHashB64)) {
+                          switch (thread.pp.subject.typeName) {
+                              case SpecialSubjectType.AgentPubKey:
+                              case SpecialSubjectType.ParticipationProtocol:
+                                  this.dispatchEvent(threadJumpEvent(new ActionId(dhtId.b64)));
+                                  return;
+                                  break;
+                              case SpecialSubjectType.AnyBead:
+                              case SpecialSubjectType.TextBead:
+                              case SpecialSubjectType.EncryptedBead:
+                              case SpecialSubjectType.EntryBead:
+                                  this.dispatchEvent(beadJumpEvent(new ActionId(dhtId.b64)));
+                                  return;
+                                  break;
+                              case SpecialSubjectType.Applet:
+                              case SpecialSubjectType.SubjectType:
+                              case SpecialSubjectType.SemanticTopic:
+                              case SpecialSubjectType.Post:
+                              default:
+                                  break
+                          }
+                          return;
                       }
-                      return;
-                  }
-                  /** openAsset() if weServices is available */
-                  if (this.weServices) {
-                      if (thread.pp.subject.appletId != this.weServices.appletIds[0]!) {
-                          //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
-                          this.weServices.openAsset(wal);
+                      /** openAsset() if weServices is available */
+                      if (this.weServices) {
+                          if (thread.pp.subject.appletId != this.weServices.appletIds[0]!) {
+                              //this.weServices.openAppletMain(decodeHashFromBase64(thread.pp.subject.appletId))
+                              this.weServices.openAsset(wal);
+                          }
+                          return;
                       }
-                      return;
                   }
-                  }
-            }>
+                  }>
               ${subjectName}
             </span>
-          </sl-tooltip>
+            </sl-tooltip>
             <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}
                              style="margin-left:5px;"></copy-wal-button>
         </h3>
         <!-- thread -->
-        <div id="list" @show-profile=${(e:any) => console.log("onShowProfile div", e)}>
+        <div id="list" @show-profile=${(e: any) => console.log("onShowProfile div", e)}>
             ${commentItems}
         </div>
         ${maybeInput}
@@ -379,34 +390,34 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       codeStyles,
       sharedStyles,
       css`
-        :host {
-          padding-right: 5px;
-          padding-left: 5px;
-          max-height: 100%;
-          display: flex;
-          flex-direction: column;
-          flex-grow: 1;
-          position: relative;
-          z-index: 0;
-          height: 100%;
-        }
+          :host {
+              padding-right: 5px;
+              padding-left: 5px;
+              max-height: 100%;
+              display: flex;
+              flex-direction: column;
+              flex-grow: 1;
+              position: relative;
+              z-index: 0;
+              height: 100%;
+          }
 
-        ui5-avatar:hover {
-          outline: 1px solid #62c547;
-        }
+          ui5-avatar:hover {
+              outline: 1px solid #62c547;
+          }
 
-        #list {
-          overflow: auto;
-          display: flex;
-          flex-direction: column;
-        }
+          #list {
+              overflow: auto;
+              display: flex;
+              flex-direction: column;
+          }
 
-        vines-input-bar {
-          border: none;
-          width: 100%;
-          margin-top: 8px;
-          margin-bottom: 10px;
-        }
+          vines-input-bar {
+              border: none;
+              width: 100%;
+              margin-top: 8px;
+              margin-bottom: 10px;
+          }
       `,
     ];
   }

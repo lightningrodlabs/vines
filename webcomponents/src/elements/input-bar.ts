@@ -48,6 +48,10 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
+  /** -- Consumed -- */
+
+  @consume({context: weClientContext, subscribe: true})
+  weServices!: WeServicesEx;
 
   /** -- Properties -- */
 
@@ -60,6 +64,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @property() threadHash?: ActionId;
   @property() agentHash?: AgentId; // special case when DM-ing before DM thread was created
 
+  /** -- State -- */
+
   @state() private _stashedInputValue: string = ""; // Used for mention pop-up
   @state() private _prevInputValue: string = "";
 
@@ -67,9 +73,6 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _wal: WAL | undefined = undefined;
 
   @state() private _isEditingFileName: boolean = false;
-
-  @consume({context: weClientContext, subscribe: true})
-  weServices!: WeServicesEx;
 
 
   /** -- Getters -- */
@@ -107,6 +110,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
   }
 
+  /** -- Callbacks -- */
 
   /** Handle 'jump' event */
   override connectedCallback() {
@@ -121,6 +125,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('paste', this.onPaste);
   }
 
+
+  /** -- Methods -- */
 
   /**  */
   onPaste(e: ClipboardEvent) {
@@ -154,9 +160,6 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
   }
-
-
-  /** -- Methods -- */
 
   /** */
   protected override async firstUpdated(_changedProperties: PropertyValues) {
@@ -618,8 +621,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this._limitations.canText) {
       const maxTextLength = this._limitations.canText!.maxTextLength;
       inputPlaceholder = maxTextLength > 0 && maxTextLength != DEFAULT_MAX_TEXT_LENGTH
-        ? `${msg("Message")} #${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${maxTextLength} ${msg('characters')})`
-        : `${msg("Message")} #${this.topic}, @ ${msg("to mention")}`;
+        ? `${msg("Message")} ${this.topic}, @ ${msg("to mention")} (${msg('limit:')} ${maxTextLength} ${msg('characters')})`
+        : `${msg("Message")} ${this.topic}, @ ${msg("to mention")}`;
     }
 
     const canSend = (this.inputElem && this.inputElem.value.length > 0) || this._file || this._wal;
