@@ -83,11 +83,11 @@ export type ThreadsDnaPerspectiveComparable = {
 export class ThreadsDvm extends DnaViewModel {
 
   static override readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
-  static override readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm, PathExplorerZvm ]
+  static override readonly ZVM_DEFS = [ThreadsZvm, ProfilesAltZvm, AuthorshipZvm, PathExplorerZvm]
 
   readonly signalHandler?: SignalCb = this.handleSignal;
 
-  private _encoder= new Encoder(HOLOCHAIN_ID_EXT_CODEC);
+  private _encoder = new Encoder(HOLOCHAIN_ID_EXT_CODEC);
   private _decoder = new Decoder(HOLOCHAIN_ID_EXT_CODEC);
 
   private _currentLocation: ActionId | null = null;
@@ -122,7 +122,7 @@ export class ThreadsDvm extends DnaViewModel {
     agentPresences: new AgentIdMap(),
     threadInputs: new ActionIdMap(),
     initialThreadProbeLogTss: new ActionIdMap(),
-    initialGlobalProbeLogTs:  0,
+    initialGlobalProbeLogTs: 0,
     signaledNotifications: [],
     typings: new ActionIdMap(),
     myUnsharedBeads: new Set(),
@@ -164,7 +164,7 @@ export class ThreadsDvm extends DnaViewModel {
     await super.initializePerspectiveOnline();
     this._perspective.initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
-        this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
+      this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
     this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
     console.log("ThreadsDvm.initializePerspectiveOnline() override persp =", this.perspective)
@@ -183,8 +183,7 @@ export class ThreadsDvm extends DnaViewModel {
       let x = (thread as ActionId).b64
       if (x) {
         thread = new ActionId(x)
-      }
-      else {
+      } else {
         return
       }
     }
@@ -200,7 +199,8 @@ export class ThreadsDvm extends DnaViewModel {
       if (thread === undefined) {
         const locTip: ThreadsAppTip = {type: thread === undefined? "where" : "location", data: this._currentLocation};
         const serTip = this._encoder.encode(locTip);
-        /*await*/ this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
+        /*await*/
+        this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
       }
     } else {
       /** Update only if newer */
@@ -233,7 +233,8 @@ export class ThreadsDvm extends DnaViewModel {
     }
     const signal = appSignal.payload as ZomeSignal;
     for (const pulse of signal.pulses) {
-      /*await*/ this.handleThreadsSignal(pulse, new AgentId(signal.from));
+      /*await*/
+      this.handleThreadsSignal(pulse, new AgentId(signal.from));
     }
     this.notifySubscribers();
   }
@@ -249,7 +250,7 @@ export class ThreadsDvm extends DnaViewModel {
     }
     if (ZomeSignalProtocolType.Entry in threadsSignal) {
       const entryPulseMat = materializeEntryPulse(threadsSignal.Entry as EntryPulse, (this.threadsZvm.constructor as typeof ZomeViewModel).ENTRY_TYPES);
-      switch(entryPulseMat.entryType) {
+      switch (entryPulseMat.entryType) {
         case ThreadsEntryType.EncryptedBead:
         case ThreadsEntryType.AnyBead:
         case ThreadsEntryType.EntryBead:
@@ -257,18 +258,18 @@ export class ThreadsDvm extends DnaViewModel {
           console.log("ThreadsDvm.handleThreadsSignal() Bead", entryPulseMat, this._perspective.ackRequests);
           /** Mark by bead as unshared */
           if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
-              console.log("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
-              this._perspective.myUnsharedBeads.add(entryPulseMat.ah.b64);
+            console.log("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
+            this._perspective.myUnsharedBeads.add(entryPulseMat.ah.b64);
           }
           /** ack author that we have it */
           if (entryPulseMat.state == "Create"
-             && !entryPulseMat.author.equals(this.cell.address.agentId)
-             && this._perspective.ackRequests.has(entryPulseMat.ah)) {
+            && !entryPulseMat.author.equals(this.cell.address.agentId)
+            && this._perspective.ackRequests.has(entryPulseMat.ah)) {
             console.log("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
             await this.ackAuthor(entryPulseMat.ah.b64);
             this._perspective.ackRequests.delete(entryPulseMat.ah);
           }
-        break;
+          break;
         case ThreadsEntryType.ParticipationProtocol:
           if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
             this._perspective.myNewestTopic = null;
@@ -278,8 +279,9 @@ export class ThreadsDvm extends DnaViewModel {
           if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
             this._perspective.myNewestTopic = entryPulseMat.ah;
           }
-        break;
-        default: break;
+          break;
+        default:
+          break;
       }
     }
   }
@@ -343,7 +345,7 @@ export class ThreadsDvm extends DnaViewModel {
     if (notif.author !== undefined && notif.author !== null && !(notif.author instanceof AgentId)) {
       let x = (notif.author as AgentId).b64
       if (x) {
-        notif.author  = new AgentId(x)
+        notif.author = new AgentId(x)
       }
     }
     this._perspective.signaledNotifications.push(notif);
@@ -368,7 +370,7 @@ export class ThreadsDvm extends DnaViewModel {
       case "Entry": {
         if (ZomeSignalProtocolType.Entry in tip) {
           const entryPulseMat = materializeEntryPulse(tip.Entry as EntryPulse, (this.threadsZvm.constructor as typeof ZomeViewModel).ENTRY_TYPES);
-          switch(entryPulseMat.entryType) {
+          switch (entryPulseMat.entryType) {
             case ThreadsEntryType.EncryptedBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
@@ -380,15 +382,17 @@ export class ThreadsDvm extends DnaViewModel {
                   console.log("ThreadsDvm.handleTip() Adding to ackRequest", entryPulseMat);
                   this._perspective.ackRequests.set(entryPulseMat.ah, entryPulseMat.author);
                   await delay(1000);
-                  /* await */ this.threadsZvm.fetchUnknownBead(entryPulseMat.ah);
+                  /* await */
+                  this.threadsZvm.fetchUnknownBead(entryPulseMat.ah);
                 }
               }
               break;
-            default: break;
+            default:
+              break;
           }
         }
       }
-      break;
+        break;
       case "AppValue":
         break;
       case "AppCustom": {
@@ -399,21 +403,21 @@ export class ThreadsDvm extends DnaViewModel {
           case "subject":
             //console.warn("latestThreadName Received subject", appTip.data?.address);
             //this.threadsZvm.storeSubject(appTip.data!);
-          break;
+            break;
           case "typing": {
-              console.log("ThreadsDvm.handleTip() typing text-input", appTip.data);
-              const ppAh =  appTip.data!.thread!;
-              const is = appTip.data!.is;
-              if (!this._perspective.typings.has(ppAh)) {
-                this._perspective.typings.set(ppAh, new AgentIdMap<Timestamp>());
-              }
-              const prev = this._perspective.typings.get(ppAh)!;
-              if (is) {
-                prev.set(from, Date.now());
-              } else {
-                prev.delete(from);
-              }
+            console.log("ThreadsDvm.handleTip() typing text-input", appTip.data);
+            const ppAh = appTip.data!.thread!;
+            const is = appTip.data!.is;
+            if (!this._perspective.typings.has(ppAh)) {
+              this._perspective.typings.set(ppAh, new AgentIdMap<Timestamp>());
             }
+            const prev = this._perspective.typings.get(ppAh)!;
+            if (is) {
+              prev.set(from, Date.now());
+            } else {
+              prev.delete(from);
+            }
+          }
             break
           case "ack":
             console.debug("ThreadsDvm.handleTip() Removing from myUnsharedBeads", appTip.data);
@@ -422,7 +426,8 @@ export class ThreadsDvm extends DnaViewModel {
           case "ackRequest":
             console.debug("ThreadsDvm.handleTip() ackRequest", appTip.data);
             if (this.threadsZvm.perspective.beads.get(appTip.data!)) {
-              /*await*/ this.ackAuthor(appTip.data!.b64);
+              /*await*/
+              this.ackAuthor(appTip.data!.b64);
             }
             break;
           case "string":
@@ -435,17 +440,17 @@ export class ThreadsDvm extends DnaViewModel {
             const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
             const serTip = this._encoder.encode(locTip);
             await this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
-          break;
+            break;
           case "location":
             this.storePresence(from, appTip.data);
-          break;
+            break;
           case "notification":
             // const notifTip: ThreadsNotificationTip = appTip.data;
             // this.addSignaledNotif(notifTip)
-          break;
+            break;
         }
       }
-      break;
+        break;
       default:
         break;
     }
@@ -479,7 +484,7 @@ export class ThreadsDvm extends DnaViewModel {
             if (pair[1] == null) return false;
             let x = pair[1] //new ActionId(pair[1].b64)
             if (!x.equals(thread)) return false;
-          } catch(e) {
+          } catch (e) {
             console.log("pair[1]", pair[1])
             console.log("thread", thread)
             console.log("pair[1] instanceof AgentId", pair[1] instanceof AgentId)
@@ -496,19 +501,20 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- (un)Publish / Edit -- */
 
   /** */
-  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx)/*: Promise<ActionId>*/ {
+  async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx) {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
-      /*return*/  await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
+      await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
+    } else {
+      await this.publishTypedBead(beadType, content, ppAh, author, prevBead);
     }
-    /*return*/ await this.publishTypedBead(beadType, content, ppAh, author, prevBead);
   }
 
 
   /** */
-  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx)/*: Promise<ActionId>*/ {
-    console.log("ThreadsDvm.publishDm()", content);
+  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx) {
     const dmAh = this.threadsZvm.perspective.dmAgents.get(otherAgent);
+    console.log("ThreadsDvm.publishDm()", otherAgent, beadType, content, prevBead, weServices, dmAh);
     /** Create or grab DmThread */
     let ppAh: ActionId;
     if (!dmAh) {
@@ -521,8 +527,7 @@ export class ThreadsDvm extends DnaViewModel {
     const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
     const base = bead2base(typed, beadType);
     const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
-    /*let beadAh =*/ await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
-    //return beadAh;
+    await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
   }
 
 
@@ -549,11 +554,12 @@ export class ThreadsDvm extends DnaViewModel {
     //console.debug("ThreadsDvm.storeThreadInput()", value);
     if (!value) {
       this._perspective.threadInputs.delete(ppAh);
-      /*await*/ this.signalTyping(ppAh, false);
+      /*await*/
+      this.signalTyping(ppAh, false);
       return;
     }
     //if (!this._perspective.threadInputs.has(ppAh)) {
-      this.signalTyping(ppAh, true);
+    this.signalTyping(ppAh, true);
     //}
     this._perspective.threadInputs.set(ppAh, value);
   }

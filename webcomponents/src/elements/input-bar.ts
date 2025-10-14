@@ -758,81 +758,81 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   static override get styles() {
     return [
       css`
-          :host {
-              /*background: beige;*/
-          }
+        :host {
+          /*background: beige;*/
+        }
 
-          #input-bar {
-              margin: auto;
-              box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-              border-radius: 20px;
-          }
+        #input-bar {
+          margin: auto;
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          border-radius: 20px;
+        }
 
-          ui5-avatar {
-              margin-top: 9px;
-              margin-left: 15px;
-          }
+        ui5-avatar {
+          margin-top: 9px;
+          margin-left: 15px;
+        }
 
-          .file-row {
-              margin-left: 35px;
-              height: 25px;
-              margin-top: 5px;
-              margin-right: 5px;
-              padding-top: 5px;
-              color: #4141cc;
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              margin-bottom: 3px;
-          }
+        .file-row {
+          margin-left: 35px;
+          height: 25px;
+          margin-top: 5px;
+          margin-right: 5px;
+          padding-top: 5px;
+          color: #4141cc;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          margin-bottom: 3px;
+        }
 
-          #pop {
-              /*background: #e3e3e3;*/
-              box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-          }
+        #pop {
+          /*background: #e3e3e3;*/
+          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+        }
 
-          #filename-input {
-              /*color: rgba(28, 79, 248, 0.75);*/
-              width: auto;
-              max-height: 18px;
-              background: #a7636312;
-              border: none;
-          }
+        #filename-input {
+          /*color: rgba(28, 79, 248, 0.75);*/
+          width: auto;
+          max-height: 18px;
+          background: #a7636312;
+          border: none;
+        }
 
-          #inputBar {
-              width: auto;
-              height: auto;
-              box-shadow: none;
-              padding: 3px;
-              border-radius: 10px;
-          }
+        #inputBar {
+          width: auto;
+          height: auto;
+          box-shadow: none;
+          padding: 3px;
+          border-radius: 10px;
+        }
 
-          #textMessageInput {
-              width: 100%;
-              border: none;
-              padding: 0px;
-          }
+        #textMessageInput {
+          width: 100%;
+          border: none;
+          padding: 0px;
+        }
 
-          .fileIcon {
-              padding: 0px;
-              margin: 0px;
-              height: 20px;
-          }
+        .fileIcon {
+          padding: 0px;
+          margin: 0px;
+          height: 20px;
+        }
 
-          .trash {
-              color: #ec4b7a;
-          }
+        .trash {
+          color: #ec4b7a;
+        }
 
-          .trash:hover {
-              background-color: rgba(243, 175, 175, 0.6);
-              border-color: #ec0e0e;
-          }
+        .trash:hover {
+          background-color: rgba(243, 175, 175, 0.6);
+          border-color: #ec0e0e;
+        }
 
-          .ui5-textarea-wrapper
-          ui5-textarea div div {
-              /*background: red;*/
-              border: 0px;
-          }
+        .ui5-textarea-wrapper
+        ui5-textarea div div {
+          /*background: red;*/
+          border: 0px;
+        }
       `,
 
     ];

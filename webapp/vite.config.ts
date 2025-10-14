@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite';
+import {defineConfig} from 'vite';
 import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
+import path from "path";
 //import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
@@ -15,7 +16,9 @@ const DIST_FOLDER = "dist"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  resolve: {},
+  resolve: {
+    //'@vines/elements': path.resolve(__dirname, '../webcomponents/src/index.ts'),
+  },
   plugins: [
     checker({
       typescript: true,
@@ -49,6 +52,10 @@ export default defineConfig({
   server: {
     open: true, // This will open the browser automatically
     watch: {
+      // include: [
+      //   'node_modules/package-one/**',
+      //   'node_modules/package-two/**'
+      // ],
       usePolling: true,
       interval: 1000 // Check for changes every second
     }
