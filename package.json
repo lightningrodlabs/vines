@@ -111,7 +111,7 @@
 
     "clean"                   : "bash scripts/clean.sh",
     "clean:npm"               : "bash scripts/clean-npm.sh",
-    "clean:hc"                : "rm -rf .hc* && rm -rf we-applet/.hc*",
+    "clean:hc"                : "rm -rf .hc* && rm -f .kitsune2_bootstrap_srv & rm -rf we-applet/.hc*",
     "clean:all"               : "git clean -f -x -d -e .idea && rm -rf submodules"
   },
   "devDependencies": {

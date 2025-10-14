@@ -1,7 +1,7 @@
 import {defineConfig} from 'vite';
 import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
-import path from "path";
+//import path from "path";
 //import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
