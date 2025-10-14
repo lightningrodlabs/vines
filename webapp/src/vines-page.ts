@@ -241,7 +241,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    window.addEventListener('beforeunload', async (_e:any) => {
+    window.addEventListener('beforeunload', async (_e: any) => {
       if (!this.weServices) {
         this.onBeforeUnload();
       }
@@ -253,16 +253,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @property() appProxy!: AppProxy; // for network info
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  @consume({ context: networkCallerContext, subscribe: true })
+  @consume({context: networkCallerContext, subscribe: true})
   @property() networkCaller!: NetworkCaller;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
-  @consume({ context: onlineLoadedContext, subscribe: true })
+  @consume({context: onlineLoadedContext, subscribe: true})
   onlineLoaded!: boolean;
 
   /** Observed perspective from zvm */
@@ -295,7 +295,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _selectedBeadAh: ActionId | undefined = undefined;
   @state() private _currentCommentRequest: CommentRequest | undefined = undefined;
   @state() private _selectedCommentThreadHash: LinkableId | undefined = undefined
-           private _selectedCommentThreadSubjectName: string = '';
+  private _selectedCommentThreadSubjectName: string = '';
 
 
   private _threadStack: ActionId[] = [];
@@ -338,9 +338,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   get createTopicDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("create-topic-dialog") as Dialog;
   }
+
   get editChannelDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("edit-channel-dialog") as Dialog;
   }
+
   get editTopicDialogElem(): Dialog {
     return this.shadowRoot!.getElementById("edit-topic-dialog") as Dialog;
   }
@@ -432,7 +434,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onLoopNetworkInfo(_e:any) {
+  onLoopNetworkInfo(_e: any) {
     console.debug("<vines-page> onLoopNetworkInfo()")
     if (!this.networkCaller?.isLooping()) {
       console.debug("<vines-page> Start loop")
@@ -491,16 +493,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this._splitObj = obj;
         const succeeded = this._filesDvm.startPublishFile(e.detail.file!, obj, [], this._dvm.profilesZvm.perspective.agents,
           async (eh) => {
-              console.debug("<vines-page> startPublishFile callback", eh);
-              const type = simplifyMimeType(e.detail.file!.type);
-              await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {
-                eh,
-                size: e.detail.file!.size,
-                type
-              }, ppAh, undefined, replyToAh, this.weServices);
-              this._splitObj = undefined;
-              this._uploadingFile = false;
-            });
+            console.debug("<vines-page> startPublishFile callback", eh);
+            const type = simplifyMimeType(e.detail.file!.type);
+            await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {
+              eh,
+              size: e.detail.file!.size,
+              type
+            }, ppAh, undefined, replyToAh, this.weServices);
+            this._splitObj = undefined;
+            this._uploadingFile = false;
+          });
         if (!succeeded) {
           toasty(msg("Failed to load file"));
         }
@@ -555,7 +557,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (shadower) {
         shadow = shadower;
       }
-    } while(shadower);
+    } while (shadower);
     return shadow;
   }
 
@@ -609,11 +611,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Topic or Channel */
     const dhtId = intoDhtId(e.detail.address.b64);
-    const type = e.detail.type == "Topic" ? msg("Category") : msg("Channel");
+    const type = e.detail.type == "Topic"? msg("Category") : msg("Channel");
     dialog.title = `${verb} ${type}?`;
     this.addEventListener('confirmed', async (_f) => {
       if (e.detail.hide) {
-          await this._dvm.threadsZvm.hideSubject(dhtId);
+        await this._dvm.threadsZvm.hideSubject(dhtId);
         toasty(`${type} ${msg("hidden")}`);
       } else {
         await this._dvm.threadsZvm.unhideSubject(dhtId);
@@ -655,19 +657,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  onEditProfile(_e:any) {
+  onEditProfile(_e: any) {
     this.profileDialogElem.show();
   }
 
 
-
   /** -- Update -- */
 
-   // /** DEBUG */
-   // protected override async willUpdate(changedProperties: PropertyValues<this>) {
-   //  super.willUpdate(changedProperties);
-   //   console.log("<vines-page>.willUpdate()", changedProperties);
-   // }
+  // /** DEBUG */
+  // protected override async willUpdate(changedProperties: PropertyValues<this>) {
+  //  super.willUpdate(changedProperties);
+  //   console.log("<vines-page>.willUpdate()", changedProperties);
+  // }
 
 
   /** -- Update -- */
@@ -706,7 +707,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onCreateTopic(_e:any) {
+  async onCreateTopic(_e: any) {
     const title = this.validateTitle("topicTitleInput");
     if (!title) {
       return;
@@ -717,7 +718,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onEditTopic(_e:any) {
+  async onEditTopic(_e: any) {
     const topicHash = this.editTopicDialogElem.getAttribute('TopicHash');
     if (!topicHash) {
       throw Promise.reject("Missing TopicHash attribute");
@@ -733,7 +734,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onEditChannel(_e:any) {
+  async onEditChannel(_e: any) {
     const hash = this.editChannelDialogElem.getAttribute('ChannelHash');
     if (!hash) {
       throw Promise.reject("Missing ChannelHash attribute");
@@ -891,7 +892,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Fiddle with shadow parts CSS */
     const searchField = this.shadowRoot!.getElementById('search-field') as Input;
-    console.log("search-field", searchField,searchField.shadowRoot);
+    console.log("search-field", searchField, searchField.shadowRoot);
     if (searchField) {
       searchField.shadowRoot!.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
       this.requestUpdate();
@@ -902,7 +903,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const appletIds = await this._dvm.threadsZvm.pullAppletIds();
       //console.log("<vines-page> firstUpdated() appletIds", appletIds);
       for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
-        /* const _appletInfo = */ await this.weServices.cacheFullAppletInfo(appletId);
+        /* const _appletInfo = */
+        await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** Register callback */
       this.weServices.onBeforeUnload(() => this.onBeforeUnload());
@@ -916,6 +918,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   private _cachedUnread: Map<HoloHashB64, [HoloHashB64, Timestamp][]> = new Map();
   private _cachedNew: HoloHashB64[] = [];
+
   protected override async updated(_changedProperties: PropertyValues) {
     //console.log("<vines-page>.updated()");
     /** ??? */
@@ -928,7 +931,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         /** Request a new update for scrolling to work */
         chatView.requestUpdate();
       }
-    } catch(e:any) {
+    } catch (e: any) {
       /** i.e. element not present */
     }
 
@@ -976,7 +979,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
       }
       /** Notify Frame of some new content: FIXME move to zvm? */
-      //const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
+        //const allCount = this._dvm.threadsZvm.perspective.unreadThreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
       const comparableNew = Array.from(this._dvm.threadsZvm.perspective.newThreads.values()).map((id) => id.b64);
       //console.debug("<vines-page>.updated() weServices comparableNew", comparableNew);
       //if (allCount > 0 && (comparableUnread != this._cachedUnread || comparableNew != this._cachedNew)) {
@@ -1029,10 +1032,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         continue;
       }
       const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(notif.author);
-      const author =  maybeProfile? maybeProfile.nickname : "unknown";
+      const author = maybeProfile? maybeProfile.nickname : "unknown";
       const canPopup = !notif.author.equals(this.cell.address.agentId) || HAPP_BUILD_MODE == HappBuildModeType.Debug;
       const [notifTitle, notifBody, jump] = composeNotificationTitle(notif, this._dvm.threadsZvm, this._filesDvm, this.weServices);
-      let message = `${msg("from")} @${author}.` ;
+      let message = `${msg("from")} @${author}.`;
       if (notifBody != "") {
         message = `"${notifBody}" ${msg("from")} @${author}.`;
       }
@@ -1088,7 +1091,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
       }
-    } catch (e:any) {
+    } catch (e: any) {
       console.log("createMyProfile() failed");
       console.log(e);
     }
@@ -1100,7 +1103,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onSaveProfile()", profile)
     try {
       await this._dvm.profilesZvm.updateMyProfile(profile);
-    } catch(e:any) {
+    } catch (e: any) {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
     this.profileDialogElem.close(false);
@@ -1200,17 +1203,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
-        address: request.subjectId.b64,
-        name: request.subjectName,
-        typeName: request.subjectType,
-        appletId: getThisAppletId(this.weServices),
-        dnaHashB64: this.cell.address.dnaId.b64,
+      address: request.subjectId.b64,
+      name: request.subjectName,
+      typeName: request.subjectType,
+      appletId: getThisAppletId(this.weServices),
+      dnaHashB64: this.cell.address.dnaId.b64,
     };
     const pp: ParticipationProtocol = {
-        purpose: "comment",
-        subject,
-        limitations: defaultLimitations(),
-        moderation: defaultModeration(),
+      purpose: "comment",
+      subject,
+      limitations: defaultLimitations(),
+      moderation: defaultModeration(),
     };
     console.debug("publishCommentThread() appletId", subject.appletId);
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
@@ -1268,7 +1271,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Set new state */
     this._mainView = e.detail.type;
-    switch(e.detail.type) {
+    switch (e.detail.type) {
       case MainViewType.Favorites:
       case MainViewType.Files:
         this._selectedThreadHash = undefined;
@@ -1314,9 +1317,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
         this._selectedBeadAh = e.detail.bead;
         this._selectedAgent = e.detail.agent;
-      break;
+        break;
     }
-    /*await*/ this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
+    /*await*/
+    this._dvm.setLocation(this._selectedThreadHash? this._selectedThreadHash : null);
     this._dvm.threadsZvm.unstoreNewThread(this._selectedThreadHash);
   }
 
@@ -1381,7 +1385,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   downloadTextFile(filename: string, content: string): void {
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -1437,7 +1441,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let primaryTitle = msg("No channel selected");
     let centerSide = html`${doodle_flowers}`;
     if (this._mainView == MainViewType.Favorites) {
-      centerSide = html`<favorites-view></favorites-view>`
+      centerSide = html`
+          <favorites-view></favorites-view>`
       primaryTitle = msg("Favorites");
     }
 
@@ -1447,7 +1452,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //console.warn("<vines-page>.render() thread", !!thread, this._selectedThreadHash.short);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
-        /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
+        /*await*/
+        this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
         primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
         const isEditOther = this._dvm.threadsZvm.isEditThreadFromPeer(this._selectedThreadHash);
@@ -1455,7 +1461,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
           const profile = this._dvm.profilesZvm.perspective.getProfile(dmThread);
-          primaryTitle = profile ? profile.nickname : "unknown";
+          primaryTitle = profile? profile.nickname : "unknown";
         }
         /** Set input bar 'topic' */
         let topic = msg("Reply");
@@ -1488,8 +1494,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const canDisplayInput = !isEditOther && canParticipate;
 
         const threadView = this.multi
-            ?  html`<chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent} .beadAh=${this._selectedBeadAh}></chat-thread-multi-view>`
-            : html`<chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash} .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
+          ? html`
+                    <chat-thread-multi-view id="chat-view" .agent=${this._selectedAgent}
+                                            .beadAh=${this._selectedBeadAh}></chat-thread-multi-view>`
+          : html`
+                    <chat-thread-view id="chat-view" .threadHash=${this._selectedThreadHash}
+                                      .beadAh=${this._selectedBeadAh}></chat-thread-view>`;
 
         let typingMsg = "";
         let typers: AgentIdMap<Timestamp> | undefined = this._dvm.perspective.typings.get(this._selectedThreadHash);
@@ -1499,14 +1509,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           const now = Date.now();
           const typersArray = Array.from(typers.entries())
             .filter(([typer, ts]) => {
-            console.debug("typer", typer, now, ts, now - ts);
-            return now - ts < 20 * 1000;
-          });
+              console.debug("typer", typer, now, ts, now - ts);
+              return now - ts < 20 * 1000;
+            });
           /* Concat names */
           if (typersArray.length > 0) {
             for (const [typer, _ts] of typers) {
               const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(typer);
-              const nickname = maybeProfile ? maybeProfile.nickname : msg("Unknown");
+              const nickname = maybeProfile? maybeProfile.nickname : msg("Unknown");
               typingMsg += nickname + ", "
             }
             typingMsg = typingMsg.slice(0, -2);
@@ -1517,30 +1527,34 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <presence-panel .hash=${this._selectedThreadHash}></presence-panel>
             ${threadView}
             ${uploadState || this._uploadingFile? html`
-              <div id="uploadCard">
-                <div style="padding:5px;">${msg('Uploading file:')} ${uploadState? uploadState.file.name : "..."}</div>
-                <ui5-progress-indicator style="width:100%;" value=${uploadState? pct : 0}></ui5-progress-indicator>
-              </div>
+                <div id="uploadCard">
+                    <div style="padding:5px;">${msg('Uploading file:')} ${uploadState? uploadState.file.name : "..."}
+                    </div>
+                    <ui5-progress-indicator style="width:100%;" value=${uploadState? pct : 0}></ui5-progress-indicator>
+                </div>
             ` : html`
-            <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
-              ${msg("About")} "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
-              <ui5-button icon="delete" design="Transparent"
-                          style="border:none; padding:0px"
-                          @click=${(_e:any) => {this._currentCommentRequest = undefined;}}></ui5-button>
-            </div>
-            <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}; background: #6f6f6f2e;">
-                ${msg("Replying to")}<span style="font-weight: bold; color:#4270A8; margin-left:3px;">${maybeReplyAuthorName}</span>
-                <div style="flex-grow: 1"></div>
-                <ui5-button icon="decline" design="Transparent"
-                            style="border:none; padding:0px"
-                            @click=${(_e:any) => {this._replyToAh = undefined;}}></ui5-button>
-            </div>
-            ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
-            ${canDisplayInput? html`
-            <vines-input-bar id="input-bar"
-                             .topic=${topic}
-                             .threadHash=${this._selectedThreadHash}></vines-input-bar>
-            ` : html`<div style="min-height: 20px;"></div>`}
+                <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
+                    ${msg("About")} "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
+                    <ui5-button icon="delete" design="Transparent"
+                                style="border:none; padding:0px"
+                                @click=${(_e: any) => {this._currentCommentRequest = undefined;}}></ui5-button>
+                </div>
+                <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}; background: #6f6f6f2e;">
+                    ${msg("Replying to")}<span
+                        style="font-weight: bold; color:#4270A8; margin-left:3px;">${maybeReplyAuthorName}</span>
+                    <div style="flex-grow: 1"></div>
+                    <ui5-button icon="decline" design="Transparent"
+                                style="border:none; padding:0px"
+                                @click=${(_e: any) => {this._replyToAh = undefined;}}></ui5-button>
+                </div>
+                ${typingMsg? html`
+                    <div id="typing-div">${typingMsg}</div>` : html``}
+                ${canDisplayInput? html`
+                    <vines-input-bar id="input-bar"
+                                     .topic=${topic}
+                                     .threadHash=${this._selectedThreadHash}></vines-input-bar>
+                ` : html`
+                    <div style="min-height: 20px;"></div>`}
             `}
         `;
       }
@@ -1564,28 +1578,40 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       primaryTitle = msg("Shared Files");
       console.log("dFiles this._filesDvm", this._filesDvm);
       const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
-          .map(([ppEh, pprm]) => {
-            const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
-            const profile = pprm.author? this._dvm.profilesZvm.perspective.getProfile(pprm.author) : undefined;
-            return {ppEh: ppEh.b64, description: pprm.description, timestamp: pprm.creationTs, author: profile, isLocal, isPrivate: false} as FileTableItem;
-          });
+        .map(([ppEh, pprm]) => {
+          const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
+          const profile = pprm.author? this._dvm.profilesZvm.perspective.getProfile(pprm.author) : undefined;
+          return {
+            ppEh: ppEh.b64,
+            description: pprm.description,
+            timestamp: pprm.creationTs,
+            author: profile,
+            isLocal,
+            isPrivate: false
+          } as FileTableItem;
+        });
       console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
       console.log("dFiles filesDvm cell", this._filesDvm.cell);
       centerSide = html`
-        <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
-            <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px; margin-top:10px;">
-              <div style="display: flex; flex-direction: row; gap:15px;">
-                  <ui5-button icon="upload-to-cloud" design="Emphasized" 
-                              ?disabled=${!!this._file}
-                              @click=${() => this.openFile()}>${this._file? msg("Uploading...") : msg("Upload File")}</ui5-button>
+          <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
+              <div style="height: 100%; display: flex; flex-direction: column; gap: 10px; margin-left:10px; margin-top:10px;">
+                  <div style="display: flex; flex-direction: row; gap:15px;">
+                      <ui5-button icon="upload-to-cloud" design="Emphasized"
+                                  ?disabled=${!!this._file}
+                                  @click=${() => this.openFile()}>
+                          ${this._file? msg("Uploading...") : msg("Upload File")}
+                      </ui5-button>
+                  </div>
+                  <file-table type="group" notag view nolocal noselect
+                              style="flex-grow: 1;"
+                              .items=${publicItems}
+                              @download=${(e: CustomEvent<EntryId>) => {
+                                  console.log("download", e.detail.b64);
+                                  this._filesDvm.downloadFile(e.detail)
+                              }}
+                  ></file-table>
               </div>
-              <file-table type="group" notag view nolocal noselect
-                          style="flex-grow: 1;"
-                          .items=${publicItems}
-                          @download=${(e: CustomEvent<EntryId>) => {console.log("download", e.detail.b64); this._filesDvm.downloadFile(e.detail)}}
-              ></file-table>
-            </div>
-        </cell-context>
+          </cell-context>
       `;
     }
 
@@ -1602,27 +1628,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 //    const groupProfile = determinerGroupProfile(this._dvm.dnaProperties, [this.weServices, 0]);
 
     /** Get network info for this cell */
-    //const sId = this.cell.address.str;
-    //const networkInfos = this.appProxy && this.appProxy.networkInfoLogs[sId]? this.appProxy.networkInfoLogs[sId] : [];
-    //const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
+      //const sId = this.cell.address.str;
+      //const networkInfos = this.appProxy && this.appProxy.networkInfoLogs[sId]? this.appProxy.networkInfoLogs[sId] : [];
+      //const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
-    let lister= html``;
+    let lister = html``;
 
     switch (this._listerToShow) {
       case "tools-option":
-        lister = html`<tool-lister id="lister" ?collapsed=${this._collapseAll}></tool-lister>`;
-      break;
+        lister = html`
+            <tool-lister id="lister" ?collapsed=${this._collapseAll}></tool-lister>`;
+        break;
       case "mine-option":
         lister = html`
-          <my-threads-lister id="lister" ?collapsed=${this._collapseAll}
-                         .showArchivedSubjects=${this._canViewArchivedSubjects}
-                         .selectedThreadHash=${this._selectedThreadHash}
-                         @createThreadClicked=${(e : CustomEvent<ActionId>) => {
-          this._createTopicHash = e.detail;
-          this.createThreadDialogElem.show();
-          }}></my-threads-lister>
+            <my-threads-lister id="lister" ?collapsed=${this._collapseAll}
+                               .showArchivedSubjects=${this._canViewArchivedSubjects}
+                               .selectedThreadHash=${this._selectedThreadHash}
+                               @createThreadClicked=${(e: CustomEvent<ActionId>) => {
+                                   this._createTopicHash = e.detail;
+                                   this.createThreadDialogElem.show();
+                               }}></my-threads-lister>
         `;
-      break;
+        break;
       case "topics-option":
         console.log("<vines-page> topics-lister", this._collapseAll);
         lister = html`
@@ -1639,41 +1666,41 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const dmLister = this.multi? html`
         <dm-multi-lister nobtn
-                .showArchived=${this._canViewArchivedSubjects}
-                .selectedThreadHash=${this._selectedThreadHash}
-                @createNewDm=${(_e:any) => {
-                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                    dialog.show();
-                }}
+                         .showArchived=${this._canViewArchivedSubjects}
+                         .selectedThreadHash=${this._selectedThreadHash}
+                         @createNewDm=${(_e: any) => {
+                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                             dialog.show();
+                         }}
         ></dm-multi-lister>
     ` : html`
         <dm-lister id="dmLister" nobtn
-                .showArchived=${this._canViewArchivedSubjects}
-                .selectedThreadHash=${this._selectedThreadHash}
-                @createNewDm=${(_e:any) => {
-                    const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                    dialog.show();
-                }}
+                   .showArchived=${this._canViewArchivedSubjects}
+                   .selectedThreadHash=${this._selectedThreadHash}
+                   @createNewDm=${(_e: any) => {
+                       const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                       dialog.show();
+                   }}
         ></dm-lister>
     `;
 
 
     let hisLister = html`
         <history-lister id="hisLister"
-                ?collapsed=${this._collapseAll}
-                .showArchived=${this._canViewArchivedSubjects}
-                .selectedThreadHash=${this._selectedThreadHash}
-                .threadStack=${this._threadStack}
-         ></history-lister>
+                        ?collapsed=${this._collapseAll}
+                        .showArchived=${this._canViewArchivedSubjects}
+                        .selectedThreadHash=${this._selectedThreadHash}
+                        .threadStack=${this._threadStack}
+        ></history-lister>
     `;
     hisLister = html``;
 
     const toggleLeftBtn = html`
         <ui5-button icon="menu2" tooltip=${msg("Show side panel")}
                     class="${this._canShowLeft? "pressed" : ""}                    
-                    slot="startButton"
-                    style="margin-right:5px; display: ${this._canShowLeft? "none" : ""}"
-                    @click=${(_e:any) => this._canShowLeft = true} >
+                    slot=" startButton"
+        style="margin-right:5px; display: ${this._canShowLeft? "none" : ""}"
+        @click=${(_e: any) => this._canShowLeft = true} >
         </ui5-button>
     `;
 
@@ -1685,15 +1712,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       if (thread) {
         /* Get subject and set back button */
         if (thread.pp.subject.typeName == SpecialSubjectType.EntryBead
-            || thread.pp.subject.typeName == SpecialSubjectType.TextBead
-            || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
-            || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead) {
+          || thread.pp.subject.typeName == SpecialSubjectType.TextBead
+          || thread.pp.subject.typeName == SpecialSubjectType.AnyBead
+          || thread.pp.subject.typeName == SpecialSubjectType.EncryptedBead) {
           const subjectAh = new ActionId(thread.pp.subject.address);
           const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectAh);
           if (subjectBead) {
             maybeBackBtn = html`
-              <ui5-button icon="nav-back" slot="startButton"
-                          @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
+                <ui5-button icon="nav-back" slot="startButton"
+                            @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectAh))}></ui5-button>`;
           }
         }
 
@@ -1703,27 +1730,35 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (maybeCommentThread != null) {
           hasUnreadComments = this.threadsPerspective.unreads.has(maybeCommentThread);
         }
-        const commentClickedEvent = { detail: {maybeCommentThread, subjectId: this._selectedThreadHash, subjectType: SpecialSubjectType.ParticipationProtocol, subjectName: thread!.title, viewType: "side"}, bubbles: true, composed: true } as CustomEvent<CommentRequest>;
+        const commentClickedEvent = {
+          detail: {
+            maybeCommentThread,
+            subjectId: this._selectedThreadHash,
+            subjectType: SpecialSubjectType.ParticipationProtocol,
+            subjectName: thread!.title,
+            viewType: "side"
+          }, bubbles: true, composed: true
+        } as CustomEvent<CommentRequest>;
         //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
         if (hasUnreadComments) {
           commentButton = html`
-            <ui5-button icon="comment" tooltip=${msg("View comments")}
-                        design="Negative"
-                        @click="${(_e: any) => this.onCommentingClicked(commentClickedEvent)}"></ui5-button>`;
+              <ui5-button icon="comment" tooltip=${msg("View comments")}
+                          design="Negative"
+                          @click="${(_e: any) => this.onCommentingClicked(commentClickedEvent)}"></ui5-button>`;
         } else {
           commentButton = maybeCommentThread != null
-              ? html`
-                <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
-                            @click=${(e: any) => {
-                              e.stopPropagation();
-                              this.onCommentingClicked(commentClickedEvent)
-                            }}></ui5-button>`
-              : html`
-                <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
-                            @click=${(e: any) => {
-                              e.stopPropagation();
-                              this.onCommentingClicked(commentClickedEvent)
-                            }}></ui5-button>`;
+            ? html`
+                      <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
+                                  @click=${(e: any) => {
+                                      e.stopPropagation();
+                                      this.onCommentingClicked(commentClickedEvent)
+                                  }}></ui5-button>`
+            : html`
+                      <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
+                                  @click=${(e: any) => {
+                                      e.stopPropagation();
+                                      this.onCommentingClicked(commentClickedEvent)
+                                  }}></ui5-button>`;
         }
       }
     }
@@ -1733,44 +1768,54 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /* Custom Segmented buttons */
     const segBtns = !this.weServices? html`` : html`
-          <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 3px 10px; border-radius: 5px; padding: 3px;">
-              <div id="topicsBtn" class="listerbtn selected" @click=${(e:any) => {
-                  e.preventDefault(); e.stopPropagation();
-                  this._listerToShow = "topics-option";
-                  const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                  topicsBtn.classList.add("selected");
-                  const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                  toolsBtn.classList.remove("selected");
-                  const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                  mineBtn.classList.remove("selected");
-                  this.requestUpdate();
-              }}>${msg('Channels')}</div>
-      <div id="toolsBtn" class="listerbtn" @click=${(e:any) => {
-                              e.preventDefault(); e.stopPropagation();
-                              /** Get and Cache appletInfo for each known applet */
-                              /*await*/ this.pullLatestAppletInfos();      
-                              /** */
-                              this._listerToShow = "tools-option";
-                              const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                              topicsBtn.classList.remove("selected");
-                              const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                              toolsBtn.classList.add("selected");
-                              const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                              mineBtn.classList.remove("selected");
-                              this.requestUpdate();
-                          }}>${msg('Tools')}</div>
-      <div id="mineBtn" class="listerbtn" @click=${(e:any) => {
-                              e.preventDefault(); e.stopPropagation();
-                              this._listerToShow = "mine-option";
-                              const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                              topicsBtn.classList.remove("selected");
-                              const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                              toolsBtn.classList.remove("selected");
-                              const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                              mineBtn.classList.add("selected");
-                              this.requestUpdate();
-                          }}>${msg('My')}</div>                    
-      </div>`;
+        <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 3px 10px; border-radius: 5px; padding: 3px;">
+            <div id="topicsBtn" class="listerbtn selected" @click=${(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._listerToShow = "topics-option";
+                const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                topicsBtn.classList.add("selected");
+                const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                toolsBtn.classList.remove("selected");
+                const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                mineBtn.classList.remove("selected");
+                this.requestUpdate();
+            }}>
+                ${msg('Channels')}
+            </div>
+            <div id="toolsBtn" class="listerbtn" @click=${(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                /** Get and Cache appletInfo for each known applet */
+                /*await*/
+                this.pullLatestAppletInfos();
+                /** */
+                this._listerToShow = "tools-option";
+                const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                topicsBtn.classList.remove("selected");
+                const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                toolsBtn.classList.add("selected");
+                const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                mineBtn.classList.remove("selected");
+                this.requestUpdate();
+            }}>
+                ${msg('Tools')}
+            </div>
+            <div id="mineBtn" class="listerbtn" @click=${(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._listerToShow = "mine-option";
+                const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                topicsBtn.classList.remove("selected");
+                const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                toolsBtn.classList.remove("selected");
+                const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                mineBtn.classList.add("selected");
+                this.requestUpdate();
+            }}>
+                ${msg('My')}
+            </div>
+        </div>`;
 
 
     /** Show Cross-view or group-view */
@@ -1778,53 +1823,58 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
 
-                <!-- Action buttons -->
-                <div style="display:flex; flex-direction:row; padding: 0 5px;">
-                 
-                    <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; width:100%; justify-content:space-between; padding-bottom:6px; padding-top:6px">
-                    ${this._listerToShow == "topics-option" ? html`
-                        <ui5-button icon="add-folder" design="Transparent" style="height:30px;" tooltip=${msg("Create New Category")} 
-                                    @click=${(_e:any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
-                    <ui5-button icon="expand-all" design="Transparent" style="height:30px;" tooltip=${msg("Expand All")} @click=${(_e:any) => {
-                      console.log("<topics-lister> EXPAND ALL")
-                      this._collapseAll = false;
-                      const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
-                      if (lister) {
-                          lister.collapseAll(false);
-                      }
-                      const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                      if (lister && hisLister) {
-                          hisLister.collapseAll(false);
-                      }
-                        
-                    }}></ui5-button>                    
-                    <ui5-button icon="collapse-all" design="Transparent" style="height:30px;" tooltip=${msg("Collapse All")} @click=${(_e:any) => {
-                      console.log("<topics-lister> Collapse ALL")
-                      this._collapseAll = true;
-                      const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
-                      if (lister) {
-                          lister.collapseAll(true);
-                      }
-                        const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                        if (lister && hisLister) {
-                            hisLister.collapseAll(true);
-                        }                      
-                    }}></ui5-button>
-                    <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent" 
-                                style="height:30px;" 
-                                tooltip=${this._canAlphabetical? msg("Sort by creation time"): msg("Sort alphabetically")} 
-                                @click=${(_e:any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>                    
-                    <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent" style="height:30px;" 
-                                tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Categories & Channels")} 
-                                @click=${(_e:any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
-                    <ui5-button icon="accept" design="Transparent" style="height:30px;" tooltip=${msg("Mark all as read")} @click=${this.onCommitBtn}></ui5-button>
-                    <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
-                        style="height:30px;"  
-                                icon="slim-arrow-left"
-                                @click=${(_e:any) => this._canShowLeft = false}>
-                    </ui5-button>
-                    </div>
-                </div>
+        <!-- Action buttons -->
+        <div style="display:flex; flex-direction:row; padding: 0 5px;">
+
+            <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; width:100%; justify-content:space-between; padding-bottom:6px; padding-top:6px">
+                ${this._listerToShow == "topics-option"? html`
+                    <ui5-button icon="add-folder" design="Transparent" style="height:30px;"
+                                tooltip=${msg("Create New Category")}
+                                @click=${(_e: any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
+                <ui5-button icon="expand-all" design="Transparent" style="height:30px;" tooltip=${msg("Expand All")}
+                            @click=${(_e: any) => {
+                                console.log("<topics-lister> EXPAND ALL")
+                                this._collapseAll = false;
+                                const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
+                                if (lister) {
+                                    lister.collapseAll(false);
+                                }
+                                const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
+                                if (lister && hisLister) {
+                                    hisLister.collapseAll(false);
+                                }
+
+                            }}></ui5-button>
+                <ui5-button icon="collapse-all" design="Transparent" style="height:30px;" tooltip=${msg("Collapse All")}
+                            @click=${(_e: any) => {
+                                console.log("<topics-lister> Collapse ALL")
+                                this._collapseAll = true;
+                                const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
+                                if (lister) {
+                                    lister.collapseAll(true);
+                                }
+                                const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
+                                if (lister && hisLister) {
+                                    hisLister.collapseAll(true);
+                                }
+                            }}></ui5-button>
+                <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent"
+                            style="height:30px;"
+                            tooltip=${this._canAlphabetical? msg("Sort by creation time") : msg("Sort alphabetically")}
+                            @click=${(_e: any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>
+                <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent"
+                            style="height:30px;"
+                            tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Categories & Channels")}
+                            @click=${(_e: any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
+                <ui5-button icon="accept" design="Transparent" style="height:30px;" tooltip=${msg("Mark all as read")}
+                            @click=${this.onCommitBtn}></ui5-button>
+                <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
+                            style="height:30px;"
+                            icon="slim-arrow-left"
+                            @click=${(_e: any) => this._canShowLeft = false}>
+                </ui5-button>
+            </div>
+        </div>
     `;
 
 
@@ -1832,63 +1882,69 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("filteredInbox", filteredInbox);
 
 
-    const dmSign = html`<div id="dmSign" style="cursor: pointer; z-index: 100" 
-                                                @click=${() => {
-        const div = this.shadowRoot!.getElementById("listerGroup") as HTMLElement;
-        if (div) {
-            div.scrollTop = div.scrollHeight - div.clientHeight;
-        }
-    }}><ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon><div>${msg("DMs")}</div></div>`;
+    const dmSign = html`
+        <div id="dmSign" style="cursor: pointer; z-index: 100"
+             @click=${() => {
+                 const div = this.shadowRoot!.getElementById("listerGroup") as HTMLElement;
+                 if (div) {
+                     div.scrollTop = div.scrollHeight - div.clientHeight;
+                 }
+             }}>
+            <ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon>
+            <div>${msg("DMs")}</div>
+        </div>`;
 
     const leftSide = this.multi? html`
         ${dmSign}
         <div style="padding-top:12px; margin-left:10px; min-width:0; margin-bottom: 15px">
-            <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1.25rem">${msg("DMs Cross View")}</div>
+            <div style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:1.25rem">
+                ${msg("DMs Cross View")}
+            </div>
         </div>
         <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
-          <!-- Messages -->
-          <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;margin-top: 30px;">
-              <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-              <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
-              <span style="flex-grow: 1"></span>
-              <ui5-button icon="add" tooltip=${msg("Message a peer")}
-                          design="Transparent"
-                          style="color:grey; margin-right: 8px;"
-                          @click=${async (e: any) => {
-                            e.stopPropagation();
-                            await this.updateComplete;
-                            const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                            dialog.show();
-                          }}>
-              </ui5-button>
-          </div>
-          ${dmLister}
-          <div style="min-height: 50px"></div>
+            <!-- Messages -->
+            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;margin-top: 30px;">
+                <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
+                <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+                <span style="flex-grow: 1"></span>
+                <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                            design="Transparent"
+                            style="color:grey; margin-right: 8px;"
+                            @click=${async (e: any) => {
+                                e.stopPropagation();
+                                await this.updateComplete;
+                                const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                                dialog.show();
+                            }}>
+                </ui5-button>
+            </div>
+            ${dmLister}
+            <div style="min-height: 50px"></div>
         </div>
     ` : html`
         ${topLeft}
         ${dmSign}
         <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
-          ${lister}
-          ${hisLister}
-          <!-- Messages -->
-          <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
-              <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-              <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
-              <span style="flex-grow: 1"></span>
-              <ui5-button icon="add" tooltip=${msg("Message a peer")}
-                          design="Transparent"
-                          style="color:grey; margin-right: 8px;"
-                          @click=${async (e: any) => {
-                            e.stopPropagation();
-                            await this.updateComplete;
-                            const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                            dialog.show();
-                          }}>
-              </ui5-button>
-          </div>
-          ${dmLister}
-          <div style="min-height: 50px"></div>
+            ${lister}
+            ${hisLister}
+            <!-- Messages -->
+            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+                <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
+                <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+                <span style="flex-grow: 1"></span>
+                <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                            design="Transparent"
+                            style="color:grey; margin-right: 8px;"
+                            @click=${async (e: any) => {
+                                e.stopPropagation();
+                                await this.updateComplete;
+                                const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                                dialog.show();
+                            }}>
+                </ui5-button>
+            </div>
+            ${dmLister}
+            <div style="min-height: 50px"></div>
         </div>
     `;
 
@@ -1900,48 +1956,50 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @edit-channel-clicked=${this.onEditChannelClicked}
              @edit-topic-clicked=${this.onEditTopicClicked}>
 
-            <div id="leftSide" style="display: ${this._canShowLeft ? "flex" : "none"}; position: relative">
-                ${leftSide}                
+            <div id="leftSide" style="display: ${this._canShowLeft? "flex" : "none"}; position: relative">
+                ${leftSide}
                 <div style="flex-grow: 1"></div>
                 ${segBtns}
                 <div id="profile-row">
                     <div style="display: flex; flex-direction:row; flex-grow:1; min-width: 0; margin-left:2px">
                         ${avatar}
                         <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-                            
+
                                 <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
                         </div>
                     </div>
-                    <ui5-button icon="documents" design="Transparent"  tooltip=${msg("View Files")}
-                                style="margin-top:10px; ${this._mainView == MainViewType.Files ? "background: #4684FD; color: white;" : ""}"
+                    <ui5-button icon="documents" design="Transparent" tooltip=${msg("View Files")}
+                                style="margin-top:10px; ${this._mainView == MainViewType.Files? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
-                    </ui5-button>                     
+                    </ui5-button>
                     <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("View Favorites")}
-                                style="margin-top:10px; ${this._mainView == MainViewType.Favorites ? "background: #4684FD; color: white;" : ""}"
+                                style="margin-top:10px; ${this._mainView == MainViewType.Favorites? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
                     </ui5-button>
-                  <ui5-button icon="group" name="group" design="Transparent" style="margin-top:10px;position:relative;"
-                              tooltip=${`${profileCount} ${profileCount != 1 ? msg('Members') : msg('Member')}`}
-                              @click=${async (e: any) => {
-                                e.stopPropagation();
-                                await this.updateComplete;
-                                const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-                                dialog.show();
-                              }}
-                  >
-                    <peer-status-badge id="peer-status"></peer-status-badge">
-                  </ui5-button>                  
-                  <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
-                              class=${this._canSpin? "spinning" : ""}
-                              design="Transparent" tooltip=${msg("Network")}
-                              style="margin-top:10px;"
-                              @click=${ async (e:any) => {
-                                e.preventDefault(); e.stopPropagation();
-                                const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                                const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
-                                popover.showAt(btn);
-                              }}>
-                  </ui5-button>                  
+                    <ui5-button icon="group" name="group" design="Transparent"
+                                style="margin-top:10px;position:relative;"
+                                tooltip=${`${profileCount} ${profileCount != 1? msg('Members') : msg('Member')}`}
+                                @click=${async (e: any) => {
+                                    e.stopPropagation();
+                                    await this.updateComplete;
+                                    const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
+                                    dialog.show();
+                                }}
+                    >
+                        <peer-status-badge id="peer-status"></peer-status-badge">
+                    </ui5-button>
+                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
+                                class=${this._canSpin? "spinning" : ""}
+                                design="Transparent" tooltip=${msg("Network")}
+                                style="margin-top:10px;"
+                                @click=${async (e: any) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                                    const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
+                                    popover.showAt(btn);
+                                }}>
+                    </ui5-button>
                     <ui5-button id="settingsBtn" style="margin-top:10px;"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
                                 @click=${(_e: any) => {
@@ -1955,23 +2013,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
                         <ui5-menu-item id="shareNetwork" text=${msg("Share Network Seed")}
-                                       icon="cloud"> </ui5-menu-item>
+                                       icon="cloud"></ui5-menu-item>
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
                                        icon="open-folder"></ui5-menu-item>
-                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>                        
+                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
                         ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
-                        <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
-                                       starts-section></ui5-menu-item>
+                            <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
+                                           starts-section></ui5-menu-item>
                         ` : html`
-                        <ui5-menu-item id="syncItem" text=${msg("Probe peers for content")} icon="download-from-cloud" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
-                                       starts-section></ui5-menu-item>
-                        <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
-                        <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
-                        <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
+                            <ui5-menu-item id="syncItem" text=${msg("Probe peers for content")}
+                                           icon="download-from-cloud" starts-section></ui5-menu-item>
+                            <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
+                                           starts-section></ui5-menu-item>
+                            <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
+                            <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
+                            <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                         `}
                     </ui5-menu>
 
@@ -1983,9 +2042,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <network-health-panel></network-health-panel>
-                        <div slot="footer" style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
+                        <div slot="footer"
+                             style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
-                            <ui5-button @click=${() => { this._filesDvm.probeAll(); this._dvm.probeAll();}}>${msg('Sync')}</ui5-button>
+                            <ui5-button @click=${() => {
+                                this._filesDvm.probeAll();
+                                this._dvm.probeAll();
+                            }}>${msg('Sync')}
+                            </ui5-button>
                             <ui5-button design="Emphasized" @click=${() => {
                                 const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
                                 if (popover.isOpen()) {
@@ -2004,7 +2068,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div style="flex-grow: 1;"></div>
                         </div>
                         <div>${msg('Share this code with a peer to grant them access to this Network')}
-                            (seed: "${this.cell.dnaModifiers.network_seed}")</div>
+                            (seed: "${this.cell.dnaModifiers.network_seed}")
+                        </div>
                         <ui5-textarea .value=${this.cell.shareCode}></ui5-textarea>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
@@ -2032,47 +2097,61 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${maybeBackBtn}
                     <div id="primaryTitle"
                          @click=${(e: any) => {
-                           e.stopPropagation(); 
-                           if (this._selectedThreadHash) {
-                             this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {detail: {ppAh: this._selectedThreadHash, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));
-                           }
+                             e.stopPropagation();
+                             if (this._selectedThreadHash) {
+                                 this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {
+                                     detail: {
+                                         ppAh: this._selectedThreadHash,
+                                         x: e.clientX,
+                                         y: e.clientY
+                                     }, bubbles: true, composed: true
+                                 }));
+                             }
                          }}>
-                      ${primaryTitle}
+                        ${primaryTitle}
                     </div>
-                  ${this._selectedThreadHash === undefined || !thread
-                      ? html``
-                      : html`
-                        <div id="topBarChannelBtns" style="margin-left: 25px; display: flex;">
-                          
-                          ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + this._selectedThreadHash.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
-                                @click=${(_e:any) => {/*await */this.onEditChannelClicked({ detail: this._selectedThreadHash!, bubbles: true, composed: true } as CustomEvent<ActionId>)}}></ui5-button>` : html``}
+                    ${this._selectedThreadHash === undefined || !thread
+                            ? html``
+                            : html`
+                                <div id="topBarChannelBtns" style="margin-left: 25px; display: flex;">
 
-                          <ui5-button id="notifSettingsBtn"
-                                                  icon="bell"
-                                                  tooltip=${msg('Notifications Settings')}
-                                                  @click=${() => {
-                              console.log("notifSettingsBtn.click()");
-                              const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
-                              if (popover.isOpen()) {
-                                popover.close();
-                                return;
-                              }
-                              const shellbar = this.shadowRoot!.getElementById("topicBar");
-                              if (!shellbar) {
-                                console.error("Missing topicBar HTML Element");
-                              }
-                              popover.showAt(shellbar!);
-                            }}>
-                          </ui5-button>
-                          
-                          <copy-wal-button .dnaId=${this.cell.address.dnaId} 
-                                           .hash=${this._selectedThreadHash} 
-                                           name=${msg("Channel")}
-                                           style="color: #464646; display: block;"></copy-wal-button>
-                          ${commentButton}
-                      </div>
-                      `
-                  }                  
+                                    ${this.cell.address.agentId.equals(thread.author)? html`
+                                        <ui5-button id=${"edit-" + this._selectedThreadHash.b64} icon="edit"
+                                                    tooltip=${msg("Edit Title")} design="Transparent"
+                                                    @click=${(_e: any) => {/*await */
+                                                        this.onEditChannelClicked({
+                                                            detail: this._selectedThreadHash!,
+                                                            bubbles: true,
+                                                            composed: true
+                                                        } as CustomEvent<ActionId>)
+                                                    }}></ui5-button>` : html``}
+
+                                    <ui5-button id="notifSettingsBtn"
+                                                icon="bell"
+                                                tooltip=${msg('Notifications Settings')}
+                                                @click=${() => {
+                                                    console.log("notifSettingsBtn.click()");
+                                                    const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
+                                                    if (popover.isOpen()) {
+                                                        popover.close();
+                                                        return;
+                                                    }
+                                                    const shellbar = this.shadowRoot!.getElementById("topicBar");
+                                                    if (!shellbar) {
+                                                        console.error("Missing topicBar HTML Element");
+                                                    }
+                                                    popover.showAt(shellbar!);
+                                                }}>
+                                    </ui5-button>
+
+                                    <copy-wal-button .dnaId=${this.cell.address.dnaId}
+                                                     .hash=${this._selectedThreadHash}
+                                                     name=${msg("Channel")}
+                                                     style="color: #464646; display: block;"></copy-wal-button>
+                                    ${commentButton}
+                                </div>
+                            `
+                    }
                     <div style="flex-grow: 1"></div>
                     <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
                                style="border-radius: 10px; border: none; height: 32px;"
@@ -2116,8 +2195,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div style="flex-grow: 1"></div>
                     <div id="topBarBtnGroup">
                         ${
-                            HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : /*html``*/
-                                    html`<ui5-button icon="developer-settings" @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
+                                HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : /*html``*/
+                                        html`
+                                            <ui5-button icon="developer-settings"
+                                                        @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
                         }
                         <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
@@ -2180,37 +2261,45 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div id="centerSide">
                         ${centerSide}
                     </div>
-                    ${this._canShowComments ? html`
+                    ${this._canShowComments? html`
                         <!-- .subjectName="${this._selectedCommentThreadSubjectName}" -->
                         <div id="commentSide">
                             <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash}
                                                  showInput="true"
-                                                 @close=${(_e:any) => this._canShowComments = false}></comment-thread-view>
+                                                 @close=${(_e: any) => this._canShowComments = false}></comment-thread-view>
                         </div>` : html``}
-                    ${this._canShowSearchResults ? html`
+                    ${this._canShowSearchResults? html`
                                 <div id="rightSide">
                                     <search-result-panel .parameters=${searchParameters}></search-result-panel>
                                 </div>`
                             : html``}
                     ${HAPP_BUILD_MODE === HappBuildModeType.Retail? html`` : html`
-                      <vines-graph id="debugSide" .threadHash=${this._debugThreadAh}
-                        style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></vines-graph>
+                        <vines-graph id="debugSide" .threadHash=${this._debugThreadAh}
+                                     style="display:${this._canShowDebug? 'block' : 'none'};background:#f4d8db;"></vines-graph>
                         <!-- <anchor-tree id="debugSide"
-                        style="display:${this._canShowDebug ? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
+                        style="display:${this._canShowDebug? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
                     `}
                 </div>
             </div>
             <!-- DIALOGS -->
             <ui5-dialog id="wait-dialog">
-                <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+                <ui5-busy-indicator delay="0" size="Large" active
+                                    style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
             <ui5-dialog id="view-agents-dialog" header-text=${msg('Members')}>
                 <peer-list self
-                        @avatar-clicked=${async (e: any) => {
-                            e.stopPropagation();
-                            console.log("@avatar-clicked", e.detail);
-                            this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: e.detail, x: window.innerWidth/2, y: window.innerHeight/2}, bubbles: true, composed: true}));}}>
-                        }}>
+                           @avatar-clicked=${async (e: any) => {
+                               e.stopPropagation();
+                               console.log("@avatar-clicked", e.detail);
+                               this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
+                                   detail: {
+                                       agentId: e.detail,
+                                       x: window.innerWidth / 2,
+                                       y: window.innerHeight / 2
+                                   }, bubbles: true, composed: true
+                               }));
+                           }}>
+                    }}>
                 </peer-list>
                 <ui5-button
                         style="margin-top: 10px; float: right;"
@@ -2223,18 +2312,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </ui5-dialog>
             <!-- View members dialog -->
             <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
-                <peer-list 
-                    @avatar-clicked=${async (e: any) => {
-                      console.log("@avatar-clicked", e.detail)
-                      const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                      dialog.close();
-                      const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
-                      if (this.multi) {
-                          this.dispatchEvent(multiJumpEvent(ppAh, e.detail));
-                      } else {
-                        this.dispatchEvent(threadJumpEvent(ppAh));
-                      }
-                  }}>
+                <peer-list
+                        @avatar-clicked=${async (e: any) => {
+                            console.log("@avatar-clicked", e.detail)
+                            const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
+                            dialog.close();
+                            const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
+                            if (this.multi) {
+                                this.dispatchEvent(multiJumpEvent(ppAh, e.detail));
+                            } else {
+                                this.dispatchEvent(threadJumpEvent(ppAh));
+                            }
+                        }}>
                 </peer-list>
                 <ui5-button
                         style="margin-top: 10px; float: right;"
@@ -2282,9 +2371,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <view-embed-dialog id="view-embed"></view-embed-dialog>
             <!-- View File Dialog -->
             <cell-context .cell=${this._filesDvm.cell} style="height: 100%">
-              <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
-                  <file-view id="file-viewer"></file-view>
-              </sl-dialog>
+                <sl-dialog id="view-file-dialog" label=${msg("File Info")}>
+                    <file-view id="file-viewer"></file-view>
+                </sl-dialog>
             </cell-context>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>
@@ -2293,11 +2382,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-label for="topicTitleInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="topicTitleInput"
                                    @keydown=${(e: any) => {
-                                      if (e.keyCode === 13) {
-                                          e.stopPropagation(); /*e.preventDefault();*/
-                                          this.onCreateTopic(e);
-                                      }
-                                  }}>
+                                       if (e.keyCode === 13) {
+                                           e.stopPropagation(); /*e.preventDefault();*/
+                                           this.onCreateTopic(e);
+                                       }
+                                   }}>
                             <div id="topicErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
@@ -2316,27 +2405,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <section>
                     <div>
                         <ui5-label for="editChannelTitleInput">${msg("Title")}:</ui5-label>
-                        <ui5-input id="editChannelTitleInput" 
+                        <ui5-input id="editChannelTitleInput"
                                    @keydown=${(e: any) => {
-                                      if (e.keyCode === 13) {
-                                        /*e.preventDefault();*/
-                                        this.onEditChannel(e);
-                                      }
-                                    }}>
-                          <div id="editChannelErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
+                                       if (e.keyCode === 13) {
+                                           /*e.preventDefault();*/
+                                           this.onEditChannel(e);
+                                       }
+                                   }}>
+                            <div id="editChannelErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
                 </section>
                 <div slot="footer">
                     <ui5-button id="createChannelDialogButton"
                                 style="margin-top:5px" design="Emphasized" @click=${this.onEditChannel}>
-                        ${msg("Edit")}
+                        ${msg("Save")}
                     </ui5-button>
                     <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.close(false)}>
                         ${msg("Cancel")}
                     </ui5-button>
                 </div>
-            </ui5-dialog>            
+            </ui5-dialog>
             <!-- EditTopicDialog -->
             <ui5-dialog id="edit-topic-dialog" header-text=${msg('Edit Category')}>
                 <section>
@@ -2344,11 +2433,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <ui5-label for="editTopicTitleInput">${msg("Title")}:</ui5-label>
                         <ui5-input id="editTopicTitleInput"
                                    @keydown=${(e: any) => {
-                                        if (e.keyCode === 13) {
-                                            /*e.preventDefault();*/
-                                            this.onEditTopic(e);
-                                        }
-                                    }}>
+                                       if (e.keyCode === 13) {
+                                           /*e.preventDefault();*/
+                                           this.onEditTopic(e);
+                                       }
+                                   }}>
                             <div id="editTopicErrorMsg" slot="valueStateMessage">${msg("Minimum 3 characters")}</div>
                         </ui5-input>
                     </div>
@@ -2356,7 +2445,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <div slot="footer">
                     <ui5-button id="createTopicDialogButton"
                                 style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>
-                        ${msg("Edit")}
+                        ${msg("Save")}
                     </ui5-button>
                     <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>
                         ${msg("Cancel")}
@@ -2365,50 +2454,52 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </ui5-dialog>
             <!-- CreateThreadDialog -->
             <ui5-dialog id="create-thread-dialog" header-text=${msg("Create New Channel")}>
-              <section>
-                <div>
-                  <ui5-label for="threadPurposeInput">${msg("Title")}:</ui5-label>
-                  <ui5-input id="threadPurposeInput"
-                             @keydown=${async (e: any) => {
-                                 if (e.keyCode === 13) {
-                                     /*e.preventDefault();*/
-                                     await this.onCreateThread();
-                                 }
-                             }}>
-                      <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
-                  </ui5-input>
+                <section>
+                    <div>
+                        <ui5-label for="threadPurposeInput">${msg("Title")}:</ui5-label>
+                        <ui5-input id="threadPurposeInput"
+                                   @keydown=${async (e: any) => {
+                                       if (e.keyCode === 13) {
+                                           /*e.preventDefault();*/
+                                           await this.onCreateThread();
+                                       }
+                                   }}>
+                            <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
+                        </ui5-input>
+                    </div>
+                    <rules-edit id="rulesEdit"></rules-edit>
+                </section>
+                <div slot="footer" style="display:flex;gap:10px;">
+                    <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
+                                @click=${async () => await this.onCreateThread()}>
+                        ${msg("Create")}
+                    </ui5-button>
+                    <ui5-button style="margin-top:5px" @click=${() => this.createThreadDialogElem.close(false)}>
+                        ${msg("Cancel")}
+                    </ui5-button>
                 </div>
-                <rules-edit id="rulesEdit"></rules-edit>
-              </section>
-              <div slot="footer" style="display:flex;gap:10px;">
-                <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                            @click=${async () => await this.onCreateThread()}>
-                    ${msg("Create")}
-                </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${() => this.createThreadDialogElem.close(false)}>
-                    ${msg("Cancel")}
-                </ui5-button>
-            </div>
-        </ui5-dialog>
-        <ui5-dialog id="confirm-thread-dialog" header-text=${msg("Confirm New Channel")}>
-            <section>
-                <div style="border: 1px solid grey; padding:10px; padding-bottom:0px">
-                    <rules-view id="confirm-rules-view"></rules-view>
+            </ui5-dialog>
+            <ui5-dialog id="confirm-thread-dialog" header-text=${msg("Confirm New Channel")}>
+                <section>
+                    <div style="border: 1px solid grey; padding:10px; padding-bottom:0px">
+                        <rules-view id="confirm-rules-view"></rules-view>
+                    </div>
+                    <div style="font-weight: bold; margin-top:20px;">
+                        <div style="width: fit-content; margin: auto;">
+                            ${msg('Rules will not be modifiable once the channel is created')}
+                        </div>
+                    </div>
+                </section>
+                <div slot="footer" style="display:flex;gap:10px;">
+                    <ui5-button id="confirmThreadDialogButton" style="margin-top:5px" design="Emphasized"
+                                @click=${async () => await this.onConfirmedCreateThread()}>
+                        ${msg("Confirm")}
+                    </ui5-button>
+                    <ui5-button style="margin-top:5px" @click=${() => this.confirmThreadDialogElem.close(false)}>
+                        ${msg("Cancel")}
+                    </ui5-button>
                 </div>
-                <div style="font-weight: bold; margin-top:20px;">
-                    <div style="width: fit-content; margin: auto;">${msg('Rules will not be modifiable once the channel is created')}</div>
-                </div>
-            </section> 
-            <div slot="footer" style="display:flex;gap:10px;">
-                <ui5-button id="confirmThreadDialogButton" style="margin-top:5px" design="Emphasized"
-                            @click=${async () => await this.onConfirmedCreateThread()}>
-                    ${msg("Confirm")}
-                </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${() => this.confirmThreadDialogElem.close(false)}>
-                    ${msg("Cancel")}
-                </ui5-button>
-            </div>
-        </ui5-dialog>
+            </ui5-dialog>
     `;
   }
 
@@ -2419,7 +2510,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     var input = document.createElement('input');
     input.type = 'file';
     input.accept = ".json";
-    input.onchange = async (e:any) => {
+    input.onchange = async (e: any) => {
       console.log("onImport() target download file", e);
       const file = e.target.files[0];
       if (!file) {
@@ -2427,7 +2518,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
       const reader = new FileReader();
-      reader.onload = (_e:any) => {
+      reader.onload = (_e: any) => {
         const contents = reader.result as string;
         //console.log(contents);
         this._dvm.importPerspective(contents, canPublish);
@@ -2447,10 +2538,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this._file = undefined;
     var input = document.createElement('input');
     input.type = 'file';
-    input.oncancel = async (_e:any) => {
+    input.oncancel = async (_e: any) => {
       console.log("<vines-page>.openFile() Canceled");
     }
-    input.onchange = (e:any) => {
+    input.onchange = (e: any) => {
       console.log("<vines-page>.openFile() target download file", e.target.files, e);
       const file = e.target.files[0];
       if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
@@ -2460,7 +2551,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this._file = file;
       splitFile(file, this._filesDvm.dnaProperties.maxChunkSize).then((splitObj) => {
         const succeeded = this._filesDvm.startPublishFile(file, splitObj, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents,
-            async (_manifestEh) => {
+          async (_manifestEh) => {
             toasty(msg("File successfully shared") + ": " + file.name);
             console.log("<vines-page>.openFile() File upload complet. requesting update.");
             this._file = undefined;
@@ -2478,40 +2569,46 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /** */
-  async onGroupMenu(e:any): Promise<void> {
+  async onGroupMenu(e: any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
-      case "viewArchived": this._canViewArchivedSubjects = !this._canViewArchivedSubjects; break;
-      case "markAllRead": this.onCommitBtn(e); break;
+      case "viewArchived":
+        this._canViewArchivedSubjects = !this._canViewArchivedSubjects;
+        break;
+      case "markAllRead":
+        this.onCommitBtn(e);
+        break;
     }
   }
 
-   async onShareNetwork(): Promise<void> {
-                             const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                             const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
-                             /** Generate and add QR code */
-                             const existingImg = popover.querySelector('img')
-                             if (!existingImg) {
-                                 let generateQR: string;
-                                 try {
-                                     generateQR = await QRCode.toDataURL(this.cell.shareCode);
-                                     const img = document.createElement('img');
-                                     img.src = generateQR;
-                                     popover.append(img);
-                                 } catch (err) {
-                                     console.error(err);
-                                 }
-                             }
-                             popover.showAt(btn);
-                         }
+  async onShareNetwork(): Promise<void> {
+    const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+    const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
+    /** Generate and add QR code */
+    const existingImg = popover.querySelector('img')
+    if (!existingImg) {
+      let generateQR: string;
+      try {
+        generateQR = await QRCode.toDataURL(this.cell.shareCode);
+        const img = document.createElement('img');
+        img.src = generateQR;
+        popover.append(img);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    popover.showAt(btn);
+  }
 
   /** */
-  async onSettingsMenu(e:any): Promise<void> {
+  async onSettingsMenu(e: any): Promise<void> {
     console.log("item-click", e);
     this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
-      case "editProfileItem": this.profileDialogElem.show(); break;
+      case "editProfileItem":
+        this.profileDialogElem.show();
+        break;
       case "shareNetwork":
         await this.onShareNetwork()
         break;
@@ -2525,17 +2622,33 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.downloadTextFile("dump_threads.json", content);
         toasty(msg(`Exported data to json in Downloads folder`));
         break;
-      case "importCommitItem": this.importDvm(true); break;
-      case "importOnlyItem": this.importDvm(false); break;
+      case "importCommitItem":
+        this.importDvm(true);
+        break;
+      case "importOnlyItem":
+        this.importDvm(false);
+        break;
       case "syncItem":
         this._filesDvm.probeAll();
         this._dvm.probeAll();
-      break;
-      case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
-      case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); break;
-      case "eraseItem": this._dvm.purgeLogs(); break;
-      case "dumpFilesItem": this._filesDvm.dumpCallLogs(); this._filesDvm.dumpSignalLogs(); break;
-      case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
+        break;
+      case "bugItem":
+        window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank');
+        break;
+      case "dumpItem":
+        this._dvm.dumpCallLogs();
+        this._dvm.dumpSignalLogs();
+        break;
+      case "eraseItem":
+        this._dvm.purgeLogs();
+        break;
+      case "dumpFilesItem":
+        this._filesDvm.dumpCallLogs();
+        this._filesDvm.dumpSignalLogs();
+        break;
+      case "dumpNetworkItem":
+        this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true}));
+        break;
     }
     this.waitDialogElem.close();
   }
@@ -2564,336 +2677,336 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return [
       sharedStyles,
       css`
-        :host {
-          /*background: #FBFCFD;*/
-          display: block;
-          height: 100vh;
-          width: 100vw;
-          background: #F6FAFC;
-        }
-
-        .spinning {
-          animation: spin 2s linear infinite; /* Adjust duration and easing */
-        }
-
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
+          :host {
+              /*background: #FBFCFD;*/
+              display: block;
+              height: 100vh;
+              width: 100vw;
+              background: #F6FAFC;
           }
-          100% {
-            transform: rotate(360deg);
+
+          .spinning {
+              animation: spin 2s linear infinite; /* Adjust duration and easing */
           }
-        }
 
-        abbr {
-          text-decoration: none;
-        }
+          @keyframes spin {
+              0% {
+                  transform: rotate(0deg);
+              }
+              100% {
+                  transform: rotate(360deg);
+              }
+          }
 
-        .reply-info {
-          /*background: #b4c4be;*/
-          margin: 0px 10px -9px 10px;
-          padding: 5px;
-          border: 1px solid black;
-        }
+          abbr {
+              text-decoration: none;
+          }
 
-        .reply-to-div {
-          flex-direction: row;
-          /*background: rgb(208, 208, 208);*/
-          margin: 0px 12px -4px;
-          border-radius: 12px;
-          font-size: smaller;
-          padding-left: 5px;
-          align-items: center;
-          color: #202020;
-        }
+          .reply-info {
+              /*background: #b4c4be;*/
+              margin: 0px 10px -9px 10px;
+              padding: 5px;
+              border: 1px solid black;
+          }
 
-        .ui5-select-label-root {
-          font-size: larger;
-          font-weight: bold;
-        }
+          .reply-to-div {
+              flex-direction: row;
+              /*background: rgb(208, 208, 208);*/
+              margin: 0px 12px -4px;
+              border-radius: 12px;
+              font-size: smaller;
+              padding-left: 5px;
+              align-items: center;
+              color: #202020;
+          }
 
-        #mainDiv {
-          display: flex;
-          flex-direction: row;
-          height: inherit;
-        }
+          .ui5-select-label-root {
+              font-size: larger;
+              font-weight: bold;
+          }
 
-        #leftSide {
-          /*background: #B9CCE7;*/
-          /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */
-          width: 288px;
-          min-width: 288px;
-          max-width: 288px;
-          display: flex;
-          flex-direction: column;
-          /*gap:15px;*/
-        }
+          #mainDiv {
+              display: flex;
+              flex-direction: row;
+              height: inherit;
+          }
 
-        #profilePop::part(content) {
-          padding: 0px;
-        }
+          #leftSide {
+              /*background: #B9CCE7;*/
+              /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */
+              width: 288px;
+              min-width: 288px;
+              max-width: 288px;
+              display: flex;
+              flex-direction: column;
+              /*gap:15px;*/
+          }
 
-        #profile-row {
-          display: flex;
-          flex-direction: row;
-          margin-bottom: 2px;
-          padding-right: 5px;
-          background: rgba(221, 233, 240, 0.68);
-          box-shadow: -1px -18px 14px -2px rgba(0, 0, 0, 0.08);
-        }
+          #profilePop::part(content) {
+              padding: 0px;
+          }
 
-        #mainSide {
-          overflow: auto;
-          display: flex;
-          flex-grow: 1;
-          flex-direction: column;
-          z-index: 1;
-          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
-          box-shadow: -22px 0px 20px -2px rgba(0, 0, 0, 0.08);
-        }
+          #profile-row {
+              display: flex;
+              flex-direction: row;
+              margin-bottom: 2px;
+              padding-right: 5px;
+              background: rgba(221, 233, 240, 0.68);
+              box-shadow: -1px -18px 14px -2px rgba(0, 0, 0, 0.08);
+          }
 
-        #lowerSide {
-          background: linear-gradient(0deg, #F4F9FC 95%, hsl(0, 0%, 87.1%) 100%);
-          display: flex;
-          flex-direction: row;
-          flex-grow: 1;
-          overflow-y: auto;
-        }
+          #mainSide {
+              overflow: auto;
+              display: flex;
+              flex-grow: 1;
+              flex-direction: column;
+              z-index: 1;
+              /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
+              box-shadow: -22px 0px 20px -2px rgba(0, 0, 0, 0.08);
+          }
 
-        #centerSide {
-          flex-grow: 1;
-          overflow: auto;
-          display: flex;
-          flex-direction: column;
-          position: relative;
-        }
+          #lowerSide {
+              background: linear-gradient(0deg, #F4F9FC 95%, hsl(0, 0%, 87.1%) 100%);
+              display: flex;
+              flex-direction: row;
+              flex-grow: 1;
+              overflow-y: auto;
+          }
 
-        presence-panel {
-          position: absolute;
-          top: 30px;
-          right: 40px;
-        }
+          #centerSide {
+              flex-grow: 1;
+              overflow: auto;
+              display: flex;
+              flex-direction: column;
+              position: relative;
+          }
 
-        #favoritesSide {
-          flex-direction: column;
-          min-width: 350px;
-          max-width: 350px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-        }
+          presence-panel {
+              position: absolute;
+              top: 30px;
+              right: 40px;
+          }
 
-        #rightSide {
-          width: 500px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-        }
+          #favoritesSide {
+              flex-direction: column;
+              min-width: 350px;
+              max-width: 350px;
+              box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+          }
 
-        #commentSide {
-          flex-direction: column;
-          min-width: 350px;
-          max-width: 350px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+          #rightSide {
+              width: 500px;
+              box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+          }
 
-        }
+          #commentSide {
+              flex-direction: column;
+              min-width: 350px;
+              max-width: 350px;
+              box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 
-        .chatAvatar {
-          margin-top: 5px;
-          margin-left: 5px;
-          margin-bottom: 5px;
-          margin-right: 5px;
-          min-width: 48px;
-        }
+          }
 
-        #threadTitle {
-          font-size: 18px;
-          font-weight: bold;
-        }
+          .chatAvatar {
+              margin-top: 5px;
+              margin-left: 5px;
+              margin-bottom: 5px;
+              margin-right: 5px;
+              min-width: 48px;
+          }
 
-        #uploadCard {
-          margin: auto;
-          margin-bottom: 10px;
-          border-radius: 10px;
-          /*margin-left:10px;*/
-          min-width: 350px;
-          width: 90%;
-          padding: 5px;
-          display: flex;
-          flex-direction: column;
-          border: 1px solid black;
-          background: beige;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
-        }
+          #threadTitle {
+              font-size: 18px;
+              font-weight: bold;
+          }
 
-        #group-div {
-          display: flex;
-          flex-direction: row;
-          cursor: pointer;
-          background: none;
-          padding-right: 7px;
-          border-bottom: 1px solid #c6c6c6;
-          margin-bottom: 7px;
-        }
+          #uploadCard {
+              margin: auto;
+              margin-bottom: 10px;
+              border-radius: 10px;
+              /*margin-left:10px;*/
+              min-width: 350px;
+              width: 90%;
+              padding: 5px;
+              display: flex;
+              flex-direction: column;
+              border: 1px solid black;
+              background: beige;
+              box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          }
 
-        #lister-select {
-          width: auto;
-          border: none;
-          background: none;
-          padding-left: 5px;
-          padding-right: 7px;
-          margin: 15px 1px 5px 1px;
-        }
+          #group-div {
+              display: flex;
+              flex-direction: row;
+              cursor: pointer;
+              background: none;
+              padding-right: 7px;
+              border-bottom: 1px solid #c6c6c6;
+              margin-bottom: 7px;
+          }
 
-        #group-div:hover,
-        #lister-select:hover {
-          /*background:red;*/
-          /*font-weight: bold;*/
-          z-index: 0;
-          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
-          background: rgba(214, 226, 245, 0.8);
-          /*outline: 1px solid darkblue;*/
-        }
+          #lister-select {
+              width: auto;
+              border: none;
+              background: none;
+              padding-left: 5px;
+              padding-right: 7px;
+              margin: 15px 1px 5px 1px;
+          }
 
-        .popover-content {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          margin-top: -20px;
-          margin-left: -12px;
-        }
+          #group-div:hover,
+          #lister-select:hover {
+              /*background:red;*/
+              /*font-weight: bold;*/
+              z-index: 0;
+              /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
+              background: rgba(214, 226, 245, 0.8);
+              /*outline: 1px solid darkblue;*/
+          }
 
-        .flex-column {
-          display: flex;
-          flex-direction: column;
-        }
+          .popover-content {
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              margin-top: -20px;
+              margin-left: -12px;
+          }
 
-        .popover-footer {
-          display: flex;
-          justify-content: flex-end;
-          width: 100%;
-          align-items: center;
-          padding: 0.5rem 0;
-        }
+          .flex-column {
+              display: flex;
+              flex-direction: column;
+          }
 
-        .search-group-header {
-          text-transform: uppercase;
-          padding-top: 0px;
-        }
+          .popover-footer {
+              display: flex;
+              justify-content: flex-end;
+              width: 100%;
+              align-items: center;
+              padding: 0.5rem 0;
+          }
 
-        vines-input-bar {
-          margin: 3px 10px 10px 10px;
-        }
+          .search-group-header {
+              text-transform: uppercase;
+              padding-top: 0px;
+          }
 
-        #topicBar {
-          background: white;
-          padding: 0px 8px 0px 2px;
-          margin-left: 5px;
-          height: 44px;
-          /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
-          display: flex;
-          flex-direction: row;
-          color: #392D1B;
-          align-items: center;
-          z-index: inherit;
-        }
+          vines-input-bar {
+              margin: 3px 10px 10px 10px;
+          }
 
-        #topicBar ui5-button {
-          color: #464646;
-          border: none;
-        }
+          #topicBar {
+              background: white;
+              padding: 0px 8px 0px 2px;
+              margin-left: 5px;
+              height: 44px;
+              /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
+              display: flex;
+              flex-direction: row;
+              color: #392D1B;
+              align-items: center;
+              z-index: inherit;
+          }
 
-        #topicBar ui5-button.pressed {
-          /*box-shadow: inset 2px 2px 1px #7b7878, inset 2px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -3px 5px rgba(255, 255, 255, 0.5);*/
-          box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.3), inset -3px -3px 8px rgba(255, 255, 255, 0.3);
+          #topicBar ui5-button {
+              color: #464646;
+              border: none;
+          }
 
-        }
+          #topicBar ui5-button.pressed {
+              /*box-shadow: inset 2px 2px 1px #7b7878, inset 2px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -3px 5px rgba(255, 255, 255, 0.5);*/
+              box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.3), inset -3px -3px 8px rgba(255, 255, 255, 0.3);
 
-        #membersCount:hover {
-          color: black;
-        }
+          }
 
-        #topicBar ui5-button:hover {
-          background: #e6e6e6;
-        }
+          #membersCount:hover {
+              color: black;
+          }
 
-        #topBarBtnGroup {
-          display: flex;
-          flex-direction: row;
-          gap: 3px;
-          align-items: center
-        }
-        
-        .numberBadge {
-          /*position: absolute;
-          top: 5px;
-          right: 8px;
-          background-color: #33A000;
-          color: white;
-          border-radius: 50%;
-          padding: 2px 5px;
-          font-size: 10px;
-          font-weight: bold;
-          text-align: center;
-          */
-          background: #33A000;
-          color: white;
-          border-radius: 10px;
-          padding: 1px 9px;
-          font-size: 10px;
-          font-weight: bold;
-          /*margin-right: -5px;*/
-          z-index: 10;
-        }
+          #topicBar ui5-button:hover {
+              background: #e6e6e6;
+          }
 
-        .numberBadge:empty {
-          display: none;
-        }
+          #topBarBtnGroup {
+              display: flex;
+              flex-direction: row;
+              gap: 3px;
+              align-items: center
+          }
 
-        .listerbtn:hover {
-          cursor: pointer;
-          outline: 2px solid rgba(49, 95, 252, 0.61);
-        }
+          .numberBadge {
+              /*position: absolute;
+              top: 5px;
+              right: 8px;
+              background-color: #33A000;
+              color: white;
+              border-radius: 50%;
+              padding: 2px 5px;
+              font-size: 10px;
+              font-weight: bold;
+              text-align: center;
+              */
+              background: #33A000;
+              color: white;
+              border-radius: 10px;
+              padding: 1px 9px;
+              font-size: 10px;
+              font-weight: bold;
+              /*margin-right: -5px;*/
+              z-index: 10;
+          }
 
-        .listerbtn {
-          display: grid;
-          place-items: center;
-          flex-grow: 1;
-          border-radius: 10px;
-          padding: 3px 0px 3px 0px;
-          color: #4D4D4D;
-        }
+          .numberBadge:empty {
+              display: none;
+          }
 
-        .listerbtn.selected {
-          background: white;
-          font-weight: bold;
-          box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197, 209, 208, 0);
-        }
+          .listerbtn:hover {
+              cursor: pointer;
+              outline: 2px solid rgba(49, 95, 252, 0.61);
+          }
 
-        #primaryTitle {
-          font-size: 20px;
-        }
+          .listerbtn {
+              display: grid;
+              place-items: center;
+              flex-grow: 1;
+              border-radius: 10px;
+              padding: 3px 0px 3px 0px;
+              color: #4D4D4D;
+          }
 
-        #primaryTitle:hover {
-          text-decoration: underline;
-          cursor: pointer;
-        }
+          .listerbtn.selected {
+              background: white;
+              font-weight: bold;
+              box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197, 209, 208, 0);
+          }
 
-        #typing-div {
-          padding-left: 70px;
-          padding-bottom: 5px;
-          font-size: small;
-          color: #5a69b5;
-        }
+          #primaryTitle {
+              font-size: 20px;
+          }
 
-        #dmSign {
-          /*width: 50px;*/
-          flex-direction: row;
-          border-radius: 20px;
-          background: #8f8f8f;
-          position: absolute;
-          bottom: 100px;
-          left: 90px;
-          display: none;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
-          padding: 10px;
-        }
+          #primaryTitle:hover {
+              text-decoration: underline;
+              cursor: pointer;
+          }
+
+          #typing-div {
+              padding-left: 70px;
+              padding-bottom: 5px;
+              font-size: small;
+              color: #5a69b5;
+          }
+
+          #dmSign {
+              /*width: 50px;*/
+              flex-direction: row;
+              border-radius: 20px;
+              background: #8f8f8f;
+              position: absolute;
+              bottom: 100px;
+              left: 90px;
+              display: none;
+              box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
+              padding: 10px;
+          }
       `,
 
     ];
