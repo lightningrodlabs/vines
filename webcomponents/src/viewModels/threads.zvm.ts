@@ -1174,9 +1174,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
       if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
         this.fetchUnknownBead(beadInfo.bead.prevBeadAh);
       }
-      /** Store in perspective */
-      this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isPersistent, isNew, innerPair);
     }
+    /** Store in perspective */
+    this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isPersistent, isNew, innerPair);
   }
 
 
