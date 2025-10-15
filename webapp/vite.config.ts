@@ -16,8 +16,11 @@ const DIST_FOLDER = "dist"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+
   resolve: {
-    //'@vines/elements': path.resolve(__dirname, '../webcomponents/src/index.ts'),
+    // alias: {
+    //   '@vines/elements': path.resolve(__dirname, '../webcomponents/src'),
+    // }
   },
   plugins: [
     checker({

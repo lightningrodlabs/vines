@@ -310,6 +310,7 @@ export class VinesApp extends HappMultiElement {
     }
     const hrl: Hrl = e.detail;
     const wurl = weaveUrlFromWal({hrl}/*, true*/);
+    console.debug("onCopy() wurl", wurl);
     navigator.clipboard.writeText(wurl);
     if (this._weServices) {
       this._weServices.assets.assetToPocket({hrl});
