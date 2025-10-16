@@ -18,11 +18,11 @@ jobs:
         shell: bash
         run: |
           npm run install:rust
-      # Download submodules
-      - name: Download submodules
+      # install zits
+      - name: install zits
         shell: bash
         run: |
-          npm run install:submodules
+          npm run install:zits
       # install hc tool
       - name: Install hc tool
         shell: bash
@@ -32,6 +32,11 @@ jobs:
       - name: Install hash-zome
         run: |
           npm run install:hash-zome
+      # Download submodules
+      - name: Download submodules
+        shell: bash
+        run: |
+          npm run install:submodules
       # Build Files happ
       - name: Build Files happ
         shell: bash
