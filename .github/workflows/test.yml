@@ -24,6 +24,3 @@ jobs:
       - name: Display artifacts folder
         run: ls -la
         working-directory: artifacts
-      # Display hash
-      - name: Display hash
-        run: npm run hash

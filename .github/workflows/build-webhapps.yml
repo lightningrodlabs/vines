@@ -70,6 +70,9 @@ jobs:
         shell: bash
         run: |
           npm run package:we
+      # Display we-applet hash
+      - name: Display we-applet hash
+        run: npm run hash
       # Regroup artifacts
       - name: Regroup artifacts
         run: |
