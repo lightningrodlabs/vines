@@ -2,61 +2,18 @@
 
 // @ts-ignore
 import {
-  /** api/common.ts */
+/** api/common.ts */
 // @ts-ignore
-    WebsocketConnectionOptions,
-  WsClientOptions,
-  HolochainError,
-  CloneIdHelper,
-  /** types.ts */
+WebsocketConnectionOptions, WsClientOptions, HolochainError, CloneIdHelper,
+/** types.ts */
 // @ts-ignore
-    KitsuneAgent,
-  KitsuneSpace,
-  HoloHashB64,
-  AgentPubKeyB64,
-  DnaHashB64,
-  WasmHashB64,
-  EntryHashB64,
-  ActionHashB64,
-  AnyDhtHashB64,
-  InstalledAppId,
-  Signature,
-  CellId,
-  DnaProperties,
-  RoleName,
-  InstalledCell,
-  Timestamp,
-  Duration,
-  HoloHashed,
-  FetchPoolInfo,
-  /** hdk/action.ts */
+KitsuneAgent, KitsuneSpace, HoloHashB64, AgentPubKeyB64, DnaHashB64, WasmHashB64, EntryHashB64, ActionHashB64, AnyDhtHashB64, InstalledAppId, Signature, CellId, DnaProperties, RoleName, InstalledCell, Timestamp, Duration, HoloHashed, FetchPoolInfo,
+/** hdk/action.ts */
 // @ts-ignore
-    SignedAction,
-  SignedActionHashed,
-  RegisterAgentActivity,
-  ActionHashed,
-  ActionType,
-  Action,
-  NewEntryAction,
-  Dna,
-  AgentValidationPkg,
-  InitZomesComplete,
-  CreateLink,
-  DeleteLink,
-  OpenChain,
-  CloseChain,
-  Update,
-  Delete,
-  Create,
-  /** hdk/capabilities.ts */
+SignedAction, SignedActionHashed, RegisterAgentActivity, ActionHashed, ActionType, Action, NewEntryAction, Dna, AgentValidationPkg, InitZomesComplete, CreateLink, DeleteLink, OpenChain, CloseChain, Update, Delete, Create,
+/** hdk/capabilities.ts */
 // @ts-ignore
-    CapSecret,
-  CapClaim,
-  GrantedFunctionsType,
-  GrantedFunctions,
-  ZomeCallCapGrant,
-  CapAccess,
-  CapGrant,
+CapSecret, CapClaim, GrantedFunctionsType, GrantedFunctions, ZomeCallCapGrant, CapAccess, CapGrant,
 ///** hdk/countersigning.ts */
 //CounterSigningSessionData,
 //PreflightRequest,
@@ -66,79 +23,23 @@ import {
 //PreflightBytes,
 //Role,
 //CountersigningAgentState,
-  /** hdk/dht-ops.ts */
+/** hdk/dht-ops.ts */
 // @ts-ignore
-    ChainOpType,
-  DhtOp,
-  WarrantOp,
-  ChainOp,
-  Warrant,
-  ChainIntegrityWarrant,
-  ValidationType,
-  ActionHashAndSig,
-  /** hdk/entry.ts */
+ChainOpType, DhtOp, WarrantOp, ChainOp, Warrant, ChainIntegrityWarrant, ValidationType, ActionHashAndSig,
+/** hdk/entry.ts */
 // @ts-ignore
-    EntryVisibility,
-  AppEntryDef,
-  EntryType,
-  EntryContent,
-  Entry,
-  /** hdk/record.ts */
+EntryVisibility, AppEntryDef, EntryType, EntryContent, Entry,
+/** hdk/record.ts */
 // @ts-ignore
-    Record as HcRecord,
-  RecordEntry as HcRecordEntry,
-  /** hdk/link.ts */
+Record as HcRecord, RecordEntry as HcRecordEntry,
+/** hdk/link.ts */
 //AnyLinkableHash,
 // @ts-ignore
-    ZomeIndex,
-  LinkType,
-  LinkTag,
-  RateWeight,
-  RateBucketId,
-  RateUnits,
-  Link,
-  /** api/admin/types.ts */
+ZomeIndex, LinkType, LinkTag, RateWeight, RateBucketId, RateUnits, Link,
+/** api/admin/types.ts */
 // @ts-ignore
 // YamlProperties
-    Zomes,
-  WasmCode,
-  DisabledAppReason,
-  AppInfoStatus,
-  StemCell,
-  ProvisionedCell,
-  ClonedCell,
-  CellType,
-  CellInfo,
-  AppInfo,
-  MembraneProof,
-  MemproofMap,
-  RoleSettingsMap,
-  RoleSettings,
-  DnaModifiersOpt,
-  DnaModifiers,
-  FunctionName,
-  ZomeName,
-  ZomeDefinition,
-  IntegrityZome,
-  CoordinatorZome,
-  DnaDefinition,
-  ResourceBytes,
-  ResourceMap,
-  CellProvisioningStrategy,
-  CellProvisioning,
-  DnaVersionSpec,
-  DnaVersionFlexible,
-  AppRoleDnaManifest,
-  AppRoleManifest,
-  AppManifest,
-  AppBundle,
-  AppBundleSource,
-  NetworkSeed,
-  AppStatusFilter,
-  AppInterfaceInfo,
-  AgentInfoSigned,
-  ZomeLocation,
-  DnaManifest,
+Zomes, WasmCode, DisabledAppReason, AppInfoStatus, StemCell, ProvisionedCell, ClonedCell, CellType, CellInfo, AppInfo, MembraneProof, MemproofMap, RoleSettingsMap, RoleSettings, DnaModifiersOpt, DnaModifiers, FunctionName, ZomeName, ZomeDefinition, IntegrityZome, CoordinatorZome, DnaDefinition, ResourceBytes, ResourceMap, CellProvisioningStrategy, CellProvisioning, DnaVersionSpec, DnaVersionFlexible, AppRoleDnaManifest, AppRoleManifest, AppManifest, AppBundle, AppBundleSource, NetworkSeed, AppStatusFilter, AppInterfaceInfo, AgentInfoSigned, ZomeLocation, DnaManifest,
 } from '@holochain/client';
 
 
@@ -162,18 +63,18 @@ type ExternalArray = Uint8Array;
 
 // @ts-ignore
 import {
-  /** Common */
+/** Common */
 // @ts-ignore
-    DhtOpHashB64, DhtOpHash,
-  /** DnaFile */
+DhtOpHashB64, DhtOpHash,
+/** DnaFile */
 // @ts-ignore
-    DnaFile, DnaDef,
-  /** entry-details */
+DnaFile, DnaDef,
+/** entry-details */
 // @ts-ignore
-    EntryDetails, RecordDetails, Details, DetailsType, EntryDhtStatus,
-  /** Validation */
+EntryDetails, RecordDetails, Details, DetailsType, EntryDhtStatus,
+/** Validation */
 // @ts-ignore
-    ValidationStatus, ValidationReceipt,
+ValidationStatus, ValidationReceipt,
 } from '@holochain-open-dev/core-types';
 
 /** User defined external dependencies */
@@ -286,12 +187,12 @@ export interface NotifyPeerInput {
  * Notification settings are per ParticipationProtocol.
  * Default setting is MentionsOnly (for normal threads, AllMessages for DM threads).
  * An agent has to declare if it wants notifications for all messages or none, since it deviates from the default setting
- *
+ * 
  */
 export enum NotifySetting {
-  Never = 'Never',
-  AllMessages = 'AllMessages',
-  MentionsOnly = 'MentionsOnly',
+	Never = 'Never',
+	AllMessages = 'AllMessages',
+	MentionsOnly = 'MentionsOnly',
 }
 
 export interface SetNotifySettingInput {
@@ -331,16 +232,15 @@ export interface FindSubjectsInput {
 }
 
 export enum BaseBeadKindType {
-  AnyBead = 'AnyBead',
-  EntryBead = 'EntryBead',
-  TextBead = 'TextBead',
+	AnyBead = 'AnyBead',
+	EntryBead = 'EntryBead',
+	TextBead = 'TextBead',
 }
-
-export type BaseBeadKindVariantAnyBead = { AnyBead: AnyBead }
-export type BaseBeadKindVariantEntryBead = { EntryBead: EntryBead }
-export type BaseBeadKindVariantTextBead = { TextBead: TextBead }
-export type BaseBeadKind =
-  | BaseBeadKindVariantAnyBead | BaseBeadKindVariantEntryBead | BaseBeadKindVariantTextBead;
+export type BaseBeadKindVariantAnyBead = {AnyBead: AnyBead}
+export type BaseBeadKindVariantEntryBead = {EntryBead: EntryBead}
+export type BaseBeadKindVariantTextBead = {TextBead: TextBead}
+export type BaseBeadKind = 
+ | BaseBeadKindVariantAnyBead | BaseBeadKindVariantEntryBead | BaseBeadKindVariantTextBead;
 
 /** First bead: prev_bead_ah == pp_ah */
 export interface Bead {
@@ -470,33 +370,25 @@ export const PP_ITEM_TYPE = "__protocol";
  * -------------------------------------------------------------------------------------------------
  */
 export enum ThreadsEntryType {
-  AnyBead = 'AnyBead',
-  EntryBead = 'EntryBead',
-  TextBead = 'TextBead',
-  EncryptedBead = 'EncryptedBead',
-  SemanticTopic = 'SemanticTopic',
-  ParticipationProtocol = 'ParticipationProtocol',
-  GlobalLastProbeLog = 'GlobalLastProbeLog',
-  ThreadLastProbeLog = 'ThreadLastProbeLog',
+	AnyBead = 'AnyBead',
+	EntryBead = 'EntryBead',
+	TextBead = 'TextBead',
+	EncryptedBead = 'EncryptedBead',
+	SemanticTopic = 'SemanticTopic',
+	ParticipationProtocol = 'ParticipationProtocol',
+	GlobalLastProbeLog = 'GlobalLastProbeLog',
+	ThreadLastProbeLog = 'ThreadLastProbeLog',
 }
-
-export type ThreadsEntryVariantAnyBead = { AnyBead: AnyBead }
-export type ThreadsEntryVariantEntryBead = { EntryBead: EntryBead }
-export type ThreadsEntryVariantTextBead = { TextBead: TextBead }
-export type ThreadsEntryVariantEncryptedBead = { EncryptedBead: EncryptedBead }
-export type ThreadsEntryVariantSemanticTopic = { SemanticTopic: SemanticTopic }
-export type ThreadsEntryVariantParticipationProtocol = { ParticipationProtocol: ParticipationProtocol }
-export type ThreadsEntryVariantGlobalLastProbeLog = { GlobalLastProbeLog: GlobalLastProbeLog }
-export type ThreadsEntryVariantThreadLastProbeLog = { ThreadLastProbeLog: ThreadLastProbeLog }
-export type ThreadsEntry =
-  | ThreadsEntryVariantAnyBead
-  | ThreadsEntryVariantEntryBead
-  | ThreadsEntryVariantTextBead
-  | ThreadsEntryVariantEncryptedBead
-  | ThreadsEntryVariantSemanticTopic
-  | ThreadsEntryVariantParticipationProtocol
-  | ThreadsEntryVariantGlobalLastProbeLog
-  | ThreadsEntryVariantThreadLastProbeLog;
+export type ThreadsEntryVariantAnyBead = {AnyBead: AnyBead}
+export type ThreadsEntryVariantEntryBead = {EntryBead: EntryBead}
+export type ThreadsEntryVariantTextBead = {TextBead: TextBead}
+export type ThreadsEntryVariantEncryptedBead = {EncryptedBead: EncryptedBead}
+export type ThreadsEntryVariantSemanticTopic = {SemanticTopic: SemanticTopic}
+export type ThreadsEntryVariantParticipationProtocol = {ParticipationProtocol: ParticipationProtocol}
+export type ThreadsEntryVariantGlobalLastProbeLog = {GlobalLastProbeLog: GlobalLastProbeLog}
+export type ThreadsEntryVariantThreadLastProbeLog = {ThreadLastProbeLog: ThreadLastProbeLog}
+export type ThreadsEntry = 
+ | ThreadsEntryVariantAnyBead | ThreadsEntryVariantEntryBead | ThreadsEntryVariantTextBead | ThreadsEntryVariantEncryptedBead | ThreadsEntryVariantSemanticTopic | ThreadsEntryVariantParticipationProtocol | ThreadsEntryVariantGlobalLastProbeLog | ThreadsEntryVariantThreadLastProbeLog;
 
 /** Dna properties */
 export interface ThreadsProperties {
