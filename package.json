@@ -104,8 +104,7 @@
     "dist:feed:we"           : "npm run dist -w we-applet_feed && npm run package:feed:we",
     "cp:we"                  : "cp artifacts/vines-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
 
-    "hash"                   : "weave hash-webhapp ./artifacts/vines-we_applet.webhapp",
-    "weave"                  : "weave --help",
+    "hash"                   : "ELECTRON_DISABLE_SANDBOX=1 weave hash-webhapp ./artifacts/vines-we_applet.webhapp",
 
     "update-version"         : "bash scripts/update-version-number.sh $npm_package_version",
     "dl-manual-release"      : "rm -rf release & mkdir -p release & gh release download manual-release -D release -R lightningrodlabs/vines",
