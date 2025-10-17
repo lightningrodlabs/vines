@@ -7,6 +7,8 @@ export * from './render';
 export * from './search';
 export * from './toast';
 
+export * as templates_webcomp_fr_fr from './generated/fr-fr.js';
+
 export * from './elements/emoji-bar';
 export * from './elements/input-bar';
 export * from './elements/wurl-link';
@@ -65,6 +67,7 @@ export * from './viewModels/threads.materialize';
 export * from './viewModels/threads.perspective';
 export * from './viewModels/threads.zvm';
 export * from './viewModels/threads.dvm';
+export * from './viewModels/thread';
 
 export * from './bindings/threads.proxy';
 export * from './bindings/threads.types';

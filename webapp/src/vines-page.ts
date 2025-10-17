@@ -204,6 +204,7 @@ import {
   VinesInputEvent,
   weaveUrlToWal,
   weClientContext,
+  composeNotificationTitle, renderAvatar, AnyBeadMat, Thread,
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -220,12 +221,9 @@ import {FilesDvm, FileView, prettyFileSize, splitFile, SplitObject} from "@ddd-q
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
-import {composeNotificationTitle, renderAvatar} from "@vines/elements/dist/render";
 import {mdiInformationOutline} from "@mdi/js";
-import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
 import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
-import {Thread} from "@vines/elements/dist/viewModels/thread";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...

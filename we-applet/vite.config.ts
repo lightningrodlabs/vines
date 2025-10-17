@@ -18,7 +18,8 @@ const DIST_FOLDER = "."
 export default defineConfig({
   resolve: {
     alias: {
-      '@vines/app': path.resolve(__dirname, '../webapp/src')
+      '@vines/app': path.resolve(__dirname, '../webapp/src'),
+      '@vines/elements': path.resolve(__dirname, '../webcomponents/src')
     }
   },
   plugins: [

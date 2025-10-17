@@ -1,7 +1,6 @@
 import * as locales from './generated/locales.js';
 import * as templates_app_fr_fr from './generated/fr-fr.js';
-import * as templates_webcomp_fr_fr from '@vines/elements/dist/generated/fr-fr.js';
-
+import {templates_webcomp_fr_fr} from '@vines/elements';
 import {configureLocalization} from "@lit/localize";
 
 /** Merge templates */

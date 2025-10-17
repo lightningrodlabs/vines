@@ -1,7 +1,7 @@
 import {defineConfig} from 'vite';
 import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
-//import path from "path";
+import path from "path";
 //import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
@@ -16,11 +16,10 @@ const DIST_FOLDER = "dist"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-
   resolve: {
-    // alias: {
-    //   '@vines/elements': path.resolve(__dirname, '../webcomponents/src'),
-    // }
+    alias: {
+      '@vines/elements': path.resolve(__dirname, '../webcomponents/src')
+    }
   },
   plugins: [
     checker({

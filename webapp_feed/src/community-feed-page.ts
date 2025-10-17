@@ -134,7 +134,6 @@ import {
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 
-import {Timestamp} from "@holochain/client";
 import {FrameNotification, GroupProfile} from "@theweave/api";
 import {consume} from "@lit/context";
 
@@ -143,12 +142,10 @@ import {FilesDvm, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
-import {toasty} from "@vines/elements/dist/toast";
+import {toasty} from "@vines/elements/toast";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiInformationOutline} from "@mdi/js";
-//import {parseSearchInput} from "@vines/elements/dist/search";
-import {CellIdStr} from "@ddd-qc/cell-proxy/dist/types";
-import {AnyBeadMat} from "@vines/elements/dist/viewModels/threads.materialize";
+import {AnyBeadMat} from "@vines/elements/viewModels/threads.materialize";
 import {AgentId} from "@ddd-qc/cell-proxy";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -166,7 +163,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    this.addEventListener('beforeunload', (e:any) => {
+    this.addEventListener('beforeunload', (e: any) => {
       console.log("<community-feed-page> beforeunload", e);
       // await this._dvm.threadsZvm.commitSearchLogs();
     });
@@ -182,6 +179,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     this.addEventListener('show-profile', this.onShowProfile);
     this.addEventListener('edit-profile', this.onEditProfile);
   }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     // @ts-ignore
@@ -205,7 +203,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       if (shadower) {
         shadow = shadower;
       }
-    } while(shadower);
+    } while (shadower);
     return shadow;
   }
 
@@ -223,7 +221,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   }
 
   /** */
-  onEditProfile(_e:any) {
+  onEditProfile(_e: any) {
     this.profileDialogElem.show();
   }
 
@@ -247,13 +245,13 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({ context: filesContext, subscribe: true })
+  @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  @consume({ context: weClientContext, subscribe: true })
+  @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
-  @consume({ context: onlineLoadedContext, subscribe: true })
+  @consume({context: onlineLoadedContext, subscribe: true})
   onlineLoaded!: boolean;
 
 
@@ -309,7 +307,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
     /** Fiddle with shadow parts CSS */
     const searchField = this.shadowRoot!.getElementById('search-field') as Input;
-    console.log("search-field", searchField,searchField.shadowRoot);
+    console.log("search-field", searchField, searchField.shadowRoot);
     if (searchField) {
       searchField.shadowRoot!.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
       this.requestUpdate();
@@ -326,7 +324,8 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       //const appletIds = await this._dvm.threadsZvm.pullAppletIds();
       //console.log("<community-feed-page> firstUpdated() appletIds", appletIds);
       for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
-        /*const wtf = */ await this.weServices.cacheFullAppletInfo(appletId);
+        /*const wtf = */
+        await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** notifyFrame of some new content */
       const allCount = this._dvm.threadsZvm.perspective.unreads.size + this._dvm.threadsZvm.perspective.newThreads.size;
@@ -338,7 +337,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'medium',
           timestamp: Date.now(),
-      }]);
+        }]);
       }
     }
     this.requestUpdate();
@@ -387,7 +386,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       //const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
       //const date_str = timeSince(date) + " ago";
       const [notifTitle, notifBody] = composeFeedNotificationTitle(notif, this._dvm, this._filesDvm, this.weServices);
-      let message = `"${notifBody}" from @${author}.` ; // | ${date_str}`;
+      let message = `"${notifBody}" from @${author}.`; // | ${date_str}`;
       /** in-app toast */
       if (canPopup) {
         toasty(notifTitle + " " + message);
@@ -433,7 +432,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
       } else {
         await this._dvm.profilesZvm.createMyProfile({nickname, fields});
       }
-    } catch (e:any) {
+    } catch (e: any) {
       console.log("createMyProfile() failed");
       console.log(e);
     }
@@ -445,7 +444,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("onSaveProfile()", profile)
     try {
       await this._dvm.profilesZvm.updateMyProfile(profile);
-    } catch(e:any) {
+    } catch (e: any) {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
     this.profileDialogElem.close(false);
@@ -518,7 +517,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   downloadTextFile(filename: string, content: string): void {
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -567,7 +566,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     };
 
     /* Use weServices, otherise try from dna properties */
-    if(this.weServices) {
+    if (this.weServices) {
       const appletInfo = this.weServices.appletInfoCached(new EntryId(this.weServices.appletIds[0]!));
       console.log("get appletInfo", appletInfo);
       if (appletInfo) {
@@ -602,193 +601,215 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     /** Render all */
     return html`
         <div id="mainDiv" @commenting-clicked=${this.onCommentingClicked}>
-          <div id="topBar">
-            <sl-tooltip content=${groupProfile.name} style="--show-delay: 500;">
-              <ui5-avatar size="S" class="chatAvatar"
-                          @click=${() => {
-                              //const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                              //const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
-                              //popover.showAt(btn);
-                          }}>
-                <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
-              </ui5-avatar>
-            </sl-tooltip>
-            <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon disabled
-                       @input=${(e:any) => {
-                          console.log("<search-field> @input", e.keyCode, e);
-                          let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
-                          let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
-                          if (searchElem.value == "") {
-                            searchPopElem.close();
-                            this.requestUpdate(); // important
-                            return;
-                          }
-                          searchPopElem.showAt(searchElem, true);
-                          searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
-                        }}
-                                                 @keypress=${(e:any) => {
-                          console.log("<search-field> @keypress", e.keyCode, e);
-                          let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
-                          let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
-                          //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
-                          if (searchElem.value != "") {
-                            if (e.keyCode === 13) {
-                              searchPopElem.close();
-                              this.requestUpdate(); // important
-                            } else {
-                              if (!searchPopElem.isOpen()) {
-                                searchPopElem.showAt(searchElem, true);
-                              }
-                            }
-                          } else {
-                            // TODO: check if this code branch is actually useful
-                            this.requestUpdate(); // important
-                          }
-                        }}>
-            </ui5-input>
-            <div style="flex-grow: 1"></div>
-            <ui5-button id="favButton" icon="favorite-list" tooltip=${msg("Favorites")}
-                        design="${this._canShowFavorites? "Emphasized" : ""}"
-                        style="border-radius: 30px;"
-                        @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
-            <ui5-button id="inboxButton" icon="bell" tooltip=${msg("Notifications")}
-                        style="border-radius: 30px;"
-                        @click=${() => {
-                        console.log("inboxButton.click()")
-                        const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
-                        if (popover.isOpen()) {
-                          popover.close();
-                          return;
-                        }
-                        const elem = this.shadowRoot!.getElementById("inboxButton");
-                        if (!elem) {
-                          console.error("Missing inboxButton HTML element")
-                        }
-                        popover.showAt(elem!);
-                      }}>
-            </ui5-button>
-              ${this._dvm.threadsZvm.perspective.inbox.size? html`
-                  <div id="notifCount">${this._dvm.threadsZvm.perspective.inbox.size}</div>
-              `: html``}
-              <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
+            <div id="topBar">
+                <sl-tooltip content=${groupProfile.name} style="--show-delay: 500;">
+                    <ui5-avatar size="S" class="chatAvatar"
+                                @click=${() => {
+                                    //const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+                                    //const btn = this.shadowRoot!.getElementById("group-div") as HTMLElement;
+                                    //popover.showAt(btn);
+                                }}>
+                        <img src=${groupProfile.icon_src} style="background: #fff; border: 1px solid #66666669;">
+                    </ui5-avatar>
+                </sl-tooltip>
+                <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon disabled
+                           @input=${(e: any) => {
+                               console.log("<search-field> @input", e.keyCode, e);
+                               let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                               let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
+                               if (searchElem.value == "") {
+                                   searchPopElem.close();
+                                   this.requestUpdate(); // important
+                                   return;
+                               }
+                               searchPopElem.showAt(searchElem, true);
+                               searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
+                           }}
+                           @keypress=${(e: any) => {
+                               console.log("<search-field> @keypress", e.keyCode, e);
+                               let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
+                               let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
+                               //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
+                               if (searchElem.value != "") {
+                                   if (e.keyCode === 13) {
+                                       searchPopElem.close();
+                                       this.requestUpdate(); // important
+                                   } else {
+                                       if (!searchPopElem.isOpen()) {
+                                           searchPopElem.showAt(searchElem, true);
+                                       }
+                                   }
+                               } else {
+                                   // TODO: check if this code branch is actually useful
+                                   this.requestUpdate(); // important
+                               }
+                           }}>
+                </ui5-input>
+                <div style="flex-grow: 1"></div>
+                <ui5-button id="favButton" icon="favorite-list" tooltip=${msg("Favorites")}
+                            design="${this._canShowFavorites? "Emphasized" : ""}"
+                            style="border-radius: 30px;"
+                            @click=${() => {this._canShowFavorites = !this._canShowFavorites;}}></ui5-button>
+                <ui5-button id="inboxButton" icon="bell" tooltip=${msg("Notifications")}
+                            style="border-radius: 30px;"
+                            @click=${() => {
+                                console.log("inboxButton.click()")
+                                const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
+                                if (popover.isOpen()) {
+                                    popover.close();
+                                    return;
+                                }
+                                const elem = this.shadowRoot!.getElementById("inboxButton");
+                                if (!elem) {
+                                    console.error("Missing inboxButton HTML element")
+                                }
+                                popover.showAt(elem!);
+                            }}>
+                </ui5-button>
+                ${this._dvm.threadsZvm.perspective.inbox.size? html`
+                    <div id="notifCount">${this._dvm.threadsZvm.perspective.inbox.size}</div>
+                ` : html``}
+                    <!-- <ui5-button id="groupBtn" tooltip slot="startButton"
                           style="margin-top:10px;"
                           design="Transparent" icon="navigation-down-arrow"
-                          @click=${(e:any) => {
-                            e.preventDefault();
-                            //console.log("onSettingsMenu()", e);
-                            const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
-                            const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
-                            menu.showAt(btn);
-                          }}>
+                          @click=${(e: any) => {
+                    e.preventDefault();
+                    //console.log("onSettingsMenu()", e);
+                    const menu = this.shadowRoot!.getElementById("groupMenu") as Menu;
+                    const btn = this.shadowRoot!.getElementById("groupBtn") as Button;
+                    menu.showAt(btn);
+                }}>
               </ui5-button>
               <ui5-menu id="groupMenu" @item-click=${this.onGroupMenu}>
                         <ui5-menu-item id="createTopic" text=${msg("Create New Category")} icon="add"></ui5-menu-item>
                         ${this._canViewArchivedSubjects
-                            ? html`<ui5-menu-item id="viewArchived" text=${msg("Hide Topics")} icon="hide"></ui5-menu-item>`
-                            : html`<ui5-menu-item id="viewArchived" text=${msg("Unhide Topics")} icon="show"></ui5-menu-item>`}
+                        ? html`
+                            <ui5-menu-item id="viewArchived" text=${msg("Hide Topics")} icon="hide"></ui5-menu-item>`
+                        : html`
+                            <ui5-menu-item id="viewArchived" text=${msg("Unhide Topics")} icon="show"></ui5-menu-item>`}
                         <ui5-menu-item id="markAllRead" text=${msg("Mark all as read")}></ui5-menu-item>
               </ui5-menu> -->
-              <ui5-button id="settingsBtn"
-                          icon="action-settings" tooltip=${msg("Settings")}
-                          style="border-radius: 30px;"
-                          @click=${(_e:any) => {
-                            //console.log("onSettingsMenu()", e);
-                            const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
-                            const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
-                            settingsMenu.showAt(settingsBtn);
-                          }}>
-              </ui5-button>
-                <ui5-menu id="settingsMenu" header-text=${msg("Settings")} 
-                          @item-click=${(e:any) => this.onSettingsMenu(e)}>
+                <ui5-button id="settingsBtn"
+                            icon="action-settings" tooltip=${msg("Settings")}
+                            style="border-radius: 30px;"
+                            @click=${(_e: any) => {
+                                //console.log("onSettingsMenu()", e);
+                                const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
+                                const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
+                                settingsMenu.showAt(settingsBtn);
+                            }}>
+                </ui5-button>
+                <ui5-menu id="settingsMenu" header-text=${msg("Settings")}
+                          @item-click=${(e: any) => this.onSettingsMenu(e)}>
                     <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")} icon="user-edit"></ui5-menu-item>
                     <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
-                    <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save" starts-section></ui5-menu-item>
-                    <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")} icon="open-folder" ></ui5-menu-item>
-                    <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder" ></ui5-menu-item>
-                    <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign" starts-section></ui5-menu-item>
-                    <ui5-menu-item id="dumpItem" text=${"Dump app logs"}></ui5-menu-item>
+                    <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
+                                   starts-section></ui5-menu-item>
+                    <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
+                                   icon="open-folder"></ui5-menu-item>
+                    <ui5-menu-item id="importOnlyItem" text=${msg("Import only")} icon="open-folder"></ui5-menu-item>
+                    <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
+                                   starts-section></ui5-menu-item>
+                    <ui5-menu-item id="dumpItem" text= ${"Dump app logs"}></ui5-menu-item>
                     <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
-                    <ui5-menu-item id="uploadFileItem" text=${msg("Import File")} icon="upload-to-cloud"></ui5-menu-item>                    
+                    <ui5-menu-item id="uploadFileItem" text=${msg("Import File")}
+                                   icon="upload-to-cloud"></ui5-menu-item>
                 </ui5-menu>
-              <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"
-                          @click=${(e:any) => {
-                              e.stopPropagation();
-                              this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {detail: {agentId: this.cell.address.agentId, x: e.clientX, y: e.clientY}, bubbles: true, composed: true}));}}>
-                  ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
-              </ui5-avatar>              
-          </div>
-          
-          <!-- Main area -->  
-          <div style="display:flex; flex-direction:row; flex-grow: 1;">
-            <div id="left" style="flex-grow:1"></div>
-            <div id="center" style="padding-top: 80px;">
-                <post-thread-view id="feed" .beadAh=${this.selectedPostAh} .favorites=${this._canShowFavorites}>
-                ${this._splitObj? html`
-                  <div id="uploadCard">
-                    <div style="padding:5px;">Uploading ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash]!.file.name}</div>
-                    <ui5-progress-indicator style="width:100%;"></ui5-progress-indicator>
-                  </div>
-                ` : html`
-                    <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
-                      Thread about "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
-                      <ui5-button icon="delete" design="Transparent"
-                                  style="border:none; padding:0px"
-                                  @click=${(_e:any) => {this._currentCommentRequest = undefined;}}></ui5-button>
-                    </div>`
-                }
+                <ui5-avatar size="S" class="chatAvatar" initials=${initials} color-scheme="Accent2"
+                            @click=${(e: any) => {
+                                e.stopPropagation();
+                                this.dispatchEvent(new CustomEvent<ShowProfileEvent>('show-profile', {
+                                    detail: {
+                                        agentId: this.cell.address.agentId,
+                                        x: e.clientX,
+                                        y: e.clientY
+                                    }, bubbles: true, composed: true
+                                }));
+                            }}>
+                    ${avatarUrl? html`<img src=${avatarUrl}>` : html``}
+                </ui5-avatar>
             </div>
-            <div id="right" style="flex-grow:1"></div>
-        </div>
-        
-          <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom" horizontal-align="Stretch">
-              <div class="popover-content">
-                  <ui5-list mode="None" separators="None">
-                      <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
-                      <!-- <ui5-li @click=${(_e:any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li> -->
-                      <ui5-li @click=${(_e:any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
-                      <ui5-li @click=${(_e:any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
-                      <ui5-li @click=${(_e:any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
-                      <ui5-li @click=${(_e:any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
-                  </ui5-list>
-              </div>
-          </ui5-popover>
-  
-          <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right" hide-arrow style="max-width: 500px">
-              <notification-list feed></notification-list>
-          </ui5-popover>
-            
+
+            <!-- Main area -->
+            <div style="display:flex; flex-direction:row; flex-grow: 1;">
+                <div id="left" style="flex-grow:1"></div>
+                <div id="center" style="padding-top: 80px;">
+                    <post-thread-view id="feed" .beadAh=${this.selectedPostAh} .favorites=${this._canShowFavorites}>
+                        ${this._splitObj? html`
+                            <div id="uploadCard">
+                                <div style="padding:5px;">Uploading
+                                    ${this._filesDvm.perspective.uploadStates[this._splitObj.dataHash]!.file.name}
+                                </div>
+                                <ui5-progress-indicator style="width:100%;"></ui5-progress-indicator>
+                            </div>
+                        ` : html`
+                            <div class="reply-info" style="display: ${this._currentCommentRequest? "block" : "none"}">
+                                Thread about
+                                    "${this._currentCommentRequest? this._currentCommentRequest.subjectName : ''}"
+                                <ui5-button icon="delete" design="Transparent"
+                                            style="border:none; padding:0px"
+                                            @click=${(_e: any) => {this._currentCommentRequest = undefined;}}></ui5-button>
+                            </div>`
+                        }
+                </div>
+                <div id="right" style="flex-grow:1"></div>
+            </div>
+
+            <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom"
+                         horizontal-align="Stretch">
+                <div class="popover-content">
+                    <ui5-list mode="None" separators="None">
+                        <ui5-li-groupheader class="search-group-header">${msg("Search Options")}</ui5-li-groupheader>
+                            <!-- <ui5-li @click=${(_e: any) => this.addSearch("in:")}
+                            ><b>in:</b> <i>thread</i></ui5-li> -->
+                        <ui5-li @click=${(_e: any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
+                        <ui5-li @click=${(_e: any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i></ui5-li>
+                        <ui5-li @click=${(_e: any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
+                        <ui5-li @click=${(_e: any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                    </ui5-list>
+                </div>
+            </ui5-popover>
+
+            <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right"
+                         hide-arrow style="max-width: 500px">
+                <notification-list feed></notification-list>
+            </ui5-popover>
+
         </div>
         <!-- FAB -->
-        <ui5-button id="create-fab" icon="add" design="Emphasized" tooltip=${msg("Create Post")} @click=${(_e:any) => this.createPostDialogElem.show()}></ui5-button>
+        <ui5-button id="create-fab" icon="add" design="Emphasized" tooltip=${msg("Create Post")}
+                    @click=${(_e: any) => this.createPostDialogElem.show()}></ui5-button>
         <!-- DIALOGS -->
         <ui5-dialog id="wait-dialog">
-            <ui5-busy-indicator delay="0" size="Large" active style="padding-top:20px; width:100%;"></ui5-busy-indicator>
+            <ui5-busy-indicator delay="0" size="Large" active
+                                style="padding-top:20px; width:100%;"></ui5-busy-indicator>
         </ui5-dialog>
         <ui5-dialog id="create-post-dialog">
             <create-post-panel
                     @created=${async (e: CustomEvent<PostCreatedEvent>) => {
-                      console.log("@created", e.detail); 
-                      this.createPostDialogElem.close(false);
-                      if (e.detail.createdMainThread) {
-                        // FIXME: Find a way to refresh feed
-                        window.location.reload();
-                        // const feed = this.shadowRoot!.getElementById("feed") as LitElement;
-                        // await this._dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
-                        // feed.requestUpdate();
-                      }
+                        console.log("@created", e.detail);
+                        this.createPostDialogElem.close(false);
+                        if (e.detail.createdMainThread) {
+                            // FIXME: Find a way to refresh feed
+                            window.location.reload();
+                            // const feed = this.shadowRoot!.getElementById("feed") as LitElement;
+                            // await this._dvm.threadsZvm.probeSubjectThreads(MAIN_TOPIC_HASH);
+                            // feed.requestUpdate();
+                        }
                     }}
                     @cancel=${() => this.createPostDialogElem.close(false)}
             ></create-post-panel>
         </ui5-dialog>
         <!-- Profile  -->
         <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
-            <profile-panel id="profilePanel" @edit-profile=${(_e:any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}></profile-panel>
+            <profile-panel id="profilePanel"
+                           @edit-profile=${(_e: any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}></profile-panel>
         </ui5-popover>
         <ui5-dialog id="profile-dialog" header-text=${msg("Edit Profile")}>
             <vines-edit-profile
                     allowCancel
                     .profile=${myProfile}
-                    .saveProfileLabel= ${msg('Edit Profile')}
+                    .saveProfileLabel=${msg('Edit Profile')}
                     @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
                     @lang-selected=${(e: CustomEvent) => setLocale(e.detail)}
                     @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
@@ -805,7 +826,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     var input = document.createElement('input');
     input.type = 'file';
     input.accept = ".json";
-    input.onchange = async (e:any) => {
+    input.onchange = async (e: any) => {
       console.log("onImport() target download file", e);
       const file = e.target.files[0];
       if (!file) {
@@ -813,7 +834,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         return;
       }
       const reader = new FileReader();
-      reader.onload = (_e:any) => {
+      reader.onload = (_e: any) => {
         const contents = reader.result as string;
         //console.log(contents);
         this._dvm.importPerspective(contents, canPublish);
@@ -830,7 +851,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("<community-feed-page>.openFile()");
     var input = document.createElement('input');
     input.type = 'file';
-    input.onchange = async (e:any) => {
+    input.onchange = async (e: any) => {
       console.log("<community-feed-page> target download file", e);
       const file = e.target.files[0];
       if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
@@ -851,23 +872,28 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  async onGroupMenu(e:any): Promise<void> {
+  async onGroupMenu(e: any): Promise<void> {
     console.log("onGroupMenu item-click", e)
     switch (e.detail.item.id) {
-      case "markAllRead": this.onCommitBtn(e); break;
+      case "markAllRead":
+        this.onCommitBtn(e);
+        break;
     }
   }
 
 
-
   /** */
-  async onSettingsMenu(e:any): Promise<void> {
+  async onSettingsMenu(e: any): Promise<void> {
     console.log("item-click", e);
     this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
-      case "uploadFileItem": this.openFile(); break;
-      case "editProfileItem": this.profileDialogElem.show(); break;
+      case "uploadFileItem":
+        this.openFile();
+        break;
+      case "editProfileItem":
+        this.profileDialogElem.show();
+        break;
       // @ts-ignore
       case "exportAllItem":
         if (content == "") content = await this._dvm.exportAllPerspective();
@@ -878,11 +904,23 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         this.downloadTextFile("dump_feed.json", content);
         toasty(msg(`Exported data to json in Downloads folder`));
         break;
-      case "importCommitItem": this.importDvm(true); break;
-      case "importOnlyItem": this.importDvm(false); break;
-      case "bugItem": window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank'); break;
-      case "dumpItem": this._dvm.dumpCallLogs(); this._dvm.dumpSignalLogs(); this._filesDvm.dumpSignalLogs(); break;
-      case "dumpNetworkItem": this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true})); break;
+      case "importCommitItem":
+        this.importDvm(true);
+        break;
+      case "importOnlyItem":
+        this.importDvm(false);
+        break;
+      case "bugItem":
+        window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank');
+        break;
+      case "dumpItem":
+        this._dvm.dumpCallLogs();
+        this._dvm.dumpSignalLogs();
+        this._filesDvm.dumpSignalLogs();
+        break;
+      case "dumpNetworkItem":
+        this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true}));
+        break;
     }
     this.waitDialogElem.close();
   }
@@ -928,7 +966,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           width: 4.5em;
           height: 4.5em;
         }
-        
+
         abbr {
           text-decoration: none;
         }
@@ -937,6 +975,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         #create-post-dialog::part(content) {
           padding: 0px;
         }
+
         .reply-info {
           background: #b4c4be;
           margin: 0px 10px -9px 10px;
@@ -960,17 +999,17 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           /*display: flex;*/
           /*align-items: center;*/
         }
-        
+
         #profilePop::part(content) {
           padding: 0px;
         }
-        
+
         #profile-row {
           display: flex;
           flex-direction: row;
           padding-right: 5px;
           background: #e8e8e8;
-          box-shadow: -1px -18px 14px -2px rgba(0,0,0,0.08);
+          box-shadow: -1px -18px 14px -2px rgba(0, 0, 0, 0.08);
           /*background: white;*/
           /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
         }
@@ -979,6 +1018,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         .shellbtn {
           color: #464646;
         }
+
         .shellbtn:hover {
           background: #e6e6e6;
         }
@@ -990,7 +1030,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           align-items: center;
           background: white;
           padding-left: 2px;
-          border-radius:5px;
+          border-radius: 5px;
           /*box-shadow: rgba(30, 30, 30, 0.17) 2px 10px 10px;*/
           box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;
           position: fixed;
@@ -1005,7 +1045,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           margin-bottom: 5px;
           margin-right: 5px;
           min-width: 48px;
-          cursor:pointer;
+          cursor: pointer;
         }
 
         #threadTitle {
@@ -1028,22 +1068,22 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
         #group-div {
           display: flex;
           flex-direction: row;
-          cursor:pointer;
+          cursor: pointer;
           background: none;
           padding-right: 7px;
         }
 
         #dna-select {
-          width:auto;
-          border:none;
-          margin:0px 1px 0px 1px;
+          width: auto;
+          border: none;
+          margin: 0px 1px 0px 1px;
           background: none;
           padding-left: 5px;
           padding-right: 7px;
-          margin-top:15px;
-          margin-bottom:15px;
+          margin-top: 15px;
+          margin-bottom: 15px;
         }
-        
+
         .popover-content {
           display: flex;
           flex-direction: column;
@@ -1069,7 +1109,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           text-transform: uppercase;
           padding-top: 0px;
         }
-        
+
         #notifCount {
           border-radius: 50%;
           background: red;
@@ -1083,7 +1123,7 @@ export class CommunityFeedPage extends DnaElement<ThreadsDnaPerspective, Threads
           text-align: center;
           min-width: 1em;
         }
-        
+
       `,
 
     ];
