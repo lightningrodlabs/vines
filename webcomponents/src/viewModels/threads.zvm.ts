@@ -455,14 +455,26 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
-  /** TODO: maybe cache value ; check when pulling latest is actually necessary  */
+  private _cacheNotifSettings: ActionIdMap<[Timestamp, [AgentId, NotifySetting, ActionId][]]> = new ActionIdMap();
+
+  /** Cache value for a minute */
   async pullNotifSettings(ppAh: ActionId): Promise<[AgentId, NotifySetting, ActionId][]> {
+    const now = Date.now();
+    const oneMinuteAgo = new Date(now - 60 * 1000).getTime();
+    //console.debug("pullNotifSettings()", ppAh, oneMinuteAgo, now);
+    const maybe = this._cacheNotifSettings.get(ppAh);
+    if (maybe && oneMinuteAgo < maybe[0]) {
+      //console.debug("pullNotifSettings() from cache", ppAh);
+      return maybe[1];
+    }
     //this._perspective.notifSettings.delete(ppAh);
     const [throttleError, notifSettings] = await catchThrottled(this.zomeProxy.pullPpNotifySettings(ppAh.hash));
     if (throttleError) {
       return [];
     }
-    return notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
+    const threadNotifSettings: [AgentId, NotifySetting, ActionId][] = notifSettings.map(([a, n, c]) => [new AgentId(a), n, new ActionId(c)]);
+    this._cacheNotifSettings.set(ppAh, [now, threadNotifSettings]);
+    return threadNotifSettings;
   }
 
 
