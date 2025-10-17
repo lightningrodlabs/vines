@@ -154,8 +154,16 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
   }
   let mentionedAgents = profilesZvm.perspective.agents;
   if (!hasAll) {
-    mentionedAgents = mentions
-      .map((mentioned) => profilesZvm.perspective.getAgent(mentioned)!)
+    mentionedAgents = [];
+    mentions.map((mentioned) => {
+      const set = profilesZvm.perspective.agentByName[mentioned]!;
+      if (set) {
+        mentionedAgents.push(...set);
+        if (set.size > 1) {
+          console.warn("parseMentions() multiple agents found with name.", mentioned);
+        }
+      }
+    })
     //.filter((el) => el != undefined);
   }
   return mentionedAgents;

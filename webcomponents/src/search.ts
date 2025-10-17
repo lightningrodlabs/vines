@@ -84,7 +84,16 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesAlt
       case "from:":
         const author = subs[1];
         if (author && author != "") {
-          result.author = profilesPerspective.getAgent(author)? profilesPerspective.getAgent(author)! : AgentId.empty();
+          const authors = profilesPerspective.agentByName[author];
+          if (authors && authors.size > 0) {
+            result.author = authors.values().next().value;
+            if (authors.size > 1) {
+              console.warn("parseSearchInput() multiple agents found with name. Using only first one for search", author);
+            }
+          } else {
+            result.author = AgentId.empty();
+            console.warn("parseSearchInput() author not found", author);
+          }
         }
         break;
       case "mentions:":
@@ -236,10 +245,16 @@ export async function generateSearchTest() {
   result &&= testSeachParse("from: alex", {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse('alex billy', {keywords: ["alex", "billy"], canSearchHidden: false});
 
-  result &&= testSeachParse("from:alex", {author: persp.getAgent("alex")!, canSearchHidden: false});
+  result &&= testSeachParse("from:alex", {
+    author: persp.agentByName["alex"]!.values().next().value,
+    canSearchHidden: false
+  });
   result &&= testSeachParse("from:jack", {author: AgentId.empty(), canSearchHidden: false});
   result &&= testSeachParse("from:tic tac", {author: AgentId.empty(), keywords: ["tac"], canSearchHidden: false});
-  result &&= testSeachParse('from:"tic tac"', {author: persp.getAgent("tic tac")!, canSearchHidden: false});
+  result &&= testSeachParse('from:"tic tac"', {
+    author: persp.agentByName["tic tac"]!.values().next().value,
+    canSearchHidden: false
+  });
   result &&= testSeachParse("mentions:alex", {mentionsAgentByName: "alex", canSearchHidden: false});
 
   result &&= testSeachParse('in:"#General: off-topic"', {threadByName: "#General: off-topic", canSearchHidden: false});
@@ -259,7 +274,7 @@ export async function generateSearchTest() {
       afterTs: 1577836800000000,
       keywords: ["golden", "lady"],
       mentionsAgentByName: "bill-y",
-      author: persp.getAgent("camille")!,
+      author: persp.agentByName["camille"]!.values().next().value,
       canSearchHidden: false
     });
 
