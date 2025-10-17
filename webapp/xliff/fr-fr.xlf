@@ -10,10 +10,6 @@
   <source>Edit Profile</source>
   <target>Editer Profile</target>
 </trans-unit>
-<trans-unit id="sf969c2297c7b8324">
-  <source>Create new Topic</source>
-  <target>Créer un nouveau sujet</target>
-</trans-unit>
 <trans-unit id="s9d8b8aa2b404c2c8">
   <source>Settings</source>
   <target>Paramètres</target>
@@ -58,14 +54,6 @@
   <source>Never</source>
   <target>Jamais</target>
 </trans-unit>
-<trans-unit id="sea38ebaa5e603b7a">
-  <source>Create Topic</source>
-  <target>Créer Sujet</target>
-</trans-unit>
-<trans-unit id="sd49456694d695e7e">
-  <source>Edit Topic</source>
-  <target>Modifier Sujet</target>
-</trans-unit>
 <trans-unit id="sd009a3da6a4ca1f5">
   <source>File successfully shared</source>
   <target>Fichier partagé avec succès</target>
@@ -85,10 +73,6 @@
 <trans-unit id="s35e45311a57818f9">
   <source>DM channel</source>
   <target>Canal privé</target>
-</trans-unit>
-<trans-unit id="s11cc72e3db49fec4">
-  <source>Topic</source>
-  <target>Sujet</target>
 </trans-unit>
 <trans-unit id="s1da50951bdd7a204">
   <source>Channel</source>
@@ -110,10 +94,6 @@
   <source>Members</source>
   <target>Membres</target>
 </trans-unit>
-<trans-unit id="s8865f02d9ebbd0f5">
-  <source>Topics</source>
-  <target>Sujets</target>
-</trans-unit>
 <trans-unit id="s274ead7abb4e71bf">
   <source>Notification settings for this channel</source>
   <target>Paramètres de notification pour ce canal</target>
@@ -125,14 +105,6 @@
 <trans-unit id="s99f110d27e30b289">
   <source>Title</source>
   <target>Titre</target>
-</trans-unit>
-<trans-unit id="s564cb97445533ac4">
-  <source>Create new channel</source>
-  <target>Créer nouveau canal</target>
-</trans-unit>
-<trans-unit id="s6d9e89e9aa685f21">
-  <source>Purpose</source>
-  <target>Raison d'être</target>
 </trans-unit>
 <trans-unit id="s382a2aa3984474dd">
   <source>Create</source>
@@ -172,144 +144,255 @@
 </trans-unit>
 <trans-unit id="s7ce5b133496ec34b">
   <source>Must be different from current title</source>
+  <target>Identique au titre actuel</target>
 </trans-unit>
 <trans-unit id="scecf37017247b0b6">
   <source>Minimum 3 characters</source>
+  <target>3 caracteres minimum</target>
 </trans-unit>
 <trans-unit id="s76195d20b87dba54">
   <source>Invalid characters</source>
+    <target>Caracteres invalides</target>
 </trans-unit>
 <trans-unit id="s0c26ad411955878a">
   <source>Message added to favorites</source>
+  <target>Message ajouter aux favoris</target>
 </trans-unit>
 <trans-unit id="sd5cebf2dae9ada75">
   <source>Message removed from favorites</source>
+  <target>Message retirer des favoris</target>
 </trans-unit>
 <trans-unit id="s20a500234e838dda">
   <source>Favorites</source>
+  <target>Favoris</target>
 </trans-unit>
 <trans-unit id="sed94da90fb5a6dbb">
   <source>Shared Files</source>
+  <target>Fichiers partagés</target>
 </trans-unit>
 <trans-unit id="sa32e9d0a108ee802">
   <source>Upload File</source>
+  <target>Televerser un fichier</target>
 </trans-unit>
 <trans-unit id="s59bf2810d8b2ec28">
   <source>DMs Cross View</source>
+  <target>Vu croiser des DMs</target>
 </trans-unit>
 <trans-unit id="sd0e1071f680d9d0e">
   <source>Share Network</source>
+  <target>Partager le reseau</target>
 </trans-unit>
 <trans-unit id="s78a89f89fef5b384">
   <source>Close side panel</source>
+  <target>Fermer le panel latéral</target>
 </trans-unit>
 <trans-unit id="sc26501e3ade7da3c">
   <source>Tools</source>
+  <target>Outils</target>
 </trans-unit>
 <trans-unit id="sf1f5ac34e94bd146">
   <source>Expand All</source>
+  <target>Etendre tout</target>
 </trans-unit>
 <trans-unit id="s62006d0c66337241">
   <source>Collapse All</source>
+  <target>Fermer tout</target>
 </trans-unit>
 <trans-unit id="s0da17e4cd77bb878">
   <source>Sort by creation time</source>
+  <target>Trier par date de creation</target>
 </trans-unit>
 <trans-unit id="sd332c0ffa9a5a912">
   <source>Sort alphabetically</source>
+  <target>Trier alphabetiquement</target>
 </trans-unit>
 <trans-unit id="sbdeedc1c60306b35">
   <source>Messages</source>
+  <target>Messages</target>
 </trans-unit>
 <trans-unit id="s884f957390b84459">
   <source>Message a peer</source>
+  <target>Ecrit a un pair</target>
 </trans-unit>
 <trans-unit id="sbf876639a6e9cbd7">
   <source>View Files</source>
+  <target>Voir les fichiers</target>
 </trans-unit>
 <trans-unit id="s95a45a35aa072a65">
   <source>View Favorites</source>
+  <target>Voir les favoris</target>
 </trans-unit>
 <trans-unit id="sc676fdb513f1ea9a">
   <source>Probe peers for content</source>
+  <target>Sonder le reseau pour du contenu</target>
 </trans-unit>
 <trans-unit id="s5e8250fb85d64c23">
   <source>Close</source>
+  <target>Fermer</target>
 </trans-unit>
 <trans-unit id="sa76d4c01726b605e">
   <source>Share this code with a peer to grant them access to this Network</source>
+  <target>Partage ce code a une personne pour lui donner access au reseau</target>
 </trans-unit>
 <trans-unit id="s8587f911bd45e922">
   <source>Copied share code to clipboard</source>
+  <target>Code de partage copier dans le presse-papier</target>
 </trans-unit>
 <trans-unit id="s86d42860e023b5f1">
   <source>Copy Joining Code</source>
+  <target>Copier le code d'invitation</target>
 </trans-unit>
 <trans-unit id="s55ddc7f60d3c09bb">
   <source>Inbox</source>
+  <target>Boite de reception</target>
 </trans-unit>
 <trans-unit id="s776051c2e6506aa1">
   <source>File Info</source>
+  <target>Information sur le fichier</target>
 </trans-unit>
 <trans-unit id="s96c1e831779d81f8">
   <source>Edit Channel Title</source>
-</trans-unit>
-<trans-unit id="s64ef2a6c2dd1d3d1">
-  <source>Edit</source>
+  <target>Modifier le titre du canal</target>
 </trans-unit>
 <trans-unit id="s1495feaa681f374b">
   <source>Minimum 1 character</source>
+  <target>Un caractere minimum</target>
 </trans-unit>
 <trans-unit id="sa2d505555b6701a8">
   <source>Copied WAL to clipboard</source>
+  <target>Copier WAL dans le presse-papier</target>
 </trans-unit>
 <trans-unit id="s9df212d89cab196d">
   <source>Hide</source>
+  <target>Cacher</target>
 </trans-unit>
 <trans-unit id="sa3443b99ecf186ea">
   <source>Unhide</source>
+  <target>Montrer</target>
 </trans-unit>
 <trans-unit id="se6bcb10cfdfb85eb">
   <source>DM channel hidden</source>
+  <target>Canal de DM cachee</target>
 </trans-unit>
 <trans-unit id="s235efeb83fe49aa0">
   <source>DM channel unhidden</source>
+  <target>Montrer canal de DM</target>
 </trans-unit>
 <trans-unit id="sa000c4df231528b9">
   <source>hidden</source>
+  <target>cache</target>
 </trans-unit>
 <trans-unit id="sf80f86fa152c1f52">
   <source>unhidden</source>
+  <target>montre</target>
 </trans-unit>
 <trans-unit id="sc592307ea80f16b9">
   <source>Unknown</source>
+  <target>Inconnu</target>
 </trans-unit>
 <trans-unit id="s50fa3befe81809d0">
   <source> is typing...</source>
+  <target> est en train d'ecrire...</target>
 </trans-unit>
 <trans-unit id="s130936e19bad7808">
   <source>Uploading file:</source>
+  <target>Fichier en cours de televersemenet:</target>
 </trans-unit>
 <trans-unit id="s0487f33d9ddaabde">
   <source>About</source>
+  <target>A propos</target>
 </trans-unit>
 <trans-unit id="s751678adb0aa2b23">
   <source>Member</source>
+  <target>Membre</target>
 </trans-unit>
 <trans-unit id="s9feb1a1345ccc3e5">
   <source>Network</source>
+  <target>Reseau</target>
 </trans-unit>
 <trans-unit id="s716a6024e3fe999c">
   <source>Show</source>
-</trans-unit>
-<trans-unit id="s3a9ab9fa945006eb">
-  <source>hidden Topics &amp; Channels</source>
+  <target>Montrer</target>
 </trans-unit>
 <trans-unit id="s05073d2537b45d1a">
   <source>Sync</source>
+  <target>Synchroniser</target>
 </trans-unit>
 <trans-unit id="s2ceb11be2290bb1b">
   <source>Cancel</source>
+  <target>Annuler</target>
+</trans-unit>
+<trans-unit id="s5e2e838ad12d97a3">
+  <source>Failed to load file</source>
+  <target>Impossible de charger le fichier</target>
+</trans-unit>
+<trans-unit id="s079a052719914d71">
+  <source>Category</source>
+  <target>Categories</target>
+</trans-unit>
+<trans-unit id="s3c804646c91361a2">
+  <source>Confirm new channel</source>
+  <target>Confirmer nouveau canal</target>
+</trans-unit>
+<trans-unit id="se7692167f1edeef2">
+  <source>Uploading...</source>
+  <target>Televersement en cours...</target>
+</trans-unit>
+<trans-unit id="s374bd2c937d5928a">
+  <source>View comments</source>
+  <target>Voir les commentaires</target>
+</trans-unit>
+<trans-unit id="sf9839d90ddaae710">
+  <source>Create comment thread</source>
+  <target>Creer fil de commentaires</target>
+</trans-unit>
+<trans-unit id="s37114ce595691035">
+  <source>Channels</source>
+  <target>Canaux</target>
+</trans-unit>
+<trans-unit id="s34aef425e5372571">
+  <source>Create New Category</source>
+  <target>Creer une nouvelle categorie</target>
+</trans-unit>
+<trans-unit id="se247034dec014703">
+  <source>hidden Categories &amp; Channels</source>
+  <target>Categories et canaux cachees</target>
+</trans-unit>
+<trans-unit id="s5794d94e58fae3ab">
+  <source>Share Network Seed</source>
+  <target>Parteger Network Seed</target>
+</trans-unit>
+<trans-unit id="s5dd970759b6e22d3">
+  <source>Edit Title</source>
+  <target>Modifier titre</target>
+</trans-unit>
+<trans-unit id="s9c99d3f4a6cb88db">
+  <source>Create Category</source>
+  <target>Creer categorie</target>
+</trans-unit>
+<trans-unit id="s33f85f24c0f5f008">
+  <source>Save</source>
+  <target>Sauvegarder</target>
+</trans-unit>
+<trans-unit id="sd59edddb0404a407">
+  <source>Edit Category</source>
+  <target>Modifier categorie</target>
+</trans-unit>
+<trans-unit id="s64b8a24aad3e6a04">
+  <source>Create New Channel</source>
+  <target>Creer nouveau canal</target>
+</trans-unit>
+<trans-unit id="s03cfd8e5fea14de2">
+  <source>Confirm New Channel</source>
+  <target>Confirmer nouveau canal</target>
+</trans-unit>
+<trans-unit id="s3d89dbf13c615157">
+  <source>Rules will not be modifiable once the channel is created</source>
+  <target>Les regles ne pourront plus etre modifier une fois que le canal est creer</target>
+</trans-unit>
+<trans-unit id="sb85774dc5d18ff0f">
+  <source>Confirm</source>
+  <target>Confirmer</target>
 </trans-unit>
 </body>
 </file>

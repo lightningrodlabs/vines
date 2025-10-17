@@ -98,17 +98,9 @@
   <source>View comments</source>
   <target>Voir commentaires</target>
 </trans-unit>
-<trans-unit id="sd382aebcb9973936">
-  <source>Create comment thread for this Topic</source>
-  <target>Créer fil de commentaire pour ce Sujet</target>
-</trans-unit>
 <trans-unit id="s5dd970759b6e22d3">
   <source>Edit Title</source>
   <target>Modifier Titre</target>
-</trans-unit>
-<trans-unit id="s2280dbdb07b20827">
-  <source>Create a new channel for this Topic</source>
-  <target>Créer un nouveau canal pour ce Sujet</target>
 </trans-unit>
 <trans-unit id="s4e9e2b7b1bd42183">
   <source>No subjects found</source>
@@ -278,10 +270,6 @@
   <source>Go to Tool</source>
   <target>Ouvrir Outil</target>
 </trans-unit>
-<trans-unit id="sf9839d90ddaae710">
-  <source>Create comment thread</source>
-  <target>Créer fil de commentaire</target>
-</trans-unit>
 <trans-unit id="sa898e62d9ad24ee3">
   <source>WeaveServices not available</source>
   <target>WeaveServices non-disponible</target>
@@ -297,10 +285,6 @@
 <trans-unit id="sa2d505555b6701a8">
   <source>Copied WAL to clipboard</source>
   <target>Copier WAL dans le presse-papier</target>
-</trans-unit>
-<trans-unit id="s6d9e89e9aa685f21">
-  <source>Purpose</source>
-  <target>Raison d'être</target>
 </trans-unit>
 <trans-unit id="sd5cebf2dae9ada75">
   <source>Message removed from favorites</source>
@@ -352,252 +336,363 @@
 </trans-unit>
 <trans-unit id="s3a9afc986f4936cf">
   <source>Rename file</source>
+  <target>Renommer le fichier</target>
 </trans-unit>
 <trans-unit id="s245245214a77e4cf">
   <source>No peers found</source>
+  <target>Aucun pair trouver</target>
 </trans-unit>
 <trans-unit id="sab8a74b036ed883a">
   <source>in groups</source>
+  <target>dans les groupes</target>
 </trans-unit>
 <trans-unit id="s6e9ce538224a588b">
   <source>Copied Text to clipboard</source>
+  <target>Copier le text dans le presse-papier</target>
 </trans-unit>
 <trans-unit id="s48736e8439e2acb6">
   <source>Copied WAL Link to clipboard</source>
+  <target>Copier le lien WAL dans le presse-papier</target>
 </trans-unit>
 <trans-unit id="s307bf47df2cfaaf5">
   <source>Download File</source>
+  <target>Telecharger un fichier</target>
 </trans-unit>
 <trans-unit id="s748439ab9fb5827c">
   <source>Copy WAL Link</source>
+  <target>Copier lien WAL</target>
 </trans-unit>
 <trans-unit id="s2031d5f7041e82aa">
   <source>view comments</source>
+  <target>Voir les commentaires</target>
 </trans-unit>
 <trans-unit id="s64ef2a6c2dd1d3d1">
   <source>Edit</source>
+  <target>Modifier</target>
 </trans-unit>
 <trans-unit id="sbd3ca78d792615e7">
   <source>escape to</source>
+  <target>echapper vers</target>
 </trans-unit>
 <trans-unit id="s47e83eaa4b387e3b">
   <source>cancel</source>
+  <target>annuler</target>
 </trans-unit>
 <trans-unit id="sdeb4105e1f8533a2">
   <source>enter to</source>
+  <target>entre pour</target>
 </trans-unit>
 <trans-unit id="s096a5e18bf857c28">
   <source>save</source>
+  <target>sauvegarder</target>
 </trans-unit>
 <trans-unit id="s2138d5192571b731">
   <source>new</source>
+  <target>nouveau</target>
 </trans-unit>
 <trans-unit id="sb226ae3a8315e853">
   <source>No peer selected</source>
+  <target>Aucun pair selectionner</target>
 </trans-unit>
 <trans-unit id="s5e8250fb85d64c23">
   <source>Close</source>
+  <target>Fermer</target>
 </trans-unit>
 <trans-unit id="s0d1be7a2c400c080">
   <source>more</source>
+  <target>plus</target>
 </trans-unit>
 <trans-unit id="s3b8b01f13046cffd">
   <source>Who's here</source>
+  <target>Qui est la</target>
 </trans-unit>
 <trans-unit id="s850f63b3de1ffb7c">
   <source>Bad characters</source>
+  <target>Caracteres invalides</target>
 </trans-unit>
 <trans-unit id="s1495feaa681f374b">
   <source>Minimum 1 character</source>
+  <target>Un caractere minimum</target>
 </trans-unit>
 <trans-unit id="sb8103c12cb92e053">
   <source>No SubjectTypes found</source>
+  <target>Aucun SubjectTypes trouver</target>
 </trans-unit>
 <trans-unit id="s458a5d1890be89c6">
   <source>(Might not be connected to peers yet)</source>
+  <target>(Peut-etre pas connecter au reseau de pairs)</target>
 </trans-unit>
 <trans-unit id="s11ec812e25ceef8a">
   <source>No messages found</source>
+  <target>Aucun message trouver</target>
 </trans-unit>
 <trans-unit id="s76420d0e51d44ab9">
   <source>Unknown member</source>
+  <target>Membre inconnu</target>
 </trans-unit>
 <trans-unit id="s669b18c6d2d9c95b">
   <source>None</source>
+  <target>Aucun</target>
 </trans-unit>
 <trans-unit id="sfacd0a18ddb097f4">
   <source>Banned from channel</source>
+  <target>Banni du canal</target>
 </trans-unit>
 <trans-unit id="sbe000d0bd494e88c">
   <source>Message has been flagged</source>
+  <target>Le message a ete signaler</target>
 </trans-unit>
 <trans-unit id="s9f5a5f23312798f0">
   <source>Members</source>
+  <target>Membres</target>
 </trans-unit>
 <trans-unit id="s751678adb0aa2b23">
   <source>Member</source>
+  <target>Membre</target>
 </trans-unit>
 <trans-unit id="sd980d545359db490">
   <source>Import Profile into Vines</source>
+  <target>Importer le Profile dans Vines</target>
 </trans-unit>
 <trans-unit id="sb134e975f4d78bc2">
   <source>Text too short</source>
+  <target>Texte trop court</target>
 </trans-unit>
 <trans-unit id="s3e3513ec0415a610">
   <source>Banned word used</source>
+  <target>Mot banni utiliser</target>
 </trans-unit>
 <trans-unit id="s5bd8bb9698a1dba7">
   <source>Invalid message</source>
+  <target>Message invalide</target>
 </trans-unit>
 <trans-unit id="sa997a8b9cd603f58">
   <source>Create Voice Message</source>
+  <target>Creer message vocal</target>
 </trans-unit>
 <trans-unit id="sab1b3fc881f10a59">
   <source>Add Attachment</source>
+  <target>Ajouter piece-jointe</target>
 </trans-unit>
 <trans-unit id="sfdff183743791c60">
   <source>&lt;Text message forbidden&gt;</source>
+  <target>&lt;Message texte interdit&gt;</target>
 </trans-unit>
 <trans-unit id="s7283f5ddbebc4fea">
   <source>limit:</source>
+  <target>Limite:</target>
 </trans-unit>
 <trans-unit id="sc147738d5cee9199">
   <source>characters</source>
+  <target>caracteres</target>
 </trans-unit>
 <trans-unit id="s57adf424d57c8a0f">
   <source>Send</source>
+  <target>Envoyer</target>
 </trans-unit>
 <trans-unit id="sf9aee319a006c9b4">
   <source>Add</source>
+  <target>Ajouter</target>
 </trans-unit>
 <trans-unit id="sca2ad486f916b89b">
   <source>Upload a File</source>
+  <target>Televerser un fichier</target>
 </trans-unit>
 <trans-unit id="sae8417fa2cd1ac01">
   <source>Insert a WAL Link</source>
+  <target>Inserer un lien WAL</target>
 </trans-unit>
 <trans-unit id="sf78ccbb5dbc169b1">
   <source>Embed a WAL</source>
+  <target>Integrer un WAL</target>
 </trans-unit>
 <trans-unit id="s60d7742ea6ab22c6">
   <source>to Pocket</source>
+  <target>vers Pocket</target>
 </trans-unit>
 <trans-unit id="s3687049d1af562c4">
   <source>Copy</source>
+  <target>Copier</target>
 </trans-unit>
 <trans-unit id="s21290c6601caecaa">
   <source>to clipboard</source>
+  <target>vers le presse-papier</target>
 </trans-unit>
 <trans-unit id="s1042dedac55ffb7a">
   <source>Restrictions</source>
+  <target>Contraintes</target>
 </trans-unit>
 <trans-unit id="s9078ee819c18df6e">
   <source>Enable</source>
+  <target>Activer</target>
 </trans-unit>
 <trans-unit id="s18d9277a5ac87167">
   <source>Participants</source>
+  <target>Participants</target>
 </trans-unit>
 <trans-unit id="s7516c4e6e32e14be">
   <source>messages per</source>
+  <target>messages par</target>
 </trans-unit>
 <trans-unit id="s407efecc7eb5764f">
   <source>hour</source>
+  <target>heure</target>
 </trans-unit>
 <trans-unit id="s5ee33a0c6e923bf5">
   <source>Message Types</source>
+  <target>Types de message</target>
 </trans-unit>
 <trans-unit id="s57d2379441a1bfed">
   <source>Moderation</source>
+  <target>Moderation</target>
 </trans-unit>
 <trans-unit id="s4629d0943788c295">
   <source>Moderators</source>
+  <target>Moderateurs</target>
 </trans-unit>
 <trans-unit id="sfc5cc343134991f5">
   <source>Infringements permitted per member</source>
+  <target>Infractions permisses par membre</target>
 </trans-unit>
 <trans-unit id="s77bc7219566a8ee4">
   <source>per</source>
+  <target>par</target>
 </trans-unit>
 <trans-unit id="sef38f6acc4a5ffd9">
   <source>File Messages:</source>
+  <target>Messages Fichier:</target>
 </trans-unit>
 <trans-unit id="s965c503c3e42fdfe">
   <source>Enabled</source>
+  <target>Actived</target>
 </trans-unit>
 <trans-unit id="sbf64627d262267a0">
   <source>No moderators set for this channel</source>
+  <target>Aucun moderateurs n'a ete etablie pour ce canal</target>
 </trans-unit>
 <trans-unit id="saa7ce532bf0e16ec">
   <source>(Press record button to start recording)</source>
+  <target>(Appuyez sur le bouton pour commencer l'enregistrement)</target>
 </trans-unit>
 <trans-unit id="s481b4c396698f750">
   <source>Recording in progess...</source>
+  <target>Enregistrement en cours...</target>
 </trans-unit>
 <trans-unit id="s41431c2bbdc5f824">
   <source>Attach</source>
+  <target>Attacher</target>
 </trans-unit>
 <trans-unit id="s1ee908b651f58117">
   <source>File hash: </source>
+  <target>Hash de fichier: </target>
 </trans-unit>
 <trans-unit id="s20e6f6ef08de49c3">
   <source>Missing File</source>
+  <target>Fichier manquant</target>
 </trans-unit>
 <trans-unit id="s3ddffe2ec6e7ef6a">
   <source>File manifest hash: </source>
+  <target>Hash de manifest de fichier: </target>
 </trans-unit>
 <trans-unit id="s7f59f507e02a2f38">
   <source>View</source>
+  <target>Voir</target>
 </trans-unit>
 <trans-unit id="s35e45311a57818f9">
   <source>DM channel</source>
+  <target>Canal DM</target>
 </trans-unit>
 <trans-unit id="sd01ad144229f6bdc">
   <source>AgentPubKey</source>
+  <target>AgentPubKey</target>
 </trans-unit>
 <trans-unit id="sa5013e9ad5caeda4">
   <source>channel</source>
+  <target>canal</target>
 </trans-unit>
 <trans-unit id="s0487f33d9ddaabde">
   <source>About</source>
+  <target>A propos</target>
 </trans-unit>
 <trans-unit id="s93022a984ae14449">
   <source>No message found</source>
+  <target>Aucun message trouver</target>
 </trans-unit>
 <trans-unit id="sbaf2dbcb41ca49a9">
   <source>(edited)</source>
+  <target>(modified)</target>
 </trans-unit>
 <trans-unit id="s18c17c2aaaf7f39d">
   <source>Add WAL to Pocket</source>
+  <target>Ajouter WAL a Pocket</target>
 </trans-unit>
 <trans-unit id="scba89d111c17f925">
   <source>&lt;Content has been flagged by a moderator&gt;</source>
+  <target>&lt;Contenu a ete signaled par un moderateur&gt;</target>
 </trans-unit>
 <trans-unit id="s475c378b1d604ba2">
   <source>Add Message to Pocket</source>
+  <target>Ajouter Message a Pocket</target>
 </trans-unit>
 <trans-unit id="s8a751ff74711da9e">
   <source>comment thread</source>
+  <target>fil de commentaires</target>
 </trans-unit>
 <trans-unit id="s15a477e9f9a165ad">
   <source>Jump</source>
+  <target>Sauter</target>
 </trans-unit>
 <trans-unit id="sb8a5bfb84cc58e62">
   <source>Timezone</source>
+  <target>Fuseau horaire</target>
 </trans-unit>
 <trans-unit id="s320c107fdc366f6b">
   <source>Send Direct Message</source>
-</trans-unit>
-<trans-unit id="s1da50951bdd7a204">
-  <source>Channel</source>
+  <target>Envoyer message direct</target>
 </trans-unit>
 <trans-unit id="sebae6a8705add1b6">
   <source>Create channel</source>
+  <target>Creer canal</target>
 </trans-unit>
 <trans-unit id="s4efe93e94c93d5f3">
   <source>Recently Viewed</source>
+  <target>Vu recemment</target>
 </trans-unit>
 <trans-unit id="sb8d426d655de5479">
   <source>Hidden Subject</source>
+  <target>Sujet cached</target>
+</trans-unit>
+<trans-unit id="sf86de323290dcb5b">
+  <source>Invalid file size</source>
+  <target>Taille du fichier invalide</target>
+</trans-unit>
+<trans-unit id="s80abc5839d75dc23">
+  <source>Maximum allowed is</source>
+  <target>Nombre maxium autorise est</target>
+</trans-unit>
+<trans-unit id="sab3b6aa7d2e6e037">
+  <source>Message has not been received by any peer yet</source>
+  <target>Le message n'a pas encore recu par une autre personne</target>
+</trans-unit>
+<trans-unit id="sb37ce515cb33ca1b">
+  <source>Message has not been received via gossip yet</source>
+  <target>Le message n'a pas encore recu via le reseau</target>
+</trans-unit>
+<trans-unit id="s99f110d27e30b289">
+  <source>Title</source>
+  <target>Titre</target>
+</trans-unit>
+<trans-unit id="sfa4cf6ef19d2f987">
+  <source>temp</source>
+  <target>temp</target>
+</trans-unit>
+<trans-unit id="s9997db775fd97b4f">
+  <source>Create comment thread for this Category</source>
+  <target>Creer un fil de commentaire pour cette categorie</target>
+</trans-unit>
+<trans-unit id="s774a061d4cb43340">
+  <source>Create a new Channel for this Category</source>
+  <target>Creer un nouveau canal pour cette categorie</target>
 </trans-unit>
 </body>
 </file>

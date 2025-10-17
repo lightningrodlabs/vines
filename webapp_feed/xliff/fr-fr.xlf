@@ -2,10 +2,6 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
 <file target-language="fr-fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
-<trans-unit id="sf969c2297c7b8324">
-  <source>Create new Topic</source>
-  <target>Créer nouveau Sujet</target>
-</trans-unit>
 <trans-unit id="sfeddbc6c931b7ad7">
   <source>Mark all as read</source>
 </trans-unit>
@@ -80,6 +76,9 @@
 </trans-unit>
 <trans-unit id="s54c8e1d3117493be">
   <source>Unhide Topics</source>
+</trans-unit>
+<trans-unit id="s34aef425e5372571">
+  <source>Create New Category</source>
 </trans-unit>
 </body>
 </file>
