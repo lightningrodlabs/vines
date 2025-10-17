@@ -694,6 +694,46 @@
   <source>Create a new Channel for this Category</source>
   <target>Creer un nouveau canal pour cette categorie</target>
 </trans-unit>
+<trans-unit id="sa7cf84ed6b98c02a">
+  <source>Rate limit:</source>
+  <target>Limit:</target>
+</trans-unit>
+<trans-unit id="s97e409d80754dc14">
+  <source>Permitted File Types:</source>
+  <target>Types de fichiers autoriseds</target>
+</trans-unit>
+<trans-unit id="s428974262ec96ab4">
+  <source>Min File Size (bytes):</source>
+  <target>Taille fichier min. (octets):</target>
+</trans-unit>
+<trans-unit id="s90b511b0e3d9c92a">
+  <source>Max File Size (bytes):</source>
+  <target>Taille fichier max. (octets):</target>
+</trans-unit>
+<trans-unit id="s5dcb82b85dd17216">
+  <source>Text Messages</source>
+  <target>Messages Texte</target>
+</trans-unit>
+<trans-unit id="sef3f6a66f4b52bb2">
+  <source>Banned Words:</source>
+  <target>Mots interdits:</target>
+</trans-unit>
+<trans-unit id="sa41894b212e0113c">
+  <source>Min Text Length:</source>
+  <target>Longueur texte min.:</target>
+</trans-unit>
+<trans-unit id="s559ad039bc0a59b6">
+  <source>Max Text Length:</source>
+  <target>Longueur texte max:</target>
+</trans-unit>
+<trans-unit id="sf77119361c715a7a">
+  <source>Instructions:</source>
+  <target>Instructions:</target>
+</trans-unit>
+<trans-unit id="sf9d920dad608987d">
+  <source>Add first message:</source>
+  <target>Ajoutez un premier message:</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

@@ -2,6 +2,7 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {sharedStyles} from "../../styles";
 import {allTimezones, formatTimezone} from "./utils";
+import {msg} from "@lit/localize";
 
 /**
  *
@@ -9,10 +10,6 @@ import {allTimezones, formatTimezone} from "./utils";
  */
 @customElement('timezone-picker')
 export class TimezonePicker extends LitElement {
-
-
-  @property({type: String})
-  label = 'Timezone';
 
   @property({type: String})
   value = '';
@@ -82,37 +79,35 @@ export class TimezonePicker extends LitElement {
   }
 
 
-  /**
-   *
-   */
+  /** */
   override render() {
     return html`
-      <div class="container">
-        <label for="timezone-select">${this.label}:</label>
-        <select 
-          id="timezone-select"
-          @change=${this._handleChange}
-          ?required=${this.required}
-        >
-          <optgroup label="Popular Timezones">
-            ${this.popularTimezones.map(tz => html`
-              <option .value=${tz} ?selected=${tz === this.value}>
-                ${formatTimezone(tz, true)}
-              </option>
-            `)}
-          </optgroup>
-          <optgroup label="All Timezones">
-            ${this._timezones.map(tz => html`
-              <option 
-                .value=${tz} 
-                ?selected=${tz === this.value && !this.popularTimezones.includes(tz)}
-              >
-                ${formatTimezone(tz, true)}
-              </option>
-            `)}
-          </optgroup>
-        </select>
-      </div>
+        <div class="container">
+            <label for="timezone-select">${msg('Timezone')}:</label>
+            <select
+                    id="timezone-select"
+                    @change=${this._handleChange}
+                    ?required=${this.required}
+            >
+                <optgroup label="Popular Timezones">
+                    ${this.popularTimezones.map(tz => html`
+                        <option .value=${tz} ?selected=${tz === this.value}>
+                            ${formatTimezone(tz, true)}
+                        </option>
+                    `)}
+                </optgroup>
+                <optgroup label="All Timezones">
+                    ${this._timezones.map(tz => html`
+                        <option
+                                .value=${tz}
+                                ?selected=${tz === this.value && !this.popularTimezones.includes(tz)}
+                        >
+                            ${formatTimezone(tz, true)}
+                        </option>
+                    `)}
+                </optgroup>
+            </select>
+        </div>
     `;
   }
 
@@ -123,44 +118,44 @@ export class TimezonePicker extends LitElement {
   static override get styles() {
     return [
       sharedStyles, css`
-    :host {
-      display: block;
-    }
-    
-    .container {
-      max-width: 400px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 18px;
-      /*font-weight: bold;*/
-    }
-    
-    select {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background-color: white;
-      font-size: 16px;
-      height: 40px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        :host {
+          display: block;
+        }
 
-    }
-    
-    select:focus {
-      outline: none;
-      border-color: #0077cc;
-      box-shadow: 0 0 0 2px rgba(0, 119, 204, 0.2);
-    }
-    
-    .group-header {
-      font-weight: bold;
-      color: #555;
-    }
-  `]
+        .container {
+          max-width: 400px;
+        }
+
+        label {
+          display: block;
+          margin-bottom: 8px;
+          font-size: 18px;
+          /*font-weight: bold;*/
+        }
+
+        select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background-color: white;
+          font-size: 16px;
+          height: 40px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+        }
+
+        select:focus {
+          outline: none;
+          border-color: #0077cc;
+          box-shadow: 0 0 0 2px rgba(0, 119, 204, 0.2);
+        }
+
+        .group-header {
+          font-weight: bold;
+          color: #555;
+        }
+      `]
   }
 
 }

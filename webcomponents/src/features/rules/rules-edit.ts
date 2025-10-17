@@ -359,26 +359,26 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
         continue;
       }
       peerList.push(html`
-        <ui5-mcb-item data-id=${agentId.b64} 
-                      .text=${pair[0].nickname}
-                      ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>
-        </ui5-mcb-item>
-    `)
+          <ui5-mcb-item data-id=${agentId.b64}
+                        .text=${pair[0].nickname}
+                        ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>
+          </ui5-mcb-item>
+      `)
     }
     ;
 
 
     /** */
     return html`
-            <div class="form-section" style="min-width: 500px">
-                <ui5-panel header-text=${msg('Restrictions')} fixed style="border: 1px solid #e1e1e1;">
+        <div class="form-section" style="min-width: 500px">
+            <ui5-panel header-text=${msg('Restrictions')} fixed style="border: 1px solid #e1e1e1;">
 
-                    <div class="field-row" >
-                        <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
-                        <ui5-switch ?checked=${this.canLimit} @change=${this.handleCanLimitChange}></ui5-switch>
-                    </div>
-                    
-                  ${this.canLimit? html`
+                <div class="field-row">
+                    <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
+                    <ui5-switch ?checked=${this.canLimit} @change=${this.handleCanLimitChange}></ui5-switch>
+                </div>
+
+                ${this.canLimit? html`
                     <div class="field-row">
                         <ui5-label>${msg('Participants')}:</ui5-label>
                         <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="everyone">
@@ -387,10 +387,11 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     </div>
 
                     <div class="field-row">
-                        <ui5-label>Rate limit:</ui5-label>
-                        <ui5-switch ?checked=${!!this.limitations.maybeAgentRateLimiting} @change=${this.handleCanRateLimitChange}></ui5-switch>
+                        <ui5-label>${msg('Rate limit:')}</ui5-label>
+                        <ui5-switch ?checked=${!!this.limitations.maybeAgentRateLimiting}
+                                    @change=${this.handleCanRateLimitChange}></ui5-switch>
                         ${this.canRateLimit? html`
-                            <ui5-input type="number" style="max-width: 50px" 
+                            <ui5-input type="number" style="max-width: 50px"
                                        .value=${this.limitations.maybeAgentRateLimiting![0]}
                                        placeholder="n" @change=${this.handleAgentRateCapChange}>
                             </ui5-input>
@@ -404,134 +405,148 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     </div>
 
                     <!-- <div style="margin-top:15px;">${msg('Message Types')}</div> -->
-                    
+
                     <div class="field-row">
                         <ui5-label style="font-size: large">WAL Embeds</ui5-label>
-                        <ui5-switch ?checked=${this.limitations.canWal} @change=${this.handleAutoCanWalChange}></ui5-switch>
-                        <!-- <ui5-checkbox ?checked=${this.limitations.canWal} @change=${this.handleAutoCanWalChange}></ui5-checkbox> -->
+                        <ui5-switch ?checked=${this.limitations.canWal}
+                                    @change=${this.handleAutoCanWalChange}></ui5-switch>
+                            <!-- <ui5-checkbox ?checked=${this.limitations.canWal}
+                             @change=${this.handleAutoCanWalChange}></ui5-checkbox> -->
                     </div>
-                    
+
                     <div class="field-row">
                         <ui5-label style="font-size: large">File Messages</ui5-label>
-                        <ui5-switch ?checked=${this.limitations.canFile} @change=${this.handleAutoCanFileChange}></ui5-switch>
-                            <!--<ui5-checkbox ?checked=${!!this.limitations.canFile} @change=${this.handleAutoCanFileChange}></ui5-checkbox> -->
+                        <ui5-switch ?checked=${this.limitations.canFile}
+                                    @change=${this.handleAutoCanFileChange}></ui5-switch>
+                            <!--<ui5-checkbox ?checked=${!!this.limitations.canFile}
+                             @change=${this.handleAutoCanFileChange}></ui5-checkbox> -->
                     </div>
-                    
+
                     ${this.limitations.canFile? html`
                         <div class="sub-section">
-                            <!--
+                                <!--
                             <div class="field-row">
                                 <ui5-label>Permitted File Types:</ui5-label>
-                                <ui5-input .value=${this.fileTypeInput} placeholder="all" @change=${(e: CustomEvent) => this.fileTypeInput = (e.target as any).value}></ui5-input>
+                                <ui5-input .value=${this.fileTypeInput}
+                                 placeholder="all" @change=${(e: CustomEvent) => this.fileTypeInput = (e.target as any).value}></ui5-input>
                                 <ui5-button @click=${this.addFileType}>Add</ui5-button> 
                             </div>
 
                                                                                   
                             <div class="token-list">
                                 ${this.fileRules.allowedFileTypes.map(type => html`
-                                    <ui5-token @click=${() => this.removeFileType(type)} text=${type}></ui5-token>
-                                `)}
+                                <ui5-token @click=${() => this.removeFileType(type)} text=${type}></ui5-token>
+                            `)}
                             </div>                            
                             -->
-                            
+
                             <div class="field-row">
-                                <ui5-label>Permitted File Types:</ui5-label>
+                                <ui5-label>${msg('Permitted File Types:')}</ui5-label>
                                 <div style="max-width: 250px">
                                     <ui5-multi-combobox id="mimeCombobox"
                                                         placeholder="all"
                                                         @selection-change=${this.handleSelectionChange}
                                                         style="width: 100%;"
-                                                            >
-                                                              ${Object.entries(handledMimeTypes).map(([k, v]) => html`
-                                      <ui5-mcb-item
-                                        .text=${v}
-                                        .value=${k}
-                                        ?selected=${this.selectedTypes.includes(k)}
-                                      ></ui5-mcb-item>
-                                    `)}
+                                    >
+                                        ${Object.entries(handledMimeTypes).map(([k, v]) => html`
+                                            <ui5-mcb-item
+                                                    .text=${v}
+                                                    .value=${k}
+                                                    ?selected=${this.selectedTypes.includes(k)}
+                                            ></ui5-mcb-item>
+                                        `)}
                                     </ui5-multi-combobox>
                                 </div>
                             </div>
 
-                            
+
                             <div class="field-row">
-                                <ui5-label>Min File Size (bytes):</ui5-label>
-                                <ui5-input type="number" .value=${this.fileRules.minFileSize} @change=${this.handleFileMinSizeChange}></ui5-input>
+                                <ui5-label>${msg('Min File Size (bytes):')}</ui5-label>
+                                <ui5-input type="number" .value=${this.fileRules.minFileSize}
+                                           @change=${this.handleFileMinSizeChange}></ui5-input>
                             </div>
-                            
+
                             <div class="field-row">
-                                <ui5-label>Max File Size (bytes):</ui5-label>
-                                <ui5-input id="maxFileInput" type="number" .value=${this.fileRules.maxFileSize} @change=${this.handleFileMaxSizeChange}>
+                                <ui5-label>${msg('Max File Size (bytes):')}</ui5-label>
+                                <ui5-input id="maxFileInput" type="number" .value=${this.fileRules.maxFileSize}
+                                           @change=${this.handleFileMaxSizeChange}>
                                     <div id="maxErrorMsg" slot="valueStateMessage"></div>
                                 </ui5-input>
                             </div>
                         </div>
                     ` : ''}
-                    
+
                     <div class="field-row" style="margin-top:20px">
-                        <ui5-label style="font-size: large;">Text Messages</ui5-label>
-                        <ui5-switch ?checked=${this.limitations.canText} @change=${this.handleAutoCanTextChange}></ui5-switch>
-                        <!-- <ui5-checkbox ?checked=${!!this.limitations.canText} @change=${this.handleAutoCanTextChange}></ui5-checkbox> -->
+                        <ui5-label style="font-size: large;">${msg('Text Messages')}</ui5-label>
+                        <ui5-switch ?checked=${this.limitations.canText}
+                                    @change=${this.handleAutoCanTextChange}></ui5-switch>
+                            <!-- <ui5-checkbox ?checked=${!!this.limitations.canText}
+                             @change=${this.handleAutoCanTextChange}></ui5-checkbox> -->
                     </div>
-                    
+
                     ${this.limitations.canText? html`
                         <div class="sub-section">
                             <div class="field-row">
-                                <ui5-label>Banned Words:</ui5-label>
-                                <ui5-input .value=${this.bannedWordInput} @change=${(e: CustomEvent) => this.bannedWordInput = (e.target as any).value}></ui5-input>
+                                <ui5-label>${msg('Banned Words:')}</ui5-label>
+                                <ui5-input .value=${this.bannedWordInput}
+                                           @change=${(e: CustomEvent) => this.bannedWordInput = (e.target as any).value}></ui5-input>
                                 <ui5-button @click=${this.addBannedWord}>Add</ui5-button>
                             </div>
-                            
+
                             <div class="token-list">
                                 ${this.textRules.bannedWords.map(word => html`
                                     <ui5-token @click=${() => this.removeBannedWord(word)} text=${word}></ui5-token>
                                 `)}
                             </div>
-                            
+
                             <div class="field-row">
-                                <ui5-label>Min Text Length:</ui5-label>
-                                <ui5-input type="number" .value=${this.textRules.minTextLength} @change=${this.handleTextMinLengthChange}></ui5-input>
+                                <ui5-label>${msg('Min Text Length:')}</ui5-label>
+                                <ui5-input type="number" .value=${this.textRules.minTextLength}
+                                           @change=${this.handleTextMinLengthChange}></ui5-input>
                             </div>
-                            
+
                             <div class="field-row">
-                                <ui5-label>Max Text Length:</ui5-label>
-                                <ui5-input type="number" .value=${this.textRules.maxTextLength} @change=${this.handleTextMaxLengthChange}></ui5-input>
+                                <ui5-label>${msg('Max Text Length:')}</ui5-label>
+                                <ui5-input type="number" .value=${this.textRules.maxTextLength}
+                                           @change=${this.handleTextMaxLengthChange}></ui5-input>
                             </div>
                         </div>
                     ` : ''}
-                  ` : ''}
-                </ui5-panel>
-            </div>
-            <div class="form-section" style="min-width: 500px">
-                <ui5-panel header-text=${msg('Moderation')} fixed style="border: 1px solid #e1e1e1;">
+                ` : ''}
+            </ui5-panel>
+        </div>
+        <div class="form-section" style="min-width: 500px">
+            <ui5-panel header-text=${msg('Moderation')} fixed style="border: 1px solid #e1e1e1;">
 
-                    <div class="field-row" >
-                        <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
-                        <ui5-switch ?checked=${this.canModerate} @change=${this.handleCanModerateChange}></ui5-switch>
+                <div class="field-row">
+                    <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
+                    <ui5-switch ?checked=${this.canModerate} @change=${this.handleCanModerateChange}></ui5-switch>
+                </div>
+
+                ${this.canModerate? html`
+                    <div class="field-row">
+                        <ui5-label>${msg('Moderators')}:</ui5-label>
+                        <ui5-multi-combobox style="flex-grow:1;"
+                                            @selection-change=${this.handleModeratorSelectionChange}>
+                            ${peerList}
+                        </ui5-multi-combobox>
                     </div>
-                    
-                    ${this.canModerate? html`
-                      <div class="field-row">
-                          <ui5-label>${msg('Moderators')}:</ui5-label>
-                          <ui5-multi-combobox style="flex-grow:1;" @selection-change=${this.handleModeratorSelectionChange}>
-                              ${peerList}
-                          </ui5-multi-combobox>
-                      </div>
-                      <div class="field-row">
-                          <ui5-label>Instructions:</ui5-label>
-                          <ui5-textarea placeholder="Enter instructions here..." 
-                              .value=${this.moderation.instructions} @change=${this.handleInstructionsChange}>
-                          </ui5-textarea>
-                      </div>
-                      <div class="field-row">
-                          <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
-                          <ui5-input type="number" .value=${this.moderation.allowedFlags} @change=${this.handleAllowedFlagsChange}></ui5-input>
-                      </div>
-                    ` : ''}
-                    
-                </ui5-panel>
-            </div>                
-        `;
+                    <div class="field-row">
+                        <ui5-label>${msg('Instructions:')}</ui5-label>
+                        <ui5-textarea placeholder="Enter instructions here..."
+                                      .value=${this.moderation.instructions} @change=${this.handleInstructionsChange}>
+                        </ui5-textarea>
+                    </div>
+                    <div class="field-row">
+                        <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
+                        <ui5-input type="number" .value=${this.moderation.allowedFlags}
+                                   @change=${this.handleAllowedFlagsChange}></ui5-input>
+                    </div>
+                ` : ''}
+
+            </ui5-panel>
+        </div>
+    `;
   }
 
 
