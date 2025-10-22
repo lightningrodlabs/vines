@@ -1,5 +1,5 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: hVines
 description: Group conversation happ
 roles:
@@ -8,7 +8,7 @@ roles:
       strategy: create
       deferred: true
     dna:
-      bundled: "../../artifacts/threads.dna"
+      path: "../../artifacts/threads.dna"
       clone_limit: 0
       modifiers:
         maxTopicNameLength: 32
@@ -20,7 +20,7 @@ roles:
       strategy: create
       deferred: true
     dna:
-      bundled: "../../artifacts/files.dna"
+      path: "../../artifacts/files.dna"
       clone_limit: 0
       modifiers:
         properties:

@@ -2,6 +2,6 @@
 manifest_version: "1"
 name: Vines Official Applet
 ui:
-  bundled: "../../artifacts/vines-we_applet-ui.zip"
-happ_manifest:
-  bundled: "../../artifacts/vines.happ"
+  path: "../../artifacts/vines-we_applet-ui.zip"
+happ:
+  path: "../../artifacts/vines.happ"
