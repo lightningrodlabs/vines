@@ -2033,6 +2033,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
   }
 
 
+  private _cacheOriginalAuthor = new ActionIdMap<[Timestamp, Uint8Array] | null>();
+
+  /** */
+  async getOriginalAuthor(ah: ActionId): Promise<[Timestamp, Uint8Array] | null> {
+    const cached = this._cacheOriginalAuthor.get(ah);
+    if (cached != undefined) {
+      return cached;
+    }
+    const res = await this.zomeProxy.getOriginalAuthor(ah.hash);
+    this._cacheOriginalAuthor.set(ah, res);
+    return res;
+  }
+
   /** */
   private async handleBeadEntryPulse(pulse: EntryPulseMat, typed: TypedBead, from: AgentId): Promise<void> {
     const beadAh = pulse.ah;
@@ -2040,7 +2053,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     const typedMat = materializeTypedBead(typed, beadType);
     console.debug("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.b64, typedMat);
     /** Store Bead */
-    const maybe = await this.zomeProxy.getOriginalAuthor(beadAh.hash);
+    const maybe = await this.getOriginalAuthor(beadAh);
     const author = maybe? new AgentId(maybe[1]) : pulse.author;
     await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew && !author.equals(this.cell.address.agentId));
     // /** Dev test: Signal a 2nd entry */
