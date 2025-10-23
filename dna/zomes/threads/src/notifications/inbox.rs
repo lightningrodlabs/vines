@@ -1,8 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
-use zome_utils::*;
 use zome_signals::*;
-
+use zome_utils::*;
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -11,7 +10,6 @@ pub struct NotifyPeerInput {
     pub who: AgentPubKey,
     pub event_index: u8,
 }
-
 
 /// Called Directly by other zfns
 #[hdk_extern]
@@ -24,31 +22,37 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
         return Ok(());
     }
     let tag = LinkTag::from(vec![input.event_index]);
-    let _link_ah = create_link_relaxed(input.who, input.content.clone(), ThreadsLinkType::Inbox, tag)?;
+    let _link_ah = create_link_relaxed(
+        input.who,
+        input.content.clone(),
+        ThreadsLinkType::Inbox,
+        tag,
+    )?;
     /// Done
     Ok(())
 }
 
-
 /// Returns vec of: LinkCreateActionHash, AuthorPubKey, TextMessageActionHash
 #[hdk_extern]
-pub fn probe_inbox(_ : ()) -> ExternResult<()> {
+pub fn probe_inbox(_: ()) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_initial_pubkey;
-    let links = get_links(link_input(me, ThreadsLinkType::Inbox, None))?;
+    let links = get_links(
+        LinkQuery::new(me, ThreadsLinkType::Inbox.try_into_filter().unwrap()),
+        GetStrategy::Network,
+    )?;
     /// Emit Signal
     attest_links(links)?;
     /// Done
     Ok(())
 }
 
-
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn unpublish_notification(link_ah : ActionHash) -> ExternResult<()> {
+pub fn unpublish_notification(link_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     // TODO: Make sure its a Inbox link
-    let _ = delete_link(link_ah)?;
+    let _ = delete_link(link_ah, GetOptions::network())?;
     Ok(())
 }
