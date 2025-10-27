@@ -28,7 +28,7 @@
     "build:localize"         : "npm run localize:build -w webcomponents && npm run localize:build -w webapp && npm run localize:build -w webapp_feed",
 
     "build:zome"             : "CARGO_TARGET_DIR=target RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown",
-    "build:files"            : "cargo build --release --target wasm32-unknown-unknown --manifest-path submodules/files/Cargo.toml && $npm_package_config_bin/hc dna pack -o artifacts/files.dna ./submodules/files/dna/workdir",
+    "build:files"            : "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown --manifest-path submodules/files/Cargo.toml && $npm_package_config_bin/hc dna pack -o artifacts/files.dna ./submodules/files/dna/workdir",
     "build:dna"              : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
     "package:happ"           : "$npm_package_config_bin/hc app pack -o artifacts/vines.happ dna/workdir",
     "build:happ"             : "npm run build:dna && bash scripts/ts-bindings.sh && npm run package:happ",
