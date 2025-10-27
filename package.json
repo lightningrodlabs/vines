@@ -1,8 +1,8 @@
 {
-  "name"           : "vines-dev",
-  "version"        : "1.19.0",
-  "config"         : {
-    "hc_version"  : "0.6.0",
+  "name"    : "vines-dev",
+  "version" : "1.19.0",
+  "config"  : {
+    "hc_version"  : "0.6.0-dev.28",
     "k2_version"  : "0.1.5",
     "zits_version": "1.17.0",
     "bin"         : "bin"
@@ -16,8 +16,8 @@
     "we-applet_feed"
   ],
   "scripts"        : {
-    "postinstall"            : "mkdir -p artifacts",
-    "install:submodules"     : "bash scripts/install-submodules.sh $npm_package_config_hc_version",
+    "postinstall"            : "mkdir -p artifacts && mkdir -p bin",
+    "install:submodules"     : "bash scripts/install-submodules.sh 6.0",
     "install:rust"           : "bash ./node_modules/@ddd-qc/hc-prebuilt/install-rust.sh",
     "install:hc"             : "bash ./node_modules/@ddd-qc/hc-prebuilt/download-hc.sh holochain $npm_package_config_bin $npm_package_config_hc_version && bash ./node_modules/@ddd-qc/hc-prebuilt/download-hc.sh hc $npm_package_config_bin $npm_package_config_hc_version && bash ./node_modules/@ddd-qc/hc-prebuilt/download-hc.sh kitsune2-bootstrap-srv $npm_package_config_bin $npm_package_config_k2_version",
     "install:hash-zome"      : "bash ./node_modules/@ddd-qc/hc-prebuilt/download-hash-zome.sh $npm_package_config_bin",
@@ -27,7 +27,7 @@
     "extract:localize"       : "npm run localize:extract -w webcomponents && npm run localize:extract -w webapp && npm run localize:extract -w webapp_feed",
     "build:localize"         : "npm run localize:build -w webcomponents && npm run localize:build -w webapp && npm run localize:build -w webapp_feed",
 
-    "build:zome"             : "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:zome"             : "CARGO_TARGET_DIR=target RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown",
     "build:files"            : "cargo build --release --target wasm32-unknown-unknown --manifest-path submodules/files/Cargo.toml && $npm_package_config_bin/hc dna pack -o artifacts/files.dna ./submodules/files/dna/workdir",
     "build:dna"              : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
     "package:happ"           : "$npm_package_config_bin/hc app pack -o artifacts/vines.happ dna/workdir",
@@ -148,11 +148,11 @@
     "@ddd-qc/lit-happ"              : "=0.33.0",
     "@ddd-qc/profiles-dvm"          : "=0.33.0",
     "@ddd-qc/we-utils"              : "=0.33.0",
-    "@ddd-qc/files"                 : "=0.7.3",
+    "@ddd-qc/files"                 : "=0.8.1",
     "@ddd-qc/delivery"              : "=0.20.0",
-    "@ddd-qc/path-explorer"         : "0.10.0",
-    "@holochain-open-dev/core-types": "0.7.0",
-    "@holochain-open-dev/profiles"  : "0.600",
+    "@ddd-qc/path-explorer"         : "=0.10.0",
+    "@holochain-open-dev/core-types": "=0.600.0-dev.1",
+    "@holochain-open-dev/profiles"  : "=0.600.0-dev.0",
     "@msgpack/msgpack"              : "^3.1.1",
     "cytoscape"                     : "~3.30.3",
     "@lit/context"                  : "1.0.1",

@@ -7,7 +7,7 @@ import {
 WebsocketConnectionOptions, WsClientOptions, HolochainError, CloneIdHelper,
 /** types.ts */
 // @ts-ignore
-KitsuneAgent, KitsuneSpace, HoloHashB64, AgentPubKeyB64, DnaHashB64, WasmHashB64, EntryHashB64, ActionHashB64, AnyDhtHashB64, InstalledAppId, Signature, CellId, DnaProperties, RoleName, InstalledCell, Timestamp, Duration, HoloHashed, FetchPoolInfo,
+KitsuneAgent, KitsuneSpace, HoloHashB64, AgentPubKeyB64, DnaHashB64, WasmHashB64, EntryHashB64, ActionHashB64, AnyDhtHashB64, InstalledAppId, Signature, CellId, DnaProperties, RoleName, InstalledCell, Timestamp, HoloHashed, FetchPoolInfo,
 /** hdk/action.ts */
 // @ts-ignore
 SignedAction, SignedActionHashed, RegisterAgentActivity, ActionHashed, ActionType, Action, NewEntryAction, Dna, AgentValidationPkg, InitZomesComplete, CreateLink, DeleteLink, OpenChain, CloseChain, Update, Delete, Create,
@@ -39,7 +39,7 @@ ZomeIndex, LinkType, LinkTag, RateWeight, RateBucketId, RateUnits, Link,
 /** api/admin/types.ts */
 // @ts-ignore
 // YamlProperties
-Zomes, WasmCode, DisabledAppReason, AppInfoStatus, StemCell, ProvisionedCell, ClonedCell, CellType, CellInfo, AppInfo, MembraneProof, MemproofMap, RoleSettingsMap, RoleSettings, DnaModifiersOpt, DnaModifiers, FunctionName, ZomeName, ZomeDefinition, IntegrityZome, CoordinatorZome, DnaDefinition, ResourceBytes, ResourceMap, CellProvisioningStrategy, CellProvisioning, DnaVersionSpec, DnaVersionFlexible, AppRoleDnaManifest, AppRoleManifest, AppManifest, AppBundle, AppBundleSource, NetworkSeed, AppStatusFilter, AppInterfaceInfo, AgentInfoSigned, ZomeLocation, DnaManifest,
+Zomes, WasmCode, CapGrantInfo, PeerMetaInfo, DisabledAppReason, AppStatus, StemCell, ProvisionedCell, ClonedCell, CellType, CellInfo, AppInfo, MembraneProof, MemproofMap, RoleSettingsMap, RoleSettings, DnaModifiersOpt, DnaModifiers, FunctionName, ZomeName, ZomeDefinition, IntegrityZome, CoordinatorZome, DnaDefinition, ResourceBytes, ResourceMap, CellProvisioningStrategy, CellProvisioning, DnaVersionSpec, DnaVersionFlexible, AppRoleDnaManifest, AppRoleManifest, AppManifest, AppBundle, AppBundleSource, NetworkSeed, AppStatusFilter, AppInterfaceInfo, AgentInfoSigned, ZomeLocation, DnaManifest,
 } from '@holochain/client';
 
 
@@ -68,7 +68,10 @@ import {
 DhtOpHashB64, DhtOpHash,
 /** DnaFile */
 // @ts-ignore
-DnaFile, DnaDef,
+DnaFile,
+/** entry */
+// @ts-ignore
+EntryDefLocation, EntryDefLocationType, AppEntryDefLocation, GetOptions, GetStrategy,
 /** entry-details */
 // @ts-ignore
 EntryDetails, RecordDetails, Details, DetailsType, EntryDhtStatus,

@@ -4,7 +4,7 @@ set -e
 
 # Script for downloading submodule dependencies
 
-echo Executing \"$0\".
+echo Executing \"$0\"
 
 # Check pre-conditions
 if [ $# != 1 ]; then
@@ -13,12 +13,13 @@ if [ $# != 1 ]; then
 fi
 
 hcversion=$1
-echo for holochain version $hcversion
+echo ... for holochain version $hcversion
 if [ "$hcversion" == "hc" ] || [ "$hcversion" == "" ] ; then
   echo Missing \"hc-version\" field in \"package.json\".
   exit 1
 fi
-hdkversion=hdk-${hcversion:2:-1}0 #trim last char and set to 0 instead
+#hdkversion=hdk-${hcversion:2:-1}0 #trim last char and set to 0 instead
+hdkversion=hdk-$hcversion
 echo Getting branch: $hdkversion
 
 echo \* Create 'submodules' folder
