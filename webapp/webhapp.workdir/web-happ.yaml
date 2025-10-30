@@ -1,7 +1,7 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: Vines Official
 ui:
-  bundled: "../../artifacts/vines-webapp-ui.zip"
-happ_manifest:
-  bundled: "../../artifacts/vines.happ"
+  path: "../../artifacts/vines-webapp-ui.zip"
+happ:
+  path: "../../artifacts/vines.happ"
