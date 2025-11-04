@@ -260,7 +260,7 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
           <div>${profileCount} ${profileCount > 1? msg('Members') : msg('Member')}</div>
           <div style="align-items: center; z-index:1;">
               <ui5-card id="profileCard">
-                  <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
+                  <ui5-card-header id="profileCardHeader" title-text=${msg('Import Profile into Vines')}></ui5-card-header>
                   <vines-edit-profile
                           .profile=${weProfile}
                           @save-profile=${async (e: CustomEvent<ProfileMat>) => {
