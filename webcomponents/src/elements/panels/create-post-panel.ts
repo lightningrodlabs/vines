@@ -219,7 +219,7 @@ export class CreatePostPanel extends DnaElement<unknown, ThreadsDvm> {
       </div>          
       <div class="footer">
         <ui5-button design="Emphasized" 
-                    .disabled=${!!this._splitObj}
+                    ?disabled=${!!this._splitObj}
                     @click=${(_e: any) => this.onCreateText()}>${msg('Publish')}</ui5-button>
       </div>
     `;

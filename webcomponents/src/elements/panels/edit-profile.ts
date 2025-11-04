@@ -65,7 +65,7 @@ export class EditProfile extends LitElement {
   saveProfileLabel: string | undefined;
 
   @property()
-  avatarMode: string = "";
+  avatarMode: string = "optional";
 
   @property({type: Boolean})
   allowCancel = false;
@@ -115,6 +115,7 @@ export class EditProfile extends LitElement {
   override firstUpdated() {
     //console.log("<edit-profile>.firstUpdated()");
     this._avatar = this.profile?.fields["avatar"];
+    this.requestUpdate(); // Needed since nickname field not ready on first update for checking if we can enable the save button.
   }
 
 
@@ -291,76 +292,68 @@ export class EditProfile extends LitElement {
 
   /** */
   override render() {
-    console.log("<edit-profile>.render()", this.profile);
+    console.log("<vines-edit-profile>.render()", this.profile);
 
     return html`
-      <section>
-        <input type="file"
+      <input type="file"
                id="avatar-file-picker"
                style="display: none;"
-               @change=${this.onAvatarUploaded}
-        />
+               @change=${this.onAvatarUploaded} />
 
-        <div class="column">
-
-          <!-- Use row-reverse so input field is focused first -->  
-          <div class="row" style="flex-direction: row-reverse;" >
-              <ui5-input
-                      id="nickname-field"
-                      outlined required
-                      .maxlength=${32}
-                      .label=${msg('Nickname')}
-                      .value=${this.profile?.nickname || ''}
-                      style="margin-left: 8px;"
-                      @input=${(_e: any) => {
-      if (this.nicknameField.value.length > 0) {
-        this.nicknameField.valueState = ValueState.None;
-      } else {
-        this.nicknameField.valueState = ValueState.Error;
-      }
-    }}>
+      <div class="column">
+        <!-- Use row-reverse so input field is focused first -->  
+        <div class="row" style="flex-direction: row-reverse;" >
+          <ui5-input id="nickname-field" outlined required
+                     .maxlength=${32}
+                     .label=${msg('Nickname')}
+                     .value=${this.profile?.nickname || ''}
+                     style="margin-left: 8px;"
+                     @input=${(_e: any) => {
+                          if (this.nicknameField.value.length > 0) {
+                            this.nicknameField.valueState = ValueState.None;
+                          } else {
+                            this.nicknameField.valueState = ValueState.Error;
+                          }
+                        }}>
                   <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>                  
-              </ui5-input>
-            ${this.renderAvatarPicker()}
-          </div>
+          </ui5-input>
+          ${this.renderAvatarPicker()}
+        </div>
 
-          <div class="row" style="margin-bottom: 18px; align-items: center;">
+        <div class="row" style="margin-bottom: 18px; align-items: center;">
               <span style="font-size:18px;padding-right:10px;padding-top:5px;">${msg('Color')}:</span>
               <sl-color-picker id="colorPicker" hoist slot="meta" size="small" noFormatToggle format="hex"
                                .value=${this.profile && this.profile.fields['color']? this.profile.fields['color'] : getRandomHexColor()}></sl-color-picker>
-          </div>
+        </div>
 
-            <div class="row">
-                <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
-                <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
-                    <sl-radio value="en">🇬🇧</sl-radio>
-                    <sl-radio value="fr-fr">🇫🇷</sl-radio>
-                </sl-radio-group>
-            </div>
+        <div class="row">
+            <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
+            <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
+              <sl-radio value="en">🇬🇧</sl-radio>
+              <sl-radio value="fr-fr">🇫🇷</sl-radio>
+            </sl-radio-group>
+        </div>
             
-          <timezone-picker id="timezonePicker"></timezone-picker>
-            
-            
-      </section>
+        <timezone-picker id="timezonePicker"></timezone-picker>
+      </div>
       
       <div slot="footer" style="display:flex; margin-top: 10px;">
-          <ui5-button
-                  style="flex:1; margin-right:6px; margin-top:15px;"
+        <ui5-button style="flex:1; margin-right:6px; margin-top:15px;"
                   design="Emphasized"
-                  .disabled=${!this.shouldSaveButtonBeEnabled()}
-                  @click=${() => this.fireSaveProfile()}
-          >${msg("Save Profile")}</ui5-button>          
-            ${this.allowCancel
-      ? html`
-              <ui5-button
-                style="flex:1; margin-top:15px;"
-                @click=${() => this.fireCancel()}
-              >${msg("Cancel")}</ui5-button>
+                  ?disabled=${!this.shouldSaveButtonBeEnabled()}
+                  @click=${() => this.fireSaveProfile()}>
+          ${msg("Save Profile")}
+        </ui5-button>          
+        ${this.allowCancel
+              ? html`
+                      <ui5-button
+                        style="flex:1; margin-top:15px;"
+                        @click=${() => this.fireCancel()}>
+                          ${msg("Cancel")}
+                      </ui5-button>
               ` : html``
-    }
-          </div>
-      
-        </div>
+            }
+      </div>
     `;
   }
 

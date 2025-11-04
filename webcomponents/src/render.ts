@@ -246,6 +246,8 @@ export function composeNotificationTitle(notif: ThreadsNotification, threadsZvm:
 
 export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAltZvm, weProfilesDvm?: ProfilesDvm) {
   const profileCount = profilesZvm.perspective.agents.length;
+  const weProfile = weProfilesDvm?.profilesZvm.getMyProfile();
+
   return html`
       <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
           ${doodle_flowers}
@@ -260,25 +262,25 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
               <ui5-card id="profileCard">
                   <ui5-card-header title-text=${msg('Import Profile into Vines')}></ui5-card-header>
                   <vines-edit-profile
-                          .profile=${weProfilesDvm?.profilesZvm.getMyProfile()}
+                          .profile=${weProfile}
                           @save-profile=${async (e: CustomEvent<ProfileMat>) => {
-    console.log("createMyProfile()", e.detail);
-    try {
-      await profilesZvm.createMyProfile(e.detail);
-    } catch (e: any) {
-      console.warn("Failed creating my Profile", e);
-      return;
-    }
-    /** Wait for perspective to update */
-    /** TODO: add a timeout */
-    let maybeMeProfile: Profile | undefined = undefined;
-    do {
-      maybeMeProfile = profilesZvm.getMyProfile();
-      await delay(20);
-    } while (!maybeMeProfile)
-    /** */
-    parent.requestUpdate();
-  }}
+                            console.log("createMyProfile()", e.detail);
+                            try {
+                              await profilesZvm.createMyProfile(e.detail);
+                            } catch (e: any) {
+                              console.warn("Failed creating my Profile", e);
+                              return;
+                            }
+                            /** Wait for perspective to update */
+                            /** TODO: add a timeout */
+                            let maybeMeProfile: Profile | undefined = undefined;
+                            do {
+                              maybeMeProfile = profilesZvm.getMyProfile();
+                              await delay(20);
+                            } while (!maybeMeProfile)
+                            /** */
+                            parent.requestUpdate();
+                          }}
                   ></vines-edit-profile>
               </ui5-card>
           </div>
