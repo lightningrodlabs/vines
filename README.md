@@ -81,8 +81,6 @@ All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifact
 | `/testdata/`                               | Config files and asset fils for testing with @theweave/cli
 | `/we-applet/`                              | Source code for the Moss tool version of Vines
 | `/webapp/`                                 | The webapp source code off Vines
-| `/we-applet_feed/`                         | Source code for the Moss tool version of Feed
-| `/webapp_feed/`                            | The webapp source code of Feed
 | `/webcomponents/`                          | The web components source code
 
 ## License

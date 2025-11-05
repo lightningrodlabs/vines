@@ -23,8 +23,8 @@
     "install:zits"           : "cargo install zits --version $npm_package_config_zits_version",
     "version"                : "$npm_package_config_bin/hc --version & $npm_package_config_bin/kitsune2-bootstrap-srv --version & $npm_package_config_bin/holochain --version & zits --version & lair-keystore --version & echo \"Typescript $(tsc --version)\" & echo \"Weave $(weave --version)\"",
 
-    "extract:localize"       : "npm run localize:extract -w webcomponents && npm run localize:extract -w webapp && npm run localize:extract -w webapp_feed",
-    "build:localize"         : "npm run localize:build -w webcomponents && npm run localize:build -w webapp && npm run localize:build -w webapp_feed",
+    "extract:localize"       : "npm run localize:extract -w webcomponents && npm run localize:extract -w webapp",
+    "build:localize"         : "npm run localize:build -w webcomponents && npm run localize:build -w webapp",
 
     "build:zome"             : "CARGO_TARGET_DIR=target RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown",
     "build:files"            : "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown --manifest-path submodules/files/Cargo.toml && $npm_package_config_bin/hc dna pack -o artifacts/files.dna ./submodules/files/dna/workdir",
