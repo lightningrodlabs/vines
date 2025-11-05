@@ -60,8 +60,7 @@ export class PostHeader extends DnaElement<unknown, ThreadsDvm> {
     const mainThreadAh = getMainThread(this._dvm);
     console.log(`commitInput() value "${this.inputElem.value}"`, mainThreadAh);
     const inputText = this.inputElem.value;
-    let res = await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh!, this.cell.address.agentId);
-    console.log("commitInput() res:", res);
+    await this._dvm.publishTypedBead(ThreadsEntryType.TextBead, inputText, mainThreadAh!, this.cell.address.agentId);
     this.inputElem.value = "";
   }
 

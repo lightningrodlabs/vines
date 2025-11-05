@@ -9,6 +9,7 @@ mod properties;
 mod validation_app_entry;
 mod validate;
 mod validate_link;
+pub(crate) mod debug;
 
 pub use entries::*;
 pub use properties::*;

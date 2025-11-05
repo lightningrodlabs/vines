@@ -167,7 +167,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private handleCanRateLimitChange(e: CustomEvent) {
     this.canRateLimit = (e.target as any).checked;
     if (this.canRateLimit && !this.limitations.maybeAgentRateLimiting) {
-      this.limitations.maybeAgentRateLimiting = [10, 24 * 60 * 60 * 1000 * 1000] // default: 10 per day
+      this.limitations.maybeAgentRateLimiting = [5, /*24 * 60 **/ 60 * 1000 * 1000] // default: 5 per minute (was: 10 per day)
     }
   }
 
@@ -203,15 +203,15 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   private handleAgentRateCapChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
-    if (!isNaN(value) && value >= 0) {
+    if (!isNaN(value) && value > 0) {
       this.limitations.maybeAgentRateLimiting![0] = value;
     }
   }
 
   private handleAgentRateTsChange(e: CustomEvent) {
     const value = parseInt((e.target as any).value);
-    if (!isNaN(value) && value >= 0) {
-      this.limitations.maybeAgentRateLimiting![1] = value * 60 * 60 * 1000 * 1000;
+    if (!isNaN(value) && value > 0) {
+      this.limitations.maybeAgentRateLimiting![1] = value /** 60*/ * 60 * 1000 * 1000;
     }
   }
 
@@ -397,10 +397,10 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             </ui5-input>
                             ${msg('messages per')}
                             <ui5-input type="number" style="max-width: 50px"
-                                       .value=${this.limitations.maybeAgentRateLimiting![1] / 60 / 60 / 1000 / 1000}
+                                       .value=${this.limitations.maybeAgentRateLimiting![1] /*/ 60*/ / 60 / 1000 / 1000}
                                        placeholder="x" @change=${this.handleAgentRateTsChange}>
                             </ui5-input>
-                            ${msg('hour')}
+                            ${msg('minute')}
                         ` : html``}
                     </div>
 

@@ -6,7 +6,7 @@ import Toast from "@ui5/webcomponents/dist/Toast";
 /** Emit toast notification */
 export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent?: LitElement) {
   const placement = "TopCenter";
-  const duration = 3500
+  const duration = 5000
 
   /** Delete previous toast elements */
   const prevToasts = document.querySelectorAll("ui5-toast");

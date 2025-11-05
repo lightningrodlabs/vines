@@ -1,5 +1,6 @@
 use crate::*;
 use hdi::prelude::*;
+use crate::debug::format_timestamp_micros;
 
 /// Call trait ZomeEntry::validate()
 pub(crate) fn validate_app_entry(
@@ -156,27 +157,30 @@ fn validate_bead(
 
 ///
 pub fn check_agent_cap(
-    now: &Timestamp,
-    prev_ah: &ActionHash,
-    author: &AgentPubKey,
-    rules: &Limitations,
-    pp_ah: &ActionHash,
+   creation_ts: &Timestamp,
+   prev_ah: &ActionHash,
+   author: &AgentPubKey,
+   rules: &Limitations,
+   pp_ah: &ActionHash,
 ) -> ExternResult<ValidateCallbackResult> {
     let Some(rate_limit) = rules.maybe_agent_rate_limiting else {
         return Ok(ValidateCallbackResult::Valid);
     };
     debug!("check_agent_cap() limit: {:?}", rate_limit);
-    /// Get all agent beads on this thread
-    let mut hash_set = HashSet::new();
-    hash_set.insert(pp_ah.to_owned());
+    let some_time_ago = creation_ts.0 -  rate_limit.1.0;
+    debug!("check_agent_cap()\n - creation_ts: {} \n - rate_limit: {} \n - some_time_ago: {}"
+      , format_timestamp_micros(creation_ts.0)
+      , format_timestamp_micros(rate_limit.1.0)
+      , format_timestamp_micros(some_time_ago));
+    /// Get all agent's activity in current timebox.
     let filter: ChainFilter<ActionHash> = ChainFilter {
         chain_top: prev_ah.to_owned(),
         include_cached_entries: true,
-        limit_conditions: LimitConditions::UntilHash(hash_set),
+        limit_conditions: LimitConditions::UntilTimestamp(Timestamp(some_time_ago)),
     };
-    /// Get all authors create bead entries since thread was created
     let chain = must_get_agent_activity(author.to_owned(), filter)?;
-    debug!("check_agent_cap() chain: {}", chain.len());
+    debug!("check_agent_cap()  chain: {}", chain.len());
+    /// Get all author's Create Bead Entries since thread was created
     let create_beads: Vec<Create> = chain
         .iter()
         // Only creates
@@ -192,12 +196,9 @@ pub fn check_agent_cap(
                 || create.entry_type
                     == EntryType::App(ThreadsEntryTypes::TextBead.try_into().unwrap())
         })
-        // Only one day old
-        .filter(|create| {
-            (now.0 - create.timestamp.0) < rate_limit.1 .0 // 10 * 1000  * 1000 //24 * 60 * 60 * 1000 * 1000
-        })
         .collect();
     debug!("check_agent_cap() create_beads: {}", create_beads.len());
+    /// Leave early is already under the limit
     if create_beads.len() < rate_limit.0 as usize {
         return Ok(ValidateCallbackResult::Valid);
     }

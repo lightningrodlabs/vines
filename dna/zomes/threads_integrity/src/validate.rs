@@ -5,12 +5,14 @@ use crate::{validation_app_entry::validate_app_entry, validate_link::validate_cr
 ///
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
-   //debug!("*** ThreadsIntegrityZome.validate() op = {:?}", op);
+   debug!("*** ThreadsIntegrityZome.validate() op = {:?}", op);
    match op {
       Op::StoreRecord ( _ ) => Ok(ValidateCallbackResult::Valid),
       Op::StoreEntry(storeEntry) => {
          let creation_action = storeEntry.action.hashed.into_inner().0;
-         return validate_entry(creation_action.clone(), storeEntry.entry, Some(creation_action.entry_type()));
+         let res = validate_entry(creation_action.clone(), storeEntry.entry, Some(creation_action.entry_type()));
+         debug!("*** validate_entry() res = {:?}", res);
+         res
       },
       Op::RegisterCreateLink(reg_create_link) => {
          return validate_create_link(reg_create_link.create_link.hashed);

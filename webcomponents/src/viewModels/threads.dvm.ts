@@ -506,7 +506,7 @@ export class ThreadsDvm extends DnaViewModel {
     if (isDmThread) {
       await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
     } else {
-      await this.publishTypedBead(beadType, content, ppAh, author, prevBead);
+      await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
     }
   }
 
@@ -527,25 +527,7 @@ export class ThreadsDvm extends DnaViewModel {
     const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
     const base = bead2base(typed, beadType);
     const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
-    await this.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
-  }
-
-
-  /** */
-  passRateLimit(ppAh: ActionId): boolean {
-    const thread = this.threadsZvm.perspective.threads.get(ppAh);
-    if (thread && thread?.pp.limitations.maybeAgentRateLimiting) {
-      const rate = thread?.pp.limitations.maybeAgentRateLimiting;
-      const beads = thread.getSince(rate[1]);
-      if (beads.length < rate[0]) {
-        return true;
-      }
-      const mines = beads
-        .map((blm) => this.threadsZvm.perspective.beads.get(blm.beadAh))
-        .filter((pair) => pair && pair[0].author.equals(this.cell.address.agentId));
-      return mines.length < rate[0];
-    }
-    return true;
+    await this.threadsZvm.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
   }
 
 
@@ -562,19 +544,6 @@ export class ThreadsDvm extends DnaViewModel {
     this.signalTyping(ppAh, true);
     //}
     this._perspective.threadInputs.set(ppAh, value);
-  }
-
-
-  /** */
-  async publishTypedBead(beadType: BeadType, content: TypedContent | EncryptedBeadContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId): Promise<ActionId> {
-    /** Check rate limit */
-    if (!this.passRateLimit(ppAh)) {
-      // TODO: should not do toast in DVM but instead return failure return code and have caller act
-      toasty("Publish message failed: Rate limit reached");
-    }
-    /** */
-    const res = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
-    return res[0]
   }
 
 

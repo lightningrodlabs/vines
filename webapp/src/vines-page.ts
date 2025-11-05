@@ -454,7 +454,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** DM */
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");
-      await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
+      try {
+          await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
+      } catch(e:any) {
+          toasty("Publish DM failed: " + e.failure);
+      }
       return;
     }
     /** Determine replyToAh */
@@ -475,13 +479,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         console.error("No thread selected");
         return;
       }
-      await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
+      try {
+        await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
+      } catch(e:any) {
+        toasty("Publish Message failed: " + e.failure);
+        console.warn(e);
+      }
     }
     /* Create Wal Message */
     if (e.detail.wal) {
       //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
-      // TODO: make sure hrl is an entryHash
-      await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
+      try {
+        // TODO: make sure hrl is an entryHash
+        await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
+      } catch(e:any) {
+        toasty("Publish Message failed: " + e.failure);
+          console.warn(e);
+      }
     }
     /* Create File Message */
     if (e.detail.file) {
@@ -494,11 +508,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           async (eh) => {
             console.debug("<vines-page> startPublishFile callback", eh);
             const type = simplifyMimeType(e.detail.file!.type);
+            try {
             await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {
               eh,
               size: e.detail.file!.size,
               type
             }, ppAh, undefined, replyToAh, this.weServices);
+            } catch(e:any) {
+                toasty("Publish Message failed: " + e.failure);
+                console.warn(e);
+            }
             this._splitObj = undefined;
             this._uploadingFile = false;
           });
@@ -825,7 +844,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     const otherAgent: AgentId = sub.hash;
     console.log("publishDmFromProfilePanel() otherAgent", otherAgent)
+      try {
     await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
+    } catch(e:any) {
+        toasty("Publish DM failed: " + e.failure);
+        return;
+    }
     this._replyToAh = undefined;
     this._selectedBeadAh = undefined;
     //await delay(1000);

@@ -13,3 +13,4 @@ crate-type = ["cdylib", "rlib"]
 serde.workspace = true
 holochain_serialized_bytes.workspace = true
 hdi.workspace = true
+chrono = { version = "0.4.42" , default-features = false}
