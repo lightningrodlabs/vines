@@ -11,7 +11,6 @@
   "workspaces"     : [
     "webcomponents",
     "webapp",
-    "webapp_feed",
     "we-applet",
     "we-applet_feed"
   ],
@@ -32,21 +31,14 @@
     "build:dna"              : "npm run build:zome && mkdir -p artifacts && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
     "package:happ"           : "$npm_package_config_bin/hc app pack -o artifacts/vines.happ dna/workdir",
     "build:happ"             : "npm run build:dna && bash scripts/ts-bindings.sh && npm run package:happ",
-    "build:webapp:feed"      : "npm run build -w webcomponents && npm run dist -w webapp_feed",
     "build:webapp"           : "npm run build -w webcomponents && npm run build -w webapp",
     "build:devtest"          : "npm run clean:hc & npm run build:happ && npm run build -w webcomponents",
-    "build:devtest:feed"     : "npm run clean:hc & npm run build:happ && npm run build -w webcomponents && npm run build -w webapp_feed",
 
     "devtest"                : "npm run build:devtest && npm run start:mem",
     "devtest:we"             : "npm run build:devtest && npm run build:happ && npm run build -w webapp && npm run devtest -w we-applet",
     "devtest:we:pp"          : "npm run build:devtest && npm run build:happ && npm run build -w webapp && npm run devtest:pp -w we-applet",
-    "devtest:feed"           : "npm run build:devtest && concurrently \"npm run build:watch -w webcomponents\" \"npm run start:mem:feed\"",
-    "devtest:feed:we"        : "npm run build:devtest && npm run build:happ && npm run devtest -w we-applet_feed",
 
     "prodtest"               : "npm run build -w webapp && HAPP_BUILD_MODE=Retail HC_APP_PORT=$(port) HC_ADMIN_PORT=$(port) UI_PORT=$(port) concurrently \"npm run new-sandbox:mem\" \"sleep 7 && npm run start -w webapp\"",
-    "prodtestfull:feed:we"   : "npm run build:devtest && npm run dist:feed:we",
-    "prodtest:feed:we"       : "BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"AGENT_NUM=1 npm run prodtest:feed:we-launch\"",
-    "prodtest:feed:we-launch": "weave \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\"  --dev-config testdata/we.prodtest.feed.config.json --agent-idx $AGENT_NUM",
     "prodtestfull:we"        : "npm run build:devtest && npm run dist:we && npm run prodtest:we",
     "prodtest:we"            : "UI_PORT=$(port) BOOT_PORT=$(port) SIGNAL_PORT=$(port) concurrently \"npm run serve:run\" \"AGENT_NUM=1 npm run prodtest:we-launch\"",
     "prodtest:we-launch"     : "weave \"-b http://127.0.0.1:$BOOT_PORT\" \"-s ws://127.0.0.1:$SIGNAL_PORT\" --dev-config testdata/we.prodtest.config.json --agent-idx $AGENT_NUM",
@@ -100,9 +92,7 @@
 
     "package:webapp"         : "rm -rf artifacts/vines-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/vines-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/vines.webhapp",
     "package:we"             : "rm -rf artifacts/vines-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/vines-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp",
-    "package:feed:we"        : "rm -rf artifacts/feed-we_applet-ui.zip & cd we-applet_feed/dist && rm -f *.map && bestzip ../../artifacts/feed-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet_feed/webhapp.workdir -o artifacts/feed-we_applet.webhapp",
     "dist:we"                : "npm run dist -w we-applet && npm run package:we",
-    "dist:feed:we"           : "npm run dist -w we-applet_feed && npm run package:feed:we",
     "cp:we"                  : "cp artifacts/vines-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
 
     "hash"                   : "ELECTRON_DISABLE_SANDBOX=1 weave hash-webhapp $npm_package_version  ./artifacts/vines-we_applet.webhapp",

@@ -23,10 +23,8 @@ import {
 import {
   BaseBeadType,
   bead2base,
-  BeadType,
   defaultLimitations,
   defaultModeration,
-  EncryptedBeadContent,
   ThreadsAppTip,
   ThreadsNotification,
   ThreadsNotificationTip,
@@ -38,7 +36,6 @@ import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
-import {toasty} from "../toast";
 
 
 /** */

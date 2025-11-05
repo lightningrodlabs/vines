@@ -1,7 +1,0 @@
----
-manifest_version: "0"
-name: Feed Official Applet
-ui:
-  path: "../../artifacts/feed-we_applet-ui.zip"
-happ:
-  path: "../../artifacts/vines.happ"

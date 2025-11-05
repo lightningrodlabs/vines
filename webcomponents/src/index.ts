@@ -34,12 +34,6 @@ export * from './features/chat-thread/chat-thread-view';
 export * from './features/chat-thread/chat-thread-multi-view';
 export * from './features/chat-thread/comment-thread-view';
 
-export * from './features/post/post-item';
-export * from './features/post/post-header';
-export * from './features/post/post-thread-view';
-export * from './features/post/post-comment-thread-view';
-export * from './features/post/post-comment-item';
-
 export * from './utils_feed';
 
 export * from './features/favorites/favorites-view';
@@ -48,7 +42,6 @@ export * from './features/favorites/favorites-item';
 export * from './elements/panels/presence-panel';
 export * from './elements/panels/view-embed-dialog';
 export * from './elements/panels/confirm-dialog';
-export * from './elements/panels/create-post-panel';
 export * from './elements/panels/create-thread-panel';
 export * from './elements/panels/edit-profile';
 export * from './elements/panels/profile-panel';
