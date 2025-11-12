@@ -20,7 +20,6 @@ import {MicEvent, VinesInputEvent} from "../events";
 import {weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
-//import {toasty} from "../toast";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
@@ -34,8 +33,6 @@ import {formatTime} from "../features/timezone/utils";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {prettyFileSize} from "@ddd-qc/files";
 import {AudioPanel} from "../features/chat-thread/audio-panel";
-//import {handledMimeTypes} from "../features/rules/rules-edit";
-//import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 
 /**
@@ -56,6 +53,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** -- Properties -- */
 
   @property() topic: string = '';
+
+  @property({type: Boolean}) busy: boolean = false;
 
   @property() background?: string;
 
@@ -447,6 +446,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
+    console.debug(`<vines-input-bar>.render() ${this.busy}`);
     const input = this.inputElem? this.inputElem.value : "";
     //console.log("<vines-input-bar>.render()", this.threadHash, this.agentHash, input);
     const me = this._dvm.cell.address.agentId;
@@ -627,9 +627,23 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const canSend = (this.inputElem && this.inputElem.value.length > 0) || this._file || this._wal;
 
+    /** render busy bar */
+    let busyBar = html``;
+    if (this.busy) {
+       busyBar = html`
+         <div style="margin-top: -10px;">
+           <ui5-bar design="FloatingFooter" style="width 300px; background:#ccc;">
+               <ui5-busy-indicator delay="0" size="Large" active
+                                   style="margin:auto; width:100%; height:100%; color:#404455c7;"
+               ></ui5-busy-indicator>
+           </ui5-bar>
+         </div>
+       `;
+    }
     /** render all */
     return html`
-        <div id="input-bar" style="${this._limitations.canText? "" : "width:fit-content;"}">
+        ${busyBar}
+        <div id="input-bar" style="${this._limitations.canText? "" : "width:fit-content;"}; ${this.busy? "display: none;": ""}">
             ${fileElem}
             ${walElem}
             <ui5-bar id="inputBar" design="FloatingFooter">

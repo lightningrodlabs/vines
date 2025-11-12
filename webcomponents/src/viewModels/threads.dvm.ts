@@ -501,15 +501,16 @@ export class ThreadsDvm extends DnaViewModel {
   async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx) {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
-      await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
+      return await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
     } else {
-      await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
+      const res = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
+      return res[0];
     }
   }
 
 
   /** */
-  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx) {
+  async publishDm(otherAgent: AgentId, beadType: BaseBeadType, content: TypedContent, prevBead?: ActionId, weServices?: WeServicesEx): Promise<ActionId> {
     const dmAh = this.threadsZvm.perspective.dmAgents.get(otherAgent);
     console.log("ThreadsDvm.publishDm()", otherAgent, beadType, content, prevBead, weServices, dmAh);
     /** Create or grab DmThread */
@@ -524,7 +525,8 @@ export class ThreadsDvm extends DnaViewModel {
     const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
     const base = bead2base(typed, beadType);
     const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
-    await this.threadsZvm.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
+    const res = await this.threadsZvm.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
+    return res[0];
   }
 
 

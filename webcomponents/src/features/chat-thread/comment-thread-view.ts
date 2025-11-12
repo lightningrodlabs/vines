@@ -46,6 +46,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Properties -- */
 
+  @property({type: Boolean}) busy: boolean = false;
+
   /** Hash of Thread to display */
   @property() threadHash?: ActionId;
   /** Enable Input bar */
@@ -288,7 +290,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     if (this.showInput) {
       // @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}
       maybeInput = html`
-          <vines-input-bar id="input-bar" nosend topic="" .threadHash=${this.threadHash}></vines-input-bar>`;
+          <vines-input-bar id="input-bar" ?busy=${this.busy} nosend topic="" .threadHash=${this.threadHash}></vines-input-bar>`;
     }
 
     const titleTip = "Type: " + subjectType;

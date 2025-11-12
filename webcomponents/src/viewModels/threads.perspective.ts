@@ -108,7 +108,6 @@ export type ThreadsPerspectiveComparable = {
 /** */
 export class ThreadsPerspective {
 
-
   /** All Entries that have been found with New = true */
   isNewStorageMap: Set<AnyDhtHashB64> = new Set();
 

@@ -290,6 +290,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowDebug = false;
 
   /** Main */
+  @state() private _waitingForBeadCommit: ActionId | undefined = undefined;
   @state() private _mainView: MainViewType | undefined = undefined;
   @state() private _replyToAh: ActionId | undefined = undefined;
   @state() private _selectedThreadHash: ActionId | undefined = undefined;
@@ -458,7 +459,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");
       try {
-          await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
+          this._waitingForBeadCommit = await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
       } catch(e:any) {
           toasty("Publish DM failed: " + e.failure);
       }
@@ -483,7 +484,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return;
       }
       try {
-        await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
+          this._waitingForBeadCommit = await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(e:any) {
         toasty("Publish Message failed: " + e.failure);
         console.warn(e);
@@ -494,7 +495,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
       try {
         // TODO: make sure hrl is an entryHash
-        await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
+          this._waitingForBeadCommit = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
       } catch(e:any) {
         toasty("Publish Message failed: " + e.failure);
           console.warn(e);
@@ -512,11 +513,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             console.debug("<vines-page> startPublishFile callback", eh);
             const type = simplifyMimeType(e.detail.file!.type);
             try {
-            await this._dvm.publishMessage(ThreadsEntryType.EntryBead, {
-              eh,
-              size: e.detail.file!.size,
-              type
-            }, ppAh, undefined, replyToAh, this.weServices);
+                this._waitingForBeadCommit = await this._dvm.publishMessage(
+                    ThreadsEntryType.EntryBead,
+                    { eh, size: e.detail.file!.size, type },
+                    ppAh,
+                    undefined,
+                    replyToAh,
+                    this.weServices,
+                  );
             } catch(e:any) {
                 toasty("Publish Message failed: " + e.failure);
                 console.warn(e);
@@ -1448,7 +1452,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-page>.render()", this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, !!this._splitObj);
+    console.log("<vines-page>.render()", this._waitingForBeadCommit, this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, !!this._splitObj);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     if (this.perspective.importing) {
@@ -1461,6 +1465,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let uploadState;
     if (this._splitObj) {
       uploadState = this._filesDvm.perspective.uploadStates[this._splitObj.dataHash];
+    }
+
+    /** Check if bead has been committed */
+    if (this._waitingForBeadCommit) {
+        const hasBead = this._dvm.threadsZvm.perspective.beads.has(this._waitingForBeadCommit);
+        if (hasBead) {
+            this._waitingForBeadCommit = undefined;
+        }
     }
 
     /** */
@@ -1577,6 +1589,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div id="typing-div">${typingMsg}</div>` : html``}
                 ${canDisplayInput? html`
                     <vines-input-bar id="input-bar"
+                                     ?busy=${!!this._waitingForBeadCommit} 
                                      .topic=${topic}
                                      .threadHash=${this._selectedThreadHash}></vines-input-bar>
                 ` : html`
@@ -2290,7 +2303,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${this._canShowComments? html`
                         <!-- .subjectName="${this._selectedCommentThreadSubjectName}" -->
                         <div id="commentSide">
-                            <comment-thread-view id="comment-view" .threadHash=${this._selectedCommentThreadHash}
+                            <comment-thread-view id="comment-view"
+                                                 ?busy=${!!this._waitingForBeadCommit}
+                                                 .threadHash=${this._selectedCommentThreadHash}
                                                  showInput="true"
                                                  @close=${(_e: any) => this._canShowComments = false}></comment-thread-view>
                         </div>` : html``}
