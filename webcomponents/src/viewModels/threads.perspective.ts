@@ -108,6 +108,10 @@ export type ThreadsPerspectiveComparable = {
 /** */
 export class ThreadsPerspective {
 
+
+  /** All Entries that have been found with New = true */
+  isNewStorageMap: Set<AnyDhtHashB64> = new Set();
+
   /** All Entries that have effectively been found in source-chain or DHT */
   persistentStorageMap: Set<AnyDhtHashB64> = new Set();
 
@@ -245,6 +249,11 @@ export class ThreadsPerspective {
     return typesForDna.get(pathHash);
   }
 
+    /** */
+  isNew(hash: AnyDhtHashB64): boolean {
+    console.debug("New: is?", hash, this.isNewStorageMap.has(hash));
+    return this.isNewStorageMap.has(hash);
+  }
 
   /** */
   isPersistent(hash: AnyDhtHashB64): boolean {
@@ -803,8 +812,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeTypedBead(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isPersistent: boolean, isUnread: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
-    console.log("storeTypedBead()", beadInfo.beadType, beadAh.short, isPersistent);
+  storeTypedBeadWithMeta(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: Boolean, isPersistent: boolean, isUnread: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
+    console.log("storeTypedBead()", beadInfo.beadType, beadAh.short, isNew, isPersistent);
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       if (!innerPair) {
@@ -817,6 +826,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.storeBeadInThread(beadAh, beadInfo, isUnread, beadInfo.beadType);
     if (isPersistent) {
       this.persistentStorageMap.add(beadAh.b64);
+    }
+    if (isNew) {
+      this.isNewStorageMap.add(beadAh.b64);
     }
   }
 
@@ -946,6 +958,9 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     if (isPersistent) {
       this.persistentStorageMap.add(ppAh.b64);
+    }
+    if (isNew) {
+      this.isNewStorageMap.add(ppAh.b64);
     }
     /** Return already stored PP */
     if (this.threads.has(ppAh)) {
@@ -1211,7 +1226,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       }
       //this.storeTypedBead(beadAh, typedBead, beadInfo.beadType, authorshipLog[0], authorshipLog[1], true);
       if (beadInfo.beadType != ThreadsEntryType.EncryptedBead) {
-        this.storeTypedBead(beadAh, beadInfo, typedBead, false, true);
+        this.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, false, false, true);
       }
       // TODO handle decBeads
     }

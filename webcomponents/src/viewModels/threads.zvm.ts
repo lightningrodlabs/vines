@@ -1196,7 +1196,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             }
         }
         /** Store in perspective */
-        this._perspective.storeTypedBead(beadAh, beadInfo, typedBead, isPersistent, isNew, innerPair);
+        this._perspective.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, isNew, isPersistent, isNew && !author.equals(this.cell.address.agentId), innerPair);
     }
 
 
@@ -2072,7 +2072,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** Store Bead */
         const maybe = await this.getOriginalAuthor(beadAh);
         const author = maybe ? new AgentId(maybe[1]) : pulse.author;
-        await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew && !author.equals(this.cell.address.agentId));
+        await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
         // /** Dev test: Signal a 2nd entry */
         // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
         //   pulse.ah = await ActionId.random();

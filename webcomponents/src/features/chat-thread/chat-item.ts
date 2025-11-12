@@ -292,8 +292,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     this._renderCount += 1;
 
     if (!this.hash) {
-      return html`
-          <div>No bead selected</div>`;
+      return html`<div>No bead selected</div>`;
     }
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     const baseBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
@@ -302,6 +301,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
+    const isNew = this._dvm.threadsZvm.perspective.isNew(this.hash.b64);
     const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
     //const isPersistent = false;
     const canParticipate = this._dvm.threadsZvm.canParticipate(beadInfo.bead.ppAh, this.cell.address.agentId);
@@ -324,8 +324,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const itemClass = hidemeta? "" : "innerItem";
     if (baseBeadInfo.beadType == ThreadsEntryType.TextBead) {
       if (!this.canEdit) {
-        item = html`
-            <chat-text class="${itemClass}" .hash=${this.hash}></chat-text>`;
+        item = html`<chat-text class="${itemClass}" .hash=${this.hash}></chat-text>`;
       } else {
         item = html`
             <chat-text-edit id="text-edit" class="${itemClass}" .hash=${this.hash}
@@ -338,12 +337,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                             }}
             ></chat-text-edit>`;
       }
-      downloadItem = html`
-          <ui5-menu-item id="downloadItem" icon="copy" text=${msg("Copy Text")}></ui5-menu-item>`;
+      downloadItem = html`<ui5-menu-item id="downloadItem" icon="copy" text=${msg("Copy Text")}></ui5-menu-item>`;
     }
     if (baseBeadInfo.beadType == ThreadsEntryType.EntryBead) {
-      item = html`
-          <chat-file class="${itemClass}" .hash=${this.hash.b64}></chat-file>`;
+      item = html`<chat-file class="${itemClass}" .hash=${this.hash.b64}></chat-file>`;
       downloadItem = html`
           <ui5-menu-item id="downloadItem" icon="download" text=${msg("Download File")}></ui5-menu-item>`;
     }
@@ -351,10 +348,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       item = html`
           <chat-wal class="${itemClass}" .hash=${this.hash}></chat-wal>`;
       downloadItem = this.weServices
-        ? html`
-                  <ui5-menu-item id="downloadItem" text=${msg("Add WAL to Pocket")}></ui5-menu-item>`
-        : html`
-                  <ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
+        ? html`<ui5-menu-item id="downloadItem" text=${msg("Add WAL to Pocket")}></ui5-menu-item>`
+        : html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
     }
 
     if (isFlagged) {
@@ -473,28 +468,38 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
       timeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;
     }
-    ;
+
     const date = new Date(baseBeadInfo.creationTime / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
     const date_str = date.toLocaleString('en-US', {hour12: false, timeZone});
-    const time_str = date.getHours().toString().padStart(2, '0').slice(-2) + ":" + date.getMinutes().toString().padStart(2, '0').slice(-2);
+    // const time_str
+    //     = date.getHours().toString().padStart(2, '0').slice(-2)
+    //     + ":"
+    //     + date.getMinutes().toString().padStart(2, '0').slice(-2);
 
     const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(baseBeadInfo.author);
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
     const isUnshared = this._dvm.perspective.myUnsharedBeads.has(this.hash.b64);
 
-    let pbInfo = undefined;
+    const alwaysVisible = isNew? "always-visible" : "";
+    //               <ui5-icon class="pb-icon ${alwaysVisible}" name="validate"></ui5-icon>
+      //               <ui5-icon class="pb-icon ${alwaysVisible}" name="sys-enter"></ui5-icon>
+      //               <ui5-icon class="pb-icon" ${alwaysVisible} name="sys-enter" style="color:#ff0000b8;"></ui5-icon>
+    let msgStateIcon = html`
+          <sl-tooltip content=${msg("Message has been verified by another peer")}>
+              <sl-icon class="pb-icon ${alwaysVisible}" name="patch-check"></sl-icon>
+          </sl-tooltip>`;
     if (isUnshared) {
-      pbInfo = html`
-          <sl-tooltip content=${msg("Message has not been received by any peer yet")}>
-              <ui5-icon class="pb-icon not-received" name="alert"></ui5-icon>
+      msgStateIcon = html`
+          <sl-tooltip content=${msg("Message locally validated, but has not been received by any peer yet")}>
+              <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
           </sl-tooltip>
       `;
     }
     if (!isPersistent) {
-      pbInfo = html`
-          <sl-tooltip content=${msg("Message has not been received via gossip yet")}>
-              <ui5-icon class="pb-icon" name="alert" style="color:#ff0000b8;"></ui5-icon>
+      msgStateIcon = html`
+          <sl-tooltip content=${msg("Message received, but has not been validated by the network yet")}>
+              <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
           </sl-tooltip>
       `;
     }
@@ -502,7 +507,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <div id="innerChatItem" style="position: relative;">
-                <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
+            <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
             ${isPersistent? html`` : html`
                 <div class="grey-veil"></div>`}
             ${isUnshared? html`
@@ -526,11 +531,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <!-- avatar column -->
                 <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;">
                     ${hidemeta? html`` : renderAvatar(this, this._dvm.profilesZvm, baseBeadInfo.author, "S")}
-                    <div style="display: flex; flex-direction: row; flex-grow: 1; margin-top:1px; position: relative;">
-                        <div class="${hidemeta && !pbInfo? "no-minutes" : "minutes"}"
+                    <div style="display:flex; flex-direction:row; flex-grow:1; margin-top:1px; position:relative;">
+                        <div id="colMeta" class="${hidemeta? "meta" : "no-meta"}"
                              style="position: absolute; left:5px;">
-                            ${time_str}
-                            ${hidemeta? pbInfo : html``}
+                          ${hidemeta? msgStateIcon : html``}
                         </div>
                         <div style="flex-grow:1;"></div>
                         <div class="vine"></div>
@@ -542,7 +546,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         ${hidemeta? html`` : html`
                             <span id="agentName">${agentName}</span>
                             <span class="chatDate">${date_str}</span>
-                            ${pbInfo}
+                            ${msgStateIcon}
                         `}
                         <span style="flex-grow: 1"></span>
                         <span id="nameEnd" style="width:10px"></span>
@@ -788,29 +792,36 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           cursor: pointer;
         }
 
-        .no-minutes {
+        .no-meta {
           padding-left: 10px;
           left: 5px;
-          font-size: 0px;
+          font-size: 0px !important;
           color: grey;
           padding-top: 1px;
         }
 
-        .chatItem:hover .no-minutes {
-          font-size: 12px;
-        }
-
-        .minutes {
-          font-size: 0px;
+        .chatItem:hover .no-meta {
+          font-size: 16px;
         }
 
         .pb-icon {
-          margin-left: 10px;
+          margin-left: 12px;
+          color: grey;
+          font-size: 0px;            
         }
 
+        .always-visible {
+            font-size: 16px;
+        }
+
+        .chatItem:hover .pb-icon {
+          font-size: 16px;
+        }
+          
         .pb-icon:hover {
           cursor: pointer;
         }
+          
       `,];
   }
 }
