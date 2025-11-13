@@ -486,19 +486,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       //               <ui5-icon class="pb-icon ${alwaysVisible}" name="sys-enter"></ui5-icon>
       //               <ui5-icon class="pb-icon" ${alwaysVisible} name="sys-enter" style="color:#ff0000b8;"></ui5-icon>
     let msgStateIcon = html`
-          <sl-tooltip content=${msg("Message has been verified by another peer")}>
+          <sl-tooltip hoist content=${msg("Message validated by another peer")}>
               <sl-icon class="pb-icon ${alwaysVisible}" name="patch-check"></sl-icon>
           </sl-tooltip>`;
     if (isUnshared) {
       msgStateIcon = html`
-          <sl-tooltip content=${msg("Message locally validated, but has not been received by any peer yet")}>
+          <sl-tooltip hoist content=${msg("Message self-validated, but not received yet")}>
               <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
           </sl-tooltip>
       `;
     }
     if (!isPersistent) {
       msgStateIcon = html`
-          <sl-tooltip content=${msg("Message received, but has not been validated by the network yet")}>
+          <sl-tooltip hoist content=${msg("Message received, but not validated yet")}>
               <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
           </sl-tooltip>
       `;

@@ -208,6 +208,7 @@ import {
   weaveUrlToWal,
   weClientContext,
   composeNotificationTitle, renderAvatar, AnyBeadMat, Thread,
+  Bead,
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -290,7 +291,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowDebug = false;
 
   /** Main */
-  @state() private _waitingForBeadCommit: ActionId | undefined = undefined;
+  @state() private _waitingForBeadCommit: Bead | undefined = undefined;
   @state() private _mainView: MainViewType | undefined = undefined;
   @state() private _replyToAh: ActionId | undefined = undefined;
   @state() private _selectedThreadHash: ActionId | undefined = undefined;
@@ -455,13 +456,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onInputCommit(e: CustomEvent<VinesInputEvent>) {
     console.log("<vines-page> onInputCommit()", e.detail);
     let ppAh = e.detail.ppAh;
+    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh);
     /** DM */
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");
       try {
-          this._waitingForBeadCommit = await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
+          await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
       } catch(e:any) {
           toasty("Publish DM failed: " + e.failure);
+          this._waitingForBeadCommit = undefined;
       }
       return;
     }
@@ -481,12 +484,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       if (!ppAh) {
         console.error("No thread selected");
+        this._waitingForBeadCommit = undefined;
         return;
       }
       try {
-          this._waitingForBeadCommit = await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
+        await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(e:any) {
         toasty("Publish Message failed: " + e.failure);
+        this._waitingForBeadCommit = undefined;
         console.warn(e);
       }
     }
@@ -495,10 +500,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const entryInfo = await this.weServices.entryInfo(maybeHrl.hrl);
       try {
         // TODO: make sure hrl is an entryHash
-          this._waitingForBeadCommit = await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
+        await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
       } catch(e:any) {
         toasty("Publish Message failed: " + e.failure);
-          console.warn(e);
+        this._waitingForBeadCommit = undefined;
+        console.warn(e);
       }
     }
     /* Create File Message */
@@ -513,7 +519,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             console.debug("<vines-page> startPublishFile callback", eh);
             const type = simplifyMimeType(e.detail.file!.type);
             try {
-                this._waitingForBeadCommit = await this._dvm.publishMessage(
+                await this._dvm.publishMessage(
                     ThreadsEntryType.EntryBead,
                     { eh, size: e.detail.file!.size, type },
                     ppAh,
@@ -523,6 +529,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   );
             } catch(e:any) {
                 toasty("Publish Message failed: " + e.failure);
+                this._waitingForBeadCommit = undefined;
                 console.warn(e);
             }
             this._splitObj = undefined;
@@ -530,6 +537,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           });
         if (!succeeded) {
           toasty(msg("Failed to load file"));
+          this._waitingForBeadCommit = undefined;
         }
       });
       //console.log("<vines-page>.onCreateFileMessage() requestUpdate()");
@@ -1469,9 +1477,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Check if bead has been committed */
     if (this._waitingForBeadCommit) {
-        const hasBead = this._dvm.threadsZvm.perspective.beads.has(this._waitingForBeadCommit);
-        if (hasBead) {
+        console.debug("<vines-page>.render() this._waitingForBeadCommit", this._waitingForBeadCommit, this._selectedThreadHash);
+        if (!this._selectedThreadHash || !this._selectedThreadHash.equals(new ActionId(this._waitingForBeadCommit.ppAh))) {
             this._waitingForBeadCommit = undefined;
+        } else {
+            const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash)!;
+            const beads = thread.getLast(1);
+            if (beads.length > 0) {
+                const [beadInfo, _] = this._dvm.threadsZvm.perspective.beads.get(beads[0]!.beadAh)!;
+                if (beadInfo.author.equals(this.cell.address.agentId) && beadInfo.bead.prevBeadAh.equals(new ActionId(this._waitingForBeadCommit.prevBeadAh))) {
+                    this._waitingForBeadCommit = undefined;
+                }
+            }
         }
     }
 

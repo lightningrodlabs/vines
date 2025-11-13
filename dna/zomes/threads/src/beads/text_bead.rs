@@ -1,9 +1,7 @@
 use hdk::prelude::*;
-//use zome_utils::*;
 use crate::beads::*;
 use threads_integrity::*;
 use time_indexing::convert_timepath_to_timestamp;
-
 
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
@@ -22,7 +20,7 @@ pub fn publish_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, T
 #[hdk_extern]
 pub fn fetch_text_bead(ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, TextBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return Ok(fetch_typed_bead::<TextBead>(ah).ok());
+  Ok(fetch_typed_bead::<TextBead>(ah).ok())
 }
 
 
@@ -30,7 +28,7 @@ pub fn fetch_text_bead(ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentP
 #[hdk_extern]
 pub fn fetch_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return ahs.into_iter().map(|ah| fetch_typed_bead::<TextBead>(ah)).collect();
+  ahs.into_iter().map(|ah| fetch_typed_bead::<TextBead>(ah)).collect()
 }
 
 
@@ -82,4 +80,16 @@ pub fn publish_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<
     start += i64::from(input.interval_us);
   }
   Ok(res)
+}
+
+/// Perform calculations until the given time period has elapsed.
+/// Used for simulating long zome calls when testing.
+fn busy_wait(seconds: u32) {
+   let start = sys_time().unwrap().0;
+   let mut end = start;
+   while end - start < seconds as i64 * 1000 * 1000 {
+      // Some arbitrary calculations to keep CPU busy
+      let _ = holo_hash_encode(&vec![end.clone() as u8; 1]);
+      end = sys_time().unwrap().0;
+   }
 }
