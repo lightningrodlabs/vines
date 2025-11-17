@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:app:default",
+    "core:window:allow-set-title",
+    "os:allow-os-type",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://github.com/holochain/*"
+        },
+        {
+          "url": "https://github.com/lightningrodlabs/*"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"main-capability":{"identifier":"main-capability","description":"Capability for the main window","local":true,"windows":["main"],"permissions":["core:app:default","core:window:allow-set-title","os:allow-os-type",{"identifier":"opener:allow-open-url","allow":[{"url":"https://github.com/holochain/*"},{"url":"https://github.com/lightningrodlabs/*"}]}]}}

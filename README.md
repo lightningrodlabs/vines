@@ -6,9 +6,6 @@ A conversation capacity for groups in The Weave.
 
 The current state-of-the-art in sync/async conversation is Discord/Slack: channel based chat with affordances for replys and threading.  The context created by a channel is completely implicit in the channel name and it's use by the community/people that use it.   The structure of any message is always the same except if you think of an emoji reaction as message type.  This is actually quite powerful (it's why we are using it) but it has some severe limitations.
 
-## Feed
-
-Experimental app for single feed conversation a-la Facebook group.
 
 ## Dev testing
 
@@ -25,17 +22,13 @@ Experimental app for single feed conversation a-la Facebook group.
 5. `npm run build:files`
 
 ### Web
-#### Vines
+
 Single agent browser devtest: `npm run devtest`
 
 Network of 3 agents devtest: `bash npm run network3`
 
-#### Feed
-Single agent browser devtest: `npm run devtest:feed`
-
 ### Moss
 
-#### Vines
 In web browser:
 `npm run devtest:we`
 
@@ -51,12 +44,37 @@ With multiple groups:
 With multiple tools:
 `npm run multitoolall`
 
-#### Feed
-In web browser:
-`npm run devtest:feed:we`
+### Android
 
-In Moss:
-`npm run prodtestfull:feed:we`
+This app supports android using p2p-shipyard.
+
+#### Environment Setup
+
+This app supports android using p2p-shipyard.
+
+To setup the android development environment:
+
+
+1. Enter the android development nix shell:
+
+```bash
+nix develop .#androidDev
+npm install
+```
+
+2. Create an android signing key, following these [instructions](https://developer.android.com/studio/publish/app-signing#generate-key)
+   `keytool -genkey -v -keystore <keystore_name>.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias <alias_name>`
+
+3. Copy `src-tauri/gen/android/key.properties.example` to `src-tauri/gen/android/key.properties` and fill in values with the previously generated signing key info.
+
+
+#### Run
+
+```bash
+nix develop .#androidDev
+npm install
+npm run start:android
+```
 
 
 ## Package
