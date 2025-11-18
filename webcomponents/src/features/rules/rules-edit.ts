@@ -370,9 +370,8 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
     /** */
     return html`
-        <div class="form-section" style="min-width: 500px">
-            <ui5-panel header-text=${msg('Restrictions')} fixed style="border: 1px solid #e1e1e1;">
-
+        <div class="form-section" style="min-width: 300px; display: block;"">
+            <ui5-panel header-text=${msg('Restrictions')} fixed style="border: 1px solid #e1e1e1; max-width: 100%">
                 <div class="field-row">
                     <ui5-label style="font-size: large">${msg('Enable')}</ui5-label>
                     <ui5-switch ?checked=${this.canLimit} @change=${this.handleCanLimitChange}></ui5-switch>
@@ -515,7 +514,8 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 ` : ''}
             </ui5-panel>
         </div>
-        <div class="form-section" style="min-width: 500px">
+        
+        <div class="form-section" style="min-width: 300px; display: block;"">
             <ui5-panel header-text=${msg('Moderation')} fixed style="border: 1px solid #e1e1e1;">
 
                 <div class="field-row">
@@ -557,6 +557,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
       css`
         :host {
           display: flex;
+            flex-direction: column;
           gap: 20px;
           font-family: var(--sapFontFamily, "72", "72full", Arial, Helvetica, sans-serif);
           color: var(--sapTextColor, #32363a);
@@ -564,6 +565,10 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
           /*padding: 1rem;*/
         }
 
+          ui5-panel::part(header) {
+              background: #c6d3dd;
+          }
+          
         .form-section {
           /*margin-bottom: 1.5rem;*/
         }

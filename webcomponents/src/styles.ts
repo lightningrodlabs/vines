@@ -59,6 +59,10 @@ export const sharedStyles = css`
         font-style: italic;
         background: #fbfbfb9c;
         padding: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
     }
 
     .sideAgentName {
@@ -206,6 +210,12 @@ inputBarStyleTemplate.innerHTML = `
   
   .ui5-textarea-wrapper {
     border: none !important;
+  }
+  
+  .ui5-textarea-wrapper  textarea{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>
 `;

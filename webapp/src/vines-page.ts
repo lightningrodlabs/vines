@@ -2512,7 +2512,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </ui5-dialog>
             <!-- CreateThreadDialog -->
-            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create New Channel")}>
+            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create New Channel")} style="background: #f7f7f7;">
                 <section>
                     <div>
                         <ui5-label for="threadPurposeInput">${msg("Title")}:</ui5-label>
@@ -3039,6 +3039,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #primaryTitle {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           font-size: 20px;
         }
 

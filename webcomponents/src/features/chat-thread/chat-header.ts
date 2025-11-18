@@ -130,9 +130,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "S");
-        title = html`${msg("About")} <span class="subjectName">${threadName}</span> from ${avatarElem}`;
+        title = html`<div style="max-width:100%;"><span>${msg("About")}</span> <span class="subjectName">${threadName}</span> <span>from ${avatarElem}</span> </div>`;
         subText = html`${msg("This is the start of comment thread about chat message")} 
-                      <span style="color:blue; cursor:pointer" 
+                      <span style="color:blue; cursor:pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" 
                             @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
                         ${threadName}
                       </span>`;
