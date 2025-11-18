@@ -221,7 +221,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   renderTopVine(beadInfo: BeadInfo) {
-    console.debug("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
+    //console.debug("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
     const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh)
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {
@@ -288,7 +288,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render(): TemplateResult<1> {
-    console.debug("<chat-item>.render()", this.hash, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
+    console.debug("<chat-item>.render()", this.hash.b64, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
     this._renderCount += 1;
 
     if (!this.hash) {

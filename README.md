@@ -76,6 +76,9 @@ npm install
 npm run start:android
 ```
 
+#### Debug
+
+`adb logcat`
 
 ## Package
 

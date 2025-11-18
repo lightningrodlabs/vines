@@ -36,7 +36,7 @@
 
     "tauri"                  : "tauri",
     "build:android"          : "npm run tauri android build -- --apk true --target aarch64",
-    "build:android:all"      : "npm run tauri android build -- --apk --target x86_64 --target aarch64 --target i686",
+    "build:android:all"      : "npm run tauri android build -- --apk true --target x86_64 --target aarch64 --target i686",
     "start:android"          : "BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) INTERNAL_IP=$(internal-ip --ipv4) concurrently -k \"npm run local-bootstrap\" \"UI_PORT=1420 npm run -w webapp start\" \"npm run launch:android\"",
     "start:tauri"            : "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$BOOTSTRAP_PORT npm run network:tauri",
     "launch:android"         : "tauri android dev",

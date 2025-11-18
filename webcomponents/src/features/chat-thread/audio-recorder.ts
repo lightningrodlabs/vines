@@ -21,7 +21,7 @@ export class AudioRecorder {
       noiseSuppression: true,
       autoGainControl: true,
       channelCount: 1,
-      sampleRate: 16000,
+      sampleRate: 16000
     };
 
     try {
@@ -38,7 +38,7 @@ export class AudioRecorder {
       });
 
     } catch (error) {
-      console.error('Error initializing audio recorder:', error);
+      console.error('Error initializing audio recorder:', JSON.stringify(error));
       throw error;
     }
   }
@@ -98,7 +98,7 @@ export class AudioRecorder {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error stopping recording:', error);
+      console.error('Error stopping recording:', JSON.stringify(error));
     }
   }
 }

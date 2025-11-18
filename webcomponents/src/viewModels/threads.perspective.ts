@@ -250,13 +250,13 @@ export class ThreadsPerspective {
 
     /** */
   isNew(hash: AnyDhtHashB64): boolean {
-    console.debug("New: is?", hash, this.isNewStorageMap.has(hash));
+    //console.debug("New: is?", hash, this.isNewStorageMap.has(hash));
     return this.isNewStorageMap.has(hash);
   }
 
   /** */
   isPersistent(hash: AnyDhtHashB64): boolean {
-    console.debug("Persistent: is?", hash, this.persistentStorageMap.has(hash));
+    //console.debug("Persistent: is?", hash, this.persistentStorageMap.has(hash));
     return this.persistentStorageMap.has(hash);
   }
 
