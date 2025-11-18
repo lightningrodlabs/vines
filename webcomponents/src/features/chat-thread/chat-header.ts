@@ -85,7 +85,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     }}>
               </ui5-button>
           </h2>
-          <div class="subtext">${msg('This is the beginning of your direct message history with')} <b>${profile.nickname}</b>${groups}</div>
+          <div class="subtext">
+              <span>${msg('This is the beginning of your direct message history')}</span>
+              <span>${groups}</span>
+          </div>
         </div>
     `;
   }
@@ -130,12 +133,20 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "S");
-        title = html`<div style="max-width:100%;"><span>${msg("About")}</span> <span class="subjectName">${threadName}</span> <span>from ${avatarElem}</span> </div>`;
-        subText = html`${msg("This is the start of comment thread about chat message")} 
-                      <span style="color:blue; cursor:pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" 
-                            @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
-                        ${threadName}
-                      </span>`;
+        title = html`
+            <div style="max-width:100%;">
+                <span>${msg("About")}</span> 
+                <span class="subjectName">${threadName}</span> 
+                <div style="display: flex; flex-direction: row; gap: 8px;"><span>${msg("from")}</span> ${avatarElem}</div> 
+            </div>`;
+        subText = html`
+            <div>
+              <span>${msg("This is the start of comment thread about chat message")} </span>
+              <span style="color:blue; cursor:pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" 
+                    @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
+                ${threadName}
+              </span>
+            </div>`;
       } else {
         title = html`${msg("About")} <span class="subjectName">${threadName}</span>`;
         subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName}: ${thread.title}`;
