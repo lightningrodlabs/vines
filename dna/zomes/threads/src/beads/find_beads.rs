@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use time_indexing::*;
 use zome_utils::*;
+use zome_path::*;
 
 /// Travers the thread-specific time-index tree and get all BeadLinks
 /// USE WITH CARE as this can easily timeout as it's a loop of get_links()
@@ -18,7 +19,7 @@ pub fn find_beads(
     let thread_tp = Path::from(vec![pp_anchor]).typed(ThreadsLinkType::ThreadTimePath)?;
     //debug!("thread_tp = {}", path2anchor(&thread_tp).unwrap());
     /// Get All LeafAnchors
-    let leaf_tps = tp_leaf_children(&thread_tp)?;
+    let leaf_tps = tp_leaf_children(&thread_tp, GetStrategy::Network)?;
     debug!("leaf_paths.len = {}", leaf_tps.len());
     /// Get BeadLinks from each LeafAnchor
     let mut res = Vec::new();

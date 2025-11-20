@@ -2,6 +2,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_signals::*;
 use zome_utils::*;
+use crate::GetAhInput;
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -23,7 +24,7 @@ pub fn publish_reaction(input: ReactionInput) -> ExternResult<()> {
         input.bead_ah,
         author,
         ThreadsLinkType::EmojiReaction,
-        str2tag(&input.emoji),
+        zome_path::str2tag(&input.emoji),
     )?;
     Ok(())
 }
@@ -38,7 +39,7 @@ pub fn unpublish_reaction(input: ReactionInput) -> ExternResult<()> {
         link_input(
             input.bead_ah,
             ThreadsLinkType::EmojiReaction.try_into_filter().unwrap(),
-            Some(str2tag(&input.emoji)),
+            Some(zome_path::str2tag(&input.emoji)),
         ),
         GetStrategy::Network,
     )?;
@@ -54,19 +55,19 @@ pub fn unpublish_reaction(input: ReactionInput) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
-pub fn pull_reactions(bead_ah: ActionHash) -> ExternResult<()> {
+pub fn pull_reactions(input: GetAhInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(
         LinkQuery::new(
-            bead_ah.clone(),
+           input.ah.clone(),
             ThreadsLinkType::EmojiReaction.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        input.strategy,
     )?;
     debug!(
         "pull_reactions() found {} for {}",
         links.len(),
-        bead_ah.clone()
+        input.ah.clone()
     );
     /// Emit Signal
     attest_links(links)?;

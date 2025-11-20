@@ -14,6 +14,7 @@ pub struct GetLatestBeadsInput {
   begin_time: Option<Timestamp>,
   end_time: Option<Timestamp>,
   target_limit: Option<usize>,
+  strategy: GetStrategy,
 }
 
 
@@ -23,7 +24,7 @@ pub fn find_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInter
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Convert arguments
   let origin_time: Timestamp = hdk::prelude::Timestamp(0); // FIXME dna_info()?.modifiers.origin_time;
-  let pp_comp = hash2comp(input.pp_ah.clone());
+  let pp_comp = zome_path::hash2comp(input.pp_ah.clone());
   let begin = input.begin_time.unwrap_or(origin_time);
   let end = input.end_time.unwrap_or(sys_time().unwrap());
   let limit = input.target_limit.unwrap_or(usize::MAX);
@@ -32,7 +33,7 @@ pub fn find_latest_beads(input: GetLatestBeadsInput) -> ExternResult<(SweepInter
   debug!("search_interval = {}", search_interval.print_as_anchors());
   let root_tp = Path::from(vec![pp_comp]).typed(ThreadsLinkType::ThreadTimePath)?;
   /// Query DHT
-  let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None, ThreadsLinkType::TimeItem)?;
+  let response = get_latest_time_indexed_links(root_tp, search_interval, limit, None, ThreadsLinkType::TimeItem, input.strategy)?;
   debug!("links.len = {}", response.1.len());
   /// Convert links to BeadLinks
   let bls: Vec<BeadLink> = response.1

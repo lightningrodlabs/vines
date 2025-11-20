@@ -2,6 +2,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use time_indexing::*;
 use zome_utils::*;
+use zome_path::*;
 use crate::beads::{BeadLink};
 
 
@@ -33,7 +34,13 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Query DHT
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
-  let responses = get_latest_time_indexed_links(root_tp, searched_interval.clone(), usize::MAX, None, ThreadsLinkType::TimeItem)?.1;
+  let responses = get_latest_time_indexed_links(
+     root_tp, searched_interval.clone(),
+     usize::MAX,
+     None,
+     ThreadsLinkType::TimeItem,
+     GetStrategy::Network
+  )?.1;
   debug!("links.len = {}", responses.len());
   /// Convert links to BeadLinks
   //let me = agent_info()?.agent_initial_pubkey;
@@ -84,10 +91,10 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
 
 /// Get the latest 20 items from the global time-index
 #[hdk_extern]
-pub fn probe_latest_items(_ : ()) -> ExternResult<SweepResponse> {
+pub fn probe_latest_items(strategy: GetStrategy) -> ExternResult<SweepResponse> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let root_tp = Path::from(GLOBAL_TIME_INDEX).typed(ThreadsLinkType::GlobalTimePath)?;
-  let search_res = get_latest_time_indexed_links(root_tp, SweepInterval::now(), 20, None, ThreadsLinkType::TimeItem)?;
+  let search_res = get_latest_time_indexed_links(root_tp, SweepInterval::now(), 20, None, ThreadsLinkType::TimeItem, strategy)?;
   debug!("links.len = {}\n\n", search_res.1.len());
   let item_links = search_res.1.into_iter()
     .map(|(ts, link)| (ts, ItemLink::from(link)))

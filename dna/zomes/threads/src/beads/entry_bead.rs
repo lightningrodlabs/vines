@@ -3,7 +3,7 @@ use time_indexing::convert_timepath_to_timestamp;
 use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::{fetch_typed_bead, index_bead};
-
+use crate::{GetAhInput, GetManyAhInput};
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -22,7 +22,7 @@ pub fn publish_entry_bead(input: AddEntryBeadInput) -> ExternResult<(ActionHash,
     let tp_pair = index_bead(input.entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, input.creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     ///
-    Ok((ah, input.entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+    Ok((ah, input.entry_bead, zome_path::path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
 
@@ -55,7 +55,7 @@ pub fn publish_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(Action
     let tp_pair = index_bead(entry_bead.bead.clone(), ah.clone(), "EntryBead"/*&bead_type*/, creation_time)?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
     ///
-    Ok((ah, entry_bead, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+    Ok((ah, entry_bead, zome_path::path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
 
@@ -95,17 +95,17 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
 
 ///
 #[hdk_extern]
-pub fn fetch_entry_bead(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
+pub fn fetch_entry_bead(input: GetAhInput) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return Ok(fetch_typed_bead::<EntryBead>(bead_ah).ok());
+    return Ok(fetch_typed_bead::<EntryBead>(input.ah, input.strategy).ok());
 }
 
 
 ///
 #[hdk_extern]
-pub fn fetch_many_entry_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EntryBead)>> {
+pub fn fetch_many_entry_beads(input: GetManyAhInput) -> ExternResult<Vec<(Timestamp, AgentPubKey, EntryBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return ahs.into_iter().map(|ah| fetch_typed_bead::<EntryBead>(ah)).collect();
+    return input.ahs.into_iter().map(|ah| fetch_typed_bead::<EntryBead>(ah, input.strategy)).collect();
 }
 
 

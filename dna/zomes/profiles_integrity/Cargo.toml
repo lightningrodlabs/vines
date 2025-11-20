@@ -9,8 +9,4 @@ crate-type = ["cdylib", "rlib"]
 
 
 [dependencies]
-#hc_zome_profiles_integrity = {git = "https://github.com/holochain-open-dev/profiles", branch = "for-hdk-v0.3.0-beta-dev.33" }
-#hc_zome_profiles_integrity = "=0.2.0"
-hc_zome_profiles_integrity = { git = "https://github.com/ddd-mtl/profiles_alt_zome", branch = "hdk-6.0" }
-
-hdi.workspace = true
+hc_zome_profiles_integrity.workspace= true

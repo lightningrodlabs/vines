@@ -1,7 +1,5 @@
 use hdk::prelude::*;
 use crate::participation_protocols::*;
-use zome_utils::{tp_children_paths, zome_panic_hook};
-
 
 ///
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -15,9 +13,9 @@ pub struct FindSubjectsInput {
 ///
 #[hdk_extern]
 pub fn find_subjects_by_type(input: FindSubjectsInput) -> ExternResult<Vec<(String, String, String)>> {
-  std::panic::set_hook(Box::new(zome_panic_hook));
+  std::panic::set_hook(Box::new(zome_utils::zome_panic_hook));
   let tp = get_subject_type_tp(input.applet_id, &input.subject_type)?;
-  let children = tp_children_paths(&tp)?;
+  let children = zome_path::tp_children_paths(&tp, GetStrategy::Network)?;
   debug!("found {} children", children.len());
   let ahs = children
     .into_iter()

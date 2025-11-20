@@ -1,13 +1,14 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
-  ActionId, AgentIdMap,
-  delay,
-  DnaElement,
-  EntryId,
-  HappBuildModeType,
-  HoloHashType,
-  intoDhtId,
+    ActionId,
+    AgentIdMap,
+    delay,
+    DnaElement,
+    EntryId,
+    HappBuildModeType,
+    HoloHashType,
+    intoDhtId,
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
 
@@ -156,7 +157,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {AgentId, AppProxy, MyDictionary, LinkableId} from "@ddd-qc/cell-proxy";
+import {AgentId, AppProxy, LinkableId, MyDictionary} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -172,43 +173,59 @@ import {SlDialog} from "@shoelace-style/shoelace";
 import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 import {
-  beadJumpEvent, catchThrottled,
-  CommentRequest,
-  ConfirmDialog, defaultLimitations, defaultModeration,
-  doodle_flowers,
-  EditTopicRequest,
-  FavoritesEvent,
-  favoritesJumpEvent,
-  filesContext,
-  filesJumpEvent,
-  getThisAppletId,
-  HideEvent, ICollapsable,
-  InputBar,
-  JumpEvent, latestThreadName,
-  MainViewType, multiJumpEvent, networkCallerContext,
-  NotifiableEvent,
-  NotifySetting,
-  onlineLoadedContext,
-  parseSearchInput,
-  ParticipationProtocol,
-  ProfilePanel, RulesEdit, RulesView,
-  searchFieldStyleTemplate, sharedStyles,
-  ShowProfileEvent, ShowRulesEvent, simplifyMimeType,
-  SpecialSubjectType,
-  Subject,
-  THIS_APPLET_ID,
-  threadJumpEvent,
-  ThreadsDnaPerspective,
-  ThreadsDvm,
-  ThreadsEntryType, ThreadsPerspective,
-  toasty,
-  ViewEmbedDialog,
-  ViewEmbedEvent,
-  VinesInputEvent,
-  weaveUrlToWal,
-  weClientContext,
-  composeNotificationTitle, renderAvatar, AnyBeadMat, Thread,
-  Bead,
+    AnyBeadMat,
+    Bead,
+    beadJumpEvent,
+    catchThrottled,
+    CommentRequest,
+    composeNotificationTitle,
+    ConfirmDialog,
+    defaultLimitations,
+    defaultModeration,
+    doodle_flowers,
+    EditTopicRequest,
+    FavoritesEvent,
+    favoritesJumpEvent,
+    filesContext,
+    filesJumpEvent,
+    getThisAppletId,
+    HideEvent,
+    ICollapsable,
+    InputBar,
+    JumpEvent,
+    latestThreadName,
+    MainViewType,
+    multiJumpEvent,
+    networkCallerContext,
+    NotifiableEvent,
+    NotifySetting,
+    onlineLoadedContext,
+    parseSearchInput,
+    ParticipationProtocol,
+    ProfilePanel,
+    renderAvatar,
+    RulesEdit,
+    RulesView,
+    searchFieldStyleTemplate,
+    sharedStyles,
+    ShowProfileEvent,
+    ShowRulesEvent,
+    simplifyMimeType,
+    SpecialSubjectType,
+    Subject,
+    THIS_APPLET_ID,
+    Thread,
+    threadJumpEvent,
+    ThreadsDnaPerspective,
+    ThreadsDvm,
+    ThreadsEntryType,
+    ThreadsPerspective,
+    toasty,
+    ViewEmbedDialog,
+    ViewEmbedEvent,
+    VinesInputEvent,
+    weaveUrlToWal,
+    weClientContext,
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -228,6 +245,7 @@ import {setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
 import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -1449,7 +1467,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async pullLatestAppletInfos() {
     console.log("pullLatestAppletInfos()", !!this.weServices);
     if (this.weServices) {
-      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds();
+      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds(GetStrategy.Network);
       console.log("pullLatestAppletInfos() appletIds", appletIds);
       for (const appletId of appletIds) {
         await this.weServices.appletInfo(appletId.b64);
@@ -2102,8 +2120,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
                             <ui5-button @click=${() => {
-                                this._filesDvm.probeAll();
-                                this._dvm.probeAll();
+                                this._filesDvm.probeAll(GetStrategy.Network);
+                                this._dvm.probeAll(GetStrategy.Network);
                             }}>${msg('Sync')}
                             </ui5-button>
                             <ui5-button design="Emphasized" @click=${() => {
@@ -2688,8 +2706,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.importDvm(false);
         break;
       case "syncItem":
-        this._filesDvm.probeAll();
-        this._dvm.probeAll();
+        this._filesDvm.probeAll(GetStrategy.Local);
+        this._dvm.probeAll(GetStrategy.Local);
         break;
       case "bugItem":
         window.open(`https://github.com/lightningrodlabs/threads/issues/new`, '_blank');
@@ -2715,7 +2733,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   async refresh(_e?: any) {
-    await this._dvm.threadsZvm.zomeProxy.probeInbox();
+    await this._dvm.threadsZvm.zomeProxy.probeInbox(GetStrategy.Network);
     console.log("Inbox:", this._dvm.threadsZvm.perspective.inbox.size);
   }
 

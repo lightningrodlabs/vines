@@ -5,12 +5,12 @@ use zome_utils::*;
 
 /// Returns list of AppletIds that have at least one subject
 #[hdk_extern]
-pub fn pull_applets(_:()) -> ExternResult<Vec<String>> {
+pub fn pull_applets(strategy: GetStrategy) -> ExternResult<Vec<String>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   debug!("START");
   let tp = Path::from(format!("{}", ROOT_ANCHOR_SUBJECTS))
     .typed(ThreadsLinkType::SubjectPath)?;
-  let children = tp_children_paths(&tp)?;
+  let children = zome_path::tp_children_paths(&tp, strategy)?;
   debug!("children: {:?}", children);
   let mut appletIds = Vec::new();
   for tp in children {

@@ -20,14 +20,21 @@ edition = "2021"
 [workspace.dependencies]
 serde = { version = "=1.0.219", default-features = false }
 holochain_serialized_bytes = "=0.0.56"
-hdi = { version = "=0.7.0-dev.18", default-features = false }
-hdk = { version = "=0.6.0-dev.21", default-features = false }
+hdi = { version = "=0.7.0", default-features = false }
+hdk = { version = "=0.6.0", default-features = false }
 
-zome_utils = { git = "https://github.com/ddd-mtl/zome-utils", branch = "hdk-6.0" }
-zome_signals = { git = "https://github.com/ddd-mtl/zome-signals", branch = "hdk-6.0" }
-time_indexing = { git = "https://github.com/ddd-mtl/time-indexing", branch = "hdk-6.0" }
-path_explorer_types = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer_types", branch = "hdk-6.0" }
-path_explorer = { git = "https://github.com/lightningrodlabs/path-explorer", package = "path_explorer", branch = "hdk-6.0" }
+zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+zome_signals = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+zome_core = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+
+time_indexing = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+path_explorer_types = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+path_explorer = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+
+hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", branch = "main-0.6" }
+hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6", package="profiles_alt_coordinator" }
+
 
 [profile.dev]
 lto = false

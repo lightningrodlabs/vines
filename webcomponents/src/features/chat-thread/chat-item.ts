@@ -1,4 +1,4 @@
-import {html, css, PropertyValues, TemplateResult} from "lit";
+import {css, html, PropertyValues, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
@@ -8,13 +8,7 @@ import 'emoji-picker-element';
 
 import {renderAvatar, renderAvatarGroup, renderProfileAvatar} from "../../render";
 import {ThreadsEntryType} from "../../bindings/threads.types";
-import {
-  beadJumpEvent,
-  threadJumpEvent,
-  ShowProfileEvent,
-  CommentRequest,
-  favoritesEvent,
-} from "../../events";
+import {beadJumpEvent, CommentRequest, favoritesEvent, ShowProfileEvent, threadJumpEvent,} from "../../events";
 import {filesContext, onlineLoadedContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlToWAL} from "@theweave/api";
@@ -32,6 +26,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {AnyBeadMat, BeadInfo, EntryBeadMat} from "../../viewModels/threads.materialize";
 import {ChatTextEdit} from "./chat-text-edit";
 import {sharedStyles} from "../../styles";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -96,7 +91,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** Probe bead and its reactions */
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
-    this.loadBead();
+      /*await*/ this.loadBead(GetStrategy.Local); // TODO: Figure out best strategy
   }
 
 
@@ -105,7 +100,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
-      this.loadBead();
+      /*await*/ this.loadBead(GetStrategy.Local);  // TODO: Figure out best strategy
       this.canEdit = false;
     }
   }
@@ -127,9 +122,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
-  private async loadBead() {
-    await this._dvm.threadsZvm.fetchUnknownBead(this.hash);
-    await this._dvm.threadsZvm.pullEmojiReactions(this.hash);
+  private async loadBead(strategy: GetStrategy) {
+    await this._dvm.threadsZvm.fetchUnknownBead(this.hash, strategy);
+    await this._dvm.threadsZvm.pullEmojiReactions(this.hash, strategy);
   }
 
 

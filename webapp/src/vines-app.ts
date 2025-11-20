@@ -253,12 +253,12 @@ export class VinesApp extends HappMultiElement {
 
 
   /** */
-  override async perspectiveInitializedOffline(): Promise<void> {
+  override async perspectiveInitializedFromLocal(): Promise<void> {
     console.log("<vines-app>.perspectiveInitializedOffline()");
     for (let i = 0; i < this.hvms.length; i += 1) {
       this.threadsDvm(i).threadsZvm.storeMainTopic();
       const maybeProfile = await this.threadsDvm(i).profilesZvm.findProfile(this.filesDvm(i).cell.address.agentId);
-      console.log("perspectiveInitializedOffline() maybeProfile", maybeProfile, this.threadsDvm(i).cell.address.agentId);
+      console.log("perspectiveInitializedFromLocal() maybeProfile", maybeProfile, this.threadsDvm(i).cell.address.agentId);
     }
     /** Done */
     this._offlineLoaded = true;
@@ -266,7 +266,7 @@ export class VinesApp extends HappMultiElement {
 
 
   /** */
-  override async perspectiveInitializedOnline(): Promise<void> {
+  override async perspectiveInitializedFromNetwork(): Promise<void> {
     this._onlineLoaded = true;
     this._onlineLoadedProvider.setValue(true);
     //this.requestUpdate();

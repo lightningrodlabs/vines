@@ -49,14 +49,14 @@ fn unhide_subject(subjectHash: AnyLinkableHash) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
-fn probe_all_hiddens(_: ()) -> ExternResult<()> {
+fn probe_all_hiddens(strategy: GetStrategy) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(
         LinkQuery::new(
             agent_info()?.agent_initial_pubkey,
             ThreadsLinkType::Hide.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        strategy,
     )?;
     /// Emit Signal
     attest_links(links)?;

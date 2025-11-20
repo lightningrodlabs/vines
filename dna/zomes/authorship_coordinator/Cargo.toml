@@ -8,17 +8,17 @@ edition.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-base64 = {version = "0.13"}
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-strum = "0.26"
-strum_macros = "0.26"
+#base64 = {version = "0.13"}
+#chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+#strum = "0.26"
+#strum_macros = "0.26"
 
 serde.workspace = true
 holochain_serialized_bytes.workspace = true
 hdk.workspace = true
 
 zome_utils.workspace = true
-time_indexing.workspace = true
-path_explorer_types.workspace = true
+zome_core.workspace = true
+zome_path.workspace = true
 
 authorship_integrity = { package = "authorship_integrity", path = "../authorship_integrity" }

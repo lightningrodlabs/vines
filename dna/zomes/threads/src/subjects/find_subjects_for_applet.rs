@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use zome_utils::*;
+use zome_path::*;
 use crate::participation_protocols::get_applet_tp;
 use crate::subjects::find_subjects_by_type::*;
 
@@ -12,7 +13,7 @@ pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, 
     return error("Empty applet_id");
   }
   let tp = get_applet_tp(applet_id.clone())?;
-  let children = tp_children_paths(&tp)?;
+  let children = tp_children_paths(&tp, GetStrategy::Network)?;
   debug!("find_subjects_for_applet() found {} children", children.len());
   let mut input = FindSubjectsInput { applet_id, subject_type: "".to_string() };
   let mut res = Vec::new();
@@ -34,7 +35,7 @@ pub fn find_subject_types_for_applet(applet_id: String) -> ExternResult<Vec<(Str
     return error("Empty applet_id");
   }
   let tp = get_applet_tp(applet_id.clone())?;
-  let children = tp_children_paths(&tp)?;
+  let children = tp_children_paths(&tp, GetStrategy::Network)?;
   debug!("get_subject_types_for_dna() found {} children", children.len());
   let leafs = children.into_iter()
     .map(|tp| (tp.leaf().unwrap().try_into().unwrap(), tp.path.path_entry_hash().unwrap()))

@@ -2,6 +2,7 @@ use hdk::prelude::*;
 use crate::beads::*;
 use threads_integrity::*;
 use time_indexing::convert_timepath_to_timestamp;
+use crate::{GetAhInput, GetManyAhInput};
 
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]
@@ -12,23 +13,23 @@ pub fn publish_text_bead(texto: TextBead) -> ExternResult<(ActionHash, String, T
   let ah_time = get(ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
   let tp_pair = index_bead(texto.bead, ah.clone(), "TextBead", ah_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+  Ok((ah, zome_path::path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
 
 ///
 #[hdk_extern]
-pub fn fetch_text_bead(ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, TextBead)>> {
+pub fn fetch_text_bead(input: GetAhInput) -> ExternResult<Option<(Timestamp, AgentPubKey, TextBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  Ok(fetch_typed_bead::<TextBead>(ah).ok())
+  Ok(fetch_typed_bead::<TextBead>(input.ah, input.strategy).ok())
 }
 
 
 ///
 #[hdk_extern]
-pub fn fetch_many_text_bead(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
+pub fn fetch_many_text_bead(input: GetManyAhInput) -> ExternResult<Vec<(Timestamp, AgentPubKey, TextBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  ahs.into_iter().map(|ah| fetch_typed_bead::<TextBead>(ah)).collect()
+   input.ahs.into_iter().map(|ah| fetch_typed_bead::<TextBead>(ah, input.strategy)).collect()
 }
 
 
@@ -49,7 +50,7 @@ pub fn publish_text_bead_at(input: AddTextBeadAtInput) -> ExternResult<(ActionHa
   let _bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   //let fn_end = sys_time()?;
   //debug!("               ADD TIME: {:?} ms", (fn_end.0 - fn_start.0) / 1000);
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap()))
+  Ok((ah, zome_path::path2anchor(&tp_pair.1.path).unwrap()))
 }
 
 
@@ -76,20 +77,8 @@ pub fn publish_many_text_bead_at(input: AddManyTextBeadAtInput) -> ExternResult<
     let ah = create_entry(ThreadsEntry::TextBead(texto))?;
     let tp_pair = index_bead(input.text_bead.bead.clone(), ah.clone(), "TextBead", Timestamp::from_micros(start.clone()))?;
     let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
-    res.push((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time));
+    res.push((ah, zome_path::path2anchor(&tp_pair.1.path).unwrap(), bucket_time));
     start += i64::from(input.interval_us);
   }
   Ok(res)
-}
-
-/// Perform calculations until the given time period has elapsed.
-/// Used for simulating long zome calls when testing.
-fn busy_wait(seconds: u32) {
-   let start = sys_time().unwrap().0;
-   let mut end = start;
-   while end - start < seconds as i64 * 1000 * 1000 {
-      // Some arbitrary calculations to keep CPU busy
-      let _ = holo_hash_encode(&vec![end.clone() as u8; 1]);
-      end = sys_time().unwrap().0;
-   }
 }

@@ -1,9 +1,7 @@
-
 mod probe_pps_from_subject;
 mod publish_participation_protocol;
 mod pp_title;
 mod rules;
-
 
 use hdi::hash_path::path::{Component};
 use hdk::prelude::*;
@@ -12,12 +10,11 @@ use threads_integrity::*;
 use authorship_zapi::*;
 use zome_signals::*;
 
-
 /// Return original author
 #[hdk_extern]
 pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, Timestamp, AgentPubKey)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(ah.clone().into()) else {
+  let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(ah.clone().into(), GetStrategy::Network) else {
     return Ok(None);
   };
   /// Emit Signal

@@ -4,8 +4,7 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::{fetch_typed_bead, index_bead};
 use crate::dm::decrypt_my_bead;
-
-
+use crate::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,23 +28,23 @@ pub fn publish_enc_bead(input: AddEncBeadInput) -> ExternResult<(ActionHash, Str
   let tp_pair = index_bead(bead.clone(), ah.clone(), "EncryptedBead"/*&bead_type*/, input.creation_time)?;
   let bucket_time = convert_timepath_to_timestamp(tp_pair.1.path.clone())?;
   /// Done
-  Ok((ah, path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
+  Ok((ah, zome_path::path2anchor(&tp_pair.1.path).unwrap(), bucket_time))
 }
 
 
 ///
 #[hdk_extern]
-pub fn fetch_enc_bead(bead_ah: ActionHash) -> ExternResult<Option<(Timestamp, AgentPubKey, EncryptedBead)>> {
+pub fn fetch_enc_bead(input: GetAhInput) -> ExternResult<Option<(Timestamp, AgentPubKey, EncryptedBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return Ok(fetch_typed_bead::<EncryptedBead>(bead_ah).ok());
+  return Ok(fetch_typed_bead::<EncryptedBead>(input.ah, input.strategy).ok());
 }
 
 
 ///
 #[hdk_extern]
-pub fn fetch_many_enc_beads(ahs: Vec<ActionHash>) -> ExternResult<Vec<(Timestamp, AgentPubKey, EncryptedBead)>> {
+pub fn fetch_many_enc_beads(input: GetManyAhInput) -> ExternResult<Vec<(Timestamp, AgentPubKey, EncryptedBead)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  return ahs.into_iter().map(|ah| fetch_typed_bead::<EncryptedBead>(ah)).collect();
+  return input.ahs.into_iter().map(|ah| fetch_typed_bead::<EncryptedBead>(ah, input.strategy)).collect();
 }
 
 

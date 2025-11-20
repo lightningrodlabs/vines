@@ -84,6 +84,13 @@ ValidationStatus, ValidationReceipt,
 // @ts-ignore
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
+export interface GetDataTypeInput {
+  hash: AnyDhtArray
+  role?: string
+  dna?: DnaArray
+  get_strategy: GetStrategy
+}
+
 export interface AddAnyBeadInput {
   anyBead: AnyBead
   creationTime: Timestamp
@@ -121,6 +128,7 @@ export interface GetLatestBeadsInput {
   begin_time?: Timestamp
   end_time?: Timestamp
   target_limit?: number
+  strategy: GetStrategy
 }
 
 export interface BeadLink {
@@ -162,6 +170,18 @@ export interface PublishDmThreadInput {
   appletId: string
 }
 
+/**  */
+export interface GetAhInput {
+  ah: ActionArray
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetManyAhInput {
+  ahs: ActionArray[]
+  strategy: GetStrategy
+}
+
 export interface CommitGlobalLogInput {
   maybe_ts?: Timestamp
   maybe_last_known_pp_ah?: ActionArray
@@ -171,12 +191,6 @@ export interface ProbeAllOutput {
   searchedInterval: SweepInterval
   newThreadsBySubject: [string, ActionArray][]
   newBeadsByThread: [ActionArray, BeadLink][]
-}
-
-export interface GetDataTypeInput {
-  hash: AnyDhtArray
-  role?: string
-  dna?: DnaArray
 }
 
 /**  */
@@ -208,6 +222,12 @@ export interface SetNotifySettingInput {
 export interface UpdatePpTitleInput {
   ppAh: ActionArray
   newTitle: string
+}
+
+/**  */
+export interface ProbePpsInput {
+  lh: AnyLinkableArray
+  strategy: GetStrategy
 }
 
 export interface BanAgentInput {

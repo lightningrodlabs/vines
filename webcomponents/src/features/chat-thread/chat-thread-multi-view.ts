@@ -13,6 +13,7 @@ import {sharedStyles} from "../../styles";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {determinerGroupProfile} from "../../utils";
 import {ts2day} from "../timezone/utils";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -137,10 +138,10 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** Check if beads have comments */
   protected async loadBeadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
     for (const bl of bls) {
-      const pps = await dvm.threadsZvm.pullSubjectThreads(intoLinkableId(bl.beadAh));
+      const pps = await dvm.threadsZvm.pullSubjectThreads(intoLinkableId(bl.beadAh), GetStrategy.Local); // TODO: GeStrategy
       for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
         if (pp.purpose == "comment") {
-          await dvm.threadsZvm.perspective.getAllBeadsOnThread(ppAh);
+          dvm.threadsZvm.perspective.getAllBeadsOnThread(ppAh);
           break;
         }
       }

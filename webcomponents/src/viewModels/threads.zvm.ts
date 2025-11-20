@@ -9,8 +9,11 @@ import {
     DM_SUBJECT_TYPE_NAME,
     EncryptedBead,
     EntryBead,
+    GetAhInput,
     GetLatestBeadsInput,
-    GlobalLastProbeLog, Limitations, Moderation,
+    GlobalLastProbeLog,
+    Limitations,
+    Moderation,
     NotifyPeerInput,
     NotifySetting,
     ParticipationProtocol,
@@ -28,7 +31,8 @@ import {
     ActionIdMap,
     AgentId,
     AnyId,
-    AnyIdMap, delay,
+    AnyIdMap,
+    delay,
     DhtId,
     DnaId,
     enc64,
@@ -53,11 +57,13 @@ import {
     base2typed,
     BaseBeadType,
     BeadInfo,
-    BeadType, defaultModeration,
+    BeadType,
+    defaultModeration,
     dematerializeEntryBead,
     dematerializeTypedBead,
     EncryptedBeadContent,
-    EntryBeadMat, FileContent,
+    EntryBeadMat,
+    FileContent,
     materializeBead,
     materializeTypedBead,
     NotifiableEvent,
@@ -82,7 +88,7 @@ import {AuthorshipZvm} from "./authorship.zvm";
 import {ThreadsLinkType} from "../bindings/threads.integrity";
 import {SpecialSubjectType} from "../events";
 import {ThreadsPerspective, ThreadsPerspectiveMutable, ThreadsSnapshot} from "./threads.perspective";
-import {MyDictionary, HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
+import {HOLOCHAIN_ID_EXT_CODEC, MyDictionary} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsDvm} from "./threads.dvm";
 import {THIS_APPLET_ID} from "../contexts";
@@ -244,47 +250,51 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** -- Init -- */
 
     /** Query all entries from local source-chain */
-    override async initializePerspectiveOffline(): Promise<void> {
-        console.debug("threadsZvm.initializePerspectiveOffline() START");
+    override async initializePerspectiveFromLocal(): Promise<void> {
+        console.debug("threadsZvm.initializePerspectiveFromLocal() START");
         await this.zomeProxy.queryAll();
-        console.debug("threadsZvm.initializePerspectiveOffline() END");
+        await this.probeAllInnerAsync(GetStrategy.Local);
+        console.debug("threadsZvm.initializePerspectiveFromLocal() END");
     }
 
 
     /** */
-    override async initializePerspectiveOnline(): Promise<void> {
-        console.debug("threadsZvm.initializePerspectiveOnline() START");
-        await this.zomeProxy.probeAllHiddens();
-        await this.zomeProxy.pullAllSemanticTopics();
-        await this.pullAppletIds();
-        await this.pullAllSubjects();
-        await this.zomeProxy.probeDmThreads(GetStrategy.Network);
-        await this.zomeProxy.probeInbox();
-        await this.pullFavorites();
+    override async initializePerspectiveFromNetwork(): Promise<void> {
+        console.debug("threadsZvm.initializePerspectiveFromNetwork() START");
+        await this.probeAllInnerAsync(GetStrategy.Network);
+        console.debug("threadsZvm.initializePerspectiveFromNetwork() END");
+    }
+
+
+    async probeAllInnerAsync(strategy: GetStrategy): Promise<void> {
+        console.debug("threadsZvm.probeAllInner() subjects counts:", this._perspective.getAllSubjects().length)
+        await this.zomeProxy.probeAllHiddens(strategy);
+        await this.zomeProxy.pullAllSemanticTopics(strategy);
+        await this.pullAppletIds(strategy);
+        await this.pullAllSubjects(strategy);
+        await this.zomeProxy.probeDmThreads(strategy);
+        await this.zomeProxy.probeInbox(strategy);
+        await this.pullFavorites(strategy);
         /** Grab all threads of other subjects to see if there are new ones */
         let probes: Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>>[] = [];
         for (const [subjectAdr, _sub] of this._perspective.getAllSubjects()) {
-            probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr)));
+            probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr), strategy));
         }
         await Promise.all(probes);
-        console.debug("threadsZvm.initializePerspectiveOnline() END");
+        if (strategy == GetStrategy.Network) {
+            /** Get last elements since last time (global probe log) */
+            /** WARN: this can commit an entry */
+            await this.probeAllLatest();
+            this._perspective.print();
+        }
     }
-
 
     /** */
     override probeAllInner() {
-        this.probeAllInnerAsync();
-    }
-
-
-    /** */
-    async probeAllInnerAsync() {
-        console.debug("threadsZvm.probeAllInner()", this._perspective.getAllSubjects().length)
-        await this.initializePerspectiveOnline();
-        /** Get last elements since last time (global probe log) */
-        /** WARN: this can commit an entry */
-        await this.probeAllLatest();
-        this._perspective.print();
+        this.probeAllInnerAsync(GetStrategy.Network).then(
+            () => { console.trace("ThreadsZvm.probeAllInner() DONE") },
+            (e) => { console.error("ThreadsZvm.probeAllInner() failed", e) },
+            );
     }
 
 
@@ -301,11 +311,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** -- Probe: Query the DHT, and store the results (async) -- */
 
     /** */
-    async pullAppletIds(): Promise<EntryId[]> {
+    async pullAppletIds(strategy: GetStrategy): Promise<EntryId[]> {
         console.log("threadsZvm.probeAllAppletIds()")
         // const appletIds = await this.zomeProxy.getApplets();
         // this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
-        const entryB64s = await this.zomeProxy.pullApplets();
+        const entryB64s = await this.zomeProxy.pullApplets(strategy);
         const list = entryB64s.map((b64) => new EntryId(b64));
         this._perspective.storeAllAppletIds(list);
         console.log("threadsZvm.probeAllAppletIds() list", list);
@@ -318,8 +328,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
     /** Get all Subjects from the RootAnchor */
-    async pullAllSubjects(): Promise<void> {
-        const subjects = await this.zomeProxy.pullAllSubjects();
+    async pullAllSubjects(strategy: GetStrategy): Promise<void> {
+        const subjects = await this.zomeProxy.pullAllSubjects(strategy);
         this._perspective.storeAllSubjects(subjects);
         console.log("threadsZvm.pullAllSubjects()", subjects.length);
         this.notifySubscribers();
@@ -328,9 +338,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     // TODO: probeDnaSubjects()
     // TODO: probeEntryTypeSubjects()
 
-
     /** Get all Threads for a subject */
-    async pullSubjectThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
+    async pullSubjectThreads(subjectId: AnyId, strategy: GetStrategy): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
         console.log("threadsZvm.pullSubjectThreads() start", subjectId);
         /** Skip Agent as it has dm link type to get its pps */
         if (subjectId.hashType == HoloHashType.Agent) {
@@ -341,7 +350,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const subjectIds = this._perspective.getAllSubjectVersions(subjectId);
         //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length, subjectId.short);
         for (const curSubjId of subjectIds) {
-            const [throttleError, tuples] = await catchThrottled(this.pullSubjectVersionThreads(curSubjId));
+            const [throttleError, tuples] = await catchThrottled(this.pullSubjectVersionThreads(curSubjId, strategy));
             if (throttleError) {
                 //console.log("threadsZvm.pullSubjectThreads() throttleError", throttleError, curSubjId);
                 continue; // pullSubjectThreads() might be called multiple times for the same subject
@@ -355,9 +364,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    async pullSubjectVersionThreads(subjectId: AnyId): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
+    async pullSubjectVersionThreads(subjectId: AnyId, strategy: GetStrategy): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
         let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
-        const pps = await this.zomeProxy.probePpsFromSubjectHash(subjectId.hash);
+        const pps = await this.zomeProxy.probePpsFromSubjectHash({lh: subjectId.hash, strategy});
         for (const [pp_ah, _linkTs] of pps) {
             const ppAh = new ActionId(pp_ah);
             //console.log("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.short);
@@ -482,23 +491,23 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /**  */
-    async pullFavorites() {
-        const favorites = await this.zomeProxy.probeMyFavorites();
+    async pullFavorites(strategy: GetStrategy): Promise<void> {
+        const favorites = await this.zomeProxy.probeMyFavorites(strategy);
         for (const fav_ah of favorites) {
             const beadAh = new ActionId(fav_ah);
-            await this.fetchUnknownBead(beadAh);
+            await this.fetchUnknownBead(beadAh, strategy);
         }
     }
 
 
     /** Probe all emojis on this bead */
-    async pullEmojiReactions(beadAh: ActionId) {
-        await catchThrottled(this.zomeProxy.pullReactions(beadAh.hash));
+    async pullEmojiReactions(beadAh: ActionId, strategy: GetStrategy) {
+        await catchThrottled(this.zomeProxy.pullReactions({ah: beadAh.hash, strategy}));
     }
 
 
     /** Get all beads from a thread */
-    async pullAllBeads(ppAh: ActionId): Promise<BeadLink[]> {
+    async pullAllBeads(ppAh: ActionId, strategy: GetStrategy): Promise<BeadLink[]> {
         console.log("pullAllBeads()", ppAh);
         const thread = this._perspective.threads.get(ppAh);
         if (!thread) {
@@ -506,7 +515,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             return [];
         }
         /** Probe bans if manual rules */
-        const [throttleError0, _] = await catchThrottled(this.pullThreadModeration(ppAh));
+        const [throttleError0, _] = await catchThrottled(this.pullThreadModeration(ppAh, strategy));
         if (throttleError0) {
             return [];
         }
@@ -518,7 +527,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [interval, beadLinks] = maybe;
         console.log("pullAllBeads()", beadLinks.length, TimeInterval.new(interval).toStringSec(), beadLinks)
         /** Fetch */
-        await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval));
+        await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval), strategy);
         thread.setHasSearchedOldestBead();
         console.log("setSearchedOldestBead for", ppAh, thread.hasSearchedOldestBead);
         /** Done */
@@ -527,13 +536,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    async pullThreadModeration(ppAh: ActionId) {
+    async pullThreadModeration(ppAh: ActionId, strategy: GetStrategy) {
         let thread = this._perspective.threads.get(ppAh);
         /** Probe bans if moderation is enabled */
         if (thread!.pp.moderation.moderators.length > 0) {
             console.log("pullThreadModeration()", ppAh.short);
-            await this.zomeProxy.probeAllBanned(ppAh.hash);
-            await this.zomeProxy.probeAllFlagged(ppAh.hash);
+            const input: GetAhInput = {
+                ah: ppAh.hash,
+                strategy,
+            };
+            await this.zomeProxy.probeAllBanned(input);
+            await this.zomeProxy.probeAllFlagged(input);
         }
     }
 
@@ -541,7 +554,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Get all beads from "now" and back until `limit` is reached or `startTime` is reached */
     async pullLatestBeads(ppAh: ActionId, begin_time?: Timestamp, end_time?: Timestamp, target_limit?: number): Promise<BeadLink[]> {
         console.log("pullLatestBeads()", ppAh);
-        let thread = this._perspective.threads.get(ppAh);
+        const strategy: GetStrategy = GetStrategy.Local; // TODO figure out GetStrategy
+            let thread = this._perspective.threads.get(ppAh);
         if (!thread) {
             // try {
             //   await this.fetchPp(ppAh);
@@ -551,13 +565,15 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             //}
             //thread = this._threads.get(ppAh);
         }
-        await this.pullThreadModeration(ppAh);
+        await this.pullThreadModeration(ppAh, strategy);
         /** Probe the latest beads */
         try {
-            const [searchedInterval, beadLinks] = await this.zomeProxy.findLatestBeads(
-                {pp_ah: ppAh.hash, begin_time, end_time, target_limit} as GetLatestBeadsInput);
+            const input: GetLatestBeadsInput = {
+                pp_ah: ppAh.hash, begin_time, end_time, target_limit, strategy,
+            };
+            const [searchedInterval, beadLinks] = await this.zomeProxy.findLatestBeads(input);
             /** Cache them */
-            await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval));
+            await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval), strategy);
             /** Check if beginning of time reached */
             console.log("pullLatestBeads() begin", searchedInterval.begin, thread.creationTime);
             if (searchedInterval.begin <= thread.creationTime) {
@@ -863,7 +879,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [pp, ts, author] = maybe;
         console.log("ThreadsZvm.fetchPp() pp", pp);
         /** grab latest title */
-        const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle(ppAh.hash));
+        const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle({ah: ppAh.hash, strategy: GetStrategy.Local}));
         if (throttleError2) {
             return null;
         }
@@ -873,21 +889,24 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    async fetchUnknownBead(beadAh: ActionId, /*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
+    async fetchUnknownBead(beadAh: ActionId, strategy: GetStrategy/*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
         console.log("fetchUnknownBead()", beadAh.b64);
         /** Return info if bead already stored */
         if (this._perspective.getBeadInfo(beadAh) && this._perspective.isPersistent(beadAh.b64)) {
             return;
         }
+        const input: GetAhInput = {
+            ah:  beadAh.hash,
+            strategy,
+        };
         /** */
-        let bead_ah = beadAh.hash;
-        const textTuple = await catchThrottled(this.zomeProxy.fetchTextBead(bead_ah));
+        const textTuple = await catchThrottled(this.zomeProxy.fetchTextBead(input));
         if (textTuple == null) {
-            const entryTuple = await catchThrottled(this.zomeProxy.fetchEntryBead(bead_ah));
+            const entryTuple = await catchThrottled(this.zomeProxy.fetchEntryBead(input));
             if (entryTuple == null) {
-                const anyTuple = await catchThrottled(this.zomeProxy.fetchAnyBead(bead_ah));
+                const anyTuple = await catchThrottled(this.zomeProxy.fetchAnyBead(input));
                 if (anyTuple == null) {
-                    const maybe = await catchThrottled(this.zomeProxy.fetchEncBead(bead_ah));
+                    const maybe = await catchThrottled(this.zomeProxy.fetchEncBead(input));
                     if (!maybe) {
                         console.warn(`Bead not found at hash ${beadAh.b64}`);
                     }
@@ -898,7 +917,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    async mustFetchUnknownBead(beadAh: ActionId): Promise<[TypedBead, BeadType, Timestamp, AgentId] | null> {
+    async mustFetchUnknownBead(beadAh: ActionId, strategy: GetStrategy): Promise<[TypedBead, BeadType, Timestamp, AgentId] | null> {
         console.log("mustFetchUnknownBead()", beadAh.short);
         const beadInfo = this._perspective.getBeadInfo(beadAh);
         /** Return info if bead already stored */
@@ -907,19 +926,23 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             return [dematerializeTypedBead(typed!, beadInfo.beadType), beadInfo.beadType, beadInfo.creationTime, beadInfo.author];
         }
         /** */
-        let bead_ah = beadAh.hash;
         let creationTime: Timestamp;
         let author: Uint8Array;
         let typed: TypedBead;
         let type: BeadType;
 
-        const textTuple = await this.zomeProxy.fetchTextBead(bead_ah);
+        const input: GetAhInput = {
+            ah:  beadAh.hash,
+            strategy,
+        };
+
+        const textTuple = await this.zomeProxy.fetchTextBead(input);
         if (textTuple == null) {
-            const entryTuple = await this.zomeProxy.fetchEntryBead(bead_ah);
+            const entryTuple = await this.zomeProxy.fetchEntryBead(input);
             if (entryTuple == null) {
-                const anyTuple = await this.zomeProxy.fetchAnyBead(bead_ah);
+                const anyTuple = await this.zomeProxy.fetchAnyBead(input);
                 if (anyTuple == null) {
-                    const maybe = await this.zomeProxy.fetchEncBead(bead_ah);
+                    const maybe = await this.zomeProxy.fetchEncBead(input);
                     if (!maybe) {
                         console.warn(`Bead not found at hash ${beadAh.b64}`);
                         return null;
@@ -943,23 +966,27 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    async fetchTypedBead(beadAh: ActionId, beadType: BeadType/*, canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
+    async fetchTypedBead(beadAh: ActionId, beadType: BeadType, strategy: GetStrategy/*, canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
         if (this._perspective.getBeadInfo(beadAh) && this._perspective.isPersistent(beadAh.b64)) {
             return;
         }
+        const input: GetAhInput = {
+            ah:  beadAh.hash,
+            strategy,
+        };
         try {
             switch (beadType) {
                 case ThreadsEntryType.TextBead:
-                    await catchThrottled(this.zomeProxy.fetchTextBead(beadAh.hash));
+                    await catchThrottled(this.zomeProxy.fetchTextBead(input));
                     break;
                 case ThreadsEntryType.EntryBead:
-                    await catchThrottled(this.zomeProxy.fetchEntryBead(beadAh.hash));
+                    await catchThrottled(this.zomeProxy.fetchEntryBead(input));
                     break;
                 case ThreadsEntryType.AnyBead:
-                    await catchThrottled(this.zomeProxy.fetchAnyBead(beadAh.hash));
+                    await catchThrottled(this.zomeProxy.fetchAnyBead(input));
                     break;
                 case ThreadsEntryType.EncryptedBead:
-                    await catchThrottled(this.zomeProxy.fetchEncBead(beadAh.hash));
+                    await catchThrottled(this.zomeProxy.fetchEncBead(input));
                     break;
             }
         } catch (e: any) {
@@ -970,7 +997,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    private async fetchBeads(ppAh: ActionId, beadLinks: BeadLink[], probedInterval: TimeInterval): Promise<void> {
+    private async fetchBeads(ppAh: ActionId, beadLinks: BeadLink[], probedInterval: TimeInterval, strategy: GetStrategy): Promise<void> {
         //console.log("fetchBeads() len = ", beadLinks.length, searchedInterval);
         if (beadLinks.length == 0) {
             return;
@@ -985,7 +1012,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** fetch each Bead */
         for (const bl of beadLinks) {
             //console.log("fetchBeads()", bl.beadType)
-            await this.fetchTypedBead(new ActionId(bl.beadAh), bl.beadType as BeadType/*, false, bl.creationTime*/);
+            await this.fetchTypedBead(new ActionId(bl.beadAh), bl.beadType as BeadType, strategy/*, false, bl.creationTime*/);
         }
         thread.addProbedInterval(probedInterval);
     }
@@ -1079,7 +1106,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             if (maybeBeadInfo) {
                 return maybeBeadInfo.bead.ppAh;
             }
-            const maybe = await this.mustFetchUnknownBead(notif.content);
+            const maybe = await this.mustFetchUnknownBead(notif.content, GetStrategy.Local);
             if (!maybe) {
                 return null;
             }
@@ -1183,7 +1210,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             /** Check and fetch prevBead */
             const prev = this._perspective.beads.get(innerBeadInfo.bead.prevBeadAh);
             if (!prev && !innerBeadInfo.bead.prevBeadAh.equals(innerBeadInfo.bead.ppAh)) {
-                this.fetchUnknownBead(innerBeadInfo.bead.prevBeadAh);
+                this.fetchUnknownBead(innerBeadInfo.bead.prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
             }
         } else {
             const bead = (typedBead as TypedBaseBeadMat).bead;
@@ -1192,7 +1219,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             /** Check and fetch prevBead */
             const prev = this._perspective.beads.get(beadInfo.bead.prevBeadAh);
             if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
-                this.fetchUnknownBead(beadInfo.bead.prevBeadAh);
+                this.fetchUnknownBead(beadInfo.bead.prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
             }
         }
         /** Store in perspective */
@@ -1513,7 +1540,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
 
         /** other */
-        await this.pullAllSubjects(); // ?? better to call probeAll ??
+        await this.pullAllSubjects(GetStrategy.Local); // ?? better to call probeAll ??
     }
 
 
@@ -1743,7 +1770,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                         this._perspective.setPersistent(pulse.create_link_hash.b64);
                     }
                     if (pulse.isNew && isAuthorSelf) {
-                        let author = await this.getRecordAuthor(intoDhtId(beadAh.b64));
+                        let author = await this.getRecordAuthor(intoDhtId(beadAh.b64), GetStrategy.Local); // TODO: Figure out best strategy
                         /** Notify bead author that it has been flagged */
                         if (this._canNotify && !this.cell.address.agentId.equals(author)) {
                             await this.zomeProxy.notifyPeer({
@@ -1813,7 +1840,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** */
     _authorCache: AnyIdMap<AgentId> = new AnyIdMap<AgentId>();
 
-    async getRecordAuthor(dh: DhtId): Promise<AgentId> {
+    async getRecordAuthor(dh: DhtId, strategy: GetStrategy): Promise<AgentId> {
         /* Skip MAIN_TOPIC_ID */
         if (dh.equals(MAIN_TOPIC_ID)) {
             return this.cell.address.agentId;
@@ -1823,7 +1850,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (maybe) {
             return maybe;
         }
-        const a = await this.zomeProxy.getRecordAuthor(dh.hash);
+        const a = strategy == GetStrategy.Local
+            ? await this.zomeProxy.getRecordAuthorLocal(dh.hash)
+            : await this.zomeProxy.getRecordAuthorNetwork(dh.hash)
         const id = new AgentId(a);
         this._authorCache.set(dh.b64, id);
         return id;
@@ -1884,7 +1913,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     // @ts-ignore
                     this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
                     /** grab latest title edit */
-                    this.zomeProxy.getPpTitle(pulse.ah.hash).catch(() => {
+                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local}).catch(() => { // TODO: Figure out best strategy
                     });
                     /** grab latest textbead edit if it's an EDIT thread */
                     if (pp.purpose == "EDIT") {
@@ -1896,7 +1925,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                         if (isEntryFromSelf) {
                             /** Notify Subject author */
                             if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64 && pp.subject.typeName != DM_SUBJECT_TYPE_NAME) {
-                                let author = await this.getRecordAuthor(intoDhtId(pp.subject.address));
+                                let author = await this.getRecordAuthor(intoDhtId(pp.subject.address), GetStrategy.Local); // TODO: Figure out best strategy
                                 if (!this.cell.address.agentId.equals(author)) {
                                     await this.zomeProxy.notifyPeer({
                                         content: pulse.ah.hash,
@@ -2119,7 +2148,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 const hasJumpedBead = lastKnownBead.length > 1 && !lastKnownBead[0]!.beadAh.equals(prevBeadAh);
                 //console.log("handleBeadEntry() hasJumpedBead", hasJumpedBead, isDmThread, lastKnownBead, prevBeadAh);
                 if (hasJumpedBead && !isDmThread) {
-                    let reply_author = await this.getRecordAuthor(prevBeadAh);
+                    let reply_author = await this.getRecordAuthor(prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
                     notifs.push({
                         content: beadAh.hash,
                         who: reply_author.hash,
@@ -2148,10 +2177,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (this.isMainView && !this._missingLinkAhs.has(notifTip.link_ah)) {
             this._missingLinkAhs.set(notifTip.link_ah, notifTip);
             if (!this._notifLoopIntervalId) {
-                this.zomeProxy.probeInbox();
+                /*await*/ this.zomeProxy.probeInbox(GetStrategy.Network);
                 this._notifLoopIntervalId = setInterval(() => {
                     console.log("Polling Inbox for Missing links...");
-                    this.zomeProxy.probeInbox();
+                    /*await*/ this.zomeProxy.probeInbox(GetStrategy.Network);
                 }, 5000);
             }
         }

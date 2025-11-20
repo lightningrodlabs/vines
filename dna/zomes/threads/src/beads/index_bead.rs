@@ -1,5 +1,4 @@
 use hdk::prelude::*;
-use zome_utils::*;
 use time_indexing::*;
 use threads_integrity::*;
 
@@ -7,7 +6,7 @@ use threads_integrity::*;
 /// Returns the Thread Time Anchor and the Global Time Anchor
 pub fn index_bead(bead: Bead, bead_ah: ActionHash, bead_type: &str, ts_us: Timestamp) -> ExternResult<(TypedPath, TypedPath)> {
   /// Index in Thread time-Index
-  let pp_anchor = hash2comp(bead.pp_ah.clone());
+  let pp_anchor = zome_path::hash2comp(bead.pp_ah.clone());
   let thread_tp = Path::from(vec![pp_anchor])
     .typed(ThreadsLinkType::ThreadTimePath)?;
   let (thread_leaf_tp, _ah) = index_item(

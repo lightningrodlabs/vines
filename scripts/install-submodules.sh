@@ -30,6 +30,9 @@ cd submodules
 echo \* Download Files repo
 git clone -b $hdkversion --depth 1 https://github.com/lightningrodlabs/files.git
 
+echo \* Download ZDK repo
+git clone -b main-0.6 --depth 1 https://github.com/ddd-mtl/zdk.git
+
 cd ..
 echo
 echo \* Done

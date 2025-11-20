@@ -9,7 +9,7 @@ mod hide;
 
 use hdk::prelude::*;
 use threads_integrity::*;
-use zome_utils::*;
+use zome_path::*;
 
 
 /// Create Threads link

@@ -36,7 +36,7 @@ pub fn publish_semantic_topic(input: PublishTopicInput) -> ExternResult<ActionHa
   let tp = determine_topic_anchor(input.topic.title.clone())?;
   tp.ensure()?;
   let ph = tp.path_entry_hash()?;
-  debug!("create_semantic_topic() path:  '{}' {} | {}", path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
+  debug!("create_semantic_topic() path:  '{}' {} | {}", zome_path::path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
   create_link(
     ph,
     ah.clone(),

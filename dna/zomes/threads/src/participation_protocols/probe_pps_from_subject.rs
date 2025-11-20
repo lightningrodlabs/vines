@@ -4,22 +4,31 @@ use threads_integrity::*;
 use zome_signals::*;
 use zome_utils::*;
 
+///
+#[derive(Serialize, Deserialize, SerializedBytes, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ProbePpsInput {
+   pub lh: AnyLinkableHash,
+   pub strategy: GetStrategy,
+}
+
+
 /// Return ppAhs and timestamp of its index-time
 #[hdk_extern]
 pub fn probe_pps_from_subject_hash(
-    lh: AnyLinkableHash,
+   input: ProbePpsInput,
 ) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let mut subject_hash = lh.clone();
+    let mut subject_hash = input.lh.clone();
     /// If link is actionHash, grab latest update
-    if let Some(ah) = lh.clone().into_action_hash() {
+    if let Some(ah) = input.lh.clone().into_action_hash() {
         //let record = get_latest_record(ah)?;
-        if let Ok(record) = get_record(ah.into()) {
+        if let Ok(record) = get_record(ah.into(), input.strategy) {
             subject_hash = record.action_address().to_owned().into();
             debug!(
                 "{} | base: {} | latest {}",
-                subject_hash == lh,
-                lh,
+                subject_hash == input.lh,
+                input.lh,
                 subject_hash
             );
         }
@@ -35,7 +44,7 @@ pub fn probe_pps_from_subject_hash(
     let ahs = links
         .iter()
         .map(|l| {
-            let ts = tag2Ts(l.tag.clone());
+            let ts = zome_path::tag2Ts(l.tag.clone());
             //debug!("get_pps_from_subject_hash() thread {}, creationTime: {}", l.target, ts);
             (ActionHash::try_from(l.target.clone()).unwrap(), ts)
         })

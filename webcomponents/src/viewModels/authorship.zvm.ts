@@ -1,13 +1,16 @@
-import {
-  AgentId,
-  EntryId, holoIdReviver,
-  intoLinkableId,
-  LinkableId,
-  ZomeViewModel
-} from "@ddd-qc/lit-happ";
 import {Timestamp} from "@holochain/client";
+import {GetStrategy} from "@holochain-open-dev/core-types";
+import {
+    AgentId,
+    EntryId,
+    holoIdReviver,
+    intoLinkableId,
+    LinkableId,
+    ZomeViewModel
+} from "@ddd-qc/lit-happ";
 import {AuthorshipProxy} from "../bindings/authorship.proxy";
-import {AuthorshipPerspectiveMutable, AuthorshipPerspective, AuthorshipSnapshot} from "./authorship.perspective";
+import {AuthorshipPerspective, AuthorshipPerspectiveMutable, AuthorshipSnapshot} from "./authorship.perspective";
+
 
 
 /**
@@ -49,36 +52,38 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** -- Init -- */
 
-  // /** */
-  // override async initializePerspectiveOffline(): Promise<void> {
-  //   // N/A
-  // }
+  /** */
+  override async initializePerspectiveFromLocal(): Promise<void> {
+      await this.probeTypes(GetStrategy.Local);
+      await this.probeAllLogs(GetStrategy.Local);
+  }
 
   /** */
-  override async initializePerspectiveOnline(): Promise<void> {
-    await this.probeTypes();
-    await this.probeAllLogs();
+  override async initializePerspectiveFromNetwork(): Promise<void> {
+    await this.probeTypes(GetStrategy.Network);
+    await this.probeAllLogs(GetStrategy.Network);
   }
 
   /** */
   override probeAllInner() {
-    /* await */
-    this.initializePerspectiveOnline();
+    this.initializePerspectiveFromNetwork().then(() => {
+        console.trace("AuthorshipZvm.probeAllInner() DONE");
+      })
   }
 
 
   /** -- Probe: Query the DHT, and store the results (async) -- */
 
   /** */
-  async probeTypes(): Promise<void> {
-    const allTypes = await this.zomeProxy.getAllAscribedTypes();
+  async probeTypes(strategy: GetStrategy): Promise<void> {
+    const allTypes = await this.zomeProxy.getAllAscribedTypes(strategy);
     this._perspective.storeTypes(allTypes);
   }
 
 
   /** */
-  async probeAllLogs(): Promise<void> {
-    const all = await this.zomeProxy.getAllAscribedEntries();
+  async probeAllLogs(strategy: GetStrategy): Promise<void> {
+    const all = await this.zomeProxy.getAllAscribedEntries(strategy);
     for (const [type, target, ts, author] of all) {
       const authorId = new AgentId(author);
       this._perspective.storeAuthorshipLog(type, intoLinkableId(target), ts, authorId);

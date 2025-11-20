@@ -11,12 +11,12 @@ use crate::participation_protocols::comp2subject;
 /// Walk Subjects AnchorTree
 /// Return Anchor, EntryHash of every threaded Subject.
 #[hdk_extern]
-pub fn pull_all_subjects(_: ()) -> ExternResult<Vec<Subject>> {
+pub fn pull_all_subjects(strategy: GetStrategy) -> ExternResult<Vec<Subject>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let root_path = Path::from(ROOT_ANCHOR_SUBJECTS).typed(ThreadsLinkType::SubjectPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
   debug!("{:?}", root_anchor);
-  let leaf_anchors = root_anchor.walk()?;
+  let leaf_anchors = root_anchor.walk(strategy)?;
   debug!("{} leaf_anchors found.", leaf_anchors.len());
   /// Seperate last component from rest of Path
   let mut all = Vec::new();

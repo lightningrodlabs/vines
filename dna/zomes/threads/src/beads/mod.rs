@@ -28,10 +28,10 @@ pub struct BeadLink {
 
 
 ///
-pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey, T)> {
+pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash, strategy: GetStrategy) -> ExternResult<(Timestamp, AgentPubKey, T)> {
   debug!("fetch_typed_bead() {}", bead_ah);
   /// Get typed
-  let Some(record) = get(bead_ah.clone(), GetOptions::network())? else {
+  let Some(record) = get(bead_ah.clone(), strategy.into())? else {
     return error("fetch_typed_bead(): Entry not found");
   };
   let Ok(typed) = get_typed_from_record::<T>(record.clone()) else {

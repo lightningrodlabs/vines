@@ -24,9 +24,9 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<ActionHash
       return error("Topic length is invalid.");
     }
   }
-  /// Make sure Topic does already exists
+  /// Make sure Topic does already exist
   let old_lh: AnyLinkableHash = input.ah.into();
-  let (record, old) = get_typed_and_record::<SemanticTopic>(old_lh.clone())?;
+  let (record, old) = get_typed_and_record::<SemanticTopic>(old_lh.clone(), GetStrategy::Local)?;
   /// Make sure title changed
   if old.title == input.topic.title {
       return error("Topic title is same");
@@ -45,7 +45,7 @@ pub fn update_semantic_topic(input: UpdateTopicInput) -> ExternResult<ActionHash
   let tp = determine_topic_anchor(input.topic.title.clone())?;
   tp.ensure()?;
   let ph = tp.path_entry_hash()?;
-  debug!("update_semantic_topic() path:  '{}' {} | {}", path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
+  debug!("update_semantic_topic() path:  '{}' {} | {}", zome_path::path2anchor(&tp.path).unwrap(), tp.link_type.zome_type.0, ph);
   create_link(
     ph,
     new_ah.clone(),

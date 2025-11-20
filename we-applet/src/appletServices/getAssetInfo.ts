@@ -13,6 +13,7 @@ import {wrapPathInSvg} from "@ddd-qc/we-utils";
 import {mdiComment, mdiCommentBookmark, mdiCommentText, mdiCommentTextMultiple, mdiMessageTextOutline} from "@mdi/js";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {RecordInfo} from "@theweave/api/dist/types";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /** */
@@ -51,7 +52,7 @@ export async function getAssetInfo(
   switch (pEntryType) {
     case ThreadsEntryType.TextBead:
       console.log("Vines/we-applet: TextBead", wal);
-      const tuple = (await threadsProxy.fetchTextBead(actionId.hash))!; // FIXME: handle null
+      const tuple = (await threadsProxy.fetchTextBead({ah: actionId.hash, strategy: GetStrategy.Local}))!; // FIXME: handle null
       return {
         icon_src: wrapPathInSvg(mdiCommentText),
         name: tuple[2].value,
@@ -59,7 +60,7 @@ export async function getAssetInfo(
       break;
     case ThreadsEntryType.AnyBead:
       console.log("Vines/we-applet: AnyBead", wal);
-      const anyTuple = (await threadsProxy.fetchAnyBead(actionId.hash))!; // FIXME: handle null
+      const anyTuple = (await threadsProxy.fetchAnyBead({ah: actionId.hash, strategy: GetStrategy.Local}))!; // FIXME: handle null
       const hrlBead = materializeAnyBead(anyTuple[2]);
       const beadWal = weaveUrlToWal(hrlBead.value);
       const beadAh = new ActionId(beadWal.hrl[1]);
@@ -70,13 +71,13 @@ export async function getAssetInfo(
         name: `WAL: ${beadAh.short}`
       };
       break;
-    case ThreadsEntryType.EntryBead:
+      case ThreadsEntryType.EntryBead:
       console.log("Vines/we-applet: EntryBead", wal);
       const fProxy = await asCellProxy(appletClient, undefined, mainAppInfo.installed_app_id, FILES_DEFAULT_ROLE_NAME);
       const filesProxy: FilesProxy = new FilesProxy(fProxy);
       console.log("Vines/we-applet: EntryBead filesProxy", filesProxy);
-      const fileTuple = (await threadsProxy.fetchEntryBead(actionId.hash))!; // FIXME: handle null
-      const manifest = await filesProxy.getFileInfo(fileTuple[2].sourceEh)
+      const fileTuple = (await threadsProxy.fetchEntryBead({ah: actionId.hash, strategy: GetStrategy.Local}))!; // FIXME: handle null
+      const manifest = await filesProxy.getFileInfoLocal(fileTuple[2].sourceEh) // TODO: GetStrategy
       //const fileBead = materializeEntryBead(fileTuple[2]);
       //const source = truncate(fileBead.sourceEh, 10, false);
       return {
@@ -96,7 +97,7 @@ export async function getAssetInfo(
       console.log("Vines/we-applet: getPp()", wal.hrl[1], threadsProxy);
       //const pp = (await threadsProxy.fetchPp(actionId.hash))!; // FIXME: handle null
       //console.log("Vines/we-applet: pp", pp);
-      const title = await threadsProxy.getPpTitle(actionId.hash);
+      const title = await threadsProxy.getPpTitle({ah: actionId.hash, strategy: GetStrategy.Local});
       const info: AssetInfo = {
         icon_src: wrapPathInSvg(mdiCommentTextMultiple),
         name: title

@@ -53,12 +53,12 @@ pub fn unpublish_favorite(bead_ah: ActionHash) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
-pub fn probe_my_favorites(_: ()) -> ExternResult<Vec<ActionHash>> {
+pub fn probe_my_favorites(strategy: GetStrategy) -> ExternResult<Vec<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = AnyLinkableHash::from(agent_info()?.agent_initial_pubkey);
     let links = get_links(
         LinkQuery::new(me, ThreadsLinkType::Favorite.try_into_filter().unwrap()),
-        GetStrategy::Network,
+        strategy,
     )?;
     let mut res = Vec::new();
     for link in links.clone() {

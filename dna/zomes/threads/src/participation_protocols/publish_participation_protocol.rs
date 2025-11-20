@@ -19,7 +19,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   /// Add subject to Subjects PathTree and create "Protocols" link
   let subject_tp = get_subject_tp(pp.subject.clone())?;
   subject_tp.ensure()?;
-  debug!("subject_tp: {} --> {}", path2anchor(&subject_tp.path).unwrap(), pp_ah);
+  debug!("subject_tp: {} --> {}", zome_path::path2anchor(&subject_tp.path).unwrap(), pp_ah);
   let _ta = TypedAnchor::try_from(&subject_tp).expect("Should hold a TypedAnchor");
   create_link(
     subject_tp.path_entry_hash()?,
@@ -50,7 +50,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
     ThreadsLinkType::TimeItem.try_into().unwrap(),
     index_time,
     &pp.subject.address.clone().into_bytes())?;
-  debug!("Thread indexed at:\n  - {} (for subject: {:?}", path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.address);
+  debug!("Thread indexed at:\n  - {} (for subject: {:?}", zome_path::path2anchor(&global_leaf_tp.path).unwrap(), pp.subject.address);
   /// Done
   Ok((pp_ah, index_time))
 }

@@ -105,7 +105,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     try {
       const manifestEh = entryBead.sourceEh;
-      this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfo(manifestEh.hash);
+      this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfoLocal(manifestEh.hash); // TODO: GetStrategy
       console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash, !!this._manifest);
       if (!this._manifest || this._manifest.description.size > maxSize) {
         console.debug("<chat-file>.loadFile() stopped", this._manifest);

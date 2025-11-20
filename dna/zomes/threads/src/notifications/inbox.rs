@@ -34,12 +34,12 @@ pub fn notify_peer(input: NotifyPeerInput) -> ExternResult<()> {
 
 /// Returns vec of: LinkCreateActionHash, AuthorPubKey, TextMessageActionHash
 #[hdk_extern]
-pub fn probe_inbox(_: ()) -> ExternResult<()> {
+pub fn probe_inbox(strategy: GetStrategy) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let me = agent_info()?.agent_initial_pubkey;
     let links = get_links(
         LinkQuery::new(me, ThreadsLinkType::Inbox.try_into_filter().unwrap()),
-        GetStrategy::Network,
+        strategy,
     )?;
     /// Emit Signal
     attest_links(links)?;

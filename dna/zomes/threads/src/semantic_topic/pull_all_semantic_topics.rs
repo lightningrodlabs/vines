@@ -9,16 +9,16 @@ use zome_signals::*;
 /// Walk semantic-topic AnchorTree
 /// Return EntryHash and title of every known SemanticTopic entry.
 #[hdk_extern]
-pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
+pub fn pull_all_semantic_topics(strategy: GetStrategy) -> ExternResult<()> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   let root_path = Path::from(ROOT_ANCHOR_SEMANTIC_TOPICS).typed(ThreadsLinkType::SemanticTopicPath)?;
   let root_anchor = TypedAnchor::try_from(&root_path).unwrap();
   debug!("pull_all_semantic_topics() {:?}", root_anchor);
-  let leaf_anchors = root_anchor.walk()?;
+  let leaf_anchors = root_anchor.walk(strategy)?;
   debug!("pull_all_semantic_topics() {} leaf_anchors found.", leaf_anchors.len());
   let mut pulses = Vec::new();
   for leaf_anchor in leaf_anchors {
-    let sts = pull_semantic_topics(leaf_anchor.anchor)?;
+    let sts = pull_semantic_topics(leaf_anchor.anchor, strategy)?;
     for (record, _) in sts {
       let entry_pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Network, false)?;
       pulses.push(ZomeSignalProtocol::Entry(entry_pulse));
@@ -32,16 +32,16 @@ pub fn pull_all_semantic_topics(_: ()) -> ExternResult<()> {
 
 
 ///
-fn pull_semantic_topics(leaf_anchor: String) -> ExternResult<Vec<(Record, SemanticTopic)>>  {
+fn pull_semantic_topics(leaf_anchor: String, strategy: GetStrategy) -> ExternResult<Vec<(Record, SemanticTopic)>>  {
   let path = Path::from(&leaf_anchor);
-  let itemlinks = get_itemlinks(path, ThreadsLinkType::Topics.try_into_filter()?, None)?;
+  let itemlinks = zome_path::get_itemlinks(path, ThreadsLinkType::Topics.try_into_filter()?, None, strategy)?;
   debug!("pull_semantic_topics() {} leaf_links found", itemlinks.len());
   let pairs = itemlinks
     .into_iter()
     .map(|ll| {
       //let eh = ll.item_hash.into_entry_hash().unwrap();
       let ah = ll.item_hash.into_action_hash().unwrap();
-      let (record, typed) = get_typed_and_record::<SemanticTopic>(ah.into())
+      let (record, typed) = get_typed_and_record::<SemanticTopic>(ah.into(), strategy)
         .unwrap(); // FIXME
       return (record, typed);
     })
@@ -61,7 +61,7 @@ pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(ActionH
     return zome_error!("Cannot search with a prefix less than 3 characters");
   }
   let tp = determine_topic_anchor(title_filter.clone())?;
-  let semantic_topics: Vec<(ActionHash, EntryHash, String)> = pull_semantic_topics(path2anchor(&tp.path).unwrap())?
+  let semantic_topics: Vec<(ActionHash, EntryHash, String)> = pull_semantic_topics(zome_path::path2anchor(&tp.path).unwrap(), GetStrategy::Network)?
     .into_iter()
     .map(|(record, typed)| (record.action_address().to_owned(), record.action().entry_hash().unwrap().to_owned(), typed.title))
     .collect();

@@ -4,15 +4,7 @@ import {consume} from "@lit/context";
 import {msg} from "@lit/localize";
 
 import {CreatableType} from "@theweave/api";
-import {
-  ActionId, AnyId,
-  DhtId,
-  EntryId,
-  EntryIdMap,
-  intoDhtId,
-  intoLinkableId,
-  ZomeElement
-} from "@ddd-qc/lit-happ";
+import {ActionId, AnyId, DhtId, EntryId, EntryIdMap, intoDhtId, intoLinkableId, ZomeElement} from "@ddd-qc/lit-happ";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
@@ -35,6 +27,7 @@ import {ActionHashB64, EntryHashB64} from "@holochain/client";
 import {sharedStyles} from "../../styles";
 import {ICollapsable} from "./topics-lister";
 import Select from "@ui5/webcomponents/dist/Select";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -273,7 +266,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     if (event.detail.item.level == 2) {
       const itemHash = intoLinkableId(toggledTreeItem.id);
       /** Grab children */
-      let pps = await this._zvm.pullSubjectThreads(itemHash);
+      let pps = await this._zvm.pullSubjectThreads(itemHash, GetStrategy.Local);
 
       const tmpls = [];
       /** Convert to TreeItem and append to Tree */

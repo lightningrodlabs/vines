@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use threads_integrity::*;
 use zome_utils::*;
-
+use zome_path::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

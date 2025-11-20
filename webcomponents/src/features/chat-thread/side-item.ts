@@ -21,6 +21,7 @@ import {filesContext, weClientContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -63,7 +64,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     /* Try loading AnyBead Asset */
-    const tuple = await newDvm.threadsZvm.mustFetchUnknownBead(this.hash);
+    const tuple = await newDvm.threadsZvm.mustFetchUnknownBead(this.hash, GetStrategy.Local); // TODO: Not sure of strategy
     if (tuple) {
       const [typedBead, type, _ts, _author] = tuple;
       if (type == ThreadsEntryType.AnyBead && this.weServices) {

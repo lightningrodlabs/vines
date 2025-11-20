@@ -8,9 +8,8 @@ edition.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-base64 = {version = "0.13"}
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
-strum = "0.26"
+#chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"] }
+#strum = "0.26"
 strum_macros = "0.26"
 bincode = "1.3"
 
@@ -19,7 +18,10 @@ holochain_serialized_bytes.workspace = true
 hdk.workspace = true
 
 zome_utils.workspace = true
+zome_path.workspace = true
 zome_signals.workspace = true
+zome_core.workspace = true
+
 time_indexing.workspace = true
 path_explorer_types.workspace = true
 

@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {msg} from "@lit/localize";
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, DnaId, DnaElement, intoDhtId} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement, DnaId, intoDhtId} from "@ddd-qc/lit-happ";
 
 import {WAL} from "@theweave/api";
 
@@ -29,6 +29,7 @@ import {InputBar} from "../../elements/input-bar";
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -113,7 +114,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
     /** */
     if (this.threadHash) {
-      newDvm.threadsZvm.pullAllBeads(this.threadHash);
+      newDvm.threadsZvm.pullAllBeads(this.threadHash, GetStrategy.Local); // TODO: Figure out best strategy
     }
   }
 
@@ -173,7 +174,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("<comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
     const maybePpMat = this._dvm.threadsZvm.perspective.getParticipationProtocol(this.threadHash!);
     if (maybePpMat && this.threadHash) {
-      await this._dvm.threadsZvm.pullAllBeads(this.threadHash);
+      await this._dvm.threadsZvm.pullAllBeads(this.threadHash, GetStrategy.Local);
       await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
       this._loading = false;
     }

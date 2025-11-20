@@ -16,6 +16,7 @@ import {toasty} from "../toast";
 import {FilesDvm} from "@ddd-qc/files";
 
 import "@ddd-qc/files/dist/elements/file-button.js";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 /**
  *
@@ -131,7 +132,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         } catch (e: any) {}
         /** Try Bead */
         try {
-          await threadsZvm.fetchUnknownBead(hash);
+          await threadsZvm.fetchUnknownBead(hash, GetStrategy.Local); // TODO: Figure out best strategy
         } catch (e: any) {
           //console.warn(`No bead found for wurl-link: ${e}`);
         }

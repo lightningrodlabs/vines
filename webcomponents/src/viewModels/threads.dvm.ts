@@ -1,34 +1,37 @@
 import {
-  ActionId,
-  ActionIdMap,
-  AgentId,
-  AgentIdMap, delay,
-  DnaViewModel, EntryPulse, materializeEntryPulse, TipProtocol, TipProtocolVariantAppCustom,
-  ZomeSignal,
-  ZomeSignalProtocol, ZomeSignalProtocolType, ZomeViewModel
+    ActionId,
+    ActionIdMap,
+    AgentId,
+    AgentIdMap,
+    delay,
+    DnaViewModel,
+    EntryPulse,
+    materializeEntryPulse,
+    TipProtocol,
+    TipProtocolVariantAppCustom,
+    ZomeSignal,
+    ZomeSignalProtocol,
+    ZomeSignalProtocolType,
+    ZomeViewModel
 } from "@ddd-qc/lit-happ";
 import {catchThrottled, ThreadsZvm} from "./threads.zvm";
+import {ActionHashB64, AppSignal, Signal, SignalCb, SignalType, Timestamp} from "@holochain/client";
 import {
-  AppSignal, Signal, SignalType,
-  SignalCb,
-  Timestamp, ActionHashB64
-} from "@holochain/client";
-import {
-  ParticipationProtocol,
-  Subject,
-  ThreadsEntryType,
-  ThreadsProperties,
-  VINES_DEFAULT_ROLE_NAME,
+    ParticipationProtocol,
+    Subject,
+    ThreadsEntryType,
+    ThreadsProperties,
+    VINES_DEFAULT_ROLE_NAME,
 } from "../bindings/threads.types";
 import {
-  BaseBeadType,
-  bead2base,
-  defaultLimitations,
-  defaultModeration,
-  ThreadsAppTip,
-  ThreadsNotification,
-  ThreadsNotificationTip,
-  TypedContent,
+    BaseBeadType,
+    bead2base,
+    defaultLimitations,
+    defaultModeration,
+    ThreadsAppTip,
+    ThreadsNotification,
+    ThreadsNotificationTip,
+    TypedContent,
 } from "./threads.materialize";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {Decoder, Encoder} from "@msgpack/msgpack";
@@ -36,6 +39,7 @@ import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /** */
@@ -156,15 +160,15 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Methods -- */
 
   /** Store probeLog timestamp upon first load of app */
-  override async initializePerspectiveOnline(): Promise<void> {
+  override async initializePerspectiveFromNetwork(): Promise<void> {
     console.log("ThreadsDvm.initializePerspectiveOnline() override")
-    await super.initializePerspectiveOnline();
+    await super.initializePerspectiveFromNetwork();
     this._perspective.initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
       this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
     this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
-    console.log("ThreadsDvm.initializePerspectiveOnline() override persp =", this.perspective)
+    console.log("ThreadsDvm.initializePerspectiveFromNetwork() override persp =", this.perspective)
   }
 
 
@@ -379,8 +383,7 @@ export class ThreadsDvm extends DnaViewModel {
                   console.log("ThreadsDvm.handleTip() Adding to ackRequest", entryPulseMat);
                   this._perspective.ackRequests.set(entryPulseMat.ah, entryPulseMat.author);
                   await delay(1000);
-                  /* await */
-                  this.threadsZvm.fetchUnknownBead(entryPulseMat.ah);
+                  /*await*/ this.threadsZvm.fetchUnknownBead(entryPulseMat.ah, GetStrategy.Local);
                 }
               }
               break;
@@ -584,11 +587,11 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** Probe all threads before exporting */
   async exportAllPerspective(): Promise<string> {
-    await this.threadsZvm.probeAllInnerAsync();
+    await this.threadsZvm.probeAllInnerAsync(GetStrategy.Local);
     /* Probe all threads */
     let probes = []
     for (const [ppAh, _thread] of this.threadsZvm.perspective.threads) {
-      probes.push(this.threadsZvm.pullAllBeads(ppAh));
+      probes.push(this.threadsZvm.pullAllBeads(ppAh, GetStrategy.Local));
     }
     await Promise.all(probes);
     /* Done */

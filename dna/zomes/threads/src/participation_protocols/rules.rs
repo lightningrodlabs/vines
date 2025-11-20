@@ -2,13 +2,14 @@ use hdk::prelude::*;
 use threads_integrity::{BaseBeadKind, ThreadsLinkType};
 use zome_signals::*;
 use zome_utils::*;
+use crate::GetAhInput;
 
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
 fn flag_bead(bead_ah: ActionHash) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let record = get_record(AnyDhtHash::from(bead_ah.clone()))?;
+    let record = get_record(AnyDhtHash::from(bead_ah.clone()), GetStrategy::Network)?;
     let RecordEntry::Present(entry) = record.entry() else {
         return zome_error!(
             "{}",
@@ -46,17 +47,17 @@ pub struct BanAgentInput {
 #[feature(zits_blocking)]
 fn ban_agent(input: BanAgentInput) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let tag = obj2Tag(input.infringements)?;
+    let tag = zome_path::obj2Tag(input.infringements)?;
     return create_link(input.pp_ah, input.vilain, ThreadsLinkType::Banned, tag);
 }
 
 ///
 #[hdk_extern]
-fn probe_all_flagged(pp_ah: ActionHash) -> ExternResult<()> {
+fn probe_all_flagged(input: GetAhInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(
-        LinkQuery::new(pp_ah, ThreadsLinkType::Flagged.try_into_filter().unwrap()),
-        GetStrategy::Network,
+        LinkQuery::new(input.ah, ThreadsLinkType::Flagged.try_into_filter().unwrap()),
+        input.strategy,
     )?;
     /// Emit Signal
     attest_links(links)?;
@@ -66,11 +67,11 @@ fn probe_all_flagged(pp_ah: ActionHash) -> ExternResult<()> {
 
 ///
 #[hdk_extern]
-fn probe_all_banned(pp_ah: ActionHash) -> ExternResult<()> {
+fn probe_all_banned(input: GetAhInput) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(
-        LinkQuery::new(pp_ah, ThreadsLinkType::Banned.try_into_filter().unwrap()),
-        GetStrategy::Network,
+        LinkQuery::new(input.ah, ThreadsLinkType::Banned.try_into_filter().unwrap()),
+        input.strategy,
     )?;
     /// Emit Signal
     attest_links(links)?;

@@ -2,24 +2,25 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_signals::*;
 use zome_utils::*;
+use crate::input_types::*;
 
 ///
 #[hdk_extern]
 #[feature(zits_blocking)]
-pub fn get_pp_title(pp_ah: ActionHash) -> ExternResult<String> {
+pub fn get_pp_title(input: GetAhInput) -> ExternResult<String> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sur pp exists
-    let (_eh, pp) = get_typed_from_ah::<ParticipationProtocol>(pp_ah.clone())?;
+    let (_eh, pp) = get_typed_from_ah::<ParticipationProtocol>(input.ah.clone(), input.strategy)?;
     /// Get previous title updates
     let title_links = get_links(
-        LinkQuery::new(pp_ah, ThreadsLinkType::TitleFix.try_into_filter().unwrap()),
-        GetStrategy::Network,
+       LinkQuery::new(input.ah, ThreadsLinkType::TitleFix.try_into_filter().unwrap()),
+       GetStrategy::Network,
     )?;
     attest_links(title_links.clone())?;
     /// Done
     return match title_links.last() {
         None => Ok(pp.purpose),
-        Some(link) => Ok(tag2str(&link.tag)?),
+        Some(link) => Ok(zome_path::tag2str(&link.tag)?),
     };
 }
 
@@ -37,7 +38,7 @@ pub struct UpdatePpTitleInput {
 pub fn update_pp_title(input: UpdatePpTitleInput) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sur pp exists
-    let record = get_record(input.pp_ah.clone().into())?;
+    let record = get_record(input.pp_ah.clone().into(), GetStrategy::Network)?;
     /// Make sure we are author
     if record.action().author() != &agent_info()?.agent_initial_pubkey {
         return error("Only PP author can update its title");
@@ -59,7 +60,7 @@ pub fn update_pp_title(input: UpdatePpTitleInput) -> ExternResult<ActionHash> {
         input.pp_ah.clone(),
         input.pp_ah,
         ThreadsLinkType::TitleFix,
-        str2tag(&input.new_title),
+        zome_path::str2tag(&input.new_title),
     )?;
     /// Done
     Ok(ah)
