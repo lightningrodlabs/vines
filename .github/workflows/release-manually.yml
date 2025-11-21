@@ -1,0 +1,32 @@
+name: release-manually
+
+on: workflow_dispatch
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/build-webhapps.yml
+    secrets: inherit
+
+  upload-artifacts:
+    needs: call-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Download previously uploaded artifacts
+      - uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+      # Display artifacts folder
+      - name: Display artifacts folder
+        run: ls
+        working-directory: artifacts
+      # upload all artifacts
+      - name: upload binary (ubuntu only)
+        if: ${{ runner.os == 'Linux' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: artifacts
+        run: |
+          rm -f *.blockmap    
+          echo threads*
+          gh release upload "manual-release" threads* --clobber

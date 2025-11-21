@@ -13,16 +13,16 @@ jobs:
         shell: bash
         run: |
           npm install
-      # Download submodules
-      - name: Download submodules
-        shell: bash
-        run: |
-          npm run install:submodules
       # install rust tools
       - name: install rust tools
         shell: bash
         run: |
           npm run install:rust
+      # install zits
+      - name: install zits
+        shell: bash
+        run: |
+          npm run install:zits
       # install hc tool
       - name: Install hc tool
         shell: bash
@@ -32,11 +32,26 @@ jobs:
       - name: Install hash-zome
         run: |
           npm run install:hash-zome
+      # Download submodules
+      - name: Download submodules
+        shell: bash
+        run: |
+          npm run install:submodules
+      # Build Files happ
+      - name: Build Files happ
+        shell: bash
+        run: |
+          npm run build:files
       # Build happ
       - name: Build happ
         shell: bash
         run: |
           CARGO_NET_GIT_FETCH_WITH_CLI=true npm run build:happ
+      # Localize
+      - name: Localize
+        run: |
+          npm run extract:localize
+          npm run build:localize
       # Build webapp
       - name: Build webapp
         run: |
@@ -53,19 +68,20 @@ jobs:
       # Package we-applet
       - name: Package we-applet
         shell: bash
-        run: |       
+        run: |
           npm run package:we
+      ## Display we-applet hash
+      #- name: Display we-applet hash
+      #  run: npm run hash
       # Regroup artifacts
       - name: Regroup artifacts
-        run: |       
-          cp target/wasm32-unknown-unknown/release/threads_integrity_zome.wasm ./artifacts
-          cp target/wasm32-unknown-unknown/release/threads_zome.wasm ./artifacts
+        run: |
+          cp target/wasm32-unknown-unknown/release/*.wasm ./artifacts
       # List uploaded files
       - name: List uploaded files
         run: ls -R
         working-directory: ./artifacts
       # "upload" artifacts
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4
         with:
-          name: all-happ-artifact
-          path: artifacts/
+          path: artifacts
