@@ -14,7 +14,7 @@ jobs:
     needs: call-build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Download previously uploaded artifacts
       - uses: actions/download-artifact@v5
         with:
@@ -31,5 +31,5 @@ jobs:
         working-directory: artifacts
         run: |
           rm -f *.blockmap         
-          echo threads*
-          gh release upload "${GITHUB_REF#refs/tags/}" threads* --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" dna* --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" vines* --clobber
