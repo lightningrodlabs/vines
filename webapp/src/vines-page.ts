@@ -246,6 +246,7 @@ import {mdiInformationOutline} from "@mdi/js";
 import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {APP_VERSION} from "./generated/version";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -2105,6 +2106,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
+                            <ui5-menu-item id="__version" disabled text="v${APP_VERSION}"></ui5-menu-item>
                         `}
                     </ui5-menu>
 

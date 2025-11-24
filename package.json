@@ -1,6 +1,6 @@
 {
   "name"    : "vines-dev",
-  "version" : "1.19.0",
+  "version" : "1.21.0",
   "config"  : {
     "hc_version"  : "0.6.0",
     "k2_version"  : "0.1.5",
@@ -31,7 +31,7 @@
     "build:dna"              : "npm run build:zome && $npm_package_config_bin/hc dna pack -o artifacts/threads.dna dna/workdir",
     "package:happ"           : "$npm_package_config_bin/hc app pack -o artifacts/vines.happ dna/workdir",
     "build:happ"             : "npm run build:dna && bash scripts/ts-bindings.sh && npm run package:happ",
-    "build:webapp"           : "npm run build -w webcomponents && npm run build -w webapp",
+    "build:webapp"           : "node scripts/generate-version.js && npm run build -w webcomponents && npm run build -w webapp",
     "build:devtest"          : "npm run clean:hc & npm run build:happ && npm run build -w webcomponents",
 
     "tauri"                  : "tauri",
@@ -123,7 +123,7 @@
   },
   "devDependencies": {
     "@ddd-qc/hc-prebuilt"     : "0.506.2",
-    "@theweave/cli"           : "0.15.3",
+    "@theweave/cli"           : "0.15.5",
     "@holochain/hc-spin"      : "0.500.1",
     "@types/jest"             : "^29.5.1",
     "@types/ws"               : "^8.5.3",
@@ -142,8 +142,8 @@
   },
   "dependencies"   : {
     "@holochain/client"             : "^0.20.0",
-    "@holochain-open-dev/core-types": "=0.600.0-dev.2",
-    "@holochain-open-dev/profiles"  : "=0.600.0-dev.2",
+    "@holochain-open-dev/core-types": "=0.600.0",
+    "@holochain-open-dev/profiles"  : "=0.600.0",
     "@theweave/api"                 : "=0.6.0",
     "@theweave/elements"            : "=0.6.0",
     "@ddd-qc/cell-proxy"            : "=0.33.4",

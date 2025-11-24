@@ -20,16 +20,16 @@ import {
   DnaViewModel, pascal, ActionId, Cell,
 } from "@ddd-qc/lit-happ";
 import {
-  ThreadsDvm,
-  ThreadsEntryType,
-  THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
-  filesContext,
-  weClientContext,
-  cardStyleTemplate,
-  JumpEvent,
-  VINES_DEFAULT_ROLE_NAME,
-  onlineLoadedContext,
-  toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
+    ThreadsDvm,
+    ThreadsEntryType,
+    THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
+    filesContext,
+    weClientContext,
+    cardStyleTemplate,
+    JumpEvent,
+    VINES_DEFAULT_ROLE_NAME,
+    onlineLoadedContext,
+    toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
@@ -45,6 +45,7 @@ import {renderWelcomeScreen} from "@vines/elements";
 import "./vines-page"
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals";
 
+import * as APPV from './generated/version.js';
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -93,7 +94,7 @@ export class VinesApp extends HappMultiElement {
 
   /** All arguments should be provided when constructed explicity */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
-    console.log("<vines-app>.ctor()", appletGroups?.length);
+    console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
