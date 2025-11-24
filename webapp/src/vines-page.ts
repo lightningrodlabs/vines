@@ -2094,7 +2094,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
                                        icon="open-folder"></ui5-menu-item>
-                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>
+                        <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>                         
                         ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
                             <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
                                            starts-section></ui5-menu-item>
@@ -2106,8 +2106,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
-                            <ui5-menu-item id="__version" disabled text="v${APP_VERSION}"></ui5-menu-item>
                         `}
+                        <ui5-menu-item id="__version" disabled text="v${APP_VERSION}"></ui5-menu-item>
                     </ui5-menu>
 
                     <!-- Network Health Panel -->
