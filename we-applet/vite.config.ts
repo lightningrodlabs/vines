@@ -35,7 +35,7 @@ export default defineConfig({
         {src: "../webapp/favicon.ico", dest: DIST_FOLDER},
         {src: "../webapp/icon.png", dest: DIST_FOLDER},
         {src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER},
-        {src: "../webapp/logo.svg", dest: DIST_FOLDER},
+        //{src: "../webapp/logo.svg", dest: DIST_FOLDER},
         {
           src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css",
           dest: DIST_FOLDER,
