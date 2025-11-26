@@ -32,7 +32,7 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {src: "weave.config.json", dest: DIST_FOLDER},
-        {src: "../webapp/favicon.ico", dest: DIST_FOLDER},
+        //{src: "../webapp/favicon.ico", dest: DIST_FOLDER},
         {src: "../webapp/icon.png", dest: DIST_FOLDER},
         {src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER},
         //{src: "../webapp/logo.svg", dest: DIST_FOLDER},
