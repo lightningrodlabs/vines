@@ -23,6 +23,7 @@
     "run-singleton-cli"  : "^0.0.5"
   },
   "dependencies"   : {
+    "@tauri-apps/api" : "2.9.0",
     "qrcode"         : "~1.5.4",
     "@vines/elements": "file:../webcomponents"
   }

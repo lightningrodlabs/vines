@@ -12,6 +12,8 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import * as APPV from './generated/version.js';
 import {DEFAULT_THREADS_DEF} from "./happDef";
 
+import { invoke } from '@tauri-apps/api/core';
+
 console.log("<vines-first>", APPV.APP_VERSION);
 
 /** */
@@ -93,7 +95,7 @@ export class VinesFirst extends LitElement {
       `;
     }
 
-    if (this._apps!.length != 0) {
+    if (this._apps!.length == 0) {
         return html`
 
             <div class="column center-content flex-1 launch-bg">
@@ -147,9 +149,7 @@ export class VinesFirst extends LitElement {
                         <button
                                 class="moss-button"
                                 style="width: 180px; margin-bottom: 28px;"
-                                @click=${() => {
-                                    console.log("CREATING new group space");
-                                }}
+                                @click=${() => this.createNewGroup()}
                         >
                             <div class="row center-content">
                                 ${plusCircleIcon(20)}
@@ -168,6 +168,15 @@ export class VinesFirst extends LitElement {
 
   }
 
+  async createNewGroup() {
+      console.log("createNewGroup()");
+      try {
+          const result = await invoke('greet', { name: 'Tauri' });
+          console.log('Result:', result);
+      } catch (error) {
+          console.error('Error:', error);
+      }
+  }
 
   /** */
   static override get styles() {

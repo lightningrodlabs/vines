@@ -5,6 +5,24 @@ use url2::Url2;
 
 const APP_ID: &'static str = "vines";
 
+#[tauri::command]
+async fn greet(handle: tauri::AppHandle, name: String) -> String {
+   println!("Helloooo, {}!", name);
+   handle
+      .holochain().unwrap()
+      .install_app(
+         String::from(APP_ID),
+         happ_bundle(),
+         None,
+         None,
+         Some(name.clone()), //"fixme:RandomNetworkId",
+      )
+      .await.unwrap();
+   format!("Helloooo, {}!", name)
+}
+
+
+
 pub fn happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../artifacts/vines.happ");
     return AppBundle::unpack(bytes.as_slice())
@@ -14,6 +32,7 @@ pub fn happ_bundle() -> AppBundle {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![greet])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
