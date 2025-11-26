@@ -32,7 +32,7 @@ import {
     toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
@@ -79,6 +79,7 @@ export class VinesApp extends HappMultiElement {
   @state() private _offlineLoaded = false;
   @state() private _onlineLoaded = false;
   private _onlineLoadedProvider?: any;
+
   @state() private _hasHolochainFailed: boolean | undefined = undefined;
   @state() private _hasWeProfile = false;
 
@@ -92,7 +93,7 @@ export class VinesApp extends HappMultiElement {
   public readonly appId?: InstalledAppId;
   public readonly appletView?: AppletView;
 
-  /** All arguments should be provided when constructed explicity */
+  /** All arguments should be provided when constructed explicitly */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
     console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
     const adminUrl = _adminWs
@@ -104,21 +105,13 @@ export class VinesApp extends HappMultiElement {
     if (appletGroups && appletGroups.length > 0) {
       pairs = appletGroups.map((appletGroup) => [appletGroup.appWs, appletGroup.appId]);
     } else {
-      if (!HC_APP_PORT) {
-        console.log({window});
         const __HC_LAUNCHER_ENV__: string = "__HC_LAUNCHER_ENV__";
         const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
         if (isLauncher) {
-          // @ts-ignore
-          const env = window[__HC_LAUNCHER_ENV__];
-          console.log("env.APP_INTERFACE_PORT", env!.APP_INTERFACE_PORT);
-          pairs = [[env!.APP_INTERFACE_PORT, env!.INSTALLED_APP_ID]];
+          pairs = [[HC_APP_PORT!, HAPP_ID]];
         } else {
           throw Error("No appWebsocket or APP PORT set");
         }
-      } else {
-        pairs = [[HC_APP_PORT, undefined]];
-      }
     }
     console.log("<vines-app>.ctor() pairs", pairs);
     super(pairs, isMulti? !isMulti : true, adminUrl, 20 * 1000);

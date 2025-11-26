@@ -3,7 +3,8 @@ name = "vinesapp"
 version = "0.1.0"
 description = "Vines"
 authors = ["you"]
-license = ""
+homepage = "https://github.com/lightningrodlabs/vines"
+license = "CAL 1.0"
 repository = ""
 edition = "2021"
 rust-version = "1.70"
@@ -13,7 +14,6 @@ resolver = "2"
 name = "tauri_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "2.2.0", default-features = false , features = [] }
@@ -35,4 +35,4 @@ anyhow = "1"
 serde_json = "1.0.120"
 
 [profile.dev.package."*"]
-debug = false # workaround for "not enough space" issue
+debug = false # workaround for "not enough space" issue on android

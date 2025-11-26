@@ -1,17 +1,36 @@
-/** -- HC_APP_PORT & friends -- */
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HappBuildModeType, HAPP_BUILD_MODE} from "@ddd-qc/lit-happ";
 
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
+export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
+
+
 try {
-  HC_APP_PORT = Number(process.env.HC_APP_PORT);
-  HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
+    HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
+    HC_APP_PORT = Number(process.env.HC_APP_PORT);
 } catch (e: any) {
-  console.log("HC_APP_PORT not defined")
+    console.warn("process.env not defined");
 }
 
-console.log("      HAPP_ID =", DEFAULT_THREADS_DEF.id)
+if (!HC_APP_PORT) {
+    console.debug({window});
+    const __HC_LAUNCHER_ENV__: string = "__HC_LAUNCHER_ENV__";
+    const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
+    if (isLauncher) {
+        // @ts-ignore
+        const env = window[__HC_LAUNCHER_ENV__];
+        console.log("env", env);
+        HC_APP_PORT = env!.APP_INTERFACE_PORT;
+        HAPP_ID = env!.INSTALLED_APP_ID;
+        HC_ADMIN_PORT = env!.ADMIN_INTERFACE_PORT;
+        //appToken = env!.APP_INTERFACE_TOKEN;
+    } else {
+        console.warn("HC_APP_PORT not defined");
+    }
+}
+
+console.log("      HAPP_ID =", HAPP_ID)
 console.log("  HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
 
