@@ -210,14 +210,6 @@ function mergeSearchKeywords(quotes: ParsedValue[]): string[] {
 /** ------------------------------------------- TEST -----------------------------------------------------------------*/
 
 const persp: ProfilesAltPerspectiveMutable = new ProfilesAltPerspectiveMutable();
-/*await*/
-persp.generateRandomProfile("alex");
-/*await*/
-persp.generateRandomProfile("bill-y");
-/*await*/
-persp.generateRandomProfile("camille");
-/*await*/
-persp.generateRandomProfile("tic tac");
 
 
 /** */
@@ -234,6 +226,11 @@ function testSeachParse(input: string, expectedOutput: SearchParameters): boolea
 /** */
 export async function generateSearchTest() {
   let result = true;
+
+    /*await*/ persp.generateRandomProfile("alex");
+    /*await*/ persp.generateRandomProfile("bill-y");
+    /*await*/ persp.generateRandomProfile("camille");
+    /*await*/ persp.generateRandomProfile("tic tac");
 
   result &&= testSeachParse("alex", {keywords: ["alex"], canSearchHidden: false});
   result &&= testSeachParse("   alex \t ", {keywords: ["alex"], canSearchHidden: false});

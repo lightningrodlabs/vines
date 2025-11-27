@@ -1,10 +1,11 @@
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HappBuildModeType, HAPP_BUILD_MODE} from "@ddd-qc/lit-happ";
+import { isTauri } from '@tauri-apps/api/core';
 
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
 export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
-
+export const IS_TAURI: boolean = isTauri();
 
 try {
     HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
@@ -39,6 +40,7 @@ if (maybeAppId) {
     HAPP_ID = maybeAppId;
 }
 
+console.log("     IS_TAURI =", IS_TAURI)
 console.log("      HAPP_ID =", HAPP_ID)
 console.log("  HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);

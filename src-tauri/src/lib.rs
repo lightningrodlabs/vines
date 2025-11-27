@@ -2,7 +2,7 @@ use holochain_types::prelude::*;
 use std::path::PathBuf;
 use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, NetworkConfig, vec_to_locked, Error};
 use url2::Url2;
-use tauri::{Manager, Url};
+use tauri::{Manager, Url, WebviewUrl};
 
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -29,7 +29,9 @@ fn hash_string(s: &str) -> Result<String, String> {
 #[tauri::command]
 async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
-   return webview.navigate(Url::parse("admin.html").unwrap())
+   let url = WebviewUrl::App("admin.html".into());
+   println!("CURRENT URL: {} | {}", webview.url().unwrap(), url.to_string());
+   return webview.navigate(Url::parse("http://localhost:1420/admin.html").unwrap())
       .map_err(|e| e.to_string());
 }
 
@@ -51,7 +53,7 @@ async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
    }
    hc.update_app_if_necessary(name.clone(), happ_bundle())
       .await?;
-   let url = Url::parse(&format!("index.html?appId={}", name)).unwrap();
+   let url = Url::parse(&format!("http://localhost:1420/index.html?appId={}", name)).unwrap();
    let webview = app.get_webview_window("main").unwrap();
    webview.navigate(url.into())
       .map_err(|e| e.to_string());
@@ -117,7 +119,7 @@ pub fn run() {
                      // Load window
                      let url = format!("index.html?appId={}", main_app.installed_app_id).to_string();
                      app.holochain()?
-                        .main_window_builder(String::from("main"), false, Some(main_app.installed_app_id), Some(url)).await?
+                        .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), Some(url)).await?
                         .build()?;
                   },
                   _ => {

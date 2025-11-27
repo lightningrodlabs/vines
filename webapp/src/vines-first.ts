@@ -10,7 +10,6 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 //import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 
 import * as APPV from './generated/version.js';
-import {DEFAULT_THREADS_DEF} from "./happDef";
 
 import { invoke } from '@tauri-apps/api/core';
 
@@ -25,7 +24,7 @@ export class VinesFirst extends LitElement {
   @state() private _apps?: Array<AppInfo>;
 
   @state() private _inviteLink: string = '';
-
+  @state() private _name: string = '';
 
     constructor() {
     console.debug("<vines-first>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
@@ -97,7 +96,6 @@ export class VinesFirst extends LitElement {
 
     if (this._apps!.length == 0) {
         return html`
-
             <div class="column center-content flex-1 launch-bg">
                 <div class="column items-center" style="margin-bottom: 52px;">
                     <div style="margin-bottom:14px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
@@ -146,10 +144,24 @@ export class VinesFirst extends LitElement {
                             ${msg('I want to start a private chat space for my group')}
                         </div>
                         <span class="flex flex-1"></span>
+                        <sl-input
+                                class="moss-input"
+                                id="name-input"
+                                placeholder=${msg('enter group name')}
+                                label=${msg('Group name')}
+                                style="margin-right: 1px; width: 190px;"
+                                @input=${() => {
+                                    const inviteLinkInput = this.shadowRoot?.getElementById(
+                                            'name-input',
+                                    ) as HTMLInputElement;
+                                    this._name = inviteLinkInput.value;
+                                }}
+                        ></sl-input>
                         <button
                                 class="moss-button"
                                 style="width: 180px; margin-bottom: 28px;"
-                                @click=${() => this.createNewGroup()}
+                                ?disabled=${this._name === ''}
+                                @click=${() => this.createNewGroup(this._name)}
                         >
                             <div class="row center-content">
                                 ${plusCircleIcon(20)}
@@ -161,17 +173,48 @@ export class VinesFirst extends LitElement {
         `;
     }
 
+    let apps  = [html``];
+        this._apps.forEach(app => {
+            const elem = html`
+                <div>
+                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
+                        ${app.installed_app_id}
+                        <button
+                                id="launch-btn"
+                                class="moss-button"
+                                ?disabled=${app.status.type !== "enabled"}
+                                @click=${() => this.onSelectApp(app.installed_app_id)}
+                                style="margin-top:10px;"
+                        >${msg('Select')}
+                        </button>
+                    </div>
+                </div>`;
+            apps.push(elem);
+        })
     /** Render all */
     return html`
-        <h2>SELECT ${DEFAULT_THREADS_DEF.id}: ${this._apps?.length}</h2>
+        <h2>Select group: ${this._apps?.length}</h2>
+        <div class="column center-content flex-1 launch-bg">
+            ${apps}
+        </div>
     `;
 
   }
 
-  async createNewGroup() {
-      console.log("createNewGroup()");
+    async onSelectApp(name: string) {
+        console.log("onSelectApp()");
+        try {
+            const result = await invoke('select', { name });
+            console.log('Result:', result);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+  async createNewGroup(name: string) {
+      console.log("createNewGroup()", name);
       try {
-          const result = await invoke('install', { name: 'Tauri' });
+          const result = await invoke('install', { name });
           console.log('Result:', result);
       } catch (error) {
           console.error('Error:', error);

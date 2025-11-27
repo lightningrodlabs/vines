@@ -32,7 +32,7 @@ import {
     toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID, IS_TAURI} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
@@ -46,6 +46,7 @@ import "./vines-page"
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals";
 
 import * as APPV from './generated/version.js';
+import {invoke} from "@tauri-apps/api/core";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -105,13 +106,7 @@ export class VinesApp extends HappMultiElement {
     if (appletGroups && appletGroups.length > 0) {
       pairs = appletGroups.map((appletGroup) => [appletGroup.appWs, appletGroup.appId]);
     } else {
-        const __HC_LAUNCHER_ENV__: string = "__HC_LAUNCHER_ENV__";
-        const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
-        if (isLauncher) {
-          pairs = [[HC_APP_PORT!, HAPP_ID]];
-        } else {
-          throw Error("No appWebsocket or APP PORT set");
-        }
+        pairs = [[HC_APP_PORT!, HAPP_ID]];
     }
     console.log("<vines-app>.ctor() pairs", pairs);
     super(pairs, isMulti? !isMulti : true, adminUrl, 20 * 1000);
@@ -334,15 +329,39 @@ export class VinesApp extends HappMultiElement {
     // }
   }
 
+
+  async gotoAdmin() {
+      console.log("gotoAdmin()");
+      try {
+          const result = await invoke('gotoadmin');
+          console.log('Result:', result);
+      } catch (error) {
+          console.error('Error:', error);
+      }
+  }
+
   /** */
   override render() {
     console.log("<vines-app>.render()", !this._hasHolochainFailed, this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
+      let adminBtn = html``;
+      if (IS_TAURI) {
+          adminBtn = html`
+              <div style="width: 100%">
+                <button id="retryBtn"
+                        style="max-width:300px; margin:auto; display: block;"
+                        @click=${async (_e: any) => this.gotoAdmin()}>
+                    ${msg('Admin')}
+                </button>
+              </div>
+            `;
+      }
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
       return html`
           <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:50%; color:#ff4343"
           ></ui5-busy-indicator>
+          ${adminBtn}
       `;
     }
     if (this._hasHolochainFailed || this.hvms.length == 0) {
@@ -364,6 +383,7 @@ export class VinesApp extends HappMultiElement {
           <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:50%; color:#f3bb2c"
           ></ui5-busy-indicator>
+          ${adminBtn}
       `;
     }
 
