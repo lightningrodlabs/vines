@@ -75,11 +75,11 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
         /** Author */
         const author = notif.author;
         const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(author)
-        const agentName = maybeProfile? maybeProfile.nickname : "unknown";
+        const agentName = maybeProfile? maybeProfile.nickname :  msg("unknown");
         /** Timestamp */
         const date = new Date(notif.timestamp / 1000); // Holochain timestamp is in micro-seconds, Date wants milliseconds
         //const date_str = date.toLocaleString('en-US', {hour12: false});
-        const date_str = timeSince(date) + " ago"; // FIXME: localize
+        const date_str = timeSince(date) + " " + msg("ago");
         const title = truncate(notifTitle, 120, true);
         /** */
         return html`

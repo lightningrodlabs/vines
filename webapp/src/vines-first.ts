@@ -171,7 +171,7 @@ export class VinesFirst extends LitElement {
   async createNewGroup() {
       console.log("createNewGroup()");
       try {
-          const result = await invoke('greet', { name: 'Tauri' });
+          const result = await invoke('install', { name: 'Tauri' });
           console.log('Result:', result);
       } catch (error) {
           console.error('Error:', error);

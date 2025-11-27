@@ -30,6 +30,15 @@ if (!HC_APP_PORT) {
     }
 }
 
+/** look-up appId from URL query param (tauri) */
+const params = new URLSearchParams(window.location.search);
+console.debug("params", params);
+const maybeAppId = params.get('appId');
+console.debug("maybeAppId", maybeAppId);
+if (maybeAppId) {
+    HAPP_ID = maybeAppId;
+}
+
 console.log("      HAPP_ID =", HAPP_ID)
 console.log("  HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
