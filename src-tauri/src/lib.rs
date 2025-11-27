@@ -1,8 +1,11 @@
 use holochain_types::prelude::*;
 use std::path::PathBuf;
-use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, NetworkConfig, vec_to_locked, Error};
-use url2::Url2;
-use tauri::{Manager, Url, WebviewUrl};
+use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked, Error};
+use tauri::{Manager, Url, WebviewUrl, ipc::CapabilityBuilder};
+
+pub mod utils;
+
+use utils::*;
 
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -15,15 +18,44 @@ pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
 }
 
+async fn globals_script(app: tauri::AppHandle, name: String) -> String {
+   let hc = &app.holochain()
+      .expect("Should have been able to get holochain runtime")
+      .holochain_runtime;
+   let allowed_origins = get_allowed_origins(&name, false);
+   let app_websocket_auth = hc
+      .get_app_websocket_auth(&name, allowed_origins)
+      .await
+      .expect("Should have been able to get websocket auth for app");
+
+   let token_vector: Vec<String> = app_websocket_auth
+      .token
+      .iter()
+      .map(|n| n.to_string())
+      .collect();
+   let token = token_vector.join(",");
+
+   return format!(
+      r#"
+            if (!window.__HC_LAUNCHER_ENV__) window.__HC_LAUNCHER_ENV__ = {{}};
+            window.__HC_LAUNCHER_ENV__.ADMIN_INTERFACE_PORT = {};
+            window.__HC_LAUNCHER_ENV__.APP_INTERFACE_PORT = {};
+            window.__HC_LAUNCHER_ENV__.APP_INTERFACE_TOKEN = [{token}];
+            window.__HC_LAUNCHER_ENV__.INSTALLED_APP_ID = "{name}";
+   "#,
+      hc.admin_port,
+      app_websocket_auth.app_websocket_port,
+   );
+}
+
 // Hash a string with random salt
 fn hash_string(s: &str) -> Result<String, String> {
    let salt = SaltString::generate(&mut OsRng);
    let argon2 = Argon2::default();
-   let hash = argon2
+   let pwd_hash = argon2
       .hash_password(s.as_bytes(), &salt)
-      .map_err(|e| e.to_string())?
-      .to_string();
-   Ok(hash)
+      .map_err(|e| e.to_string())?;
+   Ok(pwd_hash.hash.unwrap().to_string())
 }
 
 #[tauri::command]
@@ -38,6 +70,7 @@ async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
+   println!("select app {}", name);
    let hc = &app.holochain()?.holochain_runtime;
    let admin_ws = hc.admin_websocket().await?;
    let installed_apps = admin_ws
@@ -55,6 +88,13 @@ async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
       .await?;
    let url = Url::parse(&format!("http://localhost:1420/index.html?appId={}", name)).unwrap();
    let webview = app.get_webview_window("main").unwrap();
+   webview.eval(globals_script(app.clone(), name.clone()).await).unwrap();
+
+   let mut capability_builder =
+      CapabilityBuilder::new("sign-zome-call").permission("holochain:allow-sign-zome-call");
+   capability_builder = capability_builder.window(name.clone());
+   app.add_capability(capability_builder)?;
+
    webview.navigate(url.into())
       .map_err(|e| e.to_string());
    Ok(name)
@@ -62,25 +102,26 @@ async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
 
 #[tauri::command]
 async fn install(handle: tauri::AppHandle, name: String) -> Result<String, Error> {
+   println!("install app {}", name);
    let hashed_name = hash_string(&name)
       .map_err(|err| Error::OpenAppError(err))?;
    handle
       .holochain()?
       .install_app(
-         name,
+         name.clone(),
          happ_bundle(),
          None,
          None,
          Some(hashed_name.clone()),
       )
       .await?;
-   Ok(hashed_name)
+   return select(handle, name).await;
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![install, select, gotoadmin])
+        //.invoke_handler(tauri::generate_handler![install, select, gotoadmin])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -107,25 +148,42 @@ pub fn run() {
                      println!("Only one app installed, loading it directly");
                      // Make sure app is enabled
                      let main_app = installed_apps.into_iter().next().unwrap();
-                     if main_app.status != AppStatus::Enabled {
-                        println!("Enabling app {} !!!!!", main_app.installed_app_id);
-                        app.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
-                     }
-                     //
-                     handle.holochain()?.update_app_if_necessary(
-                        String::from(main_app.installed_app_id.clone()),
-                        happ_bundle()
-                     ).await?;
+                     // if main_app.status != AppStatus::Enabled {
+                     //    println!("Enabling app {} !!!!!", main_app.installed_app_id);
+                     //    app.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
+                     // }
+                     // //
+                     // handle.holochain()?.update_app_if_necessary(
+                     //    String::from(main_app.installed_app_id.clone()),
+                     //    happ_bundle()
+                     // ).await?;
                      // Load window
-                     let url = format!("index.html?appId={}", main_app.installed_app_id).to_string();
+                     //let url = format!("index.html?appId={}", main_app.installed_app_id).to_string();
                      app.holochain()?
-                        .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), Some(url)).await?
+                        .main_window_builder(String::from("main"), false, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
                         .build()?;
                   },
                   _ => {
-                     app.holochain()?
-                        .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
-                        .build()?;
+                     // {
+                     //    app.holochain()?
+                     //       .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
+                     //       .build()?;
+                     // }
+                     {
+                        handle
+                           .holochain()?
+                           .install_app(
+                              "vines".to_string(),
+                              happ_bundle(),
+                              None,
+                              None,
+                              None,
+                           )
+                           .await?;
+                        app.holochain()?
+                           .main_window_builder(String::from("main"), false, Some("vines".to_string()), None).await?
+                           .build()?;
+                     }
                   },
                }
                 Ok(())
@@ -140,34 +198,16 @@ pub fn run() {
 }
 
 
-
-fn network_config() -> NetworkConfig {
-    let mut network_config = NetworkConfig::default();
-
-    // Don't use the bootstrap service on tauri dev mode
-    if tauri::is_dev() {
-        network_config.bootstrap_url = Url2::parse("http://0.0.0.0:8888");
-    }
-
-    // Don't hold any slice of the DHT in mobile
-    if cfg!(mobile) {
-        network_config.target_arc_factor = 0;
-    }
-
-    network_config
-}
-
-fn holochain_dir() -> PathBuf {
+pub fn holochain_dir() -> PathBuf {
     let app_data_type = if tauri::is_dev() {
         app_dirs2::AppDataType::UserCache
     } else {
         app_dirs2::AppDataType::UserData
     };
-
     app_dirs2::app_root(
         app_data_type,
         &app_dirs2::AppInfo {
-            name: "vines",
+            name: "vines", // FIXME: append version number
             author: std::env!("CARGO_PKG_AUTHORS"),
         },
     )

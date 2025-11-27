@@ -196,6 +196,36 @@ export class VinesAdmin extends LitElement {
         <h2>Select group: ${this._apps?.length}</h2>
         <div class="column center-content flex-1 launch-bg">
             ${apps}
+            <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
+                <div class="dialog-title" style="width: 150px; margin-top: 20px;">
+                    ${msg('I want to start a private chat space for my group')}
+                </div>
+                <span class="flex flex-1"></span>
+                <sl-input
+                        class="moss-input"
+                        id="name-input"
+                        placeholder=${msg('enter group name')}
+                        label=${msg('Group name')}
+                        style="margin-right: 1px; width: 190px;"
+                        @input=${() => {
+                            const inviteLinkInput = this.shadowRoot?.getElementById(
+                                    'name-input',
+                            ) as HTMLInputElement;
+                            this._name = inviteLinkInput.value;
+                        }}
+                ></sl-input>
+                <button
+                        class="moss-button"
+                        style="width: 180px; margin-bottom: 28px;"
+                        ?disabled=${this._name === ''}
+                        @click=${() => this.createNewGroup(this._name)}
+                >
+                    <div class="row center-content">
+                        ${plusCircleIcon(20)}
+                        <div style="margin-left: 10px;">${msg('Create new group space')}</div>
+                    </div>
+                </button>
+            </div>
         </div>
     `;
 
