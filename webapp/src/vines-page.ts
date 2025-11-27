@@ -247,6 +247,7 @@ import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
+import {IS_TAURI} from "./globals";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -2107,6 +2108,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                         `}
+                        ${IS_TAURI?  html`<ui5-menu-item id="gotoadmin" text="Admin"></ui5-menu-item>` : html``}
                         <ui5-menu-item id="__version" disabled text="v${APP_VERSION}"></ui5-menu-item>
                     </ui5-menu>
 
@@ -2728,6 +2730,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "dumpNetworkItem":
         this.dispatchEvent(new CustomEvent('dumpNetworkLogs', {detail: null, bubbles: true, composed: true}));
         break;
+        case "gotoadmin":
+            this.dispatchEvent(new CustomEvent('gotoadmin', {detail: null, bubbles: true, composed: true}));
+            break;
     }
     this.waitDialogElem.close();
   }

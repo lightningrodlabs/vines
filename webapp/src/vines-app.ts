@@ -394,6 +394,7 @@ export class VinesApp extends HappMultiElement {
         <vines-page
                 .appProxy=${appProxy}
                 @dumpNetworkLogs=${this.onDumpNetworkLogs}
+                @gotoadmin=${() => this.gotoAdmin()}
                 @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
         ></vines-page>`;
     if (this.appletView) {

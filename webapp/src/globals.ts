@@ -2,10 +2,11 @@ import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HappBuildModeType, HAPP_BUILD_MODE} from "@ddd-qc/lit-happ";
 import { isTauri } from '@tauri-apps/api/core';
 
+export const IS_TAURI: boolean = isTauri();
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
 export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
-export const IS_TAURI: boolean = isTauri();
+export let HAPP_TOKEN: Uint8Array | undefined = undefined;
 
 try {
     HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
@@ -25,7 +26,7 @@ if (!HC_APP_PORT) {
         HC_APP_PORT = env!.APP_INTERFACE_PORT;
         HAPP_ID = env!.INSTALLED_APP_ID;
         HC_ADMIN_PORT = env!.ADMIN_INTERFACE_PORT;
-        //appToken = env!.APP_INTERFACE_TOKEN;
+        HAPP_TOKEN = env!.APP_INTERFACE_TOKEN;
     } else {
         console.warn("HC_APP_PORT not defined");
     }
@@ -39,7 +40,7 @@ console.debug("maybeAppId", maybeAppId);
 if (maybeAppId) {
     HAPP_ID = maybeAppId;
 }
-
+console.log("   HAPP_TOKEN =", HAPP_TOKEN)
 console.log("     IS_TAURI =", IS_TAURI)
 console.log("      HAPP_ID =", HAPP_ID)
 console.log("  HC_APP_PORT =", HC_APP_PORT);

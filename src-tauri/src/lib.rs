@@ -147,43 +147,41 @@ pub fn run() {
                      // Make sure app is enabled
                      let main_app = installed_apps.into_iter().next().unwrap();
                      println!("Only one app installed, loading it directly: {}", main_app.installed_app_id);
-
-                     // if main_app.status != AppStatus::Enabled {
-                     //    println!("Enabling app {} !!!!!", main_app.installed_app_id);
-                     //    app.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
-                     // }
-                     // //
-                     // handle.holochain()?.update_app_if_necessary(
-                     //    String::from(main_app.installed_app_id.clone()),
-                     //    happ_bundle()
-                     // ).await?;
+                     if main_app.status != AppStatus::Enabled {
+                        println!("Enabling app {} !!!!!", main_app.installed_app_id);
+                        app.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
+                     }
+                     //
+                     handle.holochain()?.update_app_if_necessary(
+                        String::from(main_app.installed_app_id.clone()),
+                        happ_bundle()
+                     ).await?;
                      // Load window
-                     //let url = format!("index.html?appId={}", main_app.installed_app_id).to_string();
                      app.holochain()?
-                        .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
+                        .main_window_builder(String::from("main"), false, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
                         .build()?;
                   },
                   _ => {
-                     // {
-                     //    app.holochain()?
-                     //       .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
-                     //       .build()?;
-                     // }
                      {
-                        handle
-                           .holochain()?
-                           .install_app(
-                              "vines".to_string(),
-                              happ_bundle(),
-                              None,
-                              None,
-                              None,
-                           )
-                           .await?;
                         app.holochain()?
-                           .main_window_builder(String::from("main"), true, Some("vines".to_string()), None).await?
+                           .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
                            .build()?;
                      }
+                     // {
+                     //    handle
+                     //       .holochain()?
+                     //       .install_app(
+                     //          "vines".to_string(),
+                     //          happ_bundle(),
+                     //          None,
+                     //          None,
+                     //          None,
+                     //       )
+                     //       .await?;
+                     //    app.holochain()?
+                     //       .main_window_builder(String::from("main"), true, Some("vines".to_string()), None).await?
+                     //       .build()?;
+                     // }
                   },
                }
                 Ok(())

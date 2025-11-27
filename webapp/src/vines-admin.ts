@@ -26,6 +26,8 @@ export class VinesAdmin extends LitElement {
   @state() private _inviteLink: string = '';
   @state() private _name: string = '';
 
+  @state() private _loading: boolean = false;
+
     constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
     super();
@@ -83,7 +85,7 @@ export class VinesAdmin extends LitElement {
   override render() {
     console.log("<vines-app>.render()", this._apps);
     /** Check init has been done */
-    if (this._apps == undefined) {
+    if (this._apps == undefined || this._loading) {
       return html`
           <sl-spinner></sl-spinner>
           <button id="retryBtn"
@@ -218,7 +220,10 @@ export class VinesAdmin extends LitElement {
                         class="moss-button"
                         style="width: 180px; margin-bottom: 28px;"
                         ?disabled=${this._name === ''}
-                        @click=${() => this.createNewGroup(this._name)}
+                        @click=${() => {
+                            this._loading = true;
+                            this.createNewGroup(this._name);
+    }}
                 >
                     <div class="row center-content">
                         ${plusCircleIcon(20)}
@@ -249,6 +254,7 @@ export class VinesAdmin extends LitElement {
       } catch (error) {
           console.error('Error:', error);
       }
+      this._loading = false;
   }
 
   /** */
