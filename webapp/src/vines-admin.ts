@@ -13,12 +13,12 @@ import * as APPV from './generated/version.js';
 
 import { invoke } from '@tauri-apps/api/core';
 
-console.log("<vines-first>", APPV.APP_VERSION);
+console.log("<vines-admin>", APPV.APP_VERSION);
 
 /** */
 @localized()
-@customElement("vines-first")
-export class VinesFirst extends LitElement {
+@customElement("vines-admin")
+export class VinesAdmin extends LitElement {
 
   @state() private _adminWs?: AdminWebsocket;
   @state() private _apps?: Array<AppInfo>;
@@ -27,7 +27,7 @@ export class VinesFirst extends LitElement {
   @state() private _name: string = '';
 
     constructor() {
-    console.debug("<vines-first>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
+    console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
     super();
     const adminUrl = HC_ADMIN_PORT? new URL(`ws://localhost:${HC_ADMIN_PORT}`) : undefined;
     AdminWebsocket.connect({url: adminUrl}).then(async (ws) => {
@@ -64,7 +64,7 @@ export class VinesFirst extends LitElement {
 
   /** Open Vines App if jump requested from a non-main view */
   async onJump(e: CustomEvent<boolean>) {
-    console.log("<vines-first>.onJump()", e.detail);
+    console.log("<vines-admin>.onJump()", e.detail);
   }
 
   /** Open Vines App if jump requested from a non-main view */
