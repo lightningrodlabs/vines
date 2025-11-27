@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "identifier": "org.lightningrodlabs.vines",
   "build": {
-    "removeUnusedCommands": true,
+    "removeUnusedCommands": false,
     "beforeBuildCommand": "npm run build:webapp",
     "devUrl": "http://localhost:1420"
   },

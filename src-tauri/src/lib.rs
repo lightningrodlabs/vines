@@ -4,7 +4,6 @@ use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked,
 use tauri::{Manager, Url, WebviewUrl, ipc::CapabilityBuilder};
 
 pub mod utils;
-
 use utils::*;
 
 use argon2::{
@@ -121,7 +120,7 @@ async fn install(handle: tauri::AppHandle, name: String) -> Result<String, Error
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        //.invoke_handler(tauri::generate_handler![install, select, gotoadmin])
+        .invoke_handler(tauri::generate_handler![install, select, gotoadmin])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -145,9 +144,10 @@ pub fn run() {
 
                match installed_apps.len() {
                   1 => {
-                     println!("Only one app installed, loading it directly");
                      // Make sure app is enabled
                      let main_app = installed_apps.into_iter().next().unwrap();
+                     println!("Only one app installed, loading it directly: {}", main_app.installed_app_id);
+
                      // if main_app.status != AppStatus::Enabled {
                      //    println!("Enabling app {} !!!!!", main_app.installed_app_id);
                      //    app.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
@@ -160,7 +160,7 @@ pub fn run() {
                      // Load window
                      //let url = format!("index.html?appId={}", main_app.installed_app_id).to_string();
                      app.holochain()?
-                        .main_window_builder(String::from("main"), false, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
+                        .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
                         .build()?;
                   },
                   _ => {
@@ -181,7 +181,7 @@ pub fn run() {
                            )
                            .await?;
                         app.holochain()?
-                           .main_window_builder(String::from("main"), false, Some("vines".to_string()), None).await?
+                           .main_window_builder(String::from("main"), true, Some("vines".to_string()), None).await?
                            .build()?;
                      }
                   },
