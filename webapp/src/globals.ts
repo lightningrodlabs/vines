@@ -40,6 +40,13 @@ console.debug("maybeAppId", maybeAppId);
 if (maybeAppId) {
     HAPP_ID = maybeAppId;
 }
+const maybeAppPort = params.get('appPort');
+console.debug("maybeAppPort", maybeAppPort);
+if (maybeAppPort) {
+    HC_APP_PORT = Number(maybeAppPort);
+    //HAPP_TOKEN = new Uint8Array(32);
+}
+
 console.log("   HAPP_TOKEN =", HAPP_TOKEN)
 console.log("     IS_TAURI =", IS_TAURI)
 console.log("      HAPP_ID =", HAPP_ID)

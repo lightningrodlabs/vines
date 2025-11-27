@@ -17,13 +17,25 @@ pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
 }
 
-async fn globals_script(app: tauri::AppHandle, name: String) -> String {
+async fn get_app_port(app: tauri::AppHandle, name: &str) -> u16 {
    let hc = &app.holochain()
       .expect("Should have been able to get holochain runtime")
       .holochain_runtime;
-   let allowed_origins = get_allowed_origins(&name, false);
+   let allowed_origins = get_allowed_origins(name, false);
    let app_websocket_auth = hc
-      .get_app_websocket_auth(&name, allowed_origins)
+      .get_app_websocket_auth(&name.to_string(), allowed_origins)
+      .await
+      .expect("Should have been able to get websocket auth for app");
+   app_websocket_auth.app_websocket_port
+}
+
+async fn globals_script(app: tauri::AppHandle, name: &str, can_admin: bool) -> String {
+   let hc = &app.holochain()
+      .expect("Should have been able to get holochain runtime")
+      .holochain_runtime;
+   let allowed_origins = get_allowed_origins(name, false);
+   let app_websocket_auth = hc
+      .get_app_websocket_auth(&name.to_string(), allowed_origins)
       .await
       .expect("Should have been able to get websocket auth for app");
 
@@ -42,7 +54,7 @@ async fn globals_script(app: tauri::AppHandle, name: String) -> String {
             window.__HC_LAUNCHER_ENV__.APP_INTERFACE_TOKEN = [{token}];
             window.__HC_LAUNCHER_ENV__.INSTALLED_APP_ID = "{name}";
    "#,
-      hc.admin_port,
+      if can_admin {hc.admin_port.to_string()} else {"undefined".to_string()},
       app_websocket_auth.app_websocket_port,
    );
 }
@@ -62,8 +74,19 @@ async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
    let url = WebviewUrl::App("admin.html".into());
    println!("CURRENT URL: {} | {}", webview.url().unwrap(), url.to_string());
-   return webview.navigate(Url::parse("http://localhost:1420/admin.html").unwrap())
+
+   //webview.eval(globals_script(app.clone(), "", true).await).unwrap();
+
+   // let mut capability_builder =
+   //    CapabilityBuilder::new("sign-zome-call").permission("holochain:allow-sign-zome-call");
+   // capability_builder = capability_builder.window(name.clone());
+   // app.add_capability(capability_builder).unwrap();
+
+   let res = webview.navigate(Url::parse("http://localhost:1420/admin.html").unwrap())
       .map_err(|e| e.to_string());
+
+   //webview.eval(globals_script(app.clone(), "", true).await).unwrap();
+   res
 }
 
 
@@ -85,19 +108,21 @@ async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
    }
    hc.update_app_if_necessary(name.clone(), happ_bundle())
       .await?;
-   let url = Url::parse(&format!("http://localhost:1420/index.html?appId={}", name)).unwrap();
+   let app_port = get_app_port(app.clone(), &name).await;
+   let url = Url::parse(&format!("http://localhost:1420/index.html?appId={name}&appPort={app_port}")).unwrap();
    let webview = app.get_webview_window("main").unwrap();
-   webview.eval(globals_script(app.clone(), name.clone()).await).unwrap();
 
-   let mut capability_builder =
-      CapabilityBuilder::new("sign-zome-call").permission("holochain:allow-sign-zome-call");
-   capability_builder = capability_builder.window(name.clone());
-   app.add_capability(capability_builder)?;
+   // webview.eval(globals_script(app.clone(), &name, false).await).unwrap();
+   // let mut capability_builder =
+   //    CapabilityBuilder::new("sign-zome-call").permission("holochain:allow-sign-zome-call");
+   // capability_builder = capability_builder.window(name.clone());
+   // app.add_capability(capability_builder)?;
 
-   webview.navigate(url.into())
-      .map_err(|e| e.to_string());
+   let _ = webview.navigate(url.into())
+      .map_err(|e| Error::OpenAppError(e.to_string()))?;
    Ok(name)
 }
+
 
 #[tauri::command]
 async fn install(handle: tauri::AppHandle, name: String) -> Result<String, Error> {
@@ -116,6 +141,7 @@ async fn install(handle: tauri::AppHandle, name: String) -> Result<String, Error
       .await?;
    return select(handle, name).await;
 }
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -158,7 +184,7 @@ pub fn run() {
                      ).await?;
                      // Load window
                      app.holochain()?
-                        .main_window_builder(String::from("main"), false, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
+                        .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
                         .build()?;
                   },
                   _ => {
@@ -167,6 +193,7 @@ pub fn run() {
                            .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
                            .build()?;
                      }
+                     // single app mode
                      // {
                      //    handle
                      //       .holochain()?

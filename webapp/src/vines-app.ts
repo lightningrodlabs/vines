@@ -32,7 +32,7 @@ import {
     toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID, IS_TAURI} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID, IS_TAURI, HAPP_TOKEN} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
@@ -99,7 +99,7 @@ export class VinesApp extends HappMultiElement {
     console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
     const adminUrl = _adminWs
       ? undefined
-      : HC_ADMIN_PORT
+      : HC_ADMIN_PORT && HAPP_TOKEN == undefined
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
     let pairs: [number | AppWebsocket, InstalledAppId | undefined][] = [];

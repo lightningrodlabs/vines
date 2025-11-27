@@ -1,4 +1,3 @@
-use holochain_types::prelude::*;
 use holochain_types::websocket::AllowedOrigins;
 use tauri_plugin_holochain::NetworkConfig;
 use std::collections::HashSet;
@@ -18,7 +17,7 @@ pub fn network_config() -> NetworkConfig {
 }
 
 
-pub fn happ_origin(app_id: &String) -> String {
+pub fn happ_origin(app_id: &str) -> String {
    if cfg!(any(target_os = "windows", target_os = "android")) {
       format!("http://happ.{app_id}")
    } else {
@@ -35,7 +34,7 @@ pub fn main_window_origin() -> String {
 }
 
 
-pub fn get_allowed_origins(app_id: &InstalledAppId, main_window: bool) -> AllowedOrigins {
+pub fn get_allowed_origins(app_id: &str, main_window: bool) -> AllowedOrigins {
    // Allow any when the app is build in debug mode to allow normal tauri development pointing to http://localhost:1420
    let allowed_origins = if tauri::is_dev() {
       AllowedOrigins::Any
@@ -48,10 +47,10 @@ pub fn get_allowed_origins(app_id: &InstalledAppId, main_window: bool) -> Allowe
    allowed_origins
 }
 
-pub fn get_app_origin(app_id: &InstalledAppId, main_window: bool) -> String {
+pub fn get_app_origin(app_id: &str, main_window: bool) -> String {
    if main_window {
       main_window_origin()
    } else {
-      happ_origin(&app_id)
+      happ_origin(app_id)
    }
 }
