@@ -30,7 +30,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   override render() {
     console.log("<peer-list>.render()", this.perspective);
 
-    if (this.perspective.profiles.size === 0) {
+    if (this.perspective.profiles.size <= 1) {
       return html`
           <div class="folks" style="color: #7d7d7d">
               ${msg('No peers found')}
