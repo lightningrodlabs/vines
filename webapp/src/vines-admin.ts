@@ -2,7 +2,7 @@ import {html, css, LitElement, TemplateResult} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {msg, localized} from '@lit/localize';
 import {
-    AdminWebsocket, AppInfo,
+    AdminWebsocket, AppInfo, ProvisionedCell,
 } from "@holochain/client";
 import {setLocale} from "./localization";
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
@@ -10,6 +10,8 @@ import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
 import Switch from "@ui5/webcomponents/dist/Switch";
+import QRCode from "qrcode";
+import {encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
 
 console.log("<vines-admin>", APPV.APP_VERSION);
 
@@ -27,8 +29,9 @@ export class VinesAdmin extends LitElement {
   @state() private _loading: string | undefined = ""; // Display loading string if this is defined
 
   @state() private _showAddGroup: boolean = false;
+  @state() private _showQrCode: AppInfo | undefined = undefined; // Display if this is defined
 
-    constructor() {
+  constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
     super();
     const adminUrl = HC_ADMIN_PORT? new URL(`ws://localhost:${HC_ADMIN_PORT}`) : undefined;
@@ -67,7 +70,55 @@ export class VinesAdmin extends LitElement {
     window.location.reload();
   }
 
+  /** */
+  renderQrCode(): TemplateResult<1> {
+      const appInfo = this._showQrCode!;
+      const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
+      const shareCode = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+      const popover = this.shadowRoot!.getElementById('popover');
+      let existingImg = null;
+      if (popover) { existingImg = popover.querySelector('img')}
+      console.debug("renderQrCode()", existingImg, popover);
+      if (!existingImg) {
+          try {
+              console.debug("Generating QR code for:", shareCode);
+              QRCode.toDataURL(shareCode).then(generateQR => {
+              console.debug("Generated QR code");
+              const img = document.createElement('img');
+              img.src = generateQR;
+              img.style.width = '100%';
+              const popover2 = this.shadowRoot!.getElementById('popover');
+              if (popover2) { popover2.append(img); this.requestUpdate();}
+              });
+          } catch (err) {
+              console.error(err);
+          }
+      }
 
+      return html`
+          <div class="column center-content flex-1 launch-bg" style="margin-left:5px; margin-right:5px;">
+              <div class="column items-center" style="margin-bottom: 15px;">
+                  <div style="margin-bottom:8px; margin-top:14px;">
+                      <img src="icon.png" style="height: 64px"/>
+                  </div>
+                  <div class="dialog-title">${this._showQrCode?.installed_app_id}</div>
+              </div>
+              <div id="popover"></div>
+              <ui5-textarea .value=${shareCode} style="height: 100px;margin-top:15px;"></ui5-textarea>
+              <button id="cancel-btn"
+                      class="moss-button"
+                      style="width: 120px; margin-top: 30px;"
+                      @click=${() => this._showQrCode = undefined}
+              >
+                  <div class="row center-content">
+                      <div style="">${msg('Back')}</div>
+                  </div>
+              </button>              
+          </div>
+      `;
+  }
+
+  /** */
   renderAddGroup(greet: boolean): TemplateResult<1> {
       return html`
             <div class="column center-content flex-1 launch-bg" style="margin-left:5px; margin-right:5px;">
@@ -160,9 +211,10 @@ export class VinesAdmin extends LitElement {
         `;
   }
 
+
   /** */
   override render() {
-    console.log("<vines-app>.render()", this._apps);
+    console.log("<vines-admin>.render()", this._apps);
     /** Check init has been done */
     if (this._apps == undefined || !!this._loading) {
       return html`
@@ -183,11 +235,13 @@ export class VinesAdmin extends LitElement {
     }
 
     if (this._apps!.length == 0) {
-        return this.renderAddGroup(true);
+      return this.renderAddGroup(true);
     }
-
     if (this._showAddGroup) {
-        return this.renderAddGroup(false);
+      return this.renderAddGroup(false);
+    }
+    if (this._showQrCode) {
+      return this.renderQrCode();
     }
 
     let apps  = [html``];
@@ -199,7 +253,13 @@ export class VinesAdmin extends LitElement {
                          this.onSelectApp(app.installed_app_id)
                                  .then(() => this._loading = undefined)
                      }}>
-                    <ui5-button icon="share-2" design="Transparent" @click=${(e:any) => e.stopPropagation()} style="border-radius: 10px;"></ui5-button>
+                    <ui5-button icon="share-2" design="Transparent" 
+                                style="border-radius: 10px;"
+                                @click=${(e:any) => {
+                                    e.stopPropagation();
+                                    this._showQrCode = app
+                                }}
+                    ></ui5-button>
                     <div class="app-name">${app.installed_app_id}</div>
                     <span class="flex flex-1"></span>
                     <ui5-switch id="toggle-${app.installed_app_id}" ?checked=${app.status.type == "enabled"}
