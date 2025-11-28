@@ -5,12 +5,9 @@ import {
     AdminWebsocket, AppInfo,
 } from "@holochain/client";
 import {setLocale} from "./localization";
+import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
-
-//import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-
 import * as APPV from './generated/version.js';
-
 import { invoke } from '@tauri-apps/api/core';
 
 console.log("<vines-admin>", APPV.APP_VERSION);
@@ -26,7 +23,7 @@ export class VinesAdmin extends LitElement {
   @state() private _inviteLink: string = '';
   @state() private _name: string = '';
 
-  @state() private _loading: boolean = false;
+  @state() private _loading: string | undefined = ""; // Display loading string if this is defined
 
     constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
@@ -44,30 +41,17 @@ export class VinesAdmin extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     // @ts-ignore
-    this.addEventListener('jump', this.onJump);
-    // @ts-ignore
-    this.addEventListener('copy', this.onCopy);
-    // @ts-ignore
     this.addEventListener('lang-selected', this.onLang);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     // @ts-ignore
-    this.removeEventListener('jump', this.onJump);
-    // @ts-ignore
-    this.removeEventListener('copy', this.onCopy);
-    // @ts-ignore
     this.removeEventListener('lang-selected', this.onLang);
   }
 
 
   /** -- Methods -- */
-
-  /** Open Vines App if jump requested from a non-main view */
-  async onJump(e: CustomEvent<boolean>) {
-    console.log("<vines-admin>.onJump()", e.detail);
-  }
 
   /** Open Vines App if jump requested from a non-main view */
   async onLang(e: CustomEvent) {
@@ -77,7 +61,7 @@ export class VinesAdmin extends LitElement {
 
 
   /** */
-  private onRetryHolochain() {
+  private onReload() {
     window.location.reload();
   }
 
@@ -85,14 +69,21 @@ export class VinesAdmin extends LitElement {
   override render() {
     console.log("<vines-app>.render()", this._apps);
     /** Check init has been done */
-    if (this._apps == undefined || this._loading) {
+    if (this._apps == undefined || !!this._loading) {
       return html`
-          <sl-spinner></sl-spinner>
-          <button id="retryBtn"
-                      style="max-width:300px"
-                      @click=${async (_e: any) => this.onRetryHolochain()}>
-              ${msg('Retry')}
-          </button>
+          <div class="centered">
+              <ui5-busy-indicator delay="0" size="Large" active
+                                  style="color:#9e9c65"
+              ></ui5-busy-indicator>
+              <div style="font-size: 18px; color: #131312;">${this._loading}</div>
+              ${HAPP_BUILD_MODE != HappBuildModeType.Retail ? html`
+                  <button id="retryBtn"
+                          style="max-width:300px"
+                          @click=${(_e: any) => this.onReload()}>
+                      ${msg('Reload')}
+                  </button>
+              ` : html``}
+          </div>
       `;
     }
 
@@ -185,7 +176,11 @@ export class VinesAdmin extends LitElement {
                                 id="launch-btn"
                                 class="moss-button"
                                 ?disabled=${app.status.type !== "enabled"}
-                                @click=${() => this.onSelectApp(app.installed_app_id)}
+                                @click=${() => {
+                                    this._loading = msg("Launching...");
+                                    this.onSelectApp(app.installed_app_id)
+                                            .then(() => this._loading = undefined)
+                                }}
                                 style="margin-top:10px;"
                         >${msg('Select')}
                         </button>
@@ -221,9 +216,10 @@ export class VinesAdmin extends LitElement {
                         style="width: 180px; margin-bottom: 28px;"
                         ?disabled=${this._name === ''}
                         @click=${() => {
-                            this._loading = true;
-                            this.createNewGroup(this._name);
-    }}
+                            this._loading = msg("Creating group space...");
+                            this.createNewGroup(this._name)
+                                    .then(() => this._loading = undefined);
+                            }}
                 >
                     <div class="row center-content">
                         ${plusCircleIcon(20)}
@@ -254,7 +250,6 @@ export class VinesAdmin extends LitElement {
       } catch (error) {
           console.error('Error:', error);
       }
-      this._loading = false;
   }
 
   /** */
@@ -317,6 +312,15 @@ export class VinesAdmin extends LitElement {
               --sl-tooltip-border-radius: 8px;
           }
 
+          .centered {
+              display: flex; flex-direction: column; margin: 0; gap: 10px;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              -ms-transform: translate(-50%, -50%);
+              transform: translate(-50%, -50%);
+          }
+          
           .items-center {
               align-items: center;
           }
