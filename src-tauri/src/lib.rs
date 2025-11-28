@@ -175,8 +175,7 @@ pub fn run() {
                   .await
                   .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
-               match installed_apps.len() {
-                  1 => {
+               if installed_apps.len() == 1 && installed_apps[0].status == AppStatus::Enabled {
                      // Make sure app is enabled
                      let main_app = installed_apps.into_iter().next().unwrap();
                      println!("Only one app installed, loading it directly: {}", main_app.installed_app_id);
@@ -194,8 +193,7 @@ pub fn run() {
                         .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
                         .inner_size(400.,700.)
                         .build()?;
-                  },
-                  _ => {
+                  } else {
                      {
                         app.holochain()?
                            .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
@@ -218,8 +216,7 @@ pub fn run() {
                      //       .main_window_builder(String::from("main"), true, Some("vines".to_string()), None).await?
                      //       .build()?;
                      // }
-                  },
-               }
+                  }
                Ok(())
             });
 

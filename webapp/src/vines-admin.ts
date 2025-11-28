@@ -70,65 +70,64 @@ export class VinesAdmin extends LitElement {
 
   renderAddGroup(greet: boolean): TemplateResult<1> {
       return html`
-            <div class="column center-content flex-1 launch-bg">
-                <div class="column items-center" style="margin-bottom: 52px;">
-                    <div style="margin-bottom:14px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
+            <div class="column center-content flex-1 launch-bg" style="margin-left:5px; margin-right:5px;">
+                <div class="column items-center" style="margin-bottom: 15px;">
+                    <div style="margin-bottom:8px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
                     ${greet? html`
                         <div class="dialog-title">${msg('Welcome to Vines.')}</div>
                         <div class="dialog-title">${msg('What brought you here today?')}</div>
                     ` : html`
-                        <button
+                        <button id="cancel-btn"
                                 class="moss-button"
-                                style="width: 180px;"
+                                style="width: 120px;"
                                 @click=${() => this._showAddGroup = false}
                         >
                             <div class="row center-content">
                                 ${closeIcon(30)}
-                                <div style="margin-left: 10px;">${msg('BACK')}</div>
+                                <div style="margin-left: 10px;">${msg('Cancel')}</div>
                             </div>
                         </button>
                     `}
                 </div>
 
-                <div class="row">
-                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
-                        <div class="dialog-title" style="width: 190px; margin-bottom: 28px; margin-top: 20px;">
+                <div class="column">
+                    <div class="moss-card column items-center" style="margin: 6px;">
+                        <div class="dialog-title" style="margin-bottom: 2px; margin-top: 2px;">
                             ${msg('I have an invite link to join a group')}
                         </div>
-
                         <div class="column center-content hint" style="margin-bottom: 12px;">
-                            <div style="margin-bottom: 3px;">${msg('An invite link looks like:')}</div>
+                            <div style="margin-bottom:3px;">${msg('An invite link looks like:')}</div>
                             <div style="background: rgba(230,246,215,0.58); padding:3px;">blablablablabla</div>
                         </div>
 
-                        <div class="column items-center justify-center" style="margin-bottom: 28px; margin-top:12px;">
+                        <div class="row items-center justify-center" style="margin-bottom: 2px; margin-top:1px;">
                             <sl-input
                                     class="moss-input"
                                     id="invite-link-input"
                                     placeholder=${msg('paste invite link here')}
                                     label=${msg('invite link')}
-                                    style="margin-right: 1px; width: 190px;"
+                                    style="margin-right: 1px;"
                                     @input=${() => {
-          const inviteLinkInput = this.shadowRoot?.getElementById(
-              'invite-link-input',
-          ) as HTMLInputElement;
-          this._inviteLink = inviteLinkInput.value;
-      }}
+                                          const inviteLinkInput = this.shadowRoot?.getElementById(
+                                              'invite-link-input',
+                                          ) as HTMLInputElement;
+                                          this._inviteLink = inviteLinkInput.value;
+                                      }}
                             ></sl-input>
                             <button
                                     id="join-group-btn"
                                     class="moss-button"
                                     ?disabled=${this._inviteLink === ''}
                                     @click=${() => console.log("JOINING group space")}
-                                    style="width: 30px; margin-top:10px;"
+                                    style="width: 30px; margin-left:10px;"
                             >${msg('Join')}
                             </button>
                         </div>
                     </div>
 
-                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
-                        <div class="dialog-title" style="width: 150px; margin-top: 20px;">
-                            ${msg('I want to start a private chat space for my group')}
+                    <div class="moss-card column items-center" style="margin:6px;">
+                        <div class="dialog-title" style="margin-top:2px;">
+                            ${msg('I want to start a space for my group')}
                         </div>
                         <span class="flex flex-1"></span>
                         <sl-input
@@ -136,17 +135,16 @@ export class VinesAdmin extends LitElement {
                                 id="name-input"
                                 placeholder=${msg('enter group name')}
                                 label=${msg('Group name')}
-                                style="margin-right: 1px; width: 190px;"
+                                style="margin-top: 10px; margin-bottom: 10px; width: 80%;"
                                 @input=${() => {
-          const inviteLinkInput = this.shadowRoot?.getElementById(
-              'name-input',
-          ) as HTMLInputElement;
-          this._name = inviteLinkInput.value;
-      }}
+                                      const inviteLinkInput = this.shadowRoot?.getElementById('name-input',
+                                      ) as HTMLInputElement;
+                                      this._name = inviteLinkInput.value;
+                                  }}
                         ></sl-input>
                         <button
                                 class="moss-button"
-                                style="width: 180px; margin-bottom: 28px;"
+                                style="margin-bottom: 2px;"
                                 ?disabled=${this._name === ''}
                                 @click=${() => this.createNewGroup(this._name)}
                         >
@@ -449,6 +447,13 @@ export class VinesAdmin extends LitElement {
               font-size: 20px;
           }
 
+          #cancel-btn {
+              background: rgba(41, 40, 40, 0.79) ;
+          }
+          #cancel-btn:hover {
+            background: black;    
+          }
+          
           .app-card {
               background: #f8f8f8;
               border-radius: 20px;
@@ -468,7 +473,7 @@ export class VinesAdmin extends LitElement {
           .moss-card {
               background: white;
               border-radius: 20px;
-              padding: 20px;
+              padding: 15px;
           }
 
           /* moss-dialog */
