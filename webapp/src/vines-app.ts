@@ -99,7 +99,7 @@ export class VinesApp extends HappMultiElement {
     console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
     const adminUrl = _adminWs
       ? undefined
-      : HC_ADMIN_PORT /*&& HAPP_TOKEN == undefined // don't create adminWs if we got a token from Tauri*/
+      : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
     let pairs: [HcConnectionOptions, InstalledAppId | undefined][] = [];
