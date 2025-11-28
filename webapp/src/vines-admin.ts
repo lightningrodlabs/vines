@@ -266,7 +266,6 @@ export class VinesAdmin extends LitElement {
           }
 
           :host {
-
               background: #d1f6ce;
               display: block;
               height: 100vh;

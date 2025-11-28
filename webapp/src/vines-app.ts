@@ -472,14 +472,13 @@ export class VinesApp extends HappMultiElement {
       }
     }
 
-
     /** Import profile from Moss */
-    const profilesZvm = this.threadsDvm(0).profilesZvm; // FIXME
     let guardedView = view;
+    const profilesZvm = this.threadsDvm(0).profilesZvm; // FIXME
     const maybeMyProfile = profilesZvm.getMyProfile();
     console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
-    if (this._hasWeProfile && !maybeMyProfile) {
-      guardedView = renderWelcomeScreen(this, profilesZvm, this._weProfilesDvm);
+    if (!maybeMyProfile) {
+      guardedView = renderWelcomeScreen(this, profilesZvm, this._hasWeProfile? this._weProfilesDvm: undefined);
     } else {
       if (!maybeMyProfile && HAPP_BUILD_MODE == HappBuildModeType.Debug) {
         /*await*/

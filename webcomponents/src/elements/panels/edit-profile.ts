@@ -108,6 +108,8 @@ export class EditProfile extends LitElement {
       e.stopPropagation();
       this.fireSaveProfile();
     }
+    // Update button state
+    if (this.nicknameField && this.nicknameField.value.length <= 2) { this.requestUpdate(); }
   }
 
 
@@ -333,8 +335,8 @@ export class EditProfile extends LitElement {
               <sl-radio value="fr-fr">🇫🇷</sl-radio>
             </sl-radio-group>
         </div>
-            
-        <timezone-picker id="timezonePicker"></timezone-picker>
+
+          <timezone-picker id="timezonePicker"></timezone-picker>
       </div>
       
       <div slot="footer" style="display:flex; margin-top: 10px;">

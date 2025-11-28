@@ -123,7 +123,7 @@ export class TimezonePicker extends LitElement {
         }
 
         .container {
-          max-width: 400px;
+          max-width: 360px;
         }
 
         label {

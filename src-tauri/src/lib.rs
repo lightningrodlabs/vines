@@ -1,15 +1,14 @@
 use holochain_types::prelude::*;
 use std::path::PathBuf;
 use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked, Error};
-use tauri::{Manager, Url, WebviewUrl, ipc::CapabilityBuilder};
-
-pub mod utils;
-use utils::*;
-
+use tauri::{Manager, Url, WebviewUrl};
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
    Argon2,
 };
+
+pub mod utils;
+use utils::*;
 
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
 
@@ -17,6 +16,7 @@ pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
 }
 
+///
 async fn get_app_socket(app: tauri::AppHandle, name: &str) -> (u16, String) {
    let hc = &app.holochain()
       .expect("Should have been able to get holochain runtime")
@@ -34,36 +34,7 @@ async fn get_app_socket(app: tauri::AppHandle, name: &str) -> (u16, String) {
    (app_websocket_auth.app_websocket_port, token)
 }
 
-async fn globals_script(app: tauri::AppHandle, name: &str, can_admin: bool) -> String {
-   let hc = &app.holochain()
-      .expect("Should have been able to get holochain runtime")
-      .holochain_runtime;
-   let app_websocket_auth = hc
-      .get_app_websocket_auth(&name.to_string(), get_allowed_origins())
-      .await
-      .expect("Should have been able to get websocket auth for app");
-
-   let token_vector: Vec<String> = app_websocket_auth
-      .token
-      .iter()
-      .map(|n| n.to_string())
-      .collect();
-   let token = token_vector.join(",");
-
-   return format!(
-      r#"
-            if (!window.__HC_LAUNCHER_ENV__) window.__HC_LAUNCHER_ENV__ = {{}};
-            window.__HC_LAUNCHER_ENV__.ADMIN_INTERFACE_PORT = {};
-            window.__HC_LAUNCHER_ENV__.APP_INTERFACE_PORT = {};
-            window.__HC_LAUNCHER_ENV__.APP_INTERFACE_TOKEN = [{token}];
-            window.__HC_LAUNCHER_ENV__.INSTALLED_APP_ID = "{name}";
-   "#,
-      if can_admin {hc.admin_port.to_string()} else {"undefined".to_string()},
-      app_websocket_auth.app_websocket_port,
-   );
-}
-
-// Hash a string with random salt
+/// Hash a string with random salt
 fn hash_string(s: &str) -> Result<String, String> {
    let salt = SaltString::generate(&mut OsRng);
    let argon2 = Argon2::default();
@@ -192,12 +163,14 @@ pub fn run() {
                      // Load window
                      app.holochain()?
                         .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
+                        .inner_size(400.,700.)
                         .build()?;
                   },
                   _ => {
                      {
                         app.holochain()?
                            .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
+                           .inner_size(400.,700.)
                            .build()?;
                      }
                      // single app mode
@@ -218,7 +191,7 @@ pub fn run() {
                      // }
                   },
                }
-                Ok(())
+               Ok(())
             });
 
             result?;

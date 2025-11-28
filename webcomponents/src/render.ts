@@ -248,11 +248,13 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
   const profileCount = profilesZvm.perspective.agents.length;
   const weProfile = weProfilesDvm?.profilesZvm.getMyProfile();
 
+  const greet = weProfilesDvm? msg('Import Profile into Vines') : msg('Create your Profile');
+  
   return html`
       <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
           ${doodle_flowers}
       </div>
-      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:400px;">
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:380px;">
           <h1 style="font-family:arial; color:#5804A8; z-index:1;">
               <img src="icon.png" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
               Vines
@@ -260,7 +262,7 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
           <div>${profileCount} ${profileCount > 1? msg('Members') : msg('Member')}</div>
           <div style="align-items: center; z-index:1;">
               <ui5-card id="profileCard">
-                  <ui5-card-header id="profileCardHeader" title-text=${msg('Import Profile into Vines')}></ui5-card-header>
+                  <ui5-card-header id="profileCardHeader" title-text=${greet}></ui5-card-header>
                   <vines-edit-profile
                           .profile=${weProfile}
                           @save-profile=${async (e: CustomEvent<ProfileMat>) => {
