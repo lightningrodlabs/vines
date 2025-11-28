@@ -90,14 +90,16 @@ export class VinesAdmin extends LitElement {
                     `}
                 </div>
 
-                <div class="column">
+                <div class="column" style="max-width: 100%;">
                     <div class="moss-card column items-center" style="margin: 6px;">
                         <div class="dialog-title" style="margin-bottom: 2px; margin-top: 2px;">
                             ${msg('I have an invite link to join a group')}
                         </div>
-                        <div class="column center-content hint" style="margin-bottom: 12px;">
+                        <div class="column center-content hint" style="margin-bottom: 12px; max-width:100%;">
                             <div style="margin-bottom:3px;">${msg('An invite link looks like:')}</div>
-                            <div style="background: rgba(230,246,215,0.58); padding:3px;">blablablablabla</div>
+                            <div style="background: rgba(230,246,215,0.58); padding:3px;text-overflow: ellipsis;overflow: clip;max-width: 100%;">
+                                g69vcmlnaW5hbERuYUhhc2jEJ4QtJEUWYfwZRyGSlKexuB/xOV02DsJ+RON4IFANf+C7cdRx0a5/GaRu
+                            </div>
                         </div>
 
                         <div class="row items-center justify-center" style="margin-bottom: 2px; margin-top:1px;">

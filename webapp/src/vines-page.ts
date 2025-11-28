@@ -140,6 +140,7 @@ import "@ui5/webcomponents-icons/dist/search.js"
 import "@ui5/webcomponents-icons/dist/sort.js"
 import "@ui5/webcomponents-icons/dist/slim-arrow-left.js"
 import "@ui5/webcomponents-icons/dist/slim-arrow-right.js"
+import "@ui5/webcomponents-icons/dist/share.js"
 import "@ui5/webcomponents-icons/dist/share-2.js"
 import "@ui5/webcomponents-icons/dist/sys-add.js"
 import "@ui5/webcomponents-icons/dist/sys-enter.js"
@@ -2108,7 +2109,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                         `}
-                        ${IS_TAURI?  html`<ui5-menu-item id="gotoadmin" text="Admin"></ui5-menu-item>` : html``}
+                        ${IS_TAURI?  html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` : html``}
                         <ui5-menu-item id="__version" disabled text="v${APP_VERSION}"></ui5-menu-item>
                     </ui5-menu>
 
