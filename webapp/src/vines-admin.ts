@@ -9,6 +9,7 @@ import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
+import Switch from "@ui5/webcomponents/dist/Switch";
 
 console.log("<vines-admin>", APPV.APP_VERSION);
 
@@ -201,8 +202,10 @@ export class VinesAdmin extends LitElement {
                     <ui5-button icon="share-2" design="Transparent" @click=${(e:any) => e.stopPropagation()} style="border-radius: 10px;"></ui5-button>
                     <div class="app-name">${app.installed_app_id}</div>
                     <span class="flex flex-1"></span>
-                    <ui5-switch ?checked=${app.status.type == "enabled"}
-                                @change=${this.onToggleApp(app)}
+                    <ui5-switch id="toggle-${app.installed_app_id}" ?checked=${app.status.type == "enabled"}
+                                @change=${() =>  {
+                                    const elem = this.shadowRoot!.getElementById("toggle-"+app.installed_app_id) as Switch;
+                                    this.onToggleApp(app, elem!.checked)}}
                                 @click=${(e:any) => e.stopPropagation()}
                     ></ui5-switch>
                 </div>
@@ -257,10 +260,10 @@ export class VinesAdmin extends LitElement {
       }
   }
 
-    async onToggleApp(app: AppInfo) {
-        console.log("onToggleApp()", app.installed_app_id, app.status.type);
+    async onToggleApp(app: AppInfo, enable: boolean) {
+        console.log("onToggleApp()", app.installed_app_id, enable);
         try {
-            let result = await invoke('toggleapp', { enable: app.status.type == "enabled", name: app.installed_app_id });
+            let result = await invoke('toggleapp', { enable, name: app.installed_app_id });
             console.log('Result:', result);
         } catch (error) {
             console.error('Error:', error);

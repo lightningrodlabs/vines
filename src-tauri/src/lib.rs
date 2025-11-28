@@ -45,6 +45,35 @@ fn hash_string(s: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
+async fn toggleapp(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
+   println!("toggle app: {} -> {}", name, enable);
+   // Look for happ
+   let hc = &app.holochain()?.holochain_runtime;
+   let admin_ws = hc.admin_websocket().await?;
+   let installed_apps = admin_ws
+      .list_apps(None)
+      .await
+      .map_err(|err| Error::ConductorApiError(err))?;
+   let maybe_app_info = installed_apps.iter().find(|app| app.installed_app_id == name);
+   let Some(app_info) = maybe_app_info else {
+      return Err(Error::OpenAppError("App not found".to_string()));
+   };
+   // Enable
+   if enable && app_info.status != AppStatus::Enabled {
+      hc.enable_app(app_info.installed_app_id.clone()).await
+         .map_err(|err| Error::OpenAppError("Failed to enable app".to_string()))?;
+      return Ok(());
+   }
+   // Disable
+   if !enable && app_info.status == AppStatus::Enabled {
+      hc.disable_app(app_info.installed_app_id.clone()).await
+         .map_err(|err| Error::OpenAppError("Failed to disable app".to_string()))?;
+      return Ok(());
+   }
+   Ok(())
+}
+
+#[tauri::command]
 async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
    let url = WebviewUrl::App("admin.html".into());
@@ -124,7 +153,7 @@ async fn install(handle: tauri::AppHandle, name: String) -> Result<String, Error
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![install, select, gotoadmin])
+        .invoke_handler(tauri::generate_handler![install, select, gotoadmin, toggleapp])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
