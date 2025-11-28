@@ -1,4 +1,4 @@
-import {html, css, LitElement} from "lit";
+import {html, css, LitElement, TemplateResult} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {msg, localized} from '@lit/localize';
 import {
@@ -24,6 +24,8 @@ export class VinesAdmin extends LitElement {
   @state() private _name: string = '';
 
   @state() private _loading: string | undefined = ""; // Display loading string if this is defined
+
+  @state() private _showAddGroup: boolean = false;
 
     constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
@@ -59,10 +61,102 @@ export class VinesAdmin extends LitElement {
     return setLocale(e.detail);
   }
 
-
   /** */
   private onReload() {
     window.location.reload();
+  }
+
+
+  renderAddGroup(greet: boolean): TemplateResult<1> {
+      return html`
+            <div class="column center-content flex-1 launch-bg">
+                <div class="column items-center" style="margin-bottom: 52px;">
+                    <div style="margin-bottom:14px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
+                    ${greet? html`
+                        <div class="dialog-title">${msg('Welcome to Vines.')}</div>
+                        <div class="dialog-title">${msg('What brought you here today?')}</div>
+                    ` : html`
+                        <button
+                                class="moss-button"
+                                style="width: 180px;"
+                                @click=${() => this._showAddGroup = false}
+                        >
+                            <div class="row center-content">
+                                ${closeIcon(30)}
+                                <div style="margin-left: 10px;">${msg('BACK')}</div>
+                            </div>
+                        </button>
+                    `}
+                </div>
+
+                <div class="row">
+                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
+                        <div class="dialog-title" style="width: 190px; margin-bottom: 28px; margin-top: 20px;">
+                            ${msg('I have an invite link to join a group')}
+                        </div>
+
+                        <div class="column center-content hint" style="margin-bottom: 12px;">
+                            <div style="margin-bottom: 3px;">${msg('An invite link looks like:')}</div>
+                            <div style="background: rgba(230,246,215,0.58); padding:3px;">blablablablabla</div>
+                        </div>
+
+                        <div class="column items-center justify-center" style="margin-bottom: 28px; margin-top:12px;">
+                            <sl-input
+                                    class="moss-input"
+                                    id="invite-link-input"
+                                    placeholder=${msg('paste invite link here')}
+                                    label=${msg('invite link')}
+                                    style="margin-right: 1px; width: 190px;"
+                                    @input=${() => {
+          const inviteLinkInput = this.shadowRoot?.getElementById(
+              'invite-link-input',
+          ) as HTMLInputElement;
+          this._inviteLink = inviteLinkInput.value;
+      }}
+                            ></sl-input>
+                            <button
+                                    id="join-group-btn"
+                                    class="moss-button"
+                                    ?disabled=${this._inviteLink === ''}
+                                    @click=${() => console.log("JOINING group space")}
+                                    style="width: 30px; margin-top:10px;"
+                            >${msg('Join')}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
+                        <div class="dialog-title" style="width: 150px; margin-top: 20px;">
+                            ${msg('I want to start a private chat space for my group')}
+                        </div>
+                        <span class="flex flex-1"></span>
+                        <sl-input
+                                class="moss-input"
+                                id="name-input"
+                                placeholder=${msg('enter group name')}
+                                label=${msg('Group name')}
+                                style="margin-right: 1px; width: 190px;"
+                                @input=${() => {
+          const inviteLinkInput = this.shadowRoot?.getElementById(
+              'name-input',
+          ) as HTMLInputElement;
+          this._name = inviteLinkInput.value;
+      }}
+                        ></sl-input>
+                        <button
+                                class="moss-button"
+                                style="width: 180px; margin-bottom: 28px;"
+                                ?disabled=${this._name === ''}
+                                @click=${() => this.createNewGroup(this._name)}
+                        >
+                            <div class="row center-content">
+                                ${plusCircleIcon(30)}
+                                <div style="margin-left: 10px;">${msg('Create new group space')}</div>
+                            </div>
+                        </button>
+                    </div>                     
+                </div>
+        `;
   }
 
   /** */
@@ -88,142 +182,53 @@ export class VinesAdmin extends LitElement {
     }
 
     if (this._apps!.length == 0) {
-        return html`
-            <div class="column center-content flex-1 launch-bg">
-                <div class="column items-center" style="margin-bottom: 52px;">
-                    <div style="margin-bottom:14px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
-                    <div class="dialog-title">${msg('Welcome to Vines.')}</div>
-                    <div class="dialog-title">${msg('What brought you here today?')}</div>
-                </div>
+        return this.renderAddGroup(true);
+    }
 
-                <div class="row">
-                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
-                        <div class="dialog-title" style="width: 190px; margin-bottom: 28px; margin-top: 20px;">
-                            ${msg('I have an invite link to join a group')}
-                        </div>
-
-                        <div class="column center-content hint" style="margin-bottom: 12px;">
-                            <div style="margin-bottom: 3px;">${msg('An invite link looks like:')}</div>
-                            <div style="background: rgba(230,246,215,0.58); padding:3px;">blablablablabla</div>
-                        </div>
-
-                        <div class="column items-center justify-center" style="margin-bottom: 28px; margin-top:12px;">
-                            <sl-input
-                                    class="moss-input"
-                                    id="invite-link-input"
-                                    placeholder=${msg('paste invite link here')}
-                                    label=${msg('invite link')}
-                                    style="margin-right: 1px; width: 190px;"
-                                    @input=${() => {
-                                        const inviteLinkInput = this.shadowRoot?.getElementById(
-                                                'invite-link-input',
-                                        ) as HTMLInputElement;
-                                        this._inviteLink = inviteLinkInput.value;
-                                    }}
-                            ></sl-input>
-                            <button
-                                    id="join-group-btn"
-                                    class="moss-button"
-                                    ?disabled=${this._inviteLink === ''}
-                                    @click=${() => console.log("JOINING group space")}
-                                    style="width: 30px; margin-top:10px;"
-                            >${msg('Join')}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
-                        <div class="dialog-title" style="width: 150px; margin-top: 20px;">
-                            ${msg('I want to start a private chat space for my group')}
-                        </div>
-                        <span class="flex flex-1"></span>
-                        <sl-input
-                                class="moss-input"
-                                id="name-input"
-                                placeholder=${msg('enter group name')}
-                                label=${msg('Group name')}
-                                style="margin-right: 1px; width: 190px;"
-                                @input=${() => {
-                                    const inviteLinkInput = this.shadowRoot?.getElementById(
-                                            'name-input',
-                                    ) as HTMLInputElement;
-                                    this._name = inviteLinkInput.value;
-                                }}
-                        ></sl-input>
-                        <button
-                                class="moss-button"
-                                style="width: 180px; margin-bottom: 28px;"
-                                ?disabled=${this._name === ''}
-                                @click=${() => this.createNewGroup(this._name)}
-                        >
-                            <div class="row center-content">
-                                ${plusCircleIcon(20)}
-                                <div style="margin-left: 10px;">${msg('Create new group space')}</div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-        `;
+    if (this._showAddGroup) {
+        return this.renderAddGroup(false);
     }
 
     let apps  = [html``];
         this._apps.forEach(app => {
             const elem = html`
-                <div>
-                    <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
-                        ${app.installed_app_id}
-                        <button
-                                id="launch-btn"
-                                class="moss-button"
-                                ?disabled=${app.status.type !== "enabled"}
-                                @click=${() => {
-                                    this._loading = msg("Launching...");
-                                    this.onSelectApp(app.installed_app_id)
-                                            .then(() => this._loading = undefined)
-                                }}
-                                style="margin-top:10px;"
-                        >${msg('Select')}
-                        </button>
-                    </div>
-                </div>`;
+                <div class="app-card row items-center"
+                     @click=${() => {
+                         this._loading = msg("Launching...");
+                         this.onSelectApp(app.installed_app_id)
+                                 .then(() => this._loading = undefined)
+                     }}>
+                    <ui5-button icon="share-2" design="Transparent" @click=${(e:any) => e.stopPropagation()} style="border-radius: 10px;"></ui5-button>
+                    <div class="app-name">${app.installed_app_id}</div>
+                    <span class="flex flex-1"></span>
+                    <ui5-switch ?checked=${app.status.type == "enabled"}
+                                @change=${this.onToggleApp(app)}
+                                @click=${(e:any) => e.stopPropagation()}
+                    ></ui5-switch>
+                </div>
+            `;
             apps.push(elem);
         })
     /** Render all */
     return html`
-        <h2>Select group: ${this._apps?.length}</h2>
         <div class="column center-content flex-1 launch-bg">
-            ${apps}
-            <div class="moss-card column items-center" style="margin: 6px; width: 200px;">
-                <div class="dialog-title" style="width: 150px; margin-top: 20px;">
-                    ${msg('I want to start a private chat space for my group')}
-                </div>
-                <span class="flex flex-1"></span>
-                <sl-input
-                        class="moss-input"
-                        id="name-input"
-                        placeholder=${msg('enter group name')}
-                        label=${msg('Group name')}
-                        style="margin-right: 1px; width: 190px;"
-                        @input=${() => {
-                            const inviteLinkInput = this.shadowRoot?.getElementById(
-                                    'name-input',
-                            ) as HTMLInputElement;
-                            this._name = inviteLinkInput.value;
-                        }}
-                ></sl-input>
+            
+            <div class="column items-center" style="margin-bottom: 12px;">
+                <div style="margin-bottom:4px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
+                <!-- <div class="dialog-title">${msg('Select group space')}</div> -->
+            </div>
+
+            <div class="column items-center" style="margin-bottom: 20px; gap:15px; width:90%;">
+                ${apps}
+            </div>
+            <div class="column items-center">
                 <button
                         class="moss-button"
                         style="width: 180px; margin-bottom: 28px;"
-                        ?disabled=${this._name === ''}
-                        @click=${() => {
-                            this._loading = msg("Creating group space...");
-                            this.createNewGroup(this._name)
-                                    .then(() => this._loading = undefined);
-                            }}
-                >
+                        @click=${() => this._showAddGroup = true}>
                     <div class="row center-content">
                         ${plusCircleIcon(20)}
-                        <div style="margin-left: 10px;">${msg('Create new group space')}</div>
+                        <div style="margin-left: 10px;">${msg('Add group')}</div>
                     </div>
                 </button>
             </div>
@@ -252,6 +257,17 @@ export class VinesAdmin extends LitElement {
       }
   }
 
+    async onToggleApp(app: AppInfo) {
+        console.log("onToggleApp()", app.installed_app_id, app.status.type);
+        try {
+            let result = await invoke('toggleapp', { enable: app.status.type == "enabled", name: app.installed_app_id });
+            console.log('Result:', result);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+
   /** */
   static override get styles() {
     return [
@@ -265,7 +281,7 @@ export class VinesAdmin extends LitElement {
               display: block;
               height: 100vh;
               width: 100%;
-              
+
               /* for cards */
               --sl-border-radius-medium: 6px;
               --sl-shadow-x-small: 1px 1px 5px 0 #9b9b9b;
@@ -313,14 +329,17 @@ export class VinesAdmin extends LitElement {
           }
 
           .centered {
-              display: flex; flex-direction: column; margin: 0; gap: 10px;
+              display: flex;
+              flex-direction: column;
+              margin: 0;
+              gap: 10px;
               position: absolute;
               top: 50%;
               left: 50%;
               -ms-transform: translate(-50%, -50%);
               transform: translate(-50%, -50%);
           }
-          
+
           .items-center {
               align-items: center;
           }
@@ -378,9 +397,11 @@ export class VinesAdmin extends LitElement {
               --sl-color-neutral-0: black;
               --sl-color-primary-50: #455b36;
           }
+
           .moss-button:hover {
               background: #455b36;
           }
+
           .moss-button:disabled {
               opacity: 0.4;
               background: var(--moss-grey-green);
@@ -418,6 +439,25 @@ export class VinesAdmin extends LitElement {
 
           .moss-button-secondary:focus-visible {
               outline: 2px solid var(--moss-purple);
+          }
+
+          .app-name {
+              margin-left: 20px;
+              font-size: 20px;
+          }
+
+          .app-card {
+              background: #f8f8f8;
+              border-radius: 20px;
+              padding: 15px 20px 15px 15px;
+              width: 85%;
+              transition: width 0.2s ease-in-out;
+          }
+
+          .app-card:hover {
+              cursor: pointer;
+              background: #ffffff;
+              width: 95%;
           }
 
           /* moss-card */
@@ -462,11 +502,13 @@ export class VinesAdmin extends LitElement {
               /* color: transparent; */
               color: var(--moss-grey-dark);
           }
+
           .moss-input::part(base) {
               border-radius: 12px;
               border: 1px solid --moss-grey-light;
               font-size: 16px;
           }
+
           .moss-input {
               --sl-input-focus-ring-color: var(--moss-main-green);
               --sl-input-border-color-hover: var(--moss-dark-button);
@@ -474,6 +516,7 @@ export class VinesAdmin extends LitElement {
               --sl-input-placeholder-color: var(--moss-grey-dark);
               --sl-input-height-medium: 52px;
           }
+
           .moss-input::part(form-control-label) {
               position: absolute;
               z-index: 1;
@@ -481,27 +524,33 @@ export class VinesAdmin extends LitElement {
               margin-left: 17px;
               margin-top: 3px;
           }
+
           .moss-input:focus-within {
               /* hide the placeholder */
               --sl-input-placeholder-color: transparent;
           }
+
           .moss-input::part(input) {
               color: black;
           }
+
           .moss-input::part(input):placeholder-shown {
               color: var(--moss-grey-dark);
               z-index: 1;
           }
+
           .moss-input::part(input):focus {
               /* let the label shine through */
               background: transparent;
               margin-top: 3px;
           }
+
           .moss-input::part(input):not(:placeholder-shown) {
               /* let the label shine through */
               background: transparent;
               margin-top: 3px;
           }
+
           .moss-input::part(form-control-help-text) {
               margin-left: 14px;
               color: var(--moss-purple);
@@ -516,11 +565,13 @@ export class VinesAdmin extends LitElement {
               /* color: transparent; */
               color: var(--moss-grey-dark);
           }
+
           .moss-input-no-label::part(base) {
               border-radius: 12px;
               border: 1px solid --moss-grey-light;
               font-size: 16px;
           }
+
           .moss-input-no-label {
               --sl-input-focus-ring-color: var(--moss-main-green);
               --sl-input-border-color-hover: var(--moss-dark-button);
@@ -538,16 +589,20 @@ export class VinesAdmin extends LitElement {
               align-items: center;
               cursor: pointer;
           }
+
           .moss-hover-icon-button:hover .moss-hover-icon-button-text {
               color: black;
           }
+
           .moss-hover-icon-button-text {
               color: transparent;
           }
+
           .moss-hover-icon-button-icon {
               border-radius: 8px;
               height: 24px;
           }
+
           .moss-hover-icon-button:hover .moss-hover-icon-button-icon {
               background: var(--moss-main-green);
           }
@@ -563,6 +618,7 @@ export class VinesAdmin extends LitElement {
               border-radius: 8px;
               height: 24px;
           }
+
           .moss-dialog-close-button:hover {
               background: var(--moss-main-green);
           }
@@ -577,6 +633,7 @@ export class VinesAdmin extends LitElement {
           }
 
           /* radio button styles */
+
           sl-radio {
               /* --sl-input-background-color: var(--moss-main-green); */
               --sl-color-neutral-0: black;
@@ -710,31 +767,27 @@ export class VinesAdmin extends LitElement {
               border-radius: 5px;
               background-color: var(--carousel-color, #ffffff);
               color: var(--carousel-color, #ffffff);
-              box-shadow:
-                      9984px 0 0 0 var(--carousel-color, #ffffff),
-                      9999px 0 0 0 var(--carousel-color, #ffffff),
-                      10014px 0 0 0 var(--carousel-color, #ffffff);
+              box-shadow: 9984px 0 0 0 var(--carousel-color, #ffffff),
+              9999px 0 0 0 var(--carousel-color, #ffffff),
+              10014px 0 0 0 var(--carousel-color, #ffffff);
               animation: dot-carousel 1.5s infinite linear;
           }
 
           @keyframes dot-carousel {
               0% {
-                  box-shadow:
-                          9984px 0 0 -1px var(--carousel-color, #ffffff),
-                          9999px 0 0 1px var(--carousel-color, #ffffff),
-                          10014px 0 0 -1px var(--carousel-color, #ffffff);
+                  box-shadow: 9984px 0 0 -1px var(--carousel-color, #ffffff),
+                  9999px 0 0 1px var(--carousel-color, #ffffff),
+                  10014px 0 0 -1px var(--carousel-color, #ffffff);
               }
               50% {
-                  box-shadow:
-                          10014px 0 0 -1px var(--carousel-color, #ffffff),
-                          9984px 0 0 -1px var(--carousel-color, #ffffff),
-                          9999px 0 0 1px var(--carousel-color, #ffffff);
+                  box-shadow: 10014px 0 0 -1px var(--carousel-color, #ffffff),
+                  9984px 0 0 -1px var(--carousel-color, #ffffff),
+                  9999px 0 0 1px var(--carousel-color, #ffffff);
               }
               100% {
-                  box-shadow:
-                          9999px 0 0 1px var(--carousel-color, #ffffff),
-                          10014px 0 0 -1px var(--carousel-color, #ffffff),
-                          9984px 0 0 -1px var(--carousel-color, #ffffff);
+                  box-shadow: 9999px 0 0 1px var(--carousel-color, #ffffff),
+                  10014px 0 0 -1px var(--carousel-color, #ffffff),
+                  9984px 0 0 -1px var(--carousel-color, #ffffff);
               }
           }
 
@@ -744,13 +797,16 @@ export class VinesAdmin extends LitElement {
               display: flex;
               flex-direction: row;
           }
+
           .column {
               display: flex;
               flex-direction: column;
           }
+
           .small-margin {
               margin-top: 6px;
           }
+
           .big-margin {
               margin-top: 23px;
           }
@@ -791,10 +847,12 @@ export class VinesAdmin extends LitElement {
               max-width: 100%;
               overflow-x: auto;
           }
+
           .flex-scrollable-y {
               max-height: 100%;
               overflow-y: auto;
           }
+
           :host {
               color: var(--sl-color-neutral-1000);
           }
@@ -802,17 +860,20 @@ export class VinesAdmin extends LitElement {
           sl-card {
               display: flex;
           }
+
           sl-card::part(base) {
               flex: 1;
           }
+
           sl-card::part(body) {
               display: flex;
               flex: 1;
           }
+
           sl-drawer::part(body) {
               display: flex;
           }
-          
+
           /* color classes */
 
           .bg-black {
@@ -837,6 +898,21 @@ export const plusCircleIcon = (size = 16) => html`
     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
     <path
       d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+    />
+  </svg>
+`;
+
+export const closeIcon = (size = 16) => html`
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width=${size}
+    height=${size}
+    fill="currentColor"
+    class="bi bi-x"
+    viewBox="0 0 16 16"
+  >
+    <path
+      d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
     />
   </svg>
 `;
