@@ -8,6 +8,12 @@
   </head>
   <body style="margin:0px;">
       <vines-admin></vines-admin>
+      <script type="module">
+          console.log("vines/admin.html");
+          const __HC_LAUNCHER_ENV__ = "__HC_LAUNCHER_ENV__";
+          const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
+          console.log("vines/admin.html: Launcher = ", isLauncher);
+      </script>
       <script type="module" src="./src/index.ts"></script>
   </body>
 </html>

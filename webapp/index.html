@@ -24,6 +24,13 @@
   </head>
   <body style="margin:0px;">
     <vines-app></vines-app>
+    <script type="module">
+        console.log("vines/index.html");
+        const __HC_LAUNCHER_ENV__ = "__HC_LAUNCHER_ENV__";
+        const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
+        console.log("vines/index.html: Launcher = ", isLauncher);
+        console.log("vines/index.html: location = ", window.location.toString());
+    </script>
     <script type="module" src="./src/index.ts"></script>
     <!-- <script type="module">import { VinesApp } from "./";</script> -->
   </body>

@@ -3,10 +3,10 @@ import {HappBuildModeType, HAPP_BUILD_MODE} from "@ddd-qc/lit-happ";
 import { isTauri } from '@tauri-apps/api/core';
 
 export const IS_TAURI: boolean = isTauri();
+export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
-export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
-export let HAPP_TOKEN: Uint8Array | undefined = undefined;
+export let HAPP_TOKEN: number[] | undefined = undefined;
 
 try {
     HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
@@ -34,7 +34,6 @@ if (!HC_APP_PORT) {
 
 /** look-up appId from URL query param (tauri) */
 const params = new URLSearchParams(window.location.search);
-console.debug("params", params);
 const maybeAppId = params.get('appId');
 console.debug("maybeAppId", maybeAppId);
 if (maybeAppId) {
@@ -44,7 +43,12 @@ const maybeAppPort = params.get('appPort');
 console.debug("maybeAppPort", maybeAppPort);
 if (maybeAppPort) {
     HC_APP_PORT = Number(maybeAppPort);
-    //HAPP_TOKEN = new Uint8Array(32);
+}
+const maybeToken = params.get('token');
+console.debug("maybeToken", maybeToken);
+if (maybeToken) {
+    const numbers = maybeToken.split(',').map(n => parseInt(n.trim()));
+    HAPP_TOKEN = Array.from(new Uint8Array(numbers));
 }
 
 console.log("   HAPP_TOKEN =", HAPP_TOKEN)

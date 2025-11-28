@@ -34,23 +34,13 @@ pub fn main_window_origin() -> String {
 }
 
 
-pub fn get_allowed_origins(app_id: &str, main_window: bool) -> AllowedOrigins {
+pub fn get_allowed_origins() -> AllowedOrigins {
    // Allow any when the app is build in debug mode to allow normal tauri development pointing to http://localhost:1420
-   let allowed_origins = if tauri::is_dev() {
+   if tauri::is_dev() {
       AllowedOrigins::Any
    } else {
       let mut origins: HashSet<String> = HashSet::new();
-      origins.insert(get_app_origin(app_id, main_window));
-
+      origins.insert(main_window_origin());
       AllowedOrigins::Origins(origins)
-   };
-   allowed_origins
-}
-
-pub fn get_app_origin(app_id: &str, main_window: bool) -> String {
-   if main_window {
-      main_window_origin()
-   } else {
-      happ_origin(app_id)
    }
 }

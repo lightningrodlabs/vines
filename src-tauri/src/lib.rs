@@ -17,25 +17,29 @@ pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
 }
 
-async fn get_app_port(app: tauri::AppHandle, name: &str) -> u16 {
+async fn get_app_socket(app: tauri::AppHandle, name: &str) -> (u16, String) {
    let hc = &app.holochain()
       .expect("Should have been able to get holochain runtime")
       .holochain_runtime;
-   let allowed_origins = get_allowed_origins(name, false);
    let app_websocket_auth = hc
-      .get_app_websocket_auth(&name.to_string(), allowed_origins)
+      .get_app_websocket_auth(&name.to_string(), get_allowed_origins())
       .await
       .expect("Should have been able to get websocket auth for app");
-   app_websocket_auth.app_websocket_port
+   let token_vector: Vec<String> = app_websocket_auth
+      .token
+      .iter()
+      .map(|n| n.to_string())
+      .collect();
+   let token = token_vector.join(",");
+   (app_websocket_auth.app_websocket_port, token)
 }
 
 async fn globals_script(app: tauri::AppHandle, name: &str, can_admin: bool) -> String {
    let hc = &app.holochain()
       .expect("Should have been able to get holochain runtime")
       .holochain_runtime;
-   let allowed_origins = get_allowed_origins(name, false);
    let app_websocket_auth = hc
-      .get_app_websocket_auth(&name.to_string(), allowed_origins)
+      .get_app_websocket_auth(&name.to_string(), get_allowed_origins())
       .await
       .expect("Should have been able to get websocket auth for app");
 
@@ -93,6 +97,7 @@ async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
    println!("select app {}", name);
+   // Look for happ
    let hc = &app.holochain()?.holochain_runtime;
    let admin_ws = hc.admin_websocket().await?;
    let installed_apps = admin_ws
@@ -103,13 +108,15 @@ async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
    let Some(app_info) = maybe_app_info else {
       return Err(Error::OpenAppError("App not found".to_string()));
    };
+   // Make sure app is enabled
    if app_info.status != AppStatus::Enabled {
       hc.enable_app(app_info.installed_app_id.clone()).await?;
    }
-   hc.update_app_if_necessary(name.clone(), happ_bundle())
-      .await?;
-   let app_port = get_app_port(app.clone(), &name).await;
-   let url = Url::parse(&format!("http://localhost:1420/index.html?appId={name}&appPort={app_port}")).unwrap();
+   // Update conductor if necessary
+   hc.update_app_if_necessary(name.clone(), happ_bundle()).await?;
+   // Load window with params
+   let (app_port, token) = get_app_socket(app.clone(), &name).await;
+   let url = Url::parse(&format!("http://localhost:1420/index.html?appId={name}&appPort={app_port}&token={token}")).unwrap();
    let webview = app.get_webview_window("main").unwrap();
 
    // webview.eval(globals_script(app.clone(), &name, false).await).unwrap();

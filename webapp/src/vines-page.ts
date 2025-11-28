@@ -247,7 +247,7 @@ import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
-import {IS_TAURI} from "./globals";
+import {HAPP_ID, IS_TAURI} from "./globals";
 
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
@@ -2145,7 +2145,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             ${msg("Share Network")}
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <div>${msg('Share this code with a peer to grant them access to this Network')}
+                        <div>
+                            ${msg('Share this code to grant access to this Network')}: ${HAPP_ID}
                             (seed: "${this.cell.dnaModifiers.network_seed}")
                         </div>
                         <ui5-textarea .value=${this.cell.shareCode}></ui5-textarea>

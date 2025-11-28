@@ -13,11 +13,11 @@ import {
   WeaveServices,
 } from "@theweave/api";
 import {
-  HCL,
-  HappMultiElement,
-  HvmDef,
-  DvmDef,
-  DnaViewModel, pascal, ActionId, Cell,
+    HCL,
+    HappMultiElement,
+    HvmDef,
+    DvmDef,
+    DnaViewModel, pascal, ActionId, Cell, HcConnectionOptions,
 } from "@ddd-qc/lit-happ";
 import {
     ThreadsDvm,
@@ -99,17 +99,17 @@ export class VinesApp extends HappMultiElement {
     console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
     const adminUrl = _adminWs
       ? undefined
-      : HC_ADMIN_PORT && HAPP_TOKEN == undefined
+      : HC_ADMIN_PORT /*&& HAPP_TOKEN == undefined // don't create adminWs if we got a token from Tauri*/
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    let pairs: [number | AppWebsocket, InstalledAppId | undefined][] = [];
+    let pairs: [HcConnectionOptions, InstalledAppId | undefined][] = [];
     if (appletGroups && appletGroups.length > 0) {
-      pairs = appletGroups.map((appletGroup) => [appletGroup.appWs, appletGroup.appId]);
+      pairs = appletGroups.map((appletGroup) => [{socket: appletGroup.appWs, timeout: 20 * 1000}, appletGroup.appId]);
     } else {
-        pairs = [[HC_APP_PORT!, HAPP_ID]];
+        pairs = [[{port: HC_APP_PORT!, token: HAPP_TOKEN, timeout: 20 * 1000, adminUrl}, HAPP_ID]];
     }
     console.log("<vines-app>.ctor() pairs", pairs);
-    super(pairs, isMulti? !isMulti : true, adminUrl, 20 * 1000);
+    super(pairs, isMulti? !isMulti : true);
     /** */
     if (appletGroups && appletGroups.length > 0) {
       this.appId = appletGroups[0]!.appId;
