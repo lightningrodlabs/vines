@@ -28,6 +28,9 @@ pub fn run() {
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
                let admin_ws = handle.holochain()?.admin_websocket().await?;
 
+               // Check bundle validity
+               let _bundle_dna_hash = hash_dna(happ_bundle(), "threads.dna").await.unwrap();
+
                let installed_apps = admin_ws
                   .list_apps(None)
                   .await

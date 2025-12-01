@@ -6,19 +6,8 @@ use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
    Argon2,
 };
-
-
 use crate::utils::*;
 
-/// Hash a string with random salt
-fn hash_string(s: &str) -> Result<String, String> {
-   let salt = SaltString::generate(&mut OsRng);
-   let argon2 = Argon2::default();
-   let pwd_hash = argon2
-      .hash_password(s.as_bytes(), &salt)
-      .map_err(|e| e.to_string())?;
-   Ok(pwd_hash.hash.unwrap().to_string())
-}
 
 #[tauri::command]
 pub async fn toggleapp(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
@@ -48,6 +37,7 @@ pub async fn toggleapp(app: tauri::AppHandle, enable: bool, name: String) -> Res
    }
    Ok(())
 }
+
 
 #[tauri::command]
 pub async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
@@ -109,7 +99,11 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
 
 #[tauri::command]
 pub async fn install(handle: tauri::AppHandle, name: String, dna: String) -> Result<String, Error> {
-   println!("install app {}", name);
+   println!("install app {name} | {dna}");
+   let bundle_dna_hash = hash_dna(happ_bundle(), "threads.dna").await.unwrap();
+   if dna != bundle_dna_hash {
+      return Err(Error::OpenAppError(format!("DNA hash mismatch.\n Expecting: {bundle_dna_hash}\n      got: {dna}")));
+   }
    let hashed_name = hash_string(&name)
       .map_err(|err| Error::OpenAppError(err))?;
    handle
@@ -124,6 +118,7 @@ pub async fn install(handle: tauri::AppHandle, name: String, dna: String) -> Res
       .await?;
    return select(handle, name).await;
 }
+
 
 ///
 async fn get_app_socket(app: tauri::AppHandle, name: &str) -> (u16, String) {
@@ -141,4 +136,15 @@ async fn get_app_socket(app: tauri::AppHandle, name: &str) -> (u16, String) {
       .collect();
    let token = token_vector.join(",");
    (app_websocket_auth.app_websocket_port, token)
+}
+
+
+/// Hash a string with random salt
+fn hash_string(s: &str) -> Result<String, String> {
+   let salt = SaltString::generate(&mut OsRng);
+   let argon2 = Argon2::default();
+   let pwd_hash = argon2
+      .hash_password(s.as_bytes(), &salt)
+      .map_err(|e| e.to_string())?;
+   Ok(pwd_hash.hash.unwrap().to_string())
 }

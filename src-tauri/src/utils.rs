@@ -7,10 +7,19 @@ use url2::Url2;
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
 
 pub fn happ_bundle() -> AppBundle {
-   let bundle = AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
-   println!("BUNDLE = {:?}", bundle);
-   return bundle;
+   return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
 }
+
+pub async fn get_dna_hash(app_bundle: AppBundle, dna_name: &str) -> Result<String, String> {
+   let Some(dna_bytes) = app_bundle.get_resource(&"threads.dna".to_string()) else {
+      return Err(format!("'{}' not found in happ bundle", dna_name));
+   };
+   let dna_bundle: DnaBundle = DnaBundle::unpack(dna_bytes.as_ref()).unwrap();
+   let (dna_file, dna_hash) = dna_bundle.to_dna_file().await.unwrap();
+   println!("dna hash of '{dna_name}': {}", dna_hash.to_string());
+   Ok(dna_hash.to_string())
+}
+
 
 pub fn network_config() -> NetworkConfig {
    let mut network_config = NetworkConfig::default();
