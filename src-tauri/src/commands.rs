@@ -52,7 +52,7 @@ pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    // capability_builder = capability_builder.window(name.clone());
    // app.add_capability(capability_builder).unwrap();
 
-   let res = webview.navigate(Url::parse("http://localhost:1420/admin.html").unwrap())
+   let res = webview.navigate(Url::parse("http://localhost:1420/admin.html").unwrap()) // FIXME
       .map_err(|e| e.to_string());
 
    //webview.eval(globals_script(app.clone(), "", true).await).unwrap();
@@ -98,14 +98,13 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
 
 
 #[tauri::command]
-pub async fn install(handle: tauri::AppHandle, name: String, dna: String) -> Result<String, Error> {
-   println!("install app {name} | {dna}");
-   let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
-   if dna != bundle_dna_hash {
-      return Err(Error::OpenAppError(format!("DNA hash mismatch.\n Expecting: {bundle_dna_hash}\n      got: {dna}")));
-   }
-   let hashed_name = hash_string(&name)
-      .map_err(|err| Error::OpenAppError(err))?;
+pub async fn install(handle: tauri::AppHandle, name: String, seed: Option<String>) -> Result<String, Error> {
+   println!("install app {name} | seed: {:?}", seed);
+   let network_seed = match seed {
+      Some(seed) => seed,
+      None => hash_string(&name).map_err(|err| Error::OpenAppError(err))?,
+   };
+
    handle
       .holochain()?
       .install_app(
@@ -113,7 +112,7 @@ pub async fn install(handle: tauri::AppHandle, name: String, dna: String) -> Res
          happ_bundle(),
          None,
          None,
-         Some(hashed_name.clone()),
+         Some(network_seed),
       )
       .await?;
    return select(handle, name).await;

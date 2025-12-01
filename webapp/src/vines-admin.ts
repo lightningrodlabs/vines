@@ -5,15 +5,24 @@ import {
     AdminWebsocket, AppInfo, ProvisionedCell,
 } from "@holochain/client";
 import {setLocale} from "./localization";
-import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {DnaId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
 import Switch from "@ui5/webcomponents/dist/Switch";
 import QRCode from "qrcode";
-import {encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
+import {decodeDnaJoiningInfo, DnaJoiningInfo, encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
 
 console.log("<vines-admin>", APPV.APP_VERSION);
+
+/** look-up dnaId from URL query param (tauri) */
+const params = new URLSearchParams(window.location.search);
+const DNA_FROM_URL = params.get('dna');
+console.debug("DNA from URL = " + DNA_FROM_URL);
+if (!DNA_FROM_URL) {
+    console.debug("dna param is missing from URL");
+}
+
 
 /** */
 @localized()
@@ -171,7 +180,7 @@ export class VinesAdmin extends LitElement {
                                     id="join-group-btn"
                                     class="moss-button"
                                     ?disabled=${this._inviteLink === ''}
-                                    @click=${() => console.log("JOINING group space")}
+                                    @click=${() => this.onJoinGroup()}
                                     style="width: 30px; margin-left:10px;"
                             >${msg('Join')}
                             </button>
@@ -186,8 +195,8 @@ export class VinesAdmin extends LitElement {
                         <sl-input
                                 class="moss-input"
                                 id="name-input"
-                                placeholder=${msg('enter group name')}
-                                label=${msg('Group name')}
+                                placeholder=${msg('enter space name')}
+                                label=${msg('Space name')}
                                 style="margin-top: 10px; margin-bottom: 10px; width: 80%;"
                                 @input=${() => {
                                       const inviteLinkInput = this.shadowRoot?.getElementById('name-input',
@@ -199,7 +208,10 @@ export class VinesAdmin extends LitElement {
                                 class="moss-button"
                                 style="margin-bottom: 2px;"
                                 ?disabled=${this._name === ''}
-                                @click=${() => this.createNewGroup(this._name)}
+                                @click=${() => {
+                                    this._loading = "Creating new group space...";
+                                    this.createNewGroup(this._name).then(() => this._loading = undefined);
+                                }}
                         >
                             <div class="row center-content">
                                 ${plusCircleIcon(30)}
@@ -310,10 +322,27 @@ export class VinesAdmin extends LitElement {
         }
     }
 
+    async onJoinGroup() {
+        console.log("JOINING group space: " + this._inviteLink);
+        try {
+            const decoded: DnaJoiningInfo = decodeDnaJoiningInfo(this._inviteLink);
+            const joinDnaId = new DnaId(decoded.originalDnaHash);
+            if (joinDnaId.b64 != DNA_FROM_URL) {
+                console.error("DNA MISMATCH.\n Expected: " + DNA_FROM_URL + "\n    got: " + joinDnaId.b64);
+                return;
+            }
+            await invoke("install", {name: decoded.name, seed: decoded.networkSeed});
+        } catch(e) {
+            console.error("failed to decode joining code");
+            return;
+        }
+    }
+
+
   async createNewGroup(name: string) {
       console.log("createNewGroup()", name);
       try {
-          const result = await invoke('install', { name });
+          const result = await invoke('install', {name});
           console.log('Result:', result);
       } catch (error) {
           console.error('Error:', error);

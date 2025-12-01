@@ -29,7 +29,7 @@ pub fn run() {
                let admin_ws = handle.holochain()?.admin_websocket().await?;
 
                // Check bundle validity
-               let _bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
+               let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
 
                let installed_apps = admin_ws
                   .list_apps(None)
@@ -57,7 +57,7 @@ pub fn run() {
                   } else {
                      {
                         app.holochain()?
-                           .main_window_builder(String::from("main"), true, None, Some("admin.html".to_string())).await?
+                           .main_window_builder(String::from("main"), true, None, Some(format!("admin.html?dna={}", bundle_dna_hash))).await?
                            .inner_size(400.,700.)
                            .build()?;
                      }
