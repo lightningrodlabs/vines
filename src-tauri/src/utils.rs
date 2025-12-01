@@ -1,7 +1,16 @@
+use holochain_types::prelude::*;
 use holochain_types::websocket::AllowedOrigins;
 use tauri_plugin_holochain::NetworkConfig;
 use std::collections::HashSet;
 use url2::Url2;
+
+pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
+
+pub fn happ_bundle() -> AppBundle {
+   let bundle = AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
+   println!("BUNDLE = {:?}", bundle);
+   return bundle;
+}
 
 pub fn network_config() -> NetworkConfig {
    let mut network_config = NetworkConfig::default();
