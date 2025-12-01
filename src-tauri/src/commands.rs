@@ -1,6 +1,6 @@
 use holochain_types::prelude::*;
 use std::path::PathBuf;
-use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked, Error};
+use tauri_plugin_holochain::{HolochainExt, Error};
 use tauri::{Manager, Url, WebviewUrl};
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -26,13 +26,13 @@ pub async fn toggle_app(app: tauri::AppHandle, enable: bool, name: String) -> Re
    // Enable
    if enable && app_info.status != AppStatus::Enabled {
       hc.enable_app(app_info.installed_app_id.clone()).await
-         .map_err(|err| Error::OpenAppError("Failed to enable app".to_string()))?;
+         .map_err(|_err| Error::OpenAppError("Failed to enable app".to_string()))?;
       return Ok(());
    }
    // Disable
    if !enable && app_info.status == AppStatus::Enabled {
       hc.disable_app(app_info.installed_app_id.clone()).await
-         .map_err(|err| Error::OpenAppError("Failed to disable app".to_string()))?;
+         .map_err(|_err| Error::OpenAppError("Failed to disable app".to_string()))?;
       return Ok(());
    }
    Ok(())

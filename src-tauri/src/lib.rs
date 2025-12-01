@@ -7,13 +7,10 @@ pub mod utils;
 use utils::*;
 use commands::*;
 
-use crabcamera;
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![install, select, goto_admin, toggle_app])
-       .plugin(crabcamera::init())
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -37,6 +34,7 @@ pub fn run() {
                   .list_apps(None)
                   .await
                   .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
+                println!("installed_apps: {}", installed_apps.len());
 
                if installed_apps.len() == 1 && installed_apps[0].status == AppStatus::Enabled {
                      // Make sure app is enabled
@@ -54,13 +52,13 @@ pub fn run() {
                      // Load window
                      app.holochain()?
                         .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
-                        .inner_size(400.,700.)
+                        //.inner_size(400.,700.)
                         .build()?;
                   } else {
                      {
                         app.holochain()?
-                           .main_window_builder(String::from("main"), true, None, Some(format!("admin.html?dna={}", bundle_dna_hash))).await?
-                           .inner_size(400.,700.)
+                           .main_window_builder(String::from("toto"), true, None, Some(format!("admin.html?dna={}", bundle_dna_hash))).await?
+                        //   .inner_size(400.,700.)
                            .build()?;
                      }
                      // single app mode

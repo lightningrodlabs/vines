@@ -20,7 +20,7 @@ const params = new URLSearchParams(window.location.search);
 const DNA_FROM_URL = params.get('dna');
 console.debug("DNA from URL = " + DNA_FROM_URL);
 if (!DNA_FROM_URL) {
-    console.debug("dna param is missing from URL");
+    console.error("dna param is missing from URL");
 }
 
 
@@ -83,14 +83,14 @@ export class VinesAdmin extends LitElement {
 
     override async firstUpdated() {
       console.debug("<vines-admin>.firstUpdated()")
-        // Initialize camera system
-        await invoke('plugin:crabcamera|initialize_camera_system');
-        // Get available cameras
-        const cameras = await invoke('plugin:crabcamera|get_available_cameras');
-        console.log('Available cameras:', cameras);
-        // Get recommended format for high quality
-        const format = await invoke('plugin:crabcamera|get_recommended_format');
-        console.log('Available formats:', format);
+        // // Initialize camera system
+        // await invoke('plugin:crabcamera|initialize_camera_system');
+        // // Get available cameras
+        // const cameras = await invoke('plugin:crabcamera|get_available_cameras');
+        // console.log('Available cameras:', cameras);
+        // // Get recommended format for high quality
+        // const format = await invoke('plugin:crabcamera|get_recommended_format');
+        // console.log('Available formats:', format);
     }
 
   /** */
