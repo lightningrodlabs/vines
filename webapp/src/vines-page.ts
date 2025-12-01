@@ -3101,7 +3101,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 10px;
         }
       `,
-
     ];
   }
 }

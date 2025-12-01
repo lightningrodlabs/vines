@@ -1,17 +1,19 @@
 use holochain_types::prelude::*;
 use std::path::PathBuf;
-use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked, Error};
-use tauri::{Manager, Url, WebviewUrl};
+use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked};
 
 pub mod commands;
 pub mod utils;
 use utils::*;
 use commands::*;
 
+use crabcamera;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![install, select, goto_admin, toggle_app])
+       .plugin(crabcamera::init())
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)

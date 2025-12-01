@@ -39,6 +39,7 @@ export class VinesAdmin extends LitElement {
 
   @state() private _showAddGroup: boolean = false;
   @state() private _showQrCode: AppInfo | undefined = undefined; // Display if this is defined
+  @state() private _showScanner: boolean = false;
 
   constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
@@ -78,6 +79,19 @@ export class VinesAdmin extends LitElement {
   private onReload() {
     window.location.reload();
   }
+
+
+    override async firstUpdated() {
+      console.debug("<vines-admin>.firstUpdated()")
+        // Initialize camera system
+        await invoke('plugin:crabcamera|initialize_camera_system');
+        // Get available cameras
+        const cameras = await invoke('plugin:crabcamera|get_available_cameras');
+        console.log('Available cameras:', cameras);
+        // Get recommended format for high quality
+        const format = await invoke('plugin:crabcamera|get_recommended_format');
+        console.log('Available formats:', format);
+    }
 
   /** */
   renderQrCode(): TemplateResult<1> {
@@ -147,6 +161,21 @@ export class VinesAdmin extends LitElement {
                                 <div style="margin-left: 10px;">${msg('Cancel')}</div>
                             </div>
                         </button>
+                        
+                        <button id="scan-btn"
+                                class="moss-button"
+                                style="width: 120px;"
+                                @click=${() => {
+                                    console.debug("SHOW SCANNER")
+                                    this._showScanner = true;
+      }}
+                        >
+                            <div class="row center-content">
+                                ${closeIcon(30)}
+                                <div style="margin-left: 10px;">${msg('Scan')}</div>
+                            </div>
+                        </button>
+                        
                     `}
                 </div>
 
@@ -246,6 +275,17 @@ export class VinesAdmin extends LitElement {
       `;
     }
 
+      if (this._showScanner) {
+          return html`
+            <qr-scanner 
+                    @quit=${() => {
+                        console.debug("STOP SCANNER RECEIVED");
+                        this._showScanner = false;
+          }}
+                    @scan=${() => console.debug("QR SCAN FTW")}
+            >
+            </qr-scanner>`;
+      }
     if (this._apps!.length == 0) {
       return this.renderAddGroup(true);
     }
