@@ -323,7 +323,7 @@ export class VinesAdmin extends LitElement {
     async onToggleApp(app: AppInfo, enable: boolean) {
         console.log("onToggleApp()", app.installed_app_id, enable);
         try {
-            let result = await invoke('toggleapp', { enable, name: app.installed_app_id });
+            let result = await invoke('toggle_app', { enable, name: app.installed_app_id });
             console.log('Result:', result);
         } catch (error) {
             console.error('Error:', error);

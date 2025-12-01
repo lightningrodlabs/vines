@@ -15,7 +15,7 @@ pub async fn get_dna_hash(app_bundle: AppBundle, dna_name: &str) -> Result<Strin
       return Err(format!("'{}' not found in happ bundle", dna_name));
    };
    let dna_bundle: DnaBundle = DnaBundle::unpack(dna_bytes.as_ref()).unwrap();
-   let (dna_file, dna_hash) = dna_bundle.to_dna_file().await.unwrap();
+   let (_dna_file, dna_hash) = dna_bundle.to_dna_file().await.unwrap();
    println!("dna hash of '{dna_name}': {}", dna_hash.to_string());
    Ok(dna_hash.to_string())
 }

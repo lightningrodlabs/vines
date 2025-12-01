@@ -333,7 +333,7 @@ export class VinesApp extends HappMultiElement {
   async gotoAdmin() {
       console.log("gotoAdmin()");
       try {
-          const result = await invoke('gotoadmin');
+          const result = await invoke('goto_admin');
           console.log('Result:', result);
       } catch (error) {
           console.error('Error:', error);

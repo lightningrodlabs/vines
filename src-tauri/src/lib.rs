@@ -11,7 +11,7 @@ use commands::*;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![install, select, gotoadmin, toggleapp])
+        .invoke_handler(tauri::generate_handler![install, select, goto_admin, toggle_app])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -29,7 +29,7 @@ pub fn run() {
                let admin_ws = handle.holochain()?.admin_websocket().await?;
 
                // Check bundle validity
-               let _bundle_dna_hash = hash_dna(happ_bundle(), "threads.dna").await.unwrap();
+               let _bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
 
                let installed_apps = admin_ws
                   .list_apps(None)

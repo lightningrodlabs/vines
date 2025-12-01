@@ -10,7 +10,7 @@ use crate::utils::*;
 
 
 #[tauri::command]
-pub async fn toggleapp(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
+pub async fn toggle_app(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
    println!("toggle app: {} -> {}", name, enable);
    // Look for happ
    let hc = &app.holochain()?.holochain_runtime;
@@ -40,7 +40,7 @@ pub async fn toggleapp(app: tauri::AppHandle, enable: bool, name: String) -> Res
 
 
 #[tauri::command]
-pub async fn gotoadmin(app: tauri::AppHandle) -> Result<(), String> {
+pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
    let url = WebviewUrl::App("admin.html".into());
    println!("CURRENT URL: {} | {}", webview.url().unwrap(), url.to_string());
@@ -100,7 +100,7 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
 #[tauri::command]
 pub async fn install(handle: tauri::AppHandle, name: String, dna: String) -> Result<String, Error> {
    println!("install app {name} | {dna}");
-   let bundle_dna_hash = hash_dna(happ_bundle(), "threads.dna").await.unwrap();
+   let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
    if dna != bundle_dna_hash {
       return Err(Error::OpenAppError(format!("DNA hash mismatch.\n Expecting: {bundle_dna_hash}\n      got: {dna}")));
    }
