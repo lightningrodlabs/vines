@@ -30,7 +30,7 @@ export class VinesAdmin extends LitElement {
   @state() private _loading: string | undefined = ""; // Display loading string if this is defined
 
   @state() private _showAddGroup: boolean = false;
-  @state() private _showQrCode: AppInfo | undefined = undefined; // Display if this is defined
+  @state() private _showGroupInvite: AppInfo | undefined = undefined; // Display if this is defined
   @state() private _showScanner: boolean = false;
 
   constructor() {
@@ -86,8 +86,8 @@ export class VinesAdmin extends LitElement {
     }
 
   /** */
-  renderQrCode(): TemplateResult<1> {
-      const appInfo = this._showQrCode!;
+  renderGroupInvite(): TemplateResult<1> {
+      const appInfo = this._showGroupInvite!;
       const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
       const shareCode = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
       const popover = this.shadowRoot!.getElementById('popover');
@@ -116,16 +116,17 @@ export class VinesAdmin extends LitElement {
                   <div style="margin-bottom:8px; margin-top:14px;">
                       <img src="icon.png" style="height: 64px"/>
                   </div>
-                  <div class="dialog-title">${this._showQrCode?.installed_app_id}</div>
+                  <div class="dialog-title">${this._showGroupInvite?.installed_app_id}</div>
               </div>
               <div id="popover"></div>
               <ui5-textarea .value=${shareCode} style="height: 100px;margin-top:15px;"></ui5-textarea>
               <button id="cancel-btn"
                       class="moss-button"
                       style="width: 120px; margin-top: 30px;"
-                      @click=${() => this._showQrCode = undefined}
+                      @click=${() => this._showGroupInvite = undefined}
               >
                   <div class="row center-content">
+                      <ui5-icon name="nav-back" style="margin-right:10px;"></ui5-icon>
                       <div style="">${msg('Back')}</div>
                   </div>
               </button>              
@@ -166,8 +167,8 @@ export class VinesAdmin extends LitElement {
                                 @click=${() => this._showAddGroup = false}
                         >
                             <div class="row center-content">
-                                ${closeIcon(30)}
-                                <div style="margin-left: 10px;">${msg('Cancel')}</div>
+                                <ui5-icon name="nav-back"></ui5-icon>
+                                <div style="margin-left: 10px;">${msg('Back')}</div>
                             </div>
                         </button>
                     `}
@@ -193,8 +194,8 @@ export class VinesAdmin extends LitElement {
                                     @click=${() => this._inviteLink = ''}
                                     style=""
                             >
-                            ${closeIcon(30)}
                             ${inviteGroup.name}
+                            ${closeIcon(30)}                                
                             </button>
                             <button
                                     id="join-group-btn"
@@ -221,20 +222,21 @@ export class VinesAdmin extends LitElement {
                                           this._inviteLink = inviteLinkInput.value;
                                       }}
                             ></sl-input>
+                            <div style="margin-left:10px;">${msg('or')}</div>
                             <button
                                     id="scan-btn"
                                     class="moss-button"
                                     @click=${() => this._showScanner = true}
-                                    style="margin-left:10px;"
+                                    style="margin-left:10px; display:inline-flex; align-items:center; justify-content:center;"
                             >
-                            <ui5-icon name="qr-code"></ui5-icon>
+                            <ui5-icon name="qr-code" style="margin-right:10px;"></ui5-icon>
                             ${msg('Scan')}
                             </button>
 
                             `
                             }
                         </div>
-                        ${this._inviteLink != '' && !inviteGroup? html`<div class="error">${msg("BAD INVITE LINK")}</div>` : html``}
+                        ${this._inviteLink != '' && !inviteGroup? html`<div class="error" style="margin-bottom:0px;">${msg("BAD INVITE LINK")}</div>` : html``}
                     </div>
 
                     <div class="moss-card column items-center" style="margin:6px;">
@@ -317,8 +319,8 @@ export class VinesAdmin extends LitElement {
     if (this._showAddGroup) {
       return this.renderAddGroup(false);
     }
-    if (this._showQrCode) {
-      return this.renderQrCode();
+    if (this._showGroupInvite) {
+      return this.renderGroupInvite();
     }
 
     let apps  = [html``];
@@ -334,7 +336,7 @@ export class VinesAdmin extends LitElement {
                                 style="border-radius: 10px;"
                                 @click=${(e:any) => {
                                     e.stopPropagation();
-                                    this._showQrCode = app
+                                    this._showGroupInvite = app
                                 }}
                     ></ui5-button>
                     <div class="app-name">${app.installed_app_id}</div>
@@ -613,7 +615,7 @@ export class VinesAdmin extends LitElement {
           }
 
           #cancel-btn {
-              background: rgba(41, 40, 40, 0.79);
+              background: rgb(18, 77, 4);
           }
 
           #cancel-btn:hover {
@@ -624,23 +626,29 @@ export class VinesAdmin extends LitElement {
               background: #f8f8f8;
               border-radius: 20px;
               padding: 15px 20px 15px 15px;
-              width: 85%;
-              transition: width 0.2s ease-in-out;
+              width: 90%;
+              /*transition: width 0.2s ease-in-out;*/
+          }
+
+          .app-card:hover {
+              cursor: pointer;
+              background: #ffffff;
+              /*width: 95%;*/
           }
 
           .group-button {
               background: #cfe4ae;
               cursor: pointer;
               border-radius: 20px;
-              align-content: center;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: large;
+              padding: 10px;
+              padding-left: 20px;
+              color: black;
           }
-
-          .app-card:hover {
-              cursor: pointer;
-              background: #ffffff;
-              width: 95%;
-          }
-
+          
           /* moss-card */
 
           .moss-card {

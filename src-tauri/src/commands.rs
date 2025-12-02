@@ -75,7 +75,7 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
    // Load window with params
    let (app_port, token) = get_app_socket(app.clone(), &name).await;
    let url = Url::parse(&format!("http://localhost:1420/index.html?appId={name}&appPort={app_port}&token={token}")).unwrap();
-   println!("Selecting app {:?}\n app: {:?}", url, app);
+   println!("Selecting app {:?}\n app: {:?}", url, app.webview_windows());
    let webview = app.get_webview_window("main").unwrap();
    let _ = webview.navigate(url.into())
       .map_err(|e| Error::OpenAppError(e.to_string()))?;

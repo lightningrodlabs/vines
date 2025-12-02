@@ -11,7 +11,7 @@ const params = new URLSearchParams(window.location.search);
 export const DNA_FROM_URL = params.get('dna');
 console.debug("DNA from URL = " + DNA_FROM_URL);
 if (!DNA_FROM_URL) {
-    console.error("dna param is missing from URL");
+    console.warn("dna param is missing from URL");
 }
 
 
