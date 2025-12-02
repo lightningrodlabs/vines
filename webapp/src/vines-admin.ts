@@ -144,6 +144,7 @@ export class VinesAdmin extends LitElement {
               console.debug("maybe: " + JSON.stringify(maybe));
               if (isJoiningCode(maybe)) {
                   if (new DnaId(maybe.originalDnaHash).b64 == DNA_FROM_URL) {
+                    // FIXME: Check if group already joined
                     inviteGroup = maybe as DnaJoiningInfo;
                   }
               } else {
