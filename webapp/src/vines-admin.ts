@@ -118,16 +118,17 @@ export class VinesAdmin extends LitElement {
                   </div>
                   <div class="dialog-title">${this._showGroupInvite?.installed_app_id}</div>
               </div>
+              <h3 style="margin:0px;margin-bottom:10px;">${msg('Invite code')}</h3>
               <div id="popover"></div>
-              <ui5-textarea .value=${shareCode} style="height: 100px;margin-top:15px;"></ui5-textarea>
+              <ui5-textarea .value=${shareCode} style="height:80px; width: 90%;"></ui5-textarea>
               <button id="cancel-btn"
                       class="moss-button"
-                      style="width: 120px; margin-top: 30px;"
+                      style="width: 120px; margin-top: 15px;"
                       @click=${() => this._showGroupInvite = undefined}
               >
                   <div class="row center-content">
                       <ui5-icon name="nav-back" style="margin-right:10px;"></ui5-icon>
-                      <div style="">${msg('Back')}</div>
+                      <div>${msg('Back')}</div>
                   </div>
               </button>              
           </div>
@@ -236,7 +237,7 @@ export class VinesAdmin extends LitElement {
                             `
                             }
                         </div>
-                        ${this._inviteLink != '' && !inviteGroup? html`<div class="error" style="margin-bottom:0px;">${msg("BAD INVITE LINK")}</div>` : html``}
+                        ${this._inviteLink != '' && !inviteGroup? html`<div class="error" style="margin-bottom:0px;">${msg("INVALID INVITE LINK")}</div>` : html``}
                     </div>
 
                     <div class="moss-card column items-center" style="margin:6px;">
@@ -357,7 +358,7 @@ export class VinesAdmin extends LitElement {
             
             <div class="column items-center" style="margin-bottom: 12px;">
                 <div style="margin-bottom:4px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
-                <!-- <div class="dialog-title">${msg('Select group space')}</div> -->
+                <div class="dialog-title">${msg('Select group')}</div>
             </div>
 
             <div class="column items-center" style="margin-bottom: 20px; gap:15px; width:90%;">
