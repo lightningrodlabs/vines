@@ -12,17 +12,9 @@ import { invoke } from '@tauri-apps/api/core';
 import Switch from "@ui5/webcomponents/dist/Switch";
 import QRCode from "qrcode";
 import {decodeDnaJoiningInfo, DnaJoiningInfo, encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
+import {decodeQrCodeString, isJoiningCode, DNA_FROM_URL} from "./qr-scanner";
 
 console.log("<vines-admin>", APPV.APP_VERSION);
-
-/** look-up dnaId from URL query param (tauri) */
-const params = new URLSearchParams(window.location.search);
-const DNA_FROM_URL = params.get('dna');
-console.debug("DNA from URL = " + DNA_FROM_URL);
-if (!DNA_FROM_URL) {
-    console.error("dna param is missing from URL");
-}
-
 
 /** */
 @localized()
@@ -143,6 +135,23 @@ export class VinesAdmin extends LitElement {
 
   /** */
   renderAddGroup(greet: boolean): TemplateResult<1> {
+      let inviteGroup: DnaJoiningInfo | undefined = undefined;
+      if (this._inviteLink) {
+          try {
+              const maybe = decodeQrCodeString(this._inviteLink);
+              console.debug("maybe: " + JSON.stringify(maybe));
+              if (isJoiningCode(maybe)) {
+                  if (new DnaId(maybe.originalDnaHash).b64 == DNA_FROM_URL) {
+                    inviteGroup = maybe as DnaJoiningInfo;
+                  }
+              } else {
+                  console.debug("maybe: NOPE");
+              }
+          } catch (e) {
+              console.debug("BAD INVITE LINK: " + JSON.stringify(e));
+          }
+      }
+      console.debug("inviteGroup: " + JSON.stringify(inviteGroup));
       return html`
             <div class="column center-content flex-1 launch-bg" style="margin-left:5px; margin-right:5px;">
                 <div class="column items-center" style="margin-bottom: 15px;">
@@ -161,21 +170,6 @@ export class VinesAdmin extends LitElement {
                                 <div style="margin-left: 10px;">${msg('Cancel')}</div>
                             </div>
                         </button>
-                        
-                        <button id="scan-btn"
-                                class="moss-button"
-                                style="width: 120px;"
-                                @click=${() => {
-                                    console.debug("SHOW SCANNER")
-                                    this._showScanner = true;
-      }}
-                        >
-                            <div class="row center-content">
-                                ${closeIcon(30)}
-                                <div style="margin-left: 10px;">${msg('Scan')}</div>
-                            </div>
-                        </button>
-                        
                     `}
                 </div>
 
@@ -192,12 +186,34 @@ export class VinesAdmin extends LitElement {
                         </div>
 
                         <div class="row items-center justify-center" style="margin-bottom: 2px; margin-top:1px;">
+                            ${inviteGroup? html`                           
+                            <button
+                                    id="invited-group-btn"
+                                    class="group-button"
+                                    @click=${() => this._inviteLink = ''}
+                                    style=""
+                            >
+                            ${closeIcon(30)}
+                            ${inviteGroup.name}
+                            </button>
+                            <button
+                                    id="join-group-btn"
+                                    class="moss-button"
+                                    @click=${() => {
+                                        this._loading = msg('Joining space...');
+                                        this.onJoinGroup().then(() => this._loading = undefined);
+                                    }}
+                                    style="width: 30px; margin-left:10px;"
+                            >${msg('Join')}
+                            </button>
+                            ` : html`
                             <sl-input
                                     class="moss-input"
                                     id="invite-link-input"
                                     placeholder=${msg('paste invite link here')}
                                     label=${msg('invite link')}
                                     style="margin-right: 1px;"
+                                    @change=${() => {this.requestUpdate()}}
                                     @input=${() => {
                                           const inviteLinkInput = this.shadowRoot?.getElementById(
                                               'invite-link-input',
@@ -206,14 +222,19 @@ export class VinesAdmin extends LitElement {
                                       }}
                             ></sl-input>
                             <button
-                                    id="join-group-btn"
+                                    id="scan-btn"
                                     class="moss-button"
-                                    ?disabled=${this._inviteLink === ''}
-                                    @click=${() => this.onJoinGroup()}
-                                    style="width: 30px; margin-left:10px;"
-                            >${msg('Join')}
+                                    @click=${() => this._showScanner = true}
+                                    style="margin-left:10px;"
+                            >
+                            <ui5-icon name="qr-code"></ui5-icon>
+                            ${msg('Scan')}
                             </button>
+
+                            `
+                            }
                         </div>
+                        ${this._inviteLink != '' && !inviteGroup? html`<div class="error">${msg("BAD INVITE LINK")}</div>` : html``}
                     </div>
 
                     <div class="moss-card column items-center" style="margin:6px;">
@@ -281,8 +302,12 @@ export class VinesAdmin extends LitElement {
                     @quit=${() => {
                         console.debug("STOP SCANNER RECEIVED");
                         this._showScanner = false;
-          }}
-                    @scan=${() => console.debug("QR SCAN FTW")}
+                    }}
+                    @scan=${(e: CustomEvent<string>) => {
+                        console.debug("QR SCAN FTW:" + e.detail);
+                        this._showScanner = false;
+                        this._inviteLink = e.detail;
+                    }}
             >
             </qr-scanner>`;
       }
@@ -371,6 +396,7 @@ export class VinesAdmin extends LitElement {
                 console.error("DNA MISMATCH.\n Expected: " + DNA_FROM_URL + "\n    got: " + joinDnaId.b64);
                 return;
             }
+            console.log("JOINING group space: installing " + joinDnaId.b64);
             await invoke("install", {name: decoded.name, seed: decoded.networkSeed});
         } catch(e) {
             console.error("failed to decode joining code");
@@ -458,6 +484,14 @@ export class VinesAdmin extends LitElement {
 
               /* tooltip border radius */
               --sl-tooltip-border-radius: 8px;
+          }
+
+          .error {
+              background-color: #ffebee;
+              color: #c62828;
+              padding: 15px;
+              border-radius: 6px;
+              margin: 20px 0;
           }
 
           .centered {
@@ -579,18 +613,26 @@ export class VinesAdmin extends LitElement {
           }
 
           #cancel-btn {
-              background: rgba(41, 40, 40, 0.79) ;
+              background: rgba(41, 40, 40, 0.79);
           }
+
           #cancel-btn:hover {
-            background: black;    
+              background: black;
           }
-          
+
           .app-card {
               background: #f8f8f8;
               border-radius: 20px;
               padding: 15px 20px 15px 15px;
               width: 85%;
               transition: width 0.2s ease-in-out;
+          }
+
+          .group-button {
+              background: #cfe4ae;
+              cursor: pointer;
+              border-radius: 20px;
+              align-content: center;
           }
 
           .app-card:hover {

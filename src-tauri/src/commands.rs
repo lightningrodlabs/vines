@@ -8,7 +8,7 @@ use argon2::{
 };
 use crate::utils::*;
 
-
+/** FIXME: Delete this and do it in frontend instead */
 #[tauri::command]
 pub async fn toggle_app(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
    println!("toggle app: {} -> {}", name, enable);
@@ -44,18 +44,10 @@ pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
    let url = WebviewUrl::App("admin.html".into());
    println!("CURRENT URL: {} | {}", webview.url().unwrap(), url.to_string());
-
-   //webview.eval(globals_script(app.clone(), "", true).await).unwrap();
-
-   // let mut capability_builder =
-   //    CapabilityBuilder::new("sign-zome-call").permission("holochain:allow-sign-zome-call");
-   // capability_builder = capability_builder.window(name.clone());
-   // app.add_capability(capability_builder).unwrap();
-
-   let res = webview.navigate(Url::parse("http://localhost:1420/admin.html").unwrap()) // FIXME
+   let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
+   let new_url = Url::parse(&format!("http://localhost:1420/admin.html?dna={}", bundle_dna_hash)).unwrap();  // FIXME base
+   let res = webview.navigate(new_url)
       .map_err(|e| e.to_string());
-
-   //webview.eval(globals_script(app.clone(), "", true).await).unwrap();
    res
 }
 
@@ -83,14 +75,8 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
    // Load window with params
    let (app_port, token) = get_app_socket(app.clone(), &name).await;
    let url = Url::parse(&format!("http://localhost:1420/index.html?appId={name}&appPort={app_port}&token={token}")).unwrap();
+   println!("Selecting app {:?}\n app: {:?}", url, app);
    let webview = app.get_webview_window("main").unwrap();
-
-   // webview.eval(globals_script(app.clone(), &name, false).await).unwrap();
-   // let mut capability_builder =
-   //    CapabilityBuilder::new("sign-zome-call").permission("holochain:allow-sign-zome-call");
-   // capability_builder = capability_builder.window(name.clone());
-   // app.add_capability(capability_builder)?;
-
    let _ = webview.navigate(url.into())
       .map_err(|e| Error::OpenAppError(e.to_string()))?;
    Ok(name)

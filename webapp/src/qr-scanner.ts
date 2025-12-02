@@ -1,13 +1,50 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { invoke } from '@tauri-apps/api/core';
+import {DnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
+import {decode} from "@msgpack/msgpack";
+import {msg, localized} from '@lit/localize';
+import {DnaId} from "@ddd-qc/lit-happ";
 
+/** look-up dnaId from URL query param (tauri) */
+const params = new URLSearchParams(window.location.search);
+export const DNA_FROM_URL = params.get('dna');
+console.debug("DNA from URL = " + DNA_FROM_URL);
+if (!DNA_FROM_URL) {
+    console.error("dna param is missing from URL");
+}
+
+
+/** Decode base64 string */
+export function decodeQrCodeString(shareCode: string): any {
+    return decode(new Uint8Array(atob(shareCode).split("").map((c) => c.charCodeAt(0))));
+}
+
+
+/** Make sure its a decodeQrCodeString */
+export function isJoiningCode(object: any): object is DnaJoiningInfo {
+    console.debug("isJoiningCode: " + JSON.stringify(object));
+    if (!object || typeof object !== 'object' || object === null) {
+        console.debug("isJoiningCode: NOT AN OBJECT");
+        return false;
+    }
+    return (
+        'originalDnaHash' in object
+        && 'name' in object
+        // && typeof object.name === 'string'
+        && 'networkSeed' in object
+    );
+}
+
+
+/** */
+@localized()
 @customElement('qr-scanner')
 export class QRScanner extends LitElement {
 
-    @state() private scannedData: string = '';
     @state() private isScanning: boolean = false;
     @state() private error: string = '';
+
     @state() private cameraStream: MediaStream | null = null;
 
     private videoElement?: HTMLVideoElement;
@@ -21,14 +58,14 @@ export class QRScanner extends LitElement {
         this.stopScanner();
     }
 
+    /** */
     override firstUpdated() {
-        this.startScanner();
+        /*await*/ this.startScanner();
     }
 
     /** */
     async startScanner() {
         try {
-            this.error = '';
             this.isScanning = true;
             // Request camera permission and access
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -47,9 +84,9 @@ export class QRScanner extends LitElement {
             video.srcObject = stream;
             await video.play();
             // Start scanning for QR codes
-            this.scanInterval = window.setInterval(() => this.scanFrame(), 500);
+            this.scanInterval = window.setInterval(() => this.scanFrame(), 200);
         } catch (err) {
-            this.error = `Failed to start camera: ${err}`;
+            this.error = msg(`Failed to start camera: ${err}`);
             this.isScanning = false;
         }
     }
@@ -68,7 +105,7 @@ export class QRScanner extends LitElement {
             this.videoElement.srcObject = null;
         }
         this.isScanning = false;
-        console.debug("STOP SCANNER");
+        console.debug("SCANNER STOPPED");
         this.dispatchEvent(new CustomEvent('quit', { detail: true, bubbles: true, composed: true }));
     }
 
@@ -79,7 +116,7 @@ export class QRScanner extends LitElement {
         }
         const video = this.videoElement;
         const canvas = this.canvasElement;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', {willReadFrequently: true});
         if (!ctx || video.videoWidth === 0) {
             return;
         }
@@ -91,12 +128,23 @@ export class QRScanner extends LitElement {
         // Get image data
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         try {
-            // Try to decode QR code using jsQR library (you'll need to import this)
+            // Try to decode QR code using jsQR
             // For now, we'll use a Tauri command as a fallback
             const result = await this.decodeQRCode(imageData);
             if (result) {
-                this.scannedData = result;
-                this.stopScanner();
+                console.debug("QR CODE FOUND: " + result);
+                const maybe: any = decodeQrCodeString(result);
+                if (isJoiningCode(maybe)) {
+                    if (new DnaId(maybe.originalDnaHash).b64 != DNA_FROM_URL) {
+                         this.error = msg("DNA HASH MISMATCH");
+                    } else {
+                        this.stopScanner();
+                        this.dispatchEvent(new CustomEvent('scan', { detail: result, bubbles: true, composed: true }));
+                    }
+                }
+            } else {
+                 // Not a QR code
+                 this.error = "";
             }
         } catch (err) {
             // Continue scanning
@@ -125,7 +173,7 @@ export class QRScanner extends LitElement {
     override render() {
         return html`
       <div class="container">
-        <h1>QR Code Scanner</h1>
+        <h1>${msg("Scan QR Code")}</h1>
         <div class="video-container">
           ${this.isScanning
             ? html`
@@ -135,7 +183,7 @@ export class QRScanner extends LitElement {
               `
             : html`
                 <div class="placeholder">
-                  <p>Camera not active</p>
+                  <p>${msg("Camera not active")}</p>
                 </div>
               `
         }
@@ -143,32 +191,16 @@ export class QRScanner extends LitElement {
 
         <div class="controls">
           <button
-            class="start-btn"
-            @click=${this.startScanner}
-            ?disabled=${this.isScanning}
-          >
-            Start Scanning
-          </button>
-          <button
             class="stop-btn"
             @click=${this.stopScanner}
           >
-            Stop
+            ${msg("Cancel")}
           </button>
         </div>
 
+
         ${this.error
             ? html`<div class="error">${this.error}</div>`
-            : ''
-        }
-
-        ${this.scannedData
-            ? html`
-              <div class="result">
-                <h3>Scanned Result:</h3>
-                <p>${this.scannedData}</p>
-              </div>
-            `
             : ''
         }
       </div>
