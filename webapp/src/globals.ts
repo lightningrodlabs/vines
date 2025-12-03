@@ -5,6 +5,7 @@ import {isTauri} from '@tauri-apps/api/core';
 export const IS_TAURI: boolean = isTauri();
 export let TAURI_CAN_DEFAULT: boolean = true;
 export let TAURI_IS_DEV: boolean = false;
+export let TARGET_ARC: number | undefined = undefined;
 export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
@@ -66,6 +67,11 @@ if (maybeTauriDefault) {
     TAURI_CAN_DEFAULT = "true" == maybeTauriDefault;
 }
 
+const maybeArc = params.get('arc');
+console.debug("maybeArc", maybeArc);
+if (maybeArc) {
+    TARGET_ARC = Number(maybeArc);
+}
 
 
 console.log("   HAPP_TOKEN =", HAPP_TOKEN)

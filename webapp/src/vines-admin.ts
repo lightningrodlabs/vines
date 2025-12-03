@@ -6,7 +6,7 @@ import {
 } from "@holochain/client";
 import {setLocale} from "./localization";
 import {DnaId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {HC_ADMIN_PORT, HC_APP_PORT, TAURI_CAN_DEFAULT} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, TARGET_ARC, TAURI_CAN_DEFAULT, TAURI_IS_DEV} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
 import Panel from "@ui5/webcomponents/dist/Panel";
@@ -52,7 +52,7 @@ export class VinesAdmin extends LitElement {
             this.onSelectApp(this._apps.get(this._defaultApp)!.installed_app_id);
         }
         this._initLoading = false;
-        console.log("Installed apps:", this._apps);
+        //console.log("Installed apps:", this._apps);
     });
   }
 
@@ -396,14 +396,15 @@ export class VinesAdmin extends LitElement {
                             <button class="moss-button"
                                     style="flex-grow:1;"
                                     @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
-                                ${msg("Launch (Full Arc)")}
+                                ${msg("Launch")}
                             </button>
 
-                            <button class="moss-button"
+                            <!--<button class="moss-button"
                                     style="flex-grow:1;"
                                     @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
                                 ${msg("Launch (Zero Arc)")}
                             </button>
+                            -->
 
                         </div>
                         <div style="display:flex; flex-direction: row; gap:40px;">
@@ -473,12 +474,11 @@ export class VinesAdmin extends LitElement {
     /** Render all */
     return html`
         <div class="column center-content flex-1 launch-bg">
-            
             <div class="column items-center" style="margin-bottom: 12px;">
                 <div style="margin-bottom:4px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
+                ${TAURI_IS_DEV && TARGET_ARC != undefined? html`<div class="dialog-title">${TARGET_ARC == 1? "FULL ARC" : "ZERO ARC"}</div>` : html``}
                 <!-- <div class="dialog-title">${msg('Select group')}</div> -->
             </div>
-
             <div class="column items-center" style="margin-bottom: 20px; gap:15px; width:90%;">
                 ${apps}
             </div>

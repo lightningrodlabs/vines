@@ -9,6 +9,7 @@ use utils::*;
 use commands::*;
 use qr_code::*;
 
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -22,7 +23,7 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]),
-            HolochainPluginConfig::new(holochain_dir(), network_config())
+            HolochainPluginConfig::new(holochain_dir(), network_config(TARGET_ARC))
         ))
         .setup(|app| {
             let handle = app.handle().clone();

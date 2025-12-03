@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use url2::Url2;
 
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
+pub const TARGET_ARC: u32 = 1; // 1
 
 pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
@@ -22,10 +23,13 @@ pub async fn get_dna_hash(app_bundle: AppBundle, dna_name: &str) -> Result<Strin
 
 pub async fn admin_url(can_default: bool) -> String {
    let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
-   return format!("admin.html?dev={}&dna={}&default={}", tauri::is_dev(), bundle_dna_hash, can_default);
+   return format!("admin.html?dev={}&dna={}&default={}&arc={}", tauri::is_dev(), bundle_dna_hash, can_default, TARGET_ARC);
 }
 
-pub fn network_config() -> NetworkConfig {
+/// target_arc_factor:
+///  - 0 = zero arc
+///  - 1 = full arc
+pub fn network_config(target_arc_factor: u32) -> NetworkConfig {
    let mut network_config = NetworkConfig::default();
    // Don't use the bootstrap service on tauri dev mode
    if tauri::is_dev() {
@@ -33,7 +37,7 @@ pub fn network_config() -> NetworkConfig {
    }
    // Don't hold any slice of the DHT in mobile
    if cfg!(mobile) {
-      network_config.target_arc_factor = 0;
+      network_config.target_arc_factor = target_arc_factor;
    }
    network_config
 }
