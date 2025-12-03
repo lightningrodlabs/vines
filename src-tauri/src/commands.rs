@@ -14,7 +14,7 @@ pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
    let url = webview.url().unwrap();
    println!("CURRENT URL: {:?}", url);
-   let new_url = Url::parse(&format!("{}://{}:{}/{}", url.scheme(), url.host().unwrap(), url.port().unwrap(), admin_url().await)).unwrap();
+   let new_url = Url::parse(&format!("{}://{}:{}/{}", url.scheme(), url.host().unwrap(), url.port().unwrap(), admin_url(false).await)).unwrap();
    let res = webview.navigate(new_url)
       .map_err(|e| e.to_string());
    res

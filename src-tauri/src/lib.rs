@@ -55,7 +55,7 @@ pub fn run() {
                   } else {
                      {
                         app.holochain()?
-                           .main_window_builder(String::from("main"), true, None, Some(admin_url().await)).await?
+                           .main_window_builder(String::from("main"), true, None, Some(admin_url(true).await)).await?
                         //   .inner_size(400.,700.)
                            .build()?;
                      }

@@ -3,6 +3,8 @@ import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {isTauri} from '@tauri-apps/api/core';
 
 export const IS_TAURI: boolean = isTauri();
+export let TAURI_CAN_DEFAULT: boolean = true;
+export let TAURI_IS_DEV: boolean = false;
 export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
@@ -34,6 +36,7 @@ if (!HC_APP_PORT) {
 
 /** look-up appId from URL query param (tauri) */
 const params = new URLSearchParams(window.location.search);
+console.debug("window.params", params);
 const maybeAppId = params.get('appId');
 console.debug("maybeAppId", maybeAppId);
 if (maybeAppId) {
@@ -50,6 +53,20 @@ if (maybeToken) {
     const numbers = maybeToken.split(',').map(n => parseInt(n.trim()));
     HAPP_TOKEN = Array.from(new Uint8Array(numbers));
 }
+
+const maybeDev = params.get('dev');
+console.debug("maybeDev", maybeDev);
+if (maybeDev) {
+    TAURI_IS_DEV = "true" == maybeDev;
+}
+
+const maybeTauriDefault = params.get('default');
+console.debug("maybeTauriDefault", maybeTauriDefault);
+if (maybeTauriDefault) {
+    TAURI_CAN_DEFAULT = "true" == maybeTauriDefault;
+}
+
+
 
 console.log("   HAPP_TOKEN =", HAPP_TOKEN)
 console.log("     IS_TAURI =", IS_TAURI)

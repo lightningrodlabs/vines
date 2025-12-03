@@ -20,9 +20,9 @@ pub async fn get_dna_hash(app_bundle: AppBundle, dna_name: &str) -> Result<Strin
    Ok(dna_hash.to_string())
 }
 
-pub async fn admin_url() -> String {
+pub async fn admin_url(can_default: bool) -> String {
    let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
-   return format!("admin.html?dev=${}&dna={}", tauri::is_dev(), bundle_dna_hash);
+   return format!("admin.html?dev={}&dna={}&default={}", tauri::is_dev(), bundle_dna_hash, can_default);
 }
 
 pub fn network_config() -> NetworkConfig {

@@ -6,7 +6,7 @@ import {
 } from "@holochain/client";
 import {setLocale} from "./localization";
 import {DnaId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, TAURI_CAN_DEFAULT} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
 import Panel from "@ui5/webcomponents/dist/Panel";
@@ -37,7 +37,7 @@ export class VinesAdmin extends LitElement {
   @state() private _showGroupInvite: AppInfo | undefined = undefined; // Display if this is defined
   @state() private _showScanner: boolean = false;
 
-  @state() private _defaultApp: string = JSON.parse(localStorage.getItem('vinesDefaultApp')? localStorage.getItem('vinesDefaultApp')!: "{}");
+  @state() private _defaultApp: string = localStorage.getItem('vinesDefaultApp')? localStorage.getItem('vinesDefaultApp')!: "";
 
 
   constructor() {
@@ -47,6 +47,10 @@ export class VinesAdmin extends LitElement {
     AdminWebsocket.connect({url: adminUrl}).then(async (ws) => {
         this._adminWs = ws;
         await this.getApps();
+        console.debug("TAURI_CAN_DEFAULT", TAURI_CAN_DEFAULT);
+        if (TAURI_CAN_DEFAULT && this._defaultApp && this._apps.get(this._defaultApp)) {
+            this.onSelectApp(this._apps.get(this._defaultApp)!.installed_app_id);
+        }
         this._initLoading = false;
         console.log("Installed apps:", this._apps);
     });
@@ -103,9 +107,9 @@ export class VinesAdmin extends LitElement {
   }
 
 
-  override async firstUpdated() {
-    console.debug("<vines-admin>.firstUpdated()")
-  }
+  // override async firstUpdated() {
+  //   console.debug("<vines-admin>.firstUpdated() " + this._defaultApp)
+  // }
 
   /** */
   renderGroupInvite(): TemplateResult<1> {
@@ -361,15 +365,17 @@ export class VinesAdmin extends LitElement {
       return this.renderGroupInvite();
     }
 
-    let apps  = [html``];
-    const appInfos: AppInfo[] = Array.from(this._apps.values()).sort((a, b) => {
+    // Sort by status then by alphabetic name
+    const appInfos: [string, AppInfo][] = Array.from(this._apps).sort(([_k1, a], [_k2, b]) => {
           if (a.status.type != b.status.type) {
               return b.status.type.localeCompare(a.status.type);
           }
           return a.installed_app_id.localeCompare(b.installed_app_id);
     });
     console.debug({appInfos})
-    appInfos.forEach(app => {
+    let apps  = [html``];
+    appInfos.forEach( ([code, app]) => {
+            const isDefault = this._defaultApp == code;
             const elem = app.status.type == "enabled"
             ? html`
                 <ui5-panel .id=${`panel-${app.installed_app_id}`} class="app-panel" collapsed=true 
@@ -380,40 +386,60 @@ export class VinesAdmin extends LitElement {
                             }}>
                     <div slot="header" style="display:flex; flex-direction:row; width: 100%; align-items: baseline;">
                         <div class="app-name">${app.installed_app_id}</div>
+                        <div style="margin-left: 5px; color: rgb(45, 111, 244)">${isDefault? `(${msg("default")})`: ""}</div>
                         <span class="flex flex-1"></span>
                         <div style="color:grey">${dayTimestamp(app.installed_at)}</div>
                     </div>
-                    <div style="padding:20px; border-radius:10px;display:flex; flex-direction: row; gap: 40px;background: rgba(101, 152, 121, 0.35)">
-                        <button class="moss-button-secondary"
-                                style="width: 100px; flex-grow:1; display: inline-flex; justify-content: center;"
-                                @click=${(e:any) => {
-                                    e.stopPropagation();
-                                    this._showGroupInvite = app
-                                }}>
-                            <ui5-icon name="share-2" style="margin-right:10px;"></ui5-icon>
-                            ${msg("Share")}
-                        </button>
-                        
-                        <button class="moss-button"
-                                style="width: 100px;flex-grow:1;"
-                                    @click=${(_e:any) => {
-                                        this._loading = msg("Launching...");
-                                        this.onSelectApp(app.installed_app_id)
-                                           .then(() => this._loading = undefined)
+                    <div style="padding:20px; border-radius:10px; display:flex; flex-direction:column; gap:30px; background:rgba(101, 152, 121, 0.35)">
+                        <div style="display:flex; flex-direction: row; gap:40px;">
+                            <button class="moss-button-secondary"
+                                    style="flex-grow:1; display: inline-flex; justify-content: center;"
+                                    @click=${(e:any) => {
+                                        e.stopPropagation();
+                                        this._showGroupInvite = app
                                     }}>
-                            ${msg("Launch")}
-                        </button>
+                                <ui5-icon name="share-2" style="margin-right:10px;"></ui5-icon>
+                                ${msg("Share")}
+                            </button>
+                            
+                            <button class="moss-button"
+                                    style="flex-grow:1;"
+                                    @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
+                                ${msg("Launch")}
+                            </button>
 
-                        <button
-                                class="disable-btn"
-                                style="width: 100px;flex-grow:1;"
-                                @click=${(e:any) => {
-                                    e.stopPropagation(); 
-                                    this.onToggleApp(app, false).then(async () => await this.getApps())
-                                }}
-                        >
-                            ${msg("Deactivate")}
-                        </button>
+                            ${isDefault? html`
+                                <button class="moss-button-secondary"
+                                        style=""
+                                        @click=${(_e:any) => {
+                                localStorage.setItem("vinesDefaultApp", "");
+                                this._defaultApp = "";
+                            }}>
+                                    ${msg("Unset as default")}
+                                </button>          
+                            ` : html`
+                                <button class="moss-button-secondary"
+                                        style=""
+                                        @click=${(_e:any) => {
+                                localStorage.setItem("vinesDefaultApp", code);
+                                this._defaultApp = code;
+                            }}>
+                                    ${msg("Set as default")}
+                                </button>
+                            `}
+                        </div>
+                        <div style="display:flex; flex-direction: row; gap:40px;">
+                            <button
+                                    class="disable-btn"
+                                    style="flex-grow:1;"
+                                    @click=${(e:any) => {
+                                        e.stopPropagation();
+                                        this.onToggleApp(app, false).then(async () => await this.getApps())
+                                    }}
+                            >
+                                ${msg("Deactivate")}
+                            </button>                            
+                        </div>
                     </div>
                 </ui5-panel>
             ` : html`
@@ -464,16 +490,19 @@ export class VinesAdmin extends LitElement {
 
   }
 
-    async onSelectApp(name: string) {
+    /** */
+    onSelectApp(name: string) {
         console.log("onSelectApp()");
+        this._loading = msg("Launching...");
         try {
-            const result = await invoke('select', { name });
-            console.log('Result:', result);
+            invoke('select', { name })
+                .then(() => this._loading = undefined);
         } catch (error) {
             console.error('Error:', error);
         }
     }
 
+    /** */
     async onJoinGroup() {
         console.log("JOINING group space: " + this._inviteLink);
         try {
@@ -716,12 +745,12 @@ export class VinesAdmin extends LitElement {
               display: inline-flex;
               justify-content: center;
               border-radius: 16px;
-              padding: 14px 18px;
-              font-size: 18px;
+              padding: 7px 8px;
+              font-size: 14px;
               font-weight: 500;
-              line-height: 20px;
+              line-height: 14px;
               color: red;
-              border: 2px solid #df1e1e;
+              border: 2px solid #cc4444;
               cursor: pointer;
               background: white;
           }
