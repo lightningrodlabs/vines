@@ -14,7 +14,12 @@ pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
    let url = webview.url().unwrap();
    println!("CURRENT URL: {:?}", url);
-   let new_url = Url::parse(&format!("{}://{}:{}/{}", url.scheme(), url.host().unwrap(), url.port().unwrap(), admin_url(false).await)).unwrap();
+   let port = if let Some(num) = url.port() {
+      format!(":{}", num)
+   } else {
+      "".to_string()
+   };
+   let new_url = Url::parse(&format!("{}://{}{}/{}", url.scheme(), url.host().unwrap(), port, admin_url(false).await)).unwrap();
    let res = webview.navigate(new_url)
       .map_err(|e| e.to_string());
    res
@@ -45,7 +50,12 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
    let (app_port, token) = get_app_socket(app.clone(), &name).await;
    let webview = app.get_webview_window("main").unwrap();
    let url = webview.url().unwrap();
-   let new_url = Url::parse(&format!("{}://{}:{}/index.html?appId={name}&appPort={app_port}&token={token}", url.scheme(), url.host().unwrap(), url.port().unwrap())).unwrap();
+   let port = if let Some(num) = url.port() {
+      format!(":{}", num)
+   } else {
+      "".to_string()
+   };
+   let new_url = Url::parse(&format!("{}://{}{}/index.html?appId={name}&appPort={app_port}&token={token}", url.scheme(), url.host().unwrap(), port)).unwrap();
    //println!("Selecting app {:?}\n app: {:?}", new_url, app.webview_windows());
    let _ = webview.navigate(new_url.into())
       .map_err(|e| Error::OpenAppError(e.to_string()))?;

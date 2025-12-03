@@ -399,6 +399,17 @@ export class VinesAdmin extends LitElement {
                                 ${msg("Launch")}
                             </button>
 
+                            <button
+                                    class="disable-btn"
+                                    style=""
+                                    @click=${(e:any) => {
+                                        e.stopPropagation();
+                                        this.onToggleApp(app, false).then(async () => await this.getApps())
+                                    }}
+                            >
+                                ${msg("Deactivate")}
+                            </button>
+                            
                             <!--<button class="moss-button"
                                     style="flex-grow:1;"
                                     @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
@@ -420,7 +431,7 @@ export class VinesAdmin extends LitElement {
                             
                             ${isDefault? html`
                                 <button class="moss-button-secondary"
-                                        style=""
+                                        style="flex-grow:1;display: inline-flex; justify-content: center;"
                                         @click=${(_e:any) => {
                                 localStorage.setItem("vinesDefaultApp", "");
                                 this._defaultApp = "";
@@ -429,7 +440,7 @@ export class VinesAdmin extends LitElement {
                                 </button>          
                             ` : html`
                                 <button class="moss-button-secondary"
-                                        style=""
+                                        style="flex-grow:1;display: inline-flex; justify-content: center;"
                                         @click=${(_e:any) => {
                                 localStorage.setItem("vinesDefaultApp", code);
                                 this._defaultApp = code;
@@ -438,16 +449,6 @@ export class VinesAdmin extends LitElement {
                                 </button>
                             `}
                             
-                            <button
-                                    class="disable-btn"
-                                    style="flex-grow:1;"
-                                    @click=${(e:any) => {
-                                        e.stopPropagation();
-                                        this.onToggleApp(app, false).then(async () => await this.getApps())
-                                    }}
-                            >
-                                ${msg("Deactivate")}
-                            </button>                            
                         </div>
                     </div>
                 </ui5-panel>
