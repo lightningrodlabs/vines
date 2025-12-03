@@ -42,6 +42,8 @@ base64 = "0.22"
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.
+opt-level = 0
+debug = true
 
 [profile.release]
 codegen-units = 1 # Allows LLVM to perform better optimization.
@@ -51,4 +53,5 @@ panic = "abort" # Higher performance by disabling panic handlers.
 strip = true # Ensures debug symbols are removed.
 
 [profile.dev.package."*"]
+opt-level = 1
 debug = false # workaround for "not enough space" issue on android

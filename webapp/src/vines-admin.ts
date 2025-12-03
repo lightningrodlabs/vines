@@ -9,10 +9,12 @@ import {DnaId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {HC_ADMIN_PORT, HC_APP_PORT} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
-import Switch from "@ui5/webcomponents/dist/Switch";
+import Panel from "@ui5/webcomponents/dist/Panel";
+
 import QRCode from "qrcode";
 import {decodeDnaJoiningInfo, DnaJoiningInfo, encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
 import {decodeQrCodeString, isJoiningCode, DNA_FROM_URL} from "./qr-scanner";
+import {dayTimestamp} from "@ddd-qc/files";
 
 console.log("<vines-admin>", APPV.APP_VERSION);
 
@@ -39,11 +41,25 @@ export class VinesAdmin extends LitElement {
     const adminUrl = HC_ADMIN_PORT? new URL(`ws://localhost:${HC_ADMIN_PORT}`) : undefined;
     AdminWebsocket.connect({url: adminUrl}).then(async (ws) => {
         this._adminWs = ws;
-        this._apps = await this._adminWs.listApps({});
+        this._apps = await this.listApps();
         console.log("Installed apps:", this._apps);
     });
   }
 
+
+  async listApps() {
+      if (!this._adminWs) {
+          console.error("Missing _adminWs");
+          return;
+      }
+      const apps: Array<AppInfo> = await this._adminWs.listApps({});
+      return apps.sort((a, b) => {
+          if (a.status.type != b.status.type) {
+              return b.status.type.localeCompare(a.status.type);
+          }
+          return a.installed_app_id.localeCompare(b.installed_app_id);
+      })
+  }
 
   /** Handle global events */
   override connectedCallback() {
@@ -344,30 +360,70 @@ export class VinesAdmin extends LitElement {
 
     let apps  = [html``];
         this._apps.forEach(app => {
-            const elem = html`
-                <div class="app-card row items-center"
-                     @click=${() => {
-                         this._loading = msg("Launching...");
-                         this.onSelectApp(app.installed_app_id)
-                                 .then(() => this._loading = undefined)
-                     }}>
-                    <ui5-button icon="share-2" design="Transparent" 
-                                style="border-radius: 10px;"
+            const elem = app.status.type == "enabled"
+            ? html`
+                <ui5-panel .id=${`panel-${app.installed_app_id}`} class="app-panel" collapsed=true 
+                           @click=${(e:any) => {
+                               e.preventDefault(); e.stopPropagation();
+                              const elem = this.shadowRoot!.getElementById(`panel-${app.installed_app_id}`) as Panel;
+                                elem.collapsed = !elem.collapsed;
+                            }}>
+                    <div slot="header" style="display:flex; flex-direction:row; width: 100%; align-items: baseline;">
+                        <div class="app-name">${app.installed_app_id}</div>
+                        <span class="flex flex-1"></span>
+                        <div style="color:grey">${dayTimestamp(app.installed_at)}</div>
+                    </div>
+                    <div style="padding:20px; border-radius:10px;display:flex; flex-direction: row; gap: 40px;background: rgba(101, 152, 121, 0.35)">
+                        <button class="moss-button-secondary"
+                                style="width: 100px; flex-grow:1; display: inline-flex; justify-content: center;"
                                 @click=${(e:any) => {
                                     e.stopPropagation();
                                     this._showGroupInvite = app
+                                }}>
+                            <ui5-icon name="share-2" style="margin-right:10px;"></ui5-icon>
+                            ${msg("Share")}
+                        </button>
+                        
+                        <button class="moss-button"
+                                style="width: 100px;flex-grow:1;"
+                                    @click=${(_e:any) => {
+                                        this._loading = msg("Launching...");
+                                        this.onSelectApp(app.installed_app_id)
+                                           .then(() => this._loading = undefined)
+                                    }}>
+                            ${msg("Launch")}
+                        </button>
+
+                        <button
+                                class="disable-btn"
+                                style="width: 100px;flex-grow:1;"
+                                @click=${(e:any) => {
+                                    e.stopPropagation(); 
+                                    this.onToggleApp(app, false).then(async () => this._apps = await this.listApps())
                                 }}
-                    ></ui5-button>
-                    <div class="app-name">${app.installed_app_id}</div>
-                    <span class="flex flex-1"></span>
-                    <ui5-switch id="toggle-${app.installed_app_id}" ?checked=${app.status.type == "enabled"}
-                                @change=${() =>  {
-                                    const elem = this.shadowRoot!.getElementById("toggle-"+app.installed_app_id) as Switch;
-                                    this.onToggleApp(app, elem!.checked)}}
-                                @click=${(e:any) => e.stopPropagation()}
-                    ></ui5-switch>
-                </div>
-            `;
+                        >
+                            ${msg("Deactivate")}
+                        </button>
+                    </div>
+                </ui5-panel>
+            ` : html`
+                    <div class="app-panel" style="background:rgba(215, 215, 215, 0.74); color:rgb(81, 97, 79); cursor:default">
+                        <div style="display:flex; flex-direction:row; width: 100%; align-items: baseline;">
+                            <div class="app-name">${app.installed_app_id}</div>
+                            <span class="flex flex-1"></span>
+                            <button
+                                    class="enable-btn"
+                                    style="width: 100px;"
+                                    @click=${(e:any) => {
+                                        e.stopPropagation();
+                                        this.onToggleApp(app, true).then(async () => this._apps = await this.listApps())
+                                    }}
+                            >
+                                ${msg("Activate")}
+                            </button>
+                        </div>                        
+                    </div>
+                `;
             apps.push(elem);
         })
     /** Render all */
@@ -376,7 +432,7 @@ export class VinesAdmin extends LitElement {
             
             <div class="column items-center" style="margin-bottom: 12px;">
                 <div style="margin-bottom:4px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
-                <div class="dialog-title">${msg('Select group')}</div>
+                <!-- <div class="dialog-title">${msg('Select group')}</div> -->
             </div>
 
             <div class="column items-center" style="margin-bottom: 20px; gap:15px; width:90%;">
@@ -518,6 +574,17 @@ export class VinesAdmin extends LitElement {
               --sl-tooltip-border-radius: 8px;
           }
 
+          .app-panel {
+              width: 90%;
+              background: white;
+              border-radius: 20px;
+              padding: 10px;
+          }
+
+          .app-panel:hover {
+              cursor: pointer;
+          }
+
           .error {
               background-color: #ffebee;
               color: #c62828;
@@ -610,6 +677,60 @@ export class VinesAdmin extends LitElement {
               outline: 2px solid var(--moss-purple);
           }
 
+          /* enable-btn */
+
+          .enable-btn {
+              all: unset;
+              display: inline-flex;
+              justify-content: center;
+              border-radius: 16px;
+              padding: 14px 18px;
+              font-size: 18px;
+              font-weight: 500;
+              line-height: 20px;
+              color: #1cb504;
+              border: 2px solid #41df1e;
+              cursor: pointer;
+              background: white;
+          }
+
+          .enable-btn:hover {
+              background: rgba(185, 250, 131, 0.53);
+              /*color: white;*/
+          }
+
+          /* disable-btn */
+
+          .disable-btn {
+              all: unset;
+              display: inline-flex;
+              justify-content: center;
+              border-radius: 16px;
+              padding: 14px 18px;
+              font-size: 18px;
+              font-weight: 500;
+              line-height: 20px;
+              color: red;
+              border: 2px solid #df1e1e;
+              cursor: pointer;
+              background: white;
+          }
+
+          .disable-btn:hover {
+              background: rgba(223, 30, 30, 0.53);
+              color: white;
+          }
+
+          .disable-btn:disabled {
+              opacity: 0.4;
+              cursor: default;
+              background: transparent;
+          }
+
+          .disable-btn:focus-visible {
+              outline: 2px solid var(--moss-purple);
+          }
+
           /* moss-button-secondary */
 
           .moss-button-secondary {
@@ -622,7 +743,7 @@ export class VinesAdmin extends LitElement {
               color: black;
               border: 2px solid #334128;
               cursor: pointer;
-              background: transparent;
+              background: white;
           }
 
           .moss-button-secondary:hover {
@@ -678,7 +799,7 @@ export class VinesAdmin extends LitElement {
               padding-left: 20px;
               color: black;
           }
-          
+
           /* moss-card */
 
           .moss-card {

@@ -1,51 +1,20 @@
 use holochain_types::prelude::*;
-use std::path::PathBuf;
+//use std::path::PathBuf;
 use tauri_plugin_holochain::{HolochainExt, Error};
-use tauri::{Manager, Url, WebviewUrl};
+use tauri::{Manager, Url};
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
    Argon2,
 };
 use crate::utils::*;
 
-// /** FIXME: Delete this and do it in frontend instead */
-// #[tauri::command]
-// pub async fn toggle_app(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
-//    println!("toggle app: {} -> {}", name, enable);
-//    // Look for happ
-//    let hc = &app.holochain()?.holochain_runtime;
-//    let admin_ws = hc.admin_websocket().await?;
-//    let installed_apps = admin_ws
-//       .list_apps(None)
-//       .await
-//       .map_err(|err| Error::ConductorApiError(err))?;
-//    let maybe_app_info = installed_apps.iter().find(|app| app.installed_app_id == name);
-//    let Some(app_info) = maybe_app_info else {
-//       return Err(Error::OpenAppError("App not found".to_string()));
-//    };
-//    // Enable
-//    if enable && app_info.status != AppStatus::Enabled {
-//       hc.enable_app(app_info.installed_app_id.clone()).await
-//          .map_err(|_err| Error::OpenAppError("Failed to enable app".to_string()))?;
-//       return Ok(());
-//    }
-//    // Disable
-//    if !enable && app_info.status == AppStatus::Enabled {
-//       hc.disable_app(app_info.installed_app_id.clone()).await
-//          .map_err(|_err| Error::OpenAppError("Failed to disable app".to_string()))?;
-//       return Ok(());
-//    }
-//    Ok(())
-// }
-
 
 #[tauri::command]
 pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
-   let url = WebviewUrl::App("admin.html".into());
-   println!("CURRENT URL: {} | {}", webview.url().unwrap(), url.to_string());
-   let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
-   let new_url = Url::parse(&format!("http://localhost:1420/admin.html?dna={}", bundle_dna_hash)).unwrap();  // FIXME base
+   let url = webview.url().unwrap();
+   println!("CURRENT URL: {:?}", url);
+   let new_url = Url::parse(&format!("{}://{}:{}/{}", url.scheme(), url.host().unwrap(), url.port().unwrap(), admin_url().await)).unwrap();
    let res = webview.navigate(new_url)
       .map_err(|e| e.to_string());
    res
@@ -74,10 +43,11 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
    hc.update_app_if_necessary(name.clone(), happ_bundle()).await?;
    // Load window with params
    let (app_port, token) = get_app_socket(app.clone(), &name).await;
-   let url = Url::parse(&format!("http://localhost:1420/index.html?appId={name}&appPort={app_port}&token={token}")).unwrap();
-   println!("Selecting app {:?}\n app: {:?}", url, app.webview_windows());
    let webview = app.get_webview_window("main").unwrap();
-   let _ = webview.navigate(url.into())
+   let url = webview.url().unwrap();
+   let new_url = Url::parse(&format!("{}://{}:{}/index.html?appId={name}&appPort={app_port}&token={token}", url.scheme(), url.host().unwrap(), url.port().unwrap())).unwrap();
+   //println!("Selecting app {:?}\n app: {:?}", new_url, app.webview_windows());
+   let _ = webview.navigate(new_url.into())
       .map_err(|e| Error::OpenAppError(e.to_string()))?;
    Ok(name)
 }

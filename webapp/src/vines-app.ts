@@ -344,13 +344,13 @@ export class VinesApp extends HappMultiElement {
   override render() {
     console.log("<vines-app>.render()", !this._hasHolochainFailed, this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
       let adminBtn = html``;
-      if (IS_TAURI) {
+      if (IS_TAURI && HAPP_BUILD_MODE != HappBuildModeType.Retail) {
           adminBtn = html`
               <div style="width: 100%">
                 <button id="retryBtn"
                         style="max-width:300px; margin:auto; display: block;"
                         @click=${async (_e: any) => this.gotoAdmin()}>
-                    ${msg('Cancel')}
+                    ${msg('Admin')}
                 </button>
               </div>
             `;

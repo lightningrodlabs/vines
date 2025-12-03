@@ -1,6 +1,6 @@
 import {DEFAULT_THREADS_DEF} from "./happDef";
-import {HappBuildModeType, HAPP_BUILD_MODE} from "@ddd-qc/lit-happ";
-import { isTauri } from '@tauri-apps/api/core';
+import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {isTauri} from '@tauri-apps/api/core';
 
 export const IS_TAURI: boolean = isTauri();
 export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
