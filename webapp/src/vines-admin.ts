@@ -24,10 +24,12 @@ console.log("<vines-admin>", APPV.APP_VERSION);
 export class VinesAdmin extends LitElement {
 
   @state() private _adminWs?: AdminWebsocket;
-  @state() private _apps?: Array<AppInfo>;
+  private _apps: Map<string, AppInfo> = new Map();
 
   @state() private _inviteLink: string = '';
   @state() private _name: string = '';
+
+  @state() private _initLoading: boolean = true;
 
   @state() private _loading: string | undefined = ""; // Display loading string if this is defined
 
@@ -35,30 +37,42 @@ export class VinesAdmin extends LitElement {
   @state() private _showGroupInvite: AppInfo | undefined = undefined; // Display if this is defined
   @state() private _showScanner: boolean = false;
 
+  @state() private _defaultApp: string = JSON.parse(localStorage.getItem('vinesDefaultApp')? localStorage.getItem('vinesDefaultApp')!: "{}");
+
+
   constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
     super();
     const adminUrl = HC_ADMIN_PORT? new URL(`ws://localhost:${HC_ADMIN_PORT}`) : undefined;
     AdminWebsocket.connect({url: adminUrl}).then(async (ws) => {
         this._adminWs = ws;
-        this._apps = await this.listApps();
+        await this.getApps();
+        this._initLoading = false;
         console.log("Installed apps:", this._apps);
     });
   }
 
 
-  async listApps() {
+  async getApps() {
       if (!this._adminWs) {
           console.error("Missing _adminWs");
           return;
       }
+      this._apps.clear();
       const apps: Array<AppInfo> = await this._adminWs.listApps({});
-      return apps.sort((a, b) => {
-          if (a.status.type != b.status.type) {
-              return b.status.type.localeCompare(a.status.type);
-          }
-          return a.installed_app_id.localeCompare(b.installed_app_id);
-      })
+      for (const appInfo of apps) {
+          const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
+          const code = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+            this._apps.set(code, appInfo);
+      }
+      this.requestUpdate();
+
+      // return apps.sort((a, b) => {
+      //     if (a.status.type != b.status.type) {
+      //         return b.status.type.localeCompare(a.status.type);
+      //     }
+      //     return a.installed_app_id.localeCompare(b.installed_app_id);
+      // })
   }
 
   /** Handle global events */
@@ -89,17 +103,9 @@ export class VinesAdmin extends LitElement {
   }
 
 
-    override async firstUpdated() {
-      console.debug("<vines-admin>.firstUpdated()")
-        // // Initialize camera system
-        // await invoke('plugin:crabcamera|initialize_camera_system');
-        // // Get available cameras
-        // const cameras = await invoke('plugin:crabcamera|get_available_cameras');
-        // console.log('Available cameras:', cameras);
-        // // Get recommended format for high quality
-        // const format = await invoke('plugin:crabcamera|get_recommended_format');
-        // console.log('Available formats:', format);
-    }
+  override async firstUpdated() {
+    console.debug("<vines-admin>.firstUpdated()")
+  }
 
   /** */
   renderGroupInvite(): TemplateResult<1> {
@@ -154,13 +160,10 @@ export class VinesAdmin extends LitElement {
   private _inviteError: string | undefined = undefined;
 
   hasJoiningCode(inviteLink: string): boolean {
-      for (const appInfo of this._apps!) {
-          const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
-          const code = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
-          if (code == inviteLink) {
-              this._inviteError = msg("Group already joined") + ": " + appInfo.installed_app_id;
-              return true;
-          }
+      if (this._apps.get(inviteLink)) {
+          const appInfo = this._apps.get(inviteLink)!;
+          this._inviteError = msg("Group already joined") + ": " + appInfo.installed_app_id;
+          return true;
       }
       return false;
   }
@@ -315,7 +318,7 @@ export class VinesAdmin extends LitElement {
   override render() {
     console.log("<vines-admin>.render()", this._apps);
     /** Check init has been done */
-    if (this._apps == undefined || !!this._loading) {
+    if (this._initLoading || !!this._loading) {
       return html`
           <div class="centered">
               <ui5-busy-indicator delay="0" size="Large" active
@@ -348,7 +351,7 @@ export class VinesAdmin extends LitElement {
             >
             </qr-scanner>`;
       }
-    if (this._apps!.length == 0) {
+    if (this._apps.size == 0) {
       return this.renderAddGroup(true);
     }
     if (this._showAddGroup) {
@@ -359,7 +362,14 @@ export class VinesAdmin extends LitElement {
     }
 
     let apps  = [html``];
-        this._apps.forEach(app => {
+    const appInfos: AppInfo[] = Array.from(this._apps.values()).sort((a, b) => {
+          if (a.status.type != b.status.type) {
+              return b.status.type.localeCompare(a.status.type);
+          }
+          return a.installed_app_id.localeCompare(b.installed_app_id);
+    });
+    console.debug({appInfos})
+    appInfos.forEach(app => {
             const elem = app.status.type == "enabled"
             ? html`
                 <ui5-panel .id=${`panel-${app.installed_app_id}`} class="app-panel" collapsed=true 
@@ -399,7 +409,7 @@ export class VinesAdmin extends LitElement {
                                 style="width: 100px;flex-grow:1;"
                                 @click=${(e:any) => {
                                     e.stopPropagation(); 
-                                    this.onToggleApp(app, false).then(async () => this._apps = await this.listApps())
+                                    this.onToggleApp(app, false).then(async () => await this.getApps())
                                 }}
                         >
                             ${msg("Deactivate")}
@@ -416,7 +426,7 @@ export class VinesAdmin extends LitElement {
                                     style="width: 100px;"
                                     @click=${(e:any) => {
                                         e.stopPropagation();
-                                        this.onToggleApp(app, true).then(async () => this._apps = await this.listApps())
+                                        this.onToggleApp(app, true).then(async () => await this.getApps())
                                     }}
                             >
                                 ${msg("Activate")}
