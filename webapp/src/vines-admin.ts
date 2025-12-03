@@ -135,25 +135,42 @@ export class VinesAdmin extends LitElement {
       `;
   }
 
+  private _inviteError: string | undefined = undefined;
+
+  hasJoiningCode(inviteLink: string): boolean {
+      for (const appInfo of this._apps!) {
+          const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
+          const code = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+          if (code == inviteLink) {
+              this._inviteError = msg("Group already joined") + ": " + appInfo.installed_app_id;
+              return true;
+          }
+      }
+      return false;
+  }
+
   /** */
   renderAddGroup(greet: boolean): TemplateResult<1> {
       let inviteGroup: DnaJoiningInfo | undefined = undefined;
+      this._inviteError = undefined;
       if (this._inviteLink) {
+          this._inviteError = msg("Invalid invite link");
           try {
               const maybe = decodeQrCodeString(this._inviteLink);
               console.debug("maybe: " + JSON.stringify(maybe));
               if (isJoiningCode(maybe)) {
-                  if (new DnaId(maybe.originalDnaHash).b64 == DNA_FROM_URL) {
-                    // FIXME: Check if group already joined
+                  if (!this.hasJoiningCode(this._inviteLink) && new DnaId(maybe.originalDnaHash).b64 == DNA_FROM_URL) {
                     inviteGroup = maybe as DnaJoiningInfo;
+                    this._inviteError = undefined;
                   }
               } else {
                   console.debug("maybe: NOPE");
               }
           } catch (e) {
-              console.debug("BAD INVITE LINK: " + JSON.stringify(e));
+              console.debug("INVALID INVITE LINK: " + JSON.stringify(e));
           }
       }
+
       console.debug("inviteGroup: " + JSON.stringify(inviteGroup));
       return html`
             <div class="column center-content flex-1 launch-bg" style="margin-left:5px; margin-right:5px;">
@@ -238,7 +255,7 @@ export class VinesAdmin extends LitElement {
                             `
                             }
                         </div>
-                        ${this._inviteLink != '' && !inviteGroup? html`<div class="error" style="margin-bottom:0px;">${msg("INVALID INVITE LINK")}</div>` : html``}
+                        ${this._inviteError? html`<div class="error" style="margin-bottom:0px;">${this._inviteError}</div>` : html``}
                     </div>
 
                     <div class="moss-card column items-center" style="margin:6px;">
