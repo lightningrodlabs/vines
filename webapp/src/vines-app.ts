@@ -350,7 +350,7 @@ export class VinesApp extends HappMultiElement {
                 <button id="retryBtn"
                         style="max-width:300px; margin:auto; display: block;"
                         @click=${async (_e: any) => this.gotoAdmin()}>
-                    ${msg('Admin')}
+                    ${msg('Cancel')}
                 </button>
               </div>
             `;

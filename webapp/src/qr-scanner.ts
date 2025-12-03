@@ -86,7 +86,7 @@ export class QRScanner extends LitElement {
             // Start scanning for QR codes
             this.scanInterval = window.setInterval(() => this.scanFrame(), 200);
         } catch (err) {
-            this.error = msg(`Failed to start camera: ${err}`);
+            this.error = msg(`Failed to start camera: `) + JSON.stringify(err);
             this.isScanning = false;
         }
     }

@@ -12,7 +12,7 @@ use qr_code::*;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![install, select, goto_admin, toggle_app, decode_qr_code])
+        .invoke_handler(tauri::generate_handler![install, select, goto_admin, decode_qr_code])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -43,7 +43,7 @@ pub fn run() {
                      let main_app = installed_apps.into_iter().next().unwrap();
                      println!("Only one app installed, loading it directly: {}", main_app.installed_app_id);
                      if main_app.status != AppStatus::Enabled {
-                        println!("Enabling app {} !!!!!", main_app.installed_app_id);
+                        println!("Enabling app: {}", main_app.installed_app_id);
                         app.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
                      }
                      //
@@ -59,7 +59,7 @@ pub fn run() {
                   } else {
                      {
                         app.holochain()?
-                           .main_window_builder(String::from("toto"), true, None, Some(format!("admin.html?dna={}", bundle_dna_hash))).await?
+                           .main_window_builder(String::from("main"), true, None, Some(format!("admin.html?dna={}", bundle_dna_hash))).await?
                         //   .inner_size(400.,700.)
                            .build()?;
                      }

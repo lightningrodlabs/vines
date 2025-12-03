@@ -409,23 +409,34 @@ export class VinesAdmin extends LitElement {
     }
 
 
-  async createNewGroup(name: string) {
-      console.log("createNewGroup()", name);
-      try {
-          const result = await invoke('install', {name});
-          console.log('Result:', result);
-      } catch (error) {
-          console.error('Error:', error);
+      async createNewGroup(name: string) {
+          console.log("createNewGroup()", name);
+          try {
+              const result = await invoke('install', {name});
+              console.log('Result:', result);
+          } catch (error) {
+              console.error('Error:', error);
+          }
       }
-  }
 
-    async onToggleApp(app: AppInfo, enable: boolean) {
-        console.log("onToggleApp()", app.installed_app_id, enable);
-        try {
-            let result = await invoke('toggle_app', { enable, name: app.installed_app_id });
-            console.log('Result:', result);
-        } catch (error) {
-            console.error('Error:', error);
+    /** */
+    async onToggleApp(target: AppInfo, enable: boolean) {
+       console.log("onToggleApp()", target.installed_app_id, enable, !!this._adminWs);
+       let installedApps = await this._adminWs!.listApps({});
+       let maybeAppInfo = installedApps.find((app) => app.installed_app_id == target.installed_app_id);
+       if (!maybeAppInfo) {
+           console.warn("App not found: " + target.installed_app_id);
+           return;
+       }
+       // Enable
+       if (enable && maybeAppInfo.status.type != "enabled") {
+          await this._adminWs!.enableApp({installed_app_id: target.installed_app_id})
+          return;
+       }
+       // Disable
+        if (!enable && maybeAppInfo.status.type == "enabled") {
+          await this._adminWs!.disableApp({installed_app_id: target.installed_app_id})
+          return;
         }
     }
 

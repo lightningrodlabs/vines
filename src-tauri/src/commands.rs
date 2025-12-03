@@ -8,35 +8,35 @@ use argon2::{
 };
 use crate::utils::*;
 
-/** FIXME: Delete this and do it in frontend instead */
-#[tauri::command]
-pub async fn toggle_app(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
-   println!("toggle app: {} -> {}", name, enable);
-   // Look for happ
-   let hc = &app.holochain()?.holochain_runtime;
-   let admin_ws = hc.admin_websocket().await?;
-   let installed_apps = admin_ws
-      .list_apps(None)
-      .await
-      .map_err(|err| Error::ConductorApiError(err))?;
-   let maybe_app_info = installed_apps.iter().find(|app| app.installed_app_id == name);
-   let Some(app_info) = maybe_app_info else {
-      return Err(Error::OpenAppError("App not found".to_string()));
-   };
-   // Enable
-   if enable && app_info.status != AppStatus::Enabled {
-      hc.enable_app(app_info.installed_app_id.clone()).await
-         .map_err(|_err| Error::OpenAppError("Failed to enable app".to_string()))?;
-      return Ok(());
-   }
-   // Disable
-   if !enable && app_info.status == AppStatus::Enabled {
-      hc.disable_app(app_info.installed_app_id.clone()).await
-         .map_err(|_err| Error::OpenAppError("Failed to disable app".to_string()))?;
-      return Ok(());
-   }
-   Ok(())
-}
+// /** FIXME: Delete this and do it in frontend instead */
+// #[tauri::command]
+// pub async fn toggle_app(app: tauri::AppHandle, enable: bool, name: String) -> Result<(), Error> {
+//    println!("toggle app: {} -> {}", name, enable);
+//    // Look for happ
+//    let hc = &app.holochain()?.holochain_runtime;
+//    let admin_ws = hc.admin_websocket().await?;
+//    let installed_apps = admin_ws
+//       .list_apps(None)
+//       .await
+//       .map_err(|err| Error::ConductorApiError(err))?;
+//    let maybe_app_info = installed_apps.iter().find(|app| app.installed_app_id == name);
+//    let Some(app_info) = maybe_app_info else {
+//       return Err(Error::OpenAppError("App not found".to_string()));
+//    };
+//    // Enable
+//    if enable && app_info.status != AppStatus::Enabled {
+//       hc.enable_app(app_info.installed_app_id.clone()).await
+//          .map_err(|_err| Error::OpenAppError("Failed to enable app".to_string()))?;
+//       return Ok(());
+//    }
+//    // Disable
+//    if !enable && app_info.status == AppStatus::Enabled {
+//       hc.disable_app(app_info.installed_app_id.clone()).await
+//          .map_err(|_err| Error::OpenAppError("Failed to disable app".to_string()))?;
+//       return Ok(());
+//    }
+//    Ok(())
+// }
 
 
 #[tauri::command]
