@@ -392,6 +392,21 @@ export class VinesAdmin extends LitElement {
                     </div>
                     <div style="padding:20px; border-radius:10px; display:flex; flex-direction:column; gap:30px; background:rgba(101, 152, 121, 0.35)">
                         <div style="display:flex; flex-direction: row; gap:40px;">
+                            
+                            <button class="moss-button"
+                                    style="flex-grow:1;"
+                                    @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
+                                ${msg("Launch (Full Arc)")}
+                            </button>
+
+                            <button class="moss-button"
+                                    style="flex-grow:1;"
+                                    @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
+                                ${msg("Launch (Zero Arc)")}
+                            </button>
+
+                        </div>
+                        <div style="display:flex; flex-direction: row; gap:40px;">
                             <button class="moss-button-secondary"
                                     style="flex-grow:1; display: inline-flex; justify-content: center;"
                                     @click=${(e:any) => {
@@ -402,12 +417,6 @@ export class VinesAdmin extends LitElement {
                                 ${msg("Share")}
                             </button>
                             
-                            <button class="moss-button"
-                                    style="flex-grow:1;"
-                                    @click=${(_e:any) => this.onSelectApp(app.installed_app_id)}>
-                                ${msg("Launch")}
-                            </button>
-
                             ${isDefault? html`
                                 <button class="moss-button-secondary"
                                         style=""
@@ -427,8 +436,7 @@ export class VinesAdmin extends LitElement {
                                     ${msg("Set as default")}
                                 </button>
                             `}
-                        </div>
-                        <div style="display:flex; flex-direction: row; gap:40px;">
+                            
                             <button
                                     class="disable-btn"
                                     style="flex-grow:1;"
@@ -745,10 +753,10 @@ export class VinesAdmin extends LitElement {
               display: inline-flex;
               justify-content: center;
               border-radius: 16px;
-              padding: 7px 8px;
-              font-size: 14px;
+              padding: 14px 18px;
+              font-size: 18px;
               font-weight: 500;
-              line-height: 14px;
+              line-height: 20px;
               color: red;
               border: 2px solid #cc4444;
               cursor: pointer;
