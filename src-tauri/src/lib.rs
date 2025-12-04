@@ -51,13 +51,13 @@ pub fn run() {
                      // Load window
                      app.holochain()?
                         .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
-                        //.inner_size(400.,700.)
+                        //.inner_size(360.,800.)
                         .build()?;
                   } else {
                      {
                         app.holochain()?
                            .main_window_builder(String::from("main"), true, None, Some(admin_url(true).await)).await?
-                        //   .inner_size(400.,700.)
+                           //.inner_size(360.,800.)
                            .build()?;
                      }
                      // single app mode
