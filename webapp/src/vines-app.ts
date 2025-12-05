@@ -30,9 +30,10 @@ import {
     VINES_DEFAULT_ROLE_NAME,
     onlineLoadedContext,
     toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
+    renderWelcomeScreen,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID, IS_TAURI, HAPP_TOKEN} from "./globals"
+import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID, IS_TAURI, HAPP_TOKEN, gotoAdmin} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
@@ -40,13 +41,11 @@ import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
 import {FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
-import {renderWelcomeScreen} from "@vines/elements";
 
 import "./vines-page"
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals";
 
 import * as APPV from './generated/version.js';
-import {invoke} from "@tauri-apps/api/core";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -97,6 +96,11 @@ export class VinesApp extends HappMultiElement {
   /** All arguments should be provided when constructed explicitly */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
     console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
+
+    if (IS_TAURI && HAPP_TOKEN == undefined) {
+        /*await*/ gotoAdmin();
+    }
+
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
@@ -329,17 +333,6 @@ export class VinesApp extends HappMultiElement {
     // }
   }
 
-
-  async gotoAdmin() {
-      console.log("gotoAdmin()");
-      try {
-          const result = await invoke('goto_admin');
-          console.log('Result:', result);
-      } catch (error) {
-          console.error('Error:', error);
-      }
-  }
-
   /** */
   override render() {
     console.log("<vines-app>.render()", !this._hasHolochainFailed, this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
@@ -349,7 +342,7 @@ export class VinesApp extends HappMultiElement {
               <div style="width: 100%">
                 <button id="retryBtn"
                         style="max-width:300px; margin:auto; display: block;"
-                        @click=${async (_e: any) => this.gotoAdmin()}>
+                        @click=${async (_e: any) => gotoAdmin()}>
                     ${msg('Admin')}
                 </button>
               </div>
@@ -396,7 +389,7 @@ export class VinesApp extends HappMultiElement {
                 @dumpNetworkLogs=${this.onDumpNetworkLogs}
                 @gotoadmin=${() => {
                     this._offlineLoaded = false;
-                    this.gotoAdmin().then(() => this._offlineLoaded = true)
+                    gotoAdmin().then(() => this._offlineLoaded = true)
                 }}
                 @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
         ></vines-page>`;

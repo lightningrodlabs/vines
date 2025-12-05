@@ -33,7 +33,7 @@ pub fn run() {
                   .list_apps(None)
                   .await
                   .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
-                println!("installed_apps: {}", installed_apps.len());
+                println!("Installed Vines apps: {}", installed_apps.len());
 
                if installed_apps.len() == 1 && installed_apps[0].status == AppStatus::Enabled {
                      // Make sure app is enabled
@@ -55,10 +55,11 @@ pub fn run() {
                         .build()?;
                   } else {
                      {
-                        app.holochain()?
-                           .main_window_builder(String::from("main"), true, None, Some(admin_url(true).await)).await?
-                           //.inner_size(360.,800.)
-                           .build()?;
+                         app.holochain()?
+                            .main_window_builder(String::from("main"), true, None, None).await?
+                            //.main_window_builder(String::from("main"), true, None, Some(admin_url(true).await)).await?
+                            //.inner_size(360.,800.)
+                            .build()?;
                      }
                      // single app mode
                      // {

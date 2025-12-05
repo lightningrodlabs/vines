@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use url2::Url2;
 
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
-pub const TARGET_ARC: u32 = 1; // 1
+pub const TARGET_ARC: u32 = 0; // 1
 
 pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");

@@ -1,11 +1,12 @@
 {
   "productName": "vines",
-  "version": "0.1.0",
+  "version": "1.21.0",
   "identifier": "org.lightningrodlabs.vines",
   "build": {
     "removeUnusedCommands": false,
     "beforeBuildCommand": "npm run build:webapp",
-    "devUrl": "http://localhost:1420"
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../webapp/dist"
   },
   "app": {
     "withGlobalTauri": false,

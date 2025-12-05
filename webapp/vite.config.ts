@@ -3,6 +3,7 @@ import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
 import path from "path";
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { internalIpV4Sync } from "internal-ip";
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
 console.log("vite: process.env.HAPP_BUILD_MODE: ", process.env.HAPP_BUILD_MODE);
@@ -57,6 +58,14 @@ export default defineConfig({
     }
   },
   server: {
+      host: "0.0.0.0",
+      port: 1420,
+      strictPort: true,
+      hmr: {
+          protocol: "ws",
+          host: internalIpV4Sync(),
+          port: 1421,
+      },
     open: false, // This will open the browser automatically
     watch: {
       // include: [

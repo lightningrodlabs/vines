@@ -8,12 +8,13 @@ use argon2::{
 };
 use crate::utils::*;
 
-
 #[tauri::command]
 pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
    let webview = app.get_webview_window("main").unwrap();
-   let url = webview.url().unwrap();
-   println!("CURRENT URL: {:?}", url);
+   println!("goto_admin() CURRENT URL: {:?}", webview.url());
+   let Ok(url) = webview.url() else {
+      return Err(String::from("No webview URL available"));
+   };
    let port = if let Some(num) = url.port() {
       format!(":{}", num)
    } else {

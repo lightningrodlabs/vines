@@ -1,6 +1,6 @@
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {isTauri} from '@tauri-apps/api/core';
+import {isTauri, invoke} from '@tauri-apps/api/core';
 
 export const IS_TAURI: boolean = isTauri();
 export let TAURI_CAN_DEFAULT: boolean = true;
@@ -10,6 +10,17 @@ export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
 export let HC_APP_PORT: number | undefined = undefined;
 export let HC_ADMIN_PORT: number | undefined = undefined;
 export let HAPP_TOKEN: number[] | undefined = undefined;
+
+export async function gotoAdmin() {
+    console.log("gotoAdmin()");
+    try {
+        const result = await invoke('goto_admin');
+        console.log('Result:', result);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 
 try {
     HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
@@ -72,7 +83,6 @@ console.debug("maybeArc", maybeArc);
 if (maybeArc) {
     TARGET_ARC = Number(maybeArc);
 }
-
 
 console.log("   HAPP_TOKEN =", HAPP_TOKEN)
 console.log("     IS_TAURI =", IS_TAURI)
