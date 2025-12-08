@@ -22,6 +22,7 @@ tauri-build = { version = "2.2.0", default-features = false , features = [] }
 serde = { version = "=1.0.219", default-features = false }
 tauri = { version = "2.5.1", default-features = false , features = [] }
 tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.6"}
+tauri-plugin-clipboard-manager = "2.0.0"
 holochain = { version = "0.6.0" }
 holochain_types = { version = "0.6.0" }
 lair_keystore = { version = "0.6.3" }
@@ -35,6 +36,8 @@ app_dirs2 = "2.5.5"
 anyhow = "1"
 serde_json = "1.0.120"
 argon2 = "0.5.3"
+sha2 = "0.10.8"
+hex = "0.4.3"
 
 #crabcamera = "0.4.0"
 image = "0.25"

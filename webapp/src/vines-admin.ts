@@ -5,15 +5,19 @@ import {
     AdminWebsocket, AppInfo, ProvisionedCell,
 } from "@holochain/client";
 import {setLocale} from "./localization";
-import {DnaId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {decodeHappJoinCode, encodeHappJoinCode, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
-
+import {
+    writeText,
+} from '@tauri-apps/plugin-clipboard-manager'
 import QRCode from "qrcode";
-import {decodeDnaJoiningInfo, DnaJoiningInfo, encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
-import {decodeQrCodeString, isJoiningCode} from "./qr-scanner";
+import {decodeQrCodeString, isHappJoiningCode} from "./qr-scanner";
 import {dayTimestamp} from "@ddd-qc/files";
 import {HappInfo} from "./vines-index";
+import {toasty} from "@vines/elements";
+import {HappJoinCode} from "@ddd-qc/cell-proxy";
+import {MyTauriConfig} from "./globals";
 
 /** */
 @localized()
@@ -30,6 +34,7 @@ export class VinesAdmin extends LitElement {
 
   @state() private _loading: string | undefined = ""; // Display loading string if this is defined
 
+  @state() private _showShareApp: boolean = false;
   @state() private _showAddGroup: boolean = false;
   @state() private _showGroupInvite: AppInfo | undefined = undefined; // Display if this is defined
   @state() private _showScanner: boolean = false;
@@ -47,6 +52,14 @@ export class VinesAdmin extends LitElement {
         this._initLoading = false;
         //console.log("Installed apps:", this._apps);
     });
+      if (globalThis.IS_TAURI) {
+          console.debug("REQUESTING TAURI CONFIG...");
+          invoke<MyTauriConfig>("get_config").then((config: MyTauriConfig) => {
+              console.log("GOT TAURI CONFIG: " + JSON.stringify(config));
+              globalThis.TAURI_HAPP_SHA256 = config.happ_sha256;
+              globalThis.TAURI_TARGET_ARC = config.arc;
+          })
+      }
   }
 
     protected override willUpdate(_changedProperties: PropertyValues) {
@@ -67,7 +80,7 @@ export class VinesAdmin extends LitElement {
       const apps: Array<AppInfo> = await this._adminWs.listApps({});
       for (const appInfo of apps) {
           const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
-          const code = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+          const code = encodeHappJoinCode(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed);
             this._apps.set(code, appInfo);
       }
       this.requestUpdate();
@@ -112,11 +125,69 @@ export class VinesAdmin extends LitElement {
   //   console.debug("<vines-admin>.firstUpdated() " + this._defaultApp)
   // }
 
+    renderShareApp(): TemplateResult<1> {
+      const appVersion = APPV.APP_VERSION;
+      const happDownloadLinkUrl = `https://github.com/lightningrodlabs/vines/releases/download/v${appVersion}/vines-${appVersion}.apk`;
+
+        const popover = this.shadowRoot!.getElementById('popover-happ');
+        let existingImg = null;
+        if (popover) { existingImg = popover.querySelector('img')}
+        console.debug("renderQrCode() happ", existingImg, popover);
+        if (!existingImg) {
+            try {
+                console.debug("Generating QR code for:", happDownloadLinkUrl);
+                QRCode.toDataURL(happDownloadLinkUrl).then(generateQR => {
+                    console.debug("Generated QR code");
+                    const img = document.createElement('img');
+                    img.src = generateQR;
+                    img.style.width = '100%';
+                    const popover2 = this.shadowRoot!.getElementById('popover-happ');
+                    if (popover2) { popover2.append(img); this.requestUpdate();}
+                    const popoverDiv = this.shadowRoot!.getElementById('happ-sha') as HTMLElement;
+                    if (popoverDiv) { popoverDiv.innerText = globalThis.TAURI_HAPP_SHA256!}
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        return html`
+          <div class="column center-content flex-1" style="gap:15px; height:100%;">
+              <div class="dialog-title" style="display:flex; flex-direction:row; gap:5px; align-items:baseline">
+                  <span>Vines v${appVersion}</span>
+              </div>
+              <span class="flex flex-1"></span>
+              <h3 style="margin:0px; margin-bottom:10px;">
+                  <div style="width: fit-content; margin:auto; margin-bottom:5px;">${msg('APK download link')}</div>
+                  <div id="popover-happ" style="cursor:pointer" 
+                       @click=${async () => {
+                            console.debug("writing to clipboard: " + happDownloadLinkUrl);
+                            await writeText(happDownloadLinkUrl);
+                            toasty(msg("Download link copied to clipboard"), undefined, this);
+                        }}>
+                  </div>
+              </h3>
+              <a .href=${happDownloadLinkUrl} target="_blank">${happDownloadLinkUrl}</a>
+              <div id="happ-sha"></div>
+              <span class="flex flex-1"></span>
+              <button id="cancel-btn"
+                      class="moss-button"
+                      @click=${() => this._showShareApp = false}>
+                  <div class="row center-content">
+                      <ui5-icon name="nav-back" style="margin-right:10px;"></ui5-icon>
+                      <div>${msg('Back')}</div>
+                  </div>
+              </button>              
+              </div>           
+          </div>
+      `;
+    }
+
   /** */
   renderGroupInvite(): TemplateResult<1> {
       const appInfo = this._showGroupInvite!;
       const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
-      const shareCode = encodeDnaJoiningInfo(cell.cell_id[0], appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+      const shareCode = encodeHappJoinCode(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed);
       const isDefault = this._defaultApp == shareCode;
       const popover = this.shadowRoot!.getElementById('popover');
       let existingImg = null;
@@ -145,9 +216,13 @@ export class VinesAdmin extends LitElement {
                   <div style="margin-left:5px; color:rgb(45, 111, 244); font-size:18px;">${isDefault? `(${msg("default")})`: ""}</div>
               </div>
               <span class="flex flex-1"></span>
-              <h3 style="margin:0px;margin-bottom:10px;">
+              <h3 style="margin:0px; margin-bottom:10px;">
                   <div style="width: fit-content; margin:auto; margin-bottom:5px;">${msg('Invite code')}</div>
-                  <div id="popover"></div>
+                  <div id="popover" style="cursor:pointer" @click=${async () => {
+                      console.debug("writing to clipboard: " + shareCode);
+                      await writeText(shareCode);
+                      toasty(msg("Invite code copied to clipboard"), undefined, this);
+                  }}></div>
               </h3>
               <!-- <ui5-textarea .value=${shareCode} style="height:80px; width: 90%;"></ui5-textarea> -->
               <span class="flex flex-1"></span>
@@ -211,16 +286,16 @@ export class VinesAdmin extends LitElement {
 
   /** */
   renderAddGroup(greet: boolean): TemplateResult<1> {
-      let inviteGroup: DnaJoiningInfo | undefined = undefined;
+      let inviteGroup: HappJoinCode | undefined = undefined;
       this._inviteError = undefined;
       if (this._inviteLink) {
           this._inviteError = msg("Invalid invite code");
           try {
               const maybe = decodeQrCodeString(this._inviteLink);
               console.debug("maybe: " + JSON.stringify(maybe));
-              if (isJoiningCode(maybe)) {
-                  if (!this.hasJoiningCode(this._inviteLink) && new DnaId(maybe.originalDnaHash).b64 == globalThis.TAURI_ORIGINAL_DNA_HASH) {
-                    inviteGroup = maybe as DnaJoiningInfo;
+              if (isHappJoiningCode(maybe)) {
+                  if (!this.hasJoiningCode(this._inviteLink) && globalThis.TAURI_HAPP_SHA256 == maybe.happSha256) {
+                    inviteGroup = maybe as HappJoinCode;
                     this._inviteError = undefined;
                   }
               } else {
@@ -273,7 +348,7 @@ export class VinesAdmin extends LitElement {
                                     @click=${() => this._inviteLink = ''}
                                     style=""
                             >
-                            ${inviteGroup.name}
+                            ${inviteGroup.happId}
                             ${closeIcon(30)}                                
                             </button>
                             <button
@@ -395,6 +470,9 @@ export class VinesAdmin extends LitElement {
     if (this._apps.size == 0) {
       return this.renderAddGroup(true);
     }
+      if (this._showShareApp) {
+          return this.renderShareApp();
+      }
     if (this._showAddGroup) {
       return this.renderAddGroup(false);
     }
@@ -467,6 +545,15 @@ export class VinesAdmin extends LitElement {
                         <div style="margin-left: 10px;">${msg('Add group')}</div>
                     </div>
                 </button>
+                <button
+                        class="moss-button-secondary"
+                        style="width: 180px; margin-bottom: 28px;"
+                        @click=${() => this._showShareApp = true}>
+                    <div class="row center-content">
+                        <ui5-icon name="share-2"></ui5-icon>
+                        <div style="margin-left: 10px;">${msg('Share app')}</div>
+                    </div>
+                </button>
             </div>
             
         </div>
@@ -499,14 +586,13 @@ export class VinesAdmin extends LitElement {
     async onJoinGroup() {
         console.log("JOINING group space: " + this._inviteLink);
         try {
-            const decoded: DnaJoiningInfo = decodeDnaJoiningInfo(this._inviteLink);
-            const joinDnaId = new DnaId(decoded.originalDnaHash);
-            if (joinDnaId.b64 != globalThis.TAURI_ORIGINAL_DNA_HASH) {
-                console.error("DNA MISMATCH.\n Expected: " + globalThis.TAURI_ORIGINAL_DNA_HASH + "\n    got: " + joinDnaId.b64);
+            const decoded: HappJoinCode = decodeHappJoinCode(this._inviteLink);
+            if (decoded.happSha256 != globalThis.TAURI_HAPP_SHA256) {
+                console.error("HAPP VERSION MISMATCH.\n Expected: " + globalThis.TAURI_HAPP_SHA256 + "\n    got: " + decoded.happSha256);
                 return;
             }
-            console.log("JOINING group space: installing " + joinDnaId.b64);
-            await this.createNewGroup(decoded.name, decoded.networkSeed)
+            console.log("JOINING group space: installing " + decoded.happSha256);
+            await this.createNewGroup(decoded.happId, decoded.networkSeed)
         } catch(e) {
             console.error("failed to decode joining code");
             return;

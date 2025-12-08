@@ -25,6 +25,7 @@
   },
   "dependencies"   : {
     "@tauri-apps/api" : "2.9.0",
+    "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "qrcode"         : "~1.5.4",
     "@vines/elements": "file:../webcomponents"
   }

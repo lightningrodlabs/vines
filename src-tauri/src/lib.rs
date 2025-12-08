@@ -20,6 +20,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]),
             HolochainPluginConfig::new(holochain_dir(), network_config(TARGET_ARC))

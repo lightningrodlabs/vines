@@ -159,7 +159,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {AgentId, AppProxy, LinkableId, MyDictionary} from "@ddd-qc/cell-proxy";
+import {AgentId, LinkableId, MyDictionary} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -249,6 +249,7 @@ import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
+import {happShareCodeContext} from "./globals";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -273,13 +274,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  @property() appProxy!: AppProxy; // for network info
+  //@property() appProxy!: AppProxy; // for network info
 
   @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
   @consume({context: networkCallerContext, subscribe: true})
   @property() networkCaller!: NetworkCaller;
+
+  @consume({context: happShareCodeContext, subscribe: true})
+  @property() happShareCodes!: [string, string][];
 
   @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
@@ -2149,12 +2153,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             ${msg('Share this code to grant access to this Network')}: ${HAPP_ID}
                             (seed: "${this.cell.dnaModifiers.network_seed}")
                         </div>
-                        <ui5-textarea .value=${this.cell.shareCode}></ui5-textarea>
+                        <ui5-textarea .value=${this.happShareCode()}></ui5-textarea>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
                             <ui5-button slot="footer" design="Emphasized" @click=${() => {
-                                navigator.clipboard.writeText(this.cell.shareCode);
+                                navigator.clipboard.writeText(this.happShareCode());
                                 toasty(msg("Copied share code to clipboard"));
                                 const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
                                 if (popover.isOpen()) {
@@ -2663,6 +2667,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
   }
 
+  /** */
+  happShareCode(): string {
+    const maybe = this.happShareCodes.find(([name, _v]) => name == this._dvm.cell.name);
+    return maybe? maybe[1] : "null";
+  }
+
   async onShareNetwork(): Promise<void> {
     const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
     const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
@@ -2671,7 +2681,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!existingImg) {
       let generateQR: string;
       try {
-        generateQR = await QRCode.toDataURL(this.cell.shareCode);
+        generateQR = await QRCode.toDataURL(this.happShareCode());
         const img = document.createElement('img');
         img.src = generateQR;
         popover.append(img);

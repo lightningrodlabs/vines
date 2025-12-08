@@ -17,7 +17,8 @@ import {
     HappMultiElement,
     HvmDef,
     DvmDef,
-    DnaViewModel, pascal, ActionId, Cell, HcConnectionOptions,
+    DnaViewModel, pascal, ActionId, Cell,
+    HcConnectionOptions,
 } from "@ddd-qc/lit-happ";
 import {
     ThreadsDvm,
@@ -47,6 +48,7 @@ import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals"
 import * as APPV from './generated/version.js';
 import {HappInfo} from "./vines-index";
 import {invoke} from "@tauri-apps/api/core";
+import {happShareCodeContext, MyTauriConfig} from "./globals";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -119,9 +121,9 @@ export class VinesApp extends HappMultiElement {
 
     if (globalThis.IS_TAURI) {
         console.debug("REQUESTING TAURI CONFIG...");
-        invoke("get_config").then((config: any) => {
+        invoke<MyTauriConfig>("get_config").then((config: MyTauriConfig) => {
             console.log("GOT TAURI CONFIG: " + JSON.stringify(config));
-            globalThis.TAURI_ORIGINAL_DNA_HASH = config.dna;
+            globalThis.TAURI_HAPP_SHA256 = config.happ_sha256;
             globalThis.TAURI_TARGET_ARC = config.arc;
         })
     }
@@ -247,6 +249,9 @@ export class VinesApp extends HappMultiElement {
     //this.networkCaller?.startCallLoop(1000);
     // @ts-ignore
     new ContextProvider(this, networkCallerContext, this.networkCaller);
+    //
+    const allShareCodes: [string, string][] = this.hvms.map(([_proxy, hvm]) => [hvm.appId, hvm.getHappShareCode()!])
+    new ContextProvider(this, happShareCodeContext, allShareCodes);
   }
 
 

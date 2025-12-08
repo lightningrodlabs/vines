@@ -6,6 +6,7 @@
   "permissions": [
     "core:app:default",
     "core:window:allow-set-title",
+    "clipboard-manager:allow-write-text",
     "os:allow-os-type",
     {
       "identifier": "opener:allow-open-url",

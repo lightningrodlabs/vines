@@ -1,24 +1,25 @@
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {isTauri} from "@tauri-apps/api/core";
+import {createContext} from "@lit/context";
 
 declare global {
     var IS_TAURI: boolean;
     var TAURI_SHOW_ADMIN: boolean | undefined;
     var HAPP_TOKEN: number[] | undefined;
-    var HAPP_ID: string;
-    var HC_APP_PORT: number | undefined;
-    var HC_ADMIN_PORT: number | undefined;
     var TAURI_CAN_DEFAULT: boolean;
     var TAURI_IS_DEV: boolean;
     var TAURI_TARGET_ARC: number | undefined;
-    var TAURI_ORIGINAL_DNA_HASH: string | undefined;
+    var TAURI_HAPP_SHA256: string | undefined;
+    var HAPP_ID: string;
+    var HC_APP_PORT: number | undefined;
+    var HC_ADMIN_PORT: number | undefined;
 }
 
 globalThis.IS_TAURI = isTauri();
 globalThis.TAURI_IS_DEV = false;
 globalThis.TAURI_TARGET_ARC = undefined;
-globalThis.TAURI_ORIGINAL_DNA_HASH = undefined;
+globalThis.TAURI_HAPP_SHA256 = undefined;
 globalThis.TAURI_CAN_DEFAULT = true;
 globalThis.TAURI_SHOW_ADMIN = undefined;
 globalThis.HAPP_TOKEN = undefined;
@@ -59,6 +60,7 @@ console.log("      HAPP_ID =", HAPP_ID)
 console.log("  HC_APP_PORT =", HC_APP_PORT);
 console.log("HC_ADMIN_PORT =", HC_ADMIN_PORT);
 
+
 /** Remove console.log() in Retail */
 if (HAPP_BUILD_MODE === HappBuildModeType.Retail) {
   // console.log("console.log() disabled");
@@ -66,3 +68,14 @@ if (HAPP_BUILD_MODE === HappBuildModeType.Retail) {
   console.log("console.log() changed into console.debug()");
   console.log = console.debug
 }
+
+
+export interface MyTauriConfig {
+    is_dev: boolean,
+    dna: string,
+    happ_sha256: string,
+    arc: number,
+    //can_default: bool,
+}
+
+export const happShareCodeContext = createContext<[string, string][]>('happShareCodes');

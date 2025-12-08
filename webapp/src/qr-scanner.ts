@@ -1,10 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { invoke } from '@tauri-apps/api/core';
-import {DnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
 import {decode} from "@msgpack/msgpack";
 import {msg, localized} from '@lit/localize';
-import {DnaId} from "@ddd-qc/lit-happ";
+import {HappJoinCode} from "@ddd-qc/cell-proxy";
 
 /** Decode base64 string */
 export function decodeQrCodeString(shareCode: string): any {
@@ -12,16 +11,16 @@ export function decodeQrCodeString(shareCode: string): any {
 }
 
 
-/** Make sure its a decodeQrCodeString */
-export function isJoiningCode(object: any): object is DnaJoiningInfo {
+/** Make sure its a HappJoinCode */
+export function isHappJoiningCode(object: any): object is HappJoinCode {
     console.debug("isJoiningCode: " + JSON.stringify(object));
-    if (!object || typeof object !== 'object' || object === null) {
+    if (!object || typeof object !== 'object') {
         console.debug("isJoiningCode: NOT AN OBJECT");
         return false;
     }
     return (
-        'originalDnaHash' in object
-        && 'name' in object
+        'happSha256' in object
+        && 'happId' in object
         // && typeof object.name === 'string'
         && 'networkSeed' in object
     );
@@ -125,9 +124,9 @@ export class QRScanner extends LitElement {
             if (result) {
                 console.debug("QR CODE FOUND: " + result);
                 const maybe: any = decodeQrCodeString(result);
-                if (isJoiningCode(maybe)) {
-                    if (new DnaId(maybe.originalDnaHash).b64 != globalThis.TAURI_ORIGINAL_DNA_HASH) {
-                         this.error = msg("DNA HASH MISMATCH");
+                if (isHappJoiningCode(maybe)) {
+                    if (globalThis.TAURI_HAPP_SHA256 != maybe.happSha256) {
+                         this.error = msg("HAPP VERSION MISMATCH");
                     } else {
                         this.stopScanner();
                         this.dispatchEvent(new CustomEvent('scan', { detail: result, bubbles: true, composed: true }));
