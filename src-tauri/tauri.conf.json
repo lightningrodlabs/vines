@@ -20,9 +20,7 @@
     "category": "Productivity",
     "copyright": "Copyright (C) 2021-2025, Harris-Braun Enterprises, LLC",
     "shortDescription": "Vines is a decentralized chat app built on Holochain.",
-    "resources": [
-      "../webapp/admin.html"
-      ],
+    "resources": ["../webapp/icon.png"],
     "targets": "all",
     "icon": [
       "icons/32x32.png",

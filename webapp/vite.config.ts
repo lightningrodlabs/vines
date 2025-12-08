@@ -31,7 +31,6 @@ export default defineConfig({
     }),
       viteStaticCopy({
           targets: [
-              {src: "admin.html", dest: "./"},
           ]
       }),
     dts(),

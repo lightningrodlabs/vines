@@ -4,16 +4,15 @@ use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked}
 
 pub mod commands;
 pub mod utils;
-pub mod qr_code;
+
 use utils::*;
 use commands::*;
-use qr_code::*;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![install, select, goto_admin, decode_qr_code])
+        .invoke_handler(tauri::generate_handler![install, select, decode_qr_code, get_config])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)

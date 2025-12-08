@@ -1,34 +1,14 @@
 use holochain_types::prelude::*;
-//use std::path::PathBuf;
 use tauri_plugin_holochain::{HolochainExt, Error};
-use tauri::{Manager, Url};
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
    Argon2,
 };
 use crate::utils::*;
 
-#[tauri::command]
-pub async fn goto_admin(app: tauri::AppHandle) -> Result<(), String> {
-   let webview = app.get_webview_window("main").unwrap();
-   println!("goto_admin() CURRENT URL: {:?}", webview.url());
-   let Ok(url) = webview.url() else {
-      return Err(String::from("No webview URL available"));
-   };
-   let port = if let Some(num) = url.port() {
-      format!(":{}", num)
-   } else {
-      "".to_string()
-   };
-   let new_url = Url::parse(&format!("{}://{}{}/{}", url.scheme(), url.host().unwrap(), port, admin_url(false).await)).unwrap();
-   let res = webview.navigate(new_url)
-      .map_err(|e| e.to_string());
-   res
-}
-
 
 #[tauri::command]
-pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error> {
+pub async fn select(app: tauri::AppHandle, name: String) -> Result<(u16, String), Error> {
    println!("select app {}", name);
    // Look for happ
    let hc = &app.holochain()?.holochain_runtime;
@@ -47,25 +27,15 @@ pub async fn select(app: tauri::AppHandle, name: String) -> Result<String, Error
    }
    // Update conductor if necessary
    hc.update_app_if_necessary(name.clone(), happ_bundle()).await?;
-   // Load window with params
+   // Return HappInfo
    let (app_port, token) = get_app_socket(app.clone(), &name).await;
-   let webview = app.get_webview_window("main").unwrap();
-   let url = webview.url().unwrap();
-   let port = if let Some(num) = url.port() {
-      format!(":{}", num)
-   } else {
-      "".to_string()
-   };
-   let new_url = Url::parse(&format!("{}://{}{}/index.html?appId={name}&appPort={app_port}&token={token}", url.scheme(), url.host().unwrap(), port)).unwrap();
-   //println!("Selecting app {:?}\n app: {:?}", new_url, app.webview_windows());
-   let _ = webview.navigate(new_url.into())
-      .map_err(|e| Error::OpenAppError(e.to_string()))?;
-   Ok(name)
+   println!("Selecting app ; app_port: {app_port}");
+   Ok((app_port, token))
 }
 
 
 #[tauri::command]
-pub async fn install(handle: tauri::AppHandle, name: String, seed: Option<String>) -> Result<String, Error> {
+pub async fn install(handle: tauri::AppHandle, name: String, seed: Option<String>) -> Result<(u16, String), Error> {
    println!("install app {name} | seed: {:?}", seed);
    let network_seed = match seed {
       Some(seed) => seed,

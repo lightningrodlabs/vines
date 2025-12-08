@@ -6,15 +6,6 @@ import {decode} from "@msgpack/msgpack";
 import {msg, localized} from '@lit/localize';
 import {DnaId} from "@ddd-qc/lit-happ";
 
-/** look-up dnaId from URL query param (tauri) */
-const params = new URLSearchParams(window.location.search);
-export const DNA_FROM_URL = params.get('dna');
-console.debug("DNA from URL = " + DNA_FROM_URL);
-if (!DNA_FROM_URL) {
-    console.warn("dna param is missing from URL");
-}
-
-
 /** Decode base64 string */
 export function decodeQrCodeString(shareCode: string): any {
     return decode(new Uint8Array(atob(shareCode).split("").map((c) => c.charCodeAt(0))));
@@ -135,7 +126,7 @@ export class QRScanner extends LitElement {
                 console.debug("QR CODE FOUND: " + result);
                 const maybe: any = decodeQrCodeString(result);
                 if (isJoiningCode(maybe)) {
-                    if (new DnaId(maybe.originalDnaHash).b64 != DNA_FROM_URL) {
+                    if (new DnaId(maybe.originalDnaHash).b64 != globalThis.TAURI_ORIGINAL_DNA_HASH) {
                          this.error = msg("DNA HASH MISMATCH");
                     } else {
                         this.stopScanner();

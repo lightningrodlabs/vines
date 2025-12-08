@@ -33,7 +33,6 @@ import {
     renderWelcomeScreen,
 } from "@vines/elements";
 import {setLocale} from "./localization";
-import {HC_ADMIN_PORT, HC_APP_PORT, HAPP_ID, IS_TAURI, HAPP_TOKEN, gotoAdmin} from "./globals"
 
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
@@ -46,6 +45,8 @@ import "./vines-page"
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals";
 
 import * as APPV from './generated/version.js';
+import {HappInfo} from "./vines-index";
+import {invoke} from "@tauri-apps/api/core";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -96,11 +97,6 @@ export class VinesApp extends HappMultiElement {
   /** All arguments should be provided when constructed explicitly */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
     console.log("<vines-app>.ctor()", APPV.APP_VERSION, appletGroups?.length);
-
-    if (IS_TAURI && HAPP_TOKEN == undefined) {
-        /*await*/ gotoAdmin();
-    }
-
     const adminUrl = _adminWs
       ? undefined
       : HC_ADMIN_PORT
@@ -120,6 +116,15 @@ export class VinesApp extends HappMultiElement {
       this.appletView = appletGroups[0]!.appletView;
     }
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
+
+    if (globalThis.IS_TAURI) {
+        console.debug("REQUESTING TAURI CONFIG...");
+        invoke("get_config").then((config: any) => {
+            console.log("GOT TAURI CONFIG: " + JSON.stringify(config));
+            globalThis.TAURI_ORIGINAL_DNA_HASH = config.dna;
+            globalThis.TAURI_TARGET_ARC = config.arc;
+        })
+    }
   }
 
 
@@ -337,12 +342,14 @@ export class VinesApp extends HappMultiElement {
   override render() {
     console.log("<vines-app>.render()", !this._hasHolochainFailed, this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
       let adminBtn = html``;
-      if (IS_TAURI && HAPP_BUILD_MODE != HappBuildModeType.Retail) {
+      if (globalThis.IS_TAURI && HAPP_BUILD_MODE != HappBuildModeType.Retail) {
           adminBtn = html`
               <div style="width: 100%">
                 <button id="retryBtn"
                         style="max-width:300px; margin:auto; display: block;"
-                        @click=${async (_e: any) => gotoAdmin()}>
+                        @click=${async (_e: any) => {
+                            this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: false, bubbles: true, composed: true}));
+                        }}>
                     ${msg('Admin')}
                 </button>
               </div>
@@ -387,10 +394,6 @@ export class VinesApp extends HappMultiElement {
         <vines-page
                 .appProxy=${appProxy}
                 @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                @gotoadmin=${() => {
-                    this._offlineLoaded = false;
-                    gotoAdmin().then(() => this._offlineLoaded = true)
-                }}
                 @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
         ></vines-page>`;
     if (this.appletView) {

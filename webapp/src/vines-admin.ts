@@ -1,4 +1,4 @@
-import {html, css, LitElement, TemplateResult} from "lit";
+import {html, css, LitElement, TemplateResult, PropertyValues} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {msg, localized} from '@lit/localize';
 import {
@@ -6,16 +6,14 @@ import {
 } from "@holochain/client";
 import {setLocale} from "./localization";
 import {DnaId, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {HC_ADMIN_PORT, HC_APP_PORT, TARGET_ARC, TAURI_CAN_DEFAULT, TAURI_IS_DEV} from "./globals"
 import * as APPV from './generated/version.js';
 import { invoke } from '@tauri-apps/api/core';
 
 import QRCode from "qrcode";
 import {decodeDnaJoiningInfo, DnaJoiningInfo, encodeDnaJoiningInfo} from "@ddd-qc/cell-proxy/dist/dnaJoiningInfo";
-import {decodeQrCodeString, isJoiningCode, DNA_FROM_URL} from "./qr-scanner";
+import {decodeQrCodeString, isJoiningCode} from "./qr-scanner";
 import {dayTimestamp} from "@ddd-qc/files";
-
-console.log("<vines-admin>", APPV.APP_VERSION);
+import {HappInfo} from "./vines-index";
 
 /** */
 @localized()
@@ -46,17 +44,21 @@ export class VinesAdmin extends LitElement {
     AdminWebsocket.connect({url: adminUrl}).then(async (ws) => {
         this._adminWs = ws;
         await this.getApps();
-        console.debug("TAURI_CAN_DEFAULT", TAURI_CAN_DEFAULT);
-        if (TAURI_CAN_DEFAULT && this._defaultApp && this._apps.get(this._defaultApp)) {
-            this.onSelectApp(this._apps.get(this._defaultApp)!.installed_app_id);
-        }
         this._initLoading = false;
         //console.log("Installed apps:", this._apps);
     });
   }
 
+    protected override willUpdate(_changedProperties: PropertyValues) {
+        super.willUpdate(_changedProperties);
+        console.debug("<vines-admin>.willUpdate()", TAURI_CAN_DEFAULT, this._defaultApp, this._apps);
+        if (TAURI_CAN_DEFAULT && this._defaultApp && this._apps.get(this._defaultApp)) {
+            this.onSelectApp(this._apps.get(this._defaultApp)!.installed_app_id);
+            globalThis.TAURI_CAN_DEFAULT = false; // do it only once
+        }
+    }
 
-  async getApps() {
+    async getApps() {
       if (!this._adminWs) {
           console.error("Missing _adminWs");
           return;
@@ -217,7 +219,7 @@ export class VinesAdmin extends LitElement {
               const maybe = decodeQrCodeString(this._inviteLink);
               console.debug("maybe: " + JSON.stringify(maybe));
               if (isJoiningCode(maybe)) {
-                  if (!this.hasJoiningCode(this._inviteLink) && new DnaId(maybe.originalDnaHash).b64 == DNA_FROM_URL) {
+                  if (!this.hasJoiningCode(this._inviteLink) && new DnaId(maybe.originalDnaHash).b64 == globalThis.TAURI_ORIGINAL_DNA_HASH) {
                     inviteGroup = maybe as DnaJoiningInfo;
                     this._inviteError = undefined;
                   }
@@ -446,8 +448,8 @@ export class VinesAdmin extends LitElement {
         <div class="column center-content flex-1" style="max-height: 100%;">
             
             <div class="column items-center" style="margin-bottom: 12px;">
-                <div style="margin-bottom:4px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
-                ${TAURI_IS_DEV && TARGET_ARC != undefined? html`<div class="dialog-title">${TARGET_ARC == 1? "FULL ARC" : "ZERO ARC"}</div>` : html``}
+                <div style="margin-bottom:4px; margin-top:14px;"><img src="/icon.png" style="height: 64px"/></div>
+                ${TAURI_IS_DEV && TAURI_TARGET_ARC != undefined? html`<div class="dialog-title">${TAURI_TARGET_ARC == 1? "FULL ARC" : "ZERO ARC"}</div>` : html``}
                 <!-- <div class="dialog-title">${msg('Select group')}</div> -->
             </div>
 
@@ -478,7 +480,16 @@ export class VinesAdmin extends LitElement {
         this._loading = msg("Launching...");
         try {
             invoke('select', { name })
-                .then(() => this._loading = undefined);
+                .then((pair: any) => {
+                    console.debug("Received HappInfo: " + JSON.stringify(pair));
+                    const happInfo = {
+                        port: pair[0],
+                        token: pair[1],
+                        name,
+                    };
+                    this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: happInfo, bubbles: true, composed: true}));
+                    this._loading = undefined;
+                });
         } catch (error) {
             console.error('Error:', error);
         }
@@ -490,24 +501,30 @@ export class VinesAdmin extends LitElement {
         try {
             const decoded: DnaJoiningInfo = decodeDnaJoiningInfo(this._inviteLink);
             const joinDnaId = new DnaId(decoded.originalDnaHash);
-            if (joinDnaId.b64 != DNA_FROM_URL) {
-                console.error("DNA MISMATCH.\n Expected: " + DNA_FROM_URL + "\n    got: " + joinDnaId.b64);
+            if (joinDnaId.b64 != globalThis.TAURI_ORIGINAL_DNA_HASH) {
+                console.error("DNA MISMATCH.\n Expected: " + globalThis.TAURI_ORIGINAL_DNA_HASH + "\n    got: " + joinDnaId.b64);
                 return;
             }
             console.log("JOINING group space: installing " + joinDnaId.b64);
-            await invoke("install", {name: decoded.name, seed: decoded.networkSeed});
+            await this.createNewGroup(decoded.name, decoded.networkSeed)
         } catch(e) {
             console.error("failed to decode joining code");
             return;
         }
     }
 
-
-      async createNewGroup(name: string) {
+      /** */
+      async createNewGroup(name: string, seed?: string) {
           console.log("createNewGroup()", name);
           try {
-              const result = await invoke('install', {name});
-              console.log('Result:', result);
+              const result: any = await invoke('install', {name, seed});
+              console.debug("Received HappInfo: " + JSON.stringify(result));
+              const happInfo = {
+                  port: result[0],
+                  token: result[1],
+                  name,
+              };
+              this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: happInfo, bubbles: true, composed: true}));
           } catch (error) {
               console.error('Error:', error);
           }

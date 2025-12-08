@@ -1,35 +1,41 @@
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {isTauri, invoke} from '@tauri-apps/api/core';
+import {isTauri} from "@tauri-apps/api/core";
 
-export const IS_TAURI: boolean = isTauri();
-export let TAURI_CAN_DEFAULT: boolean = true;
-export let TAURI_IS_DEV: boolean = false;
-export let TARGET_ARC: number | undefined = undefined;
-export let HAPP_ID: string = DEFAULT_THREADS_DEF.id;
-export let HC_APP_PORT: number | undefined = undefined;
-export let HC_ADMIN_PORT: number | undefined = undefined;
-export let HAPP_TOKEN: number[] | undefined = undefined;
-
-export async function gotoAdmin() {
-    console.log("gotoAdmin()");
-    try {
-        const result = await invoke('goto_admin');
-        console.log('Result:', result);
-    } catch (error) {
-        console.error('Error:', error);
-    }
+declare global {
+    var IS_TAURI: boolean;
+    var TAURI_SHOW_ADMIN: boolean | undefined;
+    var HAPP_TOKEN: number[] | undefined;
+    var HAPP_ID: string;
+    var HC_APP_PORT: number | undefined;
+    var HC_ADMIN_PORT: number | undefined;
+    var TAURI_CAN_DEFAULT: boolean;
+    var TAURI_IS_DEV: boolean;
+    var TAURI_TARGET_ARC: number | undefined;
+    var TAURI_ORIGINAL_DNA_HASH: string | undefined;
 }
+
+globalThis.IS_TAURI = isTauri();
+globalThis.TAURI_IS_DEV = false;
+globalThis.TAURI_TARGET_ARC = undefined;
+globalThis.TAURI_ORIGINAL_DNA_HASH = undefined;
+globalThis.TAURI_CAN_DEFAULT = true;
+globalThis.TAURI_SHOW_ADMIN = undefined;
+globalThis.HAPP_TOKEN = undefined;
+globalThis.HAPP_ID = DEFAULT_THREADS_DEF.id;
+globalThis.HC_APP_PORT = undefined;
+globalThis.HC_ADMIN_PORT = undefined;
 
 
 try {
-    HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
-    HC_APP_PORT = Number(process.env.HC_APP_PORT);
+    globalThis.HC_ADMIN_PORT = Number(process.env.HC_ADMIN_PORT);
+    globalThis.HC_APP_PORT = Number(process.env.HC_APP_PORT);
 } catch (e: any) {
     console.warn("process.env not defined");
 }
 
-if (!HC_APP_PORT) {
+
+if (!globalThis.HC_APP_PORT) {
     console.debug({window});
     const __HC_LAUNCHER_ENV__: string = "__HC_LAUNCHER_ENV__";
     const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
@@ -37,52 +43,15 @@ if (!HC_APP_PORT) {
         // @ts-ignore
         const env = window[__HC_LAUNCHER_ENV__];
         console.log("env", env);
-        HC_APP_PORT = env!.APP_INTERFACE_PORT;
-        HAPP_ID = env!.INSTALLED_APP_ID;
-        HC_ADMIN_PORT = env!.ADMIN_INTERFACE_PORT;
-        HAPP_TOKEN = env!.APP_INTERFACE_TOKEN;
+        globalThis.HC_APP_PORT = env!.APP_INTERFACE_PORT;
+        globalThis.HAPP_ID = env!.INSTALLED_APP_ID;
+        globalThis.HC_ADMIN_PORT = env!.ADMIN_INTERFACE_PORT;
+        globalThis.HAPP_TOKEN = env!.APP_INTERFACE_TOKEN;
     } else {
         console.warn("HC_APP_PORT not defined");
     }
 }
 
-/** look-up appId from URL query param (tauri) */
-const params = new URLSearchParams(window.location.search);
-console.debug("window.params", params);
-const maybeAppId = params.get('appId');
-console.debug("maybeAppId", maybeAppId);
-if (maybeAppId) {
-    HAPP_ID = maybeAppId;
-}
-const maybeAppPort = params.get('appPort');
-console.debug("maybeAppPort", maybeAppPort);
-if (maybeAppPort) {
-    HC_APP_PORT = Number(maybeAppPort);
-}
-const maybeToken = params.get('token');
-console.debug("maybeToken", maybeToken);
-if (maybeToken) {
-    const numbers = maybeToken.split(',').map(n => parseInt(n.trim()));
-    HAPP_TOKEN = Array.from(new Uint8Array(numbers));
-}
-
-const maybeDev = params.get('dev');
-console.debug("maybeDev", maybeDev);
-if (maybeDev) {
-    TAURI_IS_DEV = "true" == maybeDev;
-}
-
-const maybeTauriDefault = params.get('default');
-console.debug("maybeTauriDefault", maybeTauriDefault);
-if (maybeTauriDefault) {
-    TAURI_CAN_DEFAULT = "true" == maybeTauriDefault;
-}
-
-const maybeArc = params.get('arc');
-console.debug("maybeArc", maybeArc);
-if (maybeArc) {
-    TARGET_ARC = Number(maybeArc);
-}
 
 console.log("   HAPP_TOKEN =", HAPP_TOKEN)
 console.log("     IS_TAURI =", IS_TAURI)

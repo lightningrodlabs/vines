@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use url2::Url2;
 
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
-pub const TARGET_ARC: u32 = 0; // 1
+pub const TARGET_ARC: u32 = 1; // 1 // 0
 
 pub fn happ_bundle() -> AppBundle {
    return AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode happ bundle");
@@ -21,10 +21,6 @@ pub async fn get_dna_hash(app_bundle: AppBundle, dna_name: &str) -> Result<Strin
    Ok(dna_hash.to_string())
 }
 
-pub async fn admin_url(can_default: bool) -> String {
-   let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
-   return format!("admin.html?dev={}&dna={}&default={}&arc={}", tauri::is_dev(), bundle_dna_hash, can_default, TARGET_ARC);
-}
 
 /// target_arc_factor:
 ///  - 0 = zero arc

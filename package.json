@@ -142,7 +142,7 @@
     "typescript"              : "~5.2.0"
   },
   "dependencies"   : {
-    "@holochain/client"             : "^0.20.0",
+    "@holochain/client"             : "=0.20.0",
     "@holochain-open-dev/core-types": "=0.600.0",
     "@holochain-open-dev/profiles"  : "=0.600.0",
     "@theweave/api"                 : "=0.6.0",
