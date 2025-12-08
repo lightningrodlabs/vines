@@ -167,8 +167,8 @@ export class VinesAdmin extends LitElement {
                         }}>
                   </div>
               </h3>
-              <a .href=${happDownloadLinkUrl} target="_blank">${happDownloadLinkUrl}</a>
-              <div id="happ-sha"></div>
+              <a .href=${happDownloadLinkUrl} target="_blank" style="width:100%; word-wrap:break-word">${happDownloadLinkUrl}</a>
+              <div id="happ-sha" style="width:100%; word-wrap:break-word"></div>
               <span class="flex flex-1"></span>
               <button id="cancel-btn"
                       class="moss-button"
