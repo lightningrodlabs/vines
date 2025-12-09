@@ -1,16 +1,12 @@
-import {html, css, LitElement, TemplateResult, PropertyValues} from "lit";
-import {state, customElement} from "lit/decorators.js";
-import {msg, localized} from '@lit/localize';
-import {
-    AdminWebsocket, AppInfo, ProvisionedCell,
-} from "@holochain/client";
+import {css, html, LitElement, PropertyValues, TemplateResult} from "lit";
+import {customElement, state} from "lit/decorators.js";
+import {localized, msg} from '@lit/localize';
+import {AdminWebsocket, AppInfo, ProvisionedCell,} from "@holochain/client";
 import {setLocale} from "./localization";
 import {decodeHappJoinCode, encodeHappJoinCode, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import * as APPV from './generated/version.js';
-import { invoke } from '@tauri-apps/api/core';
-import {
-    writeText,
-} from '@tauri-apps/plugin-clipboard-manager'
+import {invoke} from '@tauri-apps/api/core';
+import {writeText,} from '@tauri-apps/plugin-clipboard-manager'
 import QRCode from "qrcode";
 import {decodeQrCodeString, isHappJoiningCode} from "./qr-scanner";
 import {dayTimestamp} from "@ddd-qc/files";

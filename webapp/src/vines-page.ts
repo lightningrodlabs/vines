@@ -2092,9 +2092,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @item-click=${(e: any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
-                        <ui5-menu-item id="shareNetwork" text=${msg("Share invite code")}
-                                       icon="cloud"></ui5-menu-item>
-                        ${globalThis.IS_TAURI?  html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` : html``}                        
+                        ${globalThis.IS_TAURI
+                                ? html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` 
+                                : html`<ui5-menu-item id="shareNetwork" icon="cloud" text=${msg("Share invite code")} ></ui5-menu-item>`}                        
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
