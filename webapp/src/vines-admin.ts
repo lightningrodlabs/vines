@@ -343,7 +343,7 @@ export class VinesAdmin extends LitElement {
                                     id="invited-group-btn"
                                     class="group-button"
                                     @click=${() => this._inviteLink = ''}
-                                    style=""
+                                    style="max-width:100px"
                             >
                             ${inviteGroup.happId}
                             ${closeIcon(30)}                                
@@ -524,7 +524,7 @@ export class VinesAdmin extends LitElement {
             
             <div class="column items-center" style="margin-bottom: 12px;">
                 <div style="margin-bottom:4px; margin-top:14px;"><img src=${ICON_B64} style="height: 64px"/></div>
-                ${TAURI_IS_DEV && TAURI_TARGET_ARC != undefined? html`<div class="dialog-title">${TAURI_TARGET_ARC == 1? "FULL ARC" : "ZERO ARC"}</div>` : html``}
+                ${HAPP_BUILD_MODE != HappBuildModeType.Retail && TAURI_TARGET_ARC != undefined? html`<div class="dialog-title">${TAURI_TARGET_ARC == 1? "FULL ARC" : "ZERO ARC"}</div>` : html``}
                 <!-- <div class="dialog-title">${msg('Select group')}</div> -->
             </div>
 
