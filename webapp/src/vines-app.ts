@@ -49,6 +49,7 @@ import * as APPV from './generated/version.js';
 import {HappInfo} from "./vines-index";
 import {invoke} from "@tauri-apps/api/core";
 import {happShareCodeContext, MyTauriConfig} from "./globals";
+import {ICON_B64} from "./icon";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -104,14 +105,14 @@ export class VinesApp extends HappMultiElement {
       : HC_ADMIN_PORT
         ? new URL(`ws://localhost:${HC_ADMIN_PORT}`)
         : undefined;
-    let pairs: [HcConnectionOptions, InstalledAppId | undefined][] = [];
+    let tuples: [HcConnectionOptions, string | undefined, InstalledAppId | undefined][] = [];
     if (appletGroups && appletGroups.length > 0) {
-      pairs = appletGroups.map((appletGroup) => [{socket: appletGroup.appWs, timeout: 20 * 1000}, appletGroup.appId]);
+      tuples = appletGroups.map((appletGroup) => [{socket: appletGroup.appWs, timeout: 20 * 1000}, APPV.HAPP_SHA256, appletGroup.appId]);
     } else {
-        pairs = [[{port: HC_APP_PORT!, token: HAPP_TOKEN, timeout: 20 * 1000, adminUrl}, HAPP_ID]];
+        tuples = [[{port: HC_APP_PORT!, token: HAPP_TOKEN, timeout: 20 * 1000, adminUrl}, APPV.HAPP_SHA256 , HAPP_ID]];
     }
-    console.log("<vines-app>.ctor() pairs", pairs);
-    super(pairs, isMulti? !isMulti : true);
+    console.log("<vines-app>.ctor() tuples", tuples);
+    super(tuples, isMulti? !isMulti : true);
     /** */
     if (appletGroups && appletGroups.length > 0) {
       this.appId = appletGroups[0]!.appId;
@@ -125,6 +126,7 @@ export class VinesApp extends HappMultiElement {
             console.log("GOT TAURI CONFIG: " + JSON.stringify(config));
             globalThis.TAURI_HAPP_SHA256 = config.happ_sha256;
             globalThis.TAURI_TARGET_ARC = config.arc;
+            this.hvms.forEach(([appProxy, _hvm]) => appProxy.setHappSha256(globalThis.TAURI_HAPP_SHA256!))
         })
     }
   }
@@ -250,7 +252,7 @@ export class VinesApp extends HappMultiElement {
     // @ts-ignore
     new ContextProvider(this, networkCallerContext, this.networkCaller);
     //
-    const allShareCodes: [string, string][] = this.hvms.map(([_proxy, hvm]) => [hvm.appId, hvm.getHappShareCode()!])
+    const allShareCodes: [string, string | null, string][] = this.hvms.map(([_proxy, hvm]) => [hvm.appId, hvm.happSha256, hvm.getHappShareCode()!])
     new ContextProvider(this, happShareCodeContext, allShareCodes);
   }
 
@@ -482,7 +484,7 @@ export class VinesApp extends HappMultiElement {
     const maybeMyProfile = profilesZvm.getMyProfile();
     console.log("<vines-app> Profile", this._hasWeProfile, maybeMyProfile);
     if (!maybeMyProfile) {
-      guardedView = renderWelcomeScreen(this, profilesZvm, this._hasWeProfile? this._weProfilesDvm: undefined);
+      guardedView = renderWelcomeScreen(this, profilesZvm, ICON_B64, this._hasWeProfile? this._weProfilesDvm: undefined);
     } else {
       if (!maybeMyProfile && HAPP_BUILD_MODE == HappBuildModeType.Debug) {
         /*await*/

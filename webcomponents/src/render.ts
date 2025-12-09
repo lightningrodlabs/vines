@@ -244,7 +244,7 @@ export function composeNotificationTitle(notif: ThreadsNotification, threadsZvm:
 }
 
 
-export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAltZvm, weProfilesDvm?: ProfilesDvm) {
+export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAltZvm, icon: string, weProfilesDvm?: ProfilesDvm) {
   const profileCount = profilesZvm.perspective.agents.length;
   const weProfile = weProfilesDvm?.profilesZvm.getMyProfile();
 
@@ -256,7 +256,7 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
       </div>
       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:380px;">
           <h1 style="font-family:arial; color:#5804A8; z-index:1;">
-              <img src="icon.png" width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
+              <img src=${icon} width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
               Vines
           </h1>
           <div>${profileCount} ${profileCount > 1? msg('Members') : msg('Member')}</div>

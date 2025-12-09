@@ -78,4 +78,4 @@ export interface MyTauriConfig {
     //can_default: bool,
 }
 
-export const happShareCodeContext = createContext<[string, string][]>('happShareCodes');
+export const happShareCodeContext = createContext<[string, string | null, string][]>('happShareCodes');

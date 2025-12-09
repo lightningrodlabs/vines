@@ -45,7 +45,7 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
         : "#559eee";
     /** */
     return html`
-            <span class="badge" style="background: ${memberBg};">
+            <span class="badge" style="background:${memberBg}">
             ${peerCount + 1} / ${profileCount}
         </span>
         `;
@@ -59,6 +59,9 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
       css`
                 .badge {
                     /*position: absolute;*/
+                    width:fit-content; 
+                    display:block;     
+                    margin: auto;
                     border-radius: 10px;
                     padding: 2px 6px;
                     font-size: 10px;

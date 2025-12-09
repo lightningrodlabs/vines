@@ -96,7 +96,7 @@ export async function createProfilesCellProxy(profilesClient: ProfilesClient): P
   const profilesHcl = new HCL(profilesAppInfo.installed_app_id, profilesBaseRoleName, maybeCloneId);
   /* Create profilesCellProxy */
   const profilesApi = new ProfilesApi(profilesClient);
-  const profilesAppProxy = new ExternalAppProxy(profilesApi, 10 * 1000);
+  const profilesAppProxy = new ExternalAppProxy(profilesApi, "", 10 * 1000);
   await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, profilesBaseRoleName);
   const profilesCellProxy = await profilesAppProxy.createCellProxy(profilesHcl);
   console.log("createVinesApplet() profilesCellProxy", profilesCellProxy);

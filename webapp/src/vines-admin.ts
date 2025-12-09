@@ -18,6 +18,7 @@ import {HappInfo} from "./vines-index";
 import {toasty} from "@vines/elements";
 import {HappJoinCode} from "@ddd-qc/cell-proxy";
 import {MyTauriConfig} from "./globals";
+import {ICON_B64} from "./icon";
 
 /** */
 @localized()
@@ -310,7 +311,7 @@ export class VinesAdmin extends LitElement {
       return html`
             <div class="column center-content flex-1 launch-bg" style="margin-left:5px; margin-right:5px;">
                 <div class="column items-center" style="margin-bottom: 15px;">
-                    <div style="margin-bottom:8px; margin-top:14px;"><img src="icon.png" style="height: 64px"/></div>
+                    <div style="margin-bottom:8px; margin-top:14px;"><img src=${ICON_B64} style="height: 64px"/></div>
                     ${greet? html`
                         <div class="dialog-title">${msg('Welcome to Vines.')}</div>
                         <div class="dialog-title">${msg('What brought you here today?')}</div>
@@ -441,7 +442,7 @@ export class VinesAdmin extends LitElement {
                                   style="color:#9e9c65"
               ></ui5-busy-indicator>
               <div style="font-size: 18px; color: #131312;">${this._loading}</div>
-              ${HAPP_BUILD_MODE != HappBuildModeType.Retail ? html`
+              ${HAPP_BUILD_MODE != HappBuildModeType.Retail? html`
                   <button id="retryBtn"
                           style="max-width:300px"
                           @click=${(_e: any) => this.onReload()}>
@@ -526,7 +527,7 @@ export class VinesAdmin extends LitElement {
         <div class="column center-content flex-1" style="max-height: 100%;">
             
             <div class="column items-center" style="margin-bottom: 12px;">
-                <div style="margin-bottom:4px; margin-top:14px;"><img src="/icon.png" style="height: 64px"/></div>
+                <div style="margin-bottom:4px; margin-top:14px;"><img src=${ICON_B64} style="height: 64px"/></div>
                 ${TAURI_IS_DEV && TAURI_TARGET_ARC != undefined? html`<div class="dialog-title">${TAURI_TARGET_ARC == 1? "FULL ARC" : "ZERO ARC"}</div>` : html``}
                 <!-- <div class="dialog-title">${msg('Select group')}</div> -->
             </div>
@@ -594,7 +595,7 @@ export class VinesAdmin extends LitElement {
             console.log("JOINING group space: installing " + decoded.happSha256);
             await this.createNewGroup(decoded.happId, decoded.networkSeed)
         } catch(e) {
-            console.error("failed to decode joining code");
+            console.error("failed to decode invite code");
             return;
         }
     }

@@ -283,7 +283,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @property() networkCaller!: NetworkCaller;
 
   @consume({context: happShareCodeContext, subscribe: true})
-  @property() happShareCodes!: [string, string][];
+  @property() happShareCodes!: [string, string | null, string][];
 
   @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
@@ -1484,7 +1484,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<vines-page>.render()", this._waitingForBeadCommit, this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, !!this._splitObj);
+    console.log("<vines-page>.render()", this.happSha256(), this._waitingForBeadCommit, this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, !!this._splitObj);
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     if (this.perspective.importing) {
@@ -1981,7 +1981,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${msg("DMs Cross View")}
             </div>
         </div>
-        <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
+        <div id="listerGroup" style="display:flex; flex-direction:column; overflow:auto">
             <!-- Messages -->
             <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;margin-top: 30px;">
                 <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
@@ -2057,13 +2057,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
                     </ui5-button>
                     <ui5-button icon="group" name="group" design="Transparent"
-                                style="margin-top:10px;position:relative;"
+                                style="margin-top:10px;position:relative; width: 100px;"
                                 tooltip=${`${profileCount} ${profileCount != 1? msg('Members') : msg('Member')}`}
                                 @click=${async (e: any) => {
                                     e.stopPropagation();
                                     await this.updateComplete;
                                     const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-                                    dialog.show();
+                                    await dialog.show();
                                 }}
                     >
                         <peer-status-badge id="peer-status"></peer-status-badge">
@@ -2092,8 +2092,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               @item-click=${(e: any) => this.onSettingsMenu(e)}>
                         <ui5-menu-item id="editProfileItem" text=${msg("Edit Profile")}
                                        icon="user-edit"></ui5-menu-item>
-                        <ui5-menu-item id="shareNetwork" text=${msg("Share Network Seed")}
+                        <ui5-menu-item id="shareNetwork" text=${msg("Share invite code")}
                                        icon="cloud"></ui5-menu-item>
+                        ${globalThis.IS_TAURI?  html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` : html``}                        
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
                                        icon="open-folder"></ui5-menu-item>
@@ -2112,7 +2113,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
                         `}
-                        ${globalThis.IS_TAURI?  html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` : html``}
                         <ui5-menu-item id="__version" disabled text="v${APP_VERSION}"></ui5-menu-item>
                     </ui5-menu>
 
@@ -2146,14 +2146,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-popover id="shareNetworkPopover">
                         <div slot="header"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
-                            ${msg("Share Network")}
+                            ${msg("Invite Code")}
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <div>
-                            ${msg('Share this code to grant access to this Network')}: ${HAPP_ID}
-                            (seed: "${this.cell.dnaModifiers.network_seed}")
-                        </div>
-                        <ui5-textarea .value=${this.happShareCode()}></ui5-textarea>
+                        <div>${msg('Share this code to give access to this group')}: ${HAPP_ID}</div>
+                        <!--                             (seed: "${this.cell.dnaModifiers.network_seed}") -->
+                        <ui5-textarea .value=${this.happShareCode()} style="height:80px;"></ui5-textarea>
+                        <div id="qrcode-space" style="width:100%"></div>
+                        <div>${this.happSha256()}</div>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
@@ -2165,7 +2165,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     popover.close();
                                 }
                             }}
-                            >${msg('Copy Joining Code')}
+                            >${msg('Copy Invite Code')}
                             </ui5-button>
                         </div>
                     </ui5-popover>
@@ -2669,22 +2669,32 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   happShareCode(): string {
-    const maybe = this.happShareCodes.find(([name, _v]) => name == this._dvm.cell.name);
-    return maybe? maybe[1] : "null";
+    const maybe = this.happShareCodes.find(([name, _sha256, _code]) => name == this._dvm.hcl.appId);
+    return maybe? maybe[2] : "null";
   }
 
+  /** */
+  happSha256(): string {
+      const maybe = this.happShareCodes.find(([name, _sha256, _code]) => name == this._dvm.hcl.appId);
+      return maybe && maybe[1]? maybe[1] : "null";
+  }
+
+  /** */
   async onShareNetwork(): Promise<void> {
     const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+    const space = this.shadowRoot!.getElementById("qrcode-space") as HTMLElement;
     const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
     /** Generate and add QR code */
-    const existingImg = popover.querySelector('img')
+    const existingImg = space.querySelector('img')
     if (!existingImg) {
       let generateQR: string;
       try {
         generateQR = await QRCode.toDataURL(this.happShareCode());
         const img = document.createElement('img');
         img.src = generateQR;
-        popover.append(img);
+        img.style.display = "flex";
+        img.style.margin = "auto";
+          space.append(img);
       } catch (err) {
         console.error(err);
       }
@@ -2829,9 +2839,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #leftSide {
           /*background: #B9CCE7;*/
           /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */
-          width: 288px;
-          min-width: 288px;
-          max-width: 288px;
+          width: 300px;
+          min-width: 300px;
+          max-width: 300px;
           display: flex;
           flex-direction: column;
           /*gap:15px;*/
