@@ -65,7 +65,7 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
     let response = call(
     CallTargetCell::OtherRole(input.role_name.clone()),
     ZomeName::from(input.zome_name.clone()),
-    "get_any_record".into(),
+    "get_record_local".into(),
     None,
     input.eh.clone())?;
     let maybeRecord: Option<Record> = decode_response(response)?;

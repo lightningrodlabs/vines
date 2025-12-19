@@ -22,6 +22,10 @@ import {LitElement} from "lit";
 export async function createVinesApplet(renderInfo: RenderInfo, weServices: WeaveServices): Promise<LitElement> {
   console.log("createVinesApplet() type:", renderInfo.type);
   let appletGroups: AppletGroup[] = [];
+  try {
+      let accs = await weServices.myAccountabilitiesPerGroup();
+      console.log("createVinesApplet() accs:", accs);
+  } catch (e) {}
   /** cross-group-view */
   if (renderInfo.type == "cross-group-view") {
     const crossViewInfo = renderInfo as unknown as CrossViewInfo;
