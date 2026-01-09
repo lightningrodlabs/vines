@@ -1,21 +1,17 @@
+import {LitElement} from "lit";
 import {
   AppWebsocket,
 } from "@holochain/client";
-//import { msg } from "@lit/localize";
-
 import {
   RenderInfo,
   WeaveServices,
 } from "@theweave/api";
-
 import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
-
 import {AppletViewInfo, ProfilesApi, CrossViewInfo} from "@ddd-qc/we-utils";
 import {EntryId, ExternalAppProxy} from "@ddd-qc/cell-proxy/";
 import {destructureCloneId, HCL} from "@ddd-qc/lit-happ";
 import {AppletGroup, VinesApp} from "@vines/app";
 import {ProfilesClient} from "@holochain-open-dev/profiles";
-import {LitElement} from "lit";
 
 
 /** */

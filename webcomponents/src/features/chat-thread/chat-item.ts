@@ -9,7 +9,7 @@ import 'emoji-picker-element';
 import {renderAvatar, renderAvatarGroup, renderProfileAvatar} from "../../render";
 import {ThreadsEntryType} from "../../bindings/threads.types";
 import {beadJumpEvent, CommentRequest, favoritesEvent, ShowProfileEvent, threadJumpEvent,} from "../../events";
-import {filesContext, onlineLoadedContext, weClientContext} from "../../contexts";
+import {filesContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlToWAL} from "@theweave/api";
 import {FilesDvm} from "@ddd-qc/files";
@@ -65,9 +65,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-
-  @consume({context: onlineLoadedContext, subscribe: true})
-  onlineLoaded!: boolean;
+  // @consume({context: onlineLoadedContext, subscribe: true})
+  // onlineLoaded!: boolean;
 
 
   private _renderCount = 0;

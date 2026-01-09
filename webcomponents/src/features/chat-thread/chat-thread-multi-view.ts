@@ -7,7 +7,7 @@ import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 //import {ts2day} from "../../render";
-import {onlineLoadedContext, weClientContext} from "../../contexts";
+import {weClientContext} from "../../contexts";
 import {Thread} from "../../viewModels/thread";
 import {sharedStyles} from "../../styles";
 import {WeServicesEx} from "@ddd-qc/we-utils";
@@ -42,8 +42,8 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   // threadsPerspective!: ThreadsPerspective;
 
-  @consume({context: onlineLoadedContext, subscribe: true})
-  onlineLoaded!: boolean;
+  // @consume({context: onlineLoadedContext, subscribe: true})
+  // onlineLoaded!: boolean;
 
 
   /** -- State variables -- */

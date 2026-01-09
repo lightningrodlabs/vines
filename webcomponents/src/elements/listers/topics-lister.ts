@@ -1,11 +1,9 @@
 import {css, html, /*PropertyValues,*/ TemplateResult} from "lit";
-import {consume} from "@lit/context";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, ActionIdMap, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
-import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
 import {renderAvatar, renderAvatarGroup} from "../../render";
@@ -42,8 +40,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
 
-  @consume({context: onlineLoadedContext, subscribe: true})
-  onlineLoaded!: boolean;
+  // @consume({context: onlineLoadedContext, subscribe: true})
+  // onlineLoaded!: boolean;
 
 
   /** -- Methods -- */

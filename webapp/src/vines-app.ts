@@ -80,8 +80,8 @@ export class VinesApp extends HappMultiElement {
 
   static override readonly HVM_DEF: HvmDef = DEFAULT_THREADS_DEF;
 
-  @state() private _offlineLoaded = false;
-  @state() private _onlineLoaded = false;
+  @state() private _loadedLocal = false;
+  @state() private _loadedNetwork = false;
   private _onlineLoadedProvider?: any;
 
   @state() private _hasHolochainFailed: boolean | undefined = undefined;
@@ -259,23 +259,22 @@ export class VinesApp extends HappMultiElement {
 
   /** */
   override async perspectiveInitializedFromLocal(): Promise<void> {
-    console.log("<vines-app>.perspectiveInitializedOffline()");
+    console.debug("<vines-app> perspectiveInitializedFromLocal()");
     for (let i = 0; i < this.hvms.length; i += 1) {
       this.threadsDvm(i).threadsZvm.storeMainTopic();
-      const maybeProfile = await this.threadsDvm(i).profilesZvm.findProfile(this.filesDvm(i).cell.address.agentId);
-      console.log("perspectiveInitializedFromLocal() maybeProfile", maybeProfile, this.threadsDvm(i).cell.address.agentId);
+      //const maybeProfile = await this.threadsDvm(i).profilesZvm.findProfile(this.filesDvm(i).cell.address.agentId);
+      //console.debug("<vines-app> perspectiveInitializedFromLocal() maybeProfile", i, maybeProfile, this.threadsDvm(i).cell.address.agentId);
     }
     /** Done */
-    this._offlineLoaded = true;
+    this._loadedLocal = true;
   }
 
 
   /** */
   override async perspectiveInitializedFromNetwork(): Promise<void> {
-    this._onlineLoaded = true;
+    this._loadedNetwork = true;
     this._onlineLoadedProvider.setValue(true);
-    //this.requestUpdate();
-    console.log("<threads-app> perspectiveInitializedOnline() DONE")
+    console.debug("<vines-app> perspectiveInitializedFromNetwork() DONE")
   }
 
 
@@ -347,7 +346,7 @@ export class VinesApp extends HappMultiElement {
 
   /** */
   override render() {
-    console.log("<vines-app>.render()", !this._hasHolochainFailed, this._offlineLoaded, this._onlineLoaded, this._hasWeProfile, this.hvms.length);
+    console.log("<vines-app>.render()", !this._hasHolochainFailed, this._loadedLocal, this._loadedNetwork, this._hasWeProfile, this.hvms.length);
       let adminBtn = html``;
       if (globalThis.IS_TAURI && HAPP_BUILD_MODE != HappBuildModeType.Retail) {
           adminBtn = html`
@@ -365,31 +364,37 @@ export class VinesApp extends HappMultiElement {
     /** Check init has been done */
     if (this._hasHolochainFailed == undefined) {
       return html`
-          <ui5-busy-indicator delay="0" size="Medium" active
-                              style="margin:auto; width:100%; height:50%; color:#ff4343"
-          ></ui5-busy-indicator>
+          <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
+              <ui5-busy-indicator delay="0" size="Large" active
+                                  style="color:#ff4343"
+              ></ui5-busy-indicator>
+              <div style="margin:auto; font-size:large">${msg('Connecting to Holochain')}</div>
+          </div>
           ${adminBtn}
       `;
     }
     if (this._hasHolochainFailed || this.hvms.length == 0) {
       return html`
-          <div style="display: flex; flex-direction: column">
-              <div style="width: auto; height: auto; font-size: 3rem;">
-                  ${msg("Failed to connect to Holochain Conductor and/or \"Vines\" cell.")};
+          <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
+              <div style="margin:auto; font-size:large">
+                  ${msg("Failed to connect to Holochain or \"Vines\" cell.")}
               </div>
               <ui5-button id="retryBtn" design="Emphasized"
-                          style="max-width:300px"
+                          style="max-width:300px; margin:auto;"
                           @click=${async (_e: any) => this.onRetryHolochain()}>
                   ${msg('Retry')}
               </ui5-button>
           </div>
       `;
     }
-    if (!this._offlineLoaded) {
+    if (!this._loadedLocal) {
       return html`
-          <ui5-busy-indicator delay="0" size="Medium" active
-                              style="margin:auto; width:100%; height:50%; color:#f3bb2c"
+          <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
+          <ui5-busy-indicator delay="0" size="Large" active
+                              style="color:#f3bb2c"
           ></ui5-busy-indicator>
+              <div style="margin:auto; font-size:large">${msg('Collecting local data')}</div>
+          </div>              
           ${adminBtn}
       `;
     }

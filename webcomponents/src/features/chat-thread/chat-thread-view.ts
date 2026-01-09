@@ -91,7 +91,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     if (changedProperties.has("threadsPerspective")) {
       const isFirstPerspective = this._prevThread == "";
-      /** Don't update during loading */
+      /** Don't update during network loading */
       if (!isFirstPerspective && !this.onlineLoaded) {
         return false;
       }

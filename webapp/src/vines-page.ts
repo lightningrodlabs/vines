@@ -1489,9 +1489,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     if (this.perspective.importing) {
       return html`
-          <ui5-busy-indicator delay="0" size="Large" active
-                              style="margin:auto; width:100%; height:100%; color:#05b92f"
-          ></ui5-busy-indicator>`;
+          <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
+              <ui5-busy-indicator delay="0" size="Large" active
+                                  style="margin:auto; color:#05b92f"
+              ></ui5-busy-indicator>
+          </div>
+      `;
     }
 
     let uploadState;
