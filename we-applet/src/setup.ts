@@ -11,14 +11,14 @@ import {LitElement} from "lit/development";
 
 /** */
 export async function setupVinesApplet(): Promise<LitElement> {
-  /** Determine appletView */
+  /** Check env for appletView type */
   let APPLET_VIEW = "main";
   try {
     APPLET_VIEW = process.env.APPLET_VIEW!;
     //console.log(`HAPP_ENV defined by process.ENV: "${happEnv}"`);
   } catch (e: any) {
   }
-  console.log("Vines we-applet setup() APPLET_VIEW", APPLET_VIEW);
+  console.log("Vines we-applet setup() APPLET_VIEW = ", APPLET_VIEW);
   switch (APPLET_VIEW) {
     case ThreadsEntryType.ParticipationProtocol:
       return setupVinesEntryView();
