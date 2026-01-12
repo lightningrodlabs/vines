@@ -7,7 +7,6 @@ import {
     DnaElement,
     EntryId,
     HappBuildModeType,
-    HoloHashType,
     intoDhtId,
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
@@ -245,7 +244,7 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
-import {HoloHashB64, NetworkMetrics, Timestamp} from "@holochain/client";
+import {HoloHashB64, NetworkMetrics, Timestamp, HoloHashType} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";

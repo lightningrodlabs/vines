@@ -1,4 +1,4 @@
-import {AgentPubKeyB64, Timestamp} from "@holochain/client";
+import {AgentPubKeyB64, Timestamp, HoloHashType} from "@holochain/client";
 import {
     AddEntryAsBeadInput,
     AnyBead,
@@ -40,7 +40,6 @@ import {
     EntryPulseMat,
     getIndexByVariant,
     getVariantByIndex,
-    HoloHashType,
     holoIdReviver,
     intoAnyId,
     intoDhtId,

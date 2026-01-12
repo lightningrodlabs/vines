@@ -105,6 +105,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  private _canRequest = true;
+
   /** */
   override updated() {
     /** Request ack if peers are online */
@@ -114,7 +116,13 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         this._dvm.requestAck(this.hash, others.slice(0, 5));
       } else {
         /** Otherwise check again in 5 secs */
-        delay(5000).then(() => this.requestUpdate())
+        if (this._canRequest) {
+            this._canRequest = false;
+            delay(5000).then(() => {
+                this._canRequest = true;
+                this.requestUpdate();
+            })
+        }
       }
     }
   }
@@ -380,7 +388,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           if (!authors[beadInfo.author.b64]) {
             authors[beadInfo.author.b64] = 0;
           }
-          authors[beadInfo.author.b64] += 1;
+          authors[beadInfo.author.b64]! += 1;
         }
         /** Create avatar group */
         const agents = Object.keys(authors).map((author) => new AgentId(author));

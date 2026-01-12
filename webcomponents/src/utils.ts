@@ -7,8 +7,7 @@ import {THIS_APPLET_ID} from "./contexts";
 import {ParticipationProtocol, Subject, ThreadsEntryType, ThreadsProperties} from "./bindings/threads.types";
 import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
 import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
-import {HoloHashType} from "@ddd-qc/cell-proxy/dist/hash";
-import {HoloHashB64} from "@holochain/client";
+import {HoloHashB64, HoloHashType} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
 
 
