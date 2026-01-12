@@ -21,8 +21,8 @@
     "deepmerge"              : "^4.2.2",
     "new-port-cli"           : "^1.0.0",
     "rollup"                 : "^2.56.2",
-    "tslib"                  : "^2.4.0",
-    "typescript"             : "~5.2.0"
+    "tslib"                  : "^2.8.0",
+    "typescript"             : "~5.9.0"
   },
   "dependencies"   : {
     "@mdi/js": "^7.2.0"
