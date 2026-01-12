@@ -118,6 +118,7 @@
     "reupload:we"            : "npm run dl-applet-release && npm run unpack:webhapp && npm run repackage:we && npm run upload:we",
 
     "dl:latest"              : "bash scripts/repackage-ui.sh -d ./artifacts/",
+    "pack:we"                : "$npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp && npm run hash",
     "repack:we"              : "rm -rf artifacts && mkdir artifacts && npm run dl:latest && npm run dist:we && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp && npm run hash",
 
     "clean"                  : "bash scripts/clean.sh",
