@@ -7,6 +7,7 @@ import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {consume} from "@lit/context";
 import {networkCallerContext} from "../../contexts";
 import Switch from "@ui5/webcomponents/dist/Switch";
+import {AgentId} from "@ddd-qc/lit-happ";
 
 
 function intoLine(numbers: number[]): string {
@@ -117,9 +118,18 @@ export class NetworkHealthPanel extends LitElement {
       const totalRcvMsgDiffs = alltotalRcvMsg.slice(0, -1).map((num, index) => alltotalRcvMsg[index + 1]! - num);
       const totalRcvMsgDiffLine = intoLine(totalRcvMsgDiffs);
 
+    // TODO: Change this once Holochain implemented sharding
+    let arcPct = 100;
+    if (latestMetrics.local_agents.length > 0) {
+        const localAgent = latestMetrics.local_agents[0]!;
+        // console.debug("target_arc = ", localAgent.target_arc);
+        if (!localAgent.target_arc || localAgent.target_arc[1] == 0) {
+            arcPct = 0;
+        }
+    }
 
-
-    const arcPct = 1.0;
+    const latest_peer_metas = Object.values(latestMetrics.gossip_state_summary.peer_meta);
+    const highestRoundCount = Math.max(...Array.from(latest_peer_metas).map(obj => obj.completed_rounds ?? 0));
 
 
     /** */
@@ -136,17 +146,19 @@ export class NetworkHealthPanel extends LitElement {
               <span>Peers</span>
             </div>
           </div>
-          <!-- <div class="item">
+          <div class="item">
               <div class="chart">
                   <tc-pie id="arc-pie" values="[${arcPct}]" shape-size="6" max="100" static=""></tc-pie>
                   <ui5-icon class="pie-icon" name="cloud"></ui5-icon>
               </div>
-              <div>
+              <div style="padding-top:5px;">
                 <span>${arcPct}%</span>
                 <br/>
                 <span>Arc</span>
               </div>
-          </div> -->
+          </div>
+            <div style="flex-grow: 1"></div>
+           <div class="item">gossip rounds: ${highestRoundCount}</div>
           <!-- <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch> -->
         </div>
         
