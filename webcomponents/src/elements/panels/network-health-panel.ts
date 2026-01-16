@@ -130,7 +130,7 @@ export class NetworkHealthPanel extends LitElement {
                 <tc-pie id="peer-pie" values="[${connectedPeerCount}]" shape-size="6" .max=${allPeerCount} static=""></tc-pie>
                 <ui5-icon class="pie-icon" name="person-placeholder"></ui5-icon>
             </div>
-            <div>
+            <div style="padding-top:5px;">
               <span>${connectedPeerCount} / ${allPeerCount}</span>
               <br/>
               <span>Peers</span>
@@ -147,7 +147,7 @@ export class NetworkHealthPanel extends LitElement {
                 <span>Arc</span>
               </div>
           </div> -->
-          <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch>
+          <!-- <ui5-switch id="enableSwitch" ?checked=${this.networkCaller.isLooping()} @change=${this.onSwitchNetworkInfo}></ui5-switch> -->
         </div>
         
         <div class="line-stats">

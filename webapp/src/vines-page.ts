@@ -99,6 +99,7 @@ import "@ui5/webcomponents-icons/dist/documents.js"
 import "@ui5/webcomponents-icons/dist/dropdown.js"
 import "@ui5/webcomponents-icons/dist/download.js"
 import "@ui5/webcomponents-icons/dist/edit.js"
+import "@ui5/webcomponents-icons/dist/electrocardiogram.js"
 import "@ui5/webcomponents-icons/dist/email.js"
 import "@ui5/webcomponents-icons/dist/error.js"
 import "@ui5/webcomponents-icons/dist/expand-all.js"
@@ -2070,9 +2071,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     >
                         <peer-status-badge id="peer-status"></peer-status-badge">
                     </ui5-button>
-                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "cloud"}
+                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "electrocardiogram"}
                                 class=${this._canSpin? "spinning" : ""}
-                                design="Transparent" tooltip=${msg("Network")}
+                                design="Transparent" tooltip=${msg("Network Health")}
                                 style="margin-top:10px;"
                                 @click=${async (e: any) => {
                                     e.preventDefault();
@@ -2129,11 +2130,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <div slot="footer"
                              style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
-                            <ui5-button @click=${() => {
-                                this._filesDvm.probeAll(GetStrategy.Network);
-                                this._dvm.probeAll(GetStrategy.Network);
-                            }}>${msg('Sync')}
-                            </ui5-button>
+                            ${this.networkCaller.isLooping()
+                                    ? html`<ui5-button style="border-color:red; color:red" 
+                                            @click=${() => {
+                                        this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                            detail: false, bubbles: true, composed: true
+                                        }));
+                                        this.requestUpdate();
+                                    }}>${msg('Stop')}
+                                    </ui5-button>`
+                                    :html`<ui5-button @click=${() => {
+                                        this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                            detail: true, bubbles: true, composed: true
+                                        }));
+                                        this.requestUpdate();
+                                    }}>${msg('Start')}
+                                    </ui5-button>`
+    }
                             <ui5-button design="Emphasized" @click=${() => {
                                 const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
                                 if (popover.isOpen()) {
@@ -2285,6 +2298,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             <ui5-button icon="developer-settings"
                                                         @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
                         }
+                        <ui5-button id="sync-button" icon="synchronize" 
+                                    @click=${() => {
+                                        const btn = this.shadowRoot!.getElementById("sync-button")!;
+                                        btn.classList.add('spinning');
+                                        setTimeout(() => {
+                                            btn.classList.remove('spinning');
+                                            //isRotating = false;
+                                        }, 1000);
+                                        this._filesDvm.probeAll(GetStrategy.Network);
+                                        this._dvm.probeAll(GetStrategy.Network);
+                                        this.requestUpdate();
+                        }}></ui5-button>
                         <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
                                         style="color: ${filteredInbox.length? "#33A000" : ""}"
