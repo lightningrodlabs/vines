@@ -7,7 +7,6 @@ import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {consume} from "@lit/context";
 import {networkCallerContext} from "../../contexts";
 import Switch from "@ui5/webcomponents/dist/Switch";
-import {AgentId} from "@ddd-qc/lit-happ";
 
 
 function intoLine(numbers: number[]): string {

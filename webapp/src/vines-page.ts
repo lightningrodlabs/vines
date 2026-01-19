@@ -2398,7 +2398,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-busy-indicator delay="0" size="Large" active
                                     style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
-            <ui5-dialog id="view-agents-dialog" header-text=${msg('Members')}>
+            <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Members')}>
                 <peer-list self
                            @avatar-clicked=${async (e: any) => {
                                e.stopPropagation();
@@ -2423,7 +2423,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </ui5-button>
             </ui5-dialog>
             <!-- View members dialog -->
-            <ui5-dialog id="pick-agent-dialog" header-text=${msg('Select a peer')}>
+            <ui5-dialog id="pick-agent-dialog" style="width:600px;" header-text=${msg('Select a peer')}>
                 <peer-list
                         @avatar-clicked=${async (e: any) => {
                             console.log("@avatar-clicked", e.detail)
