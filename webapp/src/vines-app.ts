@@ -18,7 +18,7 @@ import {
     HvmDef,
     DvmDef,
     DnaViewModel, pascal, ActionId, Cell,
-    HcConnectionOptions,
+    HcConnectionOptions, DnaId,
 } from "@ddd-qc/lit-happ";
 import {
     ThreadsDvm,
@@ -31,7 +31,7 @@ import {
     VINES_DEFAULT_ROLE_NAME,
     onlineLoadedContext,
     toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
-    renderWelcomeScreen,
+    renderWelcomeScreen, BeadInfo,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 
@@ -218,6 +218,17 @@ export class VinesApp extends HappMultiElement {
 
   get cells(): Cell[] {
     return this.hvms.map(([_appProxy, hvm]) => hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME)!.cell);
+  }
+
+  findThreadsDvm(dna: DnaId): ThreadsDvm | undefined {
+      for (let i = 0; i < this.hvms.length; i += 1) {
+          const dvm = this.threadsDvm(i);
+          console.debug("findThreadsDvm() dvm", i, dvm.cell.address.dnaId.b64);
+          if (dvm.cell.address.dnaId.equals(dna)) {
+              return dvm;
+          }
+      }
+      return undefined;
   }
 
 
@@ -428,8 +439,18 @@ export class VinesApp extends HappMultiElement {
             throw new Error(`Threads/we-applet: Unknown zome '${assetViewInfo.recordInfo.integrityZomeName}'.`);
           }
           const entryType = pascal(assetViewInfo.recordInfo.entryType);
-          const [_dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
+          const [dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
           console.log("pascal entryType", assetViewInfo.recordInfo.entryType, entryType);
+
+          const thisThreadDvm = this.findThreadsDvm(dnaId);
+          if (!thisThreadDvm) {
+                return html`
+                    <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
+                        <div style="margin:auto; font-size:large">${msg('Error: ThreadDvm not found')} (${dnaId.b64})</div>
+                    </div>
+            `;
+          }
+
           switch (entryType) {
             case ThreadsEntryType.ParticipationProtocol:
               const ppAh = new ActionId(dhtId.b64);
@@ -439,18 +460,40 @@ export class VinesApp extends HappMultiElement {
                                        showInput="true"></comment-thread-view>`;
               break;
             case ThreadsEntryType.EncryptedBead:
+                const encBeadAh = new ActionId(dhtId.b64);
+                const baseBeadInfo: BeadInfo | null = thisThreadDvm!.threadsZvm.perspective.getBaseBeadInfo(encBeadAh);
+                if (!baseBeadInfo) {
+                    view = html`<chat-item assetview .hash=${encBeadAh} shortmenu></chat-item>`;
+                } else {
+                    view = html`
+                        <comment-thread-view assetview
+                                             .threadHash=${baseBeadInfo.bead.ppAh}
+                                             .beadAh=${encBeadAh}
+                                             style="height: 100%;"
+                                             showInput="true"></comment-thread-view>`;
+                }
+                break;
             case ThreadsEntryType.TextBead:
             case ThreadsEntryType.AnyBead:
             case ThreadsEntryType.EntryBead:
               const beadAh = new ActionId(dhtId.b64);
-              // @click=${(_e:any) => this.dispatchEvent(beadJumpEvent(beadAh))}
-              view = html`
-                  <chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
-              break
+              // view message in comment thread
+              const beadInfo: BeadInfo | undefined = thisThreadDvm!.threadsZvm.perspective.getBeadInfo(beadAh);
+                if (!beadInfo) {
+                    view = html`<chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
+                } else {
+                    view = html`
+                        <comment-thread-view assetview
+                                             .threadHash=${beadInfo.bead.ppAh}
+                                             .beadAh=${beadAh}
+                                             style="height: 100%;"
+                                             showInput="true"></comment-thread-view>`;
+                }
+              break;
             case ThreadsEntryType.SemanticTopic:
               view = html`
                   <div>{SemanticTopic}</div>`
-              break
+              break;
             default:
               throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);
           }

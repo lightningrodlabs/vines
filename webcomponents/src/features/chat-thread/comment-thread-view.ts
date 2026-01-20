@@ -51,6 +51,8 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** Hash of Thread to display */
   @property() threadHash?: ActionId;
+  /** Hash of bead to focus */
+  @property() beadAh?: ActionId;
   /** Enable Input bar */
   @property() showInput: boolean = false
 
@@ -151,22 +153,33 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   // TODO: scrolling
-  // /** */
-  // protected override updated(_changedProperties: PropertyValues) {
-  //   super.updated(_changedProperties);
-  //   try {
-  //     //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
-  //     //console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
-  //     //this.listElem.scrollTo(0, this.listElem.scrollHeight);
-  //     //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
-  //     //this.listElem.scrollIntoView({block: "end"});
-  //     //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
-  //     //this.listElem.scrollTop = this.listElem.scrollHeight;
-  //     //this.listElem.scrollIntoView(false);
-  //   } catch(e:any) {
-  //     // element not present
-  //   }
-  // }
+  /** */
+  protected override updated(_changedProperties: PropertyValues) {
+    super.updated(_changedProperties);
+
+    /** Scroll the list container to the requested bead */
+      if (this.beadAh) {
+          console.log("<comment-threaded-view>.updated()", this.beadAh.b64)
+          const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
+          if (beadItem) {
+              const scrollY = beadItem.offsetTop - this.offsetTop;
+              this.scrollTo({top: scrollY, behavior: 'smooth'});
+          }
+      }
+
+    // try {
+    //   //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
+    //   //console.log("<comment-thread-view>.updated() ", scrollContainer.scrollTop, scrollContainer.scrollHeight, scrollContainer.clientHeight)
+    //   //this.listElem.scrollTo(0, this.listElem.scrollHeight);
+    //   //this.listElem.scroll({top: this.listElem.scrollHeight / 2});
+    //   //this.listElem.scrollIntoView({block: "end"});
+    //   //this.listElem.scrollTop = this.listElem.scrollHeight / 2;
+    //   //this.listElem.scrollTop = this.listElem.scrollHeight;
+    //   //this.listElem.scrollIntoView(false);
+    // } catch(e:any) {
+    //   // element not present
+    // }
+  }
 
 
   /** */
