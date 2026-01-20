@@ -147,7 +147,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       peers.push([agentId, this._peerStatusMap.get(agentId.b64), pair[0], pair[1]]);
     }
 
-    console.debug("peerStatusMap", this._peerStatusMap, peers);
+    //console.debug("peerStatusMap", this._peerStatusMap, peers);
 
     /** render each peer */
     const onlinePeerElems: TemplateResult<1>[] = [];

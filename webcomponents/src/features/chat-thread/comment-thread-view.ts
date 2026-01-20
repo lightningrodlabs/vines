@@ -41,7 +41,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    //console.log("<comment-thread-view>.ctor()", this.threadHash)
+    console.log("<comment-thread-view>.ctor()", this.threadHash, this.beadAh)
   }
 
 
@@ -91,9 +91,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Getters -- */
 
-  get listElem(): HTMLElement {
-    return this.shadowRoot!.getElementById("list-broken") as HTMLElement;
-  }
+   get listElem(): HTMLElement {
+     return this.shadowRoot!.getElementById("list") as HTMLElement;
+   }
 
 
   get value(): string {
@@ -159,11 +159,11 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     /** Scroll the list container to the requested bead */
       if (this.beadAh) {
-          console.log("<comment-threaded-view>.updated()", this.beadAh.b64)
           const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
+          console.debug("<comment-threaded-view>.updated()", this.beadAh.b64, beadItem)
           if (beadItem) {
               const scrollY = beadItem.offsetTop - this.offsetTop;
-              this.scrollTo({top: scrollY, behavior: 'smooth'});
+              this.listElem.scrollTo({top: scrollY, behavior: 'smooth'});
           }
       }
 
@@ -275,7 +275,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
       const item = html`
-          <side-item .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
+          <side-item id=${beadAh.b64} .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
       prevBeadAh = beadAh;
       return item;
     });
@@ -301,7 +301,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     // console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName);
     //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
     let maybeInput = html``;
-    if (this.showInput) {
+    if (this.showInput && !this.assetview) {
       // @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}
       maybeInput = html`
           <vines-input-bar id="input-bar" ?busy=${this.busy} nosend topic="" .threadHash=${this.threadHash}></vines-input-bar>`;
@@ -331,6 +331,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         ${doodle_bg}
         <!-- Title row -->
         <h3 style="margin:10px; color:#021133;">
+            ${openInMainViewBtn}
             ${this.assetview? html`` : html`
                 <ui5-button design="Transparent" tooltip=${msg('Close')}
                             icon="slim-arrow-right"
@@ -341,8 +342,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                                 composed: true
                             }))}>
                 </ui5-button>`}
-            ${openInMainViewBtn}
-                <!--<span>${msg('About')}</span> -->
+            <!--<span>${msg('About')}</span> -->
             <sl-tooltip content=${titleTip} style="--show-delay: 500;">
             <span class="subjectName" style="cursor: pointer;"
                   @click=${(_e: any) => {
@@ -390,6 +390,16 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             </sl-tooltip>
             <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}
                              style="margin-left:5px;"></copy-wal-button>
+            <ui5-button design="Transparent" tooltip=${msg('Go to Bottom')}
+                        icon="pull-down"
+                        style="margin-right:-5px;"
+                        @click=${(_e: any) => this.listElem.scrollTo(0, this.listElem.scrollHeight)}>
+            </ui5-button>
+            <ui5-button id="pull-up" design="Transparent" tooltip=${msg('Go to Top')}
+                        icon="pull-down"
+                        style="margin-right:-5px;"
+                        @click=${(_e: any) => this.listElem.scrollTo(0, 0)}>
+            </ui5-button>
         </h3>
         <!-- thread -->
         <div id="list" @show-profile=${(e: any) => console.log("onShowProfile div", e)}>
@@ -418,6 +428,10 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           height: 100%;
         }
 
+          #pull-up::part(icon) {
+              transform: rotate(180deg);
+          }
+          
         ui5-avatar:hover {
           outline: 1px solid #62c547;
         }
