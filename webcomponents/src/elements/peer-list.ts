@@ -52,9 +52,9 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     /** After first render only */
     override async firstUpdated() {
         /** Register loop callback */
-        this.networkCaller!.addCallback((m: NetworkMetrics, s: TransportStats) => {
-            console.log("TransportStats:", s.peer_urls);
-            console.log("NetworkMetrics:", m.gossip_state_summary.peer_meta);
+        this.networkCaller!.addCallback((_m: NetworkMetrics, _s: TransportStats) => {
+            //console.log("TransportStats:", s.peer_urls);
+            //console.log("NetworkMetrics:", m.gossip_state_summary.peer_meta);
             this.requestUpdate();
         });
     }
@@ -111,9 +111,22 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
   /** */
   override render() {
-    console.log("<peer-list>.render()", this.perspective);
+    //console.debug("<peer-list>.render()", this.perspective);
 
-    if (this.perspective.profiles.size <= 1) {
+    const netLogCount = this.networkCaller.networkMetricsLogs.length;
+    const peerCount = netLogCount > 0
+      ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
+      : 0;
+
+    const profilesCount = Math.max(this.perspective.profiles.size - 1 , 0); // remove self
+
+    if (profilesCount == 0) {
+        if (peerCount > 0) {
+        return html`
+          <div class="folks" style="color: #7d7d7d">
+              ${msg('No registered peers found')}
+          </div>`;
+        }
       return html`
           <div class="folks" style="color: #7d7d7d">
               ${msg('No peers found')}
@@ -150,7 +163,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             //     statusContent.push(html`<div>${status.errors}</div>`);
             // }
             if (status.isWebRtc) {
-                statusContent.push(html`<div style="background-color:green; border-radius:8px; color:white; padding:3px; font-size:small">WebRTC</div>`);
+                statusContent.push(html`<div style="background-color:green; border-radius:8px; color:white; padding:3px; font-size:small">${msg('Connected')}</div>`);
             }
         }
         const elem = html`
@@ -180,10 +193,13 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     /** render all */
     return html`
       <div class="folks">
-        <div class="category-title">Connected</div>
+        <div class="category-title">${msg('Online')}</div>
         ${onlinePeerElems}
-        <div class="category-title" style="margin-top:20px;">Remaining</div>
+        <div class="category-title" style="margin-top:20px;">${msg('Offline')}</div>
         ${offlinePeerElems}
+          ${peerCount <= profilesCount
+                  ? html``
+                  : html`<div style="text-align:center">${peerCount - profilesCount} ${msg('unregistered peer(s)')}</div>`  }
       </div>
     `
   }

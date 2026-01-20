@@ -538,7 +538,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                         </ui5-textarea>
                     </div>
                     <div class="field-row">
-                        <ui5-label>${msg('Infringements permitted per member')}:</ui5-label>
+                        <ui5-label>${msg('Infringements permitted person')}:</ui5-label>
                         <ui5-input type="number" .value=${this.moderation.allowedFlags}
                                    @change=${this.handleAllowedFlagsChange}></ui5-input>
                     </div>

@@ -90,7 +90,7 @@ export class NetworkHealthPanel extends LitElement {
     const allPendingRequestsCount: number[] = Object.values(this.networkCaller.networkMetricsLogs).map(([_ts, stats]) => Object.values(stats.fetch_state_summary.pending_requests).length);
     //const allPendingRequestsCount = [0,1,2,50,10,85,20,5,48]; // testing values
     const pendingRequestsLine = intoLine(allPendingRequestsCount);
-    console.log("<network-health>.render()", pendingRequestsLine);
+    //console.debug("<network-health>.render()", pendingRequestsLine);
 
     const totalSendBytes = Math.round(Object.values(latestStats.connections).reduce((sum, connection) =>  sum + connection.send_bytes, 0) / 1024);
     const alltotalSendBytes: number[] = Object.values(this.networkCaller.networkStatsLogs).map(

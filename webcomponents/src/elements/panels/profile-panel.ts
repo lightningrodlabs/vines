@@ -109,7 +109,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
                 ${this._profile.fields['timezone']? formatTimezone(this._profile.fields['timezone'], false) : 'UTC'}
             </div>
 
-            <h5>${msg('Member since')}</h5>
+            <h5>${msg('Joined date')}</h5>
             <div class="info">${formatTime(timestamp, timezone)}</div>
             ${!this.hash.equals(this.cell.address.agentId)? html`
                 <h5 style="margin-bottom: 3px;">${msg('Send Direct Message')}</h5>

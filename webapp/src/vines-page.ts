@@ -1846,9 +1846,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
 
-    const profileCount = this._dvm.profilesZvm.perspective.agents.length;
-
-
     /* Custom Segmented buttons */
     const segBtns = !this.weServices? html`` : html`
         <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 3px 10px; border-radius: 5px; padding: 3px;">
@@ -2061,7 +2058,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                     <ui5-button icon="group" name="group" design="Transparent"
                                 style="margin-top:10px;position:relative; width: 100px;"
-                                tooltip=${`${profileCount} ${profileCount != 1? msg('Members') : msg('Member')}`}
+                                tooltip=${msg('peers online')}
                                 @click=${async (e: any) => {
                                     e.stopPropagation();
                                     await this.updateComplete;
@@ -2398,8 +2395,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-busy-indicator delay="0" size="Large" active
                                     style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
-            <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Members')}>
-                <peer-list self
+            <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Peers')}>
+                <peer-list
                            @avatar-clicked=${async (e: any) => {
                                e.stopPropagation();
                                console.log("@avatar-clicked", e.detail);

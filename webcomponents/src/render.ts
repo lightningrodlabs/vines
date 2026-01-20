@@ -91,7 +91,7 @@ export function renderAvatarGroup(profilesZvm: ProfilesAltZvm, agents: AgentId[]
 /** */
 export function renderAvatars(parent: LitElement, agentHashes: Uint8Array[], perspective: ProfilesAltPerspective): TemplateResult<1> {
   let peerList: TemplateResult<1>[] = [];
-  const unknown = html`${msg('Unknown member')}`;
+  const unknown = html`${msg('Unknown peer')}`;
   for (const agentId of agentHashes.map((hash) => new AgentId(hash))) {
     const ah = perspective.profileByAgent.get(agentId);
     console.log("renderProfiles", agentId, ah, perspective);
@@ -259,7 +259,7 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
               <img src=${icon} width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
               Vines
           </h1>
-          <div>${profileCount} ${profileCount > 1? msg('Members') : msg('Member')}</div>
+          <div>${profileCount} ${profileCount > 1? msg('peers') : msg('peer')}</div>
           <div style="align-items: center; z-index:1;">
               <ui5-card id="profileCard">
                   <ui5-card-header id="profileCardHeader" title-text=${greet}></ui5-card-header>

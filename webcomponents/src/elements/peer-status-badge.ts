@@ -31,7 +31,8 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
   override render() {
     //console.debug("<peer-status-badge>.render()");
 
-    const profileCount = this._zvm.perspective.agents.length;
+    let profileCount = this._zvm.perspective.agents.length;
+    if (profileCount > 0) { profileCount -= 1} // Remove self
 
     const netLogCount = this.networkCaller.networkMetricsLogs.length;
     const peerCount = netLogCount > 0
@@ -40,13 +41,13 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
 
     const memberBg = peerCount == 0
       ? "#bb3314"
-      : peerCount + 1 > profileCount
+      : peerCount > profileCount
         ? "#c355ee"
         : "#559eee";
     /** */
     return html`
             <span class="badge" style="background:${memberBg}">
-            ${peerCount + 1} / ${profileCount}
+            ${peerCount} / ${profileCount}
         </span>
         `;
   }
