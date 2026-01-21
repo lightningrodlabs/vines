@@ -173,7 +173,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /**
-   * If thread is not provided we just know peer is online and assume still in same location
+   * If thread is not provided we just know peer is online and assume still at the same location.
    * Peer can be online but not in any thread (thread = null)
    */
   private storePresence(from: AgentId, thread?: ActionId | null) {
@@ -472,7 +472,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** Return list of agents with known presence not older than 5 minutes */
   allCurrentOthers(startingAgents?: AgentId[], thread?: ActionId): AgentId[] {
     const agents = startingAgents? startingAgents : Array.from(this._perspective.agentPresences.keys());
-    //console.log("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread);
+    //console.debug("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread, startingAgents);
     const currentTime: number = Math.floor(Date.now() / 1000);
     const filtered = agents
       .filter((key) => !key.equals(this.cell.address.agentId))

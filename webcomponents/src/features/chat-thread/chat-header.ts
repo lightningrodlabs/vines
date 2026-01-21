@@ -67,7 +67,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
     let groups = ""
     if (this.groupNames) {
-      groups = ", " + msg("in groups") + " (" + this.groupNames.join(", ") + ")";
+      groups = msg("in groups") + ": " + this.groupNames.join(", ");
     }
 
     //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e:any) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
