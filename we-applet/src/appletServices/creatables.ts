@@ -14,6 +14,8 @@ export const creatables: Record<CreatableName, CreatableType> = {
   thread: {
     label: "Thread",
     icon_src: wrapPathInSvg(mdiCommentTextMultiple),
+    width: "large",
+    height: "large",
   }
 };
 

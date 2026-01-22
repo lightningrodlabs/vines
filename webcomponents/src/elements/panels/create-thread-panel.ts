@@ -91,10 +91,10 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
             <ui5-input id="purposeInput" value=${msg('comment')}></ui5-input>
           </div>
           <div>
-              <ui5-label for="wurlInput" required>Subject weaveURL:</ui5-label>
-              <ui5-input id="wurlInput"></ui5-input>
+              <ui5-label for="wurlInput" required>${msg('Subject')}:</ui5-label>
+              <ui5-input id="wurlInput" placeholder="weaveURL"></ui5-input>
               <ui5-button icon="add" @click=${async (_e: any) => {
-      const maybeWal = await this.weServices?.assets.userSelectAsset();
+      const maybeWal = await this.weServices?.assets.userSelectAsset('pocket-no-create');
       if (!maybeWal) {
         return;
       }
