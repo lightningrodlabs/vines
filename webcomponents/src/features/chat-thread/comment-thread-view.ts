@@ -284,7 +284,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     if (beads.length == 0) {
       commentItems = [html`
           <div style="font-weight: bold; color: #1e1e1ecc;">
-              ${this.showInput? msg("Add first message:") : msg("No messages found")}
+              ${this.showInput && !this.assetview? msg("Add first message:") : msg("No messages found in thread")}
           </div>`]
     }
 

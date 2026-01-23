@@ -41,12 +41,6 @@
           "instanceName": "Files",
           "registeringAgent": 1,
           "joiningAgents": [2]
-        },
-        {
-          "name": "Feed",
-          "instanceName": "Feed",
-          "registeringAgent": 1,
-          "joiningAgents": [2]
         }
       ]
     }
@@ -63,19 +57,6 @@
       "source": {
         "type": "filesystem",
         "path": "artifacts/vines-we_applet.webhapp"
-      }
-    },
-    {
-      "name": "Feed",
-      "subtitle": "Blog\n",
-      "description": "...",
-      "icon": {
-        "type": "filesystem",
-        "path": "webapp_feed/icon.png"
-      },
-      "source": {
-        "type": "filesystem",
-        "path": "artifacts/feed-we_applet.webhapp"
       }
     },
     {

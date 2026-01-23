@@ -1692,11 +1692,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 if (!isAuthorSelf) {
                     return;
                 }
-                console.log("handleLinkPulse() hide", pulse.target);
+                console.debug("handleLinkPulse() hide", pulse.target);
                 this._perspective.storeHidden(pulse.target, StateChangeType.Create == pulse.state);
                 break;
             case ThreadsLinkType.Dm: {
-                console.log("handleLinkPulse() Dm", pulse.base.short);
+                console.debug("handleLinkPulse() Dm", pulse.base.short);
                 const targetAh = new ActionId(pulse.target.b64);
                 const forPeer = AgentId.from(pulse.base);
                 const isForMe = forPeer.equals(this.cell.address.agentId);
@@ -1785,7 +1785,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             }
                 break;
             case ThreadsLinkType.NotifySetting: {
-                console.log("handleLinkPulse() NotifySetting", pulse.base.short);
+                console.debug("handleLinkPulse() NotifySetting", pulse.base.short);
                 const baseAh = new ActionId(pulse.base.b64);
                 if (StateChangeType.Create == pulse.state) {
                     const index = pulse.tag[0] as number;
@@ -1800,7 +1800,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             }
                 break;
             case ThreadsLinkType.Favorite: {
-                console.log("handleLinkPulse() Favorite", pulse.target.short);
+                // console.debug("handleLinkPulse() Favorite", pulse.target.short);
                 if (pulse.author.equals(this.cell.address.agentId)) {
                     const targetAh = new ActionId(pulse.target.b64);
                     if (StateChangeType.Create == pulse.state) {
@@ -1860,7 +1860,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     protected override async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
-        console.debug("ThreadsZvm.handleEntryPulse()", pulse, pulse.ah.b64, from.b64);
+        //console.debug("ThreadsZvm.handleEntryPulse()", pulse, pulse.ah.b64, from.b64);
         //const isSignalFromSelf = this.cell.address.agentId.equals(from);
         const isEntryFromSelf = this.cell.address.agentId.equals(pulse.author);
 
@@ -1967,10 +1967,9 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     private async handleInboxLink(pulse: LinkPulseMat, from: AgentId) {
         const forAgent = AgentId.from(pulse.base);
         const isLinkFromMe = this.cell.address.agentId.equals(pulse.author);
-        const isSignalFromMe = this.cell.address.agentId.equals(from);
         const isForMe = this.cell.address.agentId.equals(forAgent);
 
-        console.log("handleInboxLink()", isLinkFromMe, isSignalFromMe, isForMe, pulse.validatedBy, pulse.create_link_hash.b64);
+        console.debug("handleInboxLink()", isLinkFromMe, this.cell.address.agentId.equals(from), isForMe, pulse.validatedBy, pulse.create_link_hash.b64);
 
         if (!isForMe && !isLinkFromMe || pulse.validatedBy == ValidatedBy.None) {
             return;

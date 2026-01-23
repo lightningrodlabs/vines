@@ -224,7 +224,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   handleSignal(ssignal: Signal) {
-    console.log("ThreadsDvm.handleSignal()", ssignal);
+    //console.log("ThreadsDvm.handleSignal()", ssignal);
     if (SignalType.App != ssignal.type) {
       return;
     }
@@ -242,7 +242,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentId): Promise<void> {
-    console.log("ThreadsDvm.handleThreadsSignal()", threadsSignal, from.b64);
+    //console.log("ThreadsDvm.handleThreadsSignal()", threadsSignal, from.b64);
     /* Update agent's known presence */
     this.storePresence(from);
     /** */
