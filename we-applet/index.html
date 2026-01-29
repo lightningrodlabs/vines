@@ -39,9 +39,15 @@
       import setupThreadsApplet from "./src/index.ts";
       setupThreadsApplet().then((happElem) => {
           console.log("Vines we-applet setup DONE - Adding in HappElement");
-          document.querySelector('.spinner').remove();
           document.body.append(happElem);
           console.log("Vines we-applet HappElement Added");
+      });
+    </script>
+
+    <script>
+      document.addEventListener('vines-ready', (e) => {
+        console.log('Vines is ready!', e.detail);
+        document.querySelector('.spinner').remove();
       });
     </script>
 

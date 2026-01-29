@@ -26,13 +26,12 @@
     "@types/functional-red-black-tree": "^1.0.2",
     "functional-red-black-tree"       : "^1.0.1",
     "js-base64"                       : "^3.7.3",
-    "emoji-picker-element"            : "1.21.0",
+    "emoji-picker-element"            : "1.28.1",
     "css-doodle"                      : "~0.38.4",
-    "timezone-picker"                 : "~2.0.0-1",
     "@ui5/webcomponents"              : "=1.13.3",
     "@ui5/webcomponents-fiori"        : "=1.13.3",
     "@ui5/webcomponents-icons"        : "=1.13.3",
-    "@shoelace-style/shoelace"        : "2.11.2",
+    "@shoelace-style/shoelace"        : "2.20.1",
     "@weblogin/trendchart-elements"   : "^1.1.0"
   }
 }

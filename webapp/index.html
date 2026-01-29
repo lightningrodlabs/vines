@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.17.1/cdn/themes/light.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.17.1/cdn/shoelace-autoloader.js"></script>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.17.1/cdn/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.17.1/cdn/shoelace-autoloader.js"></script> -->
     <style type="text/css" data-ui5-font-face="">
       /* Works on Firefox */
       * {
@@ -32,6 +32,11 @@
         const isLauncher = window && __HC_LAUNCHER_ENV__ in window;
         console.log("vines/index.html: Launcher = ", isLauncher);
         console.log("vines/index.html: location = ", window.location.toString());
+    </script>
+    <script>
+      document.addEventListener('vines-ready', (e) => {
+        console.log('Vines is ready! appId =', e.detail);
+      });
     </script>
     <script type="module" src="./src/index.ts"></script>
     <!-- <script type="module">import { VinesApp } from "./";</script> -->

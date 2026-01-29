@@ -231,6 +231,14 @@ export class VinesApp extends HappMultiElement {
       return undefined;
   }
 
+    // Notify parent that the vines happ is ready
+    override firstUpdated() {
+        this.dispatchEvent(new CustomEvent('vines-ready', {
+            detail: this.cells[0]?.appId,
+            bubbles: true,
+            composed: true,
+        }));
+    }
 
   /** -- Methods -- */
 

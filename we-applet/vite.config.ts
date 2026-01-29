@@ -32,10 +32,9 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {src: "weave.config.json", dest: DIST_FOLDER},
-        //{src: "../webapp/favicon.ico", dest: DIST_FOLDER},
         {src: "../webapp/icon.png", dest: DIST_FOLDER},
         {src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER},
-        //{src: "../webapp/logo.svg", dest: DIST_FOLDER},
+
         {
           src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css",
           dest: DIST_FOLDER,
@@ -48,7 +47,6 @@ export default defineConfig({
     //dts(),
   ],
   define: {
-    '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
     'process.env.HAPP_BUILD_MODE': JSON.stringify(HAPP_BUILD_MODE),
     'process.env.HAPP_ENV': HAPP_BUILD_MODE == "Debug"? JSON.stringify("BrowserWe") : JSON.stringify("We"),
     'process.env.APPLET_VIEW': JSON.stringify(APPLET_VIEW),

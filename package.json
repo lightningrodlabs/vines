@@ -1,6 +1,6 @@
 {
   "name"    : "vines-dev",
-  "version" : "1.22.0",
+  "version" : "1.22.1",
   "config"  : {
     "hc_version"  : "0.6.0",
     "k2_version"  : "0.1.5",
@@ -156,7 +156,7 @@
     "@ddd-qc/we-utils"              : "=0.34.2",
     "@ddd-qc/profiles-dvm"          : "=0.34.0",
     "@ddd-qc/path-explorer"         : "=1.34.0",
-    "@ddd-qc/files"                 : "=0.9.4",
+    "@ddd-qc/files"                 : "=0.9.5",
     "@ddd-qc/delivery"              : "=0.21.0",
     "@msgpack/msgpack"              : "^3.1.1",
     "cytoscape"                     : "~3.30.3",

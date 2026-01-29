@@ -23,20 +23,17 @@ export default defineConfig({
     }
   },
   plugins: [
-    checker({
-      typescript: true,
-      // eslint: {
-      //   lintCommand: 'eslint --ext .ts,.html . --ignore-path .gitignore',
-      // },
-    }),
-      viteStaticCopy({
+    checker({typescript: true}),
+    viteStaticCopy({
           targets: [
+              { src: "./icon.png", dest: "./" },
+              { src: "./add-to-pocket.svg", dest: "./" },
+              { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: "shoelace-assets" }
           ]
-      }),
+    }),
     dts(),
   ],
   define: {
-    '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
     'process.env.HAPP_BUILD_MODE': JSON.stringify(HAPP_BUILD_MODE),
     'process.env.HAPP_ENV': JSON.stringify("Browser"),
     'process.env.APPLET_VIEW': JSON.stringify(APPLET_VIEW),
@@ -48,13 +45,13 @@ export default defineConfig({
     emptyOutDir: true,
     //minify: false,
     outDir: DIST_FOLDER,
-    rollupOptions: {
-      output: {
-        entryFileNames: "index.js",
-        chunkFileNames: `assets/index-chunk.js`,
-        assetFileNames: "assets[extname]",
-      },
-    }
+    // rollupOptions: {
+    //   output: {
+    //     entryFileNames: "index.js",
+    //     chunkFileNames: `assets/index-chunk.js`,
+    //     assetFileNames: "assets[extname]",
+    //   },
+    // }
   },
   server: {
       host: "0.0.0.0",
