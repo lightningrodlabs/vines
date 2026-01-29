@@ -648,72 +648,95 @@
 </trans-unit>
 <trans-unit id="s6c26f6b6dff13c8b">
   <source>Unknown peer</source>
+  <target>Pair inconnu</target>
 </trans-unit>
 <trans-unit id="s35611c6f737ffc09">
   <source>Create your Profile</source>
+  <target>Créer votre profil</target>
 </trans-unit>
 <trans-unit id="scd0d5484ba43aa8e">
   <source>peers</source>
+  <target>pairs</target>
 </trans-unit>
 <trans-unit id="sdff7710dd73b9849">
   <source>peer</source>
+  <target>pair</target>
 </trans-unit>
 <trans-unit id="sc1f7b5c15ad374e3">
   <source>No registered peers found</source>
+  <target>Aucun pair connu trouvé</target>
 </trans-unit>
 <trans-unit id="s2b827d4f5e0ada9d">
   <source>since</source>
+  <target>depuis</target>
 </trans-unit>
 <trans-unit id="s82a4e28ab5b56670">
   <source>Connected</source>
+  <target>Connecté</target>
 </trans-unit>
 <trans-unit id="seadeb3a807d7478a">
   <source>Online</source>
+  <target>En ligne</target>
 </trans-unit>
 <trans-unit id="scde3342a428aaee8">
   <source>Offline</source>
+  <target>Hors ligne</target>
 </trans-unit>
 <trans-unit id="s9a65e7e2a7d0de86">
   <source>unregistered peer(s)</source>
+  <target>pair(s) non enregistré(s)</target>
 </trans-unit>
 <trans-unit id="s5bb2f9bdf2fad1e9">
   <source>minute</source>
+  <target>minute</target>
 </trans-unit>
 <trans-unit id="s32e77a29a7bb91d3">
   <source>Infringements permitted person</source>
+  <target>Infractions autorisées par personne</target>
 </trans-unit>
 <trans-unit id="s500c40c0f2e4e15b">
   <source>This is the beginning of your direct message history</source>
+  <target>Ceci est le début de votre historique de messages directs</target>
 </trans-unit>
 <trans-unit id="s7f845078d7a5c0b5">
   <source>from</source>
+  <target>de</target>
 </trans-unit>
 <trans-unit id="s12c64c4bb82b6120">
   <source>Message validated by another peer</source>
+  <target>Message validé par un autre pair</target>
 </trans-unit>
 <trans-unit id="s48594c1fe2500882">
   <source>Message self-validated, but not received yet</source>
+  <target>Message auto-validé, mais pas encore reçu</target>
 </trans-unit>
 <trans-unit id="s13079e984ba38e7f">
   <source>Message received, but not validated yet</source>
+  <target>Message reçu, mais pas encore validé</target>
 </trans-unit>
 <trans-unit id="s6b3a4335fdf20d5b">
   <source>No messages found in thread</source>
+  <target>Aucun message trouvé dans le fil</target>
 </trans-unit>
 <trans-unit id="sc207327af22f6d33">
   <source>Go to Bottom</source>
+  <target>Aller en bas</target>
 </trans-unit>
 <trans-unit id="s897290c90d56df6b">
   <source>Go to Top</source>
+  <target>Aller en haut</target>
 </trans-unit>
 <trans-unit id="sbbc53e0e54d7946f">
   <source>Subject</source>
+  <target>Sujet</target>
 </trans-unit>
 <trans-unit id="sf95f60bdacf660a4">
   <source>Joined date</source>
+  <target>Date d'inscription</target>
 </trans-unit>
 <trans-unit id="se715be190539325a">
   <source>ago</source>
+  <target>il y a</target>
 </trans-unit>
 </body>
 </file>
