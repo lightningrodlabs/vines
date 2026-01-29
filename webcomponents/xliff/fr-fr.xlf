@@ -86,10 +86,6 @@
   <source>Settings</source>
   <target>Paramètres</target>
 </trans-unit>
-<trans-unit id="s8847d64291996459">
-  <source>Member since</source>
-  <target>Membre depuis</target>
-</trans-unit>
 <trans-unit id="s904fefb3d01cb2ae">
   <source>empty</source>
   <target>vide</target>
@@ -126,10 +122,6 @@
   <source>Your browser does not support the video element.</source>
   <target>Votre navigateur ne supporte pas cet élément vidéo</target>
 </trans-unit>
-<trans-unit id="sb74717eac10c73f5">
-  <source>This is the beginning of your direct message history with</source>
-  <target>Ceci est le début de votre historique de messages privés avec</target>
-</trans-unit>
 <trans-unit id="s0b7ae9543c001867">
   <source>Reply</source>
   <target>Répondre</target>
@@ -137,10 +129,6 @@
 <trans-unit id="s0621fbc662f668f2">
   <source>Remove attachment</source>
   <target>Retirer pièce-jointe</target>
-</trans-unit>
-<trans-unit id="s6c9c202aecc5b1f6">
-  <source>Attach WAL from pocket</source>
-  <target>Joindre WAL à partir de Pocket</target>
 </trans-unit>
 <trans-unit id="sf18fdd3ba5f7797a">
   <source>Attach file</source>
@@ -150,49 +138,13 @@
   <source>Unknown HRL</source>
   <target>HRL inconnu</target>
 </trans-unit>
-<trans-unit id="s1a86d5e8ae309e09">
-  <source>Toggle Notifications</source>
-  <target>Enclencher Notifications</target>
-</trans-unit>
-<trans-unit id="s2ce5b7abe8cec6d7">
-  <source>comments</source>
-  <target>commentaires</target>
-</trans-unit>
-<trans-unit id="s7bdf06399a451efa">
-  <source>Whats up?</source>
-  <target>Quoi de neuf?</target>
-</trans-unit>
-<trans-unit id="sa84e6d88de4a8525">
-  <source>No Main Feed</source>
-  <target>Pas de fil principal</target>
-</trans-unit>
 <trans-unit id="s863b1e35dc70d3b3">
   <source>No favorites</source>
   <target>Aucun favoris</target>
 </trans-unit>
-<trans-unit id="sd2af6dd3f25e7992">
-  <source>Feed is empty</source>
-  <target>Fil vide</target>
-</trans-unit>
-<trans-unit id="s3d099ab47fec57b6">
-  <source>Like</source>
-  <target>Réagir</target>
-</trans-unit>
-<trans-unit id="s2df075aface0dab8">
-  <source>Share</source>
-  <target>Partager</target>
-</trans-unit>
 <trans-unit id="sb85774dc5d18ff0f">
   <source>Confirm</source>
   <target>Confirmer</target>
-</trans-unit>
-<trans-unit id="scc66beac9bca4258">
-  <source>Create a post</source>
-  <target>Créeer un message</target>
-</trans-unit>
-<trans-unit id="s0843b2fcef33fcc8">
-  <source>Publish</source>
-  <target>Publier</target>
 </trans-unit>
 <trans-unit id="s8dfbfc57ea390f76">
   <source>No channels found</source>
@@ -278,10 +230,6 @@
   <source>Copied AgentPubKey to clipboard</source>
   <target>AgentPubKey copié dans le presse-papier</target>
 </trans-unit>
-<trans-unit id="sfb6dab1a1aa86d7b">
-  <source>Copied Message's WAL to clipboard</source>
-  <target>WAL du message copié dans le presse-papier</target>
-</trans-unit>
 <trans-unit id="sa2d505555b6701a8">
   <source>Copied WAL to clipboard</source>
   <target>Copier WAL dans le presse-papier</target>
@@ -297,14 +245,6 @@
 <trans-unit id="sd1f81284eeb7b503">
   <source>File</source>
   <target>Fichier</target>
-</trans-unit>
-<trans-unit id="sb1892eeeccd481f3">
-  <source>Post added to favorites</source>
-  <target>Post ajouter aux favoris</target>
-</trans-unit>
-<trans-unit id="s6fd05a2cb92783d0">
-  <source>Post removed from favorites</source>
-  <target>Post retiré des favoris</target>
 </trans-unit>
 <trans-unit id="s382a2aa3984474dd">
   <source>Create</source>
@@ -426,10 +366,6 @@
   <source>No messages found</source>
   <target>Aucun message trouver</target>
 </trans-unit>
-<trans-unit id="s76420d0e51d44ab9">
-  <source>Unknown member</source>
-  <target>Membre inconnu</target>
-</trans-unit>
 <trans-unit id="s669b18c6d2d9c95b">
   <source>None</source>
   <target>Aucun</target>
@@ -441,14 +377,6 @@
 <trans-unit id="sbe000d0bd494e88c">
   <source>Message has been flagged</source>
   <target>Le message a ete signaler</target>
-</trans-unit>
-<trans-unit id="s9f5a5f23312798f0">
-  <source>Members</source>
-  <target>Membres</target>
-</trans-unit>
-<trans-unit id="s751678adb0aa2b23">
-  <source>Member</source>
-  <target>Membre</target>
 </trans-unit>
 <trans-unit id="sd980d545359db490">
   <source>Import Profile into Vines</source>
@@ -534,10 +462,6 @@
   <source>messages per</source>
   <target>messages par</target>
 </trans-unit>
-<trans-unit id="s407efecc7eb5764f">
-  <source>hour</source>
-  <target>heure</target>
-</trans-unit>
 <trans-unit id="s5ee33a0c6e923bf5">
   <source>Message Types</source>
   <target>Types de message</target>
@@ -549,10 +473,6 @@
 <trans-unit id="s4629d0943788c295">
   <source>Moderators</source>
   <target>Moderateurs</target>
-</trans-unit>
-<trans-unit id="sfc5cc343134991f5">
-  <source>Infringements permitted per member</source>
-  <target>Infractions permisses par membre</target>
 </trans-unit>
 <trans-unit id="s77bc7219566a8ee4">
   <source>per</source>
@@ -670,14 +590,6 @@
   <source>Maximum allowed is</source>
   <target>Nombre maxium autorise est</target>
 </trans-unit>
-<trans-unit id="sab3b6aa7d2e6e037">
-  <source>Message has not been received by any peer yet</source>
-  <target>Le message n'a pas encore recu par une autre personne</target>
-</trans-unit>
-<trans-unit id="sb37ce515cb33ca1b">
-  <source>Message has not been received via gossip yet</source>
-  <target>Le message n'a pas encore recu via le reseau</target>
-</trans-unit>
 <trans-unit id="s99f110d27e30b289">
   <source>Title</source>
   <target>Titre</target>
@@ -733,6 +645,75 @@
 <trans-unit id="sf9d920dad608987d">
   <source>Add first message:</source>
   <target>Ajoutez un premier message:</target>
+</trans-unit>
+<trans-unit id="s6c26f6b6dff13c8b">
+  <source>Unknown peer</source>
+</trans-unit>
+<trans-unit id="s35611c6f737ffc09">
+  <source>Create your Profile</source>
+</trans-unit>
+<trans-unit id="scd0d5484ba43aa8e">
+  <source>peers</source>
+</trans-unit>
+<trans-unit id="sdff7710dd73b9849">
+  <source>peer</source>
+</trans-unit>
+<trans-unit id="sc1f7b5c15ad374e3">
+  <source>No registered peers found</source>
+</trans-unit>
+<trans-unit id="s2b827d4f5e0ada9d">
+  <source>since</source>
+</trans-unit>
+<trans-unit id="s82a4e28ab5b56670">
+  <source>Connected</source>
+</trans-unit>
+<trans-unit id="seadeb3a807d7478a">
+  <source>Online</source>
+</trans-unit>
+<trans-unit id="scde3342a428aaee8">
+  <source>Offline</source>
+</trans-unit>
+<trans-unit id="s9a65e7e2a7d0de86">
+  <source>unregistered peer(s)</source>
+</trans-unit>
+<trans-unit id="s5bb2f9bdf2fad1e9">
+  <source>minute</source>
+</trans-unit>
+<trans-unit id="s32e77a29a7bb91d3">
+  <source>Infringements permitted person</source>
+</trans-unit>
+<trans-unit id="s500c40c0f2e4e15b">
+  <source>This is the beginning of your direct message history</source>
+</trans-unit>
+<trans-unit id="s7f845078d7a5c0b5">
+  <source>from</source>
+</trans-unit>
+<trans-unit id="s12c64c4bb82b6120">
+  <source>Message validated by another peer</source>
+</trans-unit>
+<trans-unit id="s48594c1fe2500882">
+  <source>Message self-validated, but not received yet</source>
+</trans-unit>
+<trans-unit id="s13079e984ba38e7f">
+  <source>Message received, but not validated yet</source>
+</trans-unit>
+<trans-unit id="s6b3a4335fdf20d5b">
+  <source>No messages found in thread</source>
+</trans-unit>
+<trans-unit id="sc207327af22f6d33">
+  <source>Go to Bottom</source>
+</trans-unit>
+<trans-unit id="s897290c90d56df6b">
+  <source>Go to Top</source>
+</trans-unit>
+<trans-unit id="sbbc53e0e54d7946f">
+  <source>Subject</source>
+</trans-unit>
+<trans-unit id="sf95f60bdacf660a4">
+  <source>Joined date</source>
+</trans-unit>
+<trans-unit id="se715be190539325a">
+  <source>ago</source>
 </trans-unit>
 </body>
 </file>

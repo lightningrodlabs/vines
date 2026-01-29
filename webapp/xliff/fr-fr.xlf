@@ -62,10 +62,6 @@
   <source>Error: File already shared to group or stored locally</source>
   <target>Erreur: Fichier déjà partagé or stocké localement</target>
 </trans-unit>
-<trans-unit id="sc1e929aa05efafba">
-  <source>Failed to connect to Holochain Conductor and/or "Vines" cell.</source>
-  <target>Échec de la connection au Holochain Conductor et/ou à la cell "Vines".</target>
-</trans-unit>
 <trans-unit id="s2c8189544e3ea679">
   <source>Retry</source>
   <target>Réessayer</target>
@@ -89,10 +85,6 @@
 <trans-unit id="s71882be308cb9fdd">
   <source>Show side panel</source>
   <target>montrere panneau latéral</target>
-</trans-unit>
-<trans-unit id="s9f5a5f23312798f0">
-  <source>Members</source>
-  <target>Membres</target>
 </trans-unit>
 <trans-unit id="s274ead7abb4e71bf">
   <source>Notification settings for this channel</source>
@@ -178,10 +170,6 @@
   <source>DMs Cross View</source>
   <target>Vu croiser des DMs</target>
 </trans-unit>
-<trans-unit id="sd0e1071f680d9d0e">
-  <source>Share Network</source>
-  <target>Partager le reseau</target>
-</trans-unit>
 <trans-unit id="s78a89f89fef5b384">
   <source>Close side panel</source>
   <target>Fermer le panel latéral</target>
@@ -230,17 +218,9 @@
   <source>Close</source>
   <target>Fermer</target>
 </trans-unit>
-<trans-unit id="sa76d4c01726b605e">
-  <source>Share this code with a peer to grant them access to this Network</source>
-  <target>Partage ce code a une personne pour lui donner access au reseau</target>
-</trans-unit>
 <trans-unit id="s8587f911bd45e922">
   <source>Copied share code to clipboard</source>
   <target>Code de partage copier dans le presse-papier</target>
-</trans-unit>
-<trans-unit id="s86d42860e023b5f1">
-  <source>Copy Joining Code</source>
-  <target>Copier le code d'invitation</target>
 </trans-unit>
 <trans-unit id="s55ddc7f60d3c09bb">
   <source>Inbox</source>
@@ -302,21 +282,9 @@
   <source>About</source>
   <target>A propos</target>
 </trans-unit>
-<trans-unit id="s751678adb0aa2b23">
-  <source>Member</source>
-  <target>Membre</target>
-</trans-unit>
-<trans-unit id="s9feb1a1345ccc3e5">
-  <source>Network</source>
-  <target>Reseau</target>
-</trans-unit>
 <trans-unit id="s716a6024e3fe999c">
   <source>Show</source>
   <target>Montrer</target>
-</trans-unit>
-<trans-unit id="s05073d2537b45d1a">
-  <source>Sync</source>
-  <target>Synchroniser</target>
 </trans-unit>
 <trans-unit id="s2ceb11be2290bb1b">
   <source>Cancel</source>
@@ -358,10 +326,6 @@
   <source>hidden Categories &amp; Channels</source>
   <target>Categories et canaux cachees</target>
 </trans-unit>
-<trans-unit id="s5794d94e58fae3ab">
-  <source>Share Network Seed</source>
-  <target>Parteger Network Seed</target>
-</trans-unit>
 <trans-unit id="s5dd970759b6e22d3">
   <source>Edit Title</source>
   <target>Modifier titre</target>
@@ -393,6 +357,156 @@
 <trans-unit id="sb85774dc5d18ff0f">
   <source>Confirm</source>
   <target>Confirmer</target>
+</trans-unit>
+<trans-unit id="s5a7cd3632d00405a">
+  <source>Failed to start camera: </source>
+</trans-unit>
+<trans-unit id="se8241c5881141142">
+  <source>HAPP VERSION MISMATCH</source>
+</trans-unit>
+<trans-unit id="sa90023f1716b4e68">
+  <source>Scan QR Code</source>
+</trans-unit>
+<trans-unit id="se320795bc92e79df">
+  <source>Camera not active</source>
+</trans-unit>
+<trans-unit id="s6a76597d4716818d">
+  <source>APK download link</source>
+</trans-unit>
+<trans-unit id="s3c030b9e0d591e50">
+  <source>Download link copied to clipboard</source>
+</trans-unit>
+<trans-unit id="sc16e00a7a8b2fde2">
+  <source>Back</source>
+</trans-unit>
+<trans-unit id="sebada5168620c5fe">
+  <source>default</source>
+</trans-unit>
+<trans-unit id="s0eb6b245e4e380a5">
+  <source>Invite code</source>
+</trans-unit>
+<trans-unit id="s13be7555b45edb32">
+  <source>Invite code copied to clipboard</source>
+</trans-unit>
+<trans-unit id="s512957aa09384646">
+  <source>Launch</source>
+</trans-unit>
+<trans-unit id="sc7e063ecdeb2ecd3">
+  <source>Unset default</source>
+</trans-unit>
+<trans-unit id="s94a283e55857014a">
+  <source>Set default</source>
+</trans-unit>
+<trans-unit id="sf56998949bdf6b33">
+  <source>Deactivate</source>
+</trans-unit>
+<trans-unit id="s20b52451ccedc301">
+  <source>Group already joined</source>
+</trans-unit>
+<trans-unit id="sa829c6f371fd6f02">
+  <source>Invalid invite code</source>
+</trans-unit>
+<trans-unit id="s100afb62e4b8bfa5">
+  <source>Welcome to Vines.</source>
+</trans-unit>
+<trans-unit id="s4dcc66195b1ddc69">
+  <source>What brought you here today?</source>
+</trans-unit>
+<trans-unit id="s43e232a11d5b0384">
+  <source>I have an invite code to join a group</source>
+</trans-unit>
+<trans-unit id="s1f978293c80cd83b">
+  <source>An invite code looks like:</source>
+</trans-unit>
+<trans-unit id="s30fa98203400e719">
+  <source>Joining space...</source>
+</trans-unit>
+<trans-unit id="s6c6bf3ea2ad3d219">
+  <source>Join</source>
+</trans-unit>
+<trans-unit id="sc940654339b9bc80">
+  <source>paste invite code here</source>
+</trans-unit>
+<trans-unit id="s0ea1dcb7e3986745">
+  <source>invite code</source>
+</trans-unit>
+<trans-unit id="s08b05407b5565ca4">
+  <source>or</source>
+</trans-unit>
+<trans-unit id="s21ea0624b6865748">
+  <source>Scan</source>
+</trans-unit>
+<trans-unit id="sd8fc07c566540e32">
+  <source>I want to start a space for my group</source>
+</trans-unit>
+<trans-unit id="s1782815320997842">
+  <source>enter space name</source>
+</trans-unit>
+<trans-unit id="s967539e2332e30dc">
+  <source>Space name</source>
+</trans-unit>
+<trans-unit id="s4e9e4d368feaf09a">
+  <source>Create new group space</source>
+</trans-unit>
+<trans-unit id="sd5b6130b4937488c">
+  <source>Reload</source>
+</trans-unit>
+<trans-unit id="s27976e94b05c6970">
+  <source>Activate</source>
+</trans-unit>
+<trans-unit id="s6693bba11fe97d7e">
+  <source>Select group</source>
+</trans-unit>
+<trans-unit id="sd9f67fbf3f86efcf">
+  <source>Add group</source>
+</trans-unit>
+<trans-unit id="s4b845f31c5ce82a3">
+  <source>Share app</source>
+</trans-unit>
+<trans-unit id="s34c11c5b8ee22cd8">
+  <source>Launching...</source>
+</trans-unit>
+<trans-unit id="see0b82b4bfb8b629">
+  <source>peers online</source>
+</trans-unit>
+<trans-unit id="sf819e4419b9e074e">
+  <source>Change group</source>
+</trans-unit>
+<trans-unit id="s84fe353c725d7e2a">
+  <source>Share invite code</source>
+</trans-unit>
+<trans-unit id="sd9ad53251f2330a5">
+  <source>Stop</source>
+</trans-unit>
+<trans-unit id="sae1c7f13b7c0c47f">
+  <source>Start</source>
+</trans-unit>
+<trans-unit id="s8da3b13ecb71b7c5">
+  <source>Invite Code</source>
+</trans-unit>
+<trans-unit id="s73d65179f6fc505b">
+  <source>Share this code to give access to this group</source>
+</trans-unit>
+<trans-unit id="s571272c18260539e">
+  <source>Copy Invite Code</source>
+</trans-unit>
+<trans-unit id="s8ccd3beb2c58fcee">
+  <source>Peers</source>
+</trans-unit>
+<trans-unit id="saae1c70e168b45b4">
+  <source>Admin</source>
+</trans-unit>
+<trans-unit id="sd306a1935a05c709">
+  <source>Connecting to Holochain</source>
+</trans-unit>
+<trans-unit id="s4b2c76e1a09def93">
+  <source>Failed to connect to Holochain or "Vines" cell.</source>
+</trans-unit>
+<trans-unit id="s88c8102a20aa0e88">
+  <source>Collecting local data</source>
+</trans-unit>
+<trans-unit id="s0cbab64aec38b079">
+  <source>Error: ThreadDvm not found</source>
 </trans-unit>
 </body>
 </file>
