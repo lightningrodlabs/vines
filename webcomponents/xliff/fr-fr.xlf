@@ -24,7 +24,7 @@
 </trans-unit>
 <trans-unit id="sc93a9aa3e5bcbf5d">
   <source>Save Profile</source>
-  <target>Enregistrer Profile</target>
+  <target>Enregistrer Profil</target>
 </trans-unit>
 <trans-unit id="s2ceb11be2290bb1b">
   <source>Cancel</source>
@@ -380,7 +380,7 @@
 </trans-unit>
 <trans-unit id="sd980d545359db490">
   <source>Import Profile into Vines</source>
-  <target>Importer le Profile dans Vines</target>
+  <target>Importer le Profil dans Vines</target>
 </trans-unit>
 <trans-unit id="sb134e975f4d78bc2">
   <source>Text too short</source>
@@ -652,7 +652,7 @@
 </trans-unit>
 <trans-unit id="s35611c6f737ffc09">
   <source>Create your Profile</source>
-  <target>Créer votre profil</target>
+  <target>Créer votre Profil</target>
 </trans-unit>
 <trans-unit id="scd0d5484ba43aa8e">
   <source>peers</source>

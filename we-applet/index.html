@@ -32,7 +32,22 @@
 
     <script type="module">
       console.log("Vines we-applet index.html START");
+      const start = Date.now()
       window.IN_WE = true;
+
+      function formatDuration(ms) {
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        const milliseconds = ms % 1000;
+
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+      }
+
+      document.addEventListener('vines-ready', (e) => {
+        const diff = Date.now() - start;
+        console.log(`Vines we-applet ready in ${formatDuration(diff)} ms | appId =`, e.detail);
+        document.querySelector('.spinner').remove();
+      });
     </script>
 
     <script type="module">
@@ -41,13 +56,6 @@
           console.log("Vines we-applet setup DONE - Adding in HappElement");
           document.body.append(happElem);
           console.log("Vines we-applet HappElement Added");
-      });
-    </script>
-
-    <script>
-      document.addEventListener('vines-ready', (e) => {
-        console.log('Vines is ready!', e.detail);
-        document.querySelector('.spinner').remove();
       });
     </script>
 
