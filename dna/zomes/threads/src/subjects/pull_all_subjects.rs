@@ -18,7 +18,7 @@ pub fn pull_all_subjects(strategy: GetStrategy) -> ExternResult<Vec<Subject>> {
   debug!("{:?}", root_anchor);
   let leaf_anchors = root_anchor.walk(strategy)?;
   debug!("{} leaf_anchors found.", leaf_anchors.len());
-  /// Seperate last component from rest of Path
+  /// Separate last component from rest of Path
   let mut all = Vec::new();
   for tp in leaf_anchors {
     let path = Path::from(tp.anchor.clone());

@@ -89,6 +89,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     }));
   }
 
+    /** */
+    onClickMerge(topicHash: ActionId, subjectName: string) {
+        this.dispatchEvent(new CustomEvent<EditTopicRequest>('merge-topic-clicked', {
+            detail: {topicHash, subjectName},
+            bubbles: true,
+            composed: true
+        }));
+    }
 
   /** */
   override render() {
@@ -370,19 +378,21 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                         @click=${(_e: any) => this.onClickEditTopic(topicAh, title)}></ui5-button>
                 ${topicHideBtn}                
                 ${topicCommentButton}
+                <!-- TODO: test mergeSubject <ui5-button id=${"merge-" + topicAh.b64} icon="edit" tooltip=${msg("Merge")} design="Transparent"
+                            @click=${(_e: any) => this.onClickMerge(topicAh, title)}></ui5-button> -->
                 <ui5-button icon="add" tooltip=${msg("Create a new Channel for this Category")}
                             design="Transparent" 
                             style="color:grey"
                             @click=${async (e: any) => {
-        e.stopPropagation();
-        e.preventDefault();
-        await this.updateComplete;
-        this.dispatchEvent(new CustomEvent<ActionId>('createThreadClicked', {
-          detail: topicAh,
-          bubbles: true,
-          composed: true
-        }));
-      }}>
+                                e.stopPropagation();
+                                e.preventDefault();
+                                await this.updateComplete;
+                                this.dispatchEvent(new CustomEvent<ActionId>('createThreadClicked', {
+                                  detail: topicAh,
+                                  bubbles: true,
+                                  composed: true
+                                }));
+                              }}>
                 </ui5-button>
             </div>
             <!-- threads -->              

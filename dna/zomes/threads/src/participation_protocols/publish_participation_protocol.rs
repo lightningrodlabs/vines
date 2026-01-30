@@ -33,7 +33,7 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   let index_time = if let Some(index_time) = maybe_index_time {
     index_time
   } else {
-    let action_ts = get(pp_ah.clone(), GetOptions::network())?.unwrap().action().timestamp();
+    let action_ts = get(pp_ah.clone(), GetOptions::local())?.unwrap().action().timestamp();
     action_ts
   };
 

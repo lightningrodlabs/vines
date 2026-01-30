@@ -39,7 +39,7 @@ pub fn probe_pps_from_subject_hash(
             subject_hash,
             ThreadsLinkType::Threads.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        input.strategy,
     )?;
     let ahs = links
         .iter()

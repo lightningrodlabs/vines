@@ -1218,6 +1218,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.editTopicDialogElem.open = true;
   }
 
+  /** */
+  async onMergeTopicClicked(e: CustomEvent<EditTopicRequest>) {
+      console.log("onMergeTopicClicked()", e.detail);
+      //this._dvm.threadsZvm.meerg
+  }
 
   /** */
   async onReplyClicked(e: CustomEvent<ActionId>) {
@@ -2039,7 +2044,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @commenting-clicked=${this.onCommentingClicked}
              @reply-clicked=${this.onReplyClicked}
              @edit-channel-clicked=${this.onEditChannelClicked}
-             @edit-topic-clicked=${this.onEditTopicClicked}>
+             @edit-topic-clicked=${this.onEditTopicClicked}
+             @merge-topic-clicked=${this.onMergeTopicClicked}>
 
             <div id="leftSide" style="display: ${this._canShowLeft? "flex" : "none"}; position: relative">
                 ${leftSide}
@@ -2101,18 +2107,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 ? html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` 
                                 : html`<ui5-menu-item id="shareNetwork" icon="cloud" text=${msg("Share invite code")} ></ui5-menu-item>`}                        
                         <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="importCommitItem" text=${msg("Import and commit")}
+                        <ui5-menu-item id="importCommitItem" text=${msg("Import and share")}
                                        icon="open-folder"></ui5-menu-item>
-                        <ui5-menu-item id="importOnlyItem" text=${msg("Import only")}
+                        <ui5-menu-item id="importOnlyItem" text=${msg("Import temporarily")}
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>                         
                         ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
                             <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
                                            starts-section></ui5-menu-item>
                         ` : html`
-                            <ui5-menu-item id="syncItem" text=${msg("Probe peers for content")}
-                                           icon="download-from-cloud" starts-section></ui5-menu-item>
-                            <ui5-menu-item id="exportAllItem" text=${msg("Export All")} icon="save"
+                            <!-- <ui5-menu-item id="syncItem" text="Probe peers for content"
+                                           icon="download-from-cloud" starts-section></ui5-menu-item> -->
+                            <ui5-menu-item id="exportAllItem" text="Export probeAll" icon="save"
                                            starts-section></ui5-menu-item>
                             <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>

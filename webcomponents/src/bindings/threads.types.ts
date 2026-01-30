@@ -254,6 +254,11 @@ export interface FindSubjectsInput {
   subjectType: string
 }
 
+export interface MergeSubjectInput {
+  subjectSource: AnyLinkableArray
+  subjectTarget: AnyLinkableArray
+}
+
 export enum BaseBeadKindType {
 	AnyBead = 'AnyBead',
 	EntryBead = 'EntryBead',

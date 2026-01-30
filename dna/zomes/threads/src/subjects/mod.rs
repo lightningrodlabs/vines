@@ -5,7 +5,7 @@ mod find_subjects_by_type;
 mod pull_all_subjects;
 mod find_subjects_for_applet;
 mod hide;
-
+mod merge_subjects;
 
 use hdk::prelude::*;
 use threads_integrity::*;

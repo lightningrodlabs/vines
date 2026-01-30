@@ -326,6 +326,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         this._perspective.storeSubject(subject);
     }
 
+    /** Merge to MAIN_TOPIC */
+    async mergeToMainTopic(source: ActionId): Promise<void> {
+        console.log("threadsZvm.mergeToMainTopic()", source.b64);
+        await this.mergeSubject(source, MAIN_TOPIC_ID);
+    }
+
+    /** Merge */
+    async mergeSubject(source: ActionId, target: ActionId): Promise<void> {
+        console.log("threadsZvm.mergeSubject()", source.b64, target.b64);
+        // TODO: Enable if mergeSubject zfn added to DNA
+        // await this.zomeProxy.mergeSubject({subjectSource: source.hash, subjectTarget: target.hash});
+    }
+
     /** Get all Subjects from the RootAnchor */
     async pullAllSubjects(strategy: GetStrategy): Promise<void> {
         const subjects = await this.zomeProxy.pullAllSubjects(strategy);
@@ -1302,7 +1315,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const topicMapping: ActionIdMap<ActionId> = new ActionIdMap();
         /** Publish each Latest Topic */
         for (const [topicAhB64, title] of Object.values(snapshot.semanticTopics)) {
+            if (topicAhB64 == MAIN_TOPIC_ID.b64) {
+                this.storeMainTopic();
+                continue;
+            }
             const newTopicAh = await this.publishSemanticTopic(title);
+            console.debug("PubImp() topic", topicAhB64, title, newTopicAh.short);
             topicMapping.set(new ActionId(topicAhB64), newTopicAh);
         }
 
