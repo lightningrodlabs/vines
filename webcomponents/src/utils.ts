@@ -169,42 +169,43 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
 }
 
 
+interface Mention {
+    name: string;
+    startIndex: number;
+    endIndex: number;
+}
+
+
 /** Return the list of known names that starts with '@' */
 function tokenizeMentions(text: string, knownNames: string[]): string[] {
     const validNames = Array.from(knownNames);
     validNames.push("all");
     // Sort by length
-    const sortedNames = validNames.sort((a, b) => b.length - a.length);
     // Find mentions
-    const mentions: string[] = [];
+    const mentions: Mention[] = [];
+    // Sort names by length (longest first) to match "John Smith" before "John"
+    const sortedNames = [...validNames].sort((a, b) => b.length - a.length);
     for (const name of sortedNames) {
-        const regex = new RegExp(`(^|\\s)@${name}(\\s|$|[.,!?;:])`, 'gi');
-        if (regex.test(text)) {
-            mentions.push(name);
+        const regex = new RegExp(`(^|\\s)@${name}(?=\\s|$|[.,!?;:])`, 'gi');
+
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            // match[1] is the captured whitespace/start, so @ starts after it
+            const startIndex = match.index + match[1]!.length;
+            const endIndex = startIndex + name.length + 1; // +1 for @
+
+            // Skip if already captured by a longer name
+            const overlaps = mentions.some(
+                m => startIndex >= m.startIndex && startIndex < m.endIndex
+            );
+
+            if (!overlaps) {
+                mentions.push({ name, startIndex, endIndex });
+            }
         }
     }
-    console.log("mentions", mentions.length, mentions);
-    return [...new Set(mentions)]; // Remove duplicates
+    return mentions.map(m => m.name);
 }
-
-
-// /** Return list of words that starts with '@' */
-// function tokenizeMentions(str: string): string[] {
-//   if (typeof str !== 'string') {
-//     throw new TypeError('expected a string');
-//   }
-//
-//   var re = /(?:[\w_＠@][＠@])|[＠@]([\w_]{1,15})(?=$|[^\w_])/g;
-//   var tokens: any = {input: str, output: str, matches: []};
-//   var match;
-//
-//   while ((match = re.exec(tokens.output))) {
-//     if (!match[1]) continue;
-//     var token = {name: match[1], match: match};
-//     tokens.matches.push(token);
-//   }
-//   return tokens.matches.map((m: any) => m.name);
-// };
 
 
 /** TODO: remove once it's implemented in we-applet */
