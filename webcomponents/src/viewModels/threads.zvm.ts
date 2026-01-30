@@ -2189,15 +2189,22 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** Handle Notification Tip */
         const notifTip = appTip.data;
         console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._notifLoopIntervalId);
-        /** Poll interval until we get it from DHT */
+        /** Poll with an interval until we get it from the DHT */
         if (this.isMainView && !this._missingLinkAhs.has(notifTip.link_ah)) {
             this._missingLinkAhs.set(notifTip.link_ah, notifTip);
             if (!this._notifLoopIntervalId) {
-                /*await*/ this.zomeProxy.probeInbox(GetStrategy.Network);
-                this._notifLoopIntervalId = setInterval(() => {
-                    console.log("Polling Inbox for Missing links...");
-                    /*await*/ this.zomeProxy.probeInbox(GetStrategy.Network);
-                }, 5000);
+                this.zomeProxy.probeInbox(GetStrategy.Network).then(() =>
+                    this._notifLoopIntervalId = setInterval(async () => {
+                        console.log("Polling Inbox for Missing links...");
+                        try {
+                            await this.zomeProxy.probeInbox(GetStrategy.Network);
+                        } catch (e) {
+                            console.error("Error when calling probeInbox() stopping the call loop.", e);
+                            clearInterval(this._notifLoopIntervalId);
+                            this._notifLoopIntervalId = undefined;
+                        }
+                    }, 5000)
+                )
             }
         }
 
