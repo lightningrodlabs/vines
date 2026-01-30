@@ -85,9 +85,9 @@ export function parseSearchInput(input: string, profilesPerspective: ProfilesAlt
         const author = subs[1];
         if (author && author != "") {
           const authors = profilesPerspective.agentByName[author];
-          if (authors && authors.size > 0) {
-            result.author = authors.values().next().value;
-            if (authors.size > 1) {
+          if (authors && authors.length > 0) {
+            result.author = authors[0];
+            if (authors.length > 1) {
               console.warn("parseSearchInput() multiple agents found with name. Using only first one for search", author);
             }
           } else {

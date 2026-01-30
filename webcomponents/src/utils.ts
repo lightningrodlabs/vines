@@ -143,8 +143,8 @@ export function truncate(str: string, n: number, useWordBoundary: boolean): stri
 
 /** Return the list of agents mentioned in a string */
 export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId[] {
-  const mentions = tokenizeMentions(str);
-  /** Handle special mentions */
+  const mentions = tokenizeMentions(str, profilesZvm.perspective.names);
+  /** Handle special system mentions first */
   let hasAll = false;
   for (const mention of mentions) {
     if (mention == "all") {
@@ -152,40 +152,59 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
     }
   }
   let mentionedAgents = profilesZvm.perspective.agents;
+  console.log("mentions, agentByName =", profilesZvm.perspective.agentByName)
   if (!hasAll) {
     mentionedAgents = [];
     mentions.map((mentioned) => {
-      const set = profilesZvm.perspective.agentByName[mentioned]!;
-      if (set) {
-        mentionedAgents.push(...set);
-        if (set.size > 1) {
-          console.warn("parseMentions() multiple agents found with name.", mentioned);
+      const agents = profilesZvm.perspective.agentByName[mentioned]!;
+      if (agents) {
+        mentionedAgents.push(...agents);
+        if (agents.length > 1) {
+          console.warn("parseMentions() multiple agents found for a mentioned name.", mentioned);
         }
       }
     })
-    //.filter((el) => el != undefined);
   }
   return mentionedAgents;
 }
 
 
-/** Return list of words that starts with '@' */
-function tokenizeMentions(str: string): string[] {
-  if (typeof str !== 'string') {
-    throw new TypeError('expected a string');
-  }
+/** Return the list of known names that starts with '@' */
+function tokenizeMentions(text: string, knownNames: string[]): string[] {
+    const validNames = Array.from(knownNames);
+    validNames.push("all");
+    // Sort by length
+    const sortedNames = validNames.sort((a, b) => b.length - a.length);
+    // Find mentions
+    const mentions: string[] = [];
+    for (const name of sortedNames) {
+        const regex = new RegExp(`(^|\\s)@${name}(\\s|$|[.,!?;:])`, 'gi');
+        if (regex.test(text)) {
+            mentions.push(name);
+        }
+    }
+    console.log("mentions", mentions.length, mentions);
+    return [...new Set(mentions)]; // Remove duplicates
+}
 
-  var re = /(?:[\w_＠@][＠@])|[＠@]([\w_]{1,15})(?=$|[^\w_])/g;
-  var tokens: any = {input: str, output: str, matches: []};
-  var match;
 
-  while ((match = re.exec(tokens.output))) {
-    if (!match[1]) continue;
-    var token = {name: match[1], match: match};
-    tokens.matches.push(token);
-  }
-  return tokens.matches.map((m: any) => m.name);
-};
+// /** Return list of words that starts with '@' */
+// function tokenizeMentions(str: string): string[] {
+//   if (typeof str !== 'string') {
+//     throw new TypeError('expected a string');
+//   }
+//
+//   var re = /(?:[\w_＠@][＠@])|[＠@]([\w_]{1,15})(?=$|[^\w_])/g;
+//   var tokens: any = {input: str, output: str, matches: []};
+//   var match;
+//
+//   while ((match = re.exec(tokens.output))) {
+//     if (!match[1]) continue;
+//     var token = {name: match[1], match: match};
+//     tokens.matches.push(token);
+//   }
+//   return tokens.matches.map((m: any) => m.name);
+// };
 
 
 /** TODO: remove once it's implemented in we-applet */

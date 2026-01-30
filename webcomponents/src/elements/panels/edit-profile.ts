@@ -224,7 +224,7 @@ export class EditProfile extends LitElement {
       return;
     }
     const nickname = this.nicknameField.value.trim();
-    const regex = new RegExp(`^["a-zA-Z0-9-_"]+$`);
+    const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
     const isValid = regex.test(nickname);
     if (!isValid) {
       this.nicknameField.valueState = ValueState.Error;

@@ -2143,6 +2143,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 if (beadType == ThreadsEntryType.TextBead) {
                     const textBead = typed as TextBead;
                     const mentionees = parseMentions(textBead.value, (this._dvmParent as any).profilesZvm);
+                    console.log("handleBeadEntry() mentions", mentionees.length, mentionees, textBead.value);
                     for (const mentionee of mentionees) {
                         notifs.push({
                             content: beadAh.hash,
