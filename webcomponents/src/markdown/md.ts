@@ -28,31 +28,31 @@ md.linkify
     .add('weave-0.13:', 'http:')
     .add('weave-0.14:', 'http:')
     .add('weave-0.15:', 'http:')
-    /** MENTION */
-    .add('@', {
-        // @ts-ignore
-        validate: function (text, pos, self) {
-            const tail = text.slice(pos);
-            if (!self.re.twitter) {
-                self.re.twitter = new RegExp(
-                    '^([a-zA-Z0-9_\-]){1,15}(?!_)(?=$|' + self.re.src_ZPCc + ')'
-                );
-            }
-            if (self.re.twitter.test(tail)) {
-                // Linkifier allows punctuation chars before prefix,
-                // but we additionally disable `@` ("@@mention" is invalid)
-                if (pos >= 2 && tail[pos - 2] === '@') {
-                    return false;
-                }
-                return tail.match(self.re.twitter)[0].length;
-            }
-            return 0;
-        },
-        // @ts-ignore
-        normalize: function (match) {
-            match.url = 'agent://' + match.url.replace(/^@/, '');
-        }
-    });
+    // /** MENTION */
+    // .add('@', {
+    //     // @ts-ignore
+    //     validate: function (text, pos, self) {
+    //         const tail = text.slice(pos);
+    //         if (!self.re.twitter) {
+    //             self.re.twitter = new RegExp(
+    //                 '^([a-zA-Z0-9_\-]){1,15}(?!_)(?=$|' + self.re.src_ZPCc + ')'
+    //             );
+    //         }
+    //         if (self.re.twitter.test(tail)) {
+    //             // Linkifier allows punctuation chars before prefix,
+    //             // but we additionally disable `@` ("@@mention" is invalid)
+    //             if (pos >= 2 && tail[pos - 2] === '@') {
+    //                 return false;
+    //             }
+    //             return tail.match(self.re.twitter)[0].length;
+    //         }
+    //         return 0;
+    //     },
+    //     // @ts-ignore
+    //     normalize: function (match) {
+    //         match.url = 'agent://' + match.url.replace(/^@/, '');
+    //     }
+    // });
 
 
 /* Customize the rendering of URLs */

@@ -180,7 +180,6 @@ interface Mention {
 function tokenizeMentions(text: string, knownNames: string[]): string[] {
     const validNames = Array.from(knownNames);
     validNames.push("all");
-    // Sort by length
     // Find mentions
     const mentions: Mention[] = [];
     // Sort names by length (longest first) to match "John Smith" before "John"
