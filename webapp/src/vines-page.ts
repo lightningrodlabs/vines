@@ -1071,7 +1071,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           this.weServices.notifyFrame([{
             title: "New thread",
             body: "",
-            notification_type: "content",
+            notification_type: msg('Conversations'),
+            //notification_type: "content",
             icon_src: wrapPathInSvg(mdiInformationOutline),
             urgency: 'medium',
             aboutWal: {hrl: intoHrl(this.cell.address.dnaId, intoDhtId(threadAh))},
@@ -1092,7 +1093,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               this.weServices.notifyFrame([{
                 title: "New message",
                 body: "",
-                notification_type: "content",
+                notification_type: msg('Conversations'),
+                //notification_type: "content",
                 icon_src: wrapPathInSvg(mdiInformationOutline),
                 urgency: 'medium',
                 aboutWal: {hrl: intoHrl(this.cell.address.dnaId, threadAh)},
@@ -1132,7 +1134,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const myNotif: FrameNotification = {
           title: notifTitle,
           body: message,
-          notification_type: notif.event,
+          notification_type: msg('Conversations'), //notif.event,
           icon_src: wrapPathInSvg(mdiInformationOutline),
           urgency: 'high',
           timestamp: notif.timestamp / 1000,
