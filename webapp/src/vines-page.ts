@@ -201,7 +201,7 @@ import {
     InputBar,
     JumpEvent,
     latestThreadName,
-    MainViewType,
+    MainViewType, markdownItMentions, md,
     multiJumpEvent,
     networkCallerContext,
     NotifiableEvent,
@@ -632,6 +632,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
+      md.use(markdownItMentions, {
+          getValidNames: () => {
+              const names = newDvm.profilesZvm.perspective.names;
+              names.push("all");
+              console.log("markdownIt getValidNames()", names);
+              return names;
+          },
+      });
   }
 
 

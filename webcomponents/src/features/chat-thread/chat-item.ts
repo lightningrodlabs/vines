@@ -27,111 +27,7 @@ import {AnyBeadMat, BeadInfo, EntryBeadMat} from "../../viewModels/threads.mater
 import {ChatTextEdit} from "./chat-text-edit";
 import {sharedStyles} from "../../styles";
 import {GetStrategy} from "@holochain-open-dev/core-types";
-import {md} from "../../markdown/md";
-// @ts-ignore
-import markdownit from "markdown-it";
-// @ts-ignore
-import StateCore from 'markdown-it/lib/rules_core/state_core';
 
-interface MentionOptions {
-    getValidNames: () => string[];
-}
-
-function markdownItMentions(md: markdownit, options: MentionOptions) {
-    const linkBuilder = ((name:any) => `agent://${name}`);
-
-    // Escape regex special characters
-    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-        function replaceMentions(state: StateCore) {
-            // Get valid names at render time
-            const validNames = options.getValidNames();
-            const sortedNames = [...validNames].sort((a, b) => b.length - a.length);
-
-            if (sortedNames.length === 0) return;
-
-            const namePattern = sortedNames.map(escapeRegex).join('|');
-            const mentionRegex = new RegExp(`(^|\\s)@(${namePattern})(?=\\s|$|[.,!?;:])`, 'gi');
-
-            const blockTokens = state.tokens;
-
-            for (let j = 0; j < blockTokens.length; j++) {
-                if (blockTokens[j].type !== 'inline') continue;
-
-                let tokens = blockTokens[j].children || [];
-                const newTokens = [];
-
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i];
-
-                    if (token.type !== 'text') {
-                        newTokens.push(token);
-                        continue;
-                    }
-
-                   const text = token.content;
-                   const matches: Array<{ start: number; end: number; name: string }> = [];
-
-                   let match;
-                   mentionRegex.lastIndex = 0;
-                   while ((match = mentionRegex.exec(text)) !== null) {
-                     const startIndex = match.index + match[1]!.length;
-                     matches.push({
-                        start: startIndex,
-                        end: startIndex + match[0].length - match[1]!.length,
-                        name: match[2]!
-                     });
-                   }
-
-                    if (matches.length === 0) {
-                        newTokens.push(token);
-                        continue;
-                    }
-
-                    // Split token into parts
-                    let lastPos = 0;
-
-                    for (const m of matches) {
-                        // Text before mention
-                        if (m.start > lastPos) {
-                            const textToken = new state.Token('text', '', 0);
-                            textToken.content = text.substring(lastPos, m.start);
-                            newTokens.push(textToken);
-                        }
-
-                        // Link token
-                        const linkOpen = new state.Token('link_open', 'a', 1);
-                        linkOpen.attrs = [
-                            ['href', linkBuilder(m.name)],
-                            ['class', 'mention']
-                        ];
-                        newTokens.push(linkOpen);
-
-                        const linkText = new state.Token('text', '', 0);
-                        linkText.content = '@' + m.name;
-                        newTokens.push(linkText);
-
-                        const linkClose = new state.Token('link_close', 'a', -1);
-                        newTokens.push(linkClose);
-
-                        lastPos = m.end;
-                    }
-
-                    // Remaining text
-                    if (lastPos < text.length) {
-                        const textToken = new state.Token('text', '', 0);
-                        textToken.content = text.substring(lastPos);
-                        newTokens.push(textToken);
-                    }
-                }
-                console.log("markdownIt newTokens()", newTokens);
-
-                blockTokens[j].children = newTokens;
-            }
-        }
-
-    md.core.ruler.after('linkify', 'mentions', replaceMentions);
-}
 
 /**
  * @element
@@ -188,14 +84,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-      md.use(markdownItMentions, {
-          getValidNames: () => {
-              const names = newDvm.profilesZvm.perspective.names;
-              names.push("all");
-              console.log("markdownIt getValidNames()", names);
-              return names;
-          },
-      });
   }
 
 
