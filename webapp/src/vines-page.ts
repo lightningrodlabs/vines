@@ -250,7 +250,7 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
-import {HoloHashB64, NetworkMetrics, Timestamp, HoloHashType} from "@holochain/client";
+import {HoloHashB64, NetworkMetrics, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
@@ -636,9 +636,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           getValidNames: () => {
               const names = newDvm.profilesZvm.perspective.names;
               names.push("all");
-              console.log("markdownIt getValidNames()", names);
+              //console.log("markdownIt getValidNames()", names);
               return names;
           },
+          getAgentKey: (name:string): AgentPubKeyB64 => {
+              const agents = newDvm.profilesZvm.perspective.agentByName[name];
+              if (!agents || agents.length == 0) {
+                  return this.cell.address.agentId.b64;
+              }
+              return agents[0]!.b64;
+          }
       });
   }
 

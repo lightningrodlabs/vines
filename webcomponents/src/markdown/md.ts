@@ -6,18 +6,21 @@ import markdownItMark from 'markdown-it-mark';
 import markdownItHighlight from 'markdown-it-highlightjs';
 // @ts-ignore
 import StateCore from 'markdown-it/lib/rules_core/state_core';
+import {AgentPubKeyB64} from "@holochain/client";
 
 export interface MentionOptions {
     getValidNames: () => string[];
+    getAgentKey:(name:string) => AgentPubKeyB64;
 }
 
-// Linkify mentions of agent names (and special mentions)
-// Should be called once by main HappElement
+// Linkify mentions of agent names (and special mentions).
+// Should be called once by the main HappElement.
 export function markdownItMentions(md: markdownit, options: MentionOptions) {
-    const linkBuilder = ((name:any) => `agent://${name}`);
-
-    // Escape regex special characters
-    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const linkBuilder = ((name:string) => {
+        //const final = name.replace(/[\\s]/g, '-');
+        const final = options.getAgentKey(name);
+        return `agent://${final}`;
+    });
 
     function replaceMentions(state: StateCore) {
         // Get valid names at render time
@@ -25,9 +28,6 @@ export function markdownItMentions(md: markdownit, options: MentionOptions) {
         const sortedNames = [...validNames].sort((a, b) => b.length - a.length);
 
         if (sortedNames.length === 0) return;
-
-        const namePattern = sortedNames.map(escapeRegex).join('|');
-        const mentionRegex = new RegExp(`(^|\\s)@(${namePattern})(?=\\s|$|[.,!?;:])`, 'gi');
 
         const blockTokens = state.tokens;
 
@@ -48,21 +48,42 @@ export function markdownItMentions(md: markdownit, options: MentionOptions) {
                 const text = token.content;
                 const matches: Array<{ start: number; end: number; name: string }> = [];
 
-                let match;
-                mentionRegex.lastIndex = 0;
-                while ((match = mentionRegex.exec(text)) !== null) {
-                    const startIndex = match.index + match[1]!.length;
-                    matches.push({
-                        start: startIndex,
-                        end: startIndex + match[0].length - match[1]!.length,
-                        name: match[2]!
-                    });
+                // Check each name individually
+                for (const name of sortedNames) {
+                    // Escape special regex characters but keep spaces as \s to match any whitespace
+                    //const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+                    //const mentionRegex = new RegExp(`(^|\\s)@${escapedName}(?=\\s|$|[.,!?;:])`, 'gi');
+
+                    const mentionRegex = new RegExp(`(^|\\s)@${name}(?=\\s|$|[.,!?;:])`, 'gi');
+
+                    let match;
+                    while ((match = mentionRegex.exec(text)) !== null) {
+                        const startIndex = match.index + match[1]!.length;
+                        const endIndex = startIndex + match[0].length - match[1]!.length;
+
+                        // Check for overlaps with existing matches
+                        const overlaps = matches.some(
+                            m => (startIndex >= m.start && startIndex < m.end) ||
+                                (endIndex > m.start && endIndex <= m.end)
+                        );
+
+                        if (!overlaps) {
+                            matches.push({
+                                start: startIndex,
+                                end: endIndex,
+                                name: name
+                            });
+                        }
+                    }
                 }
 
                 if (matches.length === 0) {
                     newTokens.push(token);
                     continue;
                 }
+
+                // Sort matches by position
+                matches.sort((a, b) => a.start - b.start);
 
                 // Split token into parts
                 let lastPos = 0;
@@ -100,7 +121,7 @@ export function markdownItMentions(md: markdownit, options: MentionOptions) {
                     newTokens.push(textToken);
                 }
             }
-            console.log("markdownIt newTokens()", newTokens);
+            //console.log("markdownIt newTokens()", newTokens);
 
             blockTokens[j].children = newTokens;
         }
@@ -181,10 +202,6 @@ md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
     return `<a href="${href}" class="${classes}" target="_blank">`;
 };
 
-// md.renderer.rules.text = function(tokens, idx, options, env, self) {
-//   console.log("md.rule args:", tokens, idx)
-//   return "";
-// }
 
 // @ts-ignore
 md.renderer.rules.link_close = function (tokens, idx, options, env, self) {
@@ -197,6 +214,9 @@ md.renderer.rules.link_close = function (tokens, idx, options, env, self) {
         if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:" || scheme == "weave-0.14:" || scheme == "weave-0.15:") {
             return "</wurl-link>";
         }
+        // else if (scheme == "agent:") {
+        //     console.log("link_close() agent:", href);
+        // }
     }
     return '</a>';
 };
