@@ -70,6 +70,8 @@ npm install
 
 #### Run
 
+(Android Studio must have a running emulator)
+
 ```bash
 nix develop .#androidDev
 npm install
