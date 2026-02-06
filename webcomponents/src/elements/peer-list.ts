@@ -24,7 +24,7 @@ import {timeSince} from "../features/timezone/utils";
 
 type PeerStatus = {
     //isConnected: boolean, // make two categories
-    isWebRtc: boolean, // display tag
+    isDirect: boolean, // display tag
     lastSeenGossip: Timestamp, // display if not connected
     errors: number, //display warning icon if errors > 0
     completedRounds: number, // display number when hovered
@@ -82,7 +82,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             for (const connection of latestStats.connections) {
                 const thisAgentPeerMeta = peerMetaMap[connection.pub_key];
                 const peerStatus: PeerStatus = {
-                    isWebRtc: connection.is_webrtc,
+                    isDirect: connection.is_direct,
                     connectedSince: connection.opened_at_s,
                     hasMeta: false,
                     errors: 0,
@@ -162,7 +162,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             //     // statusContent.push(html`<ui5-icon name="warning" show-tool-tip accessible-name=${status.errors}></ui5-icon>`);
             //     statusContent.push(html`<div>${status.errors}</div>`);
             // }
-            if (status.isWebRtc) {
+            if (status.isDirect) {
                 statusContent.push(html`<div style="background-color:green; border-radius:8px; color:white; padding:3px; font-size:small">${msg('Connected')}</div>`);
             }
         }

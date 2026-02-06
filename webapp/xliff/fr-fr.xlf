@@ -14,14 +14,6 @@
   <source>Settings</source>
   <target>Paramètres</target>
 </trans-unit>
-<trans-unit id="s79ac7fc1e859d930">
-  <source>Export All</source>
-  <target>Exporter tout</target>
-</trans-unit>
-<trans-unit id="s793f79a4b17b7cf6">
-  <source>Import only</source>
-  <target>Importer seulement</target>
-</trans-unit>
 <trans-unit id="s305e87b103d2baa9">
   <source>Report Bug</source>
   <target>Signaler un bogue</target>
@@ -122,10 +114,6 @@
   <source>DMs</source>
   <target>DMs</target>
 </trans-unit>
-<trans-unit id="s78b9eec9a8e079fe">
-  <source>Import and commit</source>
-  <target>Importer et partager</target>
-</trans-unit>
 <trans-unit id="s7dab4014eea86707">
   <source>Mentions and Replies Only</source>
   <target>Mentions et réponses seulement</target>
@@ -209,10 +197,6 @@
 <trans-unit id="s95a45a35aa072a65">
   <source>View Favorites</source>
   <target>Voir les favoris</target>
-</trans-unit>
-<trans-unit id="sc676fdb513f1ea9a">
-  <source>Probe peers for content</source>
-  <target>Sonder le réseau pour du contenu</target>
 </trans-unit>
 <trans-unit id="s5e8250fb85d64c23">
   <source>Close</source>
@@ -557,6 +541,15 @@
 <trans-unit id="s0cbab64aec38b079">
   <source>Error: ThreadDvm not found</source>
   <target>Erreur: ThreadDvm introuvable</target>
+</trans-unit>
+<trans-unit id="s12ae2efccc49d4af">
+  <source>Conversations</source>
+</trans-unit>
+<trans-unit id="s942d9335631ed51e">
+  <source>Import and share</source>
+</trans-unit>
+<trans-unit id="saf16a83a002e75e4">
+  <source>Import temporarily</source>
 </trans-unit>
 </body>
 </file>

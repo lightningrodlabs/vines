@@ -989,7 +989,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         await this.weServices.cacheFullAppletInfo(appletId);
       }
       /** Register callback */
-      this.weServices.onBeforeUnload(() => this.onBeforeUnload());
+      try {
+        this.weServices.onBeforeUnload(() => this.onBeforeUnload());
+        setLocale(this.weServices.getLocale());
+        this.weServices.onLocaleChange((locale: string) => setLocale(locale));
+      } catch (e) {
+          // weServicesMock might not implement
+      }
     }
     this.requestUpdate();
     /** */

@@ -738,6 +738,9 @@
   <source>ago</source>
   <target>il y a</target>
 </trans-unit>
+<trans-unit id="s0e0a962e81f739c7">
+  <source>Merge</source>
+</trans-unit>
 </body>
 </file>
 </xliff>
