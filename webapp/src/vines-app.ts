@@ -319,8 +319,8 @@ export class VinesApp extends HappMultiElement {
   async onJump(e: CustomEvent<JumpEvent>) {
     //console.log("<vines-app>.onJump()", e.detail);
     if ((e.detail.thread || e.detail.bead) && this.appletView && this.appletView.type != "main" && this._weServices) {
-      /* await */
-      this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!));
+      //  const wal = { hrl: [this._weProfilesDvm, e.detail.thread ?? e.detail.bead] };
+      /* await */this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!/*, wal*/));
     }
   }
 
@@ -421,17 +421,19 @@ export class VinesApp extends HappMultiElement {
     const appProxy = this.hvms[0]![0];
 
     // TODO: should probably store networkInfoLogs in class field
-    let view = html`
-        <vines-page
-                .appProxy=${appProxy}
-                @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
-        ></vines-page>`;
+    let view = html``;
     if (this.appletView) {
       console.log("<vines-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
-          /** N/A */
+
+            view = html`
+        <vines-page
+                .wal=${(this.appletView as any).wal}
+                .appProxy=${appProxy}
+                @dumpNetworkLogs=${this.onDumpNetworkLogs}
+                @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
+        ></vines-page>`;
           break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");

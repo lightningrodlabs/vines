@@ -4,7 +4,7 @@ import {
     ActionId,
     AgentIdMap,
     delay,
-    DnaElement,
+    DnaElement, DnaId,
     EntryId,
     HappBuildModeType,
     intoDhtId,
@@ -237,7 +237,7 @@ import {
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
-import {FrameNotification, Hrl} from "@theweave/api";
+import {FrameNotification, Hrl, WAL} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -302,8 +302,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @property() multi: boolean = false;
 
+  @property() wal?: WAL;
 
-  /** -- Private state -- */
+
+    /** -- Private state -- */
 
   /** Left & Lister */
   @state() private _canShowLeft = true;
@@ -997,6 +999,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           // weServicesMock might not implement
       }
     }
+    /** Display requested WAL if any */
+    if (this.wal && new DnaId(this.wal.hrl[0]).equals(this.cell.address.dnaId)) {
+        const actionId = new ActionId(this.wal.hrl[1]);
+        const bead = this.threadsPerspective.getBead(actionId);
+        const thread = this.threadsPerspective.getParticipationProtocol(actionId);
+        const jumpEvent = {
+            type: MainViewType.Thread,
+            thread: thread? actionId : undefined,
+            bead: bead? actionId : undefined,
+            history: undefined,
+        }
+        if (bead || thread) {
+            console.debug("<vines-page> Jumping to requested WAL", jumpEvent);
+            this.onJump(new CustomEvent<JumpEvent>('jump', {
+                detail: jumpEvent,
+                bubbles: true,
+                composed: true
+            }));
+        } else {
+            console.debug("<vines-page> requested WAL not found", this.wal);
+        }
+    }
+    /** */
     this.requestUpdate();
     /** */
     this.pingAllOthers();
