@@ -331,8 +331,17 @@ export class EditProfile extends LitElement {
         <div class="row">
             <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
             <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
-              <sl-radio value="en">🇬🇧</sl-radio>
-              <sl-radio value="fr-fr">🇫🇷</sl-radio>
+              <div class="two-column-radio">
+                  <sl-radio value="en">🇬🇧</sl-radio>
+                  <sl-radio value="fr">🇫🇷</sl-radio>
+                  <sl-radio value="es">🇪🇸</sl-radio>
+                  <sl-radio value="de">🇩🇪</sl-radio>
+                  <sl-radio value="it">🇮🇹</sl-radio>
+                  <sl-radio value="ja">🇯🇵</sl-radio>
+                  <sl-radio value="nl">🇳🇱</sl-radio>
+                  <sl-radio value="pt">🇵🇹</sl-radio>
+                  <sl-radio value="tr">🇹🇷</sl-radio>
+              </div>
             </sl-radio-group>
         </div>
 
@@ -366,7 +375,13 @@ export class EditProfile extends LitElement {
     sl-radio {
       font-size: larger;
     }
-
+      
+      .two-column-radio {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          column-gap: 1rem;
+      }
+      
     .row {
       display: flex;
       flex-direction: row;

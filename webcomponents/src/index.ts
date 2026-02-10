@@ -7,7 +7,14 @@ export * from './render';
 export * from './search';
 export * from './toast';
 
-export * as templates_webcomp_fr_fr from './generated/fr-fr.js';
+export * as templates_webcomp_de from './generated/de.js';
+export * as templates_webcomp_es from './generated/es.js';
+export * as templates_webcomp_fr from './generated/fr.js';
+export * as templates_webcomp_it from './generated/it.js';
+export * as templates_webcomp_ja from './generated/ja.js';
+export * as templates_webcomp_nl from './generated/nl.js';
+export * as templates_webcomp_pt from './generated/pt.js';
+export * as templates_webcomp_tr from './generated/tr.js';
 
 export * from './elements/emoji-bar';
 export * from './elements/input-bar';
