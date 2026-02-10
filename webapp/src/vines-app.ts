@@ -178,13 +178,14 @@ export class VinesApp extends HappMultiElement {
     /** Load My profile */
     const maybeMyProfile = await this._weProfilesDvm.profilesZvm.probeProfile(agent.b64);
     if (maybeMyProfile) {
-      const maybeLang = maybeMyProfile.fields['lang'];
-      if (maybeLang) {
-        console.log("Setting locale from We Profile", maybeLang);
-        setLocale(maybeLang);
-      }
+      // const maybeLang = maybeMyProfile.fields['lang'];
+      // if (maybeLang) {
+      //   console.log("Setting locale from We Profile", maybeLang);
+      //   setLocale(maybeLang);
+      // }
       this._hasWeProfile = true;
     }
+    setLocale(this._weServices!.getLocale());
   }
 
 
@@ -195,8 +196,6 @@ export class VinesApp extends HappMultiElement {
     this.addEventListener('jump', this.onJump);
     // @ts-ignore
     this.addEventListener('copy', this.onCopy);
-    // @ts-ignore
-    this.addEventListener('lang-selected', this.onLang);
   }
 
   override disconnectedCallback() {
@@ -205,8 +204,6 @@ export class VinesApp extends HappMultiElement {
     this.removeEventListener('jump', this.onJump);
     // @ts-ignore
     this.removeEventListener('copy', this.onCopy);
-    // @ts-ignore
-    this.removeEventListener('lang-selected', this.onLang);
   }
 
 
@@ -339,13 +336,6 @@ export class VinesApp extends HappMultiElement {
       this._weServices.assets.assetToPocket({hrl});
     }
     toasty(msg("Copied WAL to clipboard"));
-  }
-
-
-  /** Open Vines App if jump requested from a non-main view */
-  async onLang(e: CustomEvent) {
-    console.log("set locale", e.detail);
-    setLocale(e.detail);
   }
 
 

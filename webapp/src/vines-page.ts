@@ -248,7 +248,7 @@ import {FilesDvm, FileView, prettyFileSize, splitFile, SplitObject} from "@ddd-q
 //import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
-import {setLocale} from "./localization";
+import {getLocale, setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
 import {HoloHashB64, NetworkMetrics, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
@@ -996,8 +996,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         setLocale(this.weServices.getLocale());
         this.weServices.onLocaleChange((locale: string) => {
             console.log("<vines-page>.onLocaleChange()", locale);
-            setLocale(locale);
-            this.requestUpdate();
+            //setLocale(locale);
+            window.location.reload();
         });
       } catch (e) {
           // weServicesMock might not implement
@@ -1222,6 +1222,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("onSaveProfile()", profile)
     try {
       await this._dvm.profilesZvm.updateMyProfile(profile);
+      if (getLocale() != profile.fields['lang']) {
+          setLocale(profile.fields['lang']!);
+          window.location.reload();
+      }
     } catch (e: any) {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
@@ -1713,6 +1717,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let lang = myProfile.fields['lang'];
     if (!lang || lang == "") {
       lang = "en";
+    }
+    if (this.weServices) {
+        lang = this.weServices.getLocale();
     }
     setLocale(lang);
 
@@ -2533,7 +2540,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         .profile=${myProfile}
                         .saveProfileLabel=${msg('Edit Profile')}
                         @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
-                        @lang-selected=${(e: CustomEvent) => setLocale(e.detail)}
                         @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
                 ></vines-edit-profile>
             </ui5-dialog>

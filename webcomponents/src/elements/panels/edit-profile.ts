@@ -281,17 +281,6 @@ export class EditProfile extends LitElement {
     );
   }
 
-
-  /** */
-  async handleLangChange(_e: any) {
-    const langRadioGroup = this.shadowRoot!.getElementById("langRadioGroup") as any;
-    console.log({langRadioGroup});
-    const lang = langRadioGroup.value;
-    console.log("handleLangChange: lang =", lang);
-    this.dispatchEvent(new CustomEvent<string>('lang-selected', {detail: lang, bubbles: true, composed: true}));
-  }
-
-
   /** */
   override render() {
     console.log("<vines-edit-profile>.render()", this.profile);
@@ -330,7 +319,8 @@ export class EditProfile extends LitElement {
 
         <div class="row">
             <span style="font-size:18px;padding-right:10px;">${msg('Language')}:</span>
-            <sl-radio-group id="langRadioGroup" @click=${this.handleLangChange} .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
+            <sl-radio-group id="langRadioGroup"
+                            .value=${this.profile && this.profile.fields['lang']? this.profile.fields['lang'] : "en"}>
               <div class="two-column-radio">
                   <sl-radio value="en">🇬🇧</sl-radio>
                   <sl-radio value="fr">🇫🇷</sl-radio>
