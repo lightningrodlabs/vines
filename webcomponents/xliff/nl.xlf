@@ -4,558 +4,743 @@
 <body>
 <trans-unit id="s6c26f6b6dff13c8b">
   <source>Unknown peer</source>
+  <target>Onbekende peer</target>
 </trans-unit>
 <trans-unit id="s669b18c6d2d9c95b">
   <source>None</source>
+  <target>Geen</target>
 </trans-unit>
 <trans-unit id="s22c7a36f572f4655">
   <source>Mention</source>
+  <target>Vermelding</target>
 </trans-unit>
 <trans-unit id="s162d73fc5424798a">
   <source>New message</source>
+  <target>Nieuw bericht</target>
 </trans-unit>
 <trans-unit id="s780cca56819f90ed">
   <source>DM received</source>
+  <target>DM ontvangen</target>
 </trans-unit>
 <trans-unit id="saa9b1dd8d508bc61">
   <source>New message in</source>
+  <target>Nieuw bericht in</target>
 </trans-unit>
 <trans-unit id="s0b7ae9543c001867">
   <source>Reply</source>
+  <target>Antwoorden</target>
 </trans-unit>
 <trans-unit id="sc59b604330a8853e">
   <source>Reply in</source>
+  <target>Antwoord in</target>
 </trans-unit>
 <trans-unit id="sa9c860230fabd46a">
   <source>New channel</source>
+  <target>Nieuw kanaal</target>
 </trans-unit>
 <trans-unit id="sfacd0a18ddb097f4">
   <source>Banned from channel</source>
+  <target>Verbannen uit kanaal</target>
 </trans-unit>
 <trans-unit id="sbe000d0bd494e88c">
   <source>Message has been flagged</source>
+  <target>Bericht is gerapporteerd</target>
 </trans-unit>
 <trans-unit id="scfda43cb76c3b083">
   <source>New DM channel</source>
+  <target>Nieuw DM-kanaal</target>
 </trans-unit>
 <trans-unit id="sd980d545359db490">
   <source>Import Profile into Vines</source>
+  <target>Profiel importeren in Vines</target>
 </trans-unit>
 <trans-unit id="s35611c6f737ffc09">
   <source>Create your Profile</source>
+  <target>Maak je profiel aan</target>
 </trans-unit>
 <trans-unit id="scd0d5484ba43aa8e">
   <source>peers</source>
+  <target>peers</target>
 </trans-unit>
 <trans-unit id="sdff7710dd73b9849">
   <source>peer</source>
+  <target>peer</target>
 </trans-unit>
 <trans-unit id="saa7ce532bf0e16ec">
   <source>(Press record button to start recording)</source>
+  <target>(Druk op de opnameknop om te beginnen met opnemen)</target>
 </trans-unit>
 <trans-unit id="s92595df611bee8c6">
   <source>Your browser does not support the audio element.</source>
+  <target>Je browser ondersteunt het audio-element niet.</target>
 </trans-unit>
 <trans-unit id="s481b4c396698f750">
   <source>Recording in progess...</source>
+  <target>Opname bezig...</target>
 </trans-unit>
 <trans-unit id="s2ceb11be2290bb1b">
   <source>Cancel</source>
+  <target>Annuleren</target>
 </trans-unit>
 <trans-unit id="s41431c2bbdc5f824">
   <source>Attach</source>
+  <target>Bijvoegen</target>
 </trans-unit>
 <trans-unit id="s57adf424d57c8a0f">
   <source>Send</source>
+  <target>Verzenden</target>
 </trans-unit>
 <trans-unit id="sb134e975f4d78bc2">
   <source>Text too short</source>
+  <target>Tekst te kort</target>
 </trans-unit>
 <trans-unit id="s3e3513ec0415a610">
   <source>Banned word used</source>
+  <target>Verboden woord gebruikt</target>
 </trans-unit>
 <trans-unit id="s5bd8bb9698a1dba7">
   <source>Invalid message</source>
+  <target>Ongeldig bericht</target>
 </trans-unit>
 <trans-unit id="sd1f81284eeb7b503">
   <source>File</source>
+  <target>Bestand</target>
 </trans-unit>
 <trans-unit id="s3a9afc986f4936cf">
   <source>Rename file</source>
+  <target>Bestand hernoemen</target>
 </trans-unit>
 <trans-unit id="s0621fbc662f668f2">
   <source>Remove attachment</source>
+  <target>Bijlage verwijderen</target>
 </trans-unit>
 <trans-unit id="sa997a8b9cd603f58">
   <source>Create Voice Message</source>
+  <target>Spraakbericht maken</target>
 </trans-unit>
 <trans-unit id="sf18fdd3ba5f7797a">
   <source>Attach file</source>
+  <target>Bestand bijvoegen</target>
 </trans-unit>
 <trans-unit id="sab1b3fc881f10a59">
   <source>Add Attachment</source>
+  <target>Bijlage toevoegen</target>
 </trans-unit>
 <trans-unit id="sfdff183743791c60">
   <source>&lt;Text message forbidden&gt;</source>
+  <target>&lt;Tekstbericht verboden&gt;</target>
 </trans-unit>
 <trans-unit id="s79e8cc71a5975b04">
   <source>Message</source>
+  <target>Bericht</target>
 </trans-unit>
 <trans-unit id="s829d60d437d50c76">
   <source>to mention</source>
+  <target>om te vermelden</target>
 </trans-unit>
 <trans-unit id="s7283f5ddbebc4fea">
   <source>limit:</source>
+  <target>limiet:</target>
 </trans-unit>
 <trans-unit id="sc147738d5cee9199">
   <source>characters</source>
+  <target>tekens</target>
 </trans-unit>
 <trans-unit id="sf9aee319a006c9b4">
   <source>Add</source>
+  <target>Toevoegen</target>
 </trans-unit>
 <trans-unit id="sca2ad486f916b89b">
   <source>Upload a File</source>
+  <target>Bestand uploaden</target>
 </trans-unit>
 <trans-unit id="sae8417fa2cd1ac01">
   <source>Insert a WAL Link</source>
+  <target>WAL-link invoegen</target>
 </trans-unit>
 <trans-unit id="sf78ccbb5dbc169b1">
   <source>Embed a WAL</source>
+  <target>WAL insluiten</target>
 </trans-unit>
 <trans-unit id="sa2d505555b6701a8">
   <source>Copied WAL to clipboard</source>
+  <target>WAL gekopieerd naar klembord</target>
 </trans-unit>
 <trans-unit id="se79638a5f87eccd7">
   <source>Unknown HRL</source>
+  <target>Onbekende HRL</target>
 </trans-unit>
 <trans-unit id="sc1f7b5c15ad374e3">
   <source>No registered peers found</source>
+  <target>Geen geregistreerde peers gevonden</target>
 </trans-unit>
 <trans-unit id="s245245214a77e4cf">
   <source>No peers found</source>
+  <target>Geen peers gevonden</target>
 </trans-unit>
 <trans-unit id="s2b827d4f5e0ada9d">
   <source>since</source>
+  <target>sinds</target>
 </trans-unit>
 <trans-unit id="s82a4e28ab5b56670">
   <source>Connected</source>
+  <target>Verbonden</target>
 </trans-unit>
 <trans-unit id="seadeb3a807d7478a">
   <source>Online</source>
+  <target>Online</target>
 </trans-unit>
 <trans-unit id="scde3342a428aaee8">
   <source>Offline</source>
+  <target>Offline</target>
 </trans-unit>
 <trans-unit id="s9a65e7e2a7d0de86">
   <source>unregistered peer(s)</source>
+  <target>niet-geregistreerde peer(s)</target>
 </trans-unit>
 <trans-unit id="s60d7742ea6ab22c6">
   <source>to Pocket</source>
+  <target>naar Pocket</target>
 </trans-unit>
 <trans-unit id="s3687049d1af562c4">
   <source>Copy</source>
+  <target>Kopiëren</target>
 </trans-unit>
 <trans-unit id="s21290c6601caecaa">
   <source>to clipboard</source>
+  <target>naar klembord</target>
 </trans-unit>
 <trans-unit id="sb8a5bfb84cc58e62">
   <source>Timezone</source>
+  <target>Tijdzone</target>
 </trans-unit>
 <trans-unit id="sf86de323290dcb5b">
   <source>Invalid file size</source>
+  <target>Ongeldige bestandsgrootte</target>
 </trans-unit>
 <trans-unit id="s80abc5839d75dc23">
   <source>Maximum allowed is</source>
+  <target>Maximaal toegestaan is</target>
 </trans-unit>
 <trans-unit id="s1042dedac55ffb7a">
   <source>Restrictions</source>
+  <target>Beperkingen</target>
 </trans-unit>
 <trans-unit id="s9078ee819c18df6e">
   <source>Enable</source>
+  <target>Inschakelen</target>
 </trans-unit>
 <trans-unit id="s18d9277a5ac87167">
   <source>Participants</source>
+  <target>Deelnemers</target>
 </trans-unit>
 <trans-unit id="sa7cf84ed6b98c02a">
   <source>Rate limit:</source>
+  <target>Snelheidslimiet:</target>
 </trans-unit>
 <trans-unit id="s7516c4e6e32e14be">
   <source>messages per</source>
+  <target>berichten per</target>
 </trans-unit>
 <trans-unit id="s5bb2f9bdf2fad1e9">
   <source>minute</source>
+  <target>minuut</target>
 </trans-unit>
 <trans-unit id="s5ee33a0c6e923bf5">
   <source>Message Types</source>
+  <target>Berichttypen</target>
 </trans-unit>
 <trans-unit id="s97e409d80754dc14">
   <source>Permitted File Types:</source>
+  <target>Toegestane bestandstypen:</target>
 </trans-unit>
 <trans-unit id="s428974262ec96ab4">
   <source>Min File Size (bytes):</source>
+  <target>Min. bestandsgrootte (bytes):</target>
 </trans-unit>
 <trans-unit id="s90b511b0e3d9c92a">
   <source>Max File Size (bytes):</source>
+  <target>Max. bestandsgrootte (bytes):</target>
 </trans-unit>
 <trans-unit id="s5dcb82b85dd17216">
   <source>Text Messages</source>
+  <target>Tekstberichten</target>
 </trans-unit>
 <trans-unit id="sef3f6a66f4b52bb2">
   <source>Banned Words:</source>
+  <target>Verboden woorden:</target>
 </trans-unit>
 <trans-unit id="sa41894b212e0113c">
   <source>Min Text Length:</source>
+  <target>Min. tekstlengte:</target>
 </trans-unit>
 <trans-unit id="s559ad039bc0a59b6">
   <source>Max Text Length:</source>
+  <target>Max. tekstlengte:</target>
 </trans-unit>
 <trans-unit id="s57d2379441a1bfed">
   <source>Moderation</source>
+  <target>Moderatie</target>
 </trans-unit>
 <trans-unit id="s4629d0943788c295">
   <source>Moderators</source>
+  <target>Moderators</target>
 </trans-unit>
 <trans-unit id="sf77119361c715a7a">
   <source>Instructions:</source>
+  <target>Instructies:</target>
 </trans-unit>
 <trans-unit id="s32e77a29a7bb91d3">
   <source>Infringements permitted person</source>
+  <target>Toegestane overtredingen per persoon</target>
 </trans-unit>
 <trans-unit id="s77bc7219566a8ee4">
   <source>per</source>
+  <target>per</target>
 </trans-unit>
 <trans-unit id="sef38f6acc4a5ffd9">
   <source>File Messages:</source>
+  <target>Bestandsberichten:</target>
 </trans-unit>
 <trans-unit id="s965c503c3e42fdfe">
   <source>Enabled</source>
+  <target>Ingeschakeld</target>
 </trans-unit>
 <trans-unit id="sbf64627d262267a0">
   <source>No moderators set for this channel</source>
+  <target>Geen moderators ingesteld voor dit kanaal</target>
 </trans-unit>
 <trans-unit id="s26d236d09a66a620">
   <source>Rules</source>
+  <target>Regels</target>
 </trans-unit>
 <trans-unit id="sa898e62d9ad24ee3">
   <source>WeaveServices not available</source>
+  <target>WeaveServices niet beschikbaar</target>
 </trans-unit>
 <trans-unit id="sbe524902f9abfbfd">
   <source>Unknown Asset</source>
+  <target>Onbekend Asset</target>
 </trans-unit>
 <trans-unit id="s04d07e476a597c0c">
   <source>File downloaded</source>
+  <target>Bestand gedownload</target>
 </trans-unit>
 <trans-unit id="s6a039bb3d06048f3">
   <source>No File address provided</source>
+  <target>Geen bestandsadres opgegeven</target>
 </trans-unit>
 <trans-unit id="s1ee908b651f58117">
   <source>File hash: </source>
+  <target>Bestandshash: </target>
 </trans-unit>
 <trans-unit id="s20e6f6ef08de49c3">
   <source>Missing File</source>
+  <target>Ontbrekend bestand</target>
 </trans-unit>
 <trans-unit id="s3ddffe2ec6e7ef6a">
   <source>File manifest hash: </source>
+  <target>Bestandsmanifest-hash: </target>
 </trans-unit>
 <trans-unit id="s87d0868b917ad868">
   <source>File data not found</source>
+  <target>Bestandsgegevens niet gevonden</target>
 </trans-unit>
 <trans-unit id="s7f59f507e02a2f38">
   <source>View</source>
+  <target>Bekijken</target>
 </trans-unit>
 <trans-unit id="sc1171a6c566ac1a9">
   <source>Your browser does not support the video element.</source>
+  <target>Je browser ondersteunt het video-element niet.</target>
 </trans-unit>
 <trans-unit id="s35e45311a57818f9">
   <source>DM channel</source>
+  <target>DM-kanaal</target>
 </trans-unit>
 <trans-unit id="sab8a74b036ed883a">
   <source>in groups</source>
+  <target>in groepen</target>
 </trans-unit>
 <trans-unit id="sd01ad144229f6bdc">
   <source>AgentPubKey</source>
+  <target>AgentPubKey</target>
 </trans-unit>
 <trans-unit id="s003450339b5456ad">
   <source>Copied AgentPubKey to clipboard</source>
+  <target>AgentPubKey gekopieerd naar klembord</target>
 </trans-unit>
 <trans-unit id="s500c40c0f2e4e15b">
   <source>This is the beginning of your direct message history</source>
+  <target>Dit is het begin van je directe berichtengeschiedenis</target>
 </trans-unit>
 <trans-unit id="sa5013e9ad5caeda4">
   <source>channel</source>
+  <target>kanaal</target>
 </trans-unit>
 <trans-unit id="s1fa96bca92224298">
   <source>Welcome to</source>
+  <target>Welkom bij</target>
 </trans-unit>
 <trans-unit id="sa629ace2aeae7713">
   <source>This is the start of a channel about topic</source>
+  <target>Dit is het begin van een kanaal over het onderwerp</target>
 </trans-unit>
 <trans-unit id="s0487f33d9ddaabde">
   <source>About</source>
+  <target>Over</target>
 </trans-unit>
 <trans-unit id="s7f845078d7a5c0b5">
   <source>from</source>
+  <target>van</target>
 </trans-unit>
 <trans-unit id="s0fbc6641c107dcce">
   <source>This is the start of comment thread about chat message</source>
+  <target>Dit is het begin van de reactiethread over het chatbericht</target>
 </trans-unit>
 <trans-unit id="s2caa864ad1f0a313">
   <source>This is the start of a comment thread about a</source>
+  <target>Dit is het begin van een reactiethread over een</target>
 </trans-unit>
 <trans-unit id="scd4110589ed93bef">
   <source>Failed to retrieve Asset. WeaveServices not available.</source>
+  <target>Asset ophalen mislukt. WeaveServices niet beschikbaar.</target>
 </trans-unit>
 <trans-unit id="s93022a984ae14449">
   <source>No message found</source>
+  <target>Geen bericht gevonden</target>
 </trans-unit>
 <trans-unit id="sbaf2dbcb41ca49a9">
   <source>(edited)</source>
+  <target>(bewerkt)</target>
 </trans-unit>
 <trans-unit id="s6e9ce538224a588b">
   <source>Copied Text to clipboard</source>
+  <target>Tekst gekopieerd naar klembord</target>
 </trans-unit>
 <trans-unit id="s48736e8439e2acb6">
   <source>Copied WAL Link to clipboard</source>
+  <target>WAL-link gekopieerd naar klembord</target>
 </trans-unit>
 <trans-unit id="scbbb0fa5125d50ab">
   <source>Copy Text</source>
+  <target>Tekst kopiëren</target>
 </trans-unit>
 <trans-unit id="s307bf47df2cfaaf5">
   <source>Download File</source>
+  <target>Bestand downloaden</target>
 </trans-unit>
 <trans-unit id="s18c17c2aaaf7f39d">
   <source>Add WAL to Pocket</source>
+  <target>WAL toevoegen aan Pocket</target>
 </trans-unit>
 <trans-unit id="s748439ab9fb5827c">
   <source>Copy WAL Link</source>
+  <target>WAL-link kopiëren</target>
 </trans-unit>
 <trans-unit id="scba89d111c17f925">
   <source>&lt;Content has been flagged by a moderator&gt;</source>
+  <target>&lt;Inhoud is gerapporteerd door een moderator&gt;</target>
 </trans-unit>
 <trans-unit id="s3d0d89e11e004a72">
   <source>Create comment thread for this message</source>
+  <target>Reactiethread maken voor dit bericht</target>
 </trans-unit>
 <trans-unit id="sf0f75eca7bcd71ef">
   <source>View comments on the side</source>
+  <target>Reacties aan de zijkant tonen</target>
 </trans-unit>
 <trans-unit id="s2031d5f7041e82aa">
   <source>view comments</source>
+  <target>reacties bekijken</target>
 </trans-unit>
 <trans-unit id="s37a9e8aec5713460">
   <source>More</source>
+  <target>Meer</target>
 </trans-unit>
 <trans-unit id="s08842be103fdee87">
   <source>Add Reaction</source>
+  <target>Reactie toevoegen</target>
 </trans-unit>
 <trans-unit id="s9e226e0a027f39a6">
   <source>Remove from favorites</source>
+  <target>Verwijderen uit favorieten</target>
 </trans-unit>
 <trans-unit id="s3f75b956f3fae9cf">
   <source>Add to favorite</source>
+  <target>Toevoegen aan favorieten</target>
 </trans-unit>
 <trans-unit id="s64ef2a6c2dd1d3d1">
   <source>Edit</source>
+  <target>Bewerken</target>
 </trans-unit>
 <trans-unit id="s12c64c4bb82b6120">
   <source>Message validated by another peer</source>
+  <target>Bericht gevalideerd door een andere peer</target>
 </trans-unit>
 <trans-unit id="s48594c1fe2500882">
   <source>Message self-validated, but not received yet</source>
+  <target>Bericht zelf gevalideerd, maar nog niet ontvangen</target>
 </trans-unit>
 <trans-unit id="s13079e984ba38e7f">
   <source>Message received, but not validated yet</source>
+  <target>Bericht ontvangen, maar nog niet gevalideerd</target>
 </trans-unit>
 <trans-unit id="sbd3ca78d792615e7">
   <source>escape to</source>
+  <target>escape om te</target>
 </trans-unit>
 <trans-unit id="s47e83eaa4b387e3b">
   <source>cancel</source>
+  <target>annuleren</target>
 </trans-unit>
 <trans-unit id="sdeb4105e1f8533a2">
   <source>enter to</source>
+  <target>enter om te</target>
 </trans-unit>
 <trans-unit id="s096a5e18bf857c28">
   <source>save</source>
+  <target>opslaan</target>
 </trans-unit>
 <trans-unit id="s98af717b1afa6f27">
   <source>View comment thread</source>
+  <target>Reactiethread bekijken</target>
 </trans-unit>
 <trans-unit id="s8ee45286ff96d7be">
   <source>Create new comment thread</source>
+  <target>Nieuwe reactiethread maken</target>
 </trans-unit>
 <trans-unit id="s475c378b1d604ba2">
   <source>Add Message to Pocket</source>
+  <target>Bericht toevoegen aan Pocket</target>
 </trans-unit>
 <trans-unit id="s4d57ce331140a4c5">
   <source>Copy Message Link</source>
+  <target>Berichtlink kopiëren</target>
 </trans-unit>
 <trans-unit id="s4c0ea30616384688">
   <source>Report Message</source>
+  <target>Bericht melden</target>
 </trans-unit>
 <trans-unit id="s977abeeea3e2041a">
   <source>No channel selected</source>
+  <target>Geen kanaal geselecteerd</target>
 </trans-unit>
 <trans-unit id="s2138d5192571b731">
   <source>new</source>
+  <target>nieuw</target>
 </trans-unit>
 <trans-unit id="sb226ae3a8315e853">
   <source>No peer selected</source>
+  <target>Geen peer geselecteerd</target>
 </trans-unit>
 <trans-unit id="s0992a1fa8d28bc76">
   <source>No comment thread selected</source>
+  <target>Geen reactiethread geselecteerd</target>
 </trans-unit>
 <trans-unit id="sf9d920dad608987d">
   <source>Add first message:</source>
+  <target>Eerste bericht toevoegen:</target>
 </trans-unit>
 <trans-unit id="s6b3a4335fdf20d5b">
   <source>No messages found in thread</source>
+  <target>Geen berichten gevonden in thread</target>
 </trans-unit>
 <trans-unit id="s0fe8f27f468c7dea">
   <source>Open in Main View</source>
+  <target>Openen in hoofdweergave</target>
 </trans-unit>
 <trans-unit id="s5e8250fb85d64c23">
   <source>Close</source>
+  <target>Sluiten</target>
 </trans-unit>
 <trans-unit id="s8a751ff74711da9e">
   <source>comment thread</source>
+  <target>reactiethread</target>
 </trans-unit>
 <trans-unit id="sc207327af22f6d33">
   <source>Go to Bottom</source>
+  <target>Naar beneden</target>
 </trans-unit>
 <trans-unit id="s897290c90d56df6b">
   <source>Go to Top</source>
+  <target>Naar boven</target>
 </trans-unit>
 <trans-unit id="s863b1e35dc70d3b3">
   <source>No favorites</source>
+  <target>Geen favorieten</target>
 </trans-unit>
 <trans-unit id="sd5cebf2dae9ada75">
   <source>Message removed from favorites</source>
+  <target>Bericht verwijderd uit favorieten</target>
 </trans-unit>
 <trans-unit id="s4b60729034e68523">
   <source>No favorites found</source>
+  <target>Geen favorieten gevonden</target>
 </trans-unit>
 <trans-unit id="s15a477e9f9a165ad">
   <source>Jump</source>
+  <target>Spring</target>
 </trans-unit>
 <trans-unit id="s0d1be7a2c400c080">
   <source>more</source>
+  <target>meer</target>
 </trans-unit>
 <trans-unit id="s3b8b01f13046cffd">
   <source>Who's here</source>
+  <target>Wie is hier</target>
 </trans-unit>
 <trans-unit id="sb85774dc5d18ff0f">
   <source>Confirm</source>
+  <target>Bevestigen</target>
 </trans-unit>
 <trans-unit id="s99f110d27e30b289">
   <source>Title</source>
+  <target>Titel</target>
 </trans-unit>
 <trans-unit id="s8a0021ca40aeac3e">
   <source>comment</source>
+  <target>reactie</target>
 </trans-unit>
 <trans-unit id="sbbc53e0e54d7946f">
   <source>Subject</source>
+  <target>Onderwerp</target>
 </trans-unit>
 <trans-unit id="s382a2aa3984474dd">
   <source>Create</source>
+  <target>Aanmaken</target>
 </trans-unit>
 <trans-unit id="sb4f1dffbb6be6302">
   <source>Clear</source>
+  <target>Wissen</target>
 </trans-unit>
 <trans-unit id="s1967faf9ed8d3504">
   <source>Avatar</source>
+  <target>Avatar</target>
 </trans-unit>
 <trans-unit id="s850f63b3de1ffb7c">
   <source>Bad characters</source>
+  <target>Ongeldige tekens</target>
 </trans-unit>
 <trans-unit id="se9f30e4492cee2cd">
   <source>Nickname</source>
+  <target>Bijnaam</target>
 </trans-unit>
 <trans-unit id="s1495feaa681f374b">
   <source>Minimum 1 character</source>
+  <target>Minimaal 1 teken</target>
 </trans-unit>
 <trans-unit id="s344ea8f4939cdc98">
   <source>Color</source>
+  <target>Kleur</target>
 </trans-unit>
 <trans-unit id="sefcf950b3cc4fc3b">
   <source>Language</source>
+  <target>Taal</target>
 </trans-unit>
 <trans-unit id="sc93a9aa3e5bcbf5d">
   <source>Save Profile</source>
+  <target>Profiel opslaan</target>
 </trans-unit>
 <trans-unit id="s9d8b8aa2b404c2c8">
   <source>Settings</source>
+  <target>Instellingen</target>
 </trans-unit>
 <trans-unit id="sf95f60bdacf660a4">
   <source>Joined date</source>
+  <target>Registratiedatum</target>
 </trans-unit>
 <trans-unit id="s320c107fdc366f6b">
   <source>Send Direct Message</source>
+  <target>Direct bericht sturen</target>
 </trans-unit>
 <trans-unit id="s904fefb3d01cb2ae">
   <source>empty</source>
+  <target>leeg</target>
 </trans-unit>
 <trans-unit id="s498865c7bd1f3959">
   <source>unknown</source>
+  <target>onbekend</target>
 </trans-unit>
 <trans-unit id="se715be190539325a">
   <source>ago</source>
+  <target>geleden</target>
 </trans-unit>
 <trans-unit id="sd1abd74f5334d59a">
   <source>Results for</source>
+  <target>Resultaten voor</target>
 </trans-unit>
 <trans-unit id="sfa4cf6ef19d2f987">
   <source>temp</source>
+  <target>temp</target>
 </trans-unit>
 <trans-unit id="s374bd2c937d5928a">
   <source>View comments</source>
+  <target>Reacties bekijken</target>
 </trans-unit>
 <trans-unit id="s9997db775fd97b4f">
   <source>Create comment thread for this Category</source>
+  <target>Reactiethread maken voor deze categorie</target>
 </trans-unit>
 <trans-unit id="s8dfbfc57ea390f76">
   <source>No channels found</source>
+  <target>Geen kanalen gevonden</target>
 </trans-unit>
 <trans-unit id="sebae6a8705add1b6">
   <source>Create channel</source>
+  <target>Kanaal aanmaken</target>
 </trans-unit>
 <trans-unit id="s5dd970759b6e22d3">
   <source>Edit Title</source>
+  <target>Titel bewerken</target>
 </trans-unit>
 <trans-unit id="s0e0a962e81f739c7">
   <source>Merge</source>
+  <target>Samenvoegen</target>
 </trans-unit>
 <trans-unit id="s774a061d4cb43340">
   <source>Create a new Channel for this Category</source>
+  <target>Nieuw kanaal aanmaken voor deze categorie</target>
 </trans-unit>
 <trans-unit id="s2b3859261c42db06">
   <source>No topics found</source>
+  <target>Geen onderwerpen gevonden</target>
 </trans-unit>
 <trans-unit id="s458a5d1890be89c6">
   <source>(Might not be connected to peers yet)</source>
+  <target>(Mogelijk nog niet verbonden met peers)</target>
 </trans-unit>
 <trans-unit id="s4efe93e94c93d5f3">
   <source>Recently Viewed</source>
+  <target>Recent bekeken</target>
 </trans-unit>
 <trans-unit id="sb8103c12cb92e053">
   <source>No SubjectTypes found</source>
+  <target>Geen SubjectTypes gevonden</target>
 </trans-unit>
 <trans-unit id="se4b80aa1aac3e36a">
   <source>Go to Tool</source>
+  <target>Ga naar tool</target>
 </trans-unit>
 <trans-unit id="sc1d32c9ff0fecbac">
   <source>Unarchived Subject</source>
+  <target>Gedearchiveerd onderwerp</target>
 </trans-unit>
 <trans-unit id="sb8d426d655de5479">
   <source>Hidden Subject</source>
+  <target>Verborgen onderwerp</target>
 </trans-unit>
 <trans-unit id="s4e9e2b7b1bd42183">
   <source>No subjects found</source>
+  <target>Geen onderwerpen gevonden</target>
 </trans-unit>
 <trans-unit id="s11ec812e25ceef8a">
   <source>No messages found</source>
+  <target>Geen berichten gevonden</target>
 </trans-unit>
 <trans-unit id="s884f957390b84459">
   <source>Message a peer</source>
+  <target>Bericht sturen naar een peer</target>
 </trans-unit>
 </body>
 </file>

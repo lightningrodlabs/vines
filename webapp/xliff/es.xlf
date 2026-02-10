@@ -4,417 +4,555 @@
 <body>
 <trans-unit id="s5a7cd3632d00405a">
   <source>Failed to start camera: </source>
+  <target>Error al iniciar la cámara: </target>
 </trans-unit>
 <trans-unit id="se8241c5881141142">
   <source>HAPP VERSION MISMATCH</source>
+  <target>INCOMPATIBILIDAD DE VERSIÓN DE HAPP</target>
 </trans-unit>
 <trans-unit id="sa90023f1716b4e68">
   <source>Scan QR Code</source>
+  <target>Escanear código QR</target>
 </trans-unit>
 <trans-unit id="se320795bc92e79df">
   <source>Camera not active</source>
+  <target>Cámara no activa</target>
 </trans-unit>
 <trans-unit id="s2ceb11be2290bb1b">
   <source>Cancel</source>
+  <target>Cancelar</target>
 </trans-unit>
 <trans-unit id="s6a76597d4716818d">
   <source>APK download link</source>
+  <target>Enlace de descarga del APK</target>
 </trans-unit>
 <trans-unit id="s3c030b9e0d591e50">
   <source>Download link copied to clipboard</source>
+  <target>Enlace de descarga copiado al portapapeles</target>
 </trans-unit>
 <trans-unit id="sc16e00a7a8b2fde2">
   <source>Back</source>
+  <target>Atrás</target>
 </trans-unit>
 <trans-unit id="sebada5168620c5fe">
   <source>default</source>
+  <target>predeterminado</target>
 </trans-unit>
 <trans-unit id="s0eb6b245e4e380a5">
   <source>Invite code</source>
+  <target>Código de invitación</target>
 </trans-unit>
 <trans-unit id="s13be7555b45edb32">
   <source>Invite code copied to clipboard</source>
+  <target>Código de invitación copiado al portapapeles</target>
 </trans-unit>
 <trans-unit id="s512957aa09384646">
   <source>Launch</source>
+  <target>Lanzar</target>
 </trans-unit>
 <trans-unit id="sc7e063ecdeb2ecd3">
   <source>Unset default</source>
+  <target>Quitar predeterminado</target>
 </trans-unit>
 <trans-unit id="s94a283e55857014a">
   <source>Set default</source>
+  <target>Establecer como predeterminado</target>
 </trans-unit>
 <trans-unit id="sf56998949bdf6b33">
   <source>Deactivate</source>
+  <target>Desactivar</target>
 </trans-unit>
 <trans-unit id="s20b52451ccedc301">
   <source>Group already joined</source>
+  <target>Ya te has unido al grupo</target>
 </trans-unit>
 <trans-unit id="sa829c6f371fd6f02">
   <source>Invalid invite code</source>
+  <target>Código de invitación no válido</target>
 </trans-unit>
 <trans-unit id="s100afb62e4b8bfa5">
   <source>Welcome to Vines.</source>
+  <target>Bienvenido a Vines.</target>
 </trans-unit>
 <trans-unit id="s4dcc66195b1ddc69">
   <source>What brought you here today?</source>
+  <target>¿Qué te trae hoy aquí?</target>
 </trans-unit>
 <trans-unit id="s43e232a11d5b0384">
   <source>I have an invite code to join a group</source>
+  <target>Tengo un código de invitación para unirme a un grupo</target>
 </trans-unit>
 <trans-unit id="s1f978293c80cd83b">
   <source>An invite code looks like:</source>
+  <target>Un código de invitación se ve así:</target>
 </trans-unit>
 <trans-unit id="s30fa98203400e719">
   <source>Joining space...</source>
+  <target>Uniéndose al espacio...</target>
 </trans-unit>
 <trans-unit id="s6c6bf3ea2ad3d219">
   <source>Join</source>
+  <target>Unirse</target>
 </trans-unit>
 <trans-unit id="sc940654339b9bc80">
   <source>paste invite code here</source>
+  <target>pegar código de invitación aquí</target>
 </trans-unit>
 <trans-unit id="s0ea1dcb7e3986745">
   <source>invite code</source>
+  <target>código de invitación</target>
 </trans-unit>
 <trans-unit id="s08b05407b5565ca4">
   <source>or</source>
+  <target>o</target>
 </trans-unit>
 <trans-unit id="s21ea0624b6865748">
   <source>Scan</source>
+  <target>Escanear</target>
 </trans-unit>
 <trans-unit id="sd8fc07c566540e32">
   <source>I want to start a space for my group</source>
+  <target>Quiero crear un espacio para mi grupo</target>
 </trans-unit>
 <trans-unit id="s1782815320997842">
   <source>enter space name</source>
+  <target>introducir nombre del espacio</target>
 </trans-unit>
 <trans-unit id="s967539e2332e30dc">
   <source>Space name</source>
+  <target>Nombre del espacio</target>
 </trans-unit>
 <trans-unit id="s4e9e4d368feaf09a">
   <source>Create new group space</source>
+  <target>Crear nuevo espacio de grupo</target>
 </trans-unit>
 <trans-unit id="sd5b6130b4937488c">
   <source>Reload</source>
+  <target>Recargar</target>
 </trans-unit>
 <trans-unit id="s27976e94b05c6970">
   <source>Activate</source>
+  <target>Activar</target>
 </trans-unit>
 <trans-unit id="s6693bba11fe97d7e">
   <source>Select group</source>
+  <target>Seleccionar grupo</target>
 </trans-unit>
 <trans-unit id="sd9f67fbf3f86efcf">
   <source>Add group</source>
+  <target>Añadir grupo</target>
 </trans-unit>
 <trans-unit id="s4b845f31c5ce82a3">
   <source>Share app</source>
+  <target>Compartir aplicación</target>
 </trans-unit>
 <trans-unit id="s34c11c5b8ee22cd8">
   <source>Launching...</source>
+  <target>Lanzando...</target>
 </trans-unit>
 <trans-unit id="s5e2e838ad12d97a3">
   <source>Failed to load file</source>
+  <target>Error al cargar el archivo</target>
 </trans-unit>
 <trans-unit id="s9df212d89cab196d">
   <source>Hide</source>
+  <target>Ocultar</target>
 </trans-unit>
 <trans-unit id="sa3443b99ecf186ea">
   <source>Unhide</source>
+  <target>Mostrar</target>
 </trans-unit>
 <trans-unit id="s35e45311a57818f9">
   <source>DM channel</source>
+  <target>Canal de DM</target>
 </trans-unit>
 <trans-unit id="se6bcb10cfdfb85eb">
   <source>DM channel hidden</source>
+  <target>Canal de DM oculto</target>
 </trans-unit>
 <trans-unit id="s235efeb83fe49aa0">
   <source>DM channel unhidden</source>
+  <target>Canal de DM visible</target>
 </trans-unit>
 <trans-unit id="s079a052719914d71">
   <source>Category</source>
+  <target>Categoría</target>
 </trans-unit>
 <trans-unit id="s1da50951bdd7a204">
   <source>Channel</source>
+  <target>Canal</target>
 </trans-unit>
 <trans-unit id="sa000c4df231528b9">
   <source>hidden</source>
+  <target>oculto</target>
 </trans-unit>
 <trans-unit id="sf80f86fa152c1f52">
   <source>unhidden</source>
+  <target>visible</target>
 </trans-unit>
 <trans-unit id="s7ce5b133496ec34b">
   <source>Must be different from current title</source>
+  <target>Debe ser diferente del título actual</target>
 </trans-unit>
 <trans-unit id="scecf37017247b0b6">
   <source>Minimum 3 characters</source>
+  <target>Mínimo 3 caracteres</target>
 </trans-unit>
 <trans-unit id="s76195d20b87dba54">
   <source>Invalid characters</source>
+  <target>Caracteres no válidos</target>
 </trans-unit>
 <trans-unit id="s3c804646c91361a2">
   <source>Confirm new channel</source>
+  <target>Confirmar nuevo canal</target>
 </trans-unit>
 <trans-unit id="s12ae2efccc49d4af">
   <source>Conversations</source>
+  <target>Conversaciones</target>
 </trans-unit>
 <trans-unit id="s7f845078d7a5c0b5">
   <source>from</source>
+  <target>de</target>
 </trans-unit>
 <trans-unit id="s0c26ad411955878a">
   <source>Message added to favorites</source>
+  <target>Mensaje añadido a favoritos</target>
 </trans-unit>
 <trans-unit id="sd5cebf2dae9ada75">
   <source>Message removed from favorites</source>
+  <target>Mensaje eliminado de favoritos</target>
 </trans-unit>
 <trans-unit id="s977abeeea3e2041a">
   <source>No channel selected</source>
+  <target>Ningún canal seleccionado</target>
 </trans-unit>
 <trans-unit id="s20a500234e838dda">
   <source>Favorites</source>
+  <target>Favoritos</target>
 </trans-unit>
 <trans-unit id="s0b7ae9543c001867">
   <source>Reply</source>
+  <target>Responder</target>
 </trans-unit>
 <trans-unit id="sc592307ea80f16b9">
   <source>Unknown</source>
+  <target>Desconocido</target>
 </trans-unit>
 <trans-unit id="s50fa3befe81809d0">
   <source> is typing...</source>
+  <target> está escribiendo...</target>
 </trans-unit>
 <trans-unit id="s130936e19bad7808">
   <source>Uploading file:</source>
+  <target>Subiendo archivo:</target>
 </trans-unit>
 <trans-unit id="s0487f33d9ddaabde">
   <source>About</source>
+  <target>Acerca de</target>
 </trans-unit>
 <trans-unit id="s8d3230f4441c5b0e">
   <source>Replying to</source>
+  <target>Respondiendo a</target>
 </trans-unit>
 <trans-unit id="sed94da90fb5a6dbb">
   <source>Shared Files</source>
+  <target>Archivos compartidos</target>
 </trans-unit>
 <trans-unit id="se7692167f1edeef2">
   <source>Uploading...</source>
+  <target>Subiendo...</target>
 </trans-unit>
 <trans-unit id="sa32e9d0a108ee802">
   <source>Upload File</source>
+  <target>Subir archivo</target>
 </trans-unit>
 <trans-unit id="s71882be308cb9fdd">
   <source>Show side panel</source>
+  <target>Mostrar panel lateral</target>
 </trans-unit>
 <trans-unit id="s374bd2c937d5928a">
   <source>View comments</source>
+  <target>Ver comentarios</target>
 </trans-unit>
 <trans-unit id="sf9839d90ddaae710">
   <source>Create comment thread</source>
+  <target>Crear hilo de comentarios</target>
 </trans-unit>
 <trans-unit id="s37114ce595691035">
   <source>Channels</source>
+  <target>Canales</target>
 </trans-unit>
 <trans-unit id="sc26501e3ade7da3c">
   <source>Tools</source>
+  <target>Herramientas</target>
 </trans-unit>
 <trans-unit id="s09164307b5acf2f3">
   <source>My</source>
+  <target>Mi</target>
 </trans-unit>
 <trans-unit id="s34aef425e5372571">
   <source>Create New Category</source>
+  <target>Crear nueva categoría</target>
 </trans-unit>
 <trans-unit id="sf1f5ac34e94bd146">
   <source>Expand All</source>
+  <target>Expandir todo</target>
 </trans-unit>
 <trans-unit id="s62006d0c66337241">
   <source>Collapse All</source>
+  <target>Contraer todo</target>
 </trans-unit>
 <trans-unit id="s0da17e4cd77bb878">
   <source>Sort by creation time</source>
+  <target>Ordenar por fecha de creación</target>
 </trans-unit>
 <trans-unit id="sd332c0ffa9a5a912">
   <source>Sort alphabetically</source>
+  <target>Ordenar alfabéticamente</target>
 </trans-unit>
 <trans-unit id="s716a6024e3fe999c">
   <source>Show</source>
+  <target>Mostrar</target>
 </trans-unit>
 <trans-unit id="se247034dec014703">
   <source>hidden Categories &amp; Channels</source>
+  <target>Categorías &amp; Canales ocultos</target>
 </trans-unit>
 <trans-unit id="sfeddbc6c931b7ad7">
   <source>Mark all as read</source>
+  <target>Marcar todo como leído</target>
 </trans-unit>
 <trans-unit id="s78a89f89fef5b384">
   <source>Close side panel</source>
+  <target>Cerrar panel lateral</target>
 </trans-unit>
 <trans-unit id="se051571991d5184b">
   <source>DMs</source>
+  <target>DMs</target>
 </trans-unit>
 <trans-unit id="s59bf2810d8b2ec28">
   <source>DMs Cross View</source>
+  <target>Vista cruzada de DMs</target>
 </trans-unit>
 <trans-unit id="sbdeedc1c60306b35">
   <source>Messages</source>
+  <target>Mensajes</target>
 </trans-unit>
 <trans-unit id="s884f957390b84459">
   <source>Message a peer</source>
+  <target>Enviar mensaje a un par</target>
 </trans-unit>
 <trans-unit id="sbf876639a6e9cbd7">
   <source>View Files</source>
+  <target>Ver archivos</target>
 </trans-unit>
 <trans-unit id="s95a45a35aa072a65">
   <source>View Favorites</source>
+  <target>Ver favoritos</target>
 </trans-unit>
 <trans-unit id="see0b82b4bfb8b629">
   <source>peers online</source>
+  <target>pares en línea</target>
 </trans-unit>
 <trans-unit id="sf131ec2d0805ebf9">
   <source>Network Health</source>
+  <target>Estado de la red</target>
 </trans-unit>
 <trans-unit id="s9d8b8aa2b404c2c8">
   <source>Settings</source>
+  <target>Ajustes</target>
 </trans-unit>
 <trans-unit id="s8641b6c3688a0cec">
   <source>Edit Profile</source>
+  <target>Editar perfil</target>
 </trans-unit>
 <trans-unit id="sf819e4419b9e074e">
   <source>Change group</source>
+  <target>Cambiar de grupo</target>
 </trans-unit>
 <trans-unit id="s84fe353c725d7e2a">
   <source>Share invite code</source>
+  <target>Compartir código de invitación</target>
 </trans-unit>
 <trans-unit id="s942d9335631ed51e">
   <source>Import and share</source>
+  <target>Importar y compartir</target>
 </trans-unit>
 <trans-unit id="saf16a83a002e75e4">
   <source>Import temporarily</source>
+  <target>Importar temporalmente</target>
 </trans-unit>
 <trans-unit id="s305e87b103d2baa9">
   <source>Report Bug</source>
+  <target>Reportar error</target>
 </trans-unit>
 <trans-unit id="sd9ad53251f2330a5">
   <source>Stop</source>
+  <target>Detener</target>
 </trans-unit>
 <trans-unit id="sae1c7f13b7c0c47f">
   <source>Start</source>
+  <target>Iniciar</target>
 </trans-unit>
 <trans-unit id="s5e8250fb85d64c23">
   <source>Close</source>
+  <target>Cerrar</target>
 </trans-unit>
 <trans-unit id="s8da3b13ecb71b7c5">
   <source>Invite Code</source>
+  <target>Código de invitación</target>
 </trans-unit>
 <trans-unit id="s73d65179f6fc505b">
   <source>Share this code to give access to this group</source>
+  <target>Comparte este código para dar acceso a este grupo</target>
 </trans-unit>
 <trans-unit id="s8587f911bd45e922">
   <source>Copied share code to clipboard</source>
+  <target>Código de compartir copiado al portapapeles</target>
 </trans-unit>
 <trans-unit id="s571272c18260539e">
   <source>Copy Invite Code</source>
+  <target>Copiar código de invitación</target>
 </trans-unit>
 <trans-unit id="s5dd970759b6e22d3">
   <source>Edit Title</source>
+  <target>Editar título</target>
 </trans-unit>
 <trans-unit id="s671f7b12e6fa2d80">
   <source>Notifications Settings</source>
+  <target>Ajustes de notificaciones</target>
 </trans-unit>
 <trans-unit id="s5d929ff1619ac0c9">
   <source>Search</source>
+  <target>Buscar</target>
 </trans-unit>
 <trans-unit id="s71bcdc9319052f6e">
   <source>SEARCH FOR</source>
+  <target>BUSCAR</target>
 </trans-unit>
 <trans-unit id="s55ddc7f60d3c09bb">
   <source>Inbox</source>
+  <target>Bandeja de entrada</target>
 </trans-unit>
 <trans-unit id="sfd519740f0563fef">
   <source>Search Options</source>
+  <target>Opciones de búsqueda</target>
 </trans-unit>
 <trans-unit id="s274ead7abb4e71bf">
   <source>Notification settings for this channel</source>
+  <target>Ajustes de notificaciones para este canal</target>
 </trans-unit>
 <trans-unit id="s524251a5dae81428">
   <source>All Messages</source>
+  <target>Todos los mensajes</target>
 </trans-unit>
 <trans-unit id="s7dab4014eea86707">
   <source>Mentions and Replies Only</source>
+  <target>Solo menciones y respuestas</target>
 </trans-unit>
 <trans-unit id="s8b97ea84af17c029">
   <source>Never</source>
+  <target>Nunca</target>
 </trans-unit>
 <trans-unit id="s8ccd3beb2c58fcee">
   <source>Peers</source>
+  <target>Pares</target>
 </trans-unit>
 <trans-unit id="s1027a21e203c37d6">
   <source>Select a peer</source>
+  <target>Seleccionar un par</target>
 </trans-unit>
 <trans-unit id="s776051c2e6506aa1">
   <source>File Info</source>
+  <target>Información del archivo</target>
 </trans-unit>
 <trans-unit id="s9c99d3f4a6cb88db">
   <source>Create Category</source>
+  <target>Crear categoría</target>
 </trans-unit>
 <trans-unit id="s99f110d27e30b289">
   <source>Title</source>
+  <target>Título</target>
 </trans-unit>
 <trans-unit id="s96c1e831779d81f8">
   <source>Edit Channel Title</source>
+  <target>Editar título del canal</target>
 </trans-unit>
 <trans-unit id="s33f85f24c0f5f008">
   <source>Save</source>
+  <target>Guardar</target>
 </trans-unit>
 <trans-unit id="sd59edddb0404a407">
   <source>Edit Category</source>
+  <target>Editar categoría</target>
 </trans-unit>
 <trans-unit id="s64b8a24aad3e6a04">
   <source>Create New Channel</source>
+  <target>Crear nuevo canal</target>
 </trans-unit>
 <trans-unit id="s1495feaa681f374b">
   <source>Minimum 1 character</source>
+  <target>Mínimo 1 carácter</target>
 </trans-unit>
 <trans-unit id="s382a2aa3984474dd">
   <source>Create</source>
+  <target>Crear</target>
 </trans-unit>
 <trans-unit id="s03cfd8e5fea14de2">
   <source>Confirm New Channel</source>
+  <target>Confirmar nuevo canal</target>
 </trans-unit>
 <trans-unit id="s3d89dbf13c615157">
   <source>Rules will not be modifiable once the channel is created</source>
+  <target>Las reglas no serán modificables una vez que el canal sea creado</target>
 </trans-unit>
 <trans-unit id="sb85774dc5d18ff0f">
   <source>Confirm</source>
+  <target>Confirmar</target>
 </trans-unit>
 <trans-unit id="sd009a3da6a4ca1f5">
   <source>File successfully shared</source>
+  <target>Archivo compartido con éxito</target>
 </trans-unit>
 <trans-unit id="sfbe867ceef81dd10">
   <source>Error: File already shared to group or stored locally</source>
+  <target>Error: Archivo ya compartido con el grupo o almacenado localmente</target>
 </trans-unit>
 <trans-unit id="s4bb34a44e1191df5">
   <source>Exported data to json in Downloads folder</source>
+  <target>Datos exportados a JSON en la carpeta de Descargas</target>
 </trans-unit>
 <trans-unit id="s8933f1bb82275307">
   <source>All marked 'read' and cleared Inbox</source>
+  <target>Todo marcado como 'leído' y bandeja de entrada vaciada</target>
 </trans-unit>
 <trans-unit id="sa2d505555b6701a8">
   <source>Copied WAL to clipboard</source>
+  <target>WAL copiado al portapapeles</target>
 </trans-unit>
 <trans-unit id="saae1c70e168b45b4">
   <source>Admin</source>
+  <target>Admin</target>
 </trans-unit>
 <trans-unit id="sd306a1935a05c709">
   <source>Connecting to Holochain</source>
+  <target>Conectando a Holochain</target>
 </trans-unit>
 <trans-unit id="s4b2c76e1a09def93">
   <source>Failed to connect to Holochain or "Vines" cell.</source>
+  <target>Error al conectar con Holochain o la celda "Vines".</target>
 </trans-unit>
 <trans-unit id="s2c8189544e3ea679">
   <source>Retry</source>
+  <target>Reintentar</target>
 </trans-unit>
 <trans-unit id="s88c8102a20aa0e88">
   <source>Collecting local data</source>
+  <target>Recopilando datos locales</target>
 </trans-unit>
 <trans-unit id="s0cbab64aec38b079">
   <source>Error: ThreadDvm not found</source>
+  <target>Error: ThreadDvm no encontrado</target>
 </trans-unit>
 </body>
 </file>
