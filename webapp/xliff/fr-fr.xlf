@@ -544,12 +544,15 @@
 </trans-unit>
 <trans-unit id="s12ae2efccc49d4af">
   <source>Conversations</source>
+  <target>Conversations</target>
 </trans-unit>
 <trans-unit id="s942d9335631ed51e">
   <source>Import and share</source>
+    <target>Importer et partager</target>
 </trans-unit>
 <trans-unit id="saf16a83a002e75e4">
   <source>Import temporarily</source>
+  <target>Importer temporairement</target>
 </trans-unit>
 </body>
 </file>

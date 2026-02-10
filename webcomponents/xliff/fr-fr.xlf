@@ -40,7 +40,7 @@
 </trans-unit>
 <trans-unit id="sf0f75eca7bcd71ef">
   <source>View comments on the side</source>
-  <target>Montrer lees commentaires sur le côté</target>
+  <target>Montrer les commentaires sur le côté</target>
 </trans-unit>
 <trans-unit id="s37a9e8aec5713460">
   <source>More</source>
@@ -72,7 +72,7 @@
 </trans-unit>
 <trans-unit id="s0992a1fa8d28bc76">
   <source>No comment thread selected</source>
-  <target>Aucun fil de commentaire selection.</target>
+  <target>Aucun fil de commentaires séléctionné.</target>
 </trans-unit>
 <trans-unit id="s0fe8f27f468c7dea">
   <source>Open in Main View</source>
@@ -128,7 +128,7 @@
 </trans-unit>
 <trans-unit id="s0621fbc662f668f2">
   <source>Remove attachment</source>
-  <target>Retirer pièce-jointe</target>
+  <target>Retirer la pièce-jointe</target>
 </trans-unit>
 <trans-unit id="sf18fdd3ba5f7797a">
   <source>Attach file</source>
@@ -168,7 +168,7 @@
 </trans-unit>
 <trans-unit id="s780cca56819f90ed">
   <source>DM received</source>
-  <target>Messag privé recu</target>
+  <target>Messag privé reçu</target>
 </trans-unit>
 <trans-unit id="saa9b1dd8d508bc61">
   <source>New message in</source>
@@ -192,23 +192,23 @@
 </trans-unit>
 <trans-unit id="s0fbc6641c107dcce">
   <source>This is the start of comment thread about chat message</source>
-  <target>Ceci est le début du fil de commentaire au sujet du message</target>
+  <target>Ceci est le début du fil de commentaires au sujet du message</target>
 </trans-unit>
 <trans-unit id="s2caa864ad1f0a313">
   <source>This is the start of a comment thread about a</source>
-  <target>Ceci est le début du fil de commentaire au sujet d'un-e</target>
+  <target>Ceci est le début du fil de commentaires au sujet d'un-e</target>
 </trans-unit>
 <trans-unit id="s3d0d89e11e004a72">
   <source>Create comment thread for this message</source>
-  <target>Créer un fil de commentaire pour ce message</target>
+  <target>Créer un fil de commentaires pour ce message</target>
 </trans-unit>
 <trans-unit id="s98af717b1afa6f27">
   <source>View comment thread</source>
-  <target>Voir fil de commentaire</target>
+  <target>Voir fil de commentaires</target>
 </trans-unit>
 <trans-unit id="s8ee45286ff96d7be">
   <source>Create new comment thread</source>
-  <target>Créer un nouveau fil de commentaire</target>
+  <target>Créer un nouveau fil de commentaires</target>
 </trans-unit>
 <trans-unit id="scd4110589ed93bef">
   <source>Failed to retrieve Asset. WeaveServices not available.</source>
@@ -256,7 +256,7 @@
 </trans-unit>
 <trans-unit id="sc1d32c9ff0fecbac">
   <source>Unarchived Subject</source>
-  <target>Sujet désarchivvé</target>
+  <target>Sujet désarchivé</target>
 </trans-unit>
 <trans-unit id="s1fa96bca92224298">
   <source>Welcome to</source>
@@ -280,7 +280,7 @@
 </trans-unit>
 <trans-unit id="s245245214a77e4cf">
   <source>No peers found</source>
-  <target>Aucun pair trouver</target>
+  <target>Aucun pair trouvé</target>
 </trans-unit>
 <trans-unit id="sab8a74b036ed883a">
   <source>in groups</source>
@@ -296,7 +296,7 @@
 </trans-unit>
 <trans-unit id="s307bf47df2cfaaf5">
   <source>Download File</source>
-  <target>Telecharger un fichier</target>
+  <target>Télécharger un fichier</target>
 </trans-unit>
 <trans-unit id="s748439ab9fb5827c">
   <source>Copy WAL Link</source>
@@ -312,7 +312,7 @@
 </trans-unit>
 <trans-unit id="sbd3ca78d792615e7">
   <source>escape to</source>
-  <target>echapper vers</target>
+  <target>échapper vers</target>
 </trans-unit>
 <trans-unit id="s47e83eaa4b387e3b">
   <source>cancel</source>
@@ -332,7 +332,7 @@
 </trans-unit>
 <trans-unit id="sb226ae3a8315e853">
   <source>No peer selected</source>
-  <target>Aucun pair selectionner</target>
+  <target>Aucun pair séléctionner</target>
 </trans-unit>
 <trans-unit id="s5e8250fb85d64c23">
   <source>Close</source>
@@ -348,11 +348,11 @@
 </trans-unit>
 <trans-unit id="s850f63b3de1ffb7c">
   <source>Bad characters</source>
-  <target>Caracteres invalides</target>
+  <target>Caractères invalides</target>
 </trans-unit>
 <trans-unit id="s1495feaa681f374b">
   <source>Minimum 1 character</source>
-  <target>Un caractere minimum</target>
+  <target>Un caractère minimum</target>
 </trans-unit>
 <trans-unit id="sb8103c12cb92e053">
   <source>No SubjectTypes found</source>
@@ -360,11 +360,11 @@
 </trans-unit>
 <trans-unit id="s458a5d1890be89c6">
   <source>(Might not be connected to peers yet)</source>
-  <target>(Peut-etre pas connecter au reseau de pairs)</target>
+  <target>(Vous nềtes peut-être pas connecté au réseau de pairs)</target>
 </trans-unit>
 <trans-unit id="s11ec812e25ceef8a">
   <source>No messages found</source>
-  <target>Aucun message trouver</target>
+  <target>Aucun message trouvé</target>
 </trans-unit>
 <trans-unit id="s669b18c6d2d9c95b">
   <source>None</source>
@@ -376,7 +376,7 @@
 </trans-unit>
 <trans-unit id="sbe000d0bd494e88c">
   <source>Message has been flagged</source>
-  <target>Le message a ete signaler</target>
+  <target>Le message a été signalé</target>
 </trans-unit>
 <trans-unit id="sd980d545359db490">
   <source>Import Profile into Vines</source>
@@ -388,7 +388,7 @@
 </trans-unit>
 <trans-unit id="s3e3513ec0415a610">
   <source>Banned word used</source>
-  <target>Mot banni utiliser</target>
+  <target>Mot interdit utilisé</target>
 </trans-unit>
 <trans-unit id="s5bd8bb9698a1dba7">
   <source>Invalid message</source>
@@ -396,11 +396,11 @@
 </trans-unit>
 <trans-unit id="sa997a8b9cd603f58">
   <source>Create Voice Message</source>
-  <target>Creer message vocal</target>
+  <target>Créer un message vocal</target>
 </trans-unit>
 <trans-unit id="sab1b3fc881f10a59">
   <source>Add Attachment</source>
-  <target>Ajouter piece-jointe</target>
+  <target>Ajouter une piece-jointe</target>
 </trans-unit>
 <trans-unit id="sfdff183743791c60">
   <source>&lt;Text message forbidden&gt;</source>
@@ -412,7 +412,7 @@
 </trans-unit>
 <trans-unit id="sc147738d5cee9199">
   <source>characters</source>
-  <target>caracteres</target>
+  <target>caractères</target>
 </trans-unit>
 <trans-unit id="s57adf424d57c8a0f">
   <source>Send</source>
@@ -424,15 +424,15 @@
 </trans-unit>
 <trans-unit id="sca2ad486f916b89b">
   <source>Upload a File</source>
-  <target>Televerser un fichier</target>
+  <target>Téléverser un fichier</target>
 </trans-unit>
 <trans-unit id="sae8417fa2cd1ac01">
   <source>Insert a WAL Link</source>
-  <target>Inserer un lien WAL</target>
+  <target>Insérer un lien WAL</target>
 </trans-unit>
 <trans-unit id="sf78ccbb5dbc169b1">
   <source>Embed a WAL</source>
-  <target>Integrer un WAL</target>
+  <target>Inégrer un WAL</target>
 </trans-unit>
 <trans-unit id="s60d7742ea6ab22c6">
   <source>to Pocket</source>
@@ -468,11 +468,11 @@
 </trans-unit>
 <trans-unit id="s57d2379441a1bfed">
   <source>Moderation</source>
-  <target>Moderation</target>
+  <target>Modération</target>
 </trans-unit>
 <trans-unit id="s4629d0943788c295">
   <source>Moderators</source>
-  <target>Moderateurs</target>
+  <target>Modérateurs</target>
 </trans-unit>
 <trans-unit id="s77bc7219566a8ee4">
   <source>per</source>
@@ -480,19 +480,19 @@
 </trans-unit>
 <trans-unit id="sef38f6acc4a5ffd9">
   <source>File Messages:</source>
-  <target>Messages Fichier:</target>
+  <target>Messages de Fichier:</target>
 </trans-unit>
 <trans-unit id="s965c503c3e42fdfe">
   <source>Enabled</source>
-  <target>Actived</target>
+  <target>Activé</target>
 </trans-unit>
 <trans-unit id="sbf64627d262267a0">
   <source>No moderators set for this channel</source>
-  <target>Aucun moderateurs n'a ete etablie pour ce canal</target>
+  <target>Ce canal n'a pas de modérateurs</target>
 </trans-unit>
 <trans-unit id="saa7ce532bf0e16ec">
   <source>(Press record button to start recording)</source>
-  <target>(Appuyez sur le bouton pour commencer l'enregistrement)</target>
+  <target>(Appuyer sur le bouton pour commencer l'enregistrement)</target>
 </trans-unit>
 <trans-unit id="s481b4c396698f750">
   <source>Recording in progess...</source>
@@ -532,27 +532,27 @@
 </trans-unit>
 <trans-unit id="s0487f33d9ddaabde">
   <source>About</source>
-  <target>A propos</target>
+  <target>À propos</target>
 </trans-unit>
 <trans-unit id="s93022a984ae14449">
   <source>No message found</source>
-  <target>Aucun message trouver</target>
+  <target>Aucun message trouvé</target>
 </trans-unit>
 <trans-unit id="sbaf2dbcb41ca49a9">
   <source>(edited)</source>
-  <target>(modified)</target>
+  <target>(modifié)</target>
 </trans-unit>
 <trans-unit id="s18c17c2aaaf7f39d">
   <source>Add WAL to Pocket</source>
-  <target>Ajouter WAL a Pocket</target>
+  <target>Ajouter WAL à Pocket</target>
 </trans-unit>
 <trans-unit id="scba89d111c17f925">
   <source>&lt;Content has been flagged by a moderator&gt;</source>
-  <target>&lt;Contenu a ete signaled par un moderateur&gt;</target>
+  <target>&lt;Le contenu a été signalé par un modérateur&gt;</target>
 </trans-unit>
 <trans-unit id="s475c378b1d604ba2">
   <source>Add Message to Pocket</source>
-  <target>Ajouter Message a Pocket</target>
+  <target>Ajouter un Message à Pocket</target>
 </trans-unit>
 <trans-unit id="s8a751ff74711da9e">
   <source>comment thread</source>
@@ -560,7 +560,7 @@
 </trans-unit>
 <trans-unit id="s15a477e9f9a165ad">
   <source>Jump</source>
-  <target>Sauter</target>
+  <target>Allez à</target>
 </trans-unit>
 <trans-unit id="sb8a5bfb84cc58e62">
   <source>Timezone</source>
@@ -568,19 +568,19 @@
 </trans-unit>
 <trans-unit id="s320c107fdc366f6b">
   <source>Send Direct Message</source>
-  <target>Envoyer message direct</target>
+  <target>Envoyer un message direct</target>
 </trans-unit>
 <trans-unit id="sebae6a8705add1b6">
   <source>Create channel</source>
-  <target>Creer canal</target>
+  <target>Créer canal</target>
 </trans-unit>
 <trans-unit id="s4efe93e94c93d5f3">
   <source>Recently Viewed</source>
-  <target>Vu recemment</target>
+  <target>Vu récemment</target>
 </trans-unit>
 <trans-unit id="sb8d426d655de5479">
   <source>Hidden Subject</source>
-  <target>Sujet cached</target>
+  <target>Sujet caché</target>
 </trans-unit>
 <trans-unit id="sf86de323290dcb5b">
   <source>Invalid file size</source>
@@ -588,7 +588,7 @@
 </trans-unit>
 <trans-unit id="s80abc5839d75dc23">
   <source>Maximum allowed is</source>
-  <target>Nombre maxium autorise est</target>
+  <target>Quantité maximum autorisé est</target>
 </trans-unit>
 <trans-unit id="s99f110d27e30b289">
   <source>Title</source>
@@ -600,11 +600,11 @@
 </trans-unit>
 <trans-unit id="s9997db775fd97b4f">
   <source>Create comment thread for this Category</source>
-  <target>Creer un fil de commentaire pour cette categorie</target>
+  <target>Créer un fil de commentaires pour cette catégorie</target>
 </trans-unit>
 <trans-unit id="s774a061d4cb43340">
   <source>Create a new Channel for this Category</source>
-  <target>Creer un nouveau canal pour cette categorie</target>
+  <target>Créer un nouveau canal pour cette catégorie</target>
 </trans-unit>
 <trans-unit id="sa7cf84ed6b98c02a">
   <source>Rate limit:</source>
@@ -612,15 +612,15 @@
 </trans-unit>
 <trans-unit id="s97e409d80754dc14">
   <source>Permitted File Types:</source>
-  <target>Types de fichiers autoriseds</target>
+  <target>Types de fichiers autorisés</target>
 </trans-unit>
 <trans-unit id="s428974262ec96ab4">
   <source>Min File Size (bytes):</source>
-  <target>Taille fichier min. (octets):</target>
+  <target>Taille de fichier min. (octets):</target>
 </trans-unit>
 <trans-unit id="s90b511b0e3d9c92a">
   <source>Max File Size (bytes):</source>
-  <target>Taille fichier max. (octets):</target>
+  <target>Taille de fichier max. (octets):</target>
 </trans-unit>
 <trans-unit id="s5dcb82b85dd17216">
   <source>Text Messages</source>
@@ -644,7 +644,7 @@
 </trans-unit>
 <trans-unit id="sf9d920dad608987d">
   <source>Add first message:</source>
-  <target>Ajoutez un premier message:</target>
+  <target>Ajouter un premier message:</target>
 </trans-unit>
 <trans-unit id="s6c26f6b6dff13c8b">
   <source>Unknown peer</source>
@@ -740,6 +740,7 @@
 </trans-unit>
 <trans-unit id="s0e0a962e81f739c7">
   <source>Merge</source>
+  <target>Fusionner</target>
 </trans-unit>
 </body>
 </file>
