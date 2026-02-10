@@ -994,7 +994,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
         this.weServices.onBeforeUnload(() => this.onBeforeUnload());
         setLocale(this.weServices.getLocale());
-        this.weServices.onLocaleChange((locale: string) => setLocale(locale));
+        this.weServices.onLocaleChange((locale: string) => {
+            console.log("<vines-page>.onLocaleChange()", locale);
+            setLocale(locale);
+            this.requestUpdate();
+        });
       } catch (e) {
           // weServicesMock might not implement
       }
