@@ -159,16 +159,18 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** -- Methods -- */
 
+
   /** Store probeLog timestamp upon first load of app */
-  override async initializePerspectiveFromNetwork(): Promise<void> {
-    console.log("ThreadsDvm.initializePerspectiveOnline() override")
-    await super.initializePerspectiveFromNetwork();
+  // TODO: switch back to FromNetwork once GetStrategy from Network are fixed
+  override async initializePerspectiveFromLocal(): Promise<void> {
+    console.log("ThreadsDvm.initializePerspectiveFromLocal() override")
+    await super.initializePerspectiveFromLocal();
     this._perspective.initialGlobalProbeLogTs = this.threadsZvm.perspective.globalProbeLogTs;
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
       this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
     this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
-    console.log("ThreadsDvm.initializePerspectiveFromNetwork() override persp =", this.perspective)
+    console.log("ThreadsDvm.initializePerspectiveFromLocal() override persp =", this.perspective)
   }
 
 
@@ -493,7 +495,7 @@ export class ThreadsDvm extends DnaViewModel {
         }
         return (currentTime - pair[0]) < 5 * 60; // 5 minutes
       });
-    //console.log("allCurrentOthers() filtered = ", filtered.length);
+    //console.debug("allCurrentOthers() filtered = ", filtered.length);
     return filtered;
   }
 
