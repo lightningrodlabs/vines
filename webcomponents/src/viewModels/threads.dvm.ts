@@ -5,8 +5,8 @@ import {
     AgentIdMap,
     delay,
     DnaViewModel,
-    EntryPulse,
-    materializeEntryPulse,
+    EntryPulse, LinkPulse,
+    materializeEntryPulse, materializeLinkPulse,
     TipProtocol,
     TipProtocolVariantAppCustom,
     ZomeSignal,
@@ -40,6 +40,7 @@ import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {ProfilesAltLinkType} from "@ddd-qc/profiles-dvm/dist/bindings/profilesAlt.integrity";
 
 
 /** */
@@ -226,7 +227,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** */
   handleSignal(ssignal: Signal) {
-    //console.log("ThreadsDvm.handleSignal()", ssignal);
+    //console.debug("ThreadsDvm.handleSignal()", ssignal);
     if (SignalType.App != ssignal.type) {
       return;
     }
@@ -235,18 +236,25 @@ export class ThreadsDvm extends DnaViewModel {
       return;
     }
     const signal = appSignal.payload as ZomeSignal;
-    for (const pulse of signal.pulses) {
-      /*await*/
-      this.handleThreadsSignal(pulse, new AgentId(signal.from));
+    const from = new AgentId(signal.from);
+
+    /* Update agent's known presence */
+    this.storePresence(from);
+
+    /** Handle signal according to target zome */
+    if (appSignal.zome_name == ProfilesAltZvm.DEFAULT_ZOME_NAME) {
+        /*await*/ this.handleProfilesSignal(signal, from);
+    } else {
+        for (const pulse of signal.pulses) {
+            /*await*/ this.handleThreadsSignal(pulse, from);
+        }
+        this.notifySubscribers();
     }
-    this.notifySubscribers();
   }
 
   /** */
   async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentId): Promise<void> {
     //console.log("ThreadsDvm.handleThreadsSignal()", threadsSignal, from.b64);
-    /* Update agent's known presence */
-    this.storePresence(from);
     /** */
     if (ZomeSignalProtocolType.Tip in threadsSignal) {
       return this.handleTip(threadsSignal.Tip as TipProtocol, from);
@@ -288,6 +296,38 @@ export class ThreadsDvm extends DnaViewModel {
       }
     }
   }
+
+    /** */
+    async handleProfilesSignal(zomeSignal: ZomeSignal, from: AgentId) {
+        //console.debug("ThreadsDvm.handleProfilesSignal()", zomeSignal);
+        let all: any[] = [];
+        for (let pulse of zomeSignal.pulses) {
+            /** -- Handle Signal according to type -- */
+            if (ZomeSignalProtocolType.Tip in pulse) {
+               await this.handleTip(pulse.Tip as TipProtocol, from);
+               continue;
+            }
+            if (ZomeSignalProtocolType.Link in pulse) {
+                const linkPulse = materializeLinkPulse(pulse.Link as LinkPulse, Object.values(ProfilesAltLinkType));
+                switch(linkPulse.link_type) {
+                    case ProfilesAltLinkType.PathToAgent: {
+                        const peer = AgentId.from(linkPulse.target);
+                        if (!this._livePeers.map(id => id.b64).includes(peer.b64)) {
+                            //console.debug("ThreadsDvm Adding livePeer", peer.short);
+                            this._livePeers.push(peer);
+                        }
+                    }
+                        break;
+                    default:
+                        break;
+                }
+                continue;
+            }
+        }
+        await Promise.all(all);
+        //console.debug("ThreadsDvm.handleDeliverySignal() notifySubscribers");
+        this.notifySubscribers();
+    }
 
 
   /** */
