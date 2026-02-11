@@ -36,55 +36,55 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     return html`
         <div class="section">
             <div class="field-row">
-                <div class="field-label">Message Limit:</div>
+                <div class="field-label">${msg('Message Limit:')}</div>
                 <div class="field-value">
                     ${!!this.limitations.maybeAgentRateLimiting
                             ? html`
                                 <span>${this.limitations.maybeAgentRateLimiting[0]} ${msg('per')} ${formatDuration(this.limitations.maybeAgentRateLimiting[1])}</span>`
                             : html`
-                                <ui5-icon name="accept" class="icon-true"></ui5-icon>No limit`}
+                                <ui5-icon name="accept" class="icon-true"></ui5-icon>   ${msg('No limit')}`}
                 </div>
             </div>
 
             <div class="field-row">
-                <div class="field-label">Participants:</div>
+                <div class="field-label">${msg('Participants:')}</div>
                 <div class="field-value">
                     ${this.limitations.allowedAgents.length > 0
                             ? html`
                                 <div class="peers">${peerList}</div>`
                             : html`
-                                <ui5-icon name="accept" class="icon-true"></ui5-icon>Everyone`
+                                <ui5-icon name="accept" class="icon-true"></ui5-icon>   ${msg('Everyone')}`
                     }
                 </div>
             </div>
 
             <div class="field-row">
-                <div class="field-label">WAL Embeds:</div>
+                <div class="field-label">${msg('WAL Embeds:')}</div>
                 <div class="field-value">
                     ${this.limitations.canWal
                             ? html`
-                                <ui5-icon name="accept" class="icon-true"></ui5-icon> Enabled`
+                                <ui5-icon name="accept" class="icon-true"></ui5-icon>    ${msg('Enabled')}`
                             : html`
-                                <ui5-icon name="decline" class="icon-false"></ui5-icon> Disabled`}
+                                <ui5-icon name="decline" class="icon-false"></ui5-icon> ${msg('Disabled')}`}
                 </div>
             </div>
 
             ${this.limitations.canFile? this.renderFileRules(this.limitations.canFile) : html`
                 <div class="field-row">
-                    <div class="field-label">File Messages:</div>
+                    <div class="field-label">${msg('File Messages:')}</div>
                     <div class="field-value">
                         <ui5-icon name="decline" class="icon-false"></ui5-icon>
-                        Disabled
+                        ${msg('Disabled')}
                     </div>
                 </div>
             `}
 
             ${this.limitations.canText? this.renderTextRules(this.limitations.canText) : html`
                 <div class="field-row">
-                    <div class="field-label">Text Messages:</div>
+                    <div class="field-label">${msg('Text Messages:')}</div>
                     <div class="field-value">
                         <ui5-icon name="decline" class="icon-false"></ui5-icon>
-                        Disabled
+                        ${msg('Disabled')}
                     </div>
                 </div>
             `}
@@ -107,7 +107,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
         <div class="field-group">
             <div class="field-row">
-                <div class="field-label">Allowed Types:</div>
+                <div class="field-label">${msg('Allowed Types:')}</div>
                 <div class="field-value badge-container">
                     ${fileRules.allowedFileTypes.length > 0
                             ? fileRules.allowedFileTypes.map(fileType => html`
@@ -115,15 +115,15 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                                     ${(handledMimeTypes as any)[fileType]}
                                 </ui5-badge>`)
                             : html`
-                                <ui5-icon name="accept" class="icon-true"></ui5-icon>All file types allowed`}
+                                <ui5-icon name="accept" class="icon-true"></ui5-icon>${msg('All file types allowed')}`}
                 </div>
             </div>
 
             <div class="field-row">
-                <div class="field-label">Size Limits:</div>
+                <div class="field-label">${msg('Size Limits:')}</div>
                 <div class="field-value">
-                    Min: ${formatFileSize(fileRules.minFileSize)} |
-                    Max: ${formatFileSize(fileRules.maxFileSize)}
+                    ${msg('Min:')} ${formatFileSize(fileRules.minFileSize)} |
+                    ${msg('Max:')} ${formatFileSize(fileRules.maxFileSize)}
                 </div>
             </div>
         </div>
@@ -135,30 +135,30 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   private renderTextRules(textRules: TextLimits) {
     return html`
         <div class="field-row">
-            <div class="field-label">Text Messages:</div>
+            <div class="field-label">${msg('Text Messages:')}</div>
             <div class="field-value">
                 <ui5-icon name="accept" class="icon-true"></ui5-icon>
-                Enabled
+                ${msg('Enabled')}
             </div>
         </div>
 
         <div class="field-group">
             <div class="field-row">
-                <div class="field-label">Banned Words:</div>
+                <div class="field-label">${msg('Banned Words:')}</div>
                 <div class="field-value badge-container">
                     ${textRules.bannedWords.length > 0
                             ? textRules.bannedWords.map(word => html`
                                 <ui5-badge color-scheme="negative">${word}</ui5-badge>`)
                             : html`
-                                <ui5-icon name="accept" class="icon-true"></ui5-icon>No banned words`}
+                                <ui5-icon name="accept" class="icon-true"></ui5-icon>${msg('No banned words')}`}
                 </div>
             </div>
 
             <div class="field-row">
-                <div class="field-label">Text Length Limits:</div>
+                <div class="field-label">${msg('Text Length Limits:')}</div>
                 <div class="field-value">
-                    Min: ${textRules.minTextLength} |
-                    Max: ${textRules.maxTextLength} ${msg('characters')}
+                    ${msg('Min:')} ${textRules.minTextLength} |
+                    ${msg('Max:')} ${textRules.maxTextLength} ${msg('characters')}
                 </div>
             </div>
         </div>
@@ -173,12 +173,12 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     return html`
         <div class="section">
             <div class="field-row">
-                <div class="field-label">Instructions:</div>
+                <div class="field-label">${msg('Instructions:')}</div>
                 <div class="field-value">
                     ${this.moderation.instructions? html`
                         <pre>${this.moderation.instructions}</pre>
                     ` : html`
-                        <ui5-text>No instructions provided</ui5-text>
+                        <ui5-text>${msg('No instructions provided')}</ui5-text>
                     `}
                 </div>
             </div>
@@ -195,7 +195,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
             </div>
 
             <div class="field-row">
-                <div class="field-label">Infringements allowed:</div>
+                <div class="field-label">${msg('Infringements allowed:')}</div>
                 <div class="field-value">${this.moderation.allowedFlags}</div>
             </div>
 

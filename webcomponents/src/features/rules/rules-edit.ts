@@ -380,7 +380,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 ${this.canLimit? html`
                     <div class="field-row">
                         <ui5-label>${msg('Participants')}:</ui5-label>
-                        <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="everyone">
+                        <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="${msg('everyone')}">
                             ${peerList}
                         </ui5-multi-combobox>
                     </div>
@@ -489,7 +489,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                                 <ui5-label>${msg('Banned Words:')}</ui5-label>
                                 <ui5-input .value=${this.bannedWordInput}
                                            @change=${(e: CustomEvent) => this.bannedWordInput = (e.target as any).value}></ui5-input>
-                                <ui5-button @click=${this.addBannedWord}>Add</ui5-button>
+                                <ui5-button @click=${this.addBannedWord}>${msg('Add')}</ui5-button>
                             </div>
 
                             <div class="token-list">
@@ -533,7 +533,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     </div>
                     <div class="field-row">
                         <ui5-label>${msg('Instructions:')}</ui5-label>
-                        <ui5-textarea placeholder="Enter instructions here..."
+                        <ui5-textarea placeholder=${msg('Enter instructions here...')}
                                       .value=${this.moderation.instructions} @change=${this.handleInstructionsChange}>
                         </ui5-textarea>
                     </div>

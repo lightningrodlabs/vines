@@ -432,7 +432,7 @@
 </trans-unit>
 <trans-unit id="sf78ccbb5dbc169b1">
   <source>Embed a WAL</source>
-  <target>Inégrer un WAL</target>
+  <target>Intégrer un WAL</target>
 </trans-unit>
 <trans-unit id="s60d7742ea6ab22c6">
   <source>to Pocket</source>
@@ -741,6 +741,78 @@
 <trans-unit id="s0e0a962e81f739c7">
   <source>Merge</source>
   <target>Fusionner</target>
+</trans-unit>
+<trans-unit id="sa274c1a01a0b5a18">
+  <source>everyone</source>
+  <target>tout le monde</target>
+</trans-unit>
+<trans-unit id="s93eed7050cad07fe">
+  <source>Enter instructions here...</source>
+    <target>Mettez les instructiions ici...</target>
+</trans-unit>
+<trans-unit id="s881d2029eede8e0f">
+  <source>Message Limit:</source>
+  <target>Limite de message:</target>
+</trans-unit>
+<trans-unit id="sfd0dcab6acf65c1d">
+  <source>No limit</source>
+  <target>Aucune limite</target>
+</trans-unit>
+<trans-unit id="s016f71e84298a107">
+  <source>Participants:</source>
+    <target>Participants:</target>
+</trans-unit>
+<trans-unit id="s51a1dec7855d81f8">
+  <source>Everyone</source>
+  <target>Tout le monde</target>
+</trans-unit>
+<trans-unit id="s3b47dcae85051d9b">
+  <source>WAL Embeds:</source>
+  <target>WAL intégrés:</target>
+</trans-unit>
+<trans-unit id="s66722bc2ea775e05">
+  <source>Disabled</source>
+  <target>Désactivé</target>
+</trans-unit>
+<trans-unit id="s32414b476ae500c4">
+  <source>Text Messages:</source>
+  <target>Messages texte:</target>
+</trans-unit>
+<trans-unit id="s6cb0a7fec942f594">
+  <source>Allowed Types:</source>
+  <target>Types permis:</target>
+</trans-unit>
+<trans-unit id="s502523ce4975b123">
+  <source>All file types allowed</source>
+  <target>Tout les types de fichiers sont permis</target>
+</trans-unit>
+<trans-unit id="s73d7a74054322332">
+  <source>Size Limits:</source>
+  <target>Limites de taille:</target>
+</trans-unit>
+<trans-unit id="s04dc51aea8ffb6b7">
+  <source>Min:</source>
+  <target>Min:</target>
+</trans-unit>
+<trans-unit id="s49b491aecfdd6c39">
+  <source>Max:</source>
+  <target>Max:</target>
+</trans-unit>
+<trans-unit id="s363dd6a3f39c581f">
+  <source>No banned words</source>
+  <target>Aucun mot interdit</target>
+</trans-unit>
+<trans-unit id="s56ae92f0578ed4bc">
+  <source>Text Length Limits:</source>
+    <target>Limites de longueur de texte:</target>
+</trans-unit>
+<trans-unit id="s3490753bec8b4fa2">
+  <source>No instructions provided</source>
+  <target>Aucune instruction fournie</target>
+</trans-unit>
+<trans-unit id="scf3680c17153a318">
+  <source>Infringements allowed:</source>
+  <target>Nombre d'infraction permises:</target>
 </trans-unit>
 </body>
 </file>

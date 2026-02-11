@@ -742,6 +742,60 @@
   <source>Message a peer</source>
   <target>Enviar mensaje a un par</target>
 </trans-unit>
+<trans-unit id="sa274c1a01a0b5a18">
+  <source>everyone</source>
+</trans-unit>
+<trans-unit id="s93eed7050cad07fe">
+  <source>Enter instructions here...</source>
+</trans-unit>
+<trans-unit id="s881d2029eede8e0f">
+  <source>Message Limit:</source>
+</trans-unit>
+<trans-unit id="sfd0dcab6acf65c1d">
+  <source>No limit</source>
+</trans-unit>
+<trans-unit id="s016f71e84298a107">
+  <source>Participants:</source>
+</trans-unit>
+<trans-unit id="s51a1dec7855d81f8">
+  <source>Everyone</source>
+</trans-unit>
+<trans-unit id="s3b47dcae85051d9b">
+  <source>WAL Embeds:</source>
+</trans-unit>
+<trans-unit id="s66722bc2ea775e05">
+  <source>Disabled</source>
+</trans-unit>
+<trans-unit id="s32414b476ae500c4">
+  <source>Text Messages:</source>
+</trans-unit>
+<trans-unit id="s6cb0a7fec942f594">
+  <source>Allowed Types:</source>
+</trans-unit>
+<trans-unit id="s502523ce4975b123">
+  <source>All file types allowed</source>
+</trans-unit>
+<trans-unit id="s73d7a74054322332">
+  <source>Size Limits:</source>
+</trans-unit>
+<trans-unit id="s04dc51aea8ffb6b7">
+  <source>Min:</source>
+</trans-unit>
+<trans-unit id="s49b491aecfdd6c39">
+  <source>Max:</source>
+</trans-unit>
+<trans-unit id="s363dd6a3f39c581f">
+  <source>No banned words</source>
+</trans-unit>
+<trans-unit id="s56ae92f0578ed4bc">
+  <source>Text Length Limits:</source>
+</trans-unit>
+<trans-unit id="s3490753bec8b4fa2">
+  <source>No instructions provided</source>
+</trans-unit>
+<trans-unit id="scf3680c17153a318">
+  <source>Infringements allowed:</source>
+</trans-unit>
 </body>
 </file>
 </xliff>

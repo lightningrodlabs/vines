@@ -554,6 +554,12 @@
   <source>Error: ThreadDvm not found</source>
   <target>エラー: ThreadDvmが見つかりません</target>
 </trans-unit>
+<trans-unit id="s293aa6a6446fb153">
+  <source>Export</source>
+</trans-unit>
+<trans-unit id="s614236d7043661fd">
+  <source>synchronize</source>
+</trans-unit>
 </body>
 </file>
 </xliff>

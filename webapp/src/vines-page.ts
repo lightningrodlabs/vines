@@ -2165,7 +2165,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${globalThis.IS_TAURI
                                 ? html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` 
                                 : html`<ui5-menu-item id="shareNetwork" icon="cloud" text=${msg("Share invite code")} ></ui5-menu-item>`}                        
-                        <ui5-menu-item id="exportItem" text="Export" icon="save" starts-section></ui5-menu-item>
+                        <ui5-menu-item id="exportItem" text=${msg('Export')} icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import and share")}
                                        icon="open-folder"></ui5-menu-item>
                         <ui5-menu-item id="importOnlyItem" text=${msg("Import temporarily")}
@@ -2365,7 +2365,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             <ui5-button icon="developer-settings"
                                                         @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
                         }
-                        <ui5-button id="sync-button" icon="synchronize" 
+                        <ui5-button id="sync-button" icon="synchronize"  tooltip=${msg('synchronize')}
                                     @click=${() => {
                                         const btn = this.shadowRoot!.getElementById("sync-button")!;
                                         btn.classList.add('spinning');
@@ -2412,7 +2412,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                 </ui5-popover>
 
-                <ui5-popover id="notifPopover" header-text="Inbox" placement-type="Bottom" horizontal-align="Right"
+                <ui5-popover id="notifPopover" header-text=${msg('Inbox')} placement-type="Bottom" horizontal-align="Right"
                              hide-arrow style="max-width: 500px">
                     <notification-list></notification-list>
                 </ui5-popover>
