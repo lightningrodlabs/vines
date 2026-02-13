@@ -360,7 +360,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** */
         let merged: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
         const subjectIds = this._perspective.getAllSubjectVersions(subjectId);
-        //console.log("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length, subjectId.short);
+        //console.debug("threadsZvm.pullSubjectThreads() subjectIds", subjectIds.length, subjectId.b64);
         for (const curSubjId of subjectIds) {
             const [throttleError, tuples] = await catchThrottled(this.pullSubjectVersionThreads(curSubjId, strategy));
             if (throttleError) {
@@ -379,9 +379,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     async pullSubjectVersionThreads(subjectId: AnyId, strategy: GetStrategy): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
         let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
         const pps = await this.zomeProxy.probePpsFromSubjectHash({lh: subjectId.hash, strategy});
+        //console.debug("threadsZvm.pullSubjectVersionThreads() threads", pps.length, subjectId.b64);
         for (const [pp_ah, _linkTs] of pps) {
             const ppAh = new ActionId(pp_ah);
-            //console.log("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.short);
+            //console.debug("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.b64);
             const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp(pp_ah));
             if (throttleError) {
                 continue;

@@ -67,10 +67,11 @@ import SegmentedButtonItem from "@ui5/webcomponents/dist/SegmentedButtonItem";
 //import "@ui5/webcomponents-icons/dist/allIcons.js";
 import "@ui5/webcomponents-icons/dist/action-settings.js"
 import "@ui5/webcomponents-icons/dist/activate.js"
+import "@ui5/webcomponents-icons/dist/action.js"
+import "@ui5/webcomponents-icons/dist/accept.js"
 import "@ui5/webcomponents-icons/dist/add.js"
 import "@ui5/webcomponents-icons/dist/add-folder.js"
 import "@ui5/webcomponents-icons/dist/add-favorite.js"
-import "@ui5/webcomponents-icons/dist/accept.js"
 import "@ui5/webcomponents-icons/dist/alphabetical-order.js"
 import "@ui5/webcomponents-icons/dist/attachment.js"
 import "@ui5/webcomponents-icons/dist/attachment-text-file.js"
@@ -983,12 +984,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
-      console.log("<vines-page>.firstUpdated() cacheFullAppletInfo", this.weServices);
+      console.debug("<vines-page>.firstUpdated() cacheFullAppletInfo", this.weServices);
       //const appletIds = await this._dvm.threadsZvm.pullAppletIds();
-      //console.log("<vines-page> firstUpdated() appletIds", appletIds);
+      console.debug("<vines-page> firstUpdated() appletIds", this._dvm.threadsZvm.perspective.appletIds);
       for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
-        /* const _appletInfo = */
-        await this.weServices.cacheFullAppletInfo(appletId);
+        //console.debug("<vines-page> firstUpdated() cacheFullAppletInfo() appletId", appletId);
+        const res = await this.weServices.cacheFullAppletInfo(appletId);
+        //console.debug("<vines-page> firstUpdated() cacheFullAppletInfo() res", res);
       }
       /** Register callback */
       try {
@@ -1343,7 +1345,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       limitations: defaultLimitations(),
       moderation: defaultModeration(),
     };
-    console.debug("publishCommentThread() appletId", subject.appletId);
+    console.debug("publishCommentThread() appletId", subject.appletId, request.subjectId.b64);
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }
@@ -1539,7 +1541,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async pullLatestAppletInfos() {
     console.log("pullLatestAppletInfos()", !!this.weServices);
     if (this.weServices) {
-      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds(GetStrategy.Network);
+      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds(GetStrategy.Local); // FIXME: should be Network
       console.log("pullLatestAppletInfos() appletIds", appletIds);
       for (const appletId of appletIds) {
         await this.weServices.appletInfo(appletId.b64);
@@ -1784,37 +1786,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //const networkInfos = this.appProxy && this.appProxy.networkInfoLogs[sId]? this.appProxy.networkInfoLogs[sId] : [];
       //const networkInfo = networkInfos && networkInfos.length > 0 ? networkInfos[networkInfos.length - 1]![1] : null;
 
-    let lister = html``;
-
-    switch (this._listerToShow) {
-      case "tools-option":
-        lister = html`
-            <tool-lister id="lister" ?collapsed=${this._collapseAll}></tool-lister>`;
-        break;
-      case "mine-option":
-        lister = html`
-            <my-threads-lister id="lister" ?collapsed=${this._collapseAll}
-                               .showArchivedSubjects=${this._canViewArchivedSubjects}
-                               .selectedThreadHash=${this._selectedThreadHash}
-                               @createThreadClicked=${(e: CustomEvent<ActionId>) => {
-                                   this._createTopicHash = e.detail;
-                                   this.createThreadDialogElem.show();
-                               }}></my-threads-lister>
-        `;
-        break;
-      case "topics-option":
-        console.log("<vines-page> topics-lister", this._collapseAll);
-        lister = html`
-            <topics-lister id="lister" ?alphabetical=${this._canAlphabetical}
+    let topicsLister = html`
+            <topics-lister id="topicsLister" 
+                           style="display: ${this._listerToShow == "topics-option"? "block" : "none"}"
+                           ?alphabetical=${this._canAlphabetical}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
                            @createThreadClicked=${(e: CustomEvent<ActionId>) => {
-                               this._createTopicHash = e.detail;
-                               this.createThreadDialogElem.show();
-                           }}></topics-lister>
+                              this._createTopicHash = e.detail;
+                              this.createThreadDialogElem.show();
+                          }}>
+            </topics-lister>
         `;
-        break;
-    }
+    let  mineLister = html`
+            <my-threads-lister id="mineLister"
+                               style="display: ${this._listerToShow == "mine-option"? "block" : "none"}"
+                               ?collapsed=${this._collapseAll}
+                               .showArchivedSubjects=${this._canViewArchivedSubjects}
+                               .selectedThreadHash=${this._selectedThreadHash}
+                               @createThreadClicked=${(e: CustomEvent<ActionId>) => {
+                                  this._createTopicHash = e.detail;
+                                  this.createThreadDialogElem.show();
+                              }}>
+            </my-threads-lister>
+        `;
+    let toolLister = html`
+        <tool-lister   id="toolLister"
+                       style="display: ${this._listerToShow == "tools-option"? "block" : "none"}"
+                       ?collapsed=${this._collapseAll}
+                       .selectedThreadHash=${this._selectedThreadHash}
+    ></tool-lister>`;
+
 
     const dmLister = this.multi? html`
         <dm-multi-lister nobtn
@@ -1932,36 +1934,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             }}>
                 ${msg('Channels')}
             </div>
-            <div id="toolsBtn" class="listerbtn" @click=${(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                /** Get and Cache appletInfo for each known applet */
-                /*await*/
-                this.pullLatestAppletInfos();
-                /** */
-                this._listerToShow = "tools-option";
-                const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                topicsBtn.classList.remove("selected");
-                const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                toolsBtn.classList.add("selected");
-                const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                mineBtn.classList.remove("selected");
-                this.requestUpdate();
-            }}>
+            <div id="toolsBtn" class="listerbtn" 
+                 @click=${(e: any) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    /** Get and Cache appletInfo for each known applet */
+                    /*await*/ this.pullLatestAppletInfos();
+                    /** */
+                    this._listerToShow = "tools-option";
+                    const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                    topicsBtn.classList.remove("selected");
+                    const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                    toolsBtn.classList.add("selected");
+                    const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                    mineBtn.classList.remove("selected");
+                    this.requestUpdate();
+                }}>
                 ${msg('Tools')}
             </div>
-            <div id="mineBtn" class="listerbtn" @click=${(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this._listerToShow = "mine-option";
-                const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                topicsBtn.classList.remove("selected");
-                const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                toolsBtn.classList.remove("selected");
-                const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                mineBtn.classList.add("selected");
-                this.requestUpdate();
-            }}>
+            <div id="mineBtn" class="listerbtn" 
+                 @click=${(e: any) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this._listerToShow = "mine-option";
+                    const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
+                    topicsBtn.classList.remove("selected");
+                    const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
+                    toolsBtn.classList.remove("selected");
+                    const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
+                    mineBtn.classList.add("selected");
+                    this.requestUpdate();
+                }}>
                 ${msg('My')}
             </div>
         </div>`;
@@ -1984,12 +1987,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             @click=${(_e: any) => {
                                 console.log("<topics-lister> EXPAND ALL")
                                 this._collapseAll = false;
-                                const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
-                                if (lister) {
-                                    lister.collapseAll(false);
+                                const mineLister = this.shadowRoot!.getElementById("mineLister") as unknown as ICollapsable;
+                                if (mineLister) {
+                                    mineLister.collapseAll(false);
+                                }
+                                const topicsLister = this.shadowRoot!.getElementById("topicsLister") as unknown as ICollapsable;
+                                if (topicsLister) {
+                                    topicsLister.collapseAll(false);
                                 }
                                 const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                                if (lister && hisLister) {
+                                if (hisLister) {
                                     hisLister.collapseAll(false);
                                 }
 
@@ -1998,12 +2005,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             @click=${(_e: any) => {
                                 console.log("<topics-lister> Collapse ALL")
                                 this._collapseAll = true;
-                                const lister = this.shadowRoot!.getElementById("lister") as unknown as ICollapsable;
-                                if (lister) {
-                                    lister.collapseAll(true);
+                                const mineLister = this.shadowRoot!.getElementById("mineLister") as unknown as ICollapsable;
+                                if (mineLister) {
+                                    mineLister.collapseAll(true);
+                                }
+                                const topicsLister = this.shadowRoot!.getElementById("topicsLister") as unknown as ICollapsable;
+                                if (topicsLister) {
+                                    topicsLister.collapseAll(true);
                                 }
                                 const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                                if (lister && hisLister) {
+                                if (hisLister) {
                                     hisLister.collapseAll(true);
                                 }
                             }}></ui5-button>
@@ -2074,7 +2085,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         ${topLeft}
         ${dmSign}
         <div id="listerGroup" style="display: flex; flex-direction: column; overflow: auto">
-            ${lister}
+            ${mineLister}
+            ${topicsLister}
+            ${toolLister}
             ${hisLister}
             <!-- Messages -->
             <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">

@@ -46,6 +46,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
   weServices!: WeServicesEx;
 
   @property({type: Boolean}) collapsed?: boolean = false;
+
   @state() private _loading = false;
 
 
@@ -53,7 +54,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   protected override async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    super.zvmUpdated(newZvm, oldZvm)
+    super.zvmUpdated(newZvm, oldZvm);
     this._loading = true;
     await newZvm.zomeProxy.queryAll();
     this._loading = false;
@@ -162,9 +163,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                        ${isSelected? "background:#DBDBDB" : ""}
                        "
                      @click=${(_e: any) => {
-        const jump = threadJumpEvent(ppAh);
-        this.dispatchEvent(jump);
-      }}>
+                        const jump = threadJumpEvent(ppAh);
+                        this.dispatchEvent(jump);
+                      }}>
                   ${badge}
                   <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}">${thread.pp.purpose}</span>
                   <!-- ${hideShowBtn} -->
