@@ -989,7 +989,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.debug("<vines-page> firstUpdated() appletIds", this._dvm.threadsZvm.perspective.appletIds);
       for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
         //console.debug("<vines-page> firstUpdated() cacheFullAppletInfo() appletId", appletId);
-        const _res = await this.weServices.cacheFullAppletInfo(appletId);
+        /*const res =*/ await this.weServices.cacheFullAppletInfo(appletId);
         //console.debug("<vines-page> firstUpdated() cacheFullAppletInfo() res", res);
       }
       /** Register callback */
