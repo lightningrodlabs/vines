@@ -13,7 +13,6 @@ import {ThreadsEntryType} from "../../bindings/threads.types";
 import {CommentRequest, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {weClientContext} from "../../contexts";
 
-
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Tree.js"
 import TreeItem from "@ui5/webcomponents/dist/TreeItem";
@@ -61,20 +60,22 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   /** -- Methods -- */
 
   /** In zvmUpdated() this._zvm is not already set! */
-  protected override async zvmUpdated(newZvm: ThreadsZvm, _oldZvm?: ThreadsZvm): Promise<void> {
+  protected override async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<tool-lister>.zvmUpdated()");
+    super.zvmUpdated(newZvm, oldZvm);
     await this.loadSubjectTypes(newZvm);
   }
 
 
   /** */
   override async updated() {
-    /** Select first option if none currently selected */
     if (this.weServices) {
-      const select = this.shadowRoot!.getElementById("lister-select") as unknown as Select;
-      if (!this._appletId && select && select.options.length > 0) {
-        this._appletId = new EntryId(select.options[0]!.id);
-      }
+        return;
+    }
+    /** Select the first option if none is currently selected */
+    const select = this.shadowRoot!.getElementById("lister-select") as unknown as Select;
+    if (!this._appletId && select && select.options.length > 0) {
+      this._appletId = new EntryId(select.options[0]!.id);
     }
   }
 
@@ -84,14 +85,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     super.willUpdate(changedProperties);
     console.log("<tool-lister>.willUpdate() appletId", changedProperties, changedProperties.has("_appletId"));
     if (changedProperties.has("_appletId") && this._zvm) {
-      /*await*/
-      this.loadSubjectTypes();
+      /*await*/ this.loadSubjectTypes();
     }
   }
 
 
   /** */
-  private async loadSubjectTypes(newZvm?: ThreadsZvm) {
+  private async loadSubjectTypes(newZvm?: ThreadsZvm): Promise<void> {
     console.log("<tool-lister>.loadSubjectTypes()", this._appletId);
     if (!this._appletId) {
       return;
@@ -103,7 +103,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   }
 
 
-  /** Search for Vines attachmentType in based on _appInfoMap */
+  /** Search for Vines AssetType in based on _appInfoMap */
   getThreadAttachmentType(): CreatableType | undefined {
     // FIXME
     if (this._threadCreatableType) {
@@ -136,7 +136,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
   /** */
   async openCommentThread(hash: DhtId, _subjectType: string, _subjectName: string): Promise<void> {
-    console.log("openCommentThread()", hash);
+    console.debug("<tool-lister>.openCommentThread()", hash);
     const attType = this.getThreadAttachmentType();
     if (!attType) {
       console.error("Thread attachmentType not found");
@@ -171,7 +171,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
     }
 
-    /** DEBUG Attachment View */
+    /** DEBUG Asset View */
     //await this.openCommentThread(event.detail.item.id, type, event.detail.item.text);
 
     if (type == ThreadsEntryType.ParticipationProtocol) {
@@ -186,7 +186,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
 
   /** */
-  onClickComment(maybeCommentThread: ActionId | null, subjectHash: AnyId, subjectType: string, subjectName: string, viewType?: string) {
+  onClickComment(
+      maybeCommentThread: ActionId | null,
+      subjectHash: AnyId,
+      subjectType: string,
+      subjectName: string,
+      viewType?: string,
+      ) {
     const request: CommentRequest = {
       maybeCommentThread, subjectId: subjectHash, subjectType, subjectName,
       viewType: viewType? viewType : "side",
@@ -462,6 +468,39 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
           border:none;
           background:none;
         }
+
+          ui5-panel {
+              display: flex;
+              flex-direction: column;
+              /*padding: 7px;*/
+              border: none;
+              margin-bottom: 20px;
+          }
+
+          ui5-panel::part(content) {
+              padding: 0;
+              padding-left: 7px;
+          }
+
+          ui5-panel::part(header) {
+              border: none;
+              color: #588AD7;
+          }
+
+          ui5-panel::part(header):hover {
+              /*background: rgb(198, 214, 250);*/
+              /*font-weight: bold;*/
+              color: #0087ff !important;
+          }
+
+          ui5-panel::part(header) > ui5-button {
+              border: 1px solid black;
+              background: #33A000;
+          }
+
+          ui5-panel::part(header):hover > ui5-button {
+              display: block !important;
+          }          
       `,
 
     ];
