@@ -1,36 +1,32 @@
 import {css, html, PropertyValues, render, TemplateResult} from "lit";
-import {customElement, state} from "lit/decorators.js";
+import {customElement, property, state} from "lit/decorators.js";
 import {consume} from "@lit/context";
 import {msg} from "@lit/localize";
 
 import {CreatableType} from "@theweave/api";
 import {ActionId, AnyId, DhtId, EntryId, EntryIdMap, intoDhtId, intoLinkableId, ZomeElement} from "@ddd-qc/lit-happ";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
+import {GetStrategy} from "@holochain-open-dev/core-types";
+import {EntryHashB64} from "@holochain/client";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {ThreadsEntryType} from "../../bindings/threads.types";
-import {CommentRequest, SpecialSubjectType, threadJumpEvent} from "../../events";
+import {CommentRequest, SpecialSubjectType} from "../../events";
 import {weClientContext} from "../../contexts";
-
-/** @ui5/webcomponents */
-import "@ui5/webcomponents/dist/Tree.js"
-import TreeItem from "@ui5/webcomponents/dist/TreeItem";
-import "@ui5/webcomponents/dist/TreeItem.js";
-import "@ui5/webcomponents/dist/TreeItemCustom.js";
-import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
-import "@ui5/webcomponents/dist/BusyIndicator.js";
-import "@ui5/webcomponents/dist/StandardListItem.js";
-import "@ui5/webcomponents/dist/CustomListItem.js";
-import {ActionHashB64, EntryHashB64} from "@holochain/client";
 import {sharedStyles} from "../../styles";
 import {ICollapsable} from "./topics-lister";
+
+/** @ui5/webcomponents */
+//import BusyIndicator from "@ui5/webcomponents/dist/BusyIndicator";
+//import "@ui5/webcomponents/dist/BusyIndicator.js";
+import "@ui5/webcomponents/dist/StandardListItem.js";
+import "@ui5/webcomponents/dist/CustomListItem.js";
 import Select from "@ui5/webcomponents/dist/Select";
-import {GetStrategy} from "@holochain-open-dev/core-types";
+import Panel from "@ui5/webcomponents/dist/Panel";
 
 
 /**
- * @element
+ *
  */
 @customElement("tool-lister")
 export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> implements ICollapsable {
@@ -39,23 +35,21 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     super(ThreadsZvm.DEFAULT_ZOME_NAME);
   }
 
-  /** ID of the applet to display threads of */
-  @state() _appletId?: EntryId;
+  /** -- Properties -- */
 
+  /** ID of the applet to display */
+  @state() _appletId?: EntryId;
 
   @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
 
+  @property({type: Boolean}) collapsed?: boolean = false;
 
   @state() private _loading = false;
   @state() private _isHovered: EntryIdMap<boolean> = new EntryIdMap();
+
   private _threadCreatableType?: CreatableType;
 
-
-  /** */
-  collapseAll(_canCollapse: boolean): void {
-    //this.collapsed = canCollapse;
-  }
 
   /** -- Methods -- */
 
@@ -64,6 +58,11 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     console.log("<tool-lister>.zvmUpdated()");
     super.zvmUpdated(newZvm, oldZvm);
     await this.loadSubjectTypes(newZvm);
+  }
+
+  /** */
+  collapseAll(canCollapse: boolean): void {
+    this.collapsed = canCollapse;
   }
 
 
@@ -104,7 +103,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
 
   /** Search for Vines AssetType in based on _appInfoMap */
-  getThreadAttachmentType(): CreatableType | undefined {
+  getThreadAssetType(): CreatableType | undefined {
     // FIXME
     if (this._threadCreatableType) {
       return this._threadCreatableType;
@@ -137,7 +136,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   /** */
   async openCommentThread(hash: DhtId, _subjectType: string, _subjectName: string): Promise<void> {
     console.debug("<tool-lister>.openCommentThread()", hash);
-    const attType = this.getThreadAttachmentType();
+    const attType = this.getThreadAssetType();
     if (!attType) {
       console.error("Thread attachmentType not found");
       return;
@@ -150,38 +149,6 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     // res.context.subjectType = subjectType;
     // res.context.subjectName = subjectName;
     // this.weServices.openHrl({hrl: res.hrl, context: res.context});
-  }
-
-
-  /** */
-  async clickTree(event: any) {
-    console.log("<tool-lister> click event:", event.detail.item);
-    let type;
-    switch (event.detail.item.level) {
-      case 3:
-        type = ThreadsEntryType.ParticipationProtocol;
-        break;
-      case 2:
-        type = "Subject";
-        break;
-      case 1:
-      default:
-        type = "SubjectType";
-        break;
-
-    }
-
-    /** DEBUG Asset View */
-    //await this.openCommentThread(event.detail.item.id, type, event.detail.item.text);
-
-    if (type == ThreadsEntryType.ParticipationProtocol) {
-      await this.updateComplete;
-      const b64 = event.detail.item.id as ActionHashB64;
-      const jump = threadJumpEvent(new ActionId(b64));
-      console.log("<tool-lister> click event: jump", jump.detail);
-      this.dispatchEvent(jump);
-    }
-
   }
 
 
@@ -206,73 +173,99 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
 
   /** */
-  async toggleTreeItem(event: any, _unreadSubjects: AnyId[]) {
-    const busyIndicator = this.shadowRoot!.getElementById("busy") as BusyIndicator;
-    const toggledTreeItem = event.detail.item as TreeItem; // get the node that is toggled
-    //const isTyped = !!this.root && typeof this.root == 'object';
-    //const isTyped = !!toggledTreeItem.getAttribute("linkIndex");
+  async toggleSubjectTypePanel(pathEh: EntryId, _unreadSubjects: AnyId[]) {
+      console.log("<tool-lister>.toggleSubjectTypePanel()", pathEh);
 
-    console.log("<tool-lister>.toggleTreeItem()", toggledTreeItem);
+      const subjectTypePanel = this.shadowRoot!.getElementById(pathEh.b64) as Panel;
+      //const isTyped = !!this.root && typeof this.root == 'object';
+      //const isTyped = !!subjectTypePanel.getAttribute("linkIndex");
 
-    event.preventDefault(); // do not let the toggle button switch yet
-    busyIndicator.active = true; // block the tree from the user
+      //busyIndicator.active = true; // block the tree from the user
 
-    /** Keep already existing children */
-    let currentChildren: EntryHashB64[] = [];
-    for (const item of toggledTreeItem.items) {
-      currentChildren.push((item as TreeItem).id);
-    }
-    //console.log("toggleTreeItem() currentItemTexts", currentItemTexts);
+      /** Keep already existing children */
+      let currentChildren: EntryHashB64[] = [];
+      for (const item of Array.from(subjectTypePanel.children)) {
+          currentChildren.push((item as any).id);
+      }
+      console.log("toggleTreeItem() subjectTypePanel.items", subjectTypePanel.children);
 
-    /** SubjectType has been toggled */
-    if (event.detail.item.level == 1) {
       /** Grab children */
-      const typePathEh = new EntryId(toggledTreeItem.id);
-      let subjects = await this._zvm.findSubjects(this._appletId!, typePathEh);
+      let subjects = await this._zvm.findSubjects(this._appletId!, pathEh);
       console.log("<tool-lister> this.weServices", !!this.weServices);
       if (!this.weServices) {
-        console.warn("weServices not found in <tool-lister>")
+          console.warn("weServices not found in <tool-lister>")
       }
       /** Convert to TreeItem and append to Tree */
       for (const [dnaId, subjectHash] of subjects) {
-        /* Skip if item already exists */
-        if (currentChildren.includes(subjectHash.b64)) {
-          continue;
-        }
-        let newItem = document.createElement("ui5-tree-item") as TreeItem;
-        newItem.text = subjectHash.b64;
-        if (this.weServices) {
-          //const dnaHash = toggledTreeItem['dnaHash'];
-          console.log("calling weServices.assetInfo()", dnaId, subjectHash);
-          try {
-            const assetLocInfo = await this.weServices.assets.assetInfo({
-              hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)),
-              context: null
-            });
-            console.log("assetLocInfo", assetLocInfo);
-            if (assetLocInfo) {
-              newItem.text = assetLocInfo.assetInfo.name;
-            }
-          } catch (e: any) {
-            console.error("Couldn't find assetInfo:", e);
+          /* Skip if item already exists */
+          if (currentChildren.includes(subjectHash.b64)) {
+              continue;
           }
-        }
-        //newItem.additionalText = "[" + ta.anchor + "]";
-        //newItem.setAttribute("dnaHash", dnaHash);
-        //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
-        //newItem.setAttribute("linkIndex", ta.linkIndex.toString());
-        newItem.id = subjectHash.b64;
-        newItem.hasChildren = true;
-        newItem.level = toggledTreeItem.level + 1;
-        toggledTreeItem.appendChild(newItem);
+
+          const tmpl = html`
+              <ui5-panel id=${subjectHash.b64} ?collapsed=${this.collapsed}
+                         @toggle=${(e:any) => {
+                             e.preventDefault();
+                             this.toggleSubjectHashPanel(pathEh/*, unreadSubjects*/);
+                         }}>
+                  <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
+                      <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">
+                          ${subjectType}
+                      </div>
+                      ${commentButton}
+                      ${newBadge}
+                  </div>
+              </ui5-panel>
+          `;
+          let newItem = document.createElement("ui5-panel") as any;
+          newItem.text = subjectHash.b64;
+          if (this.weServices) {
+              //const dnaHash = toggledTreeItem['dnaHash'];
+              console.log("calling weServices.assetInfo()", dnaId, subjectHash);
+              try {
+                  const assetLocInfo = await this.weServices.assets.assetInfo({
+                      hrl: intoHrl(dnaId, intoDhtId(subjectHash.b64)),
+                      context: null
+                  });
+                  console.log("assetLocInfo", assetLocInfo);
+                  if (assetLocInfo) {
+                      newItem.text = assetLocInfo.assetInfo.name;
+                  }
+              } catch (e: any) {
+                  console.error("Couldn't find assetInfo:", e);
+              }
+          }
+          //newItem.additionalText = "[" + ta.anchor + "]";
+          //newItem.setAttribute("dnaHash", dnaHash);
+          //newItem.setAttribute("zomeIndex", ta.zomeIndex.toString());
+          //newItem.setAttribute("linkIndex", ta.linkIndex.toString());
+          newItem.id = subjectHash.b64;
+          newItem.toggleable = true;
+          newItem.toggle = () => {
+              console.log("toggleSubjectTypePanel() toggle SubjectHash", subjectHash.b64);
+          }
+          subjectTypePanel.appendChild(newItem);
+          //this.requestUpdate();
+          //subjectTypePanel.shouldToggle(this); // manually switch the toggle button
       }
     }
 
     /** SubjectHash has been toggled */
-    if (event.detail.item.level == 2) {
-      const itemHash = intoLinkableId(toggledTreeItem.id);
+    async toggleSubjectHashPanel(pathEh: EntryId, _unreadSubjects: AnyId[]) {
+      console.log("<tool-lister>.toggleSubjectHashPanel()", pathEh);
+      const subjectHashPanel = this.shadowRoot!.getElementById(pathEh.b64) as Panel;
+
+        const itemHash = intoLinkableId(pathEh.hash);
       /** Grab children */
       let pps = await this._zvm.pullSubjectThreads(itemHash, GetStrategy.Local);
+
+        /** Keep already existing children */
+        let currentChildren: EntryHashB64[] = [];
+        for (const item of Array.from(subjectHashPanel.children)) {
+            currentChildren.push((item as any).id);
+        }
+        console.log("toggleTreeItem() subjectHashPanel.items", subjectHashPanel.children);
+
 
       const tmpls = [];
       /** Convert to TreeItem and append to Tree */
@@ -298,32 +291,25 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
         }
 
         const tmpl = html`
-          <ui5-tree-item-custom id=${ppAh.b64} level=${toggledTreeItem.level + 1} style="cursor: pointer">
-            <span slot="content" style="display:flex;overflow: hidden;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}">
+          <div id=${ppAh.b64} style="cursor: pointer">
+            <span slot="content" 
+                  style="display:flex;overflow: hidden;font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}">
                 ${pp.purpose}
                 ${newBadge}
             </span>
-          </ui5-tree-item-custom>
+          </div>
         `;
 
 
         tmpls.push(tmpl);
       }
-      render(tmpls, toggledTreeItem);
-    }
-
-    /** Done */
-    toggledTreeItem.toggle(); // manually switch the toggle button
-    busyIndicator.active = false;
+      render(tmpls, subjectHashPanel);
+      subjectHashPanel.shouldToggle(this); // manually switch the toggle button
   }
-
 
   /** */
   override render() {
     console.log("<tool-lister>.render() appletId", this._appletId);
-    // if (!this.appletId) {
-    //   return html `<div>No Applet selected</div>`;
-    // }
     if (this._loading) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
@@ -332,7 +318,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
     if (this._appletId) {
       let maybeSubjectTypes = this.perspective.appletSubjectTypes.get(this._appletId);
-      console.log("<tool-lister>.render() subjectTypes", subjectTypes);
+      console.debug("<tool-lister>.render() subjectTypes", subjectTypes);
       if (maybeSubjectTypes) {
         subjectTypes = maybeSubjectTypes
       }
@@ -345,7 +331,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
-      console.log("<tool-lister>.render() subjectType", subjectType, pathEh);
+      console.debug("<tool-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
       const isUnread = !!maybeCommentThread && this._zvm.perspective.unreads.has(maybeCommentThread);
@@ -371,24 +357,30 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
         newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
       }
 
-      //const topicHasUnreads = this.perspective.unreadSubjects.includes(topicHash);
-      return html`<ui5-tree-item-custom id=${pathEh.b64} level="1" has-children>
-          <div slot="content" style="display:flex;align-items:center;font-weight:normal;text-decoration:none;">
-              <span>${subjectType}</span>
+      const subjectHasUnreads = unreadSubjects.includes(pathEh); // FIXME
+      return html`
+          <ui5-panel id=${pathEh.b64} ?collapsed=${this.collapsed}
+                     @toggle=${(e:any) => {
+                         e.preventDefault();
+                         this.toggleSubjectTypePanel(pathEh, unreadSubjects);
+                     }}>
+              <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
+              <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">
+                  ${subjectType}
+              </div>
               ${commentButton}
               ${newBadge}
-          </div>
-      </ui5-tree-item-custom>`
-    });
+              </div>
+        </ui5-panel>
+      `});
     //console.log({treeItems})
 
 
-    //console.log("this.wePerspective.applets", this.wePerspective.applets, myProfile);
     let appletOptions: TemplateResult<1>[] = [];
     if (this.weServices) {
       appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
           console.log("appletId appletInfo", appletInfo?.appletName);
-          /** exclude this tool as it's handled specifically elsewhere */
+          /** exclude this tool as it is handled specifically elsewhere */
           if (!appletInfo) {
             return html``;
           }
@@ -398,53 +390,39 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     }
     console.log("appletOptions", appletOptions);
 
-
-    let inner = html`
-        <ui5-tree id="threadsTree" mode="SingleSelect" no-data-text=${msg("No SubjectTypes found")}
-                  style="max-width:260px;"
-                  @item-toggle=${(e: any) => this.toggleTreeItem(e, unreadSubjects)}
-                  @item-click=${this.clickTree}
-                  @item-mouseover=${(e: any) => {
-      this._isHovered.set(e.detail.item.id, true);
-      this.requestUpdate();
-    }}
-                  @item-mouseout=${(e: any) => {this._isHovered.set(e.detail.item.id, false);}}
-        >
-          ${treeItems}
-        </ui5-tree>      
-    `;
+    let inner = html`<div>${treeItems}</div>`;
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      inner = html`
-            <div style="color: grey; margin: auto;">${msg('No channels found')}</div>
-            <ui5-button design="Emphasized"  ?disabled=${!this.weServices || !this._appletId}
-                        @click=${(_e: any) => {
-        if (this.weServices && this._appletId) {
-          this.weServices.openAppletMain(this._appletId.hash);
-        }
-      }}>
-                ${msg('Go to Tool')}
-            </ui5-button>
-      `;
+      inner = html`<div style="color: grey; margin: auto; padding-bottom:30px;">${msg('No comment threads found for this Tool')}</div>`;
     }
 
 
     /** render all */
     return html`
-      <ui5-busy-indicator id="busy" delay="20" style="width: 100%">
-        <div style="display:flex; flex-direction:column; gap:10px; padding:5px; width:100%">
-          <ui5-select id="lister-select" style="margin:auto"
+        <div style="display:flex; flex-direction:column; gap:10px; padding:5px;">
+          <div style="display:flex; flex-direction:row; padding-bottom: 10px;">
+            <ui5-select id="lister-select" style="margin:auto"
                       @change=${(e: any) => {
-      console.log("tool-lister change", e.detail.selectedOption, e);
-      const idB64: string = e.detail.selectedOption.id;
-      this._appletId = new EntryId(idB64);
-    }}>
+                      console.debug("<tool-lister> change", e.detail.selectedOption, e);
+                      const idB64: string = e.detail.selectedOption.id;
+                      this._appletId = new EntryId(idB64);
+                    }}>
               ${appletOptions}
           </ui5-select>
+            <ui5-button design="Emphasized" icon="action"
+                        style="margin:auto"  
+                        tooltip=${msg("Go to Tool")}
+                        ?disabled=${!this.weServices || !this._appletId /* || appletId == VinesAppletId */}
+                        @click=${(_e: any) => {
+                            if (this.weServices && this._appletId) {
+                                this.weServices.openAppletMain(this._appletId.hash);
+                            }
+                        }}>
+            </ui5-button>
+          </div>              
           ${inner}
         </div>
-      </ui5-busy-indicator>
     `
   }
 
