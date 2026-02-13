@@ -46,15 +46,15 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   @property() selectedThreadHash?: ActionId;
 
 
+  /** -- Methods -- */
 
-    /** -- Methods -- */
-
-  /** In zvmUpdated() this._zvm is not already set! */
+  /** In zvmUpdated() this._zvm is not set yet! */
   protected override async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
     console.log("<tool-lister>.zvmUpdated()", this._appletId);
     await super.zvmUpdated(newZvm, oldZvm);
     await this.loadSubjectTypes(newZvm);
   }
+
 
   /** */
   collapseAll(_canCollapse: boolean): void {
@@ -64,11 +64,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
   /** */
   override async updated() {
-    if (this.weServices) {
-        return;
-    }
+     console.debug("<tool-lister>.updated()", !!this.weServices);
+    //   if (this.weServices) {
+    //     return;
+    // }
     /** Select the first option if none is currently selected */
     const select = this.shadowRoot!.getElementById("lister-select") as unknown as Select;
+    //console.debug("<tool-lister>.updated() select", this._appletId, select);
     if (!this._appletId && select && select.options.length > 0) {
       this._appletId = new EntryId(select.options[0]!.id);
       console.debug("<tool-lister>.updated() setting appletId", this._appletId.b64);
@@ -172,10 +174,17 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
                              e.stopPropagation();
                              this.toggleSubjectHashPanel(subjectHash);
                          }}>
-                  <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
-                      <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${hasNewThreads || isSelected? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">
-                        ${title}
-                      </div>
+                  <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; cursor:pointer; width:100%; height:36px;">
+                      <div class="assetTitle"
+                           style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${hasNewThreads || isSelected? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;"
+                           @click=${(e: any) => {
+                               e.preventDefault();
+                               e.stopPropagation();
+                               if (this.weServices) {
+                                   this.weServices.openAppletMain(this._appletId!.hash, {hrl: [dnaId.hash, subjectHash.hash], context: undefined});
+                               }
+                           }}
+                      >${title}</div>
                   </div>
               </ui5-panel>
           `;
@@ -231,8 +240,10 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
                    /* unselect previous item */
                    if (this.selectedThreadHash) {
                        const prevItem = this.shadowRoot!.getElementById(`${this.selectedThreadHash.b64}`) as LitElement;
-                       console.debug("unselecting previous item", prevItem);
-                       prevItem.classList.remove("selectedItem");
+                       if (prevItem) {
+                           // console.debug("unselecting previous item", prevItem);
+                           prevItem.classList.remove("selectedItem");
+                       }
                    }
                    const jump = threadJumpEvent(ppAh);
                    this.dispatchEvent(jump);                   
@@ -265,8 +276,6 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
         subjectTypes = maybeSubjectTypes
       }
     }
-
-    // FIXME: Reset tree on update() or fix bug with subjects not under the correct update when adding new SubjectTypes live
 
     /* */
     const newSubjects = this._zvm.perspective.getNewSubjects();
@@ -321,15 +330,14 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
     let appletOptions: TemplateResult<1>[] = [];
     if (this.weServices) {
-      appletOptions = Array.from(this.weServices.cache.appletInfos.entries()).map(([appletId, appletInfo]) => {
-          console.log("appletId appletInfo", appletInfo?.appletName);
-          /** exclude this tool as it is handled specifically elsewhere */
-          if (!appletInfo) {
-            return html``;
-          }
-          return html`<ui5-option id=${appletId.b64}>${appletInfo.appletName}</ui5-option>`;
+      for (const [appletId, appletInfo] of Array.from(this.weServices.cache.appletInfos.entries())) {
+           console.log("appletId appletInfo", appletInfo?.appletName, appletId.b64);
+           /** exclude this tool as it is handled specifically elsewhere */
+           if (!appletInfo) {
+              continue;
+           }
+           appletOptions.push(html`<ui5-option .id=${appletId.b64} ?selected=${this._appletId && this._appletId.b64 == appletId.b64} >${appletInfo.appletName}</ui5-option>`);
         }
-      );
     }
     console.log("appletOptions", appletOptions);
 
@@ -347,8 +355,8 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
           <div style="display:flex; flex-direction:row; padding-bottom: 10px;">
             <ui5-select id="lister-select" style="margin:auto"
                       @change=${(e: any) => {
-                      console.debug("<tool-lister> change", e.detail.selectedOption, e);
                       const idB64: string = e.detail.selectedOption.id;
+                      console.debug("<tool-lister> change", e.detail.selectedOption, idB64, e);
                       this._appletId = new EntryId(idB64);
                     }}>
               ${appletOptions}
@@ -389,6 +397,9 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
           border:none;
           background:none;
         }
+          .assetTitle:hover {
+              font-weight: bold;
+          }
 
           ui5-panel {
               display: flex;

@@ -989,7 +989,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.debug("<vines-page> firstUpdated() appletIds", this._dvm.threadsZvm.perspective.appletIds);
       for (const appletId of this._dvm.threadsZvm.perspective.appletIds) {
         //console.debug("<vines-page> firstUpdated() cacheFullAppletInfo() appletId", appletId);
-        const res = await this.weServices.cacheFullAppletInfo(appletId);
+        const _res = await this.weServices.cacheFullAppletInfo(appletId);
         //console.debug("<vines-page> firstUpdated() cacheFullAppletInfo() res", res);
       }
       /** Register callback */
@@ -1761,7 +1761,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                               .items=${publicItems}
                               @download=${(e: CustomEvent<EntryId>) => {
                                   console.log("download", e.detail.b64);
-                                  this._filesDvm.downloadFile(e.detail)
+                                  /*await*/ this._filesDvm.downloadFile(e.detail)
                               }}
                   ></file-table>
               </div>
@@ -1794,7 +1794,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                            .selectedThreadHash=${this._selectedThreadHash}
                            @createThreadClicked=${(e: CustomEvent<ActionId>) => {
                               this._createTopicHash = e.detail;
-                              this.createThreadDialogElem.show();
+                              /*await*/ this.createThreadDialogElem.show();
                           }}>
             </topics-lister>
         `;
@@ -1806,7 +1806,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                .selectedThreadHash=${this._selectedThreadHash}
                                @createThreadClicked=${(e: CustomEvent<ActionId>) => {
                                   this._createTopicHash = e.detail;
-                                  this.createThreadDialogElem.show();
+                                  /*await*/ this.createThreadDialogElem.show();
                               }}>
             </my-threads-lister>
         `;
@@ -1824,7 +1824,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          .selectedThreadHash=${this._selectedThreadHash}
                          @createNewDm=${(_e: any) => {
                              const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                             dialog.show();
+                             /*await*/ dialog.show();
                          }}
         ></dm-multi-lister>
     ` : html`
@@ -1833,7 +1833,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                    .selectedThreadHash=${this._selectedThreadHash}
                    @createNewDm=${(_e: any) => {
                        const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                       dialog.show();
+                       /*await*/ dialog.show();
                    }}
         ></dm-lister>
     `;
@@ -1935,11 +1935,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${msg('Channels')}
             </div>
             <div id="toolsBtn" class="listerbtn" 
-                 @click=${(e: any) => {
+                 @click=${ async (e: any) => {
                     e.preventDefault();
                     e.stopPropagation();
                     /** Get and Cache appletInfo for each known applet */
-                    /*await*/ this.pullLatestAppletInfos();
+                    await this.pullLatestAppletInfos();
                     /** */
                     this._listerToShow = "tools-option";
                     const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
