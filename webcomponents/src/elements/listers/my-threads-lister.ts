@@ -81,8 +81,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       //title = latestThreadName(thread.title, thread.pp, this._zvm);
       const curSubjectId = intoAnyId(thread.pp.subject.address);
       const latestSubjectId = this._zvm.perspective.getLatestSubject(curSubjectId);
-      const latestSubject = this._zvm.perspective.subjects.get(latestSubjectId.b64)!;
-      title = latestSubject.name;
+      const latestSubject = this._zvm.perspective.subjects.get(latestSubjectId.b64);
+      title = latestSubject? latestSubject.name : thread.pp.subject.name;
 
       const maybeUnreadThread = this.perspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;

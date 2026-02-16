@@ -223,10 +223,10 @@ export class AnyIdMap<T> extends Map<HoloHashB64, T> {}
 export function latestThreadName(threadTitle: string, pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
   const curSubjectId = intoAnyId(pp.subject.address);
   const subjectType = pp.subject.typeName as SpecialSubjectType;
-  let subjectName = "unknown thread";
-
   const latestSubjectId = threadsZvm.perspective.getLatestSubject(curSubjectId);
   const latestSubject = threadsZvm.perspective.subjects.get(latestSubjectId.b64);
+  //console.debug("latestThreadName", subjectType, latestSubject);
+  let subjectName = pp.subject.name;
   if (!latestSubject) {
     if (subjectType == SpecialSubjectType.SemanticTopic) {
       let pair = threadsZvm.perspective.semanticTopics.get(ActionId.from(latestSubjectId));
@@ -245,7 +245,7 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
       }
     }
   }
-  //console.log("latestThreadName", curSubjectId.short, latestSubjectId.short, threadsZvm.perspective.subjects);
+  //console.log("latestThreadName", curSubjectId.b64, latestSubjectId.b64, threadsZvm.perspective.subjects);
   return `${determineSubjectPrefix(subjectType)} ${subjectName}: ${threadTitle}`;
 }
 
@@ -254,6 +254,12 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
 export function determineSubjectPrefix(type: SpecialSubjectType) {
   switch (type) {
     /** -- special types -- */
+    case SpecialSubjectType.Asset:
+      return `📑`;
+      break;
+    case SpecialSubjectType.Applet:
+      return `🛠`;
+      break;
     case SpecialSubjectType.ParticipationProtocol:
       return `🧵`;
       break;

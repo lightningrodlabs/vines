@@ -1333,7 +1333,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async publishCommentThread(request: CommentRequest) {
     const subject: Subject = {
-      address: request.subjectId.b64,
+      address: request.subjectHashB64,
       name: request.subjectName,
       typeName: request.subjectType,
       appletId: getThisAppletId(this.weServices),
@@ -1345,7 +1345,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       limitations: defaultLimitations(),
       moderation: defaultModeration(),
     };
-    console.debug("publishCommentThread() appletId", subject.appletId, request.subjectId.b64);
+    console.debug("publishCommentThread() appletId", subject.appletId, request.subjectHashB64);
     const [_ts, ppAh] = await this._dvm.threadsZvm.publishParticipationProtocol(pp);
     return ppAh;
   }
@@ -1884,15 +1884,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (maybeCommentThread != null) {
           hasUnreadComments = this.threadsPerspective.unreads.has(maybeCommentThread);
         }
-        const commentClickedEvent = {
-          detail: {
+        const commentRequest: CommentRequest = {
             maybeCommentThread,
-            subjectId: this._selectedThreadHash,
+            subjectHashB64: this._selectedThreadHash.b64,
             subjectType: SpecialSubjectType.ParticipationProtocol,
             subjectName: thread!.title,
             viewType: "side"
-          }, bubbles: true, composed: true
-        } as CustomEvent<CommentRequest>;
+        };
+        const commentClickedEvent = {detail: commentRequest,  bubbles: true, composed: true} as CustomEvent<CommentRequest>;
         //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
         if (hasUnreadComments) {
           commentButton = html`

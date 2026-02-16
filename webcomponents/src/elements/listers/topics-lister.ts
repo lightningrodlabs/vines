@@ -72,7 +72,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
       detail: {
         maybeCommentThread,
-        subjectId: topicAh,
+        subjectHashB64: topicAh.b64,
         subjectType: SpecialSubjectType.SemanticTopic,
         subjectName,
         viewType: "side"

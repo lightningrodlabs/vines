@@ -843,7 +843,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async publishParticipationProtocol(pp: ParticipationProtocol): Promise<[Timestamp, ActionId]> {
-        console.log("publishParticipationProtocol() appletId", pp.subject.appletId);
+        console.log("publishParticipationProtocol() appletId", pp.subject.appletId, pp.subject.name);
         const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         return [ts, new ActionId(pp_ah)];
     }

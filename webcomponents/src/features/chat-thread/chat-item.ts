@@ -140,7 +140,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
       detail: {
         maybeCommentThread,
-        subjectId: this.hash,
+        subjectHashB64: this.hash.b64,
         subjectType,
         subjectName,
         viewType: viewType? viewType : "side"

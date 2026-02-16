@@ -3,6 +3,7 @@ import {AgentId} from "@ddd-qc/cell-proxy";
 import {DM_SUBJECT_TYPE_NAME, SEMANTIC_TOPIC_TYPE_NAME} from "./bindings/threads.types";
 import {WAL} from "@theweave/api";
 import {NotifiableEvent, ThreadsNotification} from "./viewModels/threads.materialize";
+import {HoloHashB64} from "@holochain/client";
 
 // export type ViewFileEvent = {
 //   dnaId: DnaId,
@@ -49,7 +50,7 @@ export type EditTopicRequest = {
 /** */
 export type CommentRequest = {
   maybeCommentThread: ActionId | null,
-  subjectId: AnyId,
+  subjectHashB64: HoloHashB64,
   subjectType: string,
   subjectName: string,
   viewType: string,

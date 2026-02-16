@@ -10,7 +10,7 @@ import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
 import {DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
-import {determineSubjectName, weaveUrlToWal, hrl2Id} from "../../utils";
+import {weaveUrlToWal, hrl2Id} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
 import {FilesDvm} from "@ddd-qc/files";
 import {SpecialSubjectType} from "../../events";
@@ -50,14 +50,15 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       const wal0 = weaveUrlToWal(wurl);
       const [dnaId, dhtId] = hrl2Id(wal0.hrl);
       const attLocInfo = await this.weServices!.assets.assetInfo(wal0);
-      const subject: Subject = {
+        console.debug("attLocInfo", attLocInfo);
+        const subject: Subject = {
         address: dhtId.b64,
-        name: "",
+        name: attLocInfo!.assetInfo.name,
         typeName: SpecialSubjectType.Asset,
         dnaHashB64: dnaId.b64,
         appletId: new EntryId(attLocInfo!.appletHash).b64,
       }
-      subject.name = determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices!);
+      //subject.name = attLocInfo? attLocInfo.assetInfo.name : determineSubjectName(subject, this._dvm.threadsZvm, this._filesDvm, this.weServices!);
       console.log("@create event subject", subject.name, subject.appletId);
       const pp: ParticipationProtocol = {
         purpose,

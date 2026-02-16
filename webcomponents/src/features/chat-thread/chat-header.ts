@@ -1,19 +1,23 @@
 import {css, html, TemplateResult} from "lit";
-import {customElement, property} from "lit/decorators.js";
+import {customElement, property, state} from "lit/decorators.js";
 import {
-  ActionId,
-  AgentId, AnyId,
-  DnaElement,
-  intoAnyId,
+    ActionId,
+    AgentId, AnyId,
+    DnaElement, DnaId, EntryId,
+    intoAnyId, intoDhtId,
 } from "@ddd-qc/lit-happ";
 import {determineSubjectPrefix, latestThreadName} from "../../utils";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {renderAvatar, renderModerators, renderProfileAvatar} from "../../render";
-import {beadJumpEvent, ShowRulesEvent, SpecialSubjectType} from "../../events";
+import {beadJumpEvent, CommentRequest, ShowRulesEvent, SpecialSubjectType} from "../../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../../styles";
 import {toasty} from "../../toast";
 import {PropertyValues} from "lit/development";
+import {consume} from "@lit/context";
+import {weClientContext} from "../../contexts";
+import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
+import {AppletInfo, WAL} from "@theweave/api";
 
 
 /**
@@ -26,11 +30,16 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
   }
 
+  @consume({context: weClientContext, subscribe: true})
+  weServices!: WeServicesEx;
+
   /** Hash of thread to display */
   @property() threadHash?: ActionId;
   private _latestSubjectId?: AnyId;
 
   @property() groupNames?: string[];
+
+  @state() _appletInfo?: AppletInfo;
 
   // /** */
   // override async getUpdateComplete(): Promise<boolean> {
@@ -38,7 +47,6 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   //   const superOk = await super.getUpdateComplete();
   //   return superOk;
   // }
-
 
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
@@ -50,6 +58,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       if (thread) {
         console.log("<chat-header>.willUpdate() get latest", !!this._dvm);
         this._latestSubjectId = this._dvm.threadsZvm.perspective.getLatestSubject(intoAnyId(thread.pp.subject.address));
+          if (this.weServices) {
+             this.weServices.appletInfo(thread.pp.subject.appletId).then(appletInfo => {this._appletInfo = appletInfo});
+          }
       }
     }
   }
@@ -80,9 +91,9 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
               ${copyBtn}
               <ui5-button icon="number-sign" design="Transparent" tooltip=${msg("AgentPubKey") + ": " + otherAgent.b64}
                           @click=${(_e: any) => {
-      navigator.clipboard.writeText(otherAgent.b64);
-      toasty(msg("Copied AgentPubKey to clipboard"));
-    }}>
+                              navigator.clipboard.writeText(otherAgent.b64);
+                              toasty(msg("Copied AgentPubKey to clipboard"));
+                            }}>
               </ui5-button>
           </h2>
           <div class="subtext">
@@ -117,7 +128,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       const pair = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(this._latestSubjectId!.b64))!;
       maybeSemanticTopicTitle = pair[0];
     }
-    //console.debug("subjectHashType", subjectHashType);
+    //console.debug("subjectHashType", thread.pp.subject.typeName);
     const subjectId = ActionId.from(this._latestSubjectId!);
     let title: TemplateResult<1>;
     let subText: TemplateResult<1>;
@@ -126,7 +137,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
     const threadName = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
     if (maybeSemanticTopicTitle) {
-      title = html`${msg("Welcome to")} ${threadName} !`;
+      title = html`<span class="subject-name">${msg("Welcome to")} ${threadName} !</span> `;
       subText = html`${msg("This is the start of a channel about topic")} ${thread.title}`;
     } else {
       console.debug("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
@@ -136,7 +147,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         title = html`
             <div style="max-width:100%;">
                 <span>${msg("About")}</span> 
-                <span class="subjectName">${threadName}</span> 
+                <span class="subject-name">${threadName}</span> 
                 <div style="display: flex; flex-direction: row; gap: 8px;"><span>${msg("from")}</span> ${avatarElem}</div> 
             </div>`;
         subText = html`
@@ -148,32 +159,66 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
               </span>
             </div>`;
       } else {
-        title = html`${msg("About")} <span class="subjectName">${threadName}</span>`;
-        subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName}: ${thread.title}`;
+          let wal: WAL | undefined = undefined;
+          let fromElem = html``;
+          if (this.weServices) {
+              wal = {
+                  hrl: intoHrl(new DnaId(thread?.pp.subject.dnaHashB64), intoDhtId(thread?.pp.subject.address)),
+                  context: undefined
+              };
+              fromElem = html`${msg('from Tool:')} <span class="link" @click=${() => { /*await*/ this.weServices.openAppletMain(new EntryId(thread?.pp.subject.appletId).hash, wal)}}>
+                  ${this._appletInfo?.appletName}
+              </span>`;
+          }
+          title = html`
+              <div>
+                  ${msg("About")}
+                  <span class="subject-name ${wal? "link" : ""}" @click=${() => {if (wal) this.weServices.openAsset(wal, 'side')}}>${threadName}</span>
+              </div>`;
+          subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName} ${fromElem}`;
       }
     }
 
-    //const rulesStr = truncate(rules2str(thread.pp.rules), 200, true);
+    const toSideBtn = html`
+        <ui5-button    tooltip=${msg("Open in side view")} icon="navigation-right-arrow" design="Transparent"
+                       @click=${(_e: any) => {
+                           this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
+                               detail: {
+                                   maybeCommentThread: this.threadHash!,
+                                   subjectHashB64: thread?.pp.subject.address,
+                                   subjectType: thread?.pp.subject.typeName,
+                                   subjectName: thread?.pp.subject.name,
+                                   viewType: "side"
+                               },
+                               bubbles: true,
+                               composed: true,
+                           }));
+                       }}></ui5-button>`;
+
     /** render all */
     return html`
         <div id="chat-header">
           <div class="rounded-emoji">${subjectPrefix}</div>
-          <h2>${title} ${copyBtn}</h2>
+          <h2>
+            ${title}
+            ${copyBtn}
+            ${toSideBtn}
+          </h2>
           <div class="subtext">${subText}</div>
           <!-- <div class="subtext">Purpose: ${thread.title}</div> -->
           <div class="subtext">
               <span class="rules" 
                     @click=${(e: any) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {
-        detail: {
-          ppAh: this.threadHash!,
-          x: e.clientX,
-          y: e.clientY
-        }, bubbles: true, composed: true
-      }));
-    }}>
+                      e.preventDefault();
+                      e.stopPropagation();
+                      this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {
+                        detail: {
+                          ppAh: this.threadHash!,
+                          x: e.clientX,
+                          y: e.clientY
+                        }, bubbles: true, composed: true
+                      }));
+                    }}>
                 ${msg("Rules")}
               </span>
               |
@@ -214,10 +259,10 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         
         h2 {
           line-height: 44px;
-          margin: 3px 0px 3px 0px;
+          /*margin: 3px 0px 3px 0px;*/
           display: flex; 
           align-items: center; 
-          gap: 15px;
+          /*gap: 15px;*/
         }
         h2 > ui5-button {
           display: none;
@@ -250,7 +295,28 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           /*margin-left:10px;*/
           margin-bottom:5px;
           align-items: center;
-        }        
+        }
+
+          .subject-name {
+              font-style: italic;
+              background: #fbfbfb9c;
+              /*padding: 4px;*/
+              margin-left: 10px;
+              margin-right: 15px;
+              white-space: nowrap;
+              /*overflow: hidden;*/
+              text-overflow: ellipsis;
+              /*display: block;*/
+          }
+
+          
+          .link {
+              cursor: pointer;
+          }
+          
+          .link:hover {
+              text-decoration: underline;
+          }
       `,];
   }
 }

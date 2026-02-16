@@ -6,7 +6,7 @@ import {msg} from "@lit/localize";
 import {ActionId, AnyId, EntryId, EntryIdMap, intoDhtId, intoLinkableId, ZomeElement} from "@ddd-qc/lit-happ";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {GetStrategy} from "@holochain-open-dev/core-types";
-import {EntryHashB64} from "@holochain/client";
+import {EntryHashB64, HoloHashB64} from "@holochain/client";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -105,13 +105,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   /** */
   onClickComment(
       maybeCommentThread: ActionId | null,
-      subjectHash: AnyId,
+      subjectHashB64: HoloHashB64,
       subjectType: string,
       subjectName: string,
       viewType?: string,
       ) {
     const request: CommentRequest = {
-      maybeCommentThread, subjectId: subjectHash, subjectType, subjectName,
+      maybeCommentThread, subjectHashB64, subjectType, subjectName,
       viewType: viewType? viewType : "side",
     };
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
@@ -292,13 +292,13 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       if (isUnread) {
         commentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
                                              design="Negative" class=${this._isHovered.get(pathEh)? "" : "transBtn"}
-                                             @click="${(_e: any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
+                                             @click="${(_e: any) => this.onClickComment(maybeCommentThread, pathEh.b64, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`;
       } else {
         if (this._isHovered.get(pathEh)) {
           commentButton = html`
               <ui5-button icon=${maybeCommentThread? "comment" : "sys-add"} tooltip="${maybeCommentThread? msg("View comment thread") : msg("Create new comment thread")}"
                           design="Transparent"
-                          @click="${(_e: any) => this.onClickComment(maybeCommentThread, pathEh, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
+                          @click="${(_e: any) => this.onClickComment(maybeCommentThread, pathEh.b64, SpecialSubjectType.SubjectType, subjectType)}"></ui5-button>`
         }
       }
 

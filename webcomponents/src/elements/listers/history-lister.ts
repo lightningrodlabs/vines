@@ -62,7 +62,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
       detail: {
         maybeCommentThread,
-        subjectId: ppAh,
+        subjectHashB64: ppAh.b64,
         subjectType: SpecialSubjectType.ParticipationProtocol,
         subjectName,
         viewType: "side"
@@ -75,7 +75,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
     this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
       detail: {
         maybeCommentThread,
-        subjectId: topicAh,
+        subjectHashB64: topicAh.b64,
         subjectType: SpecialSubjectType.SemanticTopic,
         subjectName,
         viewType: "side"
