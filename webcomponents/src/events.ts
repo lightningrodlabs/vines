@@ -111,12 +111,16 @@ export enum MainViewType {
   MultiThread = "MultiThread",
 }
 
+/** */
 export function notification2JumpEvent(notif: ThreadsNotification): CustomEvent<JumpEvent> {
+  //console.debug("notification2JumpEvent()", notif);
   let detail: JumpEvent = {
     type: MainViewType.Thread,
     history: undefined,
   };
-  if (NotifiableEvent.Fork === notif.event || NotifiableEvent.NewDmThread === notif.event || NotifiableEvent.Banned) {
+  if (   NotifiableEvent.Fork === notif.event
+      || NotifiableEvent.NewDmThread === notif.event
+      || NotifiableEvent.Banned === notif.event) {
     detail.thread = notif.content;
   } else {
     detail.bead = notif.content;

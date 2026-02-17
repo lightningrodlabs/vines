@@ -316,8 +316,9 @@ export class VinesApp extends HappMultiElement {
   async onJump(e: CustomEvent<JumpEvent>) {
     //console.log("<vines-app>.onJump()", e.detail);
     if ((e.detail.thread || e.detail.bead) && this.appletView && this.appletView.type != "main" && this._weServices) {
-      //  const wal = { hrl: [this._weProfilesDvm, e.detail.thread ?? e.detail.bead] };
-      /* await */this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!/*, wal*/));
+      // FIXME: get correct threadsDvm
+      const wal: WAL = { hrl: [this.threadsDvm(0).cell.address.dnaId.hash, e.detail.thread? e.detail.thread.hash : e.detail.bead!.hash], context: undefined };
+      /* await */this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!), wal);
     }
   }
 
