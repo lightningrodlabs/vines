@@ -836,8 +836,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             appletId: THIS_APPLET_ID.b64,
             topic: {title},
         };
-        const eh = await this.zomeProxy.publishSemanticTopic(input);
-        return new ActionId(eh);
+        const ah = await this.zomeProxy.publishSemanticTopic(input);
+        return new ActionId(ah);
     }
 
 

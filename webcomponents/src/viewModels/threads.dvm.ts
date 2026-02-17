@@ -40,6 +40,10 @@ import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {THIS_APPLET_ID} from "../contexts";
+import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {toasty} from "../toast";
+import {MAIN_TOPIC_ID} from "../utils";
 
 
 /** */
@@ -672,13 +676,87 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
+  async importDiscord(external: any) {
+      // if (!canPublish) {
+      //     this.authorshipZvm.clear();
+      //     this.profilesZvm.clear();
+      //     this.threadsZvm.clear();
+      // }
+      const channel = external["channel"];
+      if (channel.type != "GuildTextChat") {
+          toasty("Abort importing Discord non-text channel");
+          return;
+      }
+      console.debug("ThreadsDvm.importDiscord()", channel);
+
+      const topicHash = channel.category
+          ? await this.threadsZvm.publishSemanticTopic(channel.category)
+          : MAIN_TOPIC_ID;
+      await delay(100);  // wait for signals to process
+      const [_ppTs, ppAh] = await this.threadsZvm.publishThreadFromSemanticTopic(
+          /*this.weServices? new EntryId(this.weServices.appletIds[0]!) :*/ THIS_APPLET_ID,
+          topicHash,
+          channel.name,
+          defaultLimitations(),
+          defaultModeration(),
+      );
+      await delay(100); // wait for signals to process
+      // Map previous profiles by discordId (useful when importing multiple channels)
+      const authors = new Map<string, AgentId>();
+      for (const [actionId, [profile, _ts]] of this.profilesZvm.perspective.profiles.entries()) {
+          if (profile.fields["discordId"]) {
+              authors.set(profile.fields["discordId"], this.profilesZvm.perspective.getProfileAgent(actionId)!);
+          }
+      }
+      // Publish beads & Profiles
+      //const authors = new Map<string, AgentId>();
+      let prevBeadAh: ActionId | undefined = undefined;
+      for (const message of external["messages"]) {
+          const author  = message["author"];
+          let agentId: AgentId | undefined = authors.get(author.id);
+
+              if (!agentId) {
+                  agentId = await AgentId.random();
+                  const profile: Profile = {
+                      nickname: author.nickname,
+                      fields: {lang: "en", avatarUrl: author.avatarUrl, discordId: author.id}
+                  };
+                  if (author.color) {
+                      profile.fields["color"] = author.color;
+                  }
+                  await this.profilesZvm.createProfile(profile, agentId);
+                  authors.set(author.id, agentId);
+              }
+
+          const timestamp = Date.parse(message["timestamp"])/* / 1000*/;
+          const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
+          console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, timestamp, agentId.b64);
+          const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);
+          prevBeadAh = beadAh;
+
+          await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp, agentId, false);
+
+          //for (const message of external["attachments"]) {}
+          //for (const message of external["reactions"]) {}
+
+      }
+  }
+
   /** */
   async importPerspective(json: string, canPublish: boolean) {
-    //console.debug("Dvm.importPerspective()", json);
+    console.debug("Dvm.importPerspective() size:", json.length);
     this._perspective.importing = true;
     this.notifySubscribers();
 
     const external = JSON.parse(json) as any;
+
+    if (external["guild"]) {
+        console.log("Assuming Discord import");
+        await this.importDiscord(external);
+        /** */
+        this.importDone();
+        return;
+    }
 
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
