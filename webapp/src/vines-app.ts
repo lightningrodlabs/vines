@@ -416,7 +416,6 @@ export class VinesApp extends HappMultiElement {
       console.log("<vines-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
-
             view = html`
         <vines-page
                 .wal=${(this.appletView as any).wal}
@@ -524,7 +523,14 @@ export class VinesApp extends HappMultiElement {
           console.error("Unknown applet-view type", this.appletView);
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
-    }
+    } else {
+        view = html`
+        <vines-page
+                .appProxy=${appProxy}
+                @dumpNetworkLogs=${this.onDumpNetworkLogs}
+                @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
+        ></vines-page>`;
+      }
 
     /** Import profile from Moss */
     let guardedView = view;

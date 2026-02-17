@@ -226,6 +226,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (maybeEdit) {
       maybeEdit.focus();
     }
+    /** Make sure input stays focus after committing */
+    this.focusInput();
   }
 
 
