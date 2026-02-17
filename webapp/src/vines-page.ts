@@ -238,7 +238,7 @@ import {
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
 
-import {FrameNotification, Hrl, WAL} from "@theweave/api";
+import {FrameNotification, Hrl, PeerStatusUpdate, WAL} from "@theweave/api";
 import {consume} from "@lit/context";
 
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
@@ -995,6 +995,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** Register callback */
       try {
         this.weServices.onBeforeUnload(() => this.onBeforeUnload());
+        this.weServices.onPeerStatusUpdate((peerStatusList: PeerStatusUpdate) => {
+            //console.log("<vines-page>.onPeerStatusUpdate()", Object.keys(peerStatusList).length);
+            const livePeers = this._dvm.livePeers.map(id => id.b64);
+            for (const [peer, _peerStatus] of Object.entries(peerStatusList)) {
+                const agentId = new AgentId(peer);
+                if (!livePeers.includes(peer)) {
+                    console.log("Adding livePeer from PeerStatus", agentId.short);
+                    this._dvm.livePeers.push(agentId);
+                    this._dvm.probeAll(GetStrategy.Local);
+                }
+            }
+        });
         setLocale(this.weServices.getLocale());
         this.weServices.onLocaleChange((locale: string) => {
             console.log("<vines-page>.onLocaleChange()", locale);

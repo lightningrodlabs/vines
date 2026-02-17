@@ -299,7 +299,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     /** */
     async handleProfilesSignal(zomeSignal: ZomeSignal, from: AgentId) {
-        //console.debug("ThreadsDvm.handleProfilesSignal()", zomeSignal);
+        //console.debug("ThreadsDvm.handleProfilesSignal()", zomeSignal, this._livePeers.length);
         let all: any[] = [];
         for (let pulse of zomeSignal.pulses) {
             /** -- Handle Signal according to type -- */
@@ -309,11 +309,12 @@ export class ThreadsDvm extends DnaViewModel {
             }
             if (ZomeSignalProtocolType.Link in pulse) {
                 const linkPulse = materializeLinkPulse(pulse.Link as LinkPulse, Object.values(ProfilesAltLinkType));
+                //console.debug("ThreadsDvm.handleProfilesSignal() linkPulse", linkPulse);
                 switch(linkPulse.link_type) {
                     case ProfilesAltLinkType.PathToAgent: {
                         const peer = AgentId.from(linkPulse.target);
                         if (!this._livePeers.map(id => id.b64).includes(peer.b64)) {
-                            //console.debug("ThreadsDvm Adding livePeer", peer.short);
+                            console.debug("ThreadsDvm Adding livePeer", peer.short);
                             this._livePeers.push(peer);
                         }
                     }
