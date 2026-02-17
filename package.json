@@ -152,7 +152,7 @@
     "@theweave/api"                 : "=0.6.6",
     "@theweave/elements"            : "=0.6.3",
     "@ddd-qc/cell-proxy"            : "=0.34.3",
-    "@ddd-qc/lit-happ"              : "=0.34.4",
+    "@ddd-qc/lit-happ"              : "=0.34.5",
     "@ddd-qc/we-utils"              : "=0.34.7",
     "@ddd-qc/profiles-dvm"          : "=0.34.3",
     "@ddd-qc/path-explorer"         : "=1.34.3",

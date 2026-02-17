@@ -5,8 +5,8 @@ import {
     AgentIdMap,
     delay,
     DnaViewModel,
-    EntryPulse, LinkPulse,
-    materializeEntryPulse, materializeLinkPulse,
+    EntryPulse,
+    materializeEntryPulse,
     TipProtocol,
     TipProtocolVariantAppCustom,
     ZomeSignal,
@@ -40,7 +40,6 @@ import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
 import {GetStrategy} from "@holochain-open-dev/core-types";
-import {ProfilesAltLinkType} from "@ddd-qc/profiles-dvm/dist/bindings/profilesAlt.integrity";
 
 
 /** */
@@ -170,29 +169,33 @@ export class ThreadsDvm extends DnaViewModel {
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
       this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
-    this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
     console.log("ThreadsDvm.initializePerspectiveFromLocal() override persp =", this.perspective)
   }
 
-
+  /** */
+  unstorePresence(agent: AgentId) {
+    this._perspective.agentPresences.delete(agent);
+  }
+  
   /**
    * If thread is not provided we just know peer is online and assume still at the same location.
    * Peer can be online but not in any thread (thread = null)
    */
-  private storePresence(from: AgentId, thread?: ActionId | null) {
+  storePresence(from: AgentId, timeMs: number, thread?: ActionId | null) {
+    //console.debug("storePresence()", from.short, timeMs);
     if (this.cell.address.agentId.equals(from)) {
       return;
     }
     if (thread !== undefined && thread !== null && !(thread instanceof ActionId)) {
-      let x = (thread as ActionId).b64
+      let x = (thread as ActionId).b64;
       if (x) {
-        thread = new ActionId(x)
+        thread = new ActionId(x);
       } else {
-        return
+        return;
       }
     }
 
-    const currentTimeInSeconds: number = Math.floor(Date.now() / 1000);
+    const currentTimeInSeconds: number = Math.floor(timeMs / 1000);
     let newest: [number, ActionId | null] = [currentTimeInSeconds, thread !== undefined? thread : null];
     let current = this._perspective.agentPresences.get(from);
     console.debug("storePresence()", from.short, currentTimeInSeconds, newest, current, thread);
@@ -217,8 +220,9 @@ export class ThreadsDvm extends DnaViewModel {
         current = newest;
       }
     }
+    //console.debug("storePresence() STORED");
     this._perspective.agentPresences.set(from, current);
-    //this._livePeers = this.profilesZvm.perspective.agents; // TODO: implement real presence logic
+    /** */
     this.notifySubscribers();
   }
 
@@ -239,7 +243,7 @@ export class ThreadsDvm extends DnaViewModel {
     const from = new AgentId(signal.from);
 
     /* Update agent's known presence */
-    this.storePresence(from);
+    this.storePresence(from, Date.now());
 
     /** Handle signal according to target zome */
     if (appSignal.zome_name == ProfilesAltZvm.DEFAULT_ZOME_NAME) {
@@ -307,23 +311,23 @@ export class ThreadsDvm extends DnaViewModel {
                await this.handleTip(pulse.Tip as TipProtocol, from);
                continue;
             }
-            if (ZomeSignalProtocolType.Link in pulse) {
-                const linkPulse = materializeLinkPulse(pulse.Link as LinkPulse, Object.values(ProfilesAltLinkType));
-                //console.debug("ThreadsDvm.handleProfilesSignal() linkPulse", linkPulse);
-                switch(linkPulse.link_type) {
-                    case ProfilesAltLinkType.PathToAgent: {
-                        const peer = AgentId.from(linkPulse.target);
-                        if (!this._livePeers.map(id => id.b64).includes(peer.b64)) {
-                            console.debug("ThreadsDvm Adding livePeer", peer.short);
-                            this._livePeers.push(peer);
-                        }
-                    }
-                        break;
-                    default:
-                        break;
-                }
-                continue;
-            }
+            // if (ZomeSignalProtocolType.Link in pulse) {
+            //     const linkPulse = materializeLinkPulse(pulse.Link as LinkPulse, Object.values(ProfilesAltLinkType));
+            //     //console.debug("ThreadsDvm.handleProfilesSignal() linkPulse", linkPulse);
+            //     switch(linkPulse.link_type) {
+            //         case ProfilesAltLinkType.PathToAgent: {
+            //             const peer = AgentId.from(linkPulse.target);
+            //             if (!this._livePeers.map(id => id.b64).includes(peer.b64)) {
+            //                 console.debug("ThreadsDvm Adding livePeer", peer.short);
+            //                 this._livePeers.push(peer);
+            //             }
+            //         }
+            //             break;
+            //         default:
+            //             break;
+            //     }
+            //     continue;
+            // }
         }
         await Promise.all(all);
         //console.debug("ThreadsDvm.handleDeliverySignal() notifySubscribers");
@@ -477,15 +481,15 @@ export class ThreadsDvm extends DnaViewModel {
             console.warn(`TIP APP STRING: "${appTip.data}"`);
             //this.threadsZvm.storeSubject(appTip.data!);
             break;
-          case "where":
+            case "where":
             /** Peer is asking for our location */
-            if (appTip.data) this.storePresence(from, appTip.data); // store their location
+            if (appTip.data) this.storePresence(from, Date.now(), appTip.data); // store their location
             const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
             const serTip = this._encoder.encode(locTip);
             await this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
             break;
           case "location":
-            this.storePresence(from, appTip.data);
+            this.storePresence(from, Date.now(), appTip.data);
             break;
           case "notification":
             // const notifTip: ThreadsNotificationTip = appTip.data;
@@ -512,7 +516,13 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
-  /** Return list of agents with known presence not older than 5 minutes */
+  /** */
+  override get livePeers() {
+      return this.allCurrentOthers()
+  }
+
+
+  /** Return the list of agents with a known presence not older than 5 minutes */
   allCurrentOthers(startingAgents?: AgentId[], thread?: ActionId): AgentId[] {
     const agents = startingAgents? startingAgents : Array.from(this._perspective.agentPresences.keys());
     //console.debug("allCurrentOthers() ", agents.length, Array.from(this._perspective.agentPresences.keys()), thread, startingAgents);
@@ -531,7 +541,7 @@ export class ThreadsDvm extends DnaViewModel {
             console.log("pair[1]", pair[1])
             console.log("thread", thread)
             console.log("pair[1] instanceof AgentId", pair[1] instanceof AgentId)
-            return false
+            return false;
           }
         }
         return (currentTime - pair[0]) < 5 * 60; // 5 minutes

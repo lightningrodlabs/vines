@@ -998,12 +998,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.weServices.onPeerStatusUpdate((peerStatusList: PeerStatusUpdate) => {
             //console.log("<vines-page>.onPeerStatusUpdate()", Object.keys(peerStatusList).length);
             const livePeers = this._dvm.livePeers.map(id => id.b64);
-            for (const [peer, _peerStatus] of Object.entries(peerStatusList)) {
+            for (const [peer, peerStatus] of Object.entries(peerStatusList)) {
                 const agentId = new AgentId(peer);
-                if (!livePeers.includes(peer)) {
-                    console.log("Adding livePeer from PeerStatus", agentId.short);
-                    this._dvm.livePeers.push(agentId);
+                //console.debug("<vines-page>.onPeerStatusUpdate()", peerStatus.status, peerStatus.lastSeen);
+                if (!livePeers.includes(peer) && peerStatus.status == "online") {
+                    //console.log("Adding livePeer from PeerStatus", agentId.short);
+                    this._dvm.storePresence(agentId, peerStatus.lastSeen);
                     this._dvm.probeAll(GetStrategy.Local);
+                } else {
+                  if (livePeers.includes(peer) && peerStatus.status == "offline") {
+                    this._dvm.unstorePresence(agentId);
+                  }
                 }
             }
         });
