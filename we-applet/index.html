@@ -52,11 +52,22 @@
 
     <script type="module">
       import setupThreadsApplet from "./src/index.ts";
+
+      let vinesReady = false;
       setupThreadsApplet().then((happElem) => {
           console.log("Vines we-applet setup DONE - Adding in HappElement");
           document.body.append(happElem);
+          vinesReady = true;
           console.log("Vines we-applet HappElement Added");
       });
+
+      setTimeout(() => {
+        if (!vinesReady) {
+          console.error("Vines we-applet failed to load in a timely manner. Reloading page.");
+          window.location.reload();
+        }
+      }, 10 * 1000);
+
     </script>
 
     <div class="spinner"></div>
