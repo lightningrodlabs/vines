@@ -730,7 +730,7 @@ export class ThreadsDvm extends DnaViewModel {
 
           const timestamp = Date.parse(message["timestamp"])/* / 1000*/;
           const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
-          console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, timestamp, agentId.b64);
+          console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, new Date(timestamp).toLocaleString(), agentId.b64);
           const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);
           prevBeadAh = beadAh;
 

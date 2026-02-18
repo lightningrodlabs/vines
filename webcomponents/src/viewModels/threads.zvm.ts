@@ -669,7 +669,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             moderation: defaultModeration(),
             subject,
         }
-        console.debug("ThreadsZvm.publishEditThread() appletId", pp.subject.appletId);
+        //console.debug("ThreadsZvm.publishEditThread() appletId", pp.subject.appletId);
         const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         /** */
         return [ts, new ActionId(pp_ah)];
@@ -678,7 +678,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async editMyTextBead(beadAh: ActionId, value: string) {
-        console.log("threadsZvm.editMyTextBead()", beadAh, value);
+        //console.debug("threadsZvm.editMyTextBead()", beadAh, value);
         /** make sure it's my text bead */
         const beadInfo = this._perspective.getBeadInfo(beadAh);
         if (!beadInfo || beadInfo.beadType != ThreadsEntryType.TextBead || !beadInfo.author.equals(this.cell.address.agentId)) {
@@ -2117,8 +2117,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         console.debug("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.b64, typedMat);
         /** Store Bead */
         const maybe = await this.getOriginalAuthor(beadAh);
-        const author = maybe ? new AgentId(maybe[1]) : pulse.author;
-        await this.storeTypedBead(beadAh, typedMat, beadType, pulse.ts, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
+        let author = pulse.author;
+        let creationTime = pulse.ts;
+        if (maybe) {
+            creationTime = maybe[0] * 1000;
+            author = new AgentId(maybe[1]);
+        }
+        await this.storeTypedBead(beadAh, typedMat, beadType, creationTime, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
         // /** Dev test: Signal a 2nd entry */
         // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
         //   pulse.ah = await ActionId.random();
