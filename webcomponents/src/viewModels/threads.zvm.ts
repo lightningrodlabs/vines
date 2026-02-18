@@ -1186,7 +1186,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean) {
-        console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
+        //console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
         /** pre */
         if (this._perspective.getBeadInfo(beadAh)) {
             if (!this._perspective.isPersistent(beadAh.b64) && isPersistent) {
@@ -1228,7 +1228,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         } else {
             const bead = (typedBead as TypedBaseBeadMat).bead;
             beadInfo = {creationTime, author, beadType, bead} as BeadInfo;
-            console.log("storeTypedBead()", beadAh, bead.ppAh, typedBead, author);
+            //console.debug("storeTypedBead()", beadAh, bead.ppAh, typedBead, author);
             /** Check and fetch prevBead */
             const prev = this._perspective.beads.get(beadInfo.bead.prevBeadAh);
             if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {

@@ -713,20 +713,10 @@ export class ThreadsDvm extends DnaViewModel {
       for (const message of external["messages"]) {
           const author  = message["author"];
           let agentId: AgentId | undefined = authors.get(author.id);
-
-              if (!agentId) {
-                  agentId = await AgentId.random();
-                  const profile: Profile = {
-                      nickname: author.nickname,
-                      fields: {lang: "en", avatarUrl: author.avatarUrl, discordId: author.id, imported: "true"}
-                  };
-                  if (author.color) {
-                      profile.fields["color"] = author.color;
-                  }
-                  await this.profilesZvm.createProfile(profile, agentId);
-                  authors.set(author.id, agentId);
-              }
-
+          if (!agentId) {
+              agentId = await this.createProfileForDiscordAuthor(author);
+              authors.set(author.id, agentId);
+          }
           const timestamp = Date.parse(message["timestamp"]);
           const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
           console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, new Date(timestamp).toLocaleString(), agentId.b64);
@@ -736,10 +726,40 @@ export class ThreadsDvm extends DnaViewModel {
           await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp, agentId, false);
 
           //for (const message of external["attachments"]) {}
-          //for (const message of external["reactions"]) {}
 
+          if (message["reactions"]) {
+              for (const reaction of message["reactions"]) {
+                  if (!reaction["emoji"] || !reaction["users"] || reaction["users"].length == 0) {
+                      continue;
+                  }
+                  for (const _user of reaction["users"]) {
+                      // TODO: allow publishing reactions on behalf of others
+                      // let agentId: AgentId | undefined = authors.get(author.id);
+                      // if (!agentId) {
+                      //     agentId = await this.createProfileForDiscordAuthor(user);
+                      //     authors.set(user.id, agentId);
+                      // }
+                      //console.debug("ThreadsDvm.importDiscord() Publishing reaction", reaction["emoji"].name, beadAh.b64);
+                      this.threadsZvm.zomeProxy.publishReaction({bead_ah: beadAh.hash, emoji: reaction["emoji"].name});
+                  }
+              }
+          }
       }
   }
+
+  private async createProfileForDiscordAuthor(author: any): Promise<AgentId> {
+      const agentId = await AgentId.random();
+      const profile: Profile = {
+          nickname: author.nickname,
+          fields: {lang: "en", avatarUrl: author.avatarUrl, discordId: author.id, imported: "true"}
+      };
+      if (author.color) {
+          profile.fields["color"] = author.color;
+      }
+      await this.profilesZvm.createProfile(profile, agentId);
+      return agentId;
+  }
+
 
   /** */
   async importPerspective(json: string, canPublish: boolean) {
