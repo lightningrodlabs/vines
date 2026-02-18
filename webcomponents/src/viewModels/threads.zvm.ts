@@ -903,7 +903,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async fetchUnknownBead(beadAh: ActionId, strategy: GetStrategy/*canNotify: boolean, alternateCreationTime?: Timestamp*/): Promise<void> {
-        console.log("fetchUnknownBead()", beadAh.b64);
+        //console.debug("fetchUnknownBead()", beadAh.b64);
         /** Return info if bead already stored */
         if (this._perspective.getBeadInfo(beadAh) && this._perspective.isPersistent(beadAh.b64)) {
             return;
@@ -2114,7 +2114,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const beadAh = pulse.ah;
         const beadType = pulse.entryType as BeadType;
         const typedMat = materializeTypedBead(typed, beadType);
-        console.debug("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.b64, typedMat);
+        //console.debug("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.b64, typedMat);
         /** Store Bead */
         const maybe = await this.getOriginalAuthor(beadAh);
         let author = pulse.author;

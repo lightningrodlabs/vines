@@ -274,17 +274,17 @@ export class ThreadsDvm extends DnaViewModel {
         case ThreadsEntryType.AnyBead:
         case ThreadsEntryType.EntryBead:
         case ThreadsEntryType.TextBead:
-          console.log("ThreadsDvm.handleThreadsSignal() Bead", entryPulseMat, this._perspective.ackRequests);
+          //console.debug("ThreadsDvm.handleThreadsSignal() Bead", entryPulseMat, this._perspective.ackRequests);
           /** Mark by bead as unshared */
           if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
-            console.log("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
+            //console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
             this._perspective.myUnsharedBeads.add(entryPulseMat.ah.b64);
           }
           /** ack author that we have it */
           if (entryPulseMat.state == "Create"
             && !entryPulseMat.author.equals(this.cell.address.agentId)
             && this._perspective.ackRequests.has(entryPulseMat.ah)) {
-            console.log("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
+            //console.debug("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
             await this.ackAuthor(entryPulseMat.ah.b64);
             this._perspective.ackRequests.delete(entryPulseMat.ah);
           }
@@ -683,8 +683,9 @@ export class ThreadsDvm extends DnaViewModel {
       //     this.threadsZvm.clear();
       // }
       const channel = external["channel"];
-      if (channel.type != "GuildTextChat") {
+      if (channel.type == "DirectTextChat") {
           toasty("Abort importing Discord non-text channel");
+          // FIXME find author with name = channel.name
           return;
       }
       console.debug("ThreadsDvm.importDiscord()", channel);

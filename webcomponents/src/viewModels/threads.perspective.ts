@@ -812,7 +812,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeTypedBeadWithMeta(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: Boolean, isPersistent: boolean, isUnread: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
-    console.log("storeTypedBead()", beadInfo.beadType, beadAh.short, isNew, isPersistent);
+    //console.debug("storeTypedBead()", beadInfo.beadType, beadAh.short, isNew, isPersistent);
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       if (!innerPair) {
@@ -836,7 +836,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   private storeBeadInThread(beadAh: ActionId, beadInfo: BeadInfo, isUnread: boolean, beadType: BeadType) {
     const ppAh = beadInfo.bead.ppAh;
     const creationTime = beadInfo.creationTime;
-    console.log("storeBeadInThread()", ppAh.short, beadType, beadAh.short, creationTime, this.threads.get(ppAh));
+    //console.debug("storeBeadInThread()", ppAh.short, beadType, beadAh.short, creationTime, this.threads.get(ppAh));
     const thread = this.threads.get(ppAh);
     if (!thread) {
       // await this.fetchPp(ppAh);
