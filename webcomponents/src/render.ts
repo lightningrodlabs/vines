@@ -40,7 +40,8 @@ export function renderAvatar(parent: LitElement, profilesZvm: ProfilesAltZvm, ag
  */
 export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null, profile: ProfileMat, size: string, classArg: string = "chatAvatar", slotArg?: string) {
   const initials = getInitials(profile.nickname);
-  const avatarUrl = profile.fields['avatar'];
+  const avatarUrl = profile.fields['avatar'] ?? profile.fields['avatarUrl'];
+  console.debug("renderProfileAvatar() avatarUrl", avatarUrl);
   const slot = slotArg? slotArg : "";
   const avatar = avatarUrl
     ? html`<ui5-avatar size=${size} class=${classArg}>

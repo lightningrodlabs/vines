@@ -709,7 +709,6 @@ export class ThreadsDvm extends DnaViewModel {
           }
       }
       // Publish beads & Profiles
-      //const authors = new Map<string, AgentId>();
       let prevBeadAh: ActionId | undefined = undefined;
       for (const message of external["messages"]) {
           const author  = message["author"];
@@ -719,7 +718,7 @@ export class ThreadsDvm extends DnaViewModel {
                   agentId = await AgentId.random();
                   const profile: Profile = {
                       nickname: author.nickname,
-                      fields: {lang: "en", avatarUrl: author.avatarUrl, discordId: author.id}
+                      fields: {lang: "en", avatarUrl: author.avatarUrl, discordId: author.id, imported: "true"}
                   };
                   if (author.color) {
                       profile.fields["color"] = author.color;
@@ -728,7 +727,7 @@ export class ThreadsDvm extends DnaViewModel {
                   authors.set(author.id, agentId);
               }
 
-          const timestamp = Date.parse(message["timestamp"])/* / 1000*/;
+          const timestamp = Date.parse(message["timestamp"]);
           const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
           console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, new Date(timestamp).toLocaleString(), agentId.b64);
           const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);

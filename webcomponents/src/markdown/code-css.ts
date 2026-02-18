@@ -4,6 +4,7 @@ export const codeStyles = css`
   pre code.hljs {
     display: block;
     overflow-x: auto;
+      text-wrap: auto;
     padding: 1em;
     /*background: rgb(234, 234, 234);*/
     border: 1px solid rgba(125, 125, 125, 0.64)
