@@ -67,10 +67,12 @@ export type ThreadsDnaPerspective = {
   myNewestTopic: null | ActionId,
   /** */
   importing: boolean,
+  importingPct: number,
 }
 
 export type ThreadsDnaPerspectiveComparable = {
   importing: boolean,
+  importingPct: number,
   signaledNotifications: number,
   initialThreadProbeLogTss: number,
   agentPresences: string,
@@ -133,6 +135,7 @@ export class ThreadsDvm extends DnaViewModel {
     myNewestTopic: null,
     ackRequests: new ActionIdMap(),
     importing: false,
+    importingPct: 1.0,
   }
 
 
@@ -143,6 +146,7 @@ export class ThreadsDvm extends DnaViewModel {
   override comparable(): Object {
     const res: ThreadsDnaPerspectiveComparable = {
       importing: this.perspective.importing,
+      importingPct: this.perspective.importingPct,
       signaledNotifications: this.perspective.signaledNotifications.length,
       initialThreadProbeLogTss: this.perspective.initialThreadProbeLogTss.size,
       agentPresences: JSON.stringify(Array.from(this.perspective.agentPresences.entries())),
@@ -675,12 +679,10 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
+  /** */
   async importDiscord(external: any) {
-
       const channel = external["channel"];
-
       console.debug("ThreadsDvm.importDiscord()", channel);
-
       // Map previous profiles by discordId (useful when importing multiple channels)
       const authors = new Map<string, AgentId>();
       for (const [actionId, [profile, _ts]] of this.profilesZvm.perspective.profiles.entries()) {
@@ -688,9 +690,7 @@ export class ThreadsDvm extends DnaViewModel {
               authors.set(profile.fields["discordId"], this.profilesZvm.perspective.getProfileAgent(actionId)!);
           }
       }
-
-      // Determine if Topic or DM
-      //const dmProfile: Profile | undefined = undefined;
+      // Determine if thread for Topic or DM
       let dmId: string = "";
       let ppAh;
       if (channel.type == "DirectTextChat") {
@@ -727,10 +727,14 @@ export class ThreadsDvm extends DnaViewModel {
       }
       await delay(100); // wait for signals to process
 
+      this._perspective.importingPct = 0.03;
       // Publish beads & Profiles
       const messages = new Map<string, ActionId>();
       let prevBeadAh: ActionId | undefined = undefined;
+      let count = 0;
       for (const message of external["messages"]) {
+          count += 1;
+          this._perspective.importingPct = count / external["messages"].length;
           const author  = message["author"];
           let agentId: AgentId | undefined = undefined;
           if (dmId != "" && author.id != dmId) {
@@ -803,6 +807,7 @@ export class ThreadsDvm extends DnaViewModel {
   async importPerspective(json: string, canPublish: boolean) {
     console.debug("Dvm.importPerspective() size:", json.length);
     this._perspective.importing = true;
+    this._perspective.importingPct = 0.0;
     this.notifySubscribers();
 
     const external = JSON.parse(json) as any;
@@ -818,9 +823,11 @@ export class ThreadsDvm extends DnaViewModel {
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
     //console.debug("import perspective", this.authorshipZvm.perspective);
+    this._perspective.importingPct = 0.01;
 
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     this.profilesZvm.import(JSON.stringify(profiles), canPublish);
+    this._perspective.importingPct = 0.02;
 
     const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
     this.threadsZvm.import(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
@@ -831,6 +838,7 @@ export class ThreadsDvm extends DnaViewModel {
 
   importDone() {
     this._perspective.importing = false;
+    this._perspective.importingPct = 1.0;
     this.notifySubscribers();
   }
 }

@@ -1573,11 +1573,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("<vines-page>.render() jump", this.perspective.threadInputs[this.selectedThreadHash], this.selectedThreadHash);
 
     if (this.perspective.importing) {
+      const pct = Math.floor(this.perspective.importingPct * 100);
       return html`
           <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
-              <ui5-busy-indicator delay="0" size="Large" active
+              <div style="margin: auto;">${msg('Importing data...')}</div>
+              <ui5-progress-indicator .value=${pct} style="width: 50%; margin:auto;"></ui5-progress-indicator>
+              <!-- <ui5-busy-indicator delay="0" size="Large" active
                                   style="margin:auto; color:#05b92f"
-              ></ui5-busy-indicator>
+              ></ui5-busy-indicator> 
+              <div>${pct}%</div> -->
           </div>
       `;
     }
