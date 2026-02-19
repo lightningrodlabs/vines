@@ -7,6 +7,7 @@ import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {networkCallerContext} from "../contexts";
 import {ZomeElement} from "@ddd-qc/lit-happ";
 import {ProfilesAltPerspective, ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {AgentPubKeyB64} from "@holochain/client";
 
 
 /**
@@ -31,8 +32,13 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
   override render() {
     //console.debug("<peer-status-badge>.render()");
 
-    let profileCount = this._zvm.perspective.agents.length;
-    if (profileCount > 0) { profileCount -= 1} // Remove self
+      const importedProfiles  = new Set<AgentPubKeyB64>();
+      for (const [agentId, [profile, _ts]] of this.perspective.profiles.entries()) {
+          if (profile.fields["imported"]) {
+              importedProfiles.add(agentId.b64);
+          }
+      }
+      const profilesCount = Math.max(this.perspective.profiles.size - importedProfiles.size - 1 , 0); // remove self
 
     const netLogCount = this.networkCaller.networkMetricsLogs.length;
     const peerCount = netLogCount > 0
@@ -41,13 +47,13 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
 
     const memberBg = peerCount == 0
       ? "#bb3314"
-      : peerCount > profileCount
+      : peerCount > profilesCount
         ? "#c355ee"
         : "#559eee";
     /** */
     return html`
             <span class="badge" style="background:${memberBg}">
-            ${peerCount} / ${profileCount}
+            ${peerCount} / ${profilesCount}
         </span>
         `;
   }

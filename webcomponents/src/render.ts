@@ -45,7 +45,7 @@ export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null
   const slot = slotArg? slotArg : "";
   const avatar = avatarUrl
     ? html`<ui5-avatar size=${size} class=${classArg}>
-                <img .src=${avatarUrl} style="object-fit: cover;">
+                <img .src=${avatarUrl} style="object-fit: cover; ${profile.fields["imported"]? "opacity:0.5":""}">
               </ui5-avatar>`
     : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
   return html`

@@ -118,7 +118,13 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
       : 0;
 
-    const profilesCount = Math.max(this.perspective.profiles.size - 1 , 0); // remove self
+      const importedProfiles  = new Set<AgentPubKeyB64>();
+      for (const [agentId, [profile, _ts]] of this.perspective.profiles.entries()) {
+          if (profile.fields["imported"]) {
+              importedProfiles.add(agentId.b64);
+          }
+      }
+    const profilesCount = Math.max(this.perspective.profiles.size - importedProfiles.size - 1 , 0); // remove self
 
     if (profilesCount == 0) {
         if (peerCount > 0) {
@@ -139,6 +145,10 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
       /* exclude self */
       if (!this.self && agentId.equals(this.cell.address.agentId)) {
         continue;
+      }
+      /* exclude discord */
+      if (importedProfiles.has(agentId.b64)) {
+          continue;
       }
       const pair = this.perspective.profiles.get(profileId);
       if (!pair) {

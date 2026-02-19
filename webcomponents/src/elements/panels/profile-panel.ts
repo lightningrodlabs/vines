@@ -90,6 +90,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             ` : html``}
         </div>
         <div style="display: flex; flex-direction:column; padding:10px; margin:10px; border-radius:15px; background: #c6c6c6d6; color: #111;">
+            ${this._profile.fields["imported"]? html`<h4 style="margin:auto; margin-bottom:10px;">${msg('IMPORTED PROFILE')}</h4>`:html``}
             <div style="display: flex; flex-direction:row; align-items:center;">
                 <h3>${this._profile.nickname}</h3>
                 <div style="flex-grow:1;"></div>
@@ -101,6 +102,12 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             </div>
             <hr style="width: 100%"/>
 
+            ${this._profile.fields["imported"]? html`                 
+                ${this._profile.fields["discordId"]? html`
+                    <h5>${msg('Discord ID')}</h5>
+                    <div class="info">${this._profile.fields['discordId']}</div>
+                `:html``}
+            ` : html`
             <h5>${msg('Language')}</h5>
             <div class="info">${this._profile.fields['lang']}</div>
 
@@ -114,7 +121,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
             ${!this.hash.equals(this.cell.address.agentId)? html`
                 <h5 style="margin-bottom: 3px;">${msg('Send Direct Message')}</h5>
                 <vines-input-bar .topic=${this._profile.nickname} .agentHash=${this.hash}></vines-input-bar>
-            ` : html``}
+            ` : html``}`}          
         </div>
         <div style="position:absolute; top:10px; left:10px">${avatar}</div>
     `;
