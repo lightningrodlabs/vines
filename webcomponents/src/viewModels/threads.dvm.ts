@@ -42,7 +42,6 @@ import {PathExplorerZvm} from "@ddd-qc/path-explorer";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {THIS_APPLET_ID} from "../contexts";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
-import {toasty} from "../toast";
 import {MAIN_TOPIC_ID} from "../utils";
 
 
@@ -677,31 +676,11 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   async importDiscord(external: any) {
-      // if (!canPublish) {
-      //     this.authorshipZvm.clear();
-      //     this.profilesZvm.clear();
-      //     this.threadsZvm.clear();
-      // }
+
       const channel = external["channel"];
-      if (channel.type == "DirectTextChat") {
-          toasty("Abort importing Discord non-text channel");
-          // FIXME find author with name = channel.name
-          return;
-      }
+
       console.debug("ThreadsDvm.importDiscord()", channel);
 
-      const topicHash = channel.category
-          ? await this.threadsZvm.publishSemanticTopic(channel.category)
-          : MAIN_TOPIC_ID;
-      await delay(100);  // wait for signals to process
-      const [_ppTs, ppAh] = await this.threadsZvm.publishThreadFromSemanticTopic(
-          /*this.weServices? new EntryId(this.weServices.appletIds[0]!) :*/ THIS_APPLET_ID,
-          topicHash,
-          channel.name,
-          defaultLimitations(),
-          defaultModeration(),
-      );
-      await delay(100); // wait for signals to process
       // Map previous profiles by discordId (useful when importing multiple channels)
       const authors = new Map<string, AgentId>();
       for (const [actionId, [profile, _ts]] of this.profilesZvm.perspective.profiles.entries()) {
@@ -709,22 +688,66 @@ export class ThreadsDvm extends DnaViewModel {
               authors.set(profile.fields["discordId"], this.profilesZvm.perspective.getProfileAgent(actionId)!);
           }
       }
+
+      // Determine if Topic or DM
+      //const dmProfile: Profile | undefined = undefined;
+      let dmId: string = "";
+      let ppAh;
+      if (channel.type == "DirectTextChat") {
+          console.debug("Importing DMs with", channel.name);
+          for (const message of external["messages"]) {
+              if (message["author"].nickname == channel.name) {
+                  dmId = message.author.id;
+                  let agentId: AgentId | undefined = authors.get(dmId);
+                  if (!agentId) {
+                      agentId = await this.createProfileForDiscordAuthor(message.author);
+                      authors.set(dmId, agentId);
+                  }
+                  ppAh = await this.threadsZvm.createDmThread(agentId);
+                  break;
+              }
+          }
+          if (dmId == "") {
+              console.error("No DM from other person found. Aborting import.")
+              return;
+          }
+      } else {
+          const topicHash = channel.category
+              ? await this.threadsZvm.publishSemanticTopic(channel.category)
+              : MAIN_TOPIC_ID;
+          await delay(100);  // wait for signals to process
+          const [_ppTs, topPpAh] = await this.threadsZvm.publishThreadFromSemanticTopic(
+              /*this.weServices? new EntryId(this.weServices.appletIds[0]!) :*/ THIS_APPLET_ID,
+              topicHash,
+              channel.name,
+              defaultLimitations(),
+              defaultModeration(),
+          );
+          ppAh = topPpAh;
+      }
+      await delay(100); // wait for signals to process
+
       // Publish beads & Profiles
       const messages = new Map<string, ActionId>();
       let prevBeadAh: ActionId | undefined = undefined;
       for (const message of external["messages"]) {
           const author  = message["author"];
-          let agentId: AgentId | undefined = authors.get(author.id);
-          if (!agentId) {
-              agentId = await this.createProfileForDiscordAuthor(author);
-              authors.set(author.id, agentId);
+          let agentId: AgentId | undefined = undefined;
+          if (dmId != "" && author.id != dmId) {
+              agentId = this.cell.address.agentId;
+          } else {
+              agentId = authors.get(author.id);
+              if (!agentId) {
+                  agentId = await this.createProfileForDiscordAuthor(author);
+                  authors.set(author.id, agentId);
+              }
           }
           const timestamp = Date.parse(message["timestamp"]);
           let reference = prevBeadAh;
           if (message.type == "Reply" && message.reference && message.reference.channelId == channel.id) {
               reference = messages.get(message.reference.messageId) ?? prevBeadAh;
           }
-          const nextBead = await this.threadsZvm.createNextBead(ppAh, reference);
+          const nextBead = await this.threadsZvm.createNextBead(ppAh!, reference);
           console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, new Date(timestamp).toLocaleString(), agentId.b64);
           const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);
           prevBeadAh = beadAh;
@@ -750,8 +773,8 @@ export class ThreadsDvm extends DnaViewModel {
           }
 
           for (const attachment of message["attachments"]) {
-              const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
-              console.debug("ThreadsDvm.importDiscord() Publishing URL message", attachment.url);
+              const nextBead = await this.threadsZvm.createNextBead(ppAh!, prevBeadAh);
+              //console.debug("ThreadsDvm.importDiscord() Publishing URL message", attachment.url);
               const content = "__URL__" + JSON.stringify(attachment);
               const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, content, nextBead, timestamp, agentId);
               prevBeadAh = beadAh;
