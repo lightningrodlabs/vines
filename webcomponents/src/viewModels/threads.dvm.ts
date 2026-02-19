@@ -729,10 +729,7 @@ export class ThreadsDvm extends DnaViewModel {
           const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);
           prevBeadAh = beadAh;
           messages.set(message.id, beadAh);
-
           await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp, agentId, false);
-
-          //for (const message of external["attachments"]) {}
 
           if (message["reactions"]) {
               for (const reaction of message["reactions"]) {
@@ -751,6 +748,17 @@ export class ThreadsDvm extends DnaViewModel {
                   }
               }
           }
+
+          for (const attachment of message["attachments"]) {
+              const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
+              console.debug("ThreadsDvm.importDiscord() Publishing URL message", attachment.url);
+              const content = "__URL__" + JSON.stringify(attachment);
+              const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, content, nextBead, timestamp, agentId);
+              prevBeadAh = beadAh;
+              messages.set(attachment.id, beadAh);
+              await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp + 1001, agentId, false);
+          }
+
       }
   }
 

@@ -95,10 +95,15 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     switch (beadInfo.beadType) {
       case ThreadsEntryType.TextBead:
         const tm = typedBead as TextBeadMat;
-        const result = md.render(tm.value);
-        const parsed = unsafeHTML(result);
-        /** render all */
-        content = html`<div>${parsed}</div>`;
+        /** Check for __URL__ */
+        if (tm.value.startsWith("__URL__")) {
+          const attachment = JSON.parse(tm.value.substring("__URL__".length));
+            content = html`<a href=${attachment.url} target="_blank">${attachment.fileName}</a>`;
+        } else {
+            const result = md.render(tm.value);
+            const parsed = unsafeHTML(result);
+            content = html`<div>${parsed}</div>`;
+        }
         break;
       case ThreadsEntryType.AnyBead:
         content = html`<div style="color:red;">${msg('WeaveServices not available')}</div>`;
@@ -206,10 +211,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
             <div style="flex-grow: 1"></div>
             ${this.deletable? html`<ui5-button icon="decline" design="Transparent"
             @click=${(e: any) => {
-      e.stopPropagation();
-      e.preventDefault();
-      this.dispatchEvent(new CustomEvent<boolean>('deleted', {detail: true, bubbles: true, composed: true}))
-    }}></ui5-button>` : html``}
+              e.stopPropagation();
+              e.preventDefault();
+              this.dispatchEvent(new CustomEvent<boolean>('deleted', {detail: true, bubbles: true, composed: true}))
+            }}></ui5-button>` : html``}
         </div>
         ${beadInfo? this.renderPrevBead(beadInfo) : ""}
         <div class="sideContentRow">

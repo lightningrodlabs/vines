@@ -241,9 +241,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         <ui5-list id="fileList">
           <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(fileDesc.size)}
                   @click=${(_e: any) => {
-      this._filesDvm.downloadFile(entryBead.sourceEh);
-      toasty(msg("File downloaded") + ": " + fileDesc.name);
-    }}>
+                      this._filesDvm.downloadFile(entryBead.sourceEh);
+                      toasty(msg("File downloaded") + ": " + fileDesc.name);
+                    }}>
             ${fileDesc.name}
             <!-- <ui5-button icon="show" 
                         style="height:30px;margin-left:10px"

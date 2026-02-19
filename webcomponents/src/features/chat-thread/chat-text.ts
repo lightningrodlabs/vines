@@ -51,6 +51,14 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       value = tm.value;
     }
+
+    /** Check for __URL__ */
+    if (value.startsWith("__URL__")) {
+      const attachmentJson = value.substring("__URL__".length);
+      //return html`<a href=${attachment.url} target="_blank">${attachment.fileName}</a>`;
+        return html`<chat-attachment .attachment=${attachmentJson}></chat-attachment>`;
+    }
+
     //md.use(emoji/* , options */);
     const result = md.render(value);
     const parsed = unsafeHTML(result);

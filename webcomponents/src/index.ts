@@ -31,6 +31,7 @@ export * from './features/rules/rules-view';
 
 export * from './features/chat-thread/audio-panel';
 export * from './features/chat-thread/side-item';
+export * from './features/chat-thread/chat-attachment';
 export * from './features/chat-thread/chat-file';
 export * from './features/chat-thread/chat-header';
 export * from './features/chat-thread/chat-wal';
