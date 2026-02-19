@@ -398,6 +398,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
   }
 
+    get importDialogElem(): Dialog {
+        return this.shadowRoot!.getElementById("import-dialog") as Dialog;
+    }
 
   /** -- Methods -- */
 
@@ -738,7 +741,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   onEditProfile(_e: any) {
-    this.profileDialogElem.show();
+    /*await*/ this.profileDialogElem.show();
   }
 
 
@@ -2199,10 +2202,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 ? html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` 
                                 : html`<ui5-menu-item id="shareNetwork" icon="cloud" text=${msg("Share invite code")} ></ui5-menu-item>`}                        
                         <ui5-menu-item id="exportItem" text=${msg('Export')} icon="save" starts-section></ui5-menu-item>
-                        <ui5-menu-item id="importCommitItem" text=${msg("Import and share")}
+                        <ui5-menu-item id="importCommitItem" text=${msg("Import")}
                                        icon="open-folder"></ui5-menu-item>
-                        <ui5-menu-item id="importOnlyItem" text=${msg("Import temporarily")}
-                                       icon="open-folder"></ui5-menu-item>
+                        <!-- <ui5-menu-item id="importOnlyItem" text=${msg("Import temporarily")}
+                                       icon="open-folder"></ui5-menu-item> -->
                         <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>                         
                         ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
                             <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
@@ -2576,6 +2579,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
                 ></vines-edit-profile>
             </ui5-dialog>
+            <!-- Import Dialog -->
+            <ui5-dialog id="import-dialog" header-text=${msg("Import Data")}>
+                <div slot="header" style="display:flex; flex-direction: row; width:100%; align-items:center;">
+                    <h3 >IMPORT DATA</h3>
+                    <div style="flex-grow: 1"></div>
+                    <ui5-button slot="footer"
+                                @click=${() => this.importDialogElem.open = false}>
+                        ${msg('Close')}
+                    </ui5-button>
+                </div>
+                <export-panel
+                        @import=${(e: CustomEvent) => {
+                            this.importDvm(e.detail);
+                            this.importDialogElem.close(false);
+                        }}
+                ></export-panel>
+            </ui5-dialog>            
             <!-- Confirm Dialog -->
             <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e: any) => {
             }}></confirm-dialog>
@@ -2835,7 +2855,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let content = "";
     switch (e.detail.item.id) {
       case "editProfileItem":
-        this.profileDialogElem.show();
+          /*await*/ this.profileDialogElem.show();
         break;
       case "shareNetwork":
         await this.onShareNetwork()
@@ -2851,7 +2871,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         toasty(msg(`Exported data to json in Downloads folder`));
         break;
       case "importCommitItem":
-        this.importDvm(true);
+        //this.importDvm(true);
+          /*await*/ this.importDialogElem.show();
         break;
       case "importOnlyItem":
         this.importDvm(false);
