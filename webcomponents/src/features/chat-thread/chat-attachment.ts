@@ -4,7 +4,6 @@ import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {sharedStyles} from "../../styles";
 import {type2ui5Icon} from "../../utils";
-import {ViewEmbedEvent} from "../../events";
 import {FileType, prettyFileSize} from "@ddd-qc/files";
 
 
@@ -88,7 +87,7 @@ export class ChatAttachment extends LitElement {
   /** Hash of File bead to display */
   @property() attachment!: string; // Discord attachment as JSON
 
-  //static  MAX_VIEWABLE_SIZE = 100 * 1024 * 1024;
+  static  MAX_VIEWABLE_SIZE = 100 * 1024 * 1024;
 
   //@state() private _loading = true;
 
@@ -97,113 +96,58 @@ export class ChatAttachment extends LitElement {
 
   private _att: any = {}
 
+  @state() private _canOverrideView = false;
 
   /** -- Methods -- */
 
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    /** Load file when hash changed */
-    // @ts-ignore: _dvm for first update
     if (changedProperties.has("attachment")) {
-
-        if (this.isAttViewable()) {
-            this.loadBlob();
-        }
+        this._att = JSON.parse(this.attachment);
+        this._att.mime = getMimeTypeFromUrl(this._att.url);
+        this._att.fileType = mime2Type(this._att.mime);
+        console.debug("<chat-attachment> att = ", this._att);
     }
   }
-
 
   /** */
-  protected override async updated(_changedProperties: PropertyValues) {
-    /** click file for preview */
-    const maybeImg = this.shadowRoot!.getElementById("img-bead") as HTMLElement;
-    if (maybeImg) {
-      maybeImg.addEventListener('click', (e: any) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const mime = getMimeTypeFromUrl(JSON.parse(this.attachment).url);
-        console.log("view-embed image clicked!", mime, this._maybeBlobUrl);
-        this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {
-          detail: {blobUrl: this._maybeBlobUrl!, mime},
-          bubbles: true,
-          composed: true
-        }));
-      });
-    }
+  isTypeViewable(): boolean {
+     return this._att.fileType == FileType.Image
+         || this._att.fileType == FileType.Audio
+         || this._att.fileType == FileType.Video
+         || this._att.fileType == FileType.Text
+         || this._att.fileType == FileType.Pdf;
   }
 
-    async getFileFromUrl(url: string, filename?: string): Promise<File> {
-        const response = await fetch(url);
-        const blob = await response.blob();
-
-        const name = filename ?? url.split('/').pop() ?? 'file';
-        const type = blob.type || response.headers.get('content-type') || '';
-
-        return new File([blob], name, { type });
-    }
-
-    /** */
-  loadBlob() {
-      this._loading = true;
-      if (this._maybeBlobUrl) {
-        URL.revokeObjectURL(this._maybeBlobUrl);
-        this._maybeBlobUrl = undefined;
-      }
-      const att = JSON.parse(this.attachment);
-      this.getFileFromUrl(att.url, att.fileName)
-          .then(file => {
-              this._file = file;
-              this._maybeBlobUrl = URL.createObjectURL(file);
-              this._loading = false;
-              this.requestUpdate();
-              return file;})
-          .catch(e => {
-              console.warn("<chat-attachment>.loadFile() Loading file failed:", this.attachment, e);
-              this._loading = false;
-              this._file = null;
-          });
-    }
-
-
-    isAttViewable(): boolean {
-        const att = JSON.parse(this.attachment);
-        const mime = getMimeTypeFromUrl(att.url);
-        const fileType = mime2Type(mime);
-        const isViewableType = fileType == FileType.Image || fileType == FileType.Audio || fileType == FileType.Video || fileType == FileType.Text || fileType == FileType.Pdf;
-        return isViewableType && att.fileSizeBytes < ChatAttachment.MAX_VIEWABLE_SIZE;
-    }
 
   /** */
   override render() {
-    console.log("<chat-attachment>.render()", this.attachment, this._loading, !!this._file);
+    console.log("<chat-attachment>.render()", this._att);
 
     if (!this.attachment) {
-      return html`<div style="color:#c10a0a">${msg("No File attachment provided")}</div>`;
+      return html`<div style="color:#c10a0a">${msg("No Attachment provided")}</div>`;
     }
-    if (this._loading) {
-      return html`<ui5-busy-indicator delay="0" size="Large" active style="min-height: 100px;"></ui5-busy-indicator>`;
-    }
-    const att = JSON.parse(this.attachment);
-      const mime = getMimeTypeFromUrl(att.url);
-      const fileType = mime2Type(mime);
 
-    /** Default file render (any big file) */
+    /** Default file type render (or any big file) */
     let item = html`
         <ui5-list id="fileList">
-          <ui5-li id="fileLi" icon=${type2ui5Icon(fileType)} description=${prettyFileSize(att.fileSizeBytes)}
+          <ui5-li id="fileLi" icon=${type2ui5Icon(this._att.fileType)} description=${prettyFileSize(this._att.fileSizeBytes)}
                   @click=${(_e: any) => {
-                      // FIXME
-                      toasty(msg("File downloaded") + ": " + att.fileName);
+                      const a = document.createElement('a');
+                      a.href = this._att.url;
+                      a.download = this._att.fileName;
+                      a.click();
+                      toasty(msg("File downloaded") + ": " + this._att.fileName);
                     }}>
-            ${att.fileName}
+            ${this._att.fileName}
           </ui5-li>
         </ui5-list>
-        ${this.isAttViewable()? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
+        ${!this.isTypeViewable()? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
              @click=${(e: any) => {
               e.preventDefault();
               e.stopPropagation();
-               this.loadBlob()
+               this._canOverrideView = true;
             }}>
             ${msg('View')}
         </div>` : html``}
@@ -211,8 +155,8 @@ export class ChatAttachment extends LitElement {
 
     /** Specific render depending on file type */
     /** this._file is set only for small files */
-    if (this._file != null && this._maybeBlobUrl) {
-      switch (fileType) {
+    if (this.isTypeViewable() && (this._canOverrideView || this._att.fileSizeBytes < ChatAttachment.MAX_VIEWABLE_SIZE)) {
+      switch (this._att.fileType) {
         // case FileType.Text:
         //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
         //     // //const text = decodeURIComponent(escape(tt)));
@@ -225,12 +169,17 @@ export class ChatAttachment extends LitElement {
         //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
         //     break;
         case FileType.Image:
-          item = html`<img id="img-bead" class="preview Image" src=${this._maybeBlobUrl} />`;
+          item = html`<img id="img-bead" class="preview Image" src=${this._att.url} @click=${() => {
+              const a = document.createElement('a');
+              a.href = this._att.url;
+              a.download = this._att.fileName;
+              a.click();
+          }}/>`;
           break;
         case FileType.Audio:
           item = html`
               <audio class="preview Audio" style="z-index: 51" controls>
-                  <source src=${this._maybeBlobUrl} type=${mime}>
+                  <source src=${this._att.url} type=${this._att.mime}>
                   ${msg("Your browser does not support the audio element.")}
               </audio>
           `;
@@ -239,21 +188,21 @@ export class ChatAttachment extends LitElement {
           //  width="440" height="320"
           item = html`
               <video class="preview Video" controls>
-                  <source src=${this._maybeBlobUrl} type=${mime}>
+                  <source src=${this._att.url} type=${this._att.mime}>
                   ${msg("Your browser does not support the video element.")}
               </video>
           `;
           break;
         default:
           //item = html`<div class="preview">Preview not available for this type</div>`;
-          item = html`<embed class="preview ${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
+          item = html`<embed class="preview ${this._att.fileType}" src=${this._att.url} type=${this._att.mime} />`;
           break;
       }
     }
 
     /** render item */
     return html`
-        <sl-tooltip content=${att.fileName} hoist style="--show-delay:1000">
+        <sl-tooltip content=${this._att.fileName} hoist style="--show-delay:1000">
             ${item}
         </sl-tooltip>
     `;
