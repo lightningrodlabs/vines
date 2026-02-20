@@ -43,6 +43,7 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
 import {THIS_APPLET_ID} from "../contexts";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {MAIN_TOPIC_ID} from "../utils";
+import {prettyTimestamp} from "@ddd-qc/files";
 
 
 /** */
@@ -752,7 +753,7 @@ export class ThreadsDvm extends DnaViewModel {
               reference = messages.get(message.reference.messageId) ?? prevBeadAh;
           }
           const nextBead = await this.threadsZvm.createNextBead(ppAh!, reference);
-          console.debug("ThreadsDvm.importDiscord() Publishing message", message.content, new Date(timestamp).toLocaleString(), agentId.b64);
+          console.debug("ThreadsDvm.importDiscord() Publishing message", /*message.content,*/ new Date(timestamp).toLocaleString(), agentId.b64);
           const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);
           prevBeadAh = beadAh;
           messages.set(message.id, beadAh);
@@ -786,6 +787,11 @@ export class ThreadsDvm extends DnaViewModel {
               await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp + 1001, agentId, false);
           }
 
+          // Set the threads creation date to the date of the first message (DiscordChatExporter does not provide a creation date for a channel)
+          if (count == 1) {
+              console.debug("ThreadsDvm.importDiscord() ascribe thread", prettyTimestamp(timestamp * 1000));
+              await this.authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh!, timestamp, this.cell.address.agentId, false);
+          }
       }
   }
 

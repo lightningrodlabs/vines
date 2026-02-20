@@ -180,6 +180,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('fetch_many_entry_beads', input);
   }
 
+  async fetchBeads(beadAhs: ActionArray[]): Promise<void> {
+    return this.call('fetch_beads', beadAhs);
+  }
+
   async findBeads(ppAh: ActionArray): Promise<[SweepInterval, BeadLink[]]> {
     return this.call('find_beads', ppAh);
   }

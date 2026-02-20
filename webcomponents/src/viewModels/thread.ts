@@ -98,6 +98,7 @@ export class Thread {
 
   /** */
   setHasSearchedOldestBead(): void {
+    console.debug("setHasSearchedOldestBead()", this.pp.purpose)
     this._hasSearchedOldestBead = true;
   }
 

@@ -14,16 +14,23 @@ use zome_signals::*;
 #[hdk_extern]
 pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, Timestamp, AgentPubKey)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
+  debug!("fetch_pp() {}", ah);
   let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(ah.clone().into(), GetStrategy::Network) else {
+    //debug!("fetch_pp() not found");
     return Ok(None);
   };
-  /// Emit Signal
-  attest_entry_created(record.clone(), false)?;
   ///
   let maybe_op = get_original_author(ah)?;
   if let Some(opPair) = maybe_op {
+    //debug!("fetch_pp() origin author found: {} || {}", opPair.0, record.action().timestamp());
+    let mut pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false)?;
+    pulse.change_author(opPair.1.clone(), opPair.0.clone());
+    emit_zome_signal(vec![ZomeSignalProtocol::Entry(pulse)])?;
     return Ok(Some((typed, opPair.0, opPair.1)));
-  };
+  }
+  //debug!("fetch_pp() no origin author found");
+  /// Emit Signal
+  attest_entry_created(record.clone(), false)?;
   let action = record.action().clone();
   ///
   Ok(Some((typed, action.timestamp(), action.author().to_owned())))

@@ -11,10 +11,11 @@ pub fn query_all(_: ()) -> ExternResult<()> {
    query_global_log(())?;
    query_pps(())?;
    query_thread_logs(())?;
-   query_any_beads(())?;
-   query_entry_beads(())?;
-   query_text_beads(())?;
-   query_enc_beads(())?;
+   // Don't query beads since there could be a lot (especially if this agent did some importing)
+   //query_any_beads(())?;
+   //query_entry_beads(())?;
+   //query_text_beads(())?;
+   //query_enc_beads(())?;
    Ok(())
 }
 
@@ -23,7 +24,7 @@ pub fn query_all(_: ()) -> ExternResult<()> {
 #[hdk_extern]
 pub fn query_pps(_: ()) -> ExternResult<()> {
    std::panic::set_hook(Box::new(zome_panic_hook));
-  attest_all_local_typed::<ParticipationProtocol>(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap())?;
+   attest_all_local_typed::<ParticipationProtocol>(ThreadsEntryTypes::ParticipationProtocol.try_into().unwrap())?;
    Ok(())
 }
 

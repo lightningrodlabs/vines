@@ -92,11 +92,10 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {ThreadsDvm} from "./threads.dvm";
 import {THIS_APPLET_ID} from "../contexts";
 import {GetStrategy} from "@holochain-open-dev/core-types";
-//import {msg} from "@lit/localize";
+import {prettyTimestamp} from "@ddd-qc/files";
 
 
 //generateSearchTest();
-
 
 /** Better way to catch and handle "throttled" error */
 export function catchThrottled<T>(promise: Promise<T>): Promise<[undefined, T] | [Error]> {
@@ -124,9 +123,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     private _encoder = new Encoder(HOLOCHAIN_ID_EXT_CODEC);
     private _decoder = new Decoder(HOLOCHAIN_ID_EXT_CODEC);
-
-
-    //threadsDvm(): ThreadsDvm { return this._dvmParent as ThreadsDvm }
 
 
     /** -- Perspective -- */
@@ -182,19 +178,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 originalsZvm.ascribeTarget("Subject", intoLinkableId(anyId.b64), 0/*TODO: get creationTime of Subject*/, AgentId.empty(), true);
             }
         }
-        ;
         /** pps */
         for (const [ppAh, thread] of this._perspective.threads.entries()) {
             /*await*/
             originalsZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, thread.creationTime, thread.author, true);
         }
-        ;
         /** beads */
         for (const [beadAh, [beadInfo, _typed]] of this._perspective.beads.entries()) {
             /*await*/
             originalsZvm.ascribeTarget(beadInfo.beadType, beadAh, beadInfo.creationTime, beadInfo.author, true);
         }
-        ;
     }
 
 
@@ -352,7 +345,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** Get all Threads for a subject */
     async pullSubjectThreads(subjectId: AnyId, strategy: GetStrategy): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
-        console.log("threadsZvm.pullSubjectThreads() start", subjectId);
+        //console.log("threadsZvm.pullSubjectThreads() start", subjectId);
         /** Skip Agent as it has dm link type to get its pps */
         if (subjectId.hashType == HoloHashType.Agent) {
             return new ActionIdMap();
@@ -370,7 +363,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             //console.log("threadsZvm.pullSubjectThreads() subjectId", tuples.size, subjectId.short);
             merged = new ActionIdMap([...merged, ...tuples]);
         }
-        console.log("threadsZvm.pullSubjectThreads() end", merged.size, subjectId.short);
+        //console.log("threadsZvm.pullSubjectThreads() end", merged.size, subjectId.short);
         return merged;
     }
 
@@ -568,15 +561,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     async pullLatestBeads(ppAh: ActionId, begin_time?: Timestamp, end_time?: Timestamp, target_limit?: number): Promise<BeadLink[]> {
         console.log("pullLatestBeads()", ppAh);
         const strategy: GetStrategy = GetStrategy.Local; // TODO figure out GetStrategy
-            let thread = this._perspective.threads.get(ppAh);
+        let thread = this._perspective.threads.get(ppAh);
         if (!thread) {
-            // try {
-            //   await this.fetchPp(ppAh);
-            // } catch(e:any) {
             console.error("pullLatestBeads() Failed. ParticipationProtocol not found");
             return [];
-            //}
-            //thread = this._threads.get(ppAh);
         }
         await this.pullThreadModeration(ppAh, strategy);
         /** Probe the latest beads */
@@ -588,9 +576,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             /** Cache them */
             await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(searchedInterval), strategy);
             /** Check if beginning of time reached */
-            console.log("pullLatestBeads() begin", searchedInterval.begin, thread.creationTime);
+            console.log("pullLatestBeads() begin", searchedInterval.begin <= thread.creationTime, prettyTimestamp(searchedInterval.begin * 1000), prettyTimestamp(thread.creationTime * 1000));
+            //console.log("pullLatestBeads() begin", thread.beadLinksTree.first);
             if (searchedInterval.begin <= thread.creationTime) {
-                thread.setHasSearchedOldestBead();
+                 thread.setHasSearchedOldestBead();
             }
             /** Done */
             return beadLinks;
@@ -1010,8 +999,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    private async fetchBeads(ppAh: ActionId, beadLinks: BeadLink[], probedInterval: TimeInterval, strategy: GetStrategy): Promise<void> {
-        //console.log("fetchBeads() len = ", beadLinks.length, searchedInterval);
+    private async fetchBeads(ppAh: ActionId, beadLinks: BeadLink[], probedInterval: TimeInterval, _strategy: GetStrategy): Promise<void> {
+        //console.log("fetchBeads() len = ", beadLinks.length, probedInterval);
         if (beadLinks.length == 0) {
             return;
         }
@@ -1022,11 +1011,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             //await this.fetchPp(ppAh, true);
             //thread = this._threads.get(ppAh);
         }
-        /** fetch each Bead */
-        for (const bl of beadLinks) {
-            //console.log("fetchBeads()", bl.beadType)
-            await this.fetchTypedBead(new ActionId(bl.beadAh), bl.beadType as BeadType, strategy/*, false, bl.creationTime*/);
-        }
+        await this.zomeProxy.fetchBeads(beadLinks.map((bl) => bl.beadAh));
         thread.addProbedInterval(probedInterval);
     }
 
@@ -1220,20 +1205,22 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 bead: materializeBead(bead)
             } as BeadInfo;
             innerPair = [innerBeadInfo, materializeTypedBead(innerTyped, innerBeadType) as TypedBaseBeadMat];
-            /** Check and fetch prevBead */
-            const prev = this._perspective.beads.get(innerBeadInfo.bead.prevBeadAh);
-            if (!prev && !innerBeadInfo.bead.prevBeadAh.equals(innerBeadInfo.bead.ppAh)) {
-                this.fetchUnknownBead(innerBeadInfo.bead.prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
-            }
+            // FIXME: Figure out what this was for
+            // /** Check and fetch prevBead */
+            // const prev = this._perspective.beads.get(innerBeadInfo.bead.prevBeadAh);
+            // if (!prev && !innerBeadInfo.bead.prevBeadAh.equals(innerBeadInfo.bead.ppAh)) {
+            //     this.fetchUnknownBead(innerBeadInfo.bead.prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
+            // }
         } else {
             const bead = (typedBead as TypedBaseBeadMat).bead;
             beadInfo = {creationTime, author, beadType, bead} as BeadInfo;
             //console.debug("storeTypedBead()", beadAh, bead.ppAh, typedBead, author);
-            /** Check and fetch prevBead */
-            const prev = this._perspective.beads.get(beadInfo.bead.prevBeadAh);
-            if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
-                this.fetchUnknownBead(beadInfo.bead.prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
-            }
+            // FIXME: Figure out what this was for
+            // /** Check and fetch prevBead */
+            // const prev = this._perspective.beads.get(beadInfo.bead.prevBeadAh);
+            // if (!prev && !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh)) {
+            //     this.fetchUnknownBead(beadInfo.bead.prevBeadAh, GetStrategy.Local); // TODO: Figure out best strategy
+            // }
         }
         /** Store in perspective */
         this._perspective.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, isNew, isPersistent, isNew && !author.equals(this.cell.address.agentId), innerPair);
@@ -1928,22 +1915,26 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 /** */
                 if (StateChangeType.Create == pulse.state) {
                     const maybeTitle = this._channelTitleCache.get(pulse.ah);
+                    const maybe = await this.getOriginalAuthor(pulse.ah);
+                    const author = maybe? new AgentId(maybe[1]) : pulse.author;
+                    const origTs = maybe? maybe[0] : pulse.ts;
+                    console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
                     // @ts-ignore
-                    this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, pulse.ts, pulse.author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
+                    this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
                     /** grab latest title edit */
-                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local}).catch(() => { // TODO: Figure out best strategy
+                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local}).catch(() => { // TODO: Figure out best Get strategy
                     });
-                    /** grab latest textbead edit if it's an EDIT thread */
+                    /** grab latest text-bead edit if it's an EDIT thread */
                     if (pp.purpose == "EDIT") {
                         /*await*/
-                        this.pullLatestBeads(pulse.ah, pulse.ts);
+                        this.pullLatestBeads(pulse.ah, origTs);
                     }
                     /** */
                     if (pulse.isNew && this._canNotify) {
                         if (isEntryFromSelf) {
                             /** Notify Subject author */
                             if (this.cell.address.dnaId.b64 == pp.subject.dnaHashB64 && pp.subject.typeName != DM_SUBJECT_TYPE_NAME) {
-                                let author = await this.getRecordAuthor(intoDhtId(pp.subject.address), GetStrategy.Local); // TODO: Figure out best strategy
+                                let author = await this.getRecordAuthor(intoDhtId(pp.subject.address), GetStrategy.Local); // TODO: Figure out best Get strategy
                                 if (!this.cell.address.agentId.equals(author)) {
                                     await this.zomeProxy.notifyPeer({
                                         content: pulse.ah.hash,

@@ -7,7 +7,6 @@ import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
-//import {ts2day} from "../../render";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {formatTime} from "../timezone/utils";
@@ -20,6 +19,7 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
  */
 @customElement("chat-thread-view")
 export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
+
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
@@ -41,7 +41,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   timeReferenceMs: number = Date.now();
   /** Number of beads to retrieve per 'get' */
   @property()
-  batchSize: number = 20
+  batchSize: number = 10
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -53,10 +53,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- State variables -- */
 
-  @state() _loading = true;
-
-  private _prevThread: string = ""
-
+  @state() _loading: boolean = true;
+  private  _prevThread: string = ""
   @state() private _tempBeads: Set<ActionHashB64> = new Set();
 
 
@@ -155,6 +153,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     /** Check for persistency change */
     if (this._tempBeads.size > 0) {
+      console.log("<chat-thread-view> pullAllBeads");
       await this._dvm.threadsZvm.pullAllBeads(this.threadHash, GetStrategy.Local); // FIXME: grab only latest for this thread?
       for (const beadAhB64 of this._tempBeads) {
         if (this._dvm.threadsZvm.perspective.isPersistent(beadAhB64)) {
@@ -200,7 +199,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     const dvm = newDvm? newDvm : this._dvm;
     const threadAh = this.threadHash; // Cache value;
-    dvm.threadsZvm.pullLatestBeads(threadAh, undefined, undefined, 20)
+    dvm.threadsZvm.pullLatestBeads(threadAh, undefined, undefined, this.batchSize)
       .then(async (beadLinks) => {
         console.log("<chat-thread-view>.loadlatestMessages() pulled", beadLinks.length);
         await this.loadBeadComments(beadLinks, dvm);
@@ -224,7 +223,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     this._loading = true;
     //this._commentsLoading = true;
-    const bls = await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, 10);
+    const bls = await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, this.batchSize);
+    console.log("<chat-thread-view>.loadPreviousMessages() probed", bls.length);
     this._loading = false;
     await this.loadBeadComments(bls, this._dvm);
     //this._commentsLoading = false; // This is for triggering a new requestUpdate
@@ -233,9 +233,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   async onWheel(_event: any) {
-    //console.log("ChatView.onWheel() ", this.scrollTop, this.scrollHeight, this.clientHeight)
+    if (this._loading) {
+        return;
+    }
+    const  pixelsToTop =  Math.abs(this.clientHeight - this.scrollHeight - this.scrollTop);
+    console.log("ChatView.onWheel() ", pixelsToTop, this.scrollTop, this.scrollHeight, this.clientHeight)
     //if (this.scrollTop == 0) {
-    if (this.clientHeight - this.scrollHeight == this.scrollTop) {
+    //if (this.clientHeight - this.scrollHeight == this.scrollTop) {
+    if (pixelsToTop < 100) {
       //this.style.background = 'grey';
       await this.loadPreviousMessages();
     } else {
@@ -271,23 +276,22 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** chat-header */
     let maybeHeader = html``;
     const hasReachedBeginning = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
+    console.log("<chat-thread-view>.render() hasReachedBeginning", hasReachedBeginning);
     if (hasReachedBeginning) {
-      maybeHeader = html`
-          <chat-header .threadHash=${this.threadHash}></chat-header>`;
+      maybeHeader = html`<chat-header .threadHash=${this.threadHash}></chat-header>`;
     }
 
 
     /** Should grab all probed messages and request probes if end is reached */
 
     const all = thread.getAll();
+    console.log("<chat-thread-view>.render() all", all.length);
 
     //const day = ts2day(blm.creationTime);
     let myTimeZone = "UTC";
     if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
       myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;
     }
-    ;
-
 
     let passedLog = false;
     let currentDay = "";

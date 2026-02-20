@@ -12,10 +12,7 @@ import {AuthorshipProxy} from "../bindings/authorship.proxy";
 import {AuthorshipPerspective, AuthorshipPerspectiveMutable, AuthorshipSnapshot} from "./authorship.perspective";
 
 
-
-/**
- *
- */
+/** */
 export class AuthorshipZvm extends ZomeViewModel {
 
   static override readonly ZOME_PROXY = AuthorshipProxy;
@@ -29,7 +26,7 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   private _perspective: AuthorshipPerspectiveMutable = new AuthorshipPerspectiveMutable();
 
-  /* */
+  /** */
   get perspective(): AuthorshipPerspective {
     return this._perspective.readonly;
   }

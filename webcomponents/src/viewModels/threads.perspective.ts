@@ -35,6 +35,7 @@ import {
 import {AuthorshipZvm} from "./authorship.zvm";
 import {SearchParameters} from "../search";
 import {Cell} from "@ddd-qc/cell-proxy";
+import {prettyTimestamp} from "@ddd-qc/files";
 
 
 /** Snapshot does not store notifications and new/unread state */
@@ -351,10 +352,7 @@ export class ThreadsPerspective {
   /** */
   hasReachedBeginning(ppAh: ActionId): boolean {
     let thread = this.threads.get(ppAh);
-    if (!thread) {
-      return false;
-    }
-    return thread.hasSearchedOldestBead;
+    return !!thread && thread.hasSearchedOldestBead;
   }
 
 
@@ -951,7 +949,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean): ParticipationProtocol {
-    console.debug(`storeThread() thread "${ppAh.short}"`, author.short, isNew, pp, pp.subject.name, pp.subject.address);
+    //console.debug(`storeThread() thread "${ppAh.short}"`, author.short, isNew, pp, pp.subject.name, pp.subject.address);
+    console.debug(`storeThread() thread`, pp.purpose, prettyTimestamp(creationTime));
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
     }
@@ -967,7 +966,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     const subjectAddr = intoAnyId(pp.subject.address);
     const thread = new Thread(pp, maybeTitle, /*FIXME cell.dnaModifiers.origin_time*/ 0, creationTime, author);
-    console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${creationTime}"`);
+    console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${prettyTimestamp(creationTime)}"`);
     /** Add already stored log */
     const maybeLog = this._tempThreadLogs.get(ppAh);
     if (maybeLog) {
