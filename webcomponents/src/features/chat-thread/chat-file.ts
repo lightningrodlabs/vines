@@ -13,6 +13,7 @@ import {sharedStyles} from "../../styles";
 import {EntryBeadMat} from "../../viewModels/threads.materialize";
 import {ViewEmbedEvent} from "../../events";
 import {ActionHashB64} from "@holochain/client";
+import {catchThrottled} from "../../viewModels/threads.zvm";
 
 
 let instanceCount = 0;
@@ -51,7 +52,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     /** Load file when hash changed */
     // @ts-ignore: _dvm for first update
-    if (changedProperties.has("hash") || changedProperties.has("_dvm") || !this._manifest) {
+    if (changedProperties.has("hash") || changedProperties.has("_dvm") /*|| !this._manifest*/) {
       this._canRetry = true;
       /** Load file from Cache or grab it from DHT if it's small */
       const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
@@ -67,8 +68,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         this._manifest = tuple[0];
         this.loadBlob();
       } else {
-        /* await */
-        this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
+          //if (!this._loading) {
+              /* await */ this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
+          //}
       }
     }
   }
@@ -96,7 +98,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   private async loadFileData(maxSize: number) {
-    console.log("<chat-file>.loadFile()", !!this._filesDvm, this.hash);
+    console.log("<chat-file>.loadFile()", this._loading, !!this._filesDvm, this.hash);
     this._loading = true;
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
@@ -164,11 +166,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   protected async probeForFileManifest(manifestEh: EntryId, delayMs?: number) {
-    console.log("probeForFile()", manifestEh.short)
+    console.log("probeForFileManifest()", manifestEh.short)
     if (delayMs) {
       await delay(delayMs);
     }
-    await this._filesDvm.deliveryZvm.probeDht();
+    await catchThrottled(this._filesDvm.deliveryZvm.probeDht());
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
     if (fileTuple) {
       await this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
@@ -245,22 +247,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
                       toasty(msg("File downloaded") + ": " + fileDesc.name);
                     }}>
             ${fileDesc.name}
-            <!-- <ui5-button icon="show" 
-                        style="height:30px;margin-left:10px"
-                        @click=${(e: any) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize * 20)
-    }}
-            ></ui5-button> -->              
           </ui5-li>
         </ui5-list>
         ${isViewable? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
              @click=${(e: any) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.loadFileData(MAX_VIEWABLE_SIZE);
-    }}>
+                      e.preventDefault();
+                      e.stopPropagation();
+                      this.loadFileData(MAX_VIEWABLE_SIZE);
+                    }}>
             ${msg('View')}
         </div>` : html``}        
     `;

@@ -105,8 +105,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  private _canRequest = true;
-
   /** */
   override updated() {
     /** Request ack if peers are online */

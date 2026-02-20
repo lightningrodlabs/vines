@@ -842,7 +842,6 @@ export class ThreadsDvm extends DnaViewModel {
     if (external["guild"]) {
         console.log("Assuming Discord import");
         await this.importDiscord(external);
-        /** */
         this.importDone();
         return;
     }

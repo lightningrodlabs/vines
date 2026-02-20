@@ -2,7 +2,7 @@ import {css, html, LitElement, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {repeat} from 'lit/directives/repeat.js'
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, delay, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {BeadLink} from "../../bindings/threads.types";
@@ -41,7 +41,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   timeReferenceMs: number = Date.now();
   /** Number of beads to retrieve per 'get' */
   @property()
-  batchSize: number = 10
+  batchSize: number = 20
 
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -153,27 +153,40 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     /** Check for persistency change */
     if (this._tempBeads.size > 0) {
-      console.log("<chat-thread-view> pullAllBeads");
-      await this._dvm.threadsZvm.pullAllBeads(this.threadHash, GetStrategy.Local); // FIXME: grab only latest for this thread?
-      for (const beadAhB64 of this._tempBeads) {
-        if (this._dvm.threadsZvm.perspective.isPersistent(beadAhB64)) {
-          this._tempBeads.delete(beadAhB64);
-          ///** Tell author that we have it */
-          //this._dvm.ackAuthor(beadAhB64);
-          /** Update corresponding chat-item */
-          const chatItem = this.shadowRoot!.getElementById(beadAhB64) as LitElement;
-          console.debug("Became persistent", beadAhB64, chatItem)
-          if (chatItem) {
-            chatItem.requestUpdate();
-          }
-        }
-      }
-      if (this._tempBeads.size > 0) {
-        await delay(1000);
-        this.requestUpdate();
-      }
+        this.processTempBeads();
     }
   }
+
+    /** Check every 2 secs for peers online and request acks for unshared beads if any */
+    private _processTempBeadsInterval: any = undefined;
+    processTempBeads() {
+        if (this._processTempBeadsInterval) {
+            return;
+        }
+        this._processTempBeadsInterval = setInterval(async () => {
+            if (this._tempBeads.size > 0) {
+                console.log("<chat-thread-view> processTempBeads() pullAllBeads", this._tempBeads.size);
+                await this._dvm.threadsZvm.pullAllBeads(this.threadHash, GetStrategy.Local); // FIXME: grab only latest for this thread?
+                for (const beadAhB64 of this._tempBeads) {
+                    if (this._dvm.threadsZvm.perspective.isPersistent(beadAhB64)) {
+                        this._tempBeads.delete(beadAhB64);
+                        ///** Tell author that we have it */
+                        //this._dvm.ackAuthor(beadAhB64);
+                        /** Update corresponding chat-item */
+                        const chatItem = this.shadowRoot!.getElementById(beadAhB64) as LitElement;
+                        console.debug("<chat-thread-view> processTempBeads() Bead Became persistent", beadAhB64, chatItem)
+                        if (chatItem) {
+                            chatItem.requestUpdate();
+                        }
+                    }
+                }
+            } else {
+                clearInterval(this._processTempBeadsInterval);
+                this._processTempBeadsInterval = undefined;
+            }
+        }, 2000)
+    }
+
 
 
   /** Check if beads have comments */

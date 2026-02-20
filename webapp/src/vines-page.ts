@@ -2752,9 +2752,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const reader = new FileReader();
       reader.onload = (_e: any) => {
         const contents = reader.result as string;
-        //console.log(contents);
-        this._dvm.importPerspective(contents, canPublish);
-      };
+        this._dvm.importPerspective(contents, canPublish).catch(async(e) => {
+            console.warn("Import failed", e, reader);
+            toasty(`Failed to import file`);
+            this._dvm.importDone();
+        });
+      }
       // Read the file as text
       reader.readAsText(file);
     }
