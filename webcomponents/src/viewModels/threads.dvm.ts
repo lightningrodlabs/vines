@@ -834,7 +834,7 @@ export class ThreadsDvm extends DnaViewModel {
   async importPerspective(json: string, canPublish: boolean) {
     console.debug("Dvm.importPerspective() size:", json.length);
     this._perspective.importing = true;
-    this._perspective.importingPct = 0.0;
+    this._perspective.importingPct = -1.0;
     this.notifySubscribers();
 
     const external = JSON.parse(json) as any;
@@ -849,11 +849,9 @@ export class ThreadsDvm extends DnaViewModel {
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
     this.authorshipZvm.import(JSON.stringify(originals), canPublish);
     //console.debug("import perspective", this.authorshipZvm.perspective);
-    this._perspective.importingPct = 0.01;
 
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
     this.profilesZvm.import(JSON.stringify(profiles), canPublish);
-    this._perspective.importingPct = 0.02;
 
     const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
     this.threadsZvm.import(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);

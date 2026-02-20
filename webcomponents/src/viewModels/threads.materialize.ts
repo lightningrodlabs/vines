@@ -1,14 +1,14 @@
 import {
-  AnyBead, BaseBeadKind, Bead,
-  EncryptedBead,
-  EntryBead, Limitations, Moderation,
-  ParticipationProtocol, Subject,
-  TextBead,
-  ThreadsEntryType
+    AnyBead, BaseBeadKind, Bead,
+    EncryptedBead,
+    EntryBead, FileLimits, Limitations, Moderation,
+    ParticipationProtocol, Subject,
+    TextBead, TextLimits,
+    ThreadsEntryType
 } from "../bindings/threads.types";
 import {WAL} from "@theweave/api";
 import {ActionId, AgentId, EntryId} from "@ddd-qc/lit-happ";
-import {Timestamp} from "@holochain/client";
+import {AgentPubKeyB64, Timestamp} from "@holochain/client";
 
 
 /** -- Should be defined in @holochain/client */
@@ -118,6 +118,87 @@ export interface BeadLinkMaterialized {
   creationTime: Timestamp,
   beadAh: ActionId,
   beadType: BeadType,
+}
+
+/** -- ParticipationProtocol -- */
+
+export interface ModerationMat {
+    instructions: string
+    allowedFlags: number
+    moderators: AgentPubKeyB64[]
+}
+
+
+export interface LimitationsMat {
+    canWal: boolean
+    canFile?: FileLimits
+    canText?: TextLimits
+    allowedAgents: AgentPubKeyB64[]
+    maybeAgentRateLimiting?: [number, Timestamp]
+}
+
+
+export interface PpMat {
+    purpose: string
+    subject: Subject
+    moderation: ModerationMat
+    limitations: LimitationsMat
+}
+
+
+export function materializeModeration(mod: Moderation): ModerationMat {
+    return {
+        instructions: mod.instructions,
+        allowedFlags: mod.allowedFlags,
+        moderators: mod.moderators.map((k) => new AgentId(k).b64),
+    }
+}
+
+export function materializeLimitations(limits: Limitations): LimitationsMat {
+    return {
+        canWal: limits.canWal,
+        canFile: limits.canFile,
+        canText: limits.canText,
+        allowedAgents: limits.allowedAgents.map((k) => new AgentId(k).b64),
+        maybeAgentRateLimiting: limits.maybeAgentRateLimiting,
+    }
+}
+
+export function materializePp(pp: ParticipationProtocol): PpMat {
+    return {
+        purpose: pp.purpose,
+        subject: pp.subject,
+        moderation: materializeModeration(pp.moderation),
+        limitations: materializeLimitations(pp.limitations),
+    }
+}
+
+
+export function dematerializeModeration(mod: ModerationMat): Moderation {
+    return {
+        instructions: mod.instructions,
+        allowedFlags: mod.allowedFlags,
+        moderators: mod.moderators.map((k) => new AgentId(k).hash),
+    }
+}
+
+export function dematerializeLimitations(limits: LimitationsMat): Limitations {
+    return {
+        canWal: limits.canWal,
+        canFile: limits.canFile,
+        canText: limits.canText,
+        allowedAgents: limits.allowedAgents.map((k) => new AgentId(k).hash),
+        maybeAgentRateLimiting: limits.maybeAgentRateLimiting,
+    }
+}
+
+export function dematerializePp(pp: PpMat): ParticipationProtocol {
+    return {
+        purpose: pp.purpose,
+        subject: pp.subject,
+        moderation: dematerializeModeration(pp.moderation),
+        limitations: dematerializeLimitations(pp.limitations),
+    }
 }
 
 

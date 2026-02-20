@@ -23,14 +23,14 @@ import {
 } from "../bindings/threads.types";
 import {AnyIdMap} from "../utils";
 import {
-  BeadInfo,
-  BeadLinkMaterialized,
-  BeadType,
-  NotifiableEvent,
-  TextBeadMat,
-  ThreadsNotification,
-  TypedBaseBeadMat,
-  TypedBeadMat
+    BeadInfo,
+    BeadLinkMaterialized,
+    BeadType, dematerializePp, materializePp,
+    NotifiableEvent, PpMat,
+    TextBeadMat,
+    ThreadsNotification,
+    TypedBaseBeadMat,
+    TypedBeadMat
 } from "./threads.materialize";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {SearchParameters} from "../search";
@@ -49,7 +49,7 @@ export type ThreadsSnapshot = {
   hiddens: HoloHashB64[],
   favorites: ActionHashB64[],
   /** (ppAh, ppMat, title, ts, author) */
-  pps: [ActionHashB64, ParticipationProtocol, string, Timestamp, AgentPubKeyB64][],
+  pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][],
   /** (ppAh, agents) */
   bans: [ActionHashB64, AgentPubKeyB64[]][],
   /** (ppAh, beads) */
@@ -719,10 +719,10 @@ export class ThreadsPerspective {
 
     /** PPs */
     /** Collapse subject address to latest version */
-    let pps: [ActionHashB64, ParticipationProtocol, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries()).map(([ppAh, thread]) => {
+    let pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries()).map(([ppAh, thread]) => {
       const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
       thread.pp.subject.address = latest.b64;
-      return [ppAh.b64, thread.pp, thread.title, thread.creationTime, thread.author.b64];
+      return [ppAh.b64, materializePp(thread.pp), thread.title, thread.creationTime, thread.author.b64];
     });
 
     /** -- Done -- */
@@ -1208,7 +1208,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
         ? authorshipZvm.perspective.getAuthor(ppAh)!
         : [creationTime, cell.address.agentId];
-      this.storeThread(cell, ppAh, ppMat, title, authorshipLog[0], authorshipLog[1], false, false);
+      this.storeThread(cell, ppAh, dematerializePp(ppMat), title, authorshipLog[0], authorshipLog[1], false, false);
     }
     /** this.beads */
     this.beads.clear();

@@ -1580,11 +1580,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return html`
           <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
               <div style="margin: auto;">${msg('Importing data...')}</div>
-              <ui5-progress-indicator .value=${pct} style="width: 50%; margin:auto;"></ui5-progress-indicator>
-              <!-- <ui5-busy-indicator delay="0" size="Large" active
-                                  style="margin:auto; color:#05b92f"
-              ></ui5-busy-indicator> 
-              <div>${pct}%</div> -->
+              ${pct >= 0? html`
+                    <ui5-progress-indicator .value=${pct} style="width: 50%; margin:auto;"></ui5-progress-indicator>
+              ` : html`
+                  <ui5-busy-indicator delay="0" size="Large" active
+                                      style="margin:auto; color:#05b92f"
+                  ></ui5-busy-indicator> 
+              `}
           </div>
       `;
     }
