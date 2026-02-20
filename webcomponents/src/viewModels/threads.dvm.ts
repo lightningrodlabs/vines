@@ -234,6 +234,27 @@ export class ThreadsDvm extends DnaViewModel {
     this.notifySubscribers();
   }
 
+  /** Check every 5 secs for peers online and request acks for unshared beads if any */
+  private _processUnsharedInterval: any = undefined;
+  processUnshared() {
+      if (this._processUnsharedInterval) {
+          return;
+      }
+      this._processUnsharedInterval = setInterval(async () => {
+          if (this.perspective.myUnsharedBeads.size > 0) {
+              const others = this.allCurrentOthers();
+              console.info("ThreadsDvn.processUnshared() myUnsharedBeads", this.perspective.myUnsharedBeads.size, others.length);
+              if (others.length > 0) {
+                  for (const unshared of Object.values(this.perspective.myUnsharedBeads).slice(0, 10)) { // for the first 10 beads
+                      /*await*/ this.requestAck(new ActionId(unshared), others.slice(0, 5)); // ask 5 other peers
+                  }
+              }
+          } else {
+              clearInterval(this._processUnsharedInterval);
+              this._processUnsharedInterval = undefined;
+          }
+      }, 5000)
+  }
 
   /** -- Signaling -- */
 

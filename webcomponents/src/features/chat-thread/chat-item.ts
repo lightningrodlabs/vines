@@ -111,19 +111,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   override updated() {
     /** Request ack if peers are online */
     if (this._dvm.perspective.myUnsharedBeads.has(this.hash.b64)) {
-      const others = this._dvm.allCurrentOthers();
-      if (others.length > 0) {
-        this._dvm.requestAck(this.hash, others.slice(0, 5));
-      } else {
-        /** Otherwise check again in 5 secs */
-        if (this._canRequest) {
-            this._canRequest = false;
-            delay(5000).then(() => {
-                this._canRequest = true;
-                this.requestUpdate();
-            })
-        }
-      }
+        this._dvm.processUnshared();
     }
   }
 
