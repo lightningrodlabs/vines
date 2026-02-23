@@ -230,6 +230,7 @@ export class VinesApp extends HappMultiElement {
 
     // Notify parent that the vines happ is ready
     override firstUpdated() {
+        //console.log("<vines-app>.firstUpdated() vines-ready");
         this.dispatchEvent(new CustomEvent('vines-ready', {
             detail: this.appId ?? this.cells[0]?.appId,
             bubbles: true,
