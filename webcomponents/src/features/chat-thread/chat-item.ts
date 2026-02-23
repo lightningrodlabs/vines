@@ -87,10 +87,18 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** Probe bead and its reactions */
-  protected override firstUpdated(_changedProperties: PropertyValues) {
+  /** */
+  protected override async firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
-      /*await*/ this.loadBead(GetStrategy.Local); // TODO: Figure out best strategy
+    /** Probe bead and its reactions */
+    await this.loadBead(GetStrategy.Local); // TODO: Figure out best strategy
+    /** Update if original author found */
+    const maybe = await this._dvm.threadsZvm.getOriginalAuthor(this.hash);
+    if (maybe) {
+        //console.log("<chat-item> Original", prettyTimestamp(maybe[0]), this.hash.b64);
+        this._dvm.threadsZvm.moveBead(this.hash, maybe[0]);
+        this.requestUpdate();
+    }
   }
 
 
@@ -276,7 +284,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render(): TemplateResult<1> {
-    console.debug("<chat-item>.render()", this.hash.b64, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
+    //console.debug("<chat-item>.render()", this.hash.b64, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
     this._renderCount += 1;
 
     if (!this.hash) {
@@ -289,6 +297,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
+    const maybeCachedOriginal = this._dvm.threadsZvm.getcachedOriginalAuthor(this.hash);
+    if (maybeCachedOriginal) {
+        baseBeadInfo.author = new AgentId(maybeCachedOriginal[1]);
+        baseBeadInfo.creationTime = maybeCachedOriginal[0];
+    }
+    //console.debug("<chat-item>.render()", prettyTimestamp(baseBeadInfo.creationTime), this.hash.b64);
     const isNew = this._dvm.threadsZvm.perspective.isNew(this.hash.b64);
     const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
     //const isPersistent = false;

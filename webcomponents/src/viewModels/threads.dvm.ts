@@ -14,7 +14,7 @@ import {
     ZomeSignalProtocolType,
     ZomeViewModel
 } from "@ddd-qc/lit-happ";
-import {catchThrottled, ThreadsZvm} from "./threads.zvm";
+import {ThreadsZvm} from "./threads.zvm";
 import {ActionHashB64, AppSignal, Signal, SignalCb, SignalType, Timestamp} from "@holochain/client";
 import {
     ParticipationProtocol,
@@ -365,27 +365,31 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  private async broadcastLocation(to?: AgentId[]) {
+  private broadcastLocation(to?: AgentId[]) {
     const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
     const serTip = this._encoder.encode(locTip);
     //const agents = from? [from] : this.allCurrentOthers();
     const agents = to? to : this.allCurrentOthers();
     console.log("broadcastLocation() of to", this._currentLocation, agents);
-    await this.threadsZvm.broadcastTip({AppCustom: serTip}, agents);
+    try {
+        this.threadsZvm.broadcastTip({AppCustom: serTip}, agents);
+    } catch(e) {console.warn("broadcastLocation() error", e)}
   }
 
 
   /** */
-  async requestAck(beadAh: ActionId, others: AgentId[]) {
+  requestAck(beadAh: ActionId, others: AgentId[]) {
     console.log("ThreadsDvm.requestAck()", beadAh);
     const tip: ThreadsAppTip = {type: "ackRequest", data: beadAh};
     const serTip = this._encoder.encode(tip);
-    await catchThrottled(this.threadsZvm.broadcastTip({AppCustom: serTip}, others));
+    try {
+      this.threadsZvm.broadcastTip({AppCustom: serTip}, others);
+    } catch(e) {console.warn("requestAck() error", e)}
   }
 
 
   /** */
-  async ackAuthor(beadAh: ActionHashB64) {
+  ackAuthor(beadAh: ActionHashB64) {
     console.log("ThreadsDvm.ackAuthor()", beadAh);
     const beadId = new ActionId(beadAh);
     const maybe = this.threadsZvm.perspective.beads.get(beadId);
@@ -397,17 +401,23 @@ export class ThreadsDvm extends DnaViewModel {
     const author = maybe[0].author;
     const tip: ThreadsAppTip = {type: "ack", data: beadId};
     const serTip = this._encoder.encode(tip);
-    await catchThrottled(this.threadsZvm.synchronizeCustomTip(serTip, author, "zThreads"));
+    try {
+        this.threadsZvm.synchronizeCustomTip(serTip, author, "zThreads");
+    } catch(e) {console.warn("ackAuthor() error", e)}
+
   }
 
 
   /** */
-  async signalTyping(thread: ActionId, is: boolean) {
+  signalTyping(thread: ActionId, is: boolean) {
     //console.log("ThreadsDvm.signalTyping()", thread, is);
     const tip: ThreadsAppTip = {type: "typing", data: {thread, is}};
     const serTip = this._encoder.encode(tip);
-    await catchThrottled(this.threadsZvm.broadcastTip({AppCustom: serTip}, this.allCurrentOthers()));
-  }
+    try {
+        this.threadsZvm.broadcastTip({AppCustom: serTip}, this.allCurrentOthers());
+    } catch(e) {console.warn("ackAuthor() error", e)}
+
+}
 
   /** */
   addSignaledNotif(notifTip: ThreadsNotificationTip) {
@@ -459,7 +469,7 @@ export class ThreadsDvm extends DnaViewModel {
                   console.log("ThreadsDvm.handleTip() Adding to ackRequest", entryPulseMat);
                   this._perspective.ackRequests.set(entryPulseMat.ah, entryPulseMat.author);
                   await delay(1000);
-                  /*await*/ this.threadsZvm.fetchUnknownBead(entryPulseMat.ah, GetStrategy.Local);
+                  await this.threadsZvm.fetchUnknownBead(entryPulseMat.ah, GetStrategy.Local);
                 }
               }
               break;
@@ -768,13 +778,13 @@ export class ThreadsDvm extends DnaViewModel {
                   authors.set(author.id, agentId);
               }
           }
-          const timestamp = Date.parse(message["timestamp"]);
+          const timestamp = Date.parse(message["timestamp"]) * 1000;
           let reference = prevBeadAh;
           if (message.type == "Reply" && message.reference && message.reference.channelId == channel.id) {
               reference = messages.get(message.reference.messageId) ?? prevBeadAh;
           }
           const nextBead = await this.threadsZvm.createNextBead(ppAh!, reference);
-          console.debug("ThreadsDvm.importDiscord() Publishing message", /*message.content,*/ new Date(timestamp).toLocaleString(), agentId.b64);
+          console.debug("ThreadsDvm.importDiscord() Publishing message", /*message.content,*/ prettyTimestamp(timestamp), agentId.b64);
           const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, message.content, nextBead, timestamp, agentId);
           prevBeadAh = beadAh;
           messages.set(message.id, beadAh);
@@ -805,12 +815,12 @@ export class ThreadsDvm extends DnaViewModel {
               const [beadAh, _anchor, _bead] = await this.threadsZvm.publishTypedBeadAt(ThreadsEntryType.TextBead, content, nextBead, timestamp, agentId);
               prevBeadAh = beadAh;
               messages.set(attachment.id, beadAh);
-              await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp + 1001, agentId, false);
+              await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp + 1001, agentId, false); // mark the EntryBead as created a bit later
           }
 
           // Set the threads creation date to the date of the first message (DiscordChatExporter does not provide a creation date for a channel)
           if (count == 1) {
-              console.debug("ThreadsDvm.importDiscord() ascribe thread", prettyTimestamp(timestamp * 1000));
+              console.debug("ThreadsDvm.importDiscord() ascribe thread", prettyTimestamp(timestamp));
               await this.authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh!, timestamp, this.cell.address.agentId, false);
           }
       }

@@ -5,8 +5,9 @@ import {TimeInterval} from "./timeInterval";
 import createRBTree, {Tree} from "functional-red-black-tree";
 //import {Base64} from "js-base64";
 import {BeadLinkMaterialized} from "./threads.materialize";
-import {AgentId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId} from "@ddd-qc/lit-happ";
 import {ParticipationProtocol} from "../bindings/threads.types";
+import {prettyTimestamp} from "@ddd-qc/files";
 
 
 /**
@@ -121,10 +122,27 @@ export class Thread {
     if (this.has(blMat)) {
       return;
     }
-    //console.log("ThreadInfo.addItem().inserting at", blMat.creationTime, blMat.beadAh)
+    //console.debug("ThreadInfo.addItem().inserting at", prettyTimestamp(blMat.creationTime), blMat.beadAh.b64, this._beadLinksTree.keys.length)
     this._beadLinksTree = this._beadLinksTree.insert(blMat.creationTime, blMat);
     //console.log("ThreadInfo.addItem() tree size =", this._beadLinksTree.length, this._beadLinksTree.keys.length);
   }
+
+    /** WARN: untested */
+    moveItem(oldTs: number, newTs: number) {
+      if (oldTs == newTs) {
+          //console.debug("ThreadsZvm.moveItem() canceled. same TS", prettyTimestamp(newTs));
+          return;
+      }
+      const blMat = this._beadLinksTree.get(oldTs);
+      if (!blMat) {
+          //console.debug("ThreadsZvm.moveItem() canceled. no blMat", prettyTimestamp(newTs));
+          return;
+      }
+      blMat.creationTime = newTs;
+      this._beadLinksTree = this._beadLinksTree.remove(oldTs);
+      this._beadLinksTree = this._beadLinksTree.insert(newTs, blMat);
+      console.debug("ThreadInfo.moveItem() from to", prettyTimestamp(oldTs), prettyTimestamp(newTs));
+    }
 
 
   /** */
@@ -149,6 +167,16 @@ export class Thread {
       }));
   }
 
+  /** */
+  findCreationTime(ah: ActionId): number | undefined {
+      for (const blm of this.getAll()) {
+          //console.log(`\t[${bl.indexTime}]`, blHash, bl.beadType);
+          if (blm.beadAh.equals(ah)) {
+              return blm.creationTime;
+          }
+      }
+      return undefined;
+  }
 
   /** */
   has(candidat: BeadLinkMaterialized): boolean {

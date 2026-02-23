@@ -250,7 +250,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
         return;
     }
     const  pixelsToTop =  Math.abs(this.clientHeight - this.scrollHeight - this.scrollTop);
-    console.log("ChatView.onWheel() ", pixelsToTop, this.scrollTop, this.scrollHeight, this.clientHeight)
+    //console.log("ChatView.onWheel() ", pixelsToTop, this.scrollTop, this.scrollHeight, this.clientHeight)
     //if (this.scrollTop == 0) {
     //if (this.clientHeight - this.scrollHeight == this.scrollTop) {
     if (pixelsToTop < 100) {
@@ -295,12 +295,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
 
 
-    /** Should grab all probed messages and request probes if end is reached */
+    /** Should grab all probed messages and request probes if the end has been reached */
 
     const all = thread.getAll();
     console.log("<chat-thread-view>.render() all", all.length);
+    //all.sort((blm) => blm.creationTime)
 
-    //const day = ts2day(blm.creationTime);
     let myTimeZone = "UTC";
     if (this._dvm.profilesZvm.getMyProfile() && this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]) {
       myTimeZone = this._dvm.profilesZvm.getMyProfile()!.fields["timezone"]!;

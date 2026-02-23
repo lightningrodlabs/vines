@@ -1901,9 +1901,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 /** Skip signal only pp */
                 if (pulse.validatedBy == ValidatedBy.None) {
                     console.debug("ThreadsZvm PP received via signal. Don't show and look for gossip");
-                    delay(2000).then(async () => {
-                        await this.probeAllInner();
-                    });
+                    delay(2000)
+                        .then(async () => await this.probeAllInner());
                     return;
                 }
                 /** Skip DM PP's for other agents */
@@ -1917,7 +1916,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 /** */
                 if (StateChangeType.Create == pulse.state) {
                     const maybeTitle = this._channelTitleCache.get(pulse.ah);
-                    const maybe = await this.getOriginalAuthor(pulse.ah);
+                    const [_throttleError, maybe] = await catchThrottled(this.getOriginalAuthor(pulse.ah));
                     const author = maybe? new AgentId(maybe[1]) : pulse.author;
                     const origTs = maybe? maybe[0] : pulse.ts;
                     console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
@@ -2089,6 +2088,33 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
 
+    /** */
+    moveBead(ah: ActionId, newTs: number) {
+        const baseBeadInfo = this.perspective.getBaseBeadInfo(ah);
+        if (!baseBeadInfo) {
+            //console.debug("ThreadsZvm.moveBead() canceled. no base base info found", prettyTimestamp(newTs));
+            return;
+        }
+        const thread = this.perspective.threads.get(baseBeadInfo.bead.ppAh);
+        if (!thread) {
+            //console.debug("ThreadsZvm.moveBead() canceled. no thread found", prettyTimestamp(newTs));
+            return;
+        }
+        const maybeTs = thread.findCreationTime(ah);
+        const blm = thread.getAtKey(baseBeadInfo.creationTime);
+        if (!blm) {
+            //console.debug("ThreadsZvm.moveBead() canceled. blm not found", prettyTimestamp(newTs)) ;
+            return;
+        }
+        if (baseBeadInfo.creationTime == newTs && maybeTs && maybeTs == newTs)  {
+            //console.debug("ThreadsZvm.moveBead() canceled. same ts", prettyTimestamp(newTs));
+            return;
+        }
+        thread.moveItem(maybeTs!, newTs);
+        this.notifySubscribers();
+    }
+
+
     private _cacheOriginalAuthor = new ActionIdMap<[Timestamp, Uint8Array] | null>();
 
     /** */
@@ -2101,6 +2127,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         this._cacheOriginalAuthor.set(ah, res);
         return res;
     }
+
+
+    /** */
+    getcachedOriginalAuthor(ah: ActionId): [Timestamp, Uint8Array] | null {
+        return this._cacheOriginalAuthor.get(ah) ?? null;
+    }
+
 
     /** */
     private async handleBeadEntryPulse(pulse: EntryPulseMat, typed: TypedBead, from: AgentId): Promise<void> {
