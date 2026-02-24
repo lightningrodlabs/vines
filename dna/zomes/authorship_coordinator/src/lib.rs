@@ -9,3 +9,4 @@ mod authorship;
 
 
 extern crate zome_core;
+pub use zome_core::*;

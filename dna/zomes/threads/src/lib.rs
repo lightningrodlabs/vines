@@ -17,8 +17,7 @@ mod dm;
 mod notifications;
 mod query_all;
 mod utils;
-mod input_types;
-
-pub use input_types::*;
 
 extern crate zome_core;
+
+pub use zome_core::*;

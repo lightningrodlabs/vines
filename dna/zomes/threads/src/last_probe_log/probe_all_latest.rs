@@ -39,7 +39,7 @@ pub fn probe_all_between(searched_interval: SweepInterval) -> ExternResult<Probe
      usize::MAX,
      None,
      ThreadsLinkType::TimeItem,
-     GetStrategy::Network
+     GetStrategy::Local, // FIXME
   )?.1;
   debug!("links.len = {}", responses.len());
   /// Convert links to BeadLinks

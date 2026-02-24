@@ -16,7 +16,7 @@ use hdk::prelude::*;
 use zome_utils::*;
 use authorship_zapi::get_original_author;
 use zome_signals::*;
-
+use zome_core::get_input_types::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -40,7 +40,7 @@ pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash, strategy: GetStr
   };
   let mut res = (record.action().timestamp(), record.action().author().to_owned(), typed);
   /// Get Original author
-  let maybe = get_original_author(bead_ah)?;
+  let maybe = get_original_author(GetAhInput { ah: bead_ah, strategy })?;
   if let Some(pair) = maybe {
     debug!("fetch_typed_bead() original author found: {}", pair.1);
     res.0 = pair.0;

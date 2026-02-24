@@ -84,6 +84,66 @@ ValidationStatus, ValidationReceipt,
 // @ts-ignore
 import {ItemLink, SweepInterval, SweepResponse} from './deps.types';
 
+/**  */
+export interface GetAhInput {
+  ah: ActionArray
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetManyAhInput {
+  ahs: ActionArray[]
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetEhInput {
+  eh: EntryArray
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetManyEhInput {
+  ehs: EntryArray[]
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetLhInput {
+  lh: AnyLinkableArray
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetManyLhInput {
+  lhs: AnyLinkableArray[]
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetAgentInput {
+  agent: AgentArray
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetManyAgentInput {
+  agents: AgentArray[]
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetDhInput {
+  dh: AnyDhtArray
+  strategy: GetStrategy
+}
+
+/**  */
+export interface GetManyDhInput {
+  dhs: AnyDhtArray[]
+  strategy: GetStrategy
+}
+
 export interface GetDataTypeInput {
   hash: AnyDhtArray
   role?: string
@@ -168,18 +228,6 @@ export interface AddEncBeadInput {
 export interface PublishDmThreadInput {
   otherAgent: AgentArray
   appletId: string
-}
-
-/**  */
-export interface GetAhInput {
-  ah: ActionArray
-  strategy: GetStrategy
-}
-
-/**  */
-export interface GetManyAhInput {
-  ahs: ActionArray[]
-  strategy: GetStrategy
 }
 
 export interface CommitGlobalLogInput {

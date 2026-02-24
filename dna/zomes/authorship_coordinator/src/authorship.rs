@@ -4,6 +4,7 @@ use hdi::hash_path::path::DELIMITER;
 use hdk::prelude::*;
 use zome_utils::*;
 use zome_path::*;
+use zome_core::get_input_types::*;
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -105,14 +106,14 @@ pub fn get_all_ascribed_types(strategy: GetStrategy) -> ExternResult<Vec<String>
 
 /// Returns an empty AgentPubKey if no author were provided when ascribing.
 #[hdk_extern]
-pub fn get_author(target: AnyLinkableHash) -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
+pub fn get_author(input: GetLhInput) -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let authors = get_links(
         LinkQuery::new(
-            target,
+           input.lh,
             AuthorshipLinkType::Author.try_into_filter().unwrap(),
         ),
-        GetStrategy::Local,
+        input.strategy,
     )?;
     if authors.len() == 0 {
         return Ok(None);
@@ -127,16 +128,16 @@ pub fn get_author(target: AnyLinkableHash) -> ExternResult<Option<(Timestamp, Ag
 
 ///
 #[hdk_extern]
-pub fn get_authors(targets: Vec<AnyLinkableHash>) -> ExternResult<BTreeMap<AnyLinkableHash, (Timestamp, AgentPubKey)>> {
+pub fn get_authors(input: GetManyLhInput) -> ExternResult<BTreeMap<AnyLinkableHash, (Timestamp, AgentPubKey)>> {
    std::panic::set_hook(Box::new(zome_panic_hook));
    let mut result = BTreeMap::new();
-   for target in targets.iter() {
+   for target in input.lhs.iter() {
       let authors = get_links(
          LinkQuery::new(
             target.clone(),
             AuthorshipLinkType::Author.try_into_filter().unwrap(),
          ),
-         GetStrategy::Local,
+         input.strategy,
       )?;
       if authors.len() == 0 {
          continue;

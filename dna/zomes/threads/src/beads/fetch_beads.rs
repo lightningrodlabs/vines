@@ -1,16 +1,16 @@
 use hdk::prelude::*;
 use authorship_zapi::{get_original_authors};
 use zome_signals::*;
-
+use zome_core::get_input_types::*;
 
 
 #[hdk_extern]
-pub fn fetch_beads(bead_ahs: Vec<ActionHash>) -> ExternResult<()> {
-   debug!("fetch_beads() {}", bead_ahs.len());
-   let mut pulses = Vec::with_capacity(bead_ahs.len());
+pub fn fetch_beads(input: GetManyAhInput) -> ExternResult<()> {
+   debug!("fetch_beads() {}", input.ahs.len());
+   let mut pulses = Vec::with_capacity(input.ahs.len());
 
    let mut records = Vec::new();
-   for bead_ah in bead_ahs {
+   for bead_ah in input.ahs.clone() {
       let Some(record) = get(bead_ah.clone(), GetOptions::local())? else {
          error!("fetch_beads(): Bead not found at given ActionHash");
          continue;
@@ -18,7 +18,7 @@ pub fn fetch_beads(bead_ahs: Vec<ActionHash>) -> ExternResult<()> {
       records.push(record);
    }
    let ahs = records.iter().map(|r| r.signed_action.hashed.hash.clone()).collect::<Vec<ActionHash>>();
-   let original_authors = get_original_authors(ahs)?;
+   let original_authors = get_original_authors(GetManyAhInput {ahs, strategy: input.strategy})?;
 
    for record in records {
       /// Create Pulse

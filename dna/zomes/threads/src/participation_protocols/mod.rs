@@ -10,17 +10,18 @@ use threads_integrity::*;
 use authorship_zapi::*;
 use zome_signals::*;
 
+
 /// Return original author
 #[hdk_extern]
-pub fn fetch_pp(ah: ActionHash) -> ExternResult<Option<(ParticipationProtocol, Timestamp, AgentPubKey)>> {
+pub fn fetch_pp(input: GetAhInput) -> ExternResult<Option<(ParticipationProtocol, Timestamp, AgentPubKey)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  debug!("fetch_pp() {}", ah);
-  let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(ah.clone().into(), GetStrategy::Network) else {
+  debug!("fetch_pp() {:?}", input);
+  let Ok((record, typed)) = get_typed_and_record::<ParticipationProtocol>(input.ah.clone().into(), input.strategy) else {
     //debug!("fetch_pp() not found");
     return Ok(None);
   };
   ///
-  let maybe_op = get_original_author(ah)?;
+  let maybe_op = get_original_author(input)?;
   if let Some(opPair) = maybe_op {
     //debug!("fetch_pp() origin author found: {} || {}", opPair.0, record.action().timestamp());
     let mut pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false)?;

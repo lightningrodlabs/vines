@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use crate::beads::*;
 use threads_integrity::*;
 use time_indexing::convert_timepath_to_timestamp;
-use crate::{GetAhInput, GetManyAhInput};
+use zome_core::get_input_types::*;
 
 /// Return ActionHash, Global Time Anchor, bucket time
 #[hdk_extern]

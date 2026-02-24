@@ -1628,8 +1628,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       //console.warn("<vines-page>.render() thread", !!thread, this._selectedThreadHash.short);
       if (!thread) {
         console.log("<vines-page>.render() fetchPp WARNING");
-        /*await*/
-        this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
+        /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
       } else {
         primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
         const isEditOther = this._dvm.threadsZvm.isEditThreadFromPeer(this._selectedThreadHash);

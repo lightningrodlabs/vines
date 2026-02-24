@@ -4,7 +4,7 @@ use zome_utils::*;
 use threads_integrity::*;
 use crate::beads::{fetch_typed_bead, index_bead};
 use crate::dm::decrypt_my_bead;
-use crate::*;
+use zome_core::get_input_types::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

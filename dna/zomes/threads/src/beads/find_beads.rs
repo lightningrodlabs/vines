@@ -9,17 +9,17 @@ use zome_path::*;
 /// USE WITH CARE as this can easily timeout as it's a loop of get_links()
 #[hdk_extern]
 pub fn find_beads(
-    pp_ah: ActionHash, /*,  link_tag: Option<LinkTag>*/
+    input: GetAhInput,
 ) -> ExternResult<(SweepInterval, Vec<BeadLink>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let link_tag = None;
     let search_interval = SweepInterval::now();
     /// Form TypedPath
-    let pp_anchor = hash2comp(pp_ah.clone());
+    let pp_anchor = hash2comp(input.ah.clone());
     let thread_tp = Path::from(vec![pp_anchor]).typed(ThreadsLinkType::ThreadTimePath)?;
     //debug!("thread_tp = {}", path2anchor(&thread_tp).unwrap());
     /// Get All LeafAnchors
-    let leaf_tps = tp_leaf_children(&thread_tp, GetStrategy::Network)?;
+    let leaf_tps = tp_leaf_children(&thread_tp, input.strategy.clone())?;
     debug!("leaf_paths.len = {}", leaf_tps.len());
     /// Get BeadLinks from each LeafAnchor
     let mut res = Vec::new();
@@ -36,7 +36,7 @@ pub fn find_beads(
                 ThreadsLinkType::TimeItem.try_into_filter().unwrap(),
                 link_tag.clone(),
             ),
-            GetStrategy::Network,
+            input.strategy.clone(),
         )?;
         //debug!("links.len = {}", links.len());
         let mut bls = links

@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_signals::*;
 use zome_utils::*;
-use crate::GetAhInput;
+use zome_core::get_input_types::*;
 
 ///
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

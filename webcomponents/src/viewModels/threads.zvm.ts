@@ -378,7 +378,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         for (const [pp_ah, _linkTs] of pps) {
             const ppAh = new ActionId(pp_ah);
             //console.debug("threadsZvm.pullSubjectVersionThreads() subjectId", subjectId.b64);
-            const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp(pp_ah));
+            const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp({ah: pp_ah, strategy}));
             if (throttleError) {
                 continue;
             }
@@ -872,7 +872,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (maybeThread) {
             return [maybeThread.pp, maybeThread.title, maybeThread.creationTime, maybeThread.author];
         }
-        const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp(ppAh.hash));
+        const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp({ah: ppAh.hash, strategy: GetStrategy.Local})); // FIXME strategy
         if (throttleError) {
             return null;
         }
@@ -1001,7 +1001,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    private async fetchBeads(ppAh: ActionId, beadLinks: BeadLink[], probedInterval: TimeInterval, _strategy: GetStrategy): Promise<void> {
+    private async fetchBeads(ppAh: ActionId, beadLinks: BeadLink[], probedInterval: TimeInterval, strategy: GetStrategy): Promise<void> {
         //console.log("fetchBeads() len = ", beadLinks.length, probedInterval);
         if (beadLinks.length == 0) {
             return;
@@ -1013,7 +1013,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             //await this.fetchPp(ppAh, true);
             //thread = this._threads.get(ppAh);
         }
-        await this.zomeProxy.fetchBeads(beadLinks.map((bl) => bl.beadAh));
+        await this.zomeProxy.fetchBeads({ahs: beadLinks.map((bl) => bl.beadAh), strategy});
         thread.addProbedInterval(probedInterval);
     }
 
@@ -2133,7 +2133,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (cached != undefined) {
             return cached;
         }
-        const [throttleError, res] = await catchThrottled(this.zomeProxy.getOriginalAuthor(ah.hash));
+        const [throttleError, res] = await catchThrottled(this.zomeProxy.getOriginalAuthor({ah: ah.hash, strategy: GetStrategy.Local})); // FIXME strategy
         if (!throttleError) {
             this._cacheOriginalAuthor.set(ah, res);
             return res;
