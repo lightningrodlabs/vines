@@ -89,11 +89,6 @@ export class ChatAttachment extends LitElement {
 
   static  MAX_VIEWABLE_SIZE = 100 * 1024 * 1024;
 
-  //@state() private _loading = true;
-
-  //private _file: File | null = null;
-  //private _maybeBlobUrl: string | undefined = undefined;
-
   private _att: any = {}
 
   @state() private _canOverrideView = false;
@@ -153,52 +148,53 @@ export class ChatAttachment extends LitElement {
         </div>` : html``}
     `;
 
-    /** Specific render depending on file type */
-    /** this._file is set only for small files */
-    if (this.isTypeViewable() && (this._canOverrideView || this._att.fileSizeBytes < ChatAttachment.MAX_VIEWABLE_SIZE)) {
-      switch (this._att.fileType) {
-        // case FileType.Text:
-        //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
-        //     // //const text = decodeURIComponent(escape(tt)));
-        //     // console.log("FileType.Text", this._maybeDataUrl)
-        //     // preview = html`<div id="preview" class="text">${tt}</div>`;
-        //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
-        //     break;
-        // case FileType.Pdf:
-        //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
-        //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
-        //     break;
-        case FileType.Image:
-          item = html`<img id="img-bead" class="preview Image" src=${this._att.url} @click=${() => {
-              const a = document.createElement('a');
-              a.href = this._att.url;
-              a.download = this._att.fileName;
-              a.click();
-          }}/>`;
-          break;
-        case FileType.Audio:
-          item = html`
-              <audio class="preview Audio" style="z-index: 51" controls>
-                  <source src=${this._att.url} type=${this._att.mime}>
-                  ${msg("Your browser does not support the audio element.")}
-              </audio>
-          `;
-          break;
-        case FileType.Video:
-          //  width="440" height="320"
-          item = html`
-              <video class="preview Video" controls>
-                  <source src=${this._att.url} type=${this._att.mime}>
-                  ${msg("Your browser does not support the video element.")}
-              </video>
-          `;
-          break;
-        default:
-          //item = html`<div class="preview">Preview not available for this type</div>`;
-          item = html`<embed class="preview ${this._att.fileType}" src=${this._att.url} type=${this._att.mime} />`;
-          break;
-      }
-    }
+    // FIXME: Dont try to render discord link since it it temp and will most of the time point to an unavailable resource
+    // /** Specific render depending on file type */
+    // /** this._file is set only for small files */
+    // if (this.isTypeViewable() && (this._canOverrideView || this._att.fileSizeBytes < ChatAttachment.MAX_VIEWABLE_SIZE)) {
+    //   switch (this._att.fileType) {
+    //     // case FileType.Text:
+    //     //     // const tt = atob((this._maybeBlobUrl as string).split(',')[1]);
+    //     //     // //const text = decodeURIComponent(escape(tt)));
+    //     //     // console.log("FileType.Text", this._maybeDataUrl)
+    //     //     // preview = html`<div id="preview" class="text">${tt}</div>`;
+    //     //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
+    //     //     break;
+    //     // case FileType.Pdf:
+    //     //     preview = html`<embed id="preview" src=${this._maybeBlobUrl} type=${mime} width="440px" height="300px" />`;
+    //     //     //preview = html`<embed id="preview" src=${this._maybeBlobUrl} type="application/pdf" width="100%" height="600px" />`;
+    //     //     break;
+    //     case FileType.Image:
+    //       item = html`<img id="img-bead" class="preview Image" src=${this._att.url} @click=${() => {
+    //           const a = document.createElement('a');
+    //           a.href = this._att.url;
+    //           a.download = this._att.fileName;
+    //           a.click();
+    //       }}/>`;
+    //       break;
+    //     case FileType.Audio:
+    //       item = html`
+    //           <audio class="preview Audio" style="z-index: 51" controls>
+    //               <source src=${this._att.url} type=${this._att.mime}>
+    //               ${msg("Your browser does not support the audio element.")}
+    //           </audio>
+    //       `;
+    //       break;
+    //     case FileType.Video:
+    //       //  width="440" height="320"
+    //       item = html`
+    //           <video class="preview Video" controls>
+    //               <source src=${this._att.url} type=${this._att.mime}>
+    //               ${msg("Your browser does not support the video element.")}
+    //           </video>
+    //       `;
+    //       break;
+    //     default:
+    //       //item = html`<div class="preview">Preview not available for this type</div>`;
+    //       item = html`<embed class="preview ${this._att.fileType}" src=${this._att.url} type=${this._att.mime} />`;
+    //       break;
+    //   }
+    // }
 
     /** render item */
     return html`
