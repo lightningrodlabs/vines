@@ -267,12 +267,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         await this.zomeProxy.probeDmThreads(strategy);
         await this.zomeProxy.probeInbox(strategy);
         await this.pullFavorites(strategy);
+        console.debug("threadsZvm.probeAllInner() probing subjects...");
         /** Grab all threads of other subjects to see if there are new ones */
         let probes: Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>>[] = [];
         for (const [subjectAdr, _sub] of this._perspective.getAllSubjects()) {
             probes.push(this.pullSubjectThreads(intoAnyId(subjectAdr), strategy));
         }
         await Promise.all(probes);
+        console.debug(`threadsZvm.probeAllInner() probed ${probes.length} subjects.`);
         if (strategy == GetStrategy.Network) {
             /** Get last elements since last time (global probe log) */
             /** WARN: this can commit an entry */

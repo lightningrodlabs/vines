@@ -140,7 +140,7 @@ export class VinesApp extends HappMultiElement {
     appletGroups: AppletGroup[],
   ): Promise<VinesApp> {
     if (appletGroups.length == 0) {
-      throw Error("Needs at lest one appletGroup");
+      throw Error("<vines-app> needs at least one appletGroup");
     }
     const app = new VinesApp(adminWs, appletGroups, isMulti);
     /** Provide it as context */
@@ -150,7 +150,7 @@ export class VinesApp extends HappMultiElement {
     /*let _weProvider =*/
     new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
-    console.log("<thread-app>.fromWe()", appletGroups);
+    console.log("<vines-app>.fromWe()", appletIds);
     await app.createWeProfilesDvm(appletGroups[0]!.profilesAppProxy, appletGroups[0]!.profilesHcl);
     return app;
   }
@@ -251,7 +251,7 @@ export class VinesApp extends HappMultiElement {
 
   /** */
   override async hvmsConstructed() {
-    console.log("<vines-app>.hvmsConstructed()", this.hvms.length, this._adminWs)
+    console.log("<vines-app>.hvmsConstructed()", this.hvms.length, this._adminWs, this.appId, this.appletView);
     this._hasHolochainFailed = false;
     /** Provide Files DVM context  */
     console.log(`\t\tProviding context "${filesContext}" | in host `, this);
@@ -412,7 +412,6 @@ export class VinesApp extends HappMultiElement {
 
     const appProxy = this.hvms[0]![0];
 
-    // TODO: should probably store networkInfoLogs in class field
     let view = html``;
     if (this.appletView) {
       console.log("<vines-app> appletView", this.appletView);
