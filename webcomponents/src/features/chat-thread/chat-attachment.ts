@@ -1,5 +1,5 @@
 import {css, html, LitElement, PropertyValues} from "lit";
-import {customElement, property, state} from "lit/decorators.js";
+import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {sharedStyles} from "../../styles";
@@ -91,7 +91,7 @@ export class ChatAttachment extends LitElement {
 
   private _att: any = {}
 
-  @state() private _canOverrideView = false;
+  //@state() private _canOverrideView = false;
 
   /** -- Methods -- */
 
@@ -142,7 +142,7 @@ export class ChatAttachment extends LitElement {
              @click=${(e: any) => {
               e.preventDefault();
               e.stopPropagation();
-               this._canOverrideView = true;
+               //this._canOverrideView = true;
             }}>
             ${msg('View')}
         </div>` : html``}
