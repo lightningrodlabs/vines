@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use hdk::prelude::*;
 use zome_utils::*;
 
@@ -7,10 +8,25 @@ use zome_utils::*;
 pub fn get_original_author(ah: ActionHash)  -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
     let maybe_response = call(CallTargetCell::Local, "zAuthorship", "get_author".into(), None, ah);
     let Ok(response) = maybe_response else {
-        debug!("get_original_author() reponse fail: {:?}", maybe_response);
+        debug!("get_original_author() fail response: {:?}", maybe_response);
         return Ok(None);
     };
     let result: Option<(Timestamp, AgentPubKey)> = decode_response(response)?;
-    debug!("get_original_author() reponse success: {:?}", result);
+    debug!("get_original_author() success response: {:?}", result);
     Ok(result)
+}
+
+
+
+///
+#[hdk_extern]
+pub fn get_original_authors(ah: Vec<ActionHash>)  -> ExternResult<BTreeMap<ActionHash, (Timestamp, AgentPubKey)>> {
+   let maybe_response = call(CallTargetCell::Local, "zAuthorship", "get_authors".into(), None, ah);
+   let Ok(response) = maybe_response else {
+      debug!("get_original_authors() fail response: {:?}", maybe_response);
+      return Ok(BTreeMap::new());
+   };
+   let result: BTreeMap<ActionHash, (Timestamp, AgentPubKey)> = decode_response(response)?;
+   debug!("get_authors() success response: {:?}", result);
+   Ok(result)
 }

@@ -112,8 +112,12 @@ export class AuthorshipProxy extends ZomeProxy {
     return this.call('get_author', target);
   }
 
-  async getAllAscribedEntries(strategy: GetStrategy): Promise<[string, AnyLinkableArray, Timestamp, AgentArray][]> {
-    return this.call('get_all_ascribed_entries', strategy);
+  async getAuthors(targets: AnyLinkableArray[]): Promise<Record<string, AnyLinkableArray>> {
+    return this.call('get_authors', targets);
+  }
+
+  async getAllAscribedEntries(): Promise<[string, AnyLinkableArray, Timestamp, AgentArray][]> {
+    return this.call('get_all_ascribed_entries', null);
   }
 
   async getAscribedTypeChildren(targetType: string): Promise<[AnyLinkableArray, Timestamp, AgentArray][]> {

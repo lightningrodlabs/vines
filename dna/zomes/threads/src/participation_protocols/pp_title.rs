@@ -6,7 +6,6 @@ use crate::input_types::*;
 
 ///
 #[hdk_extern]
-#[feature(zits_blocking)]
 pub fn get_pp_title(input: GetAhInput) -> ExternResult<String> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sur pp exists
@@ -14,7 +13,7 @@ pub fn get_pp_title(input: GetAhInput) -> ExternResult<String> {
     /// Get previous title updates
     let title_links = get_links(
        LinkQuery::new(input.ah, ThreadsLinkType::TitleFix.try_into_filter().unwrap()),
-       GetStrategy::Network,
+       input.strategy,
     )?;
     attest_links(title_links.clone())?;
     /// Done
@@ -32,13 +31,13 @@ pub struct UpdatePpTitleInput {
     pub new_title: String,
 }
 
-///
+/// Since only the author can update, no need for network GetStrategy
 #[hdk_extern]
 #[feature(zits_blocking)]
 pub fn update_pp_title(input: UpdatePpTitleInput) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Make sur pp exists
-    let record = get_record(input.pp_ah.clone().into(), GetStrategy::Network)?;
+    let record = get_record(input.pp_ah.clone().into(), GetStrategy::Local)?;
     /// Make sure we are author
     if record.action().author() != &agent_info()?.agent_initial_pubkey {
         return error("Only PP author can update its title");
@@ -49,11 +48,11 @@ pub fn update_pp_title(input: UpdatePpTitleInput) -> ExternResult<ActionHash> {
             input.pp_ah.clone(),
             ThreadsLinkType::TitleFix.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        GetStrategy::Local,
     )?;
     /// Delete previous title
     for link in title_links {
-        delete_link(link.create_link_hash, GetOptions::network())?;
+        delete_link(link.create_link_hash, GetOptions::local())?;
     }
     /// Set new title
     let ah = create_link(

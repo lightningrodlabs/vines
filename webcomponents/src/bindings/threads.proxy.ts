@@ -136,6 +136,10 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_original_author', ah);
   }
 
+  async getOriginalAuthors(ah: ActionArray[]): Promise<Record<string, ActionArray>> {
+    return this.call('get_original_authors', ah);
+  }
+
   async publishAnyBead(input: AddAnyBeadInput): Promise<[ActionArray, string, Timestamp]> {
     return this.callBlocking('publish_any_bead', input);
   }
@@ -321,7 +325,7 @@ export class ThreadsProxy extends ZomeProxy {
   }
 
   async getPpTitle(input: GetAhInput): Promise<string> {
-    return this.callBlocking('get_pp_title', input);
+    return this.call('get_pp_title', input);
   }
 
   async updatePpTitle(input: UpdatePpTitleInput): Promise<ActionArray> {

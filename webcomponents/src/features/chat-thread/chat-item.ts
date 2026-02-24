@@ -297,7 +297,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <ui5-busy-indicator delay="0" size="Medium" active
                               style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
-    const maybeCachedOriginal = this._dvm.threadsZvm.getcachedOriginalAuthor(this.hash);
+    const maybeCachedOriginal = this._dvm.threadsZvm.getCachedOriginalAuthor(this.hash);
     if (maybeCachedOriginal) {
         baseBeadInfo.author = new AgentId(maybeCachedOriginal[1]);
         baseBeadInfo.creationTime = maybeCachedOriginal[0];

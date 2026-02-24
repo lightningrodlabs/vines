@@ -17,6 +17,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"get_ah_network",
 	"get_data_type",
 	"get_original_author",
+	"get_original_authors",
 	"publish_any_bead",
 	"fetch_any_bead",
 	"fetch_many_any_beads",

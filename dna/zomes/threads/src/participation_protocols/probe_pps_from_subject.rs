@@ -20,13 +20,11 @@ pub fn probe_pps_from_subject_hash(
 ) -> ExternResult<Vec<(ActionHash, Timestamp)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let mut subject_hash = input.lh.clone();
-    /// If link is actionHash, grab latest update
+    /// If the subject is an actionHash, grab its latest update
     if let Some(ah) = input.lh.clone().into_action_hash() {
-        //let record = get_latest_record(ah)?;
         if let Ok(record) = get_record(ah.into(), input.strategy) {
             subject_hash = record.action_address().to_owned().into();
-            debug!(
-                "{} | base: {} | latest {}",
+            debug!("{} | base: {} | latest {}",
                 subject_hash == input.lh,
                 input.lh,
                 subject_hash
@@ -35,10 +33,7 @@ pub fn probe_pps_from_subject_hash(
     }
     /// Grab links
     let links = get_links(
-        LinkQuery::new(
-            subject_hash,
-            ThreadsLinkType::Threads.try_into_filter().unwrap(),
-        ),
+        LinkQuery::new(subject_hash, ThreadsLinkType::Threads.try_into_filter().unwrap()),
         input.strategy,
     )?;
     let ahs = links

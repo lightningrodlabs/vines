@@ -12,6 +12,7 @@ export const authorshipFunctionNames: FunctionName[] = [
 	"ascribe_app_entry",
 	"get_all_ascribed_types",
 	"get_author",
+	"get_authors",
 	"get_all_ascribed_entries",
 	"get_ascribed_type_children",
 ];

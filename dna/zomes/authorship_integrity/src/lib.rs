@@ -24,6 +24,8 @@ pub const ROOT_ANCHOR_UNKNOWN_AUTHOR: &'static str = "__unknown_author";
 /// Zome's entry types
 ///-------------------------------------------------------------------------------------------------
 
+/// This zome doesn't have Entries but we declare one because some holochain tools will not
+/// work properly if there are none.
 #[hdk_entry_types]
 #[unit_enum(AuthorshipEntryTypes)]
 pub enum AuthorshipEntry {

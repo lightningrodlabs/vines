@@ -12,11 +12,11 @@ use crate::subjects::link_subject_to_pp;
 #[feature(zits_blocking)]
 pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult<(ActionHash, Timestamp)> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  let maybe_index_time: Option<Timestamp> = None; // FIXME
+  let maybe_index_time: Option<Timestamp> = None; // FIXME: allow providing a different time to for indexing
   let pp_entry = ThreadsEntry::ParticipationProtocol(pp.clone());
   let pp_ah = create_entry(pp_entry)?;
 
-  /// Add subject to Subjects PathTree and create "Protocols" link
+  /// Add the subject to Subjects PathTree and create a "Protocols" link
   let subject_tp = get_subject_tp(pp.subject.clone())?;
   subject_tp.ensure()?;
   debug!("subject_tp: {} --> {}", zome_path::path2anchor(&subject_tp.path).unwrap(), pp_ah);
@@ -33,7 +33,8 @@ pub fn publish_participation_protocol(pp: ParticipationProtocol) -> ExternResult
   let index_time = if let Some(index_time) = maybe_index_time {
     index_time
   } else {
-    let action_ts = get(pp_ah.clone(), GetOptions::local())?.unwrap().action().timestamp();
+    let pp_record = get(pp_ah.clone(), GetOptions::local())?;
+    let action_ts = pp_record.unwrap().action().timestamp(); // should be there since created in this function
     action_ts
   };
 

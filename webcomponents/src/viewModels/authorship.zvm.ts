@@ -79,8 +79,8 @@ export class AuthorshipZvm extends ZomeViewModel {
 
 
   /** */
-  async probeAllLogs(strategy: GetStrategy): Promise<void> {
-    const all = await this.zomeProxy.getAllAscribedEntries(strategy);
+  async probeAllLogs(_strategy: GetStrategy): Promise<void> {
+    const all = await this.zomeProxy.getAllAscribedEntries(/*strategy*/);
     for (const [type, target, ts, author] of all) {
       const authorId = new AgentId(author);
       this._perspective.storeAuthorshipLog(type, intoLinkableId(target), ts, authorId);
@@ -97,7 +97,7 @@ export class AuthorshipZvm extends ZomeViewModel {
       await this.zomeProxy.ascribeTarget({
         target: anyId.hash,
         target_type: type,
-        creation_time: creationTime,
+        original_creation_time: creationTime,
         original_author: author.hash,
       });
     }

@@ -1,6 +1,5 @@
 use hdk::prelude::*;
-use zome_utils::*;
-use authorship_zapi::get_original_author;
+use authorship_zapi::{get_original_authors};
 use zome_signals::*;
 
 
@@ -9,19 +8,26 @@ use zome_signals::*;
 pub fn fetch_beads(bead_ahs: Vec<ActionHash>) -> ExternResult<()> {
    debug!("fetch_beads() {}", bead_ahs.len());
    let mut pulses = Vec::with_capacity(bead_ahs.len());
+
+   let mut records = Vec::new();
    for bead_ah in bead_ahs {
-      /// Get
       let Some(record) = get(bead_ah.clone(), GetOptions::local())? else {
          error!("fetch_beads(): Bead not found at given ActionHash");
          continue;
       };
+      records.push(record);
+   }
+   let ahs = records.iter().map(|r| r.signed_action.hashed.hash.clone()).collect::<Vec<ActionHash>>();
+   let original_authors = get_original_authors(ahs)?;
+
+   for record in records {
       /// Create Pulse
-      let mut pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false)?;
+      let mut pulse = EntryPulse::try_from_new_record(record.clone(), ValidatedBy::Me, false)?;
       /// Get Original author
-      let maybe = get_original_author(bead_ah)?;
+      let maybe = original_authors.get(&record.signed_action.hashed.hash);
       if let Some(pair) = maybe {
          debug!("fetch_beads() original author found: {} || {}", pair.1, pair.0);
-         pulse.change_author(pair.1, pair.0);
+         pulse.change_author(pair.1.clone(), pair.0);
       }
       ///
       pulses.push(ZomeSignalProtocol::Entry(pulse));

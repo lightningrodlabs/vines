@@ -84,12 +84,12 @@ ValidationStatus, ValidationReceipt,
 export interface AscribeTargetInput {
   target: AnyLinkableArray
   target_type: string
-  creation_time: Timestamp
+  original_creation_time: Timestamp
   original_author: AgentArray
 }
 
 export interface AuthorshipLog {
-  creation_time: Timestamp
+  original_creation_time: Timestamp
   original_author: AgentArray
 }
 
@@ -114,6 +114,8 @@ export const ROOT_ANCHOR_UNKNOWN_AUTHOR = "__unknown_author";
  * -------------------------------------------------------------------------------------------------
  * Zome's entry types
  * -------------------------------------------------------------------------------------------------
+ * This zome doesn't have Entries but we declare one because some holochain tools will not
+ * work properly if there are none.
  */
 export enum AuthorshipEntryType {
 	Bogus = 'Bogus',

@@ -1923,8 +1923,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     // @ts-ignore
                     this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
                     /** grab latest title edit */
-                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local}).catch(() => { // TODO: Figure out best Get strategy
-                    });
+                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local}) // TODO: Figure out best Get strategy
+                        .catch(() => {});
                     /** grab latest text-bead edit if it's an EDIT thread */
                     if (pp.purpose == "EDIT") {
                         /*await*/
@@ -2115,7 +2115,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
 
+    /** */
     private _cacheOriginalAuthor = new ActionIdMap<[Timestamp, Uint8Array] | null>();
+
+    getCachedOriginalAuthor(ah: ActionId): [Timestamp, Uint8Array] | null {
+        return this._cacheOriginalAuthor.get(ah) ?? null;
+    }
 
     /** */
     async getOriginalAuthor(ah: ActionId): Promise<[Timestamp, Uint8Array] | null> {
@@ -2126,12 +2131,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const res = await this.zomeProxy.getOriginalAuthor(ah.hash);
         this._cacheOriginalAuthor.set(ah, res);
         return res;
-    }
-
-
-    /** */
-    getcachedOriginalAuthor(ah: ActionId): [Timestamp, Uint8Array] | null {
-        return this._cacheOriginalAuthor.get(ah) ?? null;
     }
 
 
