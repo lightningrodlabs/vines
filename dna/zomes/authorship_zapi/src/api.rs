@@ -27,6 +27,6 @@ pub fn get_original_authors(ah: Vec<ActionHash>)  -> ExternResult<BTreeMap<Actio
       return Ok(BTreeMap::new());
    };
    let result: BTreeMap<ActionHash, (Timestamp, AgentPubKey)> = decode_response(response)?;
-   debug!("get_authors() success response: {:?}", result);
+   debug!("get_original_authors() success response: {:?}", result);
    Ok(result)
 }

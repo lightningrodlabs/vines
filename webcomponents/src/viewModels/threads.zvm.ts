@@ -1916,7 +1916,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 /** */
                 if (StateChangeType.Create == pulse.state) {
                     const maybeTitle = this._channelTitleCache.get(pulse.ah);
-                    const [_throttleError, maybe] = await catchThrottled(this.getOriginalAuthor(pulse.ah));
+                    const maybe = await this.getOriginalAuthor(pulse.ah);
                     const author = maybe? new AgentId(maybe[1]) : pulse.author;
                     const origTs = maybe? maybe[0] : pulse.ts;
                     console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
@@ -2088,7 +2088,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
 
-    /** */
+    /**
+     * Move bead within the BLM tree if necessary. This can be necessary when receiving beads from a channel imported
+     * by another peer as the ascribe link would be received after the initial inclusion of the bead.
+     */
     moveBead(ah: ActionId, newTs: number) {
         const baseBeadInfo = this.perspective.getBaseBeadInfo(ah);
         if (!baseBeadInfo) {
@@ -2128,9 +2131,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (cached != undefined) {
             return cached;
         }
-        const res = await this.zomeProxy.getOriginalAuthor(ah.hash);
-        this._cacheOriginalAuthor.set(ah, res);
-        return res;
+        const [throttleError, res] = await catchThrottled(this.zomeProxy.getOriginalAuthor(ah.hash));
+        if (!throttleError) {
+            this._cacheOriginalAuthor.set(ah, res);
+            return res;
+        }
+        return null;
     }
 
 
@@ -2141,13 +2147,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const typedMat = materializeTypedBead(typed, beadType);
         //console.debug("handleBeadEntry()", pulse.validatedBy, beadType, pulse.ah.b64, typedMat);
         /** Store Bead */
-        const maybe = await this.getOriginalAuthor(beadAh);
         let author = pulse.author;
         let creationTime = pulse.ts;
-        if (maybe) {
-            creationTime = maybe[0];
-            author = new AgentId(maybe[1]);
-        }
         await this.storeTypedBead(beadAh, typedMat, beadType, creationTime, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
         // /** Dev test: Signal a 2nd entry */
         // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {

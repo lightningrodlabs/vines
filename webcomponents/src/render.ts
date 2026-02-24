@@ -47,7 +47,8 @@ export function renderProfileAvatar(parent: LitElement, agentKey: AgentId | null
     ? html`<ui5-avatar size=${size} class=${classArg}>
                 <img .src=${avatarUrl} style="object-fit: cover; ${profile.fields["imported"]? "opacity:0.5":""}">
               </ui5-avatar>`
-    : html`<ui5-avatar size=${size} class=${classArg}  shape="Circle" style="background: ${profile.fields["color"]}" initials=${initials} color-scheme="Accent2"></ui5-avatar>`;
+    : html`<ui5-avatar size=${size} class=${classArg} shape="Circle" initials=${initials} color-scheme="Accent2"
+                       style="background: ${profile.fields["color"]}; ${profile.fields["imported"]? "opacity:0.5":""}" ></ui5-avatar>`;
   return html`
         <div style="cursor:pointer; width:fit-content;" slot=${slot}
              @click=${(e: any) => {

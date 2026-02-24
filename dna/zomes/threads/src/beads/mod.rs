@@ -46,7 +46,6 @@ pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash, strategy: GetStr
     res.0 = pair.0;
     res.1 = pair.1;
   }
-  //debug!("fetch_typed_bead() original author not found");
   /// Emit signal
   attest_entry_created(record, false)?;
   ///

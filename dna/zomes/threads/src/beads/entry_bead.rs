@@ -97,7 +97,7 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
 #[hdk_extern]
 pub fn fetch_entry_bead(input: GetAhInput) -> ExternResult<Option<(Timestamp, AgentPubKey, EntryBead)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    return Ok(fetch_typed_bead::<EntryBead>(input.ah, input.strategy).ok());
+    Ok(fetch_typed_bead::<EntryBead>(input.ah, input.strategy).ok())
 }
 
 
