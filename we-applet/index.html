@@ -58,13 +58,14 @@
           console.log("Vines we-applet HappElement Added");
       });
 
+      /** auto reload after 30sec if Vines got stuck at init */
       setTimeout(() => {
         const spinny = document.querySelector('.spinner');
         if (spinny) {
           console.error("Vines we-applet failed to load in a timely manner. Reloading page.");
           window.location.reload();
         }
-      }, 10 * 1000);
+      }, 30 * 1000);
 
     </script>
 

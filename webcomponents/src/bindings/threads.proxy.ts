@@ -132,11 +132,11 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('get_data_type', input);
   }
 
-  async getOriginalAuthor(input: GetAhInput): Promise<[Timestamp, AgentArray] | null> {
+  async getOriginalAuthor(input: GetLhInput): Promise<[Timestamp, AgentArray] | null> {
     return this.call('get_original_author', input);
   }
 
-  async getOriginalAuthors(input: GetManyAhInput): Promise<Record<string, ActionArray>> {
+  async getOriginalAuthors(input: GetManyLhInput): Promise<Record<string, ActionArray>> {
     return this.call('get_original_authors', input);
   }
 

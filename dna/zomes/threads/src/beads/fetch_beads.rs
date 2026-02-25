@@ -17,8 +17,8 @@ pub fn fetch_beads(input: GetManyAhInput) -> ExternResult<()> {
       };
       records.push(record);
    }
-   let ahs = records.iter().map(|r| r.signed_action.hashed.hash.clone()).collect::<Vec<ActionHash>>();
-   let original_authors = get_original_authors(GetManyAhInput {ahs, strategy: input.strategy})?;
+   let lhs = records.iter().map(|r| r.signed_action.hashed.hash.clone().into()).collect::<Vec<AnyLinkableHash>>();
+   let original_authors = get_original_authors(GetManyLhInput {lhs, strategy: input.strategy})?;
 
    for record in records {
       /// Create Pulse

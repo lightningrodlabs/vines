@@ -21,7 +21,7 @@ pub fn fetch_pp(input: GetAhInput) -> ExternResult<Option<(ParticipationProtocol
     return Ok(None);
   };
   ///
-  let maybe_op = get_original_author(input)?;
+  let maybe_op = get_original_author(GetLhInput {lh: input.ah.clone().into(), strategy: input.strategy})?;
   if let Some(opPair) = maybe_op {
     //debug!("fetch_pp() origin author found: {} || {}", opPair.0, record.action().timestamp());
     let mut pulse = EntryPulse::try_from_new_record(record, ValidatedBy::Me, false)?;

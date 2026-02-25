@@ -40,7 +40,7 @@ pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash, strategy: GetStr
   };
   let mut res = (record.action().timestamp(), record.action().author().to_owned(), typed);
   /// Get Original author
-  let maybe = get_original_author(GetAhInput { ah: bead_ah, strategy })?;
+  let maybe = get_original_author(GetLhInput { lh: bead_ah.into(), strategy })?;
   if let Some(pair) = maybe {
     debug!("fetch_typed_bead() original author found: {}", pair.1);
     res.0 = pair.0;

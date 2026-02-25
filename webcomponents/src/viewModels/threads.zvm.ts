@@ -2133,7 +2133,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (cached != undefined) {
             return cached;
         }
-        const [throttleError, res] = await catchThrottled(this.zomeProxy.getOriginalAuthor({ah: ah.hash, strategy: GetStrategy.Local})); // FIXME strategy
+        const [throttleError, res] = await catchThrottled(this.zomeProxy.getOriginalAuthor({lh: ah.hash, strategy: GetStrategy.Local})); // FIXME strategy
         if (!throttleError) {
             this._cacheOriginalAuthor.set(ah, res);
             return res;

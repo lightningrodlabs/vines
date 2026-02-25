@@ -274,15 +274,15 @@ export class ThreadsDvm extends DnaViewModel {
     /* Update agent's known presence */
     this.storePresence(from, Date.now());
 
-    /** Handle signal according to target zome */
-    if (appSignal.zome_name == ProfilesAltZvm.DEFAULT_ZOME_NAME) {
-        /*await*/ this.handleProfilesSignal(signal, from);
-    } else {
+    // /** Handle signal according to target zome */
+    // if (appSignal.zome_name == ProfilesAltZvm.DEFAULT_ZOME_NAME) {
+    //     /*await*/ this.handleProfilesSignal(signal, from);
+    // } else {
         for (const pulse of signal.pulses) {
             /*await*/ this.handleThreadsSignal(pulse, from);
         }
         this.notifySubscribers();
-    }
+   // }
   }
 
   /** */
@@ -332,7 +332,7 @@ export class ThreadsDvm extends DnaViewModel {
 
     /** */
     async handleProfilesSignal(zomeSignal: ZomeSignal, from: AgentId) {
-        //console.debug("ThreadsDvm.handleProfilesSignal()", zomeSignal, this._livePeers.length);
+        console.debug("ThreadsDvm.handleProfilesSignal()", zomeSignal);
         let all: any[] = [];
         for (let pulse of zomeSignal.pulses) {
             /** -- Handle Signal according to type -- */

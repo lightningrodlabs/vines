@@ -14,6 +14,7 @@ import {EntryBeadMat} from "../../viewModels/threads.materialize";
 import {ViewEmbedEvent} from "../../events";
 import {ActionHashB64} from "@holochain/client";
 import {catchThrottled} from "../../viewModels/threads.zvm";
+import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 let instanceCount = 0;
@@ -170,7 +171,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     if (delayMs) {
       await delay(delayMs);
     }
-    await catchThrottled(this._filesDvm.deliveryZvm.probeDht());
+    await catchThrottled(this._filesDvm.deliveryZvm.probeDht(GetStrategy.Local)); // FIXME figure out best GetStrategy to use here
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
     if (fileTuple) {
       await this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);

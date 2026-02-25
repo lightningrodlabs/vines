@@ -115,7 +115,7 @@ pub fn get_author(input: GetLhInput) -> ExternResult<Option<(Timestamp, AgentPub
         ),
         input.strategy,
     )?;
-    if authors.len() == 0 {
+    if authors.is_empty() {
         return Ok(None);
     }
     let link = authors.into_iter().next().unwrap();
