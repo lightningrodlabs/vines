@@ -409,7 +409,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (!subjectType) {
             throw Promise.reject("Unknown appletId or typePathHash");
         }
-        const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType});
+        const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType, strategy: GetStrategy.Network});
         const subjectB64s: [DnaId, AnyId][] = subjects.map(([dnaHash, subjectHash]) => [new DnaId(dnaHash), intoAnyId(subjectHash)]);
         this._perspective.storeSubjectsWithType(typePathEh, subjectB64s);
         this.notifySubscribers();
@@ -488,7 +488,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             return maybe[1];
         }
         //this._perspective.notifSettings.delete(ppAh);
-        const [throttleError, notifSettings] = await catchThrottled(this.zomeProxy.pullPpNotifySettings(ppAh.hash));
+        const [throttleError, notifSettings] = await catchThrottled(this.zomeProxy.pullPpNotifySettings({ah: ppAh.hash, strategy: GetStrategy.Local}));
         if (throttleError) {
             return [];
         }
@@ -528,7 +528,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             return [];
         }
         /** Probe */
-        const [throttleError, maybe] = await catchThrottled(this.zomeProxy.findBeads(ppAh.hash));
+        const [throttleError, maybe] = await catchThrottled(this.zomeProxy.findBeads({ah: ppAh.hash, strategy: GetStrategy.Local}));
         if (throttleError) {
             return [];
         }

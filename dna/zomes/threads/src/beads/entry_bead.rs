@@ -69,7 +69,7 @@ pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead,
     None,
     input.eh.clone())?;
     let maybeRecord: Option<Record> = decode_response(response)?;
-    //let maybeRecord = get(input.ah.clone(), GetOptions::content())?;
+    //let maybeRecord = get(input.ah.clone(), GetOptions::default())?;
     let Some(record) = maybeRecord
         else { return error("No record found at given EntryHash")};
     let creation_time = input.original_creation_time.unwrap_or(record.action().timestamp()); //   ah_time

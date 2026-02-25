@@ -81,7 +81,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"query_enc_beads",
 	"publish_semantic_topic",
 	"pull_all_semantic_topics",
-	"search_semantic_topics",
+	"search_semantic_topics_network",
 	"update_semantic_topic",
 	"find_subjects_by_type",
 	"find_subjects_for_applet",

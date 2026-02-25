@@ -7,6 +7,7 @@ use crate::participation_protocols::*;
 pub struct FindSubjectsInput {
   pub applet_id: String,
   pub subject_type: String,
+  pub strategy: GetStrategy,
 }
 
 
@@ -15,7 +16,7 @@ pub struct FindSubjectsInput {
 pub fn find_subjects_by_type(input: FindSubjectsInput) -> ExternResult<Vec<(String, String, String)>> {
   std::panic::set_hook(Box::new(zome_utils::zome_panic_hook));
   let tp = get_subject_type_tp(input.applet_id, &input.subject_type)?;
-  let children = zome_path::tp_children_paths(&tp, GetStrategy::Network)?;
+  let children = zome_path::tp_children_paths(&tp, input.strategy)?;
   debug!("found {} children", children.len());
   let ahs = children
     .into_iter()

@@ -267,6 +267,13 @@ export interface SetNotifySettingInput {
 }
 
 /**  */
+export interface PullNotifySettingsInput {
+  pp_ah: ActionArray
+  agent: AgentArray
+  strategy: GetStrategy
+}
+
+/**  */
 export interface UpdatePpTitleInput {
   ppAh: ActionArray
   newTitle: string
@@ -300,6 +307,7 @@ export interface UpdateTopicInput {
 export interface FindSubjectsInput {
   appletId: string
   subjectType: string
+  strategy: GetStrategy
 }
 
 export interface MergeSubjectInput {

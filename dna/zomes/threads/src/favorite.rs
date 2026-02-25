@@ -39,12 +39,12 @@ pub fn unpublish_favorite(bead_ah: ActionHash) -> ExternResult<()> {
     let me = AnyLinkableHash::from(agent_info()?.agent_initial_pubkey);
     let links = get_links(
         LinkQuery::new(me, ThreadsLinkType::Favorite.try_into_filter().unwrap()),
-        GetStrategy::Network,
+        GetStrategy::Local, // agent should already have the link locally if they can unpublish it
     )?;
     let ah = AnyLinkableHash::from(bead_ah);
     for link in links {
         if link.target == ah {
-            let _link_ah = delete_link(link.create_link_hash, GetOptions::network())?;
+            let _link_ah = delete_link(link.create_link_hash, GetOptions::local())?;
         }
     }
     /// Done

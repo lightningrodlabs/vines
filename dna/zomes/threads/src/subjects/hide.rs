@@ -12,7 +12,7 @@ fn find_hide_link(subjectHash: AnyLinkableHash) -> ExternResult<Option<ActionHas
             agent_info()?.agent_initial_pubkey,
             ThreadsLinkType::Hide.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        GetStrategy::Local, // All Hide links should be local
     )?;
     for link in links.iter() {
         if link.target.clone() == subjectHash {
@@ -43,7 +43,7 @@ fn unhide_subject(subjectHash: AnyLinkableHash) -> ExternResult<()> {
     let Some(create_link_hash) = find_hide_link(subjectHash)? else {
         return Ok(());
     };
-    let _hash = delete_link(create_link_hash, GetOptions::network())?;
+    let _hash = delete_link(create_link_hash, GetOptions::local())?; // All Hide links should be local
     Ok(())
 }
 

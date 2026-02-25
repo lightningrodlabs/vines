@@ -4,6 +4,7 @@ use threads_integrity::*;
 use time_indexing::*;
 use zome_utils::*;
 use zome_path::*;
+use zome_core::get_input_types::*;
 
 /// Travers the thread-specific time-index tree and get all BeadLinks
 /// USE WITH CARE as this can easily timeout as it's a loop of get_links()

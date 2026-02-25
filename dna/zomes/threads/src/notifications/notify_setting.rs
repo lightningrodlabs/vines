@@ -3,6 +3,7 @@ use strum_macros::FromRepr;
 use threads_integrity::*;
 use zome_signals::*;
 use zome_utils::*;
+use zome_core::get_input_types::*;
 
 /// Notification settings are per ParticipationProtocol.
 /// Default setting is MentionsOnly (for normal threads, AllMessages for DM threads).
@@ -36,7 +37,8 @@ pub struct SetNotifySettingInput {
 pub fn publish_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Get current setting if any
-    let (current_setting, maybe_link_ah) = pull_my_notify_settings(input.pp_ah.clone())?;
+    let pull_input = GetAhInput { ah: input.pp_ah.clone(), strategy: GetStrategy::Network };
+    let (current_setting, maybe_link_ah) = pull_my_notify_settings(pull_input)?;
     /// Bail if setting already set
     if current_setting == input.setting {
         return Ok(None);
@@ -61,28 +63,39 @@ pub fn publish_notify_setting(input: SetNotifySettingInput) -> ExternResult<Opti
     Ok(Some(new_link_ah))
 }
 
+
+///
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PullNotifySettingsInput {
+   pp_ah: ActionHash,
+   agent: AgentPubKey,
+   strategy: GetStrategy,
+}
+
+
 ///
 #[hdk_extern]
 pub fn pull_my_notify_settings(
-    pp_ah: ActionHash,
+    input: GetAhInput,
 ) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
-    return pull_notify_settings((pp_ah, agent_info()?.agent_initial_pubkey));
+    return pull_notify_settings( PullNotifySettingsInput { pp_ah: input.ah, agent: agent_info()?.agent_initial_pubkey, strategy: input.strategy});
 }
+
 
 ///
 #[hdk_extern]
 pub fn pull_notify_settings(
-    pair: (ActionHash, AgentPubKey),
+    input: PullNotifySettingsInput
 ) -> ExternResult<(NotifySetting, Option<ActionHash>)> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(
         LinkQuery::new(
-            pair.0,
+            input.pp_ah,
             ThreadsLinkType::NotifySetting.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        input.strategy,
     )?;
-    let agent_hash = AnyLinkableHash::from(pair.1);
+    let agent_hash = AnyLinkableHash::from(input.agent);
     for link in links.clone() {
         if link.target == agent_hash {
             let repr: u8 = link.tag.clone().into_inner()[0];
@@ -98,16 +111,15 @@ pub fn pull_notify_settings(
 
 ///
 #[hdk_extern]
-pub fn pull_pp_notify_settings(
-    pp_ah: ActionHash,
-) -> ExternResult<Vec<(AgentPubKey, NotifySetting, ActionHash)>> {
+pub fn pull_pp_notify_settings(input: GetAhInput)
+   -> ExternResult<Vec<(AgentPubKey, NotifySetting, ActionHash)>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     let links = get_links(
         LinkQuery::new(
-            pp_ah,
+            input.ah,
             ThreadsLinkType::NotifySetting.try_into_filter().unwrap(),
         ),
-        GetStrategy::Network,
+        input.strategy,
     )?;
     let mut res = Vec::new();
     for link in &links {

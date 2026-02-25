@@ -9,7 +9,7 @@ use zome_core::get_input_types::*;
 #[feature(zits_blocking)]
 fn flag_bead(bead_ah: ActionHash) -> ExternResult<ActionHash> {
     std::panic::set_hook(Box::new(zome_panic_hook));
-    let record = get_record(AnyDhtHash::from(bead_ah.clone()), GetStrategy::Network)?;
+    let record = get_record(AnyDhtHash::from(bead_ah.clone()), GetStrategy::Local)?; // agent should already have the bead locally if they can flag it.
     let RecordEntry::Present(entry) = record.entry() else {
         return zome_error!(
             "{}",

@@ -41,14 +41,14 @@ pub fn unpublish_reaction(input: ReactionInput) -> ExternResult<()> {
             ThreadsLinkType::EmojiReaction.try_into_filter().unwrap(),
             Some(zome_path::str2tag(&input.emoji)),
         ),
-        GetStrategy::Network,
+        GetStrategy::Local, // agent should already have the link locally if they can unpublish it
     )?;
     let my_reactions: Vec<Link> = links
         .into_iter()
         .filter(|link| AgentPubKey::try_from(link.target.clone()).unwrap() == me)
         .collect();
     for reaction_link in my_reactions {
-        let _ = delete_link(reaction_link.create_link_hash, GetOptions::network())?;
+        let _ = delete_link(reaction_link.create_link_hash, GetOptions::local())?;
     }
     Ok(())
 }
