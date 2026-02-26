@@ -100,28 +100,28 @@ export class AuthorshipProxy extends ZomeProxy {
     return this.call('get_my_agent_key_entry_hash', null);
   }
 
-  async getRecordAuthorLocal(dh: AnyDhtArray): Promise<AgentArray> {
-    return this.call('get_record_author_local', dh);
+  async getRecordAuthorFromLocal(dh: AnyDhtArray): Promise<AgentArray> {
+    return this.call('get_record_author_from_local', dh);
   }
 
-  async getRecordAuthorNetwork(dh: AnyDhtArray): Promise<AgentArray> {
-    return this.call('get_record_author_network', dh);
+  async getRecordAuthorFromNetwork(dh: AnyDhtArray): Promise<AgentArray> {
+    return this.call('get_record_author_from_network', dh);
   }
 
-  async getRecordLocal(hash: AnyDhtArray): Promise<HcRecord | null> {
-    return this.call('get_record_local', hash);
+  async getRecordFromLocal(hash: AnyDhtArray): Promise<HcRecord | null> {
+    return this.call('get_record_from_local', hash);
   }
 
-  async getRecordNetwork(hash: AnyDhtArray): Promise<HcRecord | null> {
-    return this.call('get_record_network', hash);
+  async getRecordFromNetwork(hash: AnyDhtArray): Promise<HcRecord | null> {
+    return this.call('get_record_from_network', hash);
   }
 
-  async getAhLocal(eh: EntryArray): Promise<ActionArray | null> {
-    return this.call('get_ah_local', eh);
+  async getAhFromLocal(eh: EntryArray): Promise<ActionArray | null> {
+    return this.call('get_ah_from_local', eh);
   }
 
-  async getAhNetwork(eh: EntryArray): Promise<ActionArray | null> {
-    return this.call('get_ah_network', eh);
+  async getAhFromNetwork(eh: EntryArray): Promise<ActionArray | null> {
+    return this.call('get_ah_from_network', eh);
   }
 
   async getDataType(input: GetDataTypeInput): Promise<string> {

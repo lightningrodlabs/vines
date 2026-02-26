@@ -53,6 +53,6 @@ pub fn probe_inbox(strategy: GetStrategy) -> ExternResult<()> {
 pub fn unpublish_notification(link_ah: ActionHash) -> ExternResult<()> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     // TODO: Make sure its an Inbox link
-    let _ = delete_link(link_ah, GetOptions::network())?;
+    let _ = delete_link(link_ah, GetOptions::local())?;
     Ok(())
 }

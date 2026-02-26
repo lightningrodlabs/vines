@@ -1564,7 +1564,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async pullLatestAppletInfos() {
     console.log("pullLatestAppletInfos()", !!this.weServices);
     if (this.weServices) {
-      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds(GetStrategy.Local); // FIXME: should be Network
+      const appletIds: EntryId[] = await this._dvm.threadsZvm.pullAppletIds(GetStrategy.Local); // FIXME: GetStrategy
       console.log("pullLatestAppletInfos() appletIds", appletIds);
       for (const appletId of appletIds) {
         await this.weServices.appletInfo(appletId.b64);
@@ -2168,7 +2168,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                     <ui5-button icon="group" name="group" design="Transparent"
                                 style="margin-top:10px;position:relative; width: 100px;"
-                                tooltip=${msg('peers online')}
+                                tooltip=${msg('online peers')}
                                 @click=${async (e: any) => {
                                     e.stopPropagation();
                                     await this.updateComplete;
@@ -2176,7 +2176,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     await dialog.show();
                                 }}
                     >
-                        <peer-status-badge id="peer-status"></peer-status-badge">
+                        ${this.networkCaller.isLooping()? html`
+                            <peer-status-badge id="peer-status"></peer-status-badge">
+                        ` : html`
+                            <span class="status-badge" style="background:#82afd5">
+            ? / ?
+        </span>
+                        `}
                     </ui5-button>
                     <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "electrocardiogram"}
                                 class=${this._canSpin? "spinning" : ""}
@@ -2515,7 +2521,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
             <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Peers')}>
-                <peer-list
+                <peer-list id="peer-status-list"
                            @avatar-clicked=${async (e: any) => {
                                e.stopPropagation();
                                console.log("@avatar-clicked", e.detail);
@@ -2535,8 +2541,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
                             dialog.close()
                         }}>
-                    ${msg("Cancel")}
+                    ${msg("Close")}
                 </ui5-button>
+                ${this.networkCaller.isLooping()? html`
+                    <ui5-button style="margin:10px; float:right;"
+                               @click=${() => {
+                                    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                        detail: false, bubbles: true, composed: true
+                                    }));
+                                    this.requestUpdate();
+                                    const elem = this.shadowRoot!.getElementById("peer-status-list") as LitElement;
+                                    if (elem) {
+                                        elem.requestUpdate();
+                                    }
+                                }}>
+                        ${msg('Stop pinging')}
+                    </ui5-button>
+                ` : html`
+                    <ui5-button design="Emphasized" style="margin:10px; float:right;" 
+                                @click=${() => {
+                                    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                        detail: true, bubbles: true, composed: true
+                                    }));
+                                    this.requestUpdate();
+                                    const elem = this.shadowRoot!.getElementById("peer-status-list") as LitElement;
+                                    if (elem) {
+                                        elem.requestUpdate();
+                                    }
+                    }}>
+                        ${msg("Ping peers")}
+                    </ui5-button>
+                `}                
             </ui5-dialog>
             <!-- View members dialog -->
             <ui5-dialog id="pick-agent-dialog" style="width:600px;" header-text=${msg('Select a peer')}>
@@ -2559,7 +2594,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                             dialog.close()
                         }}>
-                    ${msg("Close")}
+                    ${msg("Cancel")}
                 </ui5-button>
                 ${this.networkCaller.isLooping()? html`
                     <ui5-button style="margin:10px; float:right;"

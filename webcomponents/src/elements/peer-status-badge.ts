@@ -32,13 +32,13 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
   override render() {
     //console.debug("<peer-status-badge>.render()");
 
-      const importedProfiles  = new Set<AgentPubKeyB64>();
-      for (const [agentId, [profile, _ts]] of this.perspective.profiles.entries()) {
-          if (profile.fields["imported"]) {
-              importedProfiles.add(agentId.b64);
-          }
+    const importedProfiles = new Set<AgentPubKeyB64>();
+    for (const [agentId, [profile, _ts]] of this.perspective.profiles.entries()) {
+      if (profile.fields["imported"]) {
+          importedProfiles.add(agentId.b64);
       }
-      const profilesCount = Math.max(this.perspective.profiles.size - importedProfiles.size - 1 , 0); // remove self
+    }
+    const profilesCount = Math.max(this.perspective.profiles.size - importedProfiles.size - 1 , 0); // remove self
 
     const netLogCount = this.networkCaller.networkMetricsLogs.length;
     const peerCount = netLogCount > 0
@@ -52,7 +52,7 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
         : "#559eee";
     /** */
     return html`
-            <span class="badge" style="background:${memberBg}">
+            <span class="status-badge" style="background:${memberBg}">
             ${peerCount} / ${profilesCount}
         </span>
         `;
@@ -63,26 +63,7 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
   static override get styles() {
     return [
       sharedStyles,
-      css`
-                .badge {
-                    /*position: absolute;*/
-                    width:fit-content; 
-                    display:block;     
-                    margin: auto;
-                    border-radius: 10px;
-                    padding: 2px 6px;
-                    font-size: 10px;
-                    font-weight: bold;
-                    text-align: center;
-                    /*top: 5px;
-                    right: 8px;*/
-                    color: white;
-                    /*border-radius: 10px;
-                    padding: 1px 9px;
-                    font-size: 10px;
-                    font-weight: bold;*/
-                }                
-            `,
+      css``,
     ];
   }
 }

@@ -63,7 +63,7 @@ export class AuthorshipZvm extends ZomeViewModel {
 
   /** */
   override probeAllInner() {
-    this.initializePerspectiveFromNetwork().then(() => {
+    this.initializePerspectiveFromLocal().then(() => {
         console.trace("AuthorshipZvm.probeAllInner() DONE");
       })
   }

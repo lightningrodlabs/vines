@@ -194,6 +194,25 @@ export const sharedStyles = css`
     chat-item:hover {
         background: #d8e2f6;
     }
+    
+     .status-badge {
+                    /*position: absolute;*/
+                    width:fit-content; 
+                    display:block;     
+                    margin: auto;
+                    border-radius: 10px;
+                    padding: 2px 6px;
+                    font-size: 10px;
+                    font-weight: bold;
+                    text-align: center;
+                    /*top: 5px;
+                    right: 8px;*/
+                    color: white;
+                    /*border-radius: 10px;
+                    padding: 1px 9px;
+                    font-size: 10px;
+                    font-weight: bold;*/
+                }    
 `;
 
 

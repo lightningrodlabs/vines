@@ -201,7 +201,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
       const itemHash = intoLinkableId(subjectId.hash);
       /** Grab children */
-      let pps = await this._zvm.pullSubjectThreads(itemHash, GetStrategy.Local); // FIXME: should be Network
+      let pps = await this._zvm.pullSubjectThreads(itemHash, GetStrategy.Local); // FIXME: GetStrategy
 
         /** Keep already existing children */
         let currentChildren: EntryHashB64[] = [];

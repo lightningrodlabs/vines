@@ -275,17 +275,17 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         await Promise.all(probes);
         console.debug(`threadsZvm.probeAllInner() probed ${probes.length} subjects.`);
-        if (strategy == GetStrategy.Network) {
+        //if (strategy == GetStrategy.Network) {
             /** Get last elements since last time (global probe log) */
             /** WARN: this can commit an entry */
             await this.probeAllLatest();
             this._perspective.print();
-        }
+        //}
     }
 
     /** */
     override probeAllInner() {
-        this.probeAllInnerAsync(GetStrategy.Network).then(
+        this.probeAllInnerAsync(GetStrategy.Local).then(
             () => { console.trace("ThreadsZvm.probeAllInner() DONE") },
             (e) => { console.error("ThreadsZvm.probeAllInner() failed", e) },
             );
@@ -409,7 +409,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         if (!subjectType) {
             throw Promise.reject("Unknown appletId or typePathHash");
         }
-        const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType, strategy: GetStrategy.Network});
+        const subjects = await this.zomeProxy.findSubjectsByType({appletId: appletId.b64, subjectType, strategy: GetStrategy.Local});
         const subjectB64s: [DnaId, AnyId][] = subjects.map(([dnaHash, subjectHash]) => [new DnaId(dnaHash), intoAnyId(subjectHash)]);
         this._perspective.storeSubjectsWithType(typePathEh, subjectB64s);
         this.notifySubscribers();
@@ -1860,8 +1860,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             return maybe;
         }
         const a = strategy == GetStrategy.Local
-            ? await this.zomeProxy.getRecordAuthorLocal(dh.hash)
-            : await this.zomeProxy.getRecordAuthorNetwork(dh.hash)
+            ? await this.zomeProxy.getRecordAuthorFromLocal(dh.hash)
+            : await this.zomeProxy.getRecordAuthorFromNetwork(dh.hash)
         const id = new AgentId(a);
         this._authorCache.set(dh.b64, id);
         return id;
@@ -2223,13 +2223,14 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         /** Handle Notification Tip */
         const notifTip = appTip.data;
-        console.log(`Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._notifLoopIntervalId);
+        console.log(`ThreadZvm.handleCustomTip() Received notifTip of type ${JSON.stringify(notifTip.event)}:`, notifTip, from, this._missingLinkAhs, this._notifLoopIntervalId);
         /** Poll with an interval until we get it from the DHT */
         if (this.isMainView && !this._missingLinkAhs.has(notifTip.link_ah)) {
             this._missingLinkAhs.set(notifTip.link_ah, notifTip);
             if (!this._notifLoopIntervalId) {
-                this.zomeProxy.probeInbox(GetStrategy.Network).then(() =>
-                    this._notifLoopIntervalId = setInterval(async () => {
+                console.log(`ThreadZvm.handleCustomTip() calling probeInbox(GetStrategy.Network) from `, from.b64);
+                this.zomeProxy.probeInbox(GetStrategy.Network)
+                    .then(() => this._notifLoopIntervalId = setInterval(async () => {
                         console.log("Polling Inbox for Missing links...");
                         try {
                             await this.zomeProxy.probeInbox(GetStrategy.Network);
