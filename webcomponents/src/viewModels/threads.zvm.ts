@@ -275,11 +275,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         }
         await Promise.all(probes);
         console.debug(`threadsZvm.probeAllInner() probed ${probes.length} subjects.`);
+        // probeAllLatest() called in firstUpdated()
         //if (strategy == GetStrategy.Network) {
-            /** Get last elements since last time (global probe log) */
-            /** WARN: this can commit an entry */
-            await this.probeAllLatest();
-            this._perspective.print();
+        //    /** Get last elements since last time (global probe log) */
+        //    /** WARN: this can commit an entry */
+        //    await this.probeAllLatest();
+          this._perspective.print();
         //}
     }
 
@@ -428,7 +429,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async probeAllLatest(): Promise<void> {
-        //console.log("ThreadsZvm.probeAllLatest()");
+        console.log("ThreadsZvm.probeAllLatest()");
         const latest = await this.zomeProxy.probeAllLatest(this._perspective.globalProbeLogTs);
         await this.commitUpdateGlobalLog(latest.searchedInterval.end);
 
@@ -442,7 +443,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 newThreads.push([ppAh, intoAnyId(subject_hash)]);
             }
         }
-        console.log("probeAllLatest() newThreads", newThreads.length);
+        console.log("ThreadsZvm.probeAllLatest() newThreads", newThreads.length);
         this._perspective.storeAllNewThreads(newThreads);
 
         /* unreadThreads: Map new beads to their threads */

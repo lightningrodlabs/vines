@@ -973,7 +973,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /** WARN: this can commit an entry */
-    await this._dvm.threadsZvm.probeAllLatest();
+    if (!this.multi) {
+        await this._dvm.threadsZvm.probeAllLatest();
+    }
 
     /** Select Topics */
     const topicsBtn = this.shadowRoot!.getElementById("topics-option") as SegmentedButtonItem;
