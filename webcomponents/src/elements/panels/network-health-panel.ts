@@ -40,14 +40,14 @@ export class NetworkHealthPanel extends LitElement {
             this.requestUpdate();
         }
     });
-    /** Start looping */
-    this.onSwitchNetworkInfo(undefined);
+    // /** Start looping at init */
+    //this.onSwitchNetworkInfo(undefined);
   }
 
 
   /** */
   async onSwitchNetworkInfo(_e: any) {
-    console.log("onLoopNetworkInfo()");
+    console.log("onSwitchNetworkInfo()");
     const el = this.shadowRoot!.getElementById("enableSwitch") as Switch;
     this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
       detail: el? el.checked : true,
