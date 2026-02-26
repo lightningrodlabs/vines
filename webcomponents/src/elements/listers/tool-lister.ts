@@ -96,7 +96,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     }
     this._loading = true;
     const zvm = newZvm? newZvm : this._zvm;
-    await zvm.pullAppletSubjectTypes(this._appletId);
+    await zvm.pullAppletSubjectTypes(this._appletId, GetStrategy.Local);
     this._loading = false;
   }
 

@@ -13,9 +13,9 @@ pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, 
     return error("Empty applet_id");
   }
   let tp = get_applet_tp(applet_id.clone())?;
-  let children = tp_children_paths(&tp, GetStrategy::Network)?;
+  let children = tp_children_paths(&tp, GetStrategy::Local)?;
   debug!("find_subjects_for_applet() found {} children", children.len());
-  let mut input = FindSubjectsInput { applet_id, subject_type: "".to_string(), strategy: GetStrategy::Network };
+  let mut input = FindSubjectsInput { applet_id, subject_type: "".to_string(), strategy: GetStrategy::Local };
   let mut res = Vec::new();
   for child_tp in children {
     input.subject_type = String::try_from(child_tp.leaf().unwrap()).unwrap();
@@ -27,15 +27,15 @@ pub fn find_subjects_for_applet(applet_id: String) -> ExternResult<Vec<(String, 
 }
 
 
-/// Returns list of SubjectTypes and their PathEntryHash
+/// Returns a list of SubjectTypes and their PathEntryHash
 #[hdk_extern]
-pub fn find_subject_types_for_applet(applet_id: String) -> ExternResult<Vec<(String, EntryHash)>> {
+pub fn pull_subject_types_for_applet(pair: (String, GetStrategy)) -> ExternResult<Vec<(String, EntryHash)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
-  if applet_id.is_empty() {
+  if pair.0.is_empty() {
     return error("Empty applet_id");
   }
-  let tp = get_applet_tp(applet_id.clone())?;
-  let children = tp_children_paths(&tp, GetStrategy::Network)?;
+  let tp = get_applet_tp(pair.0.clone())?;
+  let children = tp_children_paths(&tp, pair.1)?;
   debug!("get_subject_types_for_dna() found {} children", children.len());
   let leafs = children.into_iter()
     .map(|tp| (tp.leaf().unwrap().try_into().unwrap(), tp.path.path_entry_hash().unwrap()))

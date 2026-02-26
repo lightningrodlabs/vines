@@ -55,13 +55,13 @@ fn pull_semantic_topics(leaf_anchor: String, strategy: GetStrategy) -> ExternRes
 /// From a title filter of at least 3 characters, returns all the semantic topics whose title starts with that prefix
 /// Ignores case, will return ActionHash, EntryHash and title of SemanticTopic entry.
 #[hdk_extern]
-pub fn search_semantic_topics_network(title_filter: String) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
+pub fn search_semantic_topics(title_filter: String) -> ExternResult<Vec<(ActionHash, EntryHash, String)>> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   if title_filter.len() < 3 {
     return zome_error!("Cannot search with a prefix less than 3 characters");
   }
   let tp = determine_topic_anchor(title_filter.clone())?;
-  let semantic_topics: Vec<(ActionHash, EntryHash, String)> = pull_semantic_topics(zome_path::path2anchor(&tp.path).unwrap(), GetStrategy::Network)?
+  let semantic_topics: Vec<(ActionHash, EntryHash, String)> = pull_semantic_topics(zome_path::path2anchor(&tp.path).unwrap(), GetStrategy::Local)?
     .into_iter()
     .map(|(record, typed)| (record.action_address().to_owned(), record.action().entry_hash().unwrap().to_owned(), typed.title))
     .collect();
@@ -72,7 +72,7 @@ pub fn search_semantic_topics_network(title_filter: String) -> ExternResult<Vec<
 
 ///
 pub(crate) fn does_topic_exist(title: String) -> ExternResult<Option<(ActionHash, EntryHash)>> {
-  let tuples = search_semantic_topics_network(title.clone())?;
+  let tuples = search_semantic_topics(title.clone())?;
   for (ah, eh, cur_title) in tuples {
     if &title == &cur_title {
       return Ok(Some((ah, eh)));

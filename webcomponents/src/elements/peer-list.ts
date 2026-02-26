@@ -2,7 +2,7 @@ import {html, css, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 
-import {AgentId, ZomeElement} from "@ddd-qc/lit-happ";
+import {AgentId, NetworkInfoResponse, ZomeElement} from "@ddd-qc/lit-happ";
 
 import "@shoelace-style/shoelace/dist/components/avatar/avatar.js"
 import "@shoelace-style/shoelace/dist/components/badge/badge.js"
@@ -52,10 +52,14 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     /** After first render only */
     override async firstUpdated() {
         /** Register loop callback */
-        this.networkCaller!.addCallback((_m: NetworkMetrics, _s: TransportStats) => {
+        this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
             //console.log("TransportStats:", s.peer_urls);
             //console.log("NetworkMetrics:", m.gossip_state_summary.peer_meta);
-            this.requestUpdate();
+            if (r.error != undefined) {
+                // n/a
+            } else {
+                this.requestUpdate();
+            }
         });
     }
 
@@ -109,10 +113,10 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         }
     }
 
+
   /** */
   override render() {
     //console.debug("<peer-list>.render()", this.perspective);
-
     const netLogCount = this.networkCaller.networkMetricsLogs.length;
     const peerCount = netLogCount > 0
       ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
@@ -166,7 +170,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
     peers.map(([agentId, status, profile, _ts]) => {
         let statusContent = [html``];
-        if (status) {
+        if (status && this.networkCaller!.isLooping()) {
             const date = new Date(status.connectedSince * 1000); // Timestamp is in seconds, Date wants milliseconds
             statusContent.push(html`<div style="margin-top:4px">(${msg('since')} ${timeSince(date)})</div>`);
             // if (!status.hasMeta || status.errors > 0) {
@@ -201,13 +205,24 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         }
       })
 
-    /** render all */
-    return html`
-      <div class="folks">
-        <div class="category-title">${msg('Online')}</div>
-        ${onlinePeerElems}
-        <div class="category-title" style="margin-top:20px;">${msg('Offline')}</div>
-        ${offlinePeerElems}
+      /** render all */
+      if (!this.networkCaller.isLooping()) {
+          return html`
+              <div class="folks">
+                  ${onlinePeerElems}
+                  ${offlinePeerElems}
+                  ${peerCount <= profilesCount
+                          ? html``
+                          : html`<div style="text-align:center">${peerCount - profilesCount} ${msg('unregistered peer(s)')}</div>` }
+              </div>              
+          `;
+      }
+      return html`
+        <div class="folks">
+          <div class="category-title">${msg('Online')}</div>
+          ${onlinePeerElems}
+          <div class="category-title" style="margin-top:20px;">${msg('Offline')}</div>
+          ${offlinePeerElems}
           ${peerCount <= profilesCount
                   ? html``
                   : html`<div style="text-align:center">${peerCount - profilesCount} ${msg('unregistered peer(s)')}</div>`  }
@@ -215,11 +230,11 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     `
   }
 
+
   /** */
   static override get styles() {
     return [
       css`
-
           .category-title {
               color: #9f9f9f;
               font-size: large;

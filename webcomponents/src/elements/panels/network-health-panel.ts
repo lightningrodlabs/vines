@@ -7,6 +7,7 @@ import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {consume} from "@lit/context";
 import {networkCallerContext} from "../../contexts";
 import Switch from "@ui5/webcomponents/dist/Switch";
+import {NetworkInfoResponse} from "@ddd-qc/lit-happ";
 
 
 function intoLine(numbers: number[]): string {
@@ -30,9 +31,14 @@ export class NetworkHealthPanel extends LitElement {
   /** After first render only */
   override async firstUpdated() {
     /** Register loop callback */
-    this.networkCaller!.addCallback((_info: NetworkMetrics) => {
+    this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
       //console.log("networkInfo:", info);
-      this.requestUpdate();
+        if (r.error != undefined) {
+            console.log("networkCaller failed: ", r.error);
+            this.networkCaller.stopCallLoop();
+        } else {
+            this.requestUpdate();
+        }
     });
     /** Start looping */
     this.onSwitchNetworkInfo(undefined);

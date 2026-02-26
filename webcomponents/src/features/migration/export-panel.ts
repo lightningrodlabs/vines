@@ -17,7 +17,7 @@ export class ExportPanel extends LitElement {
             <div style="display: flex; flex-direction: row; gap:15px">
                 <div class="card">
                     <h3>🎮 Discord</h3>
-                    <div>${msg('Import a Discord Channel exported from')} <a href="https://github.com/Tyrrrz/DiscordChatExporter">Discord Chat Exporter</a></div>
+                    <div>${msg('Import a Discord Channel exported from')} <a href="https://github.com/Tyrrrz/DiscordChatExporter">Discord Chat Exporter</a> ${msg('as JSON')}</div>
                     <div style="flex-grow: 1"></div>
                     <ui5-button design="Emphasized" 
                                 @click=${(e:any) => {

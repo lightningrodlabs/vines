@@ -7,7 +7,7 @@ import {
     DnaElement, DnaId,
     EntryId,
     HappBuildModeType,
-    intoDhtId,
+    intoDhtId, NetworkInfoResponse,
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
 
@@ -251,7 +251,7 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg} from "@lit/localize";
 import {getLocale, setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
-import {HoloHashB64, NetworkMetrics, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/client";
+import {HoloHashB64, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
@@ -476,14 +476,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.debug("<vines-page> onLoopNetworkInfo()")
     if (!this.networkCaller?.isLooping()) {
       console.debug("<vines-page> Start loop")
-      this.networkCaller?.startCallLoop(1000);
+      this.networkCaller?.startCallLoop(2000);
     } else {
       this.networkCaller?.stopCallLoop();
     }
-    this.networkCaller?.addCallback((_metrics) => {
-      const elem = this.shadowRoot!.getElementById("peer-status") as LitElement;
-      if (elem) elem.requestUpdate();
-    });
   }
 
 
@@ -939,14 +935,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
 
     /** Register loop callback */
-    this.networkCaller!.addCallback((metrics: NetworkMetrics) => {
+    this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
       //console.log("<vines-page>.networkCaller callback", metrics);
-
+      if (r.error != undefined) {
+        return;
+      }
+      /** Update peer-list */
+      const elem = this.shadowRoot!.getElementById("peer-status") as LitElement;
+      if (elem) {
+          elem.requestUpdate();
+      }
+      /** Show spinner if there are pending requests */
       let total = 0;
-      for (const peerUrls of Object.values(metrics.fetch_state_summary.pending_requests)) {
+      for (const peerUrls of Object.values(r.metrics!.fetch_state_summary.pending_requests)) {
         total += peerUrls.length;
       }
-
       const toggled = this._canSpin != total > 0;
       if (toggled) {
         this._canSpin = total > 0;
@@ -2230,24 +2233,33 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <network-health-panel></network-health-panel>
+                        <network-health-panel id="nhp"></network-health-panel>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
                             ${this.networkCaller.isLooping()
                                     ? html`<ui5-button style="border-color:red; color:red" 
                                             @click=${() => {
-                                        this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
-                                            detail: false, bubbles: true, composed: true
-                                        }));
-                                        this.requestUpdate();
-                                    }}>${msg('Stop')}
+                                                this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                                    detail: false, bubbles: true, composed: true
+                                                }));
+                                                this.requestUpdate();
+                                                const elem = this.shadowRoot!.getElementById("nhp") as LitElement;
+                                                if (elem) {
+                                                    elem.requestUpdate();
+                                                }
+                                            }}>
+                                        ${msg('Stop')}
                                     </ui5-button>`
                                     :html`<ui5-button @click=${() => {
                                         this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
                                             detail: true, bubbles: true, composed: true
                                         }));
                                         this.requestUpdate();
+                                        const elem = this.shadowRoot!.getElementById("nhp") as LitElement;
+                                        if (elem) {
+                                            elem.requestUpdate();
+                                        }
                                     }}>${msg('Start')}
                                     </ui5-button>`
     }
@@ -2528,7 +2540,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </ui5-dialog>
             <!-- View members dialog -->
             <ui5-dialog id="pick-agent-dialog" style="width:600px;" header-text=${msg('Select a peer')}>
-                <peer-list
+                <peer-list id="message-peer-list"
                         @avatar-clicked=${async (e: any) => {
                             console.log("@avatar-clicked", e.detail)
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
@@ -2547,8 +2559,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                             dialog.close()
                         }}>
-                    ${msg("Cancel")}
+                    ${msg("Close")}
                 </ui5-button>
+                ${this.networkCaller.isLooping()? html`
+                    <ui5-button style="margin:10px; float:right;"
+                               @click=${() => {
+                                   this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                       detail: false, bubbles: true, composed: true
+                                   }));
+                                   this.requestUpdate();
+                                   const elem = this.shadowRoot!.getElementById("message-peer-list") as LitElement;
+                                   if (elem) {
+                                       elem.requestUpdate();
+                                   }
+                               }}>
+                        ${msg('Stop pinging')}
+                    </ui5-button>
+                ` : html`
+                    <ui5-button design="Emphasized" style="margin:10px; float:right;" 
+                                @click=${() => {
+                                    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
+                                        detail: true, bubbles: true, composed: true
+                                    }));
+                                    this.requestUpdate();
+                                    const elem = this.shadowRoot!.getElementById("message-peer-list") as LitElement;
+                                    if (elem) {
+                                        elem.requestUpdate();
+                                    }
+                                }}>
+                        ${msg("Ping peers")}
+                    </ui5-button>
+                `}
             </ui5-dialog>
             <!-- View Rules Dialog/Popover -->
             <ui5-popover id="rulesPop" placement-type="Right" hide-arrow allow-target-overlap

@@ -392,8 +392,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('pull_all_semantic_topics', strategy);
   }
 
-  async searchSemanticTopicsNetwork(titleFilter: string): Promise<[ActionArray, EntryArray, string][]> {
-    return this.call('search_semantic_topics_network', titleFilter);
+  async searchSemanticTopics(titleFilter: string): Promise<[ActionArray, EntryArray, string][]> {
+    return this.call('search_semantic_topics', titleFilter);
   }
 
   async updateSemanticTopic(input: UpdateTopicInput): Promise<ActionArray> {
@@ -408,8 +408,8 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('find_subjects_for_applet', appletId);
   }
 
-  async findSubjectTypesForApplet(appletId: string): Promise<[string, EntryArray][]> {
-    return this.call('find_subject_types_for_applet', appletId);
+  async pullSubjectTypesForApplet(pair: [string, GetStrategy]): Promise<[string, EntryArray][]> {
+    return this.call('pull_subject_types_for_applet', pair);
   }
 
   async findHideLink(subjectHash: AnyLinkableArray): Promise<ActionArray | null> {

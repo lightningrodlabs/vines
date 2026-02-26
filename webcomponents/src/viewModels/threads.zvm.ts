@@ -394,10 +394,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** Get all SubjectTypes for a AppletId */
-    async pullAppletSubjectTypes(appletId: EntryId): Promise<void> {
+    async pullAppletSubjectTypes(appletId: EntryId, strategy: GetStrategy): Promise<void> {
         //const appletHash = decodeHashFromBase64(appletId);
-        console.debug("pullAppletSubjectTypes() appletId", appletId);
-        let subjectTypesRaw = await this.zomeProxy.findSubjectTypesForApplet(appletId.b64);
+        console.debug("pullAppletSubjectTypes() appletId", appletId, strategy);
+        let subjectTypesRaw = await this.zomeProxy.pullSubjectTypesForApplet([appletId.b64, strategy]);
         this._perspective.storeSubjectTypesForApplet(appletId, subjectTypesRaw);
         this.notifySubscribers();
     }

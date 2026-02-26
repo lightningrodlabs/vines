@@ -37,7 +37,7 @@ pub struct SetNotifySettingInput {
 pub fn publish_notify_setting(input: SetNotifySettingInput) -> ExternResult<Option<ActionHash>> {
     std::panic::set_hook(Box::new(zome_panic_hook));
     /// Get current setting if any
-    let pull_input = GetAhInput { ah: input.pp_ah.clone(), strategy: GetStrategy::Network };
+    let pull_input = GetAhInput { ah: input.pp_ah.clone(), strategy: GetStrategy::Local };
     let (current_setting, maybe_link_ah) = pull_my_notify_settings(pull_input)?;
     /// Bail if setting already set
     if current_setting == input.setting {
@@ -45,7 +45,7 @@ pub fn publish_notify_setting(input: SetNotifySettingInput) -> ExternResult<Opti
     }
     /// Delete previous
     if let Some(link_ah) = maybe_link_ah {
-        let _ = delete_link(link_ah, GetOptions::network())?;
+        let _ = delete_link(link_ah, GetOptions::local())?;
     }
     /// No need for link if its for MentionsOnly
     if let NotifySetting::MentionsOnly = input.setting {

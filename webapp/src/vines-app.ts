@@ -422,7 +422,6 @@ export class VinesApp extends HappMultiElement {
                 .wal=${(this.appletView as any).wal}
                 .appProxy=${appProxy}
                 @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
         ></vines-page>`;
           break;
         case "block":
@@ -529,7 +528,6 @@ export class VinesApp extends HappMultiElement {
         <vines-page
                 .appProxy=${appProxy}
                 @dumpNetworkLogs=${this.onDumpNetworkLogs}
-                @queryNetworkInfo=${(_e: any) => this.networkInfoAll()}
         ></vines-page>`;
       }
 
