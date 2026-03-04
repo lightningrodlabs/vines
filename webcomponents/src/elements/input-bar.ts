@@ -657,7 +657,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-textarea id="textMessageInput" mode="SingleSelect"
                                   placeholder=${inputPlaceholder}
                                   growing
-                                  growing-max-lines="3"
+                                  growing-max-lines="10"
                                   rows="1"
                                   .maxlength=${this._limitations.canText!.maxTextLength == 0? DEFAULT_MAX_TEXT_LENGTH : this._limitations.canText!.maxTextLength}
                                   @keydown=${this.handleKeydown}
@@ -844,6 +844,10 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           border-color: #ec0e0e;
         }
 
+          ui5-textarea::part(textarea) {
+             text-wrap:auto;
+          }
+          
         .ui5-textarea-wrapper
         ui5-textarea div div {
           /*background: red;*/

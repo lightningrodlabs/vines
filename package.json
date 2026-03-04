@@ -112,7 +112,7 @@
 
     "dl-applet-release"      : "rm -rf release & mkdir -p release & gh release download we-applet-rc -D release -R lightningrodlabs/vines",
     "unpack:webhapp"         : "$npm_package_config_bin/hc web-app unpack release/vines-we_applet.webhapp",
-    "repackage:we"           : "rm -rf artifacts && mkdir artifacts && cp release/vines.happ artifacts && npm run dist:we && npm run hash",
+    "repackage:we"           : "rm -rf artifacts && mkdir artifacts && cp release/vines-we_applet/vines.happ artifacts && npm run dist:we && npm run hash",
     "upload:we"              : "cp artifacts/vines-we_applet.webhapp artifacts/vines-we_applet-$npm_package_version.webhapp && gh release upload we-applet-rc artifacts/vines-we_applet-$npm_package_version.webhapp",
     "reupload:we"            : "npm run dl-applet-release && npm run unpack:webhapp && npm run repackage:we && npm run upload:we",
 
