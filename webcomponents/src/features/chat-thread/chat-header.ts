@@ -51,12 +51,12 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<chat-header>.willUpdate()", changedProperties, !!this._dvm);
+    //console.debug("<chat-header>.willUpdate()", changedProperties, !!this._dvm);
     // @ts-ignore: _dvm for first update
     if (changedProperties.has("threadHash") || (changedProperties.has("_dvm") && this.threadHash)) {
       let thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash!);
       if (thread) {
-        console.log("<chat-header>.willUpdate() get latest", !!this._dvm);
+        //console.debug("<chat-header>.willUpdate() get latest", !!this._dvm);
         this._latestSubjectId = this._dvm.threadsZvm.perspective.getLatestSubject(intoAnyId(thread.pp.subject.address));
           if (this.weServices) {
              this.weServices.appletInfo(thread.pp.subject.appletId).then(appletInfo => {this._appletInfo = appletInfo});
@@ -107,7 +107,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render(): any {
-    console.debug("<chat-header>.render()", this.threadHash, this._latestSubjectId);
+    //console.debug("<chat-header>.render()", this.threadHash, this._latestSubjectId);
     if (!this.threadHash) {
       return html`<div>Thread hash missing</div>`;
     }
@@ -115,7 +115,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     if (!thread) {
       return html`<div>No thread found</div>`;
     }
-    console.debug("<chat-header>.render() thread", thread);
+    //console.debug("<chat-header>.render() thread", thread);
     const maybeDmThread = this._dvm.threadsZvm.isThreadDm(this.threadHash);
     if (maybeDmThread) {
       return this.renderDmThreadHeader(maybeDmThread);
@@ -140,7 +140,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       title = html`<span class="subject-name">${msg("Welcome to")} ${threadName} !</span> `;
       subText = html`${msg("This is the start of a channel about topic")} ${thread.title}`;
     } else {
-      console.debug("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
+      //console.debug("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
         const avatarElem = renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "S");

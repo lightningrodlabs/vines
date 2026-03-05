@@ -155,7 +155,7 @@ export class QRScanner extends LitElement {
             const result = await invoke<string>('decode_qr_code', { imageData: base64 });
             return result;
         } catch {
-            ">return null;
+            return null;
         }
     }
 
