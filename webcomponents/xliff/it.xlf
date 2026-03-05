@@ -714,10 +714,6 @@
   <source>Recently Viewed</source>
   <target>Visualizzati di recente</target>
 </trans-unit>
-<trans-unit id="sb8103c12cb92e053">
-  <source>No SubjectTypes found</source>
-  <target>Nessun SubjectTypes trovato</target>
-</trans-unit>
 <trans-unit id="se4b80aa1aac3e36a">
   <source>Go to Tool</source>
   <target>Vai allo strumento</target>
@@ -795,6 +791,45 @@
 </trans-unit>
 <trans-unit id="scf3680c17153a318">
   <source>Infringements allowed:</source>
+</trans-unit>
+<trans-unit id="s331e9dc756b627a4">
+  <source>Import Data</source>
+</trans-unit>
+<trans-unit id="sd021375fb50527f4">
+  <source>Bring your data from other apps</source>
+</trans-unit>
+<trans-unit id="s90abd202abb98a71">
+  <source>Import a Discord Channel exported from</source>
+</trans-unit>
+<trans-unit id="s0dc2a94bc45de7e5">
+  <source>as JSON</source>
+</trans-unit>
+<trans-unit id="s3914cb410fca44d4">
+  <source>Import</source>
+</trans-unit>
+<trans-unit id="s609d13a4ba0ad4c2">
+  <source>Import data from a different Vines instance</source>
+</trans-unit>
+<trans-unit id="sc2473aae093ce256">
+  <source>Dry-run</source>
+</trans-unit>
+<trans-unit id="s349c2566ae97902a">
+  <source>No Attachment provided</source>
+</trans-unit>
+<trans-unit id="s925cf4486bd5f6e9">
+  <source>from Tool:</source>
+</trans-unit>
+<trans-unit id="s289481b7b17b3ac4">
+  <source>Open in side view</source>
+</trans-unit>
+<trans-unit id="sb413e553d1587e50">
+  <source>IMPORTED PROFILE</source>
+</trans-unit>
+<trans-unit id="s8e8b43ab0cc8f788">
+  <source>Discord ID</source>
+</trans-unit>
+<trans-unit id="sac6268dfb786cd6f">
+  <source>No comment threads found for this Tool</source>
 </trans-unit>
 </body>
 </file>

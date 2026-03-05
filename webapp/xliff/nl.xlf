@@ -350,10 +350,6 @@
   <source>View Favorites</source>
   <target>Favorieten bekijken</target>
 </trans-unit>
-<trans-unit id="see0b82b4bfb8b629">
-  <source>peers online</source>
-  <target>peers online</target>
-</trans-unit>
 <trans-unit id="sf131ec2d0805ebf9">
   <source>Network Health</source>
   <target>Netwerkstatus</target>
@@ -373,10 +369,6 @@
 <trans-unit id="s84fe353c725d7e2a">
   <source>Share invite code</source>
   <target>Uitnodigingscode delen</target>
-</trans-unit>
-<trans-unit id="s942d9335631ed51e">
-  <source>Import and share</source>
-  <target>Importeren en delen</target>
 </trans-unit>
 <trans-unit id="saf16a83a002e75e4">
   <source>Import temporarily</source>
@@ -559,6 +551,24 @@
 </trans-unit>
 <trans-unit id="s614236d7043661fd">
   <source>synchronize</source>
+</trans-unit>
+<trans-unit id="sc8c380a490ecd3ea">
+  <source>Importing data...</source>
+</trans-unit>
+<trans-unit id="s9b9e7ae0c8a49dc7">
+  <source>online peers</source>
+</trans-unit>
+<trans-unit id="s3914cb410fca44d4">
+  <source>Import</source>
+</trans-unit>
+<trans-unit id="sf448fe2f05602ff5">
+  <source>Stop pinging</source>
+</trans-unit>
+<trans-unit id="s31903fe19abaf698">
+  <source>Ping peers</source>
+</trans-unit>
+<trans-unit id="s331e9dc756b627a4">
+  <source>Import Data</source>
 </trans-unit>
 </body>
 </file>
