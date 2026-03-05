@@ -869,7 +869,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** */
     async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, string, Timestamp, AgentId] | null> {
         const maybeThread = this._perspective.threads.get(ppAh);
-        console.log("ThreadsZvm.fetchPp()", ppAh, !!maybeThread);
+        //console.log("ThreadsZvm.fetchPp()", ppAh, !!maybeThread);
         if (maybeThread) {
             return [maybeThread.pp, maybeThread.title, maybeThread.creationTime, maybeThread.author];
         }
@@ -882,7 +882,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             return null;
         }
         const [pp, ts, author] = maybe;
-        console.log("ThreadsZvm.fetchPp() pp", pp);
+        //console.log("ThreadsZvm.fetchPp() pp", pp);
         /** grab latest title */
         const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle({ah: ppAh.hash, strategy: GetStrategy.Local}));
         if (throttleError2) {
@@ -1703,11 +1703,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 if (!isAuthorSelf) {
                     return;
                 }
-                console.debug("handleLinkPulse() hide", pulse.target);
+                //console.debug("handleLinkPulse() hide", pulse.target);
                 this._perspective.storeHidden(pulse.target, StateChangeType.Create == pulse.state);
                 break;
             case ThreadsLinkType.Dm: {
-                console.debug("handleLinkPulse() Dm", pulse.base.short);
+                //console.debug("handleLinkPulse() Dm", pulse.base.short);
                 const targetAh = new ActionId(pulse.target.b64);
                 const forPeer = AgentId.from(pulse.base);
                 const isForMe = forPeer.equals(this.cell.address.agentId);
@@ -1796,7 +1796,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             }
                 break;
             case ThreadsLinkType.NotifySetting: {
-                console.debug("handleLinkPulse() NotifySetting", pulse.base.short);
+                //console.debug("handleLinkPulse() NotifySetting", pulse.base.short);
                 const baseAh = new ActionId(pulse.base.b64);
                 if (StateChangeType.Create == pulse.state) {
                     const index = pulse.tag[0] as number;
@@ -1824,7 +1824,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             }
                 break;
             case ThreadsLinkType.TitleFix: {
-                console.log("handleLinkPulse() TitleFix", pulse.target.short);
+                //console.log("handleLinkPulse() TitleFix", pulse.target.short);
                 const ppAh = new ActionId(pulse.target.b64);
                 if (StateChangeType.Create == pulse.state) {
                     const decoder = new TextDecoder('utf-8');
@@ -1922,7 +1922,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     const maybe = await this.getOriginalAuthor(pulse.ah);
                     const author = maybe? new AgentId(maybe[1]) : pulse.author;
                     const origTs = maybe? maybe[0] : pulse.ts;
-                    console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
+                    //console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
                     // @ts-ignore
                     this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
                     /** grab latest title edit */

@@ -903,7 +903,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeSemanticTopic(hash: ActionId, title: string, author: AgentId): void {
-    console.log("store SemanticTopic", hash.short);
+    //console.debug("store SemanticTopic", hash.short);
     if (!this.bannedSemanticTopics.includes(hash)) {
       this.semanticTopics.set(hash, [title, author]);
     }
@@ -916,7 +916,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     //   return;
     // }
     this.bannedSemanticTopics.push(hash);
-    console.log("unstore SemanticTopic", hash.short);
+    //console.debug("unstore SemanticTopic", hash.short);
     this.semanticTopics.delete(hash);
   }
 
@@ -966,7 +966,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     }
     const subjectAddr = intoAnyId(pp.subject.address);
     const thread = new Thread(pp, maybeTitle, /*FIXME cell.dnaModifiers.origin_time*/ 0, creationTime, author);
-    console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${prettyTimestamp(creationTime)}"`);
+    //console.log(`storeThread() thread "${ppAh.short}" for subject "${pp.subject.address}"| creationTime: ${prettyTimestamp(creationTime)}"`);
     /** Add already stored log */
     const maybeLog = this._tempThreadLogs.get(ppAh);
     if (maybeLog) {
@@ -985,12 +985,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       /** DM thread */
       const agentId = new AgentId(subjectAddr.b64);
       let otherAgent = cell.address.agentId.equals(author)? agentId : author;
-      console.log("storeThread() dmThread", otherAgent);
+      //console.log("storeThread() dmThread", otherAgent);
       this.dmAgents.set(otherAgent, ppAh);
     } else {
       /** isNew */
       if (isNew) {
-        console.debug(`storeThread() newThreads "${ppAh.short}"`);
+        //console.debug(`storeThread() newThreads "${ppAh.short}"`);
         this.newThreads.set(ppAh, subjectAddr);
       }
       /** threadsPerSubject */

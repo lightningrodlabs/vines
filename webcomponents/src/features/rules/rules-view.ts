@@ -206,7 +206,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   override render() {
-    console.log("<ruled-view>.render()", this.moderation, this.limitations);
+    //console.debug("<rules-view>.render()", this.moderation, this.limitations);
 
     /** */
     return html`

@@ -350,7 +350,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
   /** */
   override render() {
-    console.log("<ruled-edit>.render()", this.moderation, this.limitations, this._zvm.perspective.profiles.size);
+    //console.debug("<rules-edit>.render()", this.moderation, this.limitations, this._zvm.perspective.profiles.size);
 
     let peerList = [];
     for (const [agentId, actionId] of this._zvm.perspective.profileByAgent.entries()) {

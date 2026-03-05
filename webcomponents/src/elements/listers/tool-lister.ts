@@ -64,7 +64,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
   /** */
   override async updated() {
-     console.debug("<tool-lister>.updated()", !!this.weServices);
+    //console.debug("<tool-lister>.updated()", !!this.weServices);
     //   if (this.weServices) {
     //     return;
     // }
@@ -73,7 +73,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     //console.debug("<tool-lister>.updated() select", this._appletId, select);
     if (!this._appletId && select && select.options.length > 0) {
       this._appletId = new EntryId(select.options[0]!.id);
-      console.debug("<tool-lister>.updated() setting appletId", this._appletId.b64);
+      //console.debug("<tool-lister>.updated() setting appletId", this._appletId.b64);
     }
   }
 
@@ -81,7 +81,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   /** */
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
-    console.log("<tool-lister>.willUpdate() appletId", changedProperties, changedProperties.has("_appletId"));
+    //console.log("<tool-lister>.willUpdate() appletId", changedProperties, changedProperties.has("_appletId"));
     if (changedProperties.has("_appletId") && this._zvm) {
       /*await*/ this.loadSubjectTypes();
     }
@@ -90,7 +90,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
   /** */
   private async loadSubjectTypes(newZvm?: ThreadsZvm): Promise<void> {
-    console.log("<tool-lister>.loadSubjectTypes()", this._appletId);
+    //console.log("<tool-lister>.loadSubjectTypes()", this._appletId);
     if (!this._appletId) {
       return;
     }
@@ -262,7 +262,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
   /** */
   override render() {
-    console.log("<tool-lister>.render() appletId", this._appletId, this.selectedThreadHash);
+    //console.debug("<tool-lister>.render() appletId", this._appletId, this.selectedThreadHash);
     if (this._loading) {
       return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
@@ -271,7 +271,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
     if (this._appletId) {
       let maybeSubjectTypes = this.perspective.appletSubjectTypes.get(this._appletId);
-      console.debug("<tool-lister>.render() subjectTypes", subjectTypes);
+      //console.debug("<tool-lister>.render() subjectTypes", subjectTypes);
       if (maybeSubjectTypes) {
         subjectTypes = maybeSubjectTypes
       }
@@ -282,7 +282,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     const unreadSubjects = this._zvm.perspective.getUnreadSubjects();
 
     let treeItems = Array.from(subjectTypes.entries()).map(([pathEh, subjectType]) => {
-      console.debug("<tool-lister>.render() subjectType", subjectType, pathEh);
+      //console.debug("<tool-lister>.render() subjectType", subjectType, pathEh);
       /** Render SubjectTypes */
       const maybeCommentThread = this._zvm.perspective.getCommentThreadForSubject(pathEh);
       const isUnread = !!maybeCommentThread && this._zvm.perspective.unreads.has(maybeCommentThread);
@@ -356,7 +356,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
             <ui5-select id="lister-select" style="margin:auto"
                       @change=${(e: any) => {
                       const idB64: string = e.detail.selectedOption.id;
-                      console.debug("<tool-lister> change", e.detail.selectedOption, idB64, e);
+                      //console.debug("<tool-lister> change", e.detail.selectedOption, idB64, e);
                       this._appletId = new EntryId(idB64);
                     }}>
               ${appletOptions}

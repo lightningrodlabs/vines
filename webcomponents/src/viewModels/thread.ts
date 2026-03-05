@@ -35,7 +35,7 @@ export class Thread {
 
   /** Ctor */
   constructor(pp: ParticipationProtocol, maybeTitle: string | undefined, dnaOriginTime: Timestamp, creationTime: Timestamp, author: AgentId) {
-    console.debug("New Thread()", !!pp, dnaOriginTime, author);
+    //console.debug("New Thread()", !!pp, dnaOriginTime, author);
     this._pp = pp;
     this._title = maybeTitle? maybeTitle : this._pp.purpose;
     this._latestProbeLogTime = dnaOriginTime;
@@ -99,7 +99,7 @@ export class Thread {
 
   /** */
   setHasSearchedOldestBead(): void {
-    console.debug("setHasSearchedOldestBead()", this.pp.purpose)
+    //console.debug("setHasSearchedOldestBead()", this.pp.purpose)
     this._hasSearchedOldestBead = true;
   }
 

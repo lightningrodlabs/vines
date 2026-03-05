@@ -55,7 +55,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<notification-list>.render()", this.threadsPerspective.inbox.size, this.threadsPerspective.inbox);
+    //console.debug("<notification-list>.render()", this.threadsPerspective.inbox.size, this.threadsPerspective.inbox);
     if (this.threadsPerspective.inbox.size == 0) {
       return html`<div style="font-weight: bold;">${msg('empty')}</div>`;
     }

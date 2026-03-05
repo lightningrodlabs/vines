@@ -48,7 +48,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   override render(): TemplateResult<1> {
-    console.log("<dm-lister>.render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
+    //console.debug("<dm-lister>.render()", this.threadsPerspective.dmAgents, this._dvm.profilesZvm.perspective.profiles);
 
     let treeItems = Array.from(this.threadsPerspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
       /** Skip if hidden */
@@ -64,7 +64,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         return html`
             <ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
-      console.log("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
+      //console.debug("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
       const maybeUnreadThread = this.threadsPerspective.unreads.get(ppAh);
       const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;

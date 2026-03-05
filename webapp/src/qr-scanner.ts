@@ -155,14 +155,14 @@ export class QRScanner extends LitElement {
             const result = await invoke<string>('decode_qr_code', { imageData: base64 });
             return result;
         } catch {
-            return null;
+            ">return null;
         }
     }
 
     /** */
     override render() {
         return html`
-      <div class="container">
+      <div class="container
         <h1>${msg("Scan QR Code")}</h1>
         <div class="video-container">
           ${this.isScanning
