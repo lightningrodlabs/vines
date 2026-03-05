@@ -162,7 +162,7 @@ export class QRScanner extends LitElement {
     /** */
     override render() {
         return html`
-      <div class="container
+      <div class="container">
         <h1>${msg("Scan QR Code")}</h1>
         <div class="video-container">
           ${this.isScanning
