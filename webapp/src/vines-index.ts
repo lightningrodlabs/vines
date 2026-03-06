@@ -1,5 +1,5 @@
 import {html, css, LitElement} from "lit";
-import { customElement} from "lit/decorators.js";
+import { customElement/*, state*/} from "lit/decorators.js";
 import * as APPV from './generated/version.js';
 
 console.log("<vines-index>", APPV.APP_VERSION);
@@ -19,12 +19,23 @@ export class VinesIndex extends LitElement {
         super.connectedCallback();
         // @ts-ignore
         this.addEventListener('app-selected', this.onAppSelect);
+        // @ts-ignore
+        this.addEventListener('vines-ready', this.onReady);
     }
     override disconnectedCallback() {
         super.disconnectedCallback();
         // @ts-ignore
         this.removeEventListener('app-selected', this.onAppSelect);
+        // @ts-ignore
+        this.removeEventListener('vines-ready', this.onReady);
     }
+
+    /** */
+    onReady(_e: any) {
+        const busy = this.shadowRoot!.getElementById("busy") as HTMLElement;
+        busy?.remove();
+    }
+
 
     onAppSelect(e: CustomEvent<HappInfo>) {
         console.log("RECEIVED onAppSelect event", e);
@@ -44,11 +55,17 @@ export class VinesIndex extends LitElement {
       /** */
       override render() {
         console.log("<vines-index>.render()", globalThis.TAURI_SHOW_ADMIN);
-        /** Render all */
         if (globalThis.TAURI_SHOW_ADMIN || !globalThis.HAPP_ID) {
             return html`<vines-admin></vines-admin>`;
         }
-        return html`<vines-app></vines-app>`;
+        return html`
+            <ui5-busy-indicator id="busy" delay="0" size="Large" active 
+                                style=" top: 50%; margin-left:-50px;
+                                        left: 50%; position: fixed;
+                                        color:#05b92f; "
+            ></ui5-busy-indicator>
+            <vines-app></vines-app>
+        `;
       }
 
   /** */
@@ -56,7 +73,7 @@ export class VinesIndex extends LitElement {
     return [
       css`
           :host {
-              background: #e42751;
+              background: #fdfdfd;
               display: block;
               height: 100vh;
               width: 100%;
