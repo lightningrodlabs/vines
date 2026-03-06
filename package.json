@@ -34,7 +34,7 @@
     "build:devtest"          : "npm run clean:hc & npm run build:happ && npm run build -w webcomponents",
 
     "tauri"                  : "tauri",
-    "build:android"          : "npm run tauri android build -- --apk true --target aarch64 && cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk artifacts/vines-$npm_package_version.apk",
+    "build:android"          : "npm run tauri android build -- --apk --target aarch64 && cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk artifacts/vines-$npm_package_version.apk",
     "build:android:all"      : "npm run tauri android build -- --apk true --target x86_64 --target aarch64 --target i686",
     "start:android"          : "BOOT_PORT=$(port) SIGNAL_PORT=$(port) INTERNAL_IP=$(internal-ip --ipv4) concurrently -k \"npm run local-bootstrap\" \"UI_PORT=1420 npm run -w webapp start\" \"npm run launch:android\"",
     "start:tauri"            : "AGENTS=1 BOOT_PORT=$(port) SIGNAL_PORT=$BOOT_PORT npm run network:tauri",
