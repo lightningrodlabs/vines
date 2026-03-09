@@ -208,8 +208,8 @@ export class VinesAdmin extends LitElement {
 
       return html`
           <div class="column center-content flex-1" style="gap:15px; height:100%;">
-              <div class="dialog-title" style="display:flex; flex-direction:row; gap:5px; align-items:baseline">
-                  <span>${appInfo.installed_app_id}</span>
+              <div class="dialog-title" style="display:flex; flex-direction:row; gap:5px; align-items:baseline; overflow: hidden;">
+                  <span style="overflow-wrap: break-word; word-break: break-word; max-width: 100vw;">${appInfo.installed_app_id}</span>
                   <div style="margin-left:5px; color:rgb(45, 111, 244); font-size:18px;">${isDefault? `(${msg("default")})`: ""}</div>
               </div>
               <span class="flex flex-1"></span>
@@ -343,7 +343,7 @@ export class VinesAdmin extends LitElement {
                                     id="invited-group-btn"
                                     class="group-button"
                                     @click=${() => this._inviteLink = ''}
-                                    style="max-width:100px"
+                                    style="max-width:100px; text-overflow: ellipsis; overflow: clip;"
                             >
                             ${inviteGroup.happId}
                             ${closeIcon(30)}                                
