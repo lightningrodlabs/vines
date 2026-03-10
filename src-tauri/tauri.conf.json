@@ -1,6 +1,6 @@
 {
   "productName": "vines",
-  "version": "1.21.0",
+  "version": "1.25.1",
   "identifier": "org.lightningrodlabs.vines",
   "build": {
     "removeUnusedCommands": false,
@@ -18,7 +18,7 @@
   "bundle": {
     "active": true,
     "category": "Productivity",
-    "copyright": "Copyright (C) 2021-2025, Harris-Braun Enterprises, LLC",
+    "copyright": "Copyright (C) 2021-2026, Harris-Braun Enterprises, LLC",
     "shortDescription": "Vines is a decentralized chat app built on Holochain.",
     "resources": ["../webapp/icon.png"],
     "targets": "all",
