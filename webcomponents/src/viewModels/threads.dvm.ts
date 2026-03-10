@@ -243,7 +243,7 @@ export class ThreadsDvm extends DnaViewModel {
       this._processUnsharedInterval = setInterval(async () => {
           if (this.perspective.myUnsharedBeads.size > 0) {
               const others = this.allCurrentOthers();
-              console.info("ThreadsDvn.processUnshared() myUnsharedBeads", this.perspective.myUnsharedBeads.size, others.length);
+              console.info("ThreadsDvm.processUnshared() myUnsharedBeads", this.perspective.myUnsharedBeads.size, others.length);
               if (others.length > 0) {
                   for (const unshared of Object.values(this.perspective.myUnsharedBeads).slice(0, 10)) { // for the first 10 beads
                       /*await*/ this.requestAck(new ActionId(unshared), others.slice(0, 5)); // ask 5 other peers
