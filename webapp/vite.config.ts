@@ -7,7 +7,7 @@ import { internalIpV4Sync } from "internal-ip";
 
 console.log("vite: process.env.HC_APP_PORT: ", process.env.HC_APP_PORT);
 console.log("vite: process.env.HAPP_BUILD_MODE: ", process.env.HAPP_BUILD_MODE);
-const HAPP_BUILD_MODE = process.env.HAPP_BUILD_MODE? process.env.HAPP_BUILD_MODE : "Release";
+const HAPP_BUILD_MODE = process.env.HAPP_BUILD_MODE? process.env.HAPP_BUILD_MODE : "Retail";
 
 
 console.log("vite: process.env.APPLET_VIEW: ", process.env.APPLET_VIEW);

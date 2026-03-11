@@ -14,7 +14,7 @@ pub struct MyTauriConfig {
 
 #[tauri::command]
 pub async fn get_config() -> Result<MyTauriConfig, String> {
-   println!("get_config() called");
+   println!("get_config() called | is dev: {}", tauri::is_dev());
    let bundle_dna_hash = get_dna_hash(happ_bundle(), "threads.dna").await.unwrap();
    println!("get_config() response: {}", bundle_dna_hash.clone());
    Ok(MyTauriConfig {

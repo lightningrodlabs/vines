@@ -18,6 +18,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build = { version = "2.2.0", default-features = false , features = [] }
 
+#[target.'cfg(target_os = "android")'.dependencies]
+#android_logger = "0.13"
+
 [dependencies]
 serde = { version = "=1.0.219", default-features = false }
 tauri = { version = "=2.9", default-features = false , features = [] }

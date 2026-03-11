@@ -2418,9 +2418,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <div id="topBarBtnGroup">
                         ${
                                 HAPP_BUILD_MODE == HappBuildModeType.Retail? html`` : /*html``*/
-                                        html`
-                                            <ui5-button icon="developer-settings"
-                                                        @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
+                                        html`<ui5-button icon="developer-settings"
+                                                         @click=${() => this._canShowDebug = !this._canShowDebug}></ui5-button>`
                         }
                         <ui5-button id="sync-button" icon="synchronize"  tooltip=${msg('synchronize')}
                                     @click=${() => {

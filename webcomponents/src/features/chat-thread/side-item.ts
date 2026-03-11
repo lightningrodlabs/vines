@@ -118,10 +118,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
               <div .id=${id} 
                    style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
                    @click=${async (e: any) => {
-              e.stopPropagation();
-              await this.weServices?.assets.assetInfo(wal);
-              this.requestUpdate();
-            }}>
+                      e.stopPropagation();
+                      await this.weServices?.assets.assetInfo(wal);
+                      this.requestUpdate();
+                    }}>
                   <ui5-icon name="synchronize"></ui5-icon>
                   <span>${msg('Unknown Asset')}</span>
               </div>

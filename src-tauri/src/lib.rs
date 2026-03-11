@@ -1,12 +1,34 @@
 use holochain_types::prelude::*;
 use std::path::PathBuf;
 use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked};
+use tauri::{Listener};
+use tauri_plugin_log::{Target, TargetKind};
 
 pub mod commands;
 pub mod utils;
 
 use utils::*;
 use commands::*;
+
+//#[cfg(target_os = "android")]
+//use android_logger;
+//
+// #[cfg(target_os = "android")]
+// mod android {
+//    use std::ffi::CString;
+//
+//    extern "C" {
+//       fn __android_log_write(prio: i32, tag: *const i8, text: *const i8) -> i32;
+//    }
+//
+//    pub fn log(msg: &str) {
+//       let tag = CString::new("VinesTauri").unwrap();
+//       let msg = CString::new(msg).unwrap();
+//       unsafe {
+//          __android_log_write(4, tag.as_ptr() as *const i8, msg.as_ptr() as *const i8); // 4 = INFO
+//       }
+//    }
+// }
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -15,7 +37,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![install, select, decode_qr_code, get_config])
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Warn)
+                 .targets([
+                    Target::new(TargetKind::Stdout),
+                    //Target::new(TargetKind::LogDir { file_name: None }),
+                    Target::new(TargetKind::Webview),
+                 ])
+                .level(log::LevelFilter::Debug)
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
@@ -27,6 +54,20 @@ pub fn run() {
         ))
         .setup(|app| {
             let handle = app.handle().clone();
+            let handle_fail = app.handle().clone();
+
+           //#[cfg(target_os = "android")]
+           //android::log("VINES Hello from Rust!");
+
+            app.handle()
+              .listen("holochain://setup-failed", move |event| {
+                 println!("Holochain setup failed: {:?}", event);
+                 handle_fail.exit(1);
+              });
+           // app.handle()
+           //    .listen("holochain://setup-completed", move |_event| {
+           //       let handle = handle.clone();
+
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
                let admin_ws = handle.holochain()?.admin_websocket().await?;
                let installed_apps = admin_ws
@@ -87,8 +128,8 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+   //})
 }
-
 
 pub fn holochain_dir() -> PathBuf {
     let app_data_type = if tauri::is_dev() {
