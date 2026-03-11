@@ -3,11 +3,10 @@ use holochain_types::websocket::AllowedOrigins;
 use tauri_plugin_holochain::NetworkConfig;
 use std::collections::HashSet;
 use url2::Url2;
-use log::info;
 
 //#[cfg(target_os = "android")]
 //use android_logger;
-use crate::android;
+//use crate::android;
 
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../artifacts/vines.happ");
 pub const TARGET_ARC: u32 = 1; // 1 // 0
@@ -38,6 +37,8 @@ pub fn network_config(target_arc_factor: u32) -> NetworkConfig {
       let port = std::env::var("BOOT_PORT").unwrap_or_else(|_| "8888".to_string());
       network_config.bootstrap_url = Url2::parse(format!("http://127.0.0.1:{}", port));
       //network_config.bootstrap_url = Url2::parse("http://0.0.0.0:8888");
+   } else {
+      network_config.bootstrap_url = Url2::parse("https://bootstrap.moss.social/");
    }
    // // User-persisted config takes the highest priority
    // if let Some(user_config) = user_config {
