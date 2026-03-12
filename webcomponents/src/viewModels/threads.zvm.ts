@@ -884,7 +884,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [pp, ts, author] = maybe;
         //console.log("ThreadsZvm.fetchPp() pp", pp);
         /** grab latest title */
-        const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle({ah: ppAh.hash, strategy: GetStrategy.Local}));
+        const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle({ah: ppAh.hash, strategy: GetStrategy.Local}));  // FIXME strategy
         if (throttleError2) {
             return null;
         }
@@ -1684,7 +1684,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         console.log("castNotificationTip()", notificationTip, agent/*, notification.author*/);
         const notifTip: ThreadsAppTip = {type: "notification", data: notificationTip};
         const serTip = this._encoder.encode(notifTip);
-        await this.broadcastTip({AppCustom: serTip}, [agent]);
+        this.broadcastTip({AppCustom: serTip}, [agent]);
         return;
     }
 

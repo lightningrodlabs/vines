@@ -1,7 +1,11 @@
 import {DEFAULT_THREADS_DEF} from "./happDef";
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
-import {isTauri} from "@tauri-apps/api/core";
+import {/*invoke,*/ isTauri} from "@tauri-apps/api/core";
 import {createContext} from "@lit/context";
+//import * as APPV from "./generated/version";
+//import {AdminWebsocket} from "@holochain/client";
+import {DnaHashB64} from "@holochain/client";
+import { toUint8Array, fromUint8Array } from 'js-base64';
 
 declare global {
     var IS_TAURI: boolean;
@@ -11,6 +15,7 @@ declare global {
     var TAURI_IS_DEV: boolean;
     var TAURI_TARGET_ARC: number | undefined;
     var TAURI_HAPP_SHA256: string | undefined;
+    var TAURI_BOOTSTRAP_URL: string | undefined;
     var HAPP_ID: string;
     var HC_APP_PORT: number | undefined;
     var HC_ADMIN_PORT: number | undefined;
@@ -20,6 +25,7 @@ globalThis.IS_TAURI = isTauri();
 globalThis.TAURI_IS_DEV = false;
 globalThis.TAURI_TARGET_ARC = undefined;
 globalThis.TAURI_HAPP_SHA256 = undefined;
+globalThis.TAURI_BOOTSTRAP_URL = undefined;
 globalThis.TAURI_CAN_DEFAULT = true;
 globalThis.TAURI_SHOW_ADMIN = undefined;
 globalThis.HAPP_TOKEN = undefined;
@@ -75,7 +81,28 @@ export interface MyTauriConfig {
     dna: string,
     happ_sha256: string,
     arc: number,
+    bootstrap_url: string,
     //can_default: bool,
 }
 
 export const happShareCodeContext = createContext<[string, string | null, string][]>('happShareCodes');
+
+
+/** Call bootstrap server and get list of known peers */
+export async function getBootstrapPeers(bootstrapUrl: string, dnaB64: DnaHashB64): Promise<any> {
+    const bootstrap = bootstrapUrl.replace(/\/$/, '');
+    /* Convert dnaHash to K2 space hash */
+    console.log(`getBootstrapPeers() calling ${bootstrap} for dna`, dnaB64);
+    const trimmed = dnaB64.substring(1);
+    const rawBytes = toUint8Array(trimmed);
+    const slicedBytes = rawBytes.slice(3, 35);
+    const k2 = fromUint8Array(slicedBytes, true); // 'true' enables URL-safe mode
+    console.log(`getBootstrapPeers() k2`, k2);
+    /* Query the boostrap server */
+    const response = await fetch(bootstrap + "/bootstrap/" + k2);
+    console.log(`getBootstrapPeers() response`, response);
+    if (!response.ok) {
+    return Promise.reject(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+}

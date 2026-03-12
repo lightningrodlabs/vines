@@ -9,6 +9,7 @@ pub struct MyTauriConfig {
    dna: String,
    happ_sha256: String,
    arc: u32,
+   bootstrap_url: String,
    //can_default: bool,
 }
 
@@ -23,11 +24,11 @@ pub async fn get_config() -> Result<MyTauriConfig, String> {
       happ_sha256: get_happ_hash(),
       //can_default,
       arc: TARGET_ARC,
+      bootstrap_url: network_config(TARGET_ARC).bootstrap_url.to_string(),
    })
 }
 
-
-
+///
 fn get_happ_hash() -> String {
    let mut hasher = Sha256::new();
    hasher.update(HAPP_BUNDLE_BYTES);

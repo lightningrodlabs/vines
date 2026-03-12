@@ -214,7 +214,6 @@ export class ThreadsDvm extends DnaViewModel {
       if (thread === undefined) {
         const locTip: ThreadsAppTip = {type: thread === undefined? "where" : "location", data: this._currentLocation};
         const serTip = this._encoder.encode(locTip);
-        /*await*/
         this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
       }
     } else {
@@ -310,7 +309,7 @@ export class ThreadsDvm extends DnaViewModel {
             && !entryPulseMat.author.equals(this.cell.address.agentId)
             && this._perspective.ackRequests.has(entryPulseMat.ah)) {
             //console.debug("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
-            await this.ackAuthor(entryPulseMat.ah.b64);
+            this.ackAuthor(entryPulseMat.ah.b64);
             this._perspective.ackRequests.delete(entryPulseMat.ah);
           }
           break;
@@ -371,9 +370,7 @@ export class ThreadsDvm extends DnaViewModel {
     //const agents = from? [from] : this.allCurrentOthers();
     const agents = to? to : this.allCurrentOthers();
     console.log("broadcastLocation() of to", this._currentLocation, agents);
-    try {
-        this.threadsZvm.broadcastTip({AppCustom: serTip}, agents);
-    } catch(e) {console.warn("broadcastLocation() error", e)}
+    this.threadsZvm.broadcastTip({AppCustom: serTip}, agents);
   }
 
 
@@ -382,9 +379,7 @@ export class ThreadsDvm extends DnaViewModel {
     console.log("ThreadsDvm.requestAck()", beadAh);
     const tip: ThreadsAppTip = {type: "ackRequest", data: beadAh};
     const serTip = this._encoder.encode(tip);
-    try {
-      this.threadsZvm.broadcastTip({AppCustom: serTip}, others);
-    } catch(e) {console.warn("requestAck() error", e)}
+    this.threadsZvm.broadcastTip({AppCustom: serTip}, others);
   }
 
 
@@ -401,22 +396,16 @@ export class ThreadsDvm extends DnaViewModel {
     const author = maybe[0].author;
     const tip: ThreadsAppTip = {type: "ack", data: beadId};
     const serTip = this._encoder.encode(tip);
-    try {
-        this.threadsZvm.synchronizeCustomTip(serTip, author, "zThreads");
-    } catch(e) {console.warn("ackAuthor() error", e)}
-
+    this.threadsZvm.synchronizeCustomTip(serTip, author, "zThreads");
   }
 
 
   /** */
   signalTyping(thread: ActionId, is: boolean) {
-    //console.log("ThreadsDvm.signalTyping()", thread, is);
+    //console.debug("ThreadsDvm.signalTyping()", thread, is);
     const tip: ThreadsAppTip = {type: "typing", data: {thread, is}};
     const serTip = this._encoder.encode(tip);
-    try {
-        this.threadsZvm.broadcastTip({AppCustom: serTip}, this.allCurrentOthers());
-    } catch(e) {console.warn("ackAuthor() error", e)}
-
+    this.threadsZvm.broadcastTip({AppCustom: serTip}, this.allCurrentOthers());
 }
 
   /** */
@@ -512,7 +501,6 @@ export class ThreadsDvm extends DnaViewModel {
           case "ackRequest":
             console.debug("ThreadsDvm.handleTip() ackRequest", appTip.data);
             if (this.threadsZvm.perspective.beads.get(appTip.data!)) {
-              /*await*/
               this.ackAuthor(appTip.data!.b64);
             }
             break;
@@ -525,7 +513,7 @@ export class ThreadsDvm extends DnaViewModel {
             if (appTip.data) this.storePresence(from, Date.now(), appTip.data); // store their location
             const locTip: ThreadsAppTip = {type: "location", data: this._currentLocation};
             const serTip = this._encoder.encode(locTip);
-            await this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
+            this.threadsZvm.broadcastTip({AppCustom: serTip}, [from]);
             break;
           case "location":
             this.storePresence(from, Date.now(), appTip.data);

@@ -3,7 +3,14 @@ import {customElement, state} from "lit/decorators.js";
 import {localized, msg} from '@lit/localize';
 import {AdminWebsocket, AppInfo, ProvisionedCell,} from "@holochain/client";
 import {setLocale} from "./localization";
-import {decodeHappJoinCode, encodeHappJoinCode, HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
+import {
+    decodeHappJoinCode,
+    DnaId,
+    DnaIdMap,
+    encodeHappJoinCode,
+    HAPP_BUILD_MODE,
+    HappBuildModeType
+} from "@ddd-qc/lit-happ";
 import * as APPV from './generated/version.js';
 import {invoke} from '@tauri-apps/api/core';
 import {writeText,} from '@tauri-apps/plugin-clipboard-manager'
@@ -13,7 +20,7 @@ import {dayTimestamp} from "@ddd-qc/files";
 import {HappInfo} from "./vines-index";
 import {toasty} from "@vines/elements";
 import {HappJoinCode} from "@ddd-qc/cell-proxy";
-import {MyTauriConfig} from "./globals";
+import {getBootstrapPeers, MyTauriConfig} from "./globals";
 import {ICON_B64} from "./icon";
 
 /** */
@@ -38,6 +45,9 @@ export class VinesAdmin extends LitElement {
 
   @state() private _defaultApp: string = localStorage.getItem('vinesDefaultApp')? localStorage.getItem('vinesDefaultApp')!: "";
 
+  /*** Dna -> peer count found on bootstrap server */
+  @state() private _peers: DnaIdMap<number> = new DnaIdMap();
+
 
   constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
@@ -55,6 +65,7 @@ export class VinesAdmin extends LitElement {
               console.log("GOT TAURI CONFIG: " + JSON.stringify(config));
               globalThis.TAURI_HAPP_SHA256 = config.happ_sha256;
               globalThis.TAURI_TARGET_ARC = config.arc;
+              globalThis.TAURI_BOOTSTRAP_URL = config.bootstrap_url;
           })
       }
   }
@@ -68,6 +79,19 @@ export class VinesAdmin extends LitElement {
         }
     }
 
+
+    /** */
+    queryBootStrapServer(dnaId: DnaId) {
+        getBootstrapPeers(globalThis.TAURI_BOOTSTRAP_URL!, dnaId.b64)
+            .then((data) => {
+                console.log(`<vines-admin>.queryBootStrapServer() found ${data.length} peers for dna`, dnaId.b64);
+                this._peers.set(dnaId, data.length);
+            })
+            .catch((e) => console.warn(`<vines-admin>.queryBootStrapServer() failed:`, JSON.stringify(e)))
+    }
+
+
+    /** */
     async getApps() {
       if (!this._adminWs) {
           console.error("Missing _adminWs");
@@ -78,7 +102,8 @@ export class VinesAdmin extends LitElement {
       for (const appInfo of apps) {
           const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
           const code = encodeHappJoinCode(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed);
-            this._apps.set(code, appInfo);
+          this._apps.set(code, appInfo);
+          this.queryBootStrapServer(new DnaId(cell.cell_id[0]))
       }
       this.requestUpdate();
 
@@ -122,7 +147,7 @@ export class VinesAdmin extends LitElement {
   //   console.debug("<vines-admin>.firstUpdated() " + this._defaultApp)
   // }
 
-    renderShareApp(): TemplateResult<1> {
+  renderShareApp(): TemplateResult<1> {
       const appVersion = APPV.APP_VERSION;
       const happDownloadLinkUrl = `https://github.com/lightningrodlabs/vines/releases/download/v${appVersion}/vines-${appVersion}.apk`;
 
@@ -184,6 +209,7 @@ export class VinesAdmin extends LitElement {
   renderGroupInvite(): TemplateResult<1> {
       const appInfo = this._showGroupInvite!;
       const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
+      const dnaId = new DnaId(cell.cell_id[0]);
       const shareCode = encodeHappJoinCode(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed);
       const isDefault = this._defaultApp == shareCode;
       const popover = this.shadowRoot!.getElementById('popover');
@@ -212,6 +238,8 @@ export class VinesAdmin extends LitElement {
                   <span style="overflow-wrap: break-word; word-break: break-word; max-width: 100vw;">${appInfo.installed_app_id}</span>
                   <div style="margin-left:5px; color:rgb(45, 111, 244); font-size:18px;">${isDefault? `(${msg("default")})`: ""}</div>
               </div>
+              <div>${msg("Peers online: ")} ${this._peers.get(dnaId) ?? 0}</div>
+              <button @click=${(_e:any) => this.queryBootStrapServer(dnaId)}>Recheck</button>
               <span class="flex flex-1"></span>
               <h3 style="margin:0px; margin-bottom:10px;">
                   <div style="width: fit-content; margin:auto; margin-bottom:5px;">${msg('Invite code')}</div>

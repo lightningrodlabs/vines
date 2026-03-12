@@ -126,6 +126,7 @@ export class VinesApp extends HappMultiElement {
             console.log("GOT TAURI CONFIG: " + JSON.stringify(config));
             globalThis.TAURI_HAPP_SHA256 = config.happ_sha256;
             globalThis.TAURI_TARGET_ARC = config.arc;
+            globalThis.TAURI_BOOTSTRAP_URL = config.bootstrap_url;
             this.hvms.forEach(([appProxy, _hvm]) => appProxy.setHappSha256(globalThis.TAURI_HAPP_SHA256!))
         })
     }
