@@ -866,30 +866,19 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** -- Fetch -- */
 
-    /** */
-    async fetchPp(ppAh: ActionId): Promise<[ParticipationProtocol, string, Timestamp, AgentId] | null> {
-        const maybeThread = this._perspective.threads.get(ppAh);
-        //console.log("ThreadsZvm.fetchPp()", ppAh, !!maybeThread);
-        if (maybeThread) {
-            return [maybeThread.pp, maybeThread.title, maybeThread.creationTime, maybeThread.author];
+    /** Make sure we have a ParticipationProtocol */
+    ensurePp(ppAh: ActionId, strategy: GetStrategy): void {
+      //console.log("ThreadsZvm.fetchPp()", ppAh);
+      const maybeThread = this._perspective.threads.get(ppAh);
+      if (maybeThread) {
+          return;
+      }
+      catchThrottled(this.zomeProxy.fetchPp({ah: ppAh.hash, strategy}))
+        .then(([throttleError, maybe]) => {
+        if (!throttleError && !maybe) {
+          console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
         }
-        const [throttleError, maybe] = await catchThrottled(this.zomeProxy.fetchPp({ah: ppAh.hash, strategy: GetStrategy.Local})); // FIXME strategy
-        if (throttleError) {
-            return null;
-        }
-        if (!maybe) {
-            console.warn(`ParticipationProtocol not found at hash ${ppAh.b64}`);
-            return null;
-        }
-        const [pp, ts, author] = maybe;
-        //console.log("ThreadsZvm.fetchPp() pp", pp);
-        /** grab latest title */
-        const [throttleError2, title] = await catchThrottled(this.zomeProxy.getPpTitle({ah: ppAh.hash, strategy: GetStrategy.Local}));  // FIXME strategy
-        if (throttleError2) {
-            return null;
-        }
-        /** */
-        return [pp, title!, ts, new AgentId(author)];
+      })
     }
 
 
@@ -1714,7 +1703,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 if (!isAuthorSelf && !isForMe) {
                     return;
                 }
-                await this.fetchPp(targetAh);
+                this.ensurePp(targetAh, GetStrategy.Local);
                 /** Notify peer of DmThread */
                 if (this.isMainView && !isForMe && pulse.isNew) {
                     await this.zomeProxy.notifyPeer({
@@ -1926,7 +1915,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     // @ts-ignore
                     this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
                     /** grab latest title edit */
-                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local}) // TODO: Figure out best Get strategy
+                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local})
                         .catch(() => {});
                     /** grab latest text-bead edit if it's an EDIT thread */
                     if (pp.purpose == "EDIT") {
@@ -2034,8 +2023,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             const ppAh = await this.fetchPpAhFromNotification(notif);
             /** make sure we have the content signaled in the notification */
             if (ppAh) {
-                /*await*/
-                this.fetchPp(ppAh); // We should probably fetch it for futur use
+                this.ensurePp(ppAh, GetStrategy.Local); // We should probably fetch it for future use
                 /** Publish a NotifySetting.AllMessages for this thread if non exists */
                 if (NotifiableEvent.NewDmThread === event && pulse.isNew) {
                     if (this.isMainView) {

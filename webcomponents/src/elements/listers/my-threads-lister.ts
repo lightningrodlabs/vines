@@ -54,9 +54,9 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   /** */
   protected override async zvmUpdated(newZvm: ThreadsZvm, oldZvm?: ThreadsZvm): Promise<void> {
-    super.zvmUpdated(newZvm, oldZvm);
     this._loading = true;
-    await newZvm.zomeProxy.queryAll();
+    await super.zvmUpdated(newZvm, oldZvm);
+    //await newZvm.zomeProxy.queryAll();
     this._loading = false;
   }
 

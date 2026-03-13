@@ -1540,6 +1540,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   downloadTextFile(filename: string, content: string): void {
+    console.debug("downloadTextFile()", filename, content.length);
     const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1627,13 +1628,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       primaryTitle = msg("Favorites");
     }
 
-    /** render selected thread */
+    /** render the selected thread */
     if (this._selectedThreadHash && (this._mainView == MainViewType.Thread || this._mainView == MainViewType.MultiThread)) {
       const thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
       //console.warn("<vines-page>.render() thread", !!thread, this._selectedThreadHash.short);
       if (!thread) {
-        console.log("<vines-page>.render() fetchPp WARNING");
-        /*await*/ this._dvm.threadsZvm.fetchPp(this._selectedThreadHash);
+        console.log("<vines-page>.render() ensurePp");
+        this._dvm.threadsZvm.ensurePp(this._selectedThreadHash, GetStrategy.Local);
       } else {
         primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
         const isEditOther = this._dvm.threadsZvm.isEditThreadFromPeer(this._selectedThreadHash);
@@ -2932,7 +2933,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onSettingsMenu(e: any): Promise<void> {
     console.log("item-click", e);
-    this.waitDialogElem.show();
+    /*await*/ this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
       case "editProfileItem":
@@ -2945,10 +2946,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "exportAllItem":
         if (content == "") content = await this._dvm.exportAllPerspective();
       case "exportItem":
-        const files_json = await this._filesDvm.exportPerspective();
-        this.downloadTextFile("dump_files.json", files_json);
         if (content == "") content = this._dvm.exportPerspective();
         this.downloadTextFile("dump_threads.json", content);
+        const files_json = await this._filesDvm.exportPerspective();
+        this.downloadTextFile("dump_files.json", files_json);
         toasty(msg(`Exported data to json in Downloads folder`));
         break;
       case "importCommitItem":

@@ -88,7 +88,7 @@ export interface MyTauriConfig {
 export const happShareCodeContext = createContext<[string, string | null, string][]>('happShareCodes');
 
 
-/** Call bootstrap server and get list of known peers */
+/** Call bootstrap server and get the list of known peers */
 export async function getBootstrapPeers(bootstrapUrl: string, dnaB64: DnaHashB64): Promise<any> {
     const bootstrap = bootstrapUrl.replace(/\/$/, '');
     /* Convert dnaHash to K2 space hash */

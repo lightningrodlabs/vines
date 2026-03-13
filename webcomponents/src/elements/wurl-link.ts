@@ -76,26 +76,20 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   async loadBeadInfo(beadAh: ActionId, threadsZvm: ThreadsZvm): Promise<boolean> {
     const beadInfo = threadsZvm.perspective.getBaseBeadInfo(beadAh);
-    if (beadInfo) {
-      let thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
-      let name;
-      if (!thread) {
-        const maybe = await threadsZvm.fetchPp(beadInfo.bead.ppAh);
-        if (!maybe) {
-          return false;
-        }
-        const [ppMat, title, _ts, _author] = maybe;
-        name = latestThreadName(title, ppMat, threadsZvm);
-      } else {
-        name = latestThreadName(thread.title, thread.pp, threadsZvm);
-      }
-      //console.log("<wurl-link> loadWal() thread", thread.name);
-      this._vinesTypes = ThreadsEntryType.AnyBead;
-      this._assetName = `${name} > 💬`;
-      return true;
+    if (!beadInfo) {
+      return false;
     }
-    return false;
-  }
+    let thread = threadsZvm.perspective.threads.get(beadInfo.bead.ppAh);
+    if (!thread) {
+      threadsZvm.ensurePp(beadInfo.bead.ppAh, GetStrategy.Local);
+      return false;
+    }
+    const name = latestThreadName(thread.title, thread.pp, threadsZvm);
+    //console.log("<wurl-link> loadWal() thread", thread.name);
+    this._vinesTypes = ThreadsEntryType.AnyBead;
+    this._assetName = `${name} > 💬`;
+    return true;
+    }
 
 
   /** */
@@ -125,10 +119,13 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
         /** Try PP */
         try {
-          await threadsZvm.fetchPp(hash);
-          const thread = threadsZvm.perspective.threads.get(hash)!;
-          this._assetName = latestThreadName(thread.title, thread.pp, threadsZvm);
-          this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
+          const thread = threadsZvm.perspective.threads.get(hash);
+          if (thread) {
+            this._assetName = latestThreadName(thread.title, thread.pp, threadsZvm);
+            this._vinesTypes = ThreadsEntryType.ParticipationProtocol;
+          } else {
+            threadsZvm.ensurePp(hash, GetStrategy.Local);
+          }
         } catch (e: any) {}
         /** Try Bead */
         try {
