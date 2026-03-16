@@ -140,14 +140,14 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
       const hideShowBtn = this.showArchivedSubjects && isThreadHidden?
         html`
-              <ui5-button icon="show" tooltip="Show" design="Transparent"
+              <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
                           class="showBtn"
                           @click=${async (_e: any) => {
           await this._zvm.unhideSubject(ppAh);
           toasty(`${msg("Unarchived Subject")} "${thread.title}"`);
         }}></ui5-button>
           ` : html`
-                    <ui5-button icon="hide" tooltip="Hide" design="Transparent"
+                    <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
                                 class="showBtn"
                                 @click=${async (_e: any) => {
           await this._zvm.hideSubject(ppAh);

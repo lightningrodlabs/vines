@@ -97,7 +97,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
       const hideShowBtn = this.showArchived && isThreadHidden
         ? html`
-                  <ui5-button icon="show" tooltip="Show" design="Transparent"
+                  <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
                               class="showBtn"
                               @click=${async (e: any) => {
                                   e.stopPropagation();
@@ -110,7 +110,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                   }));
                               }}></ui5-button>
         ` : html`
-                  <ui5-button icon="hide" tooltip="Hide" design="Transparent"
+                  <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
                               class="showBtn"
                               @click=${async (e: any) => {
                                   e.stopPropagation();

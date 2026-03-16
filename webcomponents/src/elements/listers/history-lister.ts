@@ -143,7 +143,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
 
       const hideShowBtn = this.showArchivedTopics && isThreadHidden?
         html`
-            <ui5-button icon="show" tooltip="Show" design="Transparent"
+            <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
                         class="showBtn" style="${isSelected? "color:#444;" : ""}"
                         @click=${async (e: any) => {
           e.stopPropagation();
@@ -156,7 +156,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
           }));
         }}></ui5-button>
         ` : html`
-                  <ui5-button icon="hide" tooltip="Hide" design="Transparent"
+                  <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
                               class="showBtn" style="${isSelected? "color:#444;" : ""}"
                               @click=${async (e: any) => {
           e.stopPropagation();

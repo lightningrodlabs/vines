@@ -94,7 +94,7 @@ export async function getAssetInfo(
       break;
     case ThreadsEntryType.ParticipationProtocol:
       console.log("Vines/we-applet: pp info", wal);
-      console.log("Vines/we-applet: getPp()", wal.hrl[1], threadsProxy);
+      console.log("Vines/we-applet: getPpTitle()", actionId.b64, threadsProxy);
       //console.log("Vines/we-applet: pp", pp);
       const title = await threadsProxy.getPpTitle({ah: actionId.hash, strategy: GetStrategy.Local});
       const info: AssetInfo = {

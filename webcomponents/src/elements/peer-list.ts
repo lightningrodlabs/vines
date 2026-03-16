@@ -170,15 +170,22 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
 
     peers.map(([agentId, status, profile, _ts]) => {
         let statusContent = [html``];
+        /** Check if profile is hidden */
+        const item = localStorage.getItem("hide-" + agentId.b64);
+        const isHidden = item !== null ? JSON.parse(item) : false;
+        if (isHidden) {
+          return;
+        }
+        /** */
         if (status && this.networkCaller!.isLooping()) {
             const date = new Date(status.connectedSince * 1000); // Timestamp is in seconds, Date wants milliseconds
-            statusContent.push(html`<div style="margin-top:4px">(${msg('since')} ${timeSince(date)})</div>`);
+            statusContent.push(html`<div style="align-content:center;">(${msg('since')} ${timeSince(date)})</div>`);
             // if (!status.hasMeta || status.errors > 0) {
             //     // statusContent.push(html`<ui5-icon name="warning" show-tool-tip accessible-name=${status.errors}></ui5-icon>`);
             //     statusContent.push(html`<div>${status.errors}</div>`);
             // }
             if (status.isDirect) {
-                statusContent.push(html`<div style="background-color:green; border-radius:8px; color:white; padding:3px; font-size:small">${msg('Connected')}</div>`);
+                statusContent.push(html`<div style="max-height:15px; align-content:center; background-color:green; border-radius:8px; color:white; padding:5px; font-size:small">${msg('Connected')}</div>`);
             }
         }
         const elem = html`
@@ -191,11 +198,18 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             }))}>
             ${renderProfileAvatar(this, null, profile, "S")}
             <div style="width:100%; display:flex; flex-direction:row; gap:5px;">
-              <div style="margin-left:10px; margin-right:7px; font-size:16px; font-weight:bold; -webkit-text-stroke:0.1px black;">${profile.nickname}</div>
+              <div style="align-content:center; margin-left:10px; margin-right:7px; font-size:16px; font-weight:bold; -webkit-text-stroke:0.1px black;">${profile.nickname}</div>
               <div style="flex-grow: 1"></div>
+              <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
+                          style="border:none;"
+                          @click="${(e: any) => {
+                                console.log("Hiding agent", agentId.b64);
+                                e.preventDefault(); e.stopPropagation();
+                                localStorage.setItem("hide-" + agentId.b64, JSON.stringify(true));
+                                this.requestUpdate();
+                          }}"></ui5-button>
               ${statusContent}
             </div>
-              
           </li>
         `;
         if (status) {
@@ -275,6 +289,14 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         sl-tooltip {
           display: inline;
         }
+
+          li div ui5-button {
+              visibility: hidden;
+          }
+
+          li:hover div ui5-button {
+              visibility: visible;
+          }          
       `
     ];
   }

@@ -1889,38 +1889,43 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 }
                 break;
             case ThreadsEntryType.ParticipationProtocol:
-                const pp = this._decoder.decode(pulse.bytes) as ParticipationProtocol;
-                /** Skip signal only pp */
-                if (pulse.validatedBy == ValidatedBy.None) {
+              console.debug("received ParticipationProtocol()", pulse.ah.b64);
+              const pp = this._decoder.decode(pulse.bytes) as ParticipationProtocol;
+              /** Skip signal only pp */
+              if (pulse.validatedBy == ValidatedBy.None) {
                     console.debug("ThreadsZvm PP received via signal. Don't show and look for gossip");
                     delay(2000)
                         .then(async () => await this.probeAllInner());
                     return;
-                }
-                /** Skip DM PP's for other agents */
-                if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
+              }
+              /** Skip DM PP's for other agents */
+              if (pp.subject.typeName == DM_SUBJECT_TYPE_NAME) {
                     const forAgent = new AgentId(pp.subject.address);
                     if (!isEntryFromSelf && !this.cell.address.agentId.equals(forAgent)) {
                         console.debug("DM PP not for me");
                         return;
                     }
-                }
-                /** */
-                if (StateChangeType.Create == pulse.state) {
+              }
+              /** */
+              if (StateChangeType.Create == pulse.state) {
                     const maybeTitle = this._channelTitleCache.get(pulse.ah);
                     const maybe = await this.getOriginalAuthor(pulse.ah);
                     const author = maybe? new AgentId(maybe[1]) : pulse.author;
                     const origTs = maybe? maybe[0] : pulse.ts;
                     //console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
+                    const already = this._perspective.threads.get(pulse.ah);
                     // @ts-ignore
                     this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
                     /** grab latest title edit */
-                    this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local})
-                        .catch(() => {});
+                    if (!already) {
+                      console.debug("calling getPpTitle()", pulse.ah.b64);
+                      this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local})
+                        .catch(() => {
+                        });
+                    }
                     /** grab latest text-bead edit if it's an EDIT thread */
                     if (pp.purpose == "EDIT") {
-                        /*await*/
-                        this.pullLatestBeads(pulse.ah, origTs);
+                      /*await*/ this.pullLatestBeads(pulse.ah, origTs);
                     }
                     /** */
                     if (pulse.isNew && this._canNotify) {
@@ -1950,8 +1955,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                         //   }
                         // }
                     }
-                }
-                break;
+              }
+              break;
             case ThreadsEntryType.GlobalLastProbeLog: {
                 const globalLog = this._decoder.decode(pulse.bytes) as GlobalLastProbeLog;
                 this._perspective.storeGlobalLog(globalLog.ts);
