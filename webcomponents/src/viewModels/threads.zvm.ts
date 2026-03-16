@@ -1889,7 +1889,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 }
                 break;
             case ThreadsEntryType.ParticipationProtocol:
-              console.debug("received ParticipationProtocol()", pulse.ah.b64);
+              console.debug("received ParticipationProtocol()", pulse.ah.b64, pulse.validatedBy);
               const pp = this._decoder.decode(pulse.bytes) as ParticipationProtocol;
               /** Skip signal only pp */
               if (pulse.validatedBy == ValidatedBy.None) {
@@ -1920,7 +1920,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     if (!already) {
                       console.debug("calling getPpTitle()", pulse.ah.b64);
                       this.zomeProxy.getPpTitle({ah: pulse.ah.hash, strategy: GetStrategy.Local})
-                        .catch(() => {
+                        .catch((e) => {
+                          console.debug("calling getPpTitle() failed", e);
                         });
                     }
                     /** grab latest text-bead edit if it's an EDIT thread */
