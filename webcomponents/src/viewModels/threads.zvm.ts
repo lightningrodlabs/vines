@@ -536,7 +536,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [interval, beadLinks] = maybe;
         console.log("pullAllBeads()", beadLinks.length, TimeInterval.new(interval).toStringSec(), beadLinks)
         /** Fetch */
-        await this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval), strategy);
+        await catchThrottled(this.fetchBeads(ppAh, beadLinks, TimeInterval.new(interval), strategy));
         thread.setHasSearchedOldestBead();
         console.log("setSearchedOldestBead for", ppAh, thread.hasSearchedOldestBead);
         /** Done */
