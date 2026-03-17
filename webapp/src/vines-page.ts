@@ -255,7 +255,7 @@ import {HoloHashB64, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/c
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
-import {happShareCodeContext} from "./globals";
+import {happShareCodeContext, isMobile} from "./globals";
 
 // HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -1409,7 +1409,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onJump(e: CustomEvent<JumpEvent>) {
     console.log("<vines-page>.onJump()", e.detail, this._selectedThreadHash);
     this.closePopups();
-
+    if (isMobile()) {
+      this._canShowLeft = false;
+    }
     const maybePrevThreadId = this._selectedThreadHash; // this.selectedThreadHash can change value during this function call (changed by other functions handling events I guess).
 
     /** Reset state */
@@ -2149,7 +2151,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @edit-topic-clicked=${this.onEditTopicClicked}
              @merge-topic-clicked=${this.onMergeTopicClicked}>
 
-            <div id="leftSide" style="display: ${this._canShowLeft? "flex" : "none"}; position: relative">
+            <div id="leftSide" class="leftSide" style="display: ${this._canShowLeft? "flex" : "none"};">
                 ${leftSide}
                 <div style="flex-grow: 1"></div>
                 ${segBtns}
@@ -2242,7 +2244,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <network-health-panel id="nhp"></network-health-panel>
+                        <network-health-panel id="nhp" style="max-width: 100%;"></network-health-panel>
                         <div slot="footer"
                              style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
@@ -3065,17 +3067,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           height: inherit;
         }
 
-        #leftSide {
-          /*background: #B9CCE7;*/
-          /*background: linear-gradient(to right, rgba(242,242,242,0) 0%,rgba(242,242,242,0.36) 80%,rgba(43, 43, 43, 0.09) 100%); */
-          width: 300px;
-          min-width: 300px;
-          max-width: 300px;
-          display: flex;
-          flex-direction: column;
-          /*gap:15px;*/
-        }
-
+          /* Mobile */
+          @media (max-width: 500px) {
+              .leftSide {
+                  width: 100%!important;
+                  min-width: 100%!important;
+                  max-width: 100%!important;
+              }
+          } 
+          
+          .leftSide {
+              width: 300px;
+              min-width: 300px;
+              max-width: 300px;
+              position:relative;
+              flex-direction: column;
+          }
+  
         #profilePop::part(content) {
           padding: 0px;
         }

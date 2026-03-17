@@ -87,6 +87,9 @@ export interface MyTauriConfig {
 
 export const happShareCodeContext = createContext<[string, string | null, string][]>('happShareCodes');
 
+export function isMobile(): boolean {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
 
 /** Call bootstrap server and get the list of known peers */
 export async function getBootstrapPeers(bootstrapUrl: string, dnaB64: DnaHashB64): Promise<any> {

@@ -31,5 +31,5 @@ jobs:
         working-directory: artifacts
         run: |
           rm -f *.blockmap         
-          gh release upload "${GITHUB_REF#refs/tags/}" dna* --clobber
+          gh release upload "${GITHUB_REF#refs/tags/}" *dna --clobber
           gh release upload "${GITHUB_REF#refs/tags/}" vines* --clobber
