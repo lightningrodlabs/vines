@@ -1222,24 +1222,30 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** */
     _decCache: ActionIdMap<BaseBeadKind> = new ActionIdMap<BaseBeadKind>(); // Cache result to avoid throttle
     async getBaseTypedBead(beadAh: ActionId, typedBead: TypedBead, beadType: BeadType, author: AgentId): Promise<[TypedBaseBead, BaseBeadType]> {
-        console.log("getBaseTypedBead()", beadAh.short);
-        if (beadType == ThreadsEntryType.EncryptedBead) {
-            if (this._decCache.get(beadAh)) {
-                return base2typed(this._decCache.get(beadAh)!);
-            }
-            let innerBead: BaseBeadKind;
-            if (author.equals(this.cell.address.agentId)) {
-                innerBead = await this.zomeProxy.decryptMyBead(typedBead as EncryptedBead);
-            } else {
-                innerBead = await this.zomeProxy.decryptBead({
-                    encBead: typedBead as EncryptedBead,
-                    otherAgent: author.hash,
-                });
-            }
-            this._decCache.set(beadAh, innerBead);
-            return base2typed(innerBead);
+        console.log("getBaseTypedBead()", beadAh.short, beadType);
+        if (beadType != ThreadsEntryType.EncryptedBead) {
+          return [typedBead as TypedBaseBead, beadType];
         }
-        return [typedBead as TypedBaseBead, beadType];
+        if (this._decCache.get(beadAh)) {
+            return base2typed(this._decCache.get(beadAh)!);
+        }
+        let innerBead: BaseBeadKind;
+        if (author.equals(this.cell.address.agentId)) {
+            innerBead = await this.zomeProxy.decryptMyBead(typedBead as EncryptedBead);
+        } else {
+            const [error, innerBead2] = await catchThrottled(this.zomeProxy.decryptBead({
+                encBead: typedBead as EncryptedBead,
+                otherAgent: author.hash,
+            }));
+            /** If throttled, wait a bit and try again. The bead should be cached by now */
+            if (error) {
+              await delay(200);
+              return this.getBaseTypedBead(beadAh, typedBead, beadType, author);
+            }
+            innerBead = innerBead2;
+        }
+        this._decCache.set(beadAh, innerBead);
+        return base2typed(innerBead);
     }
 
 
