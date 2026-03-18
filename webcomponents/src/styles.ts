@@ -183,6 +183,12 @@ export const sharedStyles = css`
         display: none !important;
     }
 
+    @media (max-width: 500px) {
+        .threadItem > ui5-button {
+            display: block !important;
+        }
+    } 
+          
     .threadItem:hover > ui5-button {
         display: block !important;
     }

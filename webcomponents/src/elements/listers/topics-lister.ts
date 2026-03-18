@@ -180,28 +180,28 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                 <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
                             class="showBtn" style="${isSelected? "color:#444;" : ""}"
                             @click=${async (e: any) => {
-              e.stopPropagation();
-              this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                detail: {
-                  hide: false,
-                  address: ppAh,
-                  type: "Channel"
-                }, bubbles: true, composed: true
-              }));
-            }}></ui5-button>
+                              e.stopPropagation();
+                              this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                                detail: {
+                                  hide: false,
+                                  address: ppAh,
+                                  type: "Channel"
+                                }, bubbles: true, composed: true
+                              }));
+                            }}></ui5-button>
             ` : html`
                       <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
                                   class="showBtn" style="${isSelected? "color:#444;" : ""}"
                                   @click=${async (e: any) => {
-              e.stopPropagation();
-              this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                detail: {
-                  hide: true,
-                  address: ppAh,
-                  type: "Channel"
-                }, bubbles: true, composed: true
-              }));
-            }}></ui5-button>`;
+                                    e.stopPropagation();
+                                    this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                                      detail: {
+                                        hide: true,
+                                        address: ppAh,
+                                        type: "Channel"
+                                      }, bubbles: true, composed: true
+                                    }));
+                                  }}></ui5-button>`;
 
           /** Create avatar group */
           const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
@@ -421,65 +421,74 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     return [
       sharedStyles,
       css`
-        :host {
-          /*background: #FBFCFD;*/
-          /*display: block;*/
-          display: flex;
-          flex-direction: column;
-          /*overflow-y: auto;*/
-          /*height: 100%;*/
-          padding-bottom: 20px;
-        }
+          :host {
+              /*background: #FBFCFD;*/
+              /*display: block;*/
+              display: flex;
+              flex-direction: column;
+              /*overflow-y: auto;*/
+              /*height: 100%;*/
+              padding-bottom: 20px;
+          }
 
-        .subjectBadge {
-          margin-top: 10px !important;
-        }
-        
-        ui5-panel {
-          display: flex;
-          flex-direction: column;
-          /*padding: 7px;*/
-          border: none;
-          margin-bottom: 20px;
-        }
+          .subjectBadge {
+              margin-top: 10px !important;
+          }
 
-        ui5-panel::part(content) {
-          padding: 0;
-          padding-left: 7px;
-        }
+          ui5-panel {
+              display: flex;
+              flex-direction: column;
+              /*padding: 7px;*/
+              border: none;
+              margin-bottom: 20px;
+          }
 
-        ui5-panel::part(header) {
-          border: none;
-          color: #588AD7;
-        }
+          ui5-panel::part(content) {
+              padding: 0;
+              padding-left: 7px;
+          }
 
-        ui5-panel::part(header):hover {
-          /*background: rgb(198, 214, 250);*/
-          /*font-weight: bold;*/
-          color: #0087ff !important;
-        }
+          ui5-panel::part(header) {
+              border: none;
+              color: #588AD7;
+          }
 
-        ui5-panel::part(header) > ui5-button {
-          border: 1px solid black;
-          background: #33A000;
-        }
+          ui5-panel::part(header):hover {
+              /*background: rgb(198, 214, 250);*/
+              /*font-weight: bold;*/
+              color: #0087ff !important;
+          }
 
-        ui5-panel::part(header) > copy-wal-button {
-          border: 1px solid black;
-          background: #33A000;
-        }
-        
-        
-      
-        ui5-panel::part(header):hover > ui5-button {
-          display: block !important;
-        }
-        
-        ui5-panel::part(header):hover > copy-wal-button {
-          display: block !important;
-        }
+          ui5-panel::part(header) > ui5-button {
+              border: 1px solid black;
+              background: #33A000;
+          }
+
+          ui5-panel::part(header) > copy-wal-button {
+              border: 1px solid black;
+              background: #33A000;
+          }
+
+
+          ui5-panel::part(header):hover > ui5-button {
+              display: block !important;
+          }
+
+          ui5-panel::part(header):hover > copy-wal-button {
+              display: block !important;
+          }
+
+          /*
+          @media (max-width: 500px) {
+              ui5-button {
+                  display: block !important;
+              }
+              copy-wal-button {
+                  display: block !important;
+              }
+          }
+          */
       `,
-
     ];
   }
 }
