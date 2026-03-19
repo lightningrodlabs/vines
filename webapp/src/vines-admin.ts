@@ -17,7 +17,7 @@ import {writeText,} from '@tauri-apps/plugin-clipboard-manager'
 import QRCode from "qrcode";
 import {decodeQrCodeString, isHappJoiningInfo} from "./qr-scanner";
 import {dayTimestamp} from "@ddd-qc/files";
-import {HappInfo} from "./vines-index";
+import {HappConnectInfo} from "./vines-index";
 import {toasty} from "@vines/elements";
 import {HappJoinInfo} from "@ddd-qc/cell-proxy";
 import {getBootstrapPeers, MyTauriConfig} from "./globals";
@@ -29,7 +29,6 @@ import {ICON_B64} from "./icon";
 export class VinesAdmin extends LitElement {
 
   @state() private _adminWs?: AdminWebsocket;
-  private _apps: Map<string, AppInfo> = new Map();
 
   @state() private _inviteLink: string = '';
   @state() private _name: string = '';
@@ -40,7 +39,7 @@ export class VinesAdmin extends LitElement {
 
   @state() private _showShareApp: boolean = false;
   @state() private _showAddGroup: boolean = false;
-  @state() private _showGroupInvite: AppInfo | undefined = undefined; // Display if this is defined
+  @state() private _showGroupInvite: [AppInfo, string] | undefined = undefined; // Display if this is defined
   @state() private _showScanner: boolean = false;
 
   @state() private _defaultApp: string = localStorage.getItem('vinesDefaultApp')? localStorage.getItem('vinesDefaultApp')!: "";
@@ -48,7 +47,11 @@ export class VinesAdmin extends LitElement {
   /*** Dna -> peer count found on bootstrap server */
   @state() private _peers: DnaIdMap<number> = new DnaIdMap();
 
+  /** happId -> [appInfo, customName] */
+  private _happList: Map<string, [AppInfo, string]> = new Map();
 
+
+  /** */
   constructor() {
     console.debug("<vines-admin>.ctor()", APPV.APP_VERSION, HC_APP_PORT, HC_ADMIN_PORT);
     super();
@@ -72,9 +75,10 @@ export class VinesAdmin extends LitElement {
 
     protected override willUpdate(_changedProperties: PropertyValues) {
         super.willUpdate(_changedProperties);
-        console.debug("<vines-admin>.willUpdate()", TAURI_CAN_DEFAULT, this._defaultApp, this._apps);
-        if (TAURI_CAN_DEFAULT && this._defaultApp && this._apps.get(this._defaultApp)) {
-            this.onSelectApp(this._apps.get(this._defaultApp)!.installed_app_id);
+        console.debug("<vines-admin>.willUpdate()", TAURI_CAN_DEFAULT, this._defaultApp, this._happList);
+        /** Load default happ if any */
+        if (TAURI_CAN_DEFAULT && this._defaultApp) {
+            this.onSelectApp(this._defaultApp);
             globalThis.TAURI_CAN_DEFAULT = false; // do it only once
         }
     }
@@ -97,12 +101,13 @@ export class VinesAdmin extends LitElement {
           console.error("Missing _adminWs");
           return;
       }
-      this._apps.clear();
+      this._happList.clear();
       const apps: Array<AppInfo> = await this._adminWs.listApps({});
       for (const appInfo of apps) {
           const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
-          const code = encodeHappJoinInfo(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed, []);
-          this._apps.set(code, appInfo);
+          const customName = localStorage.getItem("vinesCustomName_" + appInfo.installed_app_id);
+          //const code = encodeHappJoinInfo(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed, [], customName);
+          this._happList.set(appInfo.installed_app_id, [appInfo, customName ?? ""]);
           this.queryBootStrapServer(new DnaId(cell.cell_id[0]))
       }
       this.requestUpdate();
@@ -207,10 +212,10 @@ export class VinesAdmin extends LitElement {
 
   /** */
   renderGroupInvite(): TemplateResult<1> {
-      const appInfo = this._showGroupInvite!;
+      const [appInfo, customName] = this._showGroupInvite!;
       const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
       const dnaId = new DnaId(cell.cell_id[0]);
-      const shareCode = encodeHappJoinInfo(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed, []);
+      const shareCode = encodeHappJoinInfo(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed, [], customName);
       const isDefault = this._defaultApp == shareCode;
       const popover = this.shadowRoot!.getElementById('popover');
       let existingImg = null;
@@ -235,7 +240,7 @@ export class VinesAdmin extends LitElement {
       return html`
           <div class="column center-content flex-1" style="gap:15px; height:100%;">
               <div class="dialog-title" style="display:flex; flex-direction:row; gap:5px; align-items:baseline; overflow: hidden;">
-                  <span style="overflow-wrap: break-word; word-break: break-word; max-width: 100vw;">${appInfo.installed_app_id}</span>
+                  <span style="overflow-wrap: break-word; word-break: break-word; max-width: 100vw;">${customName != "" ?  customName : appInfo.installed_app_id}</span>
                   <div style="margin-left:5px; color:rgb(45, 111, 244); font-size:18px;">${isDefault? `(${msg("default")})`: ""}</div>
               </div>
               <div>${msg("Peers online: ")} ${this._peers.get(dnaId) ?? 0}</div>
@@ -300,13 +305,15 @@ export class VinesAdmin extends LitElement {
 
   private _inviteError: string | undefined = undefined;
 
+  /** */
   hasJoiningCode(inviteLink: string): boolean {
-      if (this._apps.get(inviteLink)) {
-          const appInfo = this._apps.get(inviteLink)!;
-          this._inviteError = msg("Group already joined") + ": " + appInfo.installed_app_id;
-          return true;
+      const happJoinInfo = decodeHappJoinInfo(inviteLink);
+      if (!this._happList.get(happJoinInfo.happId)) {
+        return false;
       }
-      return false;
+      const name = happJoinInfo.customName ?? happJoinInfo.happId;
+      this._inviteError = msg("Group already joined") + ": " + name;
+      return true;
   }
 
   /** */
@@ -373,7 +380,7 @@ export class VinesAdmin extends LitElement {
                                     @click=${() => this._inviteLink = ''}
                                     style="max-width:100px; text-overflow: ellipsis; overflow: clip;"
                             >
-                            ${inviteGroup.happId}
+                            ${inviteGroup.customName ?? inviteGroup.happId}
                             ${closeIcon(30)}                                
                             </button>
                             <button
@@ -457,7 +464,7 @@ export class VinesAdmin extends LitElement {
 
   /** */
   override render() {
-    console.log("<vines-admin>.render()", this._apps);
+    console.log("<vines-admin>.render()", this._happList);
     /** Check init has been done */
     if (this._initLoading || !!this._loading) {
       return html`
@@ -492,7 +499,7 @@ export class VinesAdmin extends LitElement {
             >
             </qr-scanner>`;
       }
-    if (this._apps.size == 0) {
+    if (this._happList.size == 0) {
       return this.renderAddGroup(true);
     }
       if (this._showShareApp) {
@@ -506,23 +513,26 @@ export class VinesAdmin extends LitElement {
     }
 
     // Sort by status then by alphabetic name
-    const appInfos: [string, AppInfo][] = Array.from(this._apps).sort(([_k1, a], [_k2, b]) => {
-          if (a.status.type != b.status.type) {
-              return b.status.type.localeCompare(a.status.type);
+    const appInfos: [string, [AppInfo, string]][] = Array.from(this._happList).sort(([_k1, a], [_k2, b]) => {
+          if (a[0].status.type != b[0].status.type) {
+              return b[0].status.type.localeCompare(a[0].status.type);
           }
-          return a.installed_app_id.localeCompare(b.installed_app_id);
+          const aName = a[1] != "" ? a[1] : a[0].installed_app_id;
+          const bName = b[1] != "" ? b[1] : b[0].installed_app_id;
+          return aName.localeCompare(bName);
     });
     let apps  = [html``];
-    appInfos.forEach( ([code, app]) => {
+    appInfos.forEach( ([code, [app, customName]]) => {
             const isDefault = this._defaultApp == code;
+            const name = customName != "" ? customName : app.installed_app_id;
             const elem = app.status.type == "enabled"
             ? html`
                 <div   .id=${`panel-${app.installed_app_id}`} class="app-panel"
                        @click=${(e:any) => {
                           e.preventDefault(); e.stopPropagation();
-                           this._showGroupInvite = app
+                           this._showGroupInvite = [app, customName]
                         }}>
-                        <div class="app-name">${app.installed_app_id}</div>
+                        <div class="app-name">${name}</div>
                         <div style="margin-left: 5px; color: rgb(45, 111, 244)">${isDefault? `(${msg("default")})`: ""}</div>
                         <span class="flex flex-1"></span>
                         <div style="color:grey; font-size:small">${dayTimestamp(app.installed_at)}</div>
@@ -530,7 +540,7 @@ export class VinesAdmin extends LitElement {
             ` : html`
                     <div class="app-panel" 
                          style="background:rgba(215, 215, 215, 0.74); color:rgb(81, 97, 79); cursor:default;">
-                        <div class="app-name">${app.installed_app_id}</div>
+                        <div class="app-name">${name}</div>
                         <span class="flex flex-1"></span>
                         <button
                                 class="enable-btn"
@@ -587,19 +597,20 @@ export class VinesAdmin extends LitElement {
   }
 
     /** */
-    onSelectApp(name: string) {
+    onSelectApp(happId: string) {
         console.log("onSelectApp()");
         this._loading = msg("Launching...");
         try {
-            invoke('select', { name })
+            invoke('select', { name: happId })
                 .then((pair: any) => {
-                    console.debug("Received HappInfo: " + JSON.stringify(pair));
-                    const happInfo = {
+                    console.debug("Received HappConnectInfo: " + JSON.stringify(pair));
+                    const happConnectInfo: HappConnectInfo = {
                         port: pair[0],
                         token: pair[1],
-                        name,
+                        happId,
+                        customName: undefined,
                     };
-                    this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: happInfo, bubbles: true, composed: true}));
+                    this.dispatchEvent(new CustomEvent<HappConnectInfo>('app-selected', {detail: happConnectInfo, bubbles: true, composed: true}));
                     this._loading = undefined;
                 });
         } catch (error) {
@@ -617,7 +628,7 @@ export class VinesAdmin extends LitElement {
                 return;
             }
             console.log(`JOINING group space "${decoded.customName}" : installing ${decoded.happSha256}`);
-            await this.createNewGroup(decoded.happId, decoded.networkSeed)
+            await this.createNewGroup(decoded.happId, decoded.networkSeed, decoded.customName);
         } catch(e) {
             console.error("failed to decode invite code");
             return;
@@ -625,17 +636,24 @@ export class VinesAdmin extends LitElement {
     }
 
       /** */
-      async createNewGroup(name: string, networkSeed?: string) {
-          console.log("createNewGroup()", name);
+      async createNewGroup(happId: string, networkSeed?: string, customName?: string) {
+          console.log("createNewGroup()", happId);
           try {
-              const result: any = await invoke('install', {name, seed: networkSeed});
+              /** Install happ */
+              const result: any = await invoke('install', {name: happId, seed: networkSeed});
               console.debug("Received HappInfo: " + JSON.stringify(result));
-              const happConnectInfo: HappInfo = {
+              /** Store customName in localStorage */
+              if (customName) {
+                localStorage.setItem("vinesCustomName_" + happId, customName);
+              }
+              /** Select it */
+              const happConnectInfo: HappConnectInfo = {
                   port: result[0],
                   token: result[1],
-                  name,
+                  happId,
+                  customName
               };
-              this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: happConnectInfo, bubbles: true, composed: true}));
+              this.dispatchEvent(new CustomEvent<HappConnectInfo>('app-selected', {detail: happConnectInfo, bubbles: true, composed: true}));
           } catch (error) {
               console.error('Error:', error);
           }

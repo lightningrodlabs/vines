@@ -4,10 +4,11 @@ import * as APPV from './generated/version.js';
 
 console.log("<vines-index>", APPV.APP_VERSION);
 
-export type HappInfo = {
-    name: string,
+export type HappConnectInfo = {
+    happId: string,
     port: number,
     token: string,
+    customName: string | undefined,
 } | boolean;
 
 /** */
@@ -37,7 +38,7 @@ export class VinesIndex extends LitElement {
     }
 
 
-    onAppSelect(e: CustomEvent<HappInfo>) {
+    onAppSelect(e: CustomEvent<HappConnectInfo>) {
         console.log("RECEIVED onAppSelect event", e);
         if (typeof e.detail == "boolean") {
             globalThis.TAURI_SHOW_ADMIN = true;
@@ -46,8 +47,9 @@ export class VinesIndex extends LitElement {
             const numbers = e.detail?.token.split(',').map(n => parseInt(n.trim()));
             globalThis.HAPP_TOKEN = Array.from(new Uint8Array(numbers));
             globalThis.TAURI_SHOW_ADMIN = undefined;
-            globalThis.HAPP_ID = e.detail?.name;
+            globalThis.HAPP_ID = e.detail?.happId;
             globalThis.HC_APP_PORT = e.detail?.port;
+            globalThis.HAPP_CUSTOM_NAME = e.detail?.customName;
         }
         this.requestUpdate();
     }

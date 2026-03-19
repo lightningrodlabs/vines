@@ -20,6 +20,7 @@ declare global {
     var TAURI_HAPP_SHA256: string | undefined;
     var TAURI_BOOTSTRAP_URL: string | undefined;
     var HAPP_ID: string;
+    var HAPP_CUSTOM_NAME: string | undefined;
     var HC_APP_PORT: number | undefined;
     var HC_ADMIN_PORT: number | undefined;
 }
@@ -33,6 +34,7 @@ globalThis.TAURI_CAN_DEFAULT = true;
 globalThis.TAURI_SHOW_ADMIN = undefined;
 globalThis.HAPP_TOKEN = undefined;
 globalThis.HAPP_ID = DEFAULT_THREADS_DEF.id;
+globalThis.HAPP_CUSTOM_NAME = undefined;
 globalThis.HC_APP_PORT = undefined;
 globalThis.HC_ADMIN_PORT = undefined;
 

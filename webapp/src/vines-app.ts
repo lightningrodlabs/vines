@@ -46,10 +46,10 @@ import "./vines-page"
 import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ/dist/globals";
 
 import * as APPV from './generated/version.js';
-import {HappInfo} from "./vines-index";
 import {invoke} from "@tauri-apps/api/core";
 import {happShareCodeContext, MyTauriConfig} from "./globals";
 import {ICON_B64} from "./icon";
+import {HappConnectInfo} from "./vines-index";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -287,7 +287,7 @@ export class VinesApp extends HappMultiElement {
         console.debug("<vines-app>.hvmsConstructed() groupProfile", groupProfile);
         if (groupProfile) customName = groupProfile.name;
       }
-      return [hvm.appId, hvm.happSha256, hvm.getHappShareCode(undefined, customName?? hvm.appId)!]
+      return [hvm.appId, hvm.happSha256, hvm.getHappShareCode(undefined, customName ?? hvm.appId)!]
     });
     new ContextProvider(this, happShareCodeContext, allShareCodes);
   }
@@ -384,7 +384,7 @@ export class VinesApp extends HappMultiElement {
                 <button id="retryBtn"
                         style="max-width:300px; margin:auto; display: block;"
                         @click=${async (_e: any) => {
-                            this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: false, bubbles: true, composed: true}));
+                            this.dispatchEvent(new CustomEvent<HappConnectInfo>('app-selected', {detail: false, bubbles: true, composed: true}));
                         }}>
                     ${msg('Admin')}
                 </button>
