@@ -14,14 +14,14 @@ import {AnyBead, ThreadsEntryType} from "../../bindings/threads.types";
 import {md} from "../../markdown/md";
 import {codeStyles} from "../../markdown/code-css";
 import {determineBeadName, weaveUrlToWal} from "../../utils";
-import {toasty} from "../../toast";
-import {beadJumpEvent} from "../../events";
+import {beadJumpEvent, viewFileEvent} from "../../events";
 import {renderAvatar} from "../../render";
 import {filesContext, weClientContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {ParcelDescription} from "@ddd-qc/delivery";
 
 
 /**
@@ -137,18 +137,27 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         }
         break;
       case ThreadsEntryType.EntryBead:
-        content = html`<div>__File__</div>`;
+        content = html`<div>${`<${msg("File missing")}>`}</div>`;
         const entryBead = typedBead as EntryBeadMat;
-        console.log("<side-item> entryBead", entryBead, entryBead.sourceEh);
+        console.log("<side-item> entryBead", entryBead, entryBead.sourceEh.b64);
         const manifestEh = entryBead.sourceEh;
         const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
+        let desc: ParcelDescription | undefined = undefined;
         if (maybePprm) {
-          const desc = maybePprm.description;
-          content = html`<div style="color:#1067d7; cursor:pointer; overflow: auto;" 
-                              @click=${(_e: any) => {
-            this._filesDvm.downloadFile(manifestEh);
-            toasty(msg("File downloaded") + ": " + desc.name);
-          }}>
+          desc = maybePprm.description;
+        } else {
+          const tuple = this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(manifestEh);
+          if(tuple) {
+            desc = tuple[0].description
+          }
+        }
+        if (desc) {
+          content = html`<div class="file-link"
+                              @click=${(e:any) => {
+                                e.stopPropagation(); e.preventDefault();
+                                console.log("<side-item> viewFileEvent", manifestEh.b64);
+                                this.dispatchEvent(viewFileEvent(manifestEh))
+                          }}>
                          ${msg("File")}: ${desc.name} (${prettyFileSize(desc.size)})
                       </div>`;
         }
@@ -242,6 +251,14 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         .reply:hover {
           background: #def9de;
         }
+          
+          .file-link {
+              color:#1067d7; cursor:pointer; overflow: auto;
+          }
+          
+          .file-link:hover {
+              text-decoration: underline;
+          }
       `,
     ];
   }

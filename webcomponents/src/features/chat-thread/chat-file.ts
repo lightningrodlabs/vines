@@ -108,7 +108,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     try {
       const manifestEh = entryBead.sourceEh;
-      this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfoLocal(manifestEh.hash); // TODO: GetStrategy
+      this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfoFromLocal(manifestEh.hash); // TODO: GetStrategy
       console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash, !!this._manifest);
       if (!this._manifest || this._manifest.description.size > maxSize) {
         console.debug("<chat-file>.loadFile() stopped", this._manifest);
@@ -171,10 +171,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     if (delayMs) {
       await delay(delayMs);
     }
-    await catchThrottled(this._filesDvm.deliveryZvm.probeDht(GetStrategy.Local)); // FIXME figure out best GetStrategy to use here
     const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
     if (fileTuple) {
       await this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
+    } else {
+      await catchThrottled(this._filesDvm.deliveryZvm.probeDht(GetStrategy.Local)); // FIXME figure out best GetStrategy to use here
     }
     this.requestUpdate();
   }
@@ -196,13 +197,12 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           <ui5-list id="fileList" style="max-width: 300px;">
               <ui5-li id="fileLi" class="fail" icon="synchronize"
                       @click=${async (e: any) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
-        if (entryBead) {
-          await this.probeForFileManifest(entryBead.sourceEh);
-        }
-      }}>
+                        e.stopPropagation(); e.preventDefault();
+                        const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
+                        if (entryBead) {
+                          await this.probeForFileManifest(entryBead.sourceEh);
+                        }
+                      }}>
                   <abbr title=${msg('File hash: ') + this.hash} style="text-decoration: none;">${msg('Missing File')}</abbr>
               </ui5-li>
           </ui5-list>`;
@@ -217,17 +217,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       /** Retry once */
       if (this._canRetry) {
         this._canRetry = false;
-        this.probeForFileManifest(manifestEh, 1000);
+        /*await*/ this.probeForFileManifest(manifestEh, 1000);
         return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f61933"></ui5-busy-indicator>`;
       }
       return html`
         <ui5-list id="fileList" style="max-width: 300px;">
           <ui5-li id="fileLi" class="fail" icon="synchronize"
                   @click=${async (e: any) => {
-        e.stopPropagation();
-        e.preventDefault();
-        await this.probeForFileManifest(manifestEh);
-      }}>
+                    e.stopPropagation(); e.preventDefault();
+                    await this.probeForFileManifest(manifestEh);
+                  }}>
               <abbr title=${msg('File manifest hash: ') + manifestEh.b64} style="text-decoration: none;">${msg('File data not found')}</abbr>
           </ui5-li>
         </ui5-list>`;
@@ -251,10 +250,9 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           </ui5-li>
         </ui5-list>
         ${isViewable? html`<div class="linky" style="font-size: small; margin-top:-3px; margin-bottom:10px;margin-left:5px;"
-             @click=${(e: any) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      this.loadFileData(MAX_VIEWABLE_SIZE);
+             @click=${async (e: any) => {
+                      e.preventDefault(); e.stopPropagation();
+                      await this.loadFileData(MAX_VIEWABLE_SIZE);
                     }}>
             ${msg('View')}
         </div>` : html``}        

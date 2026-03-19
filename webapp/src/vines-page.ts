@@ -430,6 +430,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     // @ts-ignore
     this.addEventListener('favorites', this.onFavorites);
     // @ts-ignore
+    this.addEventListener('view-file', this.onViewFile);
+    // @ts-ignore
+    // Event from Files webcomponents
     this.addEventListener('view', this.onViewFile);
     // @ts-ignore
     this.addEventListener('mouseup', this.handleMouse);
@@ -458,6 +461,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('view-embed', this.onViewEmbed);
     // @ts-ignore
     this.removeEventListener('favorites', this.onFavorites);
+    // @ts-ignore
+    this.removeEventListener('view-file', this.onViewFile);
     // @ts-ignore
     this.removeEventListener('view', this.onViewFile);
     // @ts-ignore
@@ -656,7 +661,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onViewFile(e: CustomEvent<EntryId>) {
     const dialog = this.shadowRoot!.getElementById("view-file-dialog") as SlDialog;
     const fileView = this.shadowRoot!.getElementById("file-viewer") as FileView;
-    console.log("FileDvm list:", this._filesDvm.zomeNames.join(", "))
+    console.log("onViewFile() FileDvm list:", this._filesDvm.zomeNames.join(", "))
     fileView.hash = e.detail;
     dialog.open = true;
   }
@@ -1052,6 +1057,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             console.debug("<vines-page> requested WAL not found", this.wal);
         }
     }
+    /** Need this to get all manifests at startup */
+    this._filesDvm.probeAll(GetStrategy.Local);
     /** */
     this.requestUpdate();
     /** */

@@ -63,11 +63,11 @@ pub fn publish_entry_as_bead(input: AddEntryAsBeadInput) -> ExternResult<(Action
 #[hdk_extern]
 pub fn create_entry_bead(input: AddEntryAsBeadInput) -> ExternResult<(EntryBead, Timestamp)> {
     let response = call(
-    CallTargetCell::OtherRole(input.role_name.clone()),
-    ZomeName::from(input.zome_name.clone()),
-    "get_record_local".into(),
-    None,
-    input.eh.clone())?;
+       CallTargetCell::OtherRole(input.role_name.clone()),
+       ZomeName::from(input.zome_name.clone()),
+       "get_record_from_local".into(),
+       None,
+       input.eh.clone())?;
     let maybeRecord: Option<Record> = decode_response(response)?;
     //let maybeRecord = get(input.ah.clone(), GetOptions::default())?;
     let Some(record) = maybeRecord

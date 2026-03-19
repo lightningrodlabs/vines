@@ -178,5 +178,5 @@ export function favoritesEvent(beadAh: ActionId, canAdd: boolean): CustomEvent<F
 }
 
 export function viewFileEvent(/*dnaId: DnaId,*/ manifestEh: EntryId): CustomEvent<EntryId> {
-  return new CustomEvent<EntryId>('view', {detail: manifestEh, bubbles: true, composed: true});
+  return new CustomEvent<EntryId>('view-file', {detail: manifestEh, bubbles: true, composed: true});
 }

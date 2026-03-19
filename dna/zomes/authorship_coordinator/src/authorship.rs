@@ -71,7 +71,7 @@ pub fn ascribe_app_entry(ah: ActionHash) -> ExternResult<(Timestamp, AgentPubKey
     std::panic::set_hook(Box::new(zome_panic_hook));
     let record = get_record(AnyDhtHash::from(ah.clone()), GetStrategy::Local)?;
     let (target_type, _entry) = get_app_entry_name(ah.clone().into(), CallTargetCell::Local, GetStrategy::Local)?;
-    /// Form input & create link
+    /// Form input and create Link
     let input = AscribeTargetInput {
         target: ah.into(),
         target_type: target_type.to_string(),

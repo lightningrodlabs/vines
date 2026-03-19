@@ -3,11 +3,12 @@ use hdk::prelude::*;
 use zome_utils::*;
 
 pub use zome_core::get_input_types::*;
+use crate::call_authorship_zome;
 
 ///
 #[hdk_extern]
 pub fn get_original_author(input: GetLhInput) -> ExternResult<Option<(Timestamp, AgentPubKey)>> {
-    let maybe_response = call(CallTargetCell::Local, "zAuthorship", "get_author".into(), None, input);
+    let maybe_response = call_authorship_zome("get_author".into(), input);
     let Ok(response) = maybe_response else {
         debug!("get_original_author() fail response: {:?}", maybe_response);
         return Ok(None);
@@ -22,7 +23,7 @@ pub fn get_original_author(input: GetLhInput) -> ExternResult<Option<(Timestamp,
 ///
 #[hdk_extern]
 pub fn get_original_authors(input: GetManyLhInput) -> ExternResult<BTreeMap<ActionHash, (Timestamp, AgentPubKey)>> {
-   let maybe_response = call(CallTargetCell::Local, "zAuthorship", "get_authors".into(), None, input);
+   let maybe_response = call_authorship_zome("get_authors".into(), input);
    let Ok(response) = maybe_response else {
       debug!("get_original_authors() fail response: {:?}", maybe_response);
       return Ok(BTreeMap::new());

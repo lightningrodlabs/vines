@@ -77,7 +77,7 @@ export async function getAssetInfo(
       const filesProxy: FilesProxy = new FilesProxy(fProxy);
       console.log("Vines/we-applet: EntryBead filesProxy", filesProxy);
       const fileTuple = (await threadsProxy.fetchEntryBead({ah: actionId.hash, strategy: GetStrategy.Local}))!; // FIXME: handle null
-      const manifest = await filesProxy.getFileInfoLocal(fileTuple[2].sourceEh) // TODO: GetStrategy
+      const manifest = await filesProxy.getFileInfoFromLocal(fileTuple[2].sourceEh) // TODO: GetStrategy
       //const fileBead = materializeEntryBead(fileTuple[2]);
       //const source = truncate(fileBead.sourceEh, 10, false);
       return {
