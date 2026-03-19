@@ -584,7 +584,7 @@ export class ThreadsDvm extends DnaViewModel {
   async publishMessage(beadType: BaseBeadType, content: TypedContent, ppAh: ActionId, author?: AgentId, prevBead?: ActionId, weServices?: WeServicesEx) {
     const isDmThread = this.threadsZvm.isThreadDm(ppAh);
     if (isDmThread) {
-      return await this.publishDm(isDmThread, beadType, content, prevBead, weServices);
+      return await this.publishDm(isDmThread!, beadType, content, prevBead, weServices);
     } else {
       const res = await this.threadsZvm.publishTypedBead(beadType, content, ppAh, author, prevBead);
       return res[0];

@@ -526,9 +526,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       try {
         await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
-      } catch(e:any) {
-        toasty("Publish Message failed: " + e.failure);
+      } catch(error:any) {
+        toasty("Publish Message failed: " + error.failure);
         this._waitingForBeadCommit = undefined;
+        const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+        if (inputBar) {
+          inputBar.setValue(e.detail.text);
+        }
         console.warn(e);
       }
     }
@@ -538,10 +542,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
         // TODO: make sure hrl is an entryHash
         await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
-      } catch(e:any) {
-        toasty("Publish Message failed: " + e.failure);
+      } catch(error:any) {
+        toasty("Publish Message failed: " + error.failure);
         this._waitingForBeadCommit = undefined;
-        console.warn(e);
+        console.warn(error);
+        const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+        if (inputBar) {
+          inputBar.setWal(e.detail.wal);
+        }
       }
     }
     /* Create File Message */
@@ -564,10 +572,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     replyToAh,
                     this.weServices,
                   );
-            } catch(e:any) {
-                toasty("Publish Message failed: " + e.failure);
+            } catch(error:any) {
+                toasty("Publish Message failed: " + error.failure);
                 this._waitingForBeadCommit = undefined;
-                console.warn(e);
+                const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+                console.warn("Publish Message failed:",  inputBar);
+                if (inputBar && e.detail.file) {
+                  inputBar.setFile(e.detail.file!);
+                }
             }
             this._splitObj = undefined;
             this._uploadingFile = false;
@@ -575,6 +587,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         if (!succeeded) {
           toasty(msg("Failed to load file"));
           this._waitingForBeadCommit = undefined;
+          const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+          console.warn("Publish Message failed:",  inputBar);
+          if (inputBar && e.detail.file) {
+            inputBar.setFile(e.detail.file!);
+          }
         }
       });
       //console.log("<vines-page>.onCreateFileMessage() requestUpdate()");
@@ -1648,7 +1665,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this._dvm.threadsZvm.ensurePp(this._selectedThreadHash, GetStrategy.Local);
       } else {
         primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
-        const isEditOther = this._dvm.threadsZvm.isEditThreadFromPeer(this._selectedThreadHash);
         const dmThread = this._dvm.threadsZvm.isThreadDm(this._selectedThreadHash);
         if (dmThread) {
           console.log("<vines-page>.render() dmThread", dmThread);
@@ -1682,8 +1698,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           }
         }
 
+        const isEditOther = this._dvm.threadsZvm.isEditThreadFromPeer(this._selectedThreadHash);
         const canParticipate = this._dvm.threadsZvm.canParticipate(this._selectedThreadHash, this.cell.address.agentId);
-        const canDisplayInput = !isEditOther && canParticipate;
+        const canDisplayInput = !isEditOther && canParticipate && !uploadState && !this._uploadingFile;
 
         const threadView = this.multi
           ? html`
@@ -1739,16 +1756,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="border:none; padding:0px"
                                 @click=${(_e: any) => {this._replyToAh = undefined;}}></ui5-button>
                 </div>
-                ${typingMsg? html`
-                    <div id="typing-div">${typingMsg}</div>` : html``}
-                ${canDisplayInput? html`
-                    <vines-input-bar id="input-bar"
-                                     ?busy=${!!this._waitingForBeadCommit} 
-                                     .topic=${topic}
-                                     .threadHash=${this._selectedThreadHash}></vines-input-bar>
-                ` : html`
-                    <div style="min-height: 20px;"></div>`}
+                ${typingMsg? html`<div id="typing-div">${typingMsg}</div>` : html``}
             `}
+            <vines-input-bar id="input-bar"
+                             style="display: ${canDisplayInput? "block" : "none"}"
+                             ?busy=${!!this._waitingForBeadCommit}
+                             .topic=${topic}
+                             .threadHash=${this._selectedThreadHash}></vines-input-bar>
         `;
       }
     }

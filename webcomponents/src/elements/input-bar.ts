@@ -100,6 +100,15 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return "";
   }
 
+  setWal(f: WAL): void {
+    this._wal = f;
+  }
+
+  setFile(f: File): void {
+    console.log("<vines-input-bar>.setFile()", f);
+    this._file = f;
+  }
+
   setValue(v: string): void {
 //    console.debug("<vines-input-bar>.setValue()", v);
     if (this.inputElem) {
