@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { invoke } from '@tauri-apps/api/core';
 import {decode} from "@msgpack/msgpack";
 import {msg, localized} from '@lit/localize';
-import {HappJoinCode} from "@ddd-qc/cell-proxy";
+import {HappJoinInfo} from "@ddd-qc/cell-proxy";
 
 /** Decode base64 string */
 export function decodeQrCodeString(shareCode: string): any {
@@ -12,7 +12,7 @@ export function decodeQrCodeString(shareCode: string): any {
 
 
 /** Make sure its a HappJoinCode */
-export function isHappJoiningCode(object: any): object is HappJoinCode {
+export function isHappJoiningInfo(object: any): object is HappJoinInfo {
     console.debug("isJoiningCode: " + JSON.stringify(object));
     if (!object || typeof object !== 'object') {
         console.debug("isJoiningCode: NOT AN OBJECT");
@@ -23,6 +23,7 @@ export function isHappJoiningCode(object: any): object is HappJoinCode {
         && 'happId' in object
         // && typeof object.name === 'string'
         && 'networkSeed' in object
+        && 'bootstrapUrls' in object
     );
 }
 
@@ -124,7 +125,7 @@ export class QRScanner extends LitElement {
             if (result) {
                 console.debug("QR CODE FOUND: " + result);
                 const maybe: any = decodeQrCodeString(result);
-                if (isHappJoiningCode(maybe)) {
+                if (isHappJoiningInfo(maybe)) {
                     if (globalThis.TAURI_HAPP_SHA256 != maybe.happSha256) {
                          this.error = msg("HAPP VERSION MISMATCH");
                     } else {

@@ -31,7 +31,7 @@ import {
     VINES_DEFAULT_ROLE_NAME,
     onlineLoadedContext,
     toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
-    renderWelcomeScreen, BeadInfo,
+    renderWelcomeScreen, BeadInfo, determinerGroupProfile,
 } from "@vines/elements";
 import {setLocale} from "./localization";
 
@@ -143,16 +143,26 @@ export class VinesApp extends HappMultiElement {
     if (appletGroups.length == 0) {
       throw Error("<vines-app> needs at least one appletGroup");
     }
+    /** Create VinesApp */
     const app = new VinesApp(adminWs, appletGroups, isMulti);
-    /** Provide it as context */
+    /** Create WeServicesEx */
     const appletIds = appletGroups.map((group) => group.appletId);
     app._weServices = new WeServicesEx(weServices, appletIds);
+    /** Cache all appletInfo and GroupInfo */
+    for (const appletGroup of appletGroups) {
+      const appletInfo = await app._weServices.appletInfo(appletGroup.appletId.b64);
+      for (const group of appletInfo?.groupsHashes ?? []) {
+        const groupInfo = await app._weServices.groupProfile(group);
+        console.debug("<vines-app>.fromWe() groupInfo", groupInfo);
+      }
+    }
+    /** Provide WeServicesEx as context */
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
-    /*let _weProvider =*/
     new ContextProvider(app, weClientContext, app._weServices);
     /** Create Profiles Dvm from provided AppProxy */
     console.log("<vines-app>.fromWe()", appletIds);
     await app.createWeProfilesDvm(appletGroups[0]!.profilesAppProxy, appletGroups[0]!.profilesHcl);
+    /** */
     return app;
   }
 
@@ -269,8 +279,16 @@ export class VinesApp extends HappMultiElement {
     //this.networkCaller?.startCallLoop(1000);
     // @ts-ignore
     new ContextProvider(this, networkCallerContext, this.networkCaller);
-    //
-    const allShareCodes: [string, string | null, string][] = this.hvms.map(([_proxy, hvm]) => [hvm.appId, hvm.happSha256, hvm.getHappShareCode()!])
+    /** Grab Group Name and set happShareCodes */
+    const allShareCodes: [string, string | null, string][] = this.hvms.map(([_proxy, hvm]) => {
+      let customName = undefined;
+      if (this._weServices) {
+        const groupProfile = determinerGroupProfile((hvm.getDvm(ThreadsDvm.DEFAULT_BASE_ROLE_NAME) as ThreadsDvm)!.dnaProperties, [this._weServices, 0]);
+        console.debug("<vines-app>.hvmsConstructed() groupProfile", groupProfile);
+        if (groupProfile) customName = groupProfile.name;
+      }
+      return [hvm.appId, hvm.happSha256, hvm.getHappShareCode(undefined, customName?? hvm.appId)!]
+    });
     new ContextProvider(this, happShareCodeContext, allShareCodes);
   }
 

@@ -4,22 +4,22 @@ import {localized, msg} from '@lit/localize';
 import {AdminWebsocket, AppInfo, ProvisionedCell,} from "@holochain/client";
 import {setLocale} from "./localization";
 import {
-    decodeHappJoinCode,
-    DnaId,
-    DnaIdMap,
-    encodeHappJoinCode,
-    HAPP_BUILD_MODE,
-    HappBuildModeType
+  decodeHappJoinInfo,
+  DnaId,
+  DnaIdMap,
+  encodeHappJoinInfo,
+  HAPP_BUILD_MODE,
+  HappBuildModeType
 } from "@ddd-qc/lit-happ";
 import * as APPV from './generated/version.js';
 import {invoke} from '@tauri-apps/api/core';
 import {writeText,} from '@tauri-apps/plugin-clipboard-manager'
 import QRCode from "qrcode";
-import {decodeQrCodeString, isHappJoiningCode} from "./qr-scanner";
+import {decodeQrCodeString, isHappJoiningInfo} from "./qr-scanner";
 import {dayTimestamp} from "@ddd-qc/files";
 import {HappInfo} from "./vines-index";
 import {toasty} from "@vines/elements";
-import {HappJoinCode} from "@ddd-qc/cell-proxy";
+import {HappJoinInfo} from "@ddd-qc/cell-proxy";
 import {getBootstrapPeers, MyTauriConfig} from "./globals";
 import {ICON_B64} from "./icon";
 
@@ -101,7 +101,7 @@ export class VinesAdmin extends LitElement {
       const apps: Array<AppInfo> = await this._adminWs.listApps({});
       for (const appInfo of apps) {
           const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
-          const code = encodeHappJoinCode(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+          const code = encodeHappJoinInfo(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed, []);
           this._apps.set(code, appInfo);
           this.queryBootStrapServer(new DnaId(cell.cell_id[0]))
       }
@@ -210,7 +210,7 @@ export class VinesAdmin extends LitElement {
       const appInfo = this._showGroupInvite!;
       const cell: ProvisionedCell = appInfo.cell_info["rVines"]![0]!.value as ProvisionedCell;
       const dnaId = new DnaId(cell.cell_id[0]);
-      const shareCode = encodeHappJoinCode(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed);
+      const shareCode = encodeHappJoinInfo(globalThis.TAURI_HAPP_SHA256!, appInfo.installed_app_id, cell.dna_modifiers.network_seed, []);
       const isDefault = this._defaultApp == shareCode;
       const popover = this.shadowRoot!.getElementById('popover');
       let existingImg = null;
@@ -311,16 +311,16 @@ export class VinesAdmin extends LitElement {
 
   /** */
   renderAddGroup(greet: boolean): TemplateResult<1> {
-      let inviteGroup: HappJoinCode | undefined = undefined;
+      let inviteGroup: HappJoinInfo | undefined = undefined;
       this._inviteError = undefined;
       if (this._inviteLink) {
           this._inviteError = msg("Invalid invite code");
           try {
               const maybe = decodeQrCodeString(this._inviteLink);
               console.debug("maybe: " + JSON.stringify(maybe));
-              if (isHappJoiningCode(maybe)) {
+              if (isHappJoiningInfo(maybe)) {
                   if (!this.hasJoiningCode(this._inviteLink) && globalThis.TAURI_HAPP_SHA256 == maybe.happSha256) {
-                    inviteGroup = maybe as HappJoinCode;
+                    inviteGroup = maybe as HappJoinInfo;
                     this._inviteError = undefined;
                   }
               } else {
@@ -611,12 +611,12 @@ export class VinesAdmin extends LitElement {
     async onJoinGroup() {
         console.log("JOINING group space: " + this._inviteLink);
         try {
-            const decoded: HappJoinCode = decodeHappJoinCode(this._inviteLink);
+            const decoded: HappJoinInfo = decodeHappJoinInfo(this._inviteLink);
             if (decoded.happSha256 != globalThis.TAURI_HAPP_SHA256) {
                 console.error("HAPP VERSION MISMATCH.\n Expected: " + globalThis.TAURI_HAPP_SHA256 + "\n    got: " + decoded.happSha256);
                 return;
             }
-            console.log("JOINING group space: installing " + decoded.happSha256);
+            console.log(`JOINING group space "${decoded.customName}" : installing ${decoded.happSha256}`);
             await this.createNewGroup(decoded.happId, decoded.networkSeed)
         } catch(e) {
             console.error("failed to decode invite code");
@@ -625,17 +625,17 @@ export class VinesAdmin extends LitElement {
     }
 
       /** */
-      async createNewGroup(name: string, seed?: string) {
+      async createNewGroup(name: string, networkSeed?: string) {
           console.log("createNewGroup()", name);
           try {
-              const result: any = await invoke('install', {name, seed});
+              const result: any = await invoke('install', {name, seed: networkSeed});
               console.debug("Received HappInfo: " + JSON.stringify(result));
-              const happInfo = {
+              const happConnectInfo: HappInfo = {
                   port: result[0],
                   token: result[1],
                   name,
               };
-              this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: happInfo, bubbles: true, composed: true}));
+              this.dispatchEvent(new CustomEvent<HappInfo>('app-selected', {detail: happConnectInfo, bubbles: true, composed: true}));
           } catch (error) {
               console.error('Error:', error);
           }

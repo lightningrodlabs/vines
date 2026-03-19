@@ -1,13 +1,13 @@
 import {css, html, LitElement, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
-    ActionId,
-    AgentIdMap,
-    delay,
-    DnaElement, DnaId,
-    EntryId,
-    HappBuildModeType,
-    intoDhtId, NetworkInfoResponse,
+  ActionId,
+  AgentIdMap, decodeHappJoinInfo,
+  delay,
+  DnaElement, DnaId,
+  EntryId,
+  HappBuildModeType,
+  intoDhtId, NetworkInfoResponse,
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
 
@@ -161,7 +161,7 @@ import "@ui5/webcomponents-icons/dist/warning.js"
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js"
 
 /**  */
-import {AgentId, LinkableId, MyDictionary} from "@ddd-qc/cell-proxy";
+import {AgentId, HappJoinInfo, LinkableId, MyDictionary} from "@ddd-qc/cell-proxy";
 
 import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
@@ -256,9 +256,9 @@ import {HoloHashB64, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/c
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
-import {happShareCodeContext, isMobile} from "./globals";
+import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 
-// HACK: For some reason hc-sandbox gives the dna name as cell name instead of the role name...
+// HACK: For some reason hc-sandbox gives the dna name as the cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
 console.log("<vines-page> FILES_CELL_NAME", FILES_CELL_NAME);
 
@@ -1535,6 +1535,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (sharePopElem.isOpen()) {
       sharePopElem.close();
     }
+    const apkPopElem = this.shadowRoot!.getElementById("apkPopover") as Popover;
+    if (apkPopElem.isOpen()) {
+      apkPopElem.close();
+    }
   }
 
 
@@ -1991,8 +1995,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             <div id="toolsBtn" class="listerbtn" 
                  @click=${ async (e: any) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault(); e.stopPropagation();
                     /** Get and Cache appletInfo for each known applet */
                     await this.pullLatestAppletInfos();
                     /** */
@@ -2165,6 +2168,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </div>
     `;
 
+    const happJoinInfo = this.happJoinInfo();
+
     /** Render all */
     return html`
         <div id="mainDiv"
@@ -2307,6 +2312,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             </ui5-button>
                         </div>
                     </ui5-popover>
+                    <!-- APK link -->
+                    <ui5-popover id="apkPopover">
+                        <h3 style="margin:0px; margin-bottom:10px;">
+                            <div style="width: fit-content; margin:auto; margin-bottom:5px;">${msg('APK download link')}</div>
+                            <div id="popover-happ" style="cursor:pointer"
+                                 @click=${async () => {
+                                     console.debug("writing to clipboard: " + APK_LINK);
+                                     await navigator.clipboard.writeText(APK_LINK);
+                                     toasty(msg("Download link copied to clipboard"), undefined, this);
+                                 }}>
+                            </div>
+                        </h3>
+                        <div id="qrcode-apk" style="width:100%"></div>
+                        <a .href=${APK_LINK} target="_blank" style="width:100%; word-wrap:break-word">${APK_LINK}</a>
+                    </ui5-popover>
                     <!-- Share Network -->
                     <ui5-popover id="shareNetworkPopover">
                         <div slot="header"
@@ -2314,29 +2334,45 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             ${msg("Invite Code")}
                             <div style="flex-grow: 1;"></div>
                         </div>
-                        <div>${msg('Share this code to give access to this group')}: ${HAPP_ID}</div>
-                        <!--                             (seed: "${this.cell.dnaModifiers.network_seed}") -->
-                        <ui5-textarea .value=${this.happShareCode()} style="height:80px;"></ui5-textarea>
-                        <div id="qrcode-space" style="width:100%"></div>
-                        <div>${this.happSha256()}</div>
+                        <div>${msg('Share this code to give access to this group')}:</div>
+                        <sl-tooltip placement="left" style="--show-delay: 500; --max-width: 800px;">
+                            <div slot="content" style="display: flex; flex-direction:column; gap:4px;">
+                                <div>happId: ${happJoinInfo?.happId}</div>
+                                <div>customName: ${happJoinInfo?.customName}</div>
+                                <div style="overflow: hidden">happSha256: ${happJoinInfo?.happSha256}</div>
+                                <div>networkSeed: ${happJoinInfo?.networkSeed}</div>
+                                <div>bootstrapUrls: ${happJoinInfo?.bootstrapUrls}</div>
+                            </div>
+                            <div id="qrcode-space" style="width:100%; cursor:help;"></div>
+                        </sl-tooltip>
                         <div slot="footer"
-                             style="display:flex; flex-direction:row; width:100%; margin:5px; margin-right:0px;">
+                             style="display:flex; flex-direction:row; gap:10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
-                            <ui5-button slot="footer" design="Emphasized" @click=${() => {
-                                navigator.clipboard.writeText(this.happShareCode());
-                                toasty(msg("Copied share code to clipboard"));
-                                const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                                if (popover.isOpen()) {
-                                    popover.close();
-                                }
-                            }}
-                            >${msg('Copy Invite Code')}
+                            <ui5-button slot="footer" design="Transparent"
+                                        @click=${async () => {
+                                            const popover0 = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                                            if (popover0.isOpen()) {
+                                                popover0.close();
+                                            }
+                                            const popover = this.shadowRoot!.getElementById("apkPopover") as Popover;
+                                            const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
+                                            if (popover && btn) {
+                                                /*await*/ popover.showAt(btn);
+                                            }}}>
+                                ${msg('Android App')}
+                            </ui5-button>
+                            <ui5-button slot="footer" design="Emphasized"
+                                        @click=${async () => {
+                                            const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
+                                            if (popover.isOpen()) {
+                                                popover.close();
+                                            }
+                                            await navigator.clipboard.writeText(this.happShareCode());
+                                            toasty(msg("Copied share code to clipboard"));
+                                        }}>${msg('Copy Invite Code')}
                             </ui5-button>
                         </div>
                     </ui5-popover>
-                        <!-- <ui5-button style="margin-top:10px;"
-                                design="Transparent" icon="synchronize" tooltip="Refresh"
-                                @click=${this.refresh}></ui5-button>  -->
                 </div>
             </div>
             <div id="mainSide">
@@ -2926,6 +2962,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return maybe? maybe[2] : "null";
   }
 
+  happJoinInfo(): HappJoinInfo | null {
+    const maybe = this.happShareCodes.find(([name, _sha256, _code]) => name == this._dvm.hcl.appId);
+    return maybe? decodeHappJoinInfo(maybe[2]) : null;
+  }
+
   /** */
   happSha256(): string {
       const maybe = this.happShareCodes.find(([name, _sha256, _code]) => name == this._dvm.hcl.appId);
@@ -2935,9 +2976,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onShareNetwork(): Promise<void> {
     const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-    const space = this.shadowRoot!.getElementById("qrcode-space") as HTMLElement;
     const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
-    /** Generate and add QR code */
+    /** Generate and add QR code for space */
+    const space = this.shadowRoot!.getElementById("qrcode-space") as HTMLElement;
     const existingImg = space.querySelector('img')
     if (!existingImg) {
       let generateQR: string;
@@ -2947,12 +2988,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         img.src = generateQR;
         img.style.display = "flex";
         img.style.margin = "auto";
-          space.append(img);
+        space.append(img);
       } catch (err) {
         console.error(err);
       }
     }
-    popover.showAt(btn);
+    /** Generate and add QR code for APK */
+    const apk = this.shadowRoot!.getElementById("qrcode-apk") as HTMLElement;
+    const existingImgApk = apk.querySelector('img')
+    if (!existingImgApk) {
+      let generateQR: string;
+      try {
+        generateQR = await QRCode.toDataURL(APK_LINK);
+        const img = document.createElement('img');
+        img.src = generateQR;
+        img.style.display = "flex";
+        img.style.margin = "auto";
+        apk.append(img);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    /** */
+    /*await*/ popover.showAt(btn);
   }
 
   /** */
