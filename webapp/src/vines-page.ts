@@ -234,6 +234,7 @@ import {
     VinesInputEvent,
     weaveUrlToWal,
     weClientContext,
+    unimportedProfiles,
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -641,7 +642,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
       md.use(markdownItMentions, {
           getValidNames: () => {
-              const names = newDvm.profilesZvm.perspective.names;
+              const profiles: [ActionId, ProfileMat][] = unimportedProfiles(newDvm.profilesZvm);
+              const names: string[] = profiles.map(([_actionId, profile]) => profile.nickname);
               names.push("all");
               //console.log("markdownIt getValidNames()", names);
               return names;

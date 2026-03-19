@@ -466,16 +466,13 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const filter = lastWord.slice(1);
       /** Filter suggestions */
       let suggestionItems = Object.entries(this._specialProfiles);
-
       for (const agent of this._dvm.profilesZvm.perspective.agents) {
         const profile = this._dvm.profilesZvm.perspective.getProfile(agent);
-        if (profile) {
+        if (profile && !profile.fields["imported"]) {
           suggestionItems.push([agent.b64, profile])
         }
       }
-
       let suggestionKeys = suggestionItems.map(([agentKey, _profile]) => agentKey);
-
       /** Filter */
       const filtered = suggestionItems
         .filter(([_agentKey, profile]) => {

@@ -5,7 +5,7 @@ import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
 import {ParticipationProtocol, Subject, ThreadsEntryType, ThreadsProperties} from "./bindings/threads.types";
-import {ProfilesAltZvm} from "@ddd-qc/profiles-dvm";
+import {ProfilesAltZvm, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashB64, HoloHashType} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
@@ -138,12 +138,36 @@ export function truncate(str: string, n: number, useWordBoundary: boolean): stri
   return (useWordBoundary
     ? subString.slice(0, subString.lastIndexOf(" "))
     : subString) + "...";
-};
+}
+
+
+/** */
+export function unimportedProfiles(profilesZvm: ProfilesAltZvm, thisAgent?: AgentId): [ActionId, ProfileMat][] {
+  return Array.from(profilesZvm.perspective.profiles.entries())
+    .filter(([key, [profile, _ts]]) => !profile.fields["imported"] && (!thisAgent || thisAgent.equals(key)))
+    .map(([key, [profile, _ts]]) => [key, profile])
+}
 
 
 /** Return the list of agents mentioned in a string */
 export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId[] {
-  const mentions = tokenizeMentions(str, profilesZvm.perspective.names);
+  /** Make custom agentByName with filtered profiles */
+  const profiles = unimportedProfiles(profilesZvm);
+  console.log("parseMentions()", profiles);
+  const agentByName: Record<string, AgentId[]> = {};
+  profiles.map(([actionId, profile]) => {
+    const cur = agentByName[profile.nickname];
+    const agentId = profilesZvm.perspective.getProfileAgent(actionId)!;
+    if (!cur) {
+      agentByName[profile.nickname] = [agentId];
+    } else {
+      cur.push(agentId);
+      agentByName[profile.nickname] = cur;
+    }
+  })
+  const names = Object.keys(agentByName);
+  /** Get Mentions */
+  const mentions = tokenizeMentions(str, names);
   /** Handle special system mentions first */
   let hasAll = false;
   for (const mention of mentions) {
@@ -152,11 +176,11 @@ export function parseMentions(str: string, profilesZvm: ProfilesAltZvm): AgentId
     }
   }
   let mentionedAgents = profilesZvm.perspective.agents;
-  console.log("mentions, agentByName =", profilesZvm.perspective.agentByName)
+  console.log("mentions, agentByName =", agentByName)
   if (!hasAll) {
     mentionedAgents = [];
     mentions.map((mentioned) => {
-      const agents = profilesZvm.perspective.agentByName[mentioned]!;
+      const agents = agentByName[mentioned]!;
       if (agents) {
         mentionedAgents.push(...agents);
         if (agents.length > 1) {
