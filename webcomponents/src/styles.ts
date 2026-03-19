@@ -237,10 +237,11 @@ inputBarStyleTemplate.innerHTML = `
     border: none !important;
   }
   
-  .ui5-textarea-wrapper  textarea{
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .ui5-textarea-wrapper textarea {
+    /*white-space: nowrap;*/
+    /*overflow: hidden;*/
+    /*text-overflow: ellipsis;*/
+    text-wrap: wrap;
   }
 </style>
 `;
