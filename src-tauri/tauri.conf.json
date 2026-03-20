@@ -13,7 +13,17 @@
     "security": {
       "csp": null
     },
-    "windows": []
+    "windows": [
+      {
+        "width": 400,
+        "height": 500,
+        "decorations": false,
+        "resizable": false,
+        "center": true,
+        "url": "splashscreen.html",
+        "label": "splashscreen"
+      }
+    ]
   },
   "bundle": {
     "active": true,
