@@ -86,7 +86,7 @@ pub fn run() {
                     let one_happ_mode = installed_apps.len() == 1 && installed_apps[0].status == AppStatus::Enabled;
 
                     let res = async {
-                       let main_window = if one_happ_mode {
+                       let mut main_window = if one_happ_mode {
                               // Make sure app is enabled
                               let main_app = installed_apps.into_iter().next().unwrap();
                               println!("Only one app installed, loading it directly: {}", main_app.installed_app_id);
