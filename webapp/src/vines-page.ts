@@ -1655,8 +1655,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let primaryTitle = msg("No channel selected");
     let centerSide = html`${doodle_flowers}`;
     if (this._mainView == MainViewType.Favorites) {
-      centerSide = html`
-          <favorites-view></favorites-view>`
+      centerSide = html`<favorites-view></favorites-view>`
       primaryTitle = msg("Favorites");
     }
 
@@ -2030,9 +2029,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     /** Show Cross-view or group-view */
     const topLeft = html`
-
-
-
         <!-- Action buttons -->
         <div style="display:flex; flex-direction:row; padding: 0 5px;">
 
@@ -2095,10 +2091,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </div>
     `;
 
-
     const filteredInbox = this._dvm.threadsZvm.perspective.filteredInbox();
     //console.log("filteredInbox", filteredInbox);
-
 
     const dmSign = html`
         <div id="dmSign" style="cursor: pointer; z-index: 100"
@@ -2958,13 +2952,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   happShareCode(): string {
+    if (!this.happShareCodes) return "";
     const maybe = this.happShareCodes.find(([name, _sha256, _code]) => name == this._dvm.hcl.appId);
     return maybe? maybe[2] : "null";
   }
 
   happJoinInfo(): HappJoinInfo | null {
+    if (!this.happShareCodes) return null;
     const maybe = this.happShareCodes.find(([name, _sha256, _code]) => name == this._dvm.hcl.appId);
-    return maybe? decodeHappJoinInfo(maybe[2]) : null;
+    if (maybe) {
+      if (!maybe[2] || maybe[2].length < 1) return null;
+      try {
+        return decodeHappJoinInfo(maybe[2]);
+      } catch(e) {
+        console.warn("happJoinInfo() failed", e);
+      }
+    }
+    return null;
   }
 
   /** */

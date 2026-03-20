@@ -307,13 +307,16 @@ export class VinesAdmin extends LitElement {
 
   /** */
   hasJoiningCode(inviteLink: string): boolean {
-      const happJoinInfo = decodeHappJoinInfo(inviteLink);
-      if (!this._happList.get(happJoinInfo.happId)) {
-        return false;
-      }
-      const name = happJoinInfo.customName ?? happJoinInfo.happId;
-      this._inviteError = msg("Group already joined") + ": " + name;
-      return true;
+    if (!inviteLink || inviteLink.length == 0) {
+      return false;
+    }
+    const happJoinInfo = decodeHappJoinInfo(inviteLink);
+    if (!this._happList.get(happJoinInfo.happId)) {
+      return false;
+    }
+    const name = happJoinInfo.customName ?? happJoinInfo.happId;
+    this._inviteError = msg("Group already joined") + ": " + name;
+    return true;
   }
 
   /** */
@@ -630,7 +633,7 @@ export class VinesAdmin extends LitElement {
             console.log(`JOINING group space "${decoded.customName}" : installing ${decoded.happSha256}`);
             await this.createNewGroup(decoded.happId, decoded.networkSeed, decoded.customName);
         } catch(e) {
-            console.error("failed to decode invite code");
+            console.error("failed to decode invite code", e);
             return;
         }
     }

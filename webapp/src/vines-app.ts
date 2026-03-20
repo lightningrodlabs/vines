@@ -287,8 +287,10 @@ export class VinesApp extends HappMultiElement {
         console.debug("<vines-app>.hvmsConstructed() groupProfile", groupProfile);
         if (groupProfile) customName = groupProfile.name;
       }
-      return [hvm.appId, hvm.happSha256, hvm.getHappShareCode(undefined, customName ?? hvm.appId)!]
+      const code = hvm.getHappShareCode(undefined, customName ?? hvm.appId);
+      return [hvm.appId, hvm.happSha256, code ?? ""]
     });
+    console.log("<vines-app>.hvmsConstructed() allShareCodes", allShareCodes);
     new ContextProvider(this, happShareCodeContext, allShareCodes);
   }
 
