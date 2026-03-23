@@ -6,15 +6,59 @@ import {
   ThreadsProxy, weaveUrlToWal
 } from "@vines/elements";
 import {asCellProxy} from "@ddd-qc/we-utils";
-import {ActionId, pascal} from "@ddd-qc/cell-proxy";
+import {ActionId, intoDhtId, pascal} from "@ddd-qc/cell-proxy";
 import {devtestNames} from "../devtest";
 import {AssetInfo, WAL} from "@theweave/api";
 import {wrapPathInSvg} from "@ddd-qc/we-utils";
-import {mdiComment, mdiCommentBookmark, mdiCommentText, mdiCommentTextMultiple, mdiMessageTextOutline} from "@mdi/js";
+import {
+  mdiComment,
+  mdiCommentBookmark,
+  mdiCommentText,
+  mdiCommentTextMultiple,
+  mdiFileOutline,
+  mdiMessageTextOutline
+} from "@mdi/js";
 import {FILES_DEFAULT_ROLE_NAME, FilesProxy} from "@ddd-qc/files";
 import {RecordInfo} from "@theweave/api/dist/types";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 
+
+async function getFilesAssetInfo(appletClient: AppClient, wal: WAL, recordInfo: RecordInfo): Promise<AssetInfo | undefined> {
+  if (recordInfo.integrityZomeName != DELIVERY_INTERGRITY_ZOME_NAME) {
+    throw new Error(`Vines/we-applet/getAssetInfo(): Unknown zome for ${FILES_DEFAULT_ROLE_NAME} '${recordInfo.integrityZomeName}'.`);
+  }
+  const mainAppInfo = await appletClient.appInfo();
+  if (!mainAppInfo) {
+    throw Promise.reject("No main appInfo found");
+  }
+
+  const pEntryType = pascal(recordInfo.entryType);
+
+  //console.debug("Vines/we-applet/getAssetInfo(): Files pEntryType", pEntryType);
+  switch (pEntryType) {
+    case DeliveryEntryType.PrivateManifest:
+    case DeliveryEntryType.PublicManifest:
+      //console.debug("Vines/we-applet/getAssetInfo(): Files pp info", wal);
+      const cellProxy = await asCellProxy(
+        appletClient,
+        undefined, // hrl[0],
+        mainAppInfo.installed_app_id,
+        FILES_DEFAULT_ROLE_NAME);
+      //console.debug("Vines/we-applet/getAssetInfo(): Files cellProxy?", !!cellProxy);
+      const proxy/*: FilesProxy */ = new FilesProxy(cellProxy);
+      console.debug("Vines/we-applet/getAssetInfo(): Files getFile()", intoDhtId(wal.hrl[1]), proxy);
+      const manifest = await proxy.getFileInfoFromLocal(wal.hrl[1]);
+      //console.debug("Vines/we-applet/getAssetInfo(): Files file", manifest.description);
+      return {
+        icon_src: wrapPathInSvg(mdiFileOutline),
+        name: manifest.description.name,
+      };
+      break;
+    default:
+      throw new Error(`Vines/we-applet/getAssetInfo(): Unknown entry type for Files ${recordInfo.entryType}.`);
+  }
+}
 
 /** */
 export async function getAssetInfo(
@@ -24,6 +68,9 @@ export async function getAssetInfo(
 ): Promise<AssetInfo | undefined> {
   if (!recordInfo) {
     throw new Error(`Vines/we-applet/getAssetInfo(): Missing recordInfo`);
+  }
+  if (recordInfo.roleName == FILES_DEFAULT_ROLE_NAME) {
+    return await getFilesAssetInfo(appletClient, wal, recordInfo);
   }
   if (recordInfo.roleName != devtestNames.provisionedRoleName) {
     throw new Error(`Vines/we-applet: Unknown role name '${recordInfo.roleName}'.`);

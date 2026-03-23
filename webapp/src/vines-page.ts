@@ -626,8 +626,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     const hrl: Hrl = e.detail;
-    const threadAh = new ActionId(hrl[1]);
-    console.log("THREAD", threadAh);
+    const dhtId = intoDhtId(hrl[1]);
+    console.debug("HRL", new DnaId(hrl[0]).b64, dhtId.b64);
     //this._canShowDebug = true;
     //this._debugThreadAh = threadAh;
   }

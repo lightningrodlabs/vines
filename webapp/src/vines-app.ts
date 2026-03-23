@@ -1,4 +1,4 @@
-import {html, css, PropertyValues} from "lit";
+import {html, css, PropertyValues, TemplateResult} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
 import {msg, localized} from '@lit/localize';
@@ -39,7 +39,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {AppProxy, AgentId, EntryId, dec64} from "@ddd-qc/cell-proxy";
 import {AssetViewInfo} from "@ddd-qc/we-utils";
 import {ProfilesDvm} from "@ddd-qc/profiles-dvm";
-import {FilesDvm} from "@ddd-qc/files";
+import {FILES_DEFAULT_ROLE_NAME, FilesDvm} from "@ddd-qc/files";
 import {DEFAULT_THREADS_DEF} from "./happDef";
 
 import "./vines-page"
@@ -50,6 +50,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {happShareCodeContext, MyTauriConfig} from "./globals";
 import {ICON_B64} from "./icon";
 import {HappConnectInfo} from "./vines-index";
+import {DELIVERY_INTERGRITY_ZOME_NAME, DeliveryEntryType} from "@ddd-qc/delivery";
 
 //import Button from "@ui5/webcomponents/dist/Button";
 //import {searchAgentPlugin} from "@holochain-open-dev/profiles/dist/elements/textarea-with-mentions";
@@ -376,6 +377,34 @@ export class VinesApp extends HappMultiElement {
     // }
   }
 
+
+  /** */
+  renderFilesAsset(assetViewInfo: AssetViewInfo): TemplateResult<1> {
+    console.log("<vines-app>.renderFilesAsset()",assetViewInfo);
+    if (assetViewInfo.recordInfo!.integrityZomeName != DELIVERY_INTERGRITY_ZOME_NAME) {
+      throw new Error(`Vines/we-applet: Unknown zome for ${assetViewInfo.recordInfo!.roleName} '${assetViewInfo.recordInfo!.integrityZomeName}'.`);
+    }
+    const entryType = pascal(assetViewInfo.recordInfo!.entryType);
+    console.log("<vines-app> pascal entryType", entryType);
+    switch (entryType) {
+      case DeliveryEntryType.PrivateManifest:
+      case DeliveryEntryType.PublicManifest: {
+        const dh = new EntryId(assetViewInfo.wal.hrl[1])
+        console.log("<vines-app> File entry:", dh);
+        return html`
+        <cell-context .cell=${this.filesDvm(0).cell}>
+          <file-view .hash=${dh}></file-view>
+        </cell-context>
+      `;
+        //return html`<file-view .hash=${dh} style="height: 100vh;"></file-view>`;
+      }
+      break;
+      default:
+        throw new Error(`Unknown entry type ${entryType}.`);
+    }
+  }
+
+
   /** */
   override render() {
     console.log("<vines-app>.render()", !this._hasHolochainFailed, this._loadedLocal, this._loadedNetwork, this._hasWeProfile, this.hvms.length);
@@ -438,12 +467,12 @@ export class VinesApp extends HappMultiElement {
       console.log("<vines-app> appletView", this.appletView);
       switch (this.appletView.type) {
         case "main":
-            view = html`
-        <vines-page
-                .wal=${(this.appletView as any).wal}
-                .appProxy=${appProxy}
-                @dumpNetworkLogs=${this.onDumpNetworkLogs}
-        ></vines-page>`;
+          view = html`
+              <vines-page
+                      .wal=${(this.appletView as any).wal}
+                      .appProxy=${appProxy}
+                      @dumpNetworkLogs=${this.onDumpNetworkLogs}
+              ></vines-page>`;
           break;
         case "block":
           throw new Error("Threads/we-applet: Block view is not implemented.");
@@ -452,72 +481,77 @@ export class VinesApp extends HappMultiElement {
           if (!assetViewInfo.recordInfo) {
             throw new Error(`Threads/we-applet: Missing AssetViewInfo.recordInfo.`);
           }
-          if (assetViewInfo.recordInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
-            throw new Error(`Threads/we-applet: Unknown role name '${assetViewInfo.recordInfo.roleName}'.`);
-          }
-          if (assetViewInfo.recordInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
-            throw new Error(`Threads/we-applet: Unknown zome '${assetViewInfo.recordInfo.integrityZomeName}'.`);
-          }
-          const entryType = pascal(assetViewInfo.recordInfo.entryType);
-          const [dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
-          console.log("pascal entryType", assetViewInfo.recordInfo.entryType, entryType);
+          if (assetViewInfo.recordInfo.roleName == FILES_DEFAULT_ROLE_NAME) {
+            view = this.renderFilesAsset(assetViewInfo);
+          } else {
+            if (assetViewInfo.recordInfo.roleName != VINES_DEFAULT_ROLE_NAME) {
+              throw new Error(`Threads/we-applet: Unknown role name '${assetViewInfo.recordInfo.roleName}'.`);
+            }
+            if (assetViewInfo.recordInfo.integrityZomeName != THREADS_DEFAULT_INTEGRITY_ZOME_NAME) {
+              throw new Error(`Threads/we-applet: Unknown zome '${assetViewInfo.recordInfo.integrityZomeName}'.`);
+            }
+            const entryType = pascal(assetViewInfo.recordInfo.entryType);
+            const [dnaId, dhtId] = hrl2Id(assetViewInfo.wal.hrl);
+            console.log("pascal entryType", assetViewInfo.recordInfo.entryType, entryType);
 
-          const thisThreadDvm = this.findThreadsDvm(dnaId);
-          if (!thisThreadDvm) {
-                return html`
-                    <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
-                        <div style="margin:auto; font-size:large">${msg('Error: ThreadDvm not found')} (${dnaId.b64})</div>
-                    </div>
-            `;
-          }
+            const thisThreadDvm = this.findThreadsDvm(dnaId);
+            if (!thisThreadDvm) {
+              return html`
+                  <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
+                      <div style="margin:auto; font-size:large">${msg('Error: ThreadDvm not found')} (${dnaId.b64})
+                      </div>
+                  </div>
+              `;
+            }
 
-          switch (entryType) {
-            case ThreadsEntryType.ParticipationProtocol:
-              const ppAh = new ActionId(dhtId.b64);
-              console.log("asset ppAh:", ppAh);
-              view = html`
-                  <comment-thread-view assetview .threadHash=${ppAh} style="height: 100%;"
-                                       showInput="true"></comment-thread-view>`;
-              break;
-            case ThreadsEntryType.EncryptedBead:
+            switch (entryType) {
+              case ThreadsEntryType.ParticipationProtocol:
+                const ppAh = new ActionId(dhtId.b64);
+                console.log("asset ppAh:", ppAh);
+                view = html`
+                    <comment-thread-view assetview .threadHash=${ppAh} style="height: 100%;"
+                                         showInput="true"></comment-thread-view>`;
+                break;
+              case ThreadsEntryType.EncryptedBead:
                 const encBeadAh = new ActionId(dhtId.b64);
                 const baseBeadInfo: BeadInfo | null = thisThreadDvm!.threadsZvm.perspective.getBaseBeadInfo(encBeadAh);
                 if (!baseBeadInfo) {
-                    view = html`<chat-item assetview .hash=${encBeadAh} shortmenu></chat-item>`;
+                  view = html`<chat-item assetview .hash=${encBeadAh} shortmenu></chat-item>`;
                 } else {
-                    view = html`
-                        <comment-thread-view assetview
-                                             .threadHash=${baseBeadInfo.bead.ppAh}
-                                             .beadAh=${encBeadAh}
-                                             style="height: 100%;"
-                                             showInput="true"></comment-thread-view>`;
+                  view = html`
+                      <comment-thread-view assetview
+                                           .threadHash=${baseBeadInfo.bead.ppAh}
+                                           .beadAh=${encBeadAh}
+                                           style="height: 100%;"
+                                           showInput="true"></comment-thread-view>`;
                 }
-                break;
-            case ThreadsEntryType.TextBead:
-            case ThreadsEntryType.AnyBead:
-            case ThreadsEntryType.EntryBead:
-              const beadAh = new ActionId(dhtId.b64);
-              // view message in comment thread
-              const beadInfo: BeadInfo | undefined = thisThreadDvm!.threadsZvm.perspective.getBeadInfo(beadAh);
-                if (!beadInfo) {
-                    view = html`<chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
-                } else {
-                    view = html`
-                        <comment-thread-view assetview
-                                             .threadHash=${beadInfo.bead.ppAh}
-                                             .beadAh=${beadAh}
-                                             style="height: 100%;"
-                                             showInput="true"></comment-thread-view>`;
-                }
-              break;
-            case ThreadsEntryType.SemanticTopic:
+            break;
+          case ThreadsEntryType.TextBead:
+          case ThreadsEntryType.AnyBead:
+          case ThreadsEntryType.EntryBead:
+            const beadAh = new ActionId(dhtId.b64);
+            // view message in comment thread
+            const beadInfo: BeadInfo | undefined = thisThreadDvm!.threadsZvm.perspective.getBeadInfo(beadAh);
+            if (!beadInfo) {
+              view = html`<chat-item assetview .hash=${beadAh} shortmenu></chat-item>`;
+            } else {
               view = html`
-                  <div>{SemanticTopic}</div>`
-              break;
-            default:
-              throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);
+                  <comment-thread-view assetview
+                                       .threadHash=${beadInfo.bead.ppAh}
+                                       .beadAh=${beadAh}
+                                       style="height: 100%;"
+                                       showInput="true"></comment-thread-view>`;
+            }
+            break;
+          case ThreadsEntryType.SemanticTopic:
+            view = html`
+                <div>{SemanticTopic}</div>`
+            break;
+          default:
+            throw new Error(`Unhandled entry type ${assetViewInfo.recordInfo.entryType}.`);
           }
-          break;
+        }
+        break;
         case "creatable":
           const creatableViewInfo = this.appletView as {
             type: "creatable";
