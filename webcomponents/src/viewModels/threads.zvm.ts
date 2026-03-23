@@ -244,8 +244,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     /** Query all entries from local source-chain */
     override async initializePerspectiveFromLocal(): Promise<void> {
         console.debug("threadsZvm.initializePerspectiveFromLocal() START");
-        await this.zomeProxy.queryAll();
-        await this.probeAllInnerAsync(GetStrategy.Local);
+        try {
+          await this.zomeProxy.queryAll();
+          await this.probeAllInnerAsync(GetStrategy.Local);
+        } catch(e) {
+          console.warn("initializePerspectiveFromLocal() failed.", e);
+        }
         console.debug("threadsZvm.initializePerspectiveFromLocal() END");
     }
 

@@ -30,7 +30,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
   @property({type: Boolean}) history?: boolean = false;
 
-  @property({type: Boolean}) alphabetical?: boolean = false;
+  @property() order: string = "custom";
 
   @property() showArchivedTopics?: string;
 
@@ -43,6 +43,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   // @consume({context: onlineLoadedContext, subscribe: true})
   // onlineLoaded!: boolean;
 
+  private _dragged: any;
 
   /** -- Methods -- */
 
@@ -100,16 +101,25 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
   /** */
   override render() {
-    console.log("<topics-lister>.render()", this.collapsed, this.threadsPerspective.semanticTopics.size, this.threadsPerspective.semanticTopics);
+    console.log("<topics-lister>.render() start", this.collapsed, this.threadsPerspective.semanticTopics.size, this.threadsPerspective.semanticTopics);
 
     let pairs = Array.from(this.threadsPerspective.semanticTopics.entries());
-    if (this.alphabetical) {
-      pairs = pairs.sort((a, b) => {
-        return a[1][0].localeCompare(b[1][0]);
-      });
-    } else {
-      pairs = pairs.reverse();
+    switch (this.order) {
+      case "alpha":
+        pairs = pairs.sort((a, b) => {
+          return a[1][0].localeCompare(b[1][0]);
+        });
+      break;
+      case "chrono":
+        pairs = pairs.reverse();
+      break;
+      case "custom":
+      default:
+        console.log("<topics-lister custom>", pairs.length);
+        pairs = this.getOrderFromLocalStorage(this.threadsPerspective.semanticTopics);
+      break;
     }
+
     let treeItems = pairs.map(([topicAh, [title, author]]) => {
       const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
       /** Skip if hidden */
@@ -122,7 +132,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       if (topicThreads == undefined) {
         topicThreads = [];
       } else {
-        if (this.alphabetical) {
+        if (this.order == "alpha") {
           topicThreads = topicThreads.sort((a, b) => {
             const threadA = this.threadsPerspective.threads.get(a)!;
             const nameA = latestThreadName(threadA.title, threadA.pp, this._dvm.threadsZvm);
@@ -322,16 +332,15 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                    <span style="color:grey;">${msg('No channels found')}</span>
                     <span class="linky" style="text-decoration: underline; font-size: small"
                           @click=${async (e: any) => {
-          e.stopPropagation();
-          e.preventDefault();
-          await this.updateComplete;
-          this.dispatchEvent(new CustomEvent<ActionId>('createThreadClicked', {
-            detail: topicAh,
-            bubbles: true,
-            composed: true
-          }));
-        }}
-                    >
+                            e.stopPropagation();
+                            e.preventDefault();
+                            await this.updateComplete;
+                            this.dispatchEvent(new CustomEvent<ActionId>('createThreadClicked', {
+                              detail: topicAh,
+                              bubbles: true,
+                              composed: true
+                            }));
+                          }}>
                         ${msg('Create channel')}</span>
               </div>`];
       }
@@ -348,27 +357,28 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       return html`
           <ui5-panel id=${topicAh.b64} ?collapsed=${collapsed}
                      style="${bgColor}"
+                     .draggable=${this.order == "custom"? "true" : ""}
                      @toggle=${(e: any) => {
-        //console.log("<topics-lister> TOGGLED", e.target.collapsed);
-        this.collapsed.set(topicAh, e.target.collapsed);
-        this.requestUpdate();
-      }}
+                        //console.log("<topics-lister> TOGGLED", e.target.collapsed);
+                        this.collapsed.set(topicAh, e.target.collapsed);
+                        this.requestUpdate();
+                      }}
                      @mouseover=${(_e: any) => {
-        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
-        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);
-        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
-        if (hide) hide.style.display = "block";
-        if (cmt) cmt.style.display = "block";
-        if (edit && this.cell.address.agentId.equals(author)) edit.style.display = "block";
-      }}
+                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
+                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);
+                        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
+                        if (hide) hide.style.display = "block";
+                        if (cmt) cmt.style.display = "block";
+                        if (edit && this.cell.address.agentId.equals(author)) edit.style.display = "block";
+                      }}
                      @mouseout=${(_e: any) => {
-        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
-        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);
-        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
-        if (hide) hide.style.display = "none";
-        if (cmt) cmt.style.display = "none";
-        if (edit) edit.style.display = "none";
-      }}>
+                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
+                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);
+                        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
+                        if (hide) hide.style.display = "none";
+                        if (cmt) cmt.style.display = "none";
+                        if (edit) edit.style.display = "none";
+                      }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
@@ -412,7 +422,57 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     }
 
     /** render all */
-    return html`${treeItems}`
+    return html`
+    <div id="container"
+         @dragstart=${(e: any) => {
+           this._dragged = e.target.closest('ui5-panel');
+           setTimeout(() =>  this._dragged?.classList.add('dragging'), 0);
+         }}
+         @dragend=${(_e: any) => {
+             this._dragged?.classList.remove('dragging');
+             this._dragged = null;
+         }}
+         @dragover=${(e: any) => {
+            e.preventDefault();
+            const target = e.target.closest('ui5-panel');
+            if (!target || target ===  this._dragged) return;
+          
+            const { top, height } = target.getBoundingClientRect();
+            const after = e.clientY > top + height / 2;
+            const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
+            container.insertBefore( this._dragged, after ? target.nextSibling : target);
+         }}
+         @drop=${(e: any) => {
+            e.preventDefault();
+            const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
+            const order = Array.from(container.children).map(el => el.id);
+            console.log("ORDER", order);
+            localStorage.setItem("vinesTopicOrder", JSON.stringify(order));
+         }}>
+        ${treeItems}
+    </div>`
+  }
+
+
+  /** Grab order for local storage. Set order and append any unknown remaining elements */
+  getOrderFromLocalStorage(map: ActionIdMap<[string, AgentId]>): [ActionId, [string, AgentId]][] {
+    const json = localStorage.getItem("vinesTopicOrder");
+    let allPairs = Array.from(map.entries());
+    if (!json) return allPairs;
+    let ids: string[];
+    try {
+      ids = JSON.parse(json) as string[];
+    } catch {
+      return allPairs;
+    }
+    let pairs: [ActionId, [string, AgentId]][] = [];
+    for (const idb64 of ids) {
+      const id = new ActionId(idb64);
+      pairs.push([id, map.get(id)!]);
+      allPairs = allPairs.filter((key) => !key[0].equals(id));
+    }
+    console.log("ORDER FROM LOCAL STORAGE", pairs);
+    return pairs.concat(allPairs);
   }
 
 
@@ -421,7 +481,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     return [
       sharedStyles,
       css`
-          :host {
+          #container {
               /*background: #FBFCFD;*/
               /*display: block;*/
               display: flex;
@@ -478,6 +538,13 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               display: block !important;
           }
 
+          ui5-panel[draggable="true"] {
+              cursor: grab;
+          }
+          ui5-panel.dragging {
+              opacity: 0.4;
+          }
+          
           /*
           @media (max-width: 500px) {
               ui5-button {

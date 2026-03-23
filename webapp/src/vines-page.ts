@@ -117,6 +117,7 @@ import "@ui5/webcomponents-icons/dist/information.js"
 import "@ui5/webcomponents-icons/dist/journey-arrive.js"
 import "@ui5/webcomponents-icons/dist/journey-depart.js"
 import "@ui5/webcomponents-icons/dist/less.js"
+import "@ui5/webcomponents-icons/dist/list.js"
 import "@ui5/webcomponents-icons/dist/menu2.js"
 import "@ui5/webcomponents-icons/dist/microphone.js"
 import "@ui5/webcomponents-icons/dist/message-success.js"
@@ -313,7 +314,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canShowLeft = true;
   @state() private _listerToShow: string | null = "topics-option";
   @state() private _collapseAll: boolean = false;
-  @state() private _canAlphabetical: boolean = false;
+  @state() private _topicOrderType: string = "custom";
   @state() private _canViewArchivedSubjects = false;
   @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we don't know which thread from which tool to use
   @state() private _createTopicHash: ActionId | undefined = undefined;
@@ -1848,7 +1849,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let topicsLister = html`
             <topics-lister id="topicsLister" 
                            style="display: ${this._listerToShow == "topics-option"? "block" : "none"}"
-                           ?alphabetical=${this._canAlphabetical}
+                           .order=${this._topicOrderType}
                            .showArchivedTopics=${this._canViewArchivedSubjects}
                            .selectedThreadHash=${this._selectedThreadHash}
                            @createThreadClicked=${(e: CustomEvent<ActionId>) => {
@@ -2072,10 +2073,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     hisLister.collapseAll(true);
                                 }
                             }}></ui5-button>
-                <ui5-button icon=${this._canAlphabetical? "time-account" : "alphabetical-order"} design="Transparent"
+                <ui5-button icon=${this._topicOrderType == "alpha" ? "time-account" : this._topicOrderType == "chrono" ? "list" : "alphabetical-order"} design="Transparent"
                             style="height:30px;"
-                            tooltip=${this._canAlphabetical? msg("Sort by creation time") : msg("Sort alphabetically")}
-                            @click=${(_e: any) => this._canAlphabetical = !this._canAlphabetical}></ui5-button>
+                            tooltip=${this._topicOrderType == "alpha" ? msg("Sort by creation time") : this._topicOrderType == "chrono"? msg("Use custom ordering") : msg("Sort alphabetically")}
+                            @click=${(_e: any) => {
+                                switch (this._topicOrderType) {
+                                    case "alpha": this._topicOrderType = "chrono"; break;
+                                    case "chrono": this._topicOrderType = "custom"; break;
+                                    case "custom": this._topicOrderType = "alpha"; break;
+                                }
+                            }}
+                ></ui5-button>
                 <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent"
                             style="height:30px;"
                             tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Categories & Channels")}
