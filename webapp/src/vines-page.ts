@@ -1655,6 +1655,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** */
     let primaryTitle = msg("No channel selected");
     let centerSide = html`${doodle_flowers}`;
+    const IS_PROGENITOR = false; // FIXME: set in localStorage?
+    if (this._dvm.threadsZvm.perspective.threads.size == 0) {
+      let panel = html``; // FIXME: add 'waiting to sync` message
+      if (IS_PROGENITOR) {
+        panel = html`
+            <div class="mypanel">
+            <export-panel
+                        @import=${(e: CustomEvent) => {
+                            this.importDvm(e.detail);
+                            this.importDialogElem.close(false);
+                        }}
+              ></export-panel>
+            </div>
+        `;
+      }
+      centerSide = html`
+          <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
+              ${doodle_flowers}
+          </div>
+          ${panel}
+      `;
+    }
     if (this._mainView == MainViewType.Favorites) {
       centerSide = html`<favorites-view></favorites-view>`
       primaryTitle = msg("Favorites");
@@ -3321,6 +3343,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 0.5rem 0;
         }
 
+        .mypanel {
+            background-color: white;
+            width: fit-content;
+            margin: auto;
+            z-index: 1;
+            padding: 0px 20px 10px 20px;
+            border-radius: 10px;
+            /*box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.15);*/
+            box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+        }
         .search-group-header {
           text-transform: uppercase;
           padding-top: 0px;
