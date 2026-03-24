@@ -23,6 +23,7 @@ declare global {
     var HAPP_CUSTOM_NAME: string | undefined;
     var HC_APP_PORT: number | undefined;
     var HC_ADMIN_PORT: number | undefined;
+    var TS_INIT_DONE: boolean | undefined;
 }
 
 globalThis.IS_TAURI = isTauri();
@@ -37,6 +38,7 @@ globalThis.HAPP_ID = DEFAULT_THREADS_DEF.id;
 globalThis.HAPP_CUSTOM_NAME = undefined;
 globalThis.HC_APP_PORT = undefined;
 globalThis.HC_ADMIN_PORT = undefined;
+globalThis.TS_INIT_DONE = undefined;
 
 
 try {
@@ -79,6 +81,8 @@ if (HAPP_BUILD_MODE === HappBuildModeType.Retail) {
   console.log("console.log() changed into console.debug()");
   console.log = console.debug
 }
+
+globalThis.TS_INIT_DONE = true;
 
 
 export interface MyTauriConfig {

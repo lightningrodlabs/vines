@@ -56,7 +56,16 @@ export class VinesIndex extends LitElement {
 
       /** */
       override render() {
-        console.log("<vines-index>.render()", globalThis.TAURI_SHOW_ADMIN);
+        console.log("<vines-index>.render()", globalThis.TS_INIT_DONE, globalThis.TAURI_SHOW_ADMIN, globalThis.HAPP_ID);
+        if (!globalThis.TS_INIT_DONE) {
+          setTimeout(() => this.requestUpdate(), 100); // globals might need some time to be set (probably because of xxhash)
+          return html`
+            <ui5-busy-indicator id="busy" delay="0" size="Large" active 
+                                style=" top: 50%; margin-left:-50px;
+                                        left: 50%; position: fixed;
+                                        color:#05b92f; "
+            ></ui5-busy-indicator>`;
+        }
         if (globalThis.TAURI_SHOW_ADMIN || !globalThis.HAPP_ID) {
             return html`<vines-admin></vines-admin>`;
         }
