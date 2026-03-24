@@ -528,7 +528,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
         await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
-        toasty(msg("Publish Message failed: " + error.failure));
+        toasty(msg("Publish Message failed: ") + error.failure);
         this._waitingForBeadCommit = undefined;
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
         if (inputBar) {
@@ -544,7 +544,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         // TODO: make sure hrl is an entryHash
         await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
-        toasty(msg("Publish Message failed: " + error.failure));
+        toasty(msg("Publish Message failed: ") + error.failure);
         this._waitingForBeadCommit = undefined;
         console.warn(error);
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
@@ -574,7 +574,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     this.weServices,
                   );
             } catch(error:any) {
-                toasty(msg("Publish Message failed: " + error.failure));
+                toasty(msg("Publish Message failed: ") + error.failure);
                 this._waitingForBeadCommit = undefined;
                 const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
                 console.warn("Publish Message failed:",  inputBar);
@@ -933,7 +933,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
     await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     } catch(e:any) {
-        toasty(msg("Publish DM failed: " + e.failure));
+        toasty(msg("Publish DM failed: ") + e.failure);
         return;
     }
     this._replyToAh = undefined;
