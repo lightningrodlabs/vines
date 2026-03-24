@@ -250,7 +250,7 @@ import {FileButton} from "@ddd-qc/files/dist/elements/file-button";
 import {FilesDvm, FileView, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
 //import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
-import {msg} from "@lit/localize";
+import {msg, str} from "@lit/localize";
 import {getLocale, setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
 import {HoloHashB64, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/client";
@@ -501,7 +501,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
           await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
       } catch(e:any) {
-          toasty("Publish DM failed: " + e.failure);
+          toasty(msg("Publish DM failed: ") + e.failure);
           this._waitingForBeadCommit = undefined;
       }
       return;
@@ -528,7 +528,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
         await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
-        toasty("Publish Message failed: " + error.failure);
+        toasty(msg("Publish Message failed: " + error.failure));
         this._waitingForBeadCommit = undefined;
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
         if (inputBar) {
@@ -544,7 +544,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         // TODO: make sure hrl is an entryHash
         await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
-        toasty("Publish Message failed: " + error.failure);
+        toasty(msg("Publish Message failed: " + error.failure));
         this._waitingForBeadCommit = undefined;
         console.warn(error);
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
@@ -574,7 +574,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     this.weServices,
                   );
             } catch(error:any) {
-                toasty("Publish Message failed: " + error.failure);
+                toasty(msg("Publish Message failed: " + error.failure));
                 this._waitingForBeadCommit = undefined;
                 const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
                 console.warn("Publish Message failed:",  inputBar);
@@ -933,7 +933,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       try {
     await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     } catch(e:any) {
-        toasty("Publish DM failed: " + e.failure);
+        toasty(msg("Publish DM failed: " + e.failure));
         return;
     }
     this._replyToAh = undefined;
@@ -2896,7 +2896,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         const contents = reader.result as string;
         this._dvm.importPerspective(contents, canPublish).catch(async(e) => {
             console.warn("Import failed", e, reader);
-            toasty(`Failed to import file`);
+            toasty(msg(`Failed to import file`));
             this._dvm.importDone();
         });
       }
@@ -2911,7 +2911,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   private openFile() {
-    console.log("<vines-page>.openFile()");
+    console.log("<vines-page>.openFile()", this._filesDvm.dnaProperties);
     this._file = undefined;
     var input = document.createElement('input');
     input.type = 'file';
@@ -2921,8 +2921,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     input.onchange = (e: any) => {
       console.log("<vines-page>.openFile() target download file", e.target.files, e);
       const file = e.target.files[0];
-      if (file.size > this._filesDvm.dnaProperties.maxParcelSize) {
-        toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(this._filesDvm.dnaProperties.maxParcelSize)}`);
+      const maxSizeAllowed = Math.min(this._filesDvm.dnaProperties.maxParcelSize, 1 * 1024 * 1024 * 1024); // 1 GB
+      if (file.size > maxSizeAllowed) {
+        toasty(msg(str`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(maxSizeAllowed)}`));
         return;
       }
       this._file = file;

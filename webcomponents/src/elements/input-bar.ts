@@ -14,7 +14,7 @@ import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {renderAvatar} from "../render";
-import {msg} from "@lit/localize";
+import {msg, str} from "@lit/localize";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {MicEvent, VinesInputEvent} from "../events";
 import {weClientContext} from "../contexts";
@@ -715,7 +715,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                      {type: MIC_MIME_TYPE, lastModified: Date.now()}
                              );
                              if (file.size < this._limitations.canFile!.minFileSize || file.size > this._limitations.canFile!.maxFileSize) {
-                                 toasty("Attach recording cancelled: Invalid file size");
+                                 toasty(msg("Attach recording cancelled: Invalid file size"));
                              } else {
                                  this._file = file;
                              }
@@ -730,19 +730,18 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
   }
 
-
   /** */
   onAttachFile(e: any) {
     const file = e.target.files[0] as File;
     const fileLimits = this._limitations.canFile!;
     console.log("<vines-input-bar> onAttachFile()", file.size, fileLimits.minFileSize, fileLimits.maxFileSize)
     if (file.size > fileLimits.maxFileSize /*|| file.size > this._filesDvm.dnaProperties.maxParcelSize*/) {
-      toasty(`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(fileLimits.maxFileSize)}`);
+      toasty(msg(str`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size allowed in this channel: ${prettyFileSize(fileLimits.maxFileSize)}`));
       this.focusInput();
       return;
     }
     if (file.size < fileLimits.minFileSize) {
-      toasty(`Error: File is too small ${prettyFileSize(file.size)}. Minimum file size: ${prettyFileSize(fileLimits.minFileSize)}`);
+      toasty(msg(str`Error: File is too small ${prettyFileSize(file.size)}. Minimum file size allowed in this channel: ${prettyFileSize(fileLimits.minFileSize)}`));
       this.focusInput();
       return;
     }

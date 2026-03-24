@@ -22,12 +22,12 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
 
   /** Render innerHtml */
   const litHtml = html`
-        <div style="display:flex; flex-direction:row; gap:10px; margin:0px; padding:0px; white-space:pre-wrap; cursor:pointer"
+        <div style="display:flex; flex-direction:row; gap:10px; margin:0px; padding:0px; white-space:pre-wrap; cursor:pointer; overflow-wrap: anywhere;"
              @click=${(_e: any) => {
-    console.log("Toasty jump", jumpEvent, parent);
-    if (jumpEvent && parent) parent.dispatchEvent(jumpEvent);
-  }}>
-            <strong>${escapeHtml(title)}</strong>
+                console.log("Toasty jump", jumpEvent, parent);
+                if (jumpEvent && parent) parent.dispatchEvent(jumpEvent);
+             }}
+        ><strong>${escapeHtml(title)}</strong>
         </div>   
       `;
   render(litHtml, toastElem);
