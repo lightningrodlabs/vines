@@ -311,13 +311,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async pullAppletIds(strategy: GetStrategy): Promise<EntryId[]> {
-        console.log("threadsZvm.probeAllAppletIds()")
-        // const appletIds = await this.zomeProxy.getApplets();
-        // this._allAppletIds = appletIds.map((eh) => encodeHashToBase64(eh));
+        //console.log("threadsZvm.probeAllAppletIds()")
         const entryB64s = await this.zomeProxy.pullApplets(strategy);
         const list = entryB64s.map((b64) => new EntryId(b64));
         this._perspective.storeAllAppletIds(list);
-        console.log("threadsZvm.probeAllAppletIds() list", list);
+        console.debug("threadsZvm.probeAllAppletIds() list", list);
         this.notifySubscribers();
         return list;
     }

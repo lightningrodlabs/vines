@@ -86,17 +86,22 @@ export class VinesApp extends HappMultiElement {
   private _onlineLoadedProvider?: any;
 
   @state() private _hasHolochainFailed: boolean | undefined = undefined;
-  @state() private _hasWeProfile = false;
+
+  /** happId -> am I progenitor */
+  private _amIprogenitorMap = new Map<string, boolean>();
+
 
   /** We-applet specifics */
+  @state() private _hasWeProfile = false;
+
   private _weProfilesDvm?: ProfilesDvm;
   protected _weServices?: WeServicesEx;
 
-
-  /** -- Constructor -- */
-
   public readonly appId?: InstalledAppId;
   public readonly appletView?: AppletView;
+
+
+  /** -- Constructor -- */
 
   /** All arguments should be provided when constructed explicitly */
   constructor(private _adminWs?: AdminWebsocket, appletGroups?: AppletGroup[], isMulti?: boolean) {
@@ -114,13 +119,20 @@ export class VinesApp extends HappMultiElement {
     }
     console.log("<vines-app>.ctor() tuples", tuples);
     super(tuples, isMulti? !isMulti : true);
-    /** */
+    /** Multigroup / Moss specific */
     if (appletGroups && appletGroups.length > 0) {
       this.appId = appletGroups[0]!.appId;
       this.appletView = appletGroups[0]!.appletView;
+    } else {
+      /** Single group ; grab progenitor info from local storage */
+      const happId = tuples[0]![2]!;
+      const maybe = localStorage.getItem("vinesMeProgenitor_" + happId);
+      if (maybe) {
+        this._amIprogenitorMap.set(happId, true)
+      }
     }
     this._onlineLoadedProvider = new ContextProvider(this, onlineLoadedContext, false);
-
+    /** */
     if (globalThis.IS_TAURI) {
         console.debug("REQUESTING TAURI CONFIG...");
         invoke<MyTauriConfig>("get_config").then((config: MyTauriConfig) => {
@@ -150,12 +162,25 @@ export class VinesApp extends HappMultiElement {
     const appletIds = appletGroups.map((group) => group.appletId);
     app._weServices = new WeServicesEx(weServices, appletIds);
     /** Cache all appletInfo and GroupInfo */
+    let i = 0;
     for (const appletGroup of appletGroups) {
-      const appletInfo = await app._weServices.appletInfo(appletGroup.appletId.b64);
+      const appletInfo = await weServices.appletInfo(appletGroup.appletId.hash);
+      /** Determine progenitor in Moss non-cross-group context */
+      try {
+        const groupHash = appletInfo!.groupsHashes[0];
+        console.debug("<vines-app>.fromWe() progenitor groupHash", groupHash);
+        const progenitor = await weServices.toolInstaller(appletGroup.appletId.hash, groupHash);
+        if (progenitor) {
+          const happId = app.cells[i]!.appId;
+          const myKey = app.cells[i]!.address.agentId;
+          app._amIprogenitorMap.set(happId, myKey.equals(progenitor));
+        }
+      } catch (e) { /* toolInstaller() doesn't work in cross-group view */ }
       for (const group of appletInfo?.groupsHashes ?? []) {
         const groupInfo = await app._weServices.groupProfile(group);
         console.debug("<vines-app>.fromWe() groupInfo", groupInfo);
       }
+      i += 1;
     }
     /** Provide WeServicesEx as context */
     console.log(`\t\tProviding context "${weClientContext}" | in host `, app);
@@ -243,8 +268,9 @@ export class VinesApp extends HappMultiElement {
     // Notify parent that the vines happ is ready
     override firstUpdated() {
         //console.log("<vines-app>.firstUpdated() vines-ready");
+        const happId = this.appId ?? this.cells[0]!.appId;
         this.dispatchEvent(new CustomEvent('vines-ready', {
-            detail: this.appId ?? this.cells[0]?.appId,
+            detail: happId,
             bubbles: true,
             composed: true,
         }));
@@ -460,7 +486,9 @@ export class VinesApp extends HappMultiElement {
       `;
     }
 
-    const appProxy = this.hvms[0]![0];
+    const happId = this.appId ?? this.cells[0]!.appId;
+    const progenitor = this._amIprogenitorMap.get(happId);
+    console.log("<vines-app> progenitor", progenitor, happId);
 
     let view = html``;
     if (this.appletView) {
@@ -470,7 +498,7 @@ export class VinesApp extends HappMultiElement {
           view = html`
               <vines-page
                       .wal=${(this.appletView as any).wal}
-                      .appProxy=${appProxy}
+                      ?progenitor=${!!progenitor}
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
               ></vines-page>`;
           break;
@@ -579,12 +607,8 @@ export class VinesApp extends HappMultiElement {
           throw new Error(`Unknown applet-view type: ${(this.appletView as any).type}`);
       }
     } else {
-        view = html`
-        <vines-page
-                .appProxy=${appProxy}
-                @dumpNetworkLogs=${this.onDumpNetworkLogs}
-        ></vines-page>`;
-      }
+      view = html`<vines-page ?progenitor=${!!progenitor} @dumpNetworkLogs=${this.onDumpNetworkLogs}></vines-page>`;
+    }
 
     /** Import profile from Moss */
     let guardedView = view;
@@ -595,13 +619,11 @@ export class VinesApp extends HappMultiElement {
       guardedView = renderWelcomeScreen(this, profilesZvm, ICON_B64, this._hasWeProfile? this._weProfilesDvm: undefined);
     } else {
       if (!maybeMyProfile && HAPP_BUILD_MODE == HappBuildModeType.Debug) {
-        /*await*/
-        profilesZvm.createMyProfile({nickname: generateRandomName(), fields: {lang: "en", color: getRandomHexColor()}});
+        /*await*/ profilesZvm.createMyProfile({nickname: generateRandomName(), fields: {lang: "en", color: getRandomHexColor()}});
       }
     }
-
     console.log("<vines-app>.render() cells length:", this.cells.length, this.isMainView);
-    /** Render all Single */
+    /** Render all Single View */
     if (this.isMainView) {
       return html`
           <cell-context .cell=${this.threadsDvm(0).cell}>
@@ -609,8 +631,7 @@ export class VinesApp extends HappMultiElement {
           </cell-context>
       `;
     }
-
-    /** Render all Multi */
+    /** Render all Multi View */
     return html`
         <cell-context .cell=${this.threadsDvm(0).cell}>
             <cell-multi-context .cells=${this.cells}>
@@ -618,7 +639,6 @@ export class VinesApp extends HappMultiElement {
             </cell-multi-context>
         </cell-context>
     `;
-
   }
 
 

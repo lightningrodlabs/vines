@@ -282,7 +282,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Properties -- */
 
-  //@property() appProxy!: AppProxy; // for network info
+  @property({type: Boolean}) progenitor?: boolean;
 
   @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
@@ -308,7 +308,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @property() wal?: WAL;
 
 
-    /** -- Private state -- */
+  /** -- Private state -- */
 
   /** Left & Lister */
   @state() private _canShowLeft = true;
@@ -929,7 +929,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.log("<vines-page>.publishDmFromProfilePanel()", inputText, this._dvm.profilesZvm)
     const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     const otherAgent: AgentId = sub.hash;
-    console.log("publishDmFromProfilePanel() otherAgent", otherAgent)
+    //console.log("publishDmFromProfilePanel() otherAgent", otherAgent)
       try {
     await this._dvm.publishDm(otherAgent, ThreadsEntryType.TextBead, inputText, undefined, this.weServices);
     } catch(e:any) {
@@ -955,11 +955,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   private _canSpin = false;
 
-  /** After first render only */
+  /** After the first render only */
   override async firstUpdated() {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
 
-    /** Register loop callback */
+    /** Register the loop callback */
     this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
       //console.log("<vines-page>.networkCaller callback", metrics);
       if (r.error != undefined) {
@@ -1652,31 +1652,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
     }
 
-    /** */
+    /** Default: show empty flowers */
     let primaryTitle = msg("No channel selected");
     let centerSide = html`${doodle_flowers}`;
-    const IS_PROGENITOR = false; // FIXME: set in localStorage?
-    if (this._dvm.threadsZvm.perspective.threads.size == 0) {
-      let panel = html``; // FIXME: add 'waiting to sync` message
-      if (IS_PROGENITOR) {
-        panel = html`
-            <div class="mypanel">
-            <export-panel
-                        @import=${(e: CustomEvent) => {
-                            this.importDvm(e.detail);
-                            this.importDialogElem.close(false);
-                        }}
-              ></export-panel>
-            </div>
-        `;
-      }
+    /** If there are no threads and the user is the progenitor (and not in cross-group view), show the import panel */
+    console.debug("<vines-page> progenitor", this.progenitor, this.multi)
+    if (!this.multi && this._dvm.threadsZvm.perspective.threads.size == 0 && this.progenitor) {
       centerSide = html`
           <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
               ${doodle_flowers}
           </div>
-          ${panel}
+          <div class="mypanel">
+              <export-panel
+                      @import=${(e: CustomEvent) => {
+                          this.importDvm(e.detail);
+                          this.importDialogElem.close(false);
+                      }}
+              ></export-panel>
+          </div>
       `;
     }
+    /** Favorites */
     if (this._mainView == MainViewType.Favorites) {
       centerSide = html`<favorites-view></favorites-view>`
       primaryTitle = msg("Favorites");

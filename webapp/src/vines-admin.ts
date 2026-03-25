@@ -645,6 +645,8 @@ export class VinesAdmin extends LitElement {
               /** Install happ */
               const result: any = await invoke('install', {name: happId, seed: networkSeed});
               console.debug("Received HappInfo: " + JSON.stringify(result));
+              /** Remember this agent as the progenitor of this happ */
+              localStorage.setItem("vinesMeProgenitor_" + happId, "true");
               /** Store customName in localStorage */
               if (customName) {
                 localStorage.setItem("vinesCustomName_" + happId, customName);
@@ -658,7 +660,7 @@ export class VinesAdmin extends LitElement {
               };
               this.dispatchEvent(new CustomEvent<HappConnectInfo>('app-selected', {detail: happConnectInfo, bubbles: true, composed: true}));
           } catch (error) {
-              console.error('Error:', error);
+              console.error('Error when creating new group:', error);
           }
       }
 

@@ -3,12 +3,10 @@ import {HAPP_BUILD_MODE, HappBuildModeType} from "@ddd-qc/lit-happ";
 import {/*invoke,*/ isTauri} from "@tauri-apps/api/core";
 import {createContext} from "@lit/context";
 import * as APPV from "./generated/version.js";
-//import {AdminWebsocket} from "@holochain/client";
 import {DnaHashB64} from "@holochain/client";
 import { toUint8Array, fromUint8Array } from 'js-base64';
 
 export const APK_LINK = `https://github.com/lightningrodlabs/vines/releases/download/v${APPV.APP_VERSION}/vines-${APPV.APP_VERSION}.apk`;
-
 
 declare global {
     var IS_TAURI: boolean;

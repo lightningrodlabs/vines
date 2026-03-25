@@ -54,11 +54,13 @@ export class VinesIndex extends LitElement {
         this.requestUpdate();
     }
 
-      /** */
-      override render() {
+
+    /** */
+    override render() {
         console.log("<vines-index>.render()", globalThis.TS_INIT_DONE, globalThis.TAURI_SHOW_ADMIN, globalThis.HAPP_ID);
+        /* Wait for globals, as they might need some time to get set (probably because of xxhash) */
         if (!globalThis.TS_INIT_DONE) {
-          setTimeout(() => this.requestUpdate(), 100); // globals might need some time to be set (probably because of xxhash)
+          setTimeout(() => this.requestUpdate(), 100);
           return html`
             <ui5-busy-indicator id="busy" delay="0" size="Large" active 
                                 style=" top: 50%; margin-left:-50px;
@@ -69,6 +71,7 @@ export class VinesIndex extends LitElement {
         if (globalThis.TAURI_SHOW_ADMIN || !globalThis.HAPP_ID) {
             return html`<vines-admin></vines-admin>`;
         }
+        /** render all */
         return html`
             <ui5-busy-indicator id="busy" delay="0" size="Large" active 
                                 style=" top: 50%; margin-left:-50px;
@@ -77,11 +80,12 @@ export class VinesIndex extends LitElement {
             ></ui5-busy-indicator>
             <vines-app></vines-app>
         `;
-      }
+    }
 
-  /** */
-  static override get styles() {
-    return [
+
+    /** */
+    static override get styles() {
+      return [
       css`
           :host {
               background: #fdfdfd;
@@ -91,7 +95,6 @@ export class VinesIndex extends LitElement {
               margin: 0px;
               box-sizing: border-box;
       `,
-
     ];
   }
 }
