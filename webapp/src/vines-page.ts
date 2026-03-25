@@ -2937,7 +2937,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page>.openFile() Canceled");
     }
     input.onchange = (e: any) => {
-      console.log("<vines-page>.openFile() target download file", e.target.files, e);
+      console.log("<vines-page>.openFile() target download file", this._filesDvm.dnaProperties.maxChunkSize, e.target.files, e);
       const file = e.target.files[0];
       const maxSizeAllowed = Math.min(this._filesDvm.dnaProperties.maxParcelSize, 1 * 1024 * 1024 * 1024); // 1 GB
       if (file.size > maxSizeAllowed) {
@@ -2946,10 +2946,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       this._file = file;
       splitFile(file, this._filesDvm.dnaProperties.maxChunkSize).then((splitObj) => {
+        console.log("splitFile output", file, splitObj);
         const succeeded = this._filesDvm.startPublishFile(file, splitObj, []/*this._selectedTags*/, this._dvm.profilesZvm.perspective.agents,
           async (_manifestEh) => {
             toasty(msg("File successfully shared") + ": " + file.name);
-            console.log("<vines-page>.openFile() File upload complet. requesting update.");
+            console.log("<vines-page>.openFile() File upload complete. requesting update.");
             this._file = undefined;
             await delay(50); // required
             this.requestUpdate();
