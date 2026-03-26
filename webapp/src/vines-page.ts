@@ -182,60 +182,60 @@ import {SlDialog} from "@shoelace-style/shoelace";
 import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 
 import {
-    AnyBeadMat,
-    Bead,
-    beadJumpEvent,
-    catchThrottled,
-    CommentRequest,
-    composeNotificationTitle,
-    ConfirmDialog,
-    defaultLimitations,
-    defaultModeration,
-    doodle_flowers,
-    EditTopicRequest,
-    FavoritesEvent,
-    favoritesJumpEvent,
-    filesContext,
-    filesJumpEvent,
-    getThisAppletId,
-    HideEvent,
-    ICollapsable,
-    InputBar,
-    JumpEvent,
-    latestThreadName,
-    MainViewType, markdownItMentions, md,
-    multiJumpEvent,
-    networkCallerContext,
-    NotifiableEvent,
-    NotifySetting,
-    onlineLoadedContext,
-    parseSearchInput,
-    ParticipationProtocol,
-    ProfilePanel,
-    renderAvatar,
-    RulesEdit,
-    RulesView,
-    searchFieldStyleTemplate,
-    sharedStyles,
-    ShowProfileEvent,
-    ShowRulesEvent,
-    simplifyMimeType,
-    SpecialSubjectType,
-    Subject,
-    THIS_APPLET_ID,
-    Thread,
-    threadJumpEvent,
-    ThreadsDnaPerspective,
-    ThreadsDvm,
-    ThreadsEntryType,
-    ThreadsPerspective,
-    toasty,
-    ViewEmbedDialog,
-    ViewEmbedEvent,
-    VinesInputEvent,
-    weaveUrlToWal,
-    weClientContext,
-    unimportedProfiles,
+  AnyBeadMat,
+  Bead,
+  beadJumpEvent,
+  catchThrottled,
+  CommentRequest,
+  composeNotificationTitle,
+  ConfirmDialog,
+  defaultLimitations,
+  defaultModeration,
+  doodle_flowers,
+  EditTopicRequest,
+  FavoritesEvent,
+  favoritesJumpEvent,
+  filesContext,
+  filesJumpEvent,
+  getThisAppletId,
+  HideEvent,
+  ICollapsable,
+  InputBar,
+  JumpEvent,
+  latestThreadName,
+  MainViewType, markdownItMentions, md,
+  multiJumpEvent,
+  networkCallerContext,
+  NotifiableEvent,
+  NotifySetting,
+  onlineLoadedContext,
+  parseSearchInput,
+  ParticipationProtocol,
+  ProfilePanel,
+  renderAvatar,
+  RulesEdit,
+  RulesView,
+  searchFieldStyleTemplate,
+  sharedStyles,
+  ShowProfileEvent,
+  ShowRulesEvent,
+  simplifyMimeType,
+  SpecialSubjectType,
+  Subject,
+  THIS_APPLET_ID,
+  Thread,
+  threadJumpEvent,
+  ThreadsDnaPerspective,
+  ThreadsDvm,
+  ThreadsEntryType,
+  ThreadsPerspective,
+  toasty,
+  ViewEmbedDialog,
+  ViewEmbedEvent,
+  VinesInputEvent,
+  weaveUrlToWal,
+  weClientContext,
+  unimportedProfiles, ImportSummary, loadImportFile
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -1609,6 +1609,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  onImportFile = (data: any) => {
+    console.log("onImportFile()", this, data);
+    const summary = this.shadowRoot!.getElementById("importSummary") as ImportSummary;
+    console.log("onImportFile() summary", summary);
+    summary.open(data);
+  }
+
   /** */
   override render() {
     console.log("<vines-page>.render()", this.happSha256(), this._waitingForBeadCommit, this._collapseAll, this.onlineLoaded, this._mainView, this._selectedThreadHash, this._selectedAgent, !!this._splitObj);
@@ -1664,9 +1671,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           </div>
           <div class="mypanel">
               <import-panel
-                      @import=${(e: CustomEvent) => {
-                          this.importDvm(e.detail);
-                          this.importDialogElem.close(false);
+                      @import-requested=${(_e: CustomEvent) => {
+                        //const canPublish = e.detail;
+                        loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
                       }}
               ></import-panel>
           </div>
@@ -2750,15 +2757,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                 </div>
                 <import-panel
-                        @import=${(e: CustomEvent) => {
-                            this.importDvm(e.detail);
+                        @import-requested=${(_e: CustomEvent) => {
+                            //const canPublish = e.detail;
+                            loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
                             this.importDialogElem.close(false);
                         }}
                 ></import-panel>
             </ui5-dialog>            
             <!-- Confirm Dialog -->
-            <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e: any) => {
-            }}></confirm-dialog>
+            <confirm-dialog id="confirm-hide-topic" 
+                            @confirmed=${(e: any) => {
+                              e.stopPropagation(); e.preventDefault();
+                            }}>
+            </confirm-dialog>
             <!-- View Embed Dialog -->
             <view-embed-dialog id="view-embed"></view-embed-dialog>
             <!-- View File Dialog -->
@@ -2767,6 +2778,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <file-view id="file-viewer"></file-view>
                 </sl-dialog>
             </cell-context>
+            <!-- Import Summary Dialog -->
+            <import-summary id="importSummary"></import-summary>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>
                 <section>
@@ -2895,34 +2908,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
   }
 
-
-  /** */
-  private importDvm(canPublish: boolean) {
-    console.log("importDvm()");
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.accept = ".json";
-    input.onchange = async (e: any) => {
-      console.log("onImport() target download file", e);
-      const file = e.target.files[0];
-      if (!file) {
-        console.error("No file selected");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (_e: any) => {
-        const contents = reader.result as string;
-        this._dvm.importPerspective(contents, canPublish).catch(async(e) => {
-            console.warn("Import failed", e, reader);
-            toasty(msg(`Failed to import file`));
-            this._dvm.importDone();
-        });
-      }
-      // Read the file as text
-      reader.readAsText(file);
-    }
-    input.click();
-  }
 
 
   @state() private _file: File | undefined = undefined;
@@ -3072,7 +3057,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*await*/ this.importDialogElem.show();
         break;
       case "importOnlyItem":
-        this.importDvm(false);
+        loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
         break;
       case "syncItem":
         this._filesDvm.probeAll(GetStrategy.Local);

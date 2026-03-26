@@ -745,7 +745,8 @@ export class ThreadsDvm extends DnaViewModel {
           );
           ppAh = topPpAh;
       }
-      await delay(100); // wait for signals to process
+      /** wait for signals to process */
+      await delay(100); // TODO: find a better way
 
       this._perspective.importingPct = 0.03;
       // Publish beads & Profiles

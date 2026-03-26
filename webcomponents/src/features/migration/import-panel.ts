@@ -10,7 +10,7 @@ import {sharedStyles} from "../../styles";
 export class ImportPanel extends LitElement {
 
     override render() {
-        //console.log("<import-panel>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
+        console.log("<import-panel>.render()");
         return html`
             <!-- <h1>${msg('Import Data')}</h1> -->
             <h3>${msg('Bring your data from other apps')}</h3>
@@ -23,7 +23,7 @@ export class ImportPanel extends LitElement {
                                 @click=${(e:any) => {
                                     e.stopPropagation();
                                     e.preventDefault();
-                                    this.dispatchEvent(new CustomEvent<boolean>('import', {detail: true, bubbles: true, composed: true}));
+                                    this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: true, bubbles: true, composed: true}));
                                 }}>
                         ${msg('Import')}
                     </ui5-button>
@@ -39,7 +39,7 @@ export class ImportPanel extends LitElement {
                                     @click=${(e:any) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        this.dispatchEvent(new CustomEvent<boolean>('import', {detail: true, bubbles: true, composed: true}));
+                                        this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: true, bubbles: true, composed: true}));
                                     }}>
                             ${msg('Import')}
                         </ui5-button>
@@ -47,7 +47,7 @@ export class ImportPanel extends LitElement {
                                     @click=${(e:any) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        this.dispatchEvent(new CustomEvent<boolean>('import', {detail: false, bubbles: true, composed: true}));
+                                        this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: false, bubbles: true, composed: true}));
                                     }}>
                             ${msg('Dry-run')}
                         </ui5-button>
