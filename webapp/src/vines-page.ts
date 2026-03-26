@@ -235,7 +235,7 @@ import {
   VinesInputEvent,
   weaveUrlToWal,
   weClientContext,
-  unimportedProfiles, ImportSummary, loadImportFile
+  unimportedProfiles, ImportSummary, loadImportFile, ImportData, ImportConfirmed
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -958,6 +958,187 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** After the first render only */
   override async firstUpdated() {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
+
+    const data: ImportData = {
+      "authors": [
+        {
+          "id": "351440510273191938",
+          "name": "Guillem Cordoba"
+        },
+        {
+          "id": "304738938843824129",
+          "name": "Damien"
+        },
+        {
+          "id": "728260592317628456",
+          "name": "zippy"
+        }
+      ],
+      "channels": [
+        {
+          "name": "presence",
+          "timestamp": 1647016385137000,
+          "category": "mini-missions"
+        }
+      ],
+      "messages": [
+        {
+          "id": "951880453244211260",
+          "authorId": "351440510273191938",
+          "timestamp": 1647016385137000,
+          "content": "@Damien hey! I need the presence widget for we! Is there any way I can use it from where? Should I copy the code and extract it into its own module?"
+        },
+        {
+          "id": "951887707066466315",
+          "authorId": "304738938843824129",
+          "timestamp": 1647018114583000,
+          "content": "I believe you are talking about the `WhereFolks` class in where-folks.ts ? It could be used without where. I did need to store the last time each agent was seen, so I stored it in the whereStore but it could be stored anywhere else.",
+          "prevId": "951880453244211260"
+        },
+        {
+          "id": "951887999514312725",
+          "authorId": "304738938843824129",
+          "timestamp": 1647018184308000,
+          "content": "You could probably extract it and add it to the profiles module",
+          "prevId": "951887707066466315"
+        },
+        {
+          "id": "951888731051286599",
+          "authorId": "351440510273191938",
+          "timestamp": 1647018358720000,
+          "content": "Yeah cool that's it",
+          "prevId": "951887999514312725"
+        },
+        {
+          "id": "951888765981429791",
+          "authorId": "351440510273191938",
+          "timestamp": 1647018367048000,
+          "content": "Mmm I'm thinking to have it separate",
+          "prevId": "951888731051286599"
+        },
+        {
+          "id": "951888790547488788",
+          "authorId": "351440510273191938",
+          "timestamp": 1647018372905000,
+          "content": "Want to try a thing out",
+          "prevId": "951888765981429791"
+        },
+        {
+          "id": "951888793366065233",
+          "authorId": "351440510273191938",
+          "timestamp": 1647018373577000,
+          "content": "Thanks",
+          "prevId": "951888790547488788"
+        },
+        {
+          "id": "951934458297212968",
+          "authorId": "728260592317628456",
+          "timestamp": 1647029260945000,
+          "content": "Love this as a mini mission.",
+          "prevId": "951888793366065233"
+        },
+        {
+          "id": "951957143232331856",
+          "authorId": "351440510273191938",
+          "timestamp": 1647034669455000,
+          "content": "@zippy  should we put this in lightningrodlabs github or holochain open dev?",
+          "prevId": "951934458297212968"
+        },
+        {
+          "id": "951957925939793990",
+          "authorId": "728260592317628456",
+          "timestamp": 1647034856067000,
+          "content": "OpenDev no?",
+          "prevId": "951957143232331856"
+        },
+        {
+          "id": "951985763875172382",
+          "authorId": "351440510273191938",
+          "timestamp": 1647041493148000,
+          "content": "I like that too",
+          "prevId": "951957925939793990"
+        },
+        {
+          "id": "956254446210383972",
+          "authorId": "351440510273191938",
+          "timestamp": 1648059226325000,
+          "content": "Mvp finished, code here : https://github.com/holochain-open-dev/status",
+          "prevId": "951985763875172382"
+        },
+        {
+          "id": "956288677905043456",
+          "authorId": "728260592317628456",
+          "timestamp": 1648067387797000,
+          "content": "WOOT!  Yahoo.",
+          "prevId": "956254446210383972"
+        },
+        {
+          "id": "956288910525337700",
+          "authorId": "728260592317628456",
+          "timestamp": 1648067443258000,
+          "content": "Uhh, the installation instructions and documentation link in the README is broken...",
+          "prevId": "956288677905043456"
+        },
+        {
+          "id": "956289059838377994",
+          "authorId": "351440510273191938",
+          "timestamp": 1648067478857000,
+          "content": "Uh uh you already need that?",
+          "prevId": "956288910525337700"
+        },
+        {
+          "id": "956289176687485068",
+          "authorId": "728260592317628456",
+          "timestamp": 1648067506716000,
+          "content": "haha",
+          "prevId": "956289059838377994"
+        },
+        {
+          "id": "956289311551135784",
+          "authorId": "351440510273191938",
+          "timestamp": 1648067538870000,
+          "content": "If you do I can spend an hour or two more on it and get it released",
+          "prevId": "956289176687485068"
+        },
+        {
+          "id": "956289418090659840",
+          "authorId": "728260592317628456",
+          "timestamp": 1648067564271000,
+          "content": "no problem. don't do it, I was just noticing...",
+          "prevId": "956289311551135784"
+        },
+        {
+          "id": "956289474533400606",
+          "authorId": "351440510273191938",
+          "timestamp": 1648067577728000,
+          "content": "Ah yeah okey",
+          "prevId": "956289418090659840"
+        },
+        {
+          "id": "956289549745676288",
+          "authorId": "351440510273191938",
+          "timestamp": 1648067595660000,
+          "content": "We didn't attend anything but the code in the workshop",
+          "prevId": "956289474533400606"
+        },
+        {
+          "id": "956289607190839326",
+          "authorId": "728260592317628456",
+          "timestamp": 1648067609356000,
+          "content": "totally.  Fantastic work!",
+          "prevId": "956289549745676288"
+        },
+        {
+          "id": "956289678317871204",
+          "authorId": "351440510273191938",
+          "timestamp": 1648067626314000,
+          "content": "Thanks :)",
+          "prevId": "956289607190839326"
+        }
+      ],
+      "reactions": []
+    }
+    this.updateComplete.then(() => this.onImportFile(data));
 
     /** Register the loop callback */
     this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
@@ -2779,7 +2960,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </sl-dialog>
             </cell-context>
             <!-- Import Summary Dialog -->
-            <import-summary id="importSummary"></import-summary>
+            <import-summary-dialog id="importSummary"
+                                   @import-confirmed=${(e: CustomEvent<ImportConfirmed>) => {
+                                     this._dvm.importPerspective()
+                                   }} ></import-summary-dialog>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>
                 <section>

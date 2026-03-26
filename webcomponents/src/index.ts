@@ -27,6 +27,7 @@ export * from './elements/graph';
 export * from './features/timezone/timezone-picker';
 export * from './features/migration/import-panel';
 export * from './features/migration/import-summary';
+export * from './features/migration/import-summary-dialog';
 export * from './features/migration/import-utils';
 
 

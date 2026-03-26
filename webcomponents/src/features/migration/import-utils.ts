@@ -63,12 +63,14 @@ export type ImportData = {
      // TODO: color: string;
    }[],
   channels: {
+    id: string;
     timestamp: number;
     name: string;
     category?: string; // No category == DM channel
    }[],
    messages: {
      id: string;
+     channelId: string;
      prevId?: string;
      authorId: string;
      timestamp: number;
@@ -85,7 +87,7 @@ function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
   let result: ImportData = {authors: [], channels: [], messages: [], reactions: []};
   const channel = external["channel"];
   console.debug("parseDiscord()", channel);
-  let discordChannel: any = {name: channel.name, timestamp: 0};
+  let discordChannel: any = {id: channel.id, name: channel.name, timestamp: 0};
 
   /** Map previous profiles by discordId (useful when importing multiple channels) */
   const knownDiscordAuthors = new Set<string>();
@@ -136,7 +138,7 @@ function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
     if (message.type == "Reply" && message.reference && message.reference.channelId == channel.id) {
       reference = message.reference.messageId;
     }
-    let discordMessage = {id: message.id, authorId: author.id, timestamp, content: message.content, prevId: reference};
+    let discordMessage = {id: message.id, channelId: discordChannel.id, authorId: author.id, timestamp, content: message.content, prevId: reference};
     result.messages.push(discordMessage);
     prevMessageId = message.id;
     /** Process Reactions */

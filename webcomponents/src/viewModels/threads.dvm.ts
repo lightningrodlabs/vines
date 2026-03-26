@@ -44,6 +44,7 @@ import {THIS_APPLET_ID} from "../contexts";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {MAIN_TOPIC_ID} from "../utils";
 import {prettyTimestamp} from "@ddd-qc/files";
+import {ImportConfirmed} from "../features/migration/import-summary";
 
 
 /** */
@@ -830,13 +831,11 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async importPerspective(json: string, canPublish: boolean) {
-    console.debug("Dvm.importPerspective() size:", json.length);
+  async importPerspective(data: ImportConfirmed, canPublish: boolean) {
+    console.debug("Dvm.importPerspective() selection size:", data.selection.size);
     this._perspective.importing = true;
     this._perspective.importingPct = -1.0;
     this.notifySubscribers();
-
-    const external = JSON.parse(json) as any;
 
     if (external["guild"]) {
         console.log("Assuming Discord import");
