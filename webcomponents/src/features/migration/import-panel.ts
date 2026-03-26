@@ -6,11 +6,11 @@ import {sharedStyles} from "../../styles";
 /**
  * @element
  */
-@customElement("export-panel")
-export class ExportPanel extends LitElement {
+@customElement("import-panel")
+export class ImportPanel extends LitElement {
 
     override render() {
-        //console.log("<export-panel>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
+        //console.log("<import-panel>.render()",  !!this.networkCaller, this.networkCaller.networkInfoLogs.length);
         return html`
             <!-- <h1>${msg('Import Data')}</h1> -->
             <h3>${msg('Bring your data from other apps')}</h3>

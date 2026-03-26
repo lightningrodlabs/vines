@@ -1663,12 +1663,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               ${doodle_flowers}
           </div>
           <div class="mypanel">
-              <export-panel
+              <import-panel
                       @import=${(e: CustomEvent) => {
                           this.importDvm(e.detail);
                           this.importDialogElem.close(false);
                       }}
-              ></export-panel>
+              ></import-panel>
           </div>
       `;
     }
@@ -2749,12 +2749,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${msg('Close')}
                     </ui5-button>
                 </div>
-                <export-panel
+                <import-panel
                         @import=${(e: CustomEvent) => {
                             this.importDvm(e.detail);
                             this.importDialogElem.close(false);
                         }}
-                ></export-panel>
+                ></import-panel>
             </ui5-dialog>            
             <!-- Confirm Dialog -->
             <confirm-dialog id="confirm-hide-topic" @confirmed=${(_e: any) => {

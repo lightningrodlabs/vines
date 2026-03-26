@@ -25,7 +25,7 @@ export * from './elements/copy-wal-button';
 export * from './elements/graph';
 
 export * from './features/timezone/timezone-picker';
-export * from './features/migration/export-panel';
+export * from './features/migration/import-panel';
 
 export * from './features/rules/rules-edit';
 export * from './features/rules/rules-view';
