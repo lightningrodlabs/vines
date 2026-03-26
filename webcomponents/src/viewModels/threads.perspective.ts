@@ -59,7 +59,7 @@ export type ThreadsSnapshot = {
   /** bead_ah -> [agent, emojis[]][] */
   emojiReactions: [ActionHashB64, [AgentPubKeyB64, string[]][]][],
 
-  // TODO: remove deductibles
+  // TODO: remove duplicates
   /** AppletId -> (PathEntryHash -> subjectType) */
   appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][],
   /** */
@@ -485,7 +485,7 @@ export class ThreadsPerspective {
 
   /** */
 
-  /** Recursivily follow mapping and store all IDs in both directions */
+  /** Recursively follow mapping and store all IDs in both directions */
   getAllSubjectVersions(subjectAnyId: AnyId): AnyId[] {
     let subjectId = subjectAnyId;
     let all: AnyId[] = [subjectAnyId];

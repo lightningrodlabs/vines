@@ -2,7 +2,80 @@ import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {MAIN_SEMANTIC_TOPIC} from "../../utils";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
+import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
+import {ActionId, AgentId} from "@ddd-qc/lit-happ";
+import {ThreadsSnapshot} from "../../viewModels/threads.perspective";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import {SpecialSubjectType} from "../../events";
+import {ActionHashB64} from "@holochain/client";
+import {ProfilesAltSnapshot, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 
+
+export type ChannelInfo = {
+  id: string;
+  timestamp: number;
+  name: string;
+  category?: string; // No category == DM channel
+  dmId?: AgentId;
+}
+
+export type DiscordMessage = {
+  id: string;
+  channelId: string;
+  prevId?: string;
+  authorId: string;
+  timestamp: number;
+  content: string;
+}
+
+export type ImportData = {
+  json: any,
+  discord?: DiscordImportData,
+  vines?: VinesImportData,
+}
+
+export type DiscordImportData = {
+  authors: {
+    agentId: AgentId;
+    profile?: Profile;
+  }[],
+  channels: ChannelInfo[],
+  messages: DiscordMessage[],
+  reactions: {messageId: string, emoji: string, authorId: string}[],
+}
+
+
+export type VinesImportData = {
+  authors: {
+    agentId: AgentId;
+    profile?: Profile;
+  }[],
+  channels: {
+    info: ChannelInfo,
+    messages: {
+      ah: ActionId,
+      reactions: number,
+    }[]
+  }[],
+}
+
+
+
+async function createProfileFromDiscord(author: any): Promise<any> {
+  const agentId = await AgentId.random(); // Profile needs to be bound to an agentId, since there are none, make one up.
+  const profile: Profile = {
+    nickname: author.nickname,
+    fields: {lang: "en", avatarUrl: author.avatarUrl, discordId: author.id, imported: "true"}
+  };
+  if (author.color) {
+    profile.fields["color"] = author.color;
+  }
+  return { agentId, profile } ;
+}
+
+
+
+/** */
 export function loadImportFile(dvm: ThreadsDvm, callback: (data: ImportData) => void) {
   console.log("loadImportFile()");
   /** Select a file */
@@ -28,7 +101,7 @@ export function loadImportFile(dvm: ThreadsDvm, callback: (data: ImportData) => 
     }
     /** Read the file */
     const reader = new FileReader();
-    reader.onload = (_e: any) => {
+    reader.onload = async (_e: any) => {
       const json = reader.result as string;
 
       let external;
@@ -40,14 +113,15 @@ export function loadImportFile(dvm: ThreadsDvm, callback: (data: ImportData) => 
         return;
       }
 
-      let data: ImportData;
+      let result: any = {json: external};
       if (external["guild"]) {
         console.debug("Assuming Discord import");
-        data = parseDiscord(external, dvm);
-      } else {
-        data = parseVines(external, dvm);
+        result.discord = await parseDiscord(external, dvm);
       }
-      callback(data);
+      else {
+        result.vines = parseVines(external, dvm);
+      }
+      callback(result);
     }
     // Read the file as text
     reader.readAsText(file);
@@ -56,40 +130,16 @@ export function loadImportFile(dvm: ThreadsDvm, callback: (data: ImportData) => 
 }
 
 
-export type ImportData = {
-  authors: {
-     id: string;
-     name: string;
-     // TODO: color: string;
-   }[],
-  channels: {
-    id: string;
-    timestamp: number;
-    name: string;
-    category?: string; // No category == DM channel
-   }[],
-   messages: {
-     id: string;
-     channelId: string;
-     prevId?: string;
-     authorId: string;
-     timestamp: number;
-     content: string;
-   }[],
-   reactions: {messageId: string, emoji: string, authorId: string}[],
-}
-
-
-/** */
-function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
-  // TODO: verify input is correct Discord export schema
-
-  let result: ImportData = {authors: [], channels: [], messages: [], reactions: []};
+/**
+ * TODO: verify input is correct Discord export schema
+ */
+async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImportData> {
+  let result: DiscordImportData = {authors: [], channels: [], messages: [], reactions: []};
   const channel = external["channel"];
   console.debug("parseDiscord()", channel);
-  let discordChannel: any = {id: channel.id, name: channel.name, timestamp: 0};
+  let discordChannel: ChannelInfo = {id: channel.id, name: channel.name, timestamp: 0};
 
-  /** Map previous profiles by discordId (useful when importing multiple channels) */
+  /** Map previous profiles by discordId (useful when importing multiple discord channels) */
   const knownDiscordAuthors = new Set<string>();
   for (const [_actionId, [profile, _ts]] of dvm.profilesZvm.perspective.profiles.entries()) {
     if (profile.fields["discordId"]) {
@@ -104,17 +154,19 @@ function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
     /** Get the DM peer */
     for (const message of external["messages"]) {
       if (message["author"].nickname == channel.name) {
-        dmId = message.author.id;
         if (!knownDiscordAuthors.has(message.author.id)) {
           knownDiscordAuthors.add(message.author.id);
-          result.authors.push({id: message.author.id, name: message.author.nickname});
+          const author = await createProfileFromDiscord(message.author)
+          result.authors.push(author);
+          dmId = author.agentId;
         }
         break;
       }
     }
-    if (dmId == "") {
+    if (!dmId || dmId == "") {
       throw new Error("No DM from other person found. Aborting import.")
     }
+    discordChannel.dmId = dmId;
   } else {
     /** Normal channel case */
     discordChannel.category = channel.category ?? MAIN_SEMANTIC_TOPIC;
@@ -128,7 +180,7 @@ function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
     /** Process author for non-DM channel */
     const author = message["author"];
     if (discordChannel.category && !knownDiscordAuthors.has(author.id)) {
-      result.authors.push({id: author.id, name: author.nickname});
+      result.authors.push(await createProfileFromDiscord(author));
       knownDiscordAuthors.add(author.id);
     }
     /** Process timestamp */
@@ -158,7 +210,7 @@ function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
      */
     for (const attachment of message["attachments"]) {
       const content = "__URL__" + JSON.stringify(attachment);
-      discordChannel.messages.push({id: attachment.id, authorId: author.id, timestamp, content, prevId: reference});
+      result.messages.push({id: attachment.id, channelId: discordChannel.id, authorId: author.id, timestamp: timestamp + 1001, content, prevId: reference});
       prevMessageId = attachment.id;
     }
     /** Set the channel creation date to the date of the first message (DiscordChatExporter does not provide a creation date for a channel) */
@@ -172,9 +224,42 @@ function parseDiscord(external: any, dvm: ThreadsDvm): ImportData {
 
 
 /** */
-function parseVines(_external: any, _dvm: ThreadsDvm): ImportData {
-  // TODO: verify input is correct Discord export schema
-  let result: ImportData = {authors: [], channels: [], messages: [], reactions: []};
-  // FIXME
+function parseVines(external: any, _dvm: ThreadsDvm): VinesImportData {
+  // TODO: verify input is correct Vines export schema
+  let result: VinesImportData = {authors: [], channels: [] };
+  const snapshot: ThreadsSnapshot = external[ThreadsZvm.DEFAULT_ZOME_NAME];
+  /** authors */
+  const profiles: ProfilesAltSnapshot = external[ProfilesZvm.DEFAULT_ZOME_NAME];
+  for (const [agentId, _actionId, profile, _ts] of profiles.all) {
+    result.authors.push({agentId, profile})
+  }
+  /** reactions */
+  const reacMap = new Map<ActionHashB64, number>();
+  for (const [beadAhB64, pairs] of snapshot.emojiReactions) {
+    reacMap.set(beadAhB64, pairs.length);
+  }
+  /** Beads */
+  const msgMap = new Map<ActionHashB64, { ah: ActionId, reactions: number}[]>();
+  for (const [beadAhB64, beadInfo, _typedBead] of Object.values(snapshot.beads)) {
+    const key = beadInfo.bead.ppAh.b64;
+    if (!msgMap.has(key)) msgMap.set(key, []);
+    msgMap.get(key)!.push({ah: new ActionId(beadAhB64), reactions: reacMap.get(key) ?? 0});
+  }
+  /** Threads */
+  for (const [ppAhB64, ppMat, title, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
+    const channel: ChannelInfo = {id: ppAhB64, name: title, timestamp: creationTime};
+    if (ppMat.subject.typeName == SpecialSubjectType.AgentPubKey) {
+      channel.dmId = new AgentId(ppMat.subject.address);
+    } else if (ppMat.subject.typeName == SpecialSubjectType.SemanticTopic) {
+      channel.category = ppMat.subject.name;
+    } else {
+      /** Skip non-topic non dm thread */
+      continue;
+    }
+    /** */
+    result.channels.push({info: channel, messages: msgMap.get(ppAhB64) ?? []});
+  }
+
+  /** */
   return result;
 }

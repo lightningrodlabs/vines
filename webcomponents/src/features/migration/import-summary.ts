@@ -1,8 +1,10 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import {ImportData} from "./import-utils";
+import {ChannelInfo, ImportData} from "./import-utils";
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
+import {ThreadsSnapshot} from "../../viewModels/threads.perspective";
+import {ThreadsZvm} from "../../viewModels/threads.zvm";
 
 export type ImportConfirmed = {
   selection: Set<string>,
@@ -19,29 +21,6 @@ export class ImportSummary extends LitElement {
   @state() private _selectedChannels: Set<string> = new Set();
 
   /** */
-  private get channelPerCategory(): Map<string, ImportData["channels"]> {
-    if (!this.data) return new Map();
-    const groups = new Map<string, ImportData["channels"]>();
-    for (const ch of this.data.channels) {
-      const key = ch.category ?? "__dm__";
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(ch);
-    }
-    return groups;
-  }
-
-  /** */
-  private get messagesPerChannel(): Map<string, ImportData["messages"]> {
-    if (!this.data) return new Map();
-    const groups = new Map<string, ImportData["messages"]>();
-    for (const msg of this.data.messages) {
-      if (!groups.has(msg.channelId)) groups.set(msg.channelId, []);
-      groups.get(msg.channelId)!.push(msg);
-    }
-    return groups;
-  }
-
-  /** */
   private toggleChannel(key: string) {
     const selection = new Set(this._selectedChannels);
     if (selection.has(key)) {
@@ -55,7 +34,7 @@ export class ImportSummary extends LitElement {
   /** */
   private toggleAll() {
     if (!this.data) return;
-    const allKeys = this.data.channels.map((ch) => ch.id);
+    const allKeys = this.data.vines!.channels.map((ch) => ch.info.id);
     if (this._selectedChannels.size === allKeys.length) {
       this._selectedChannels = new Set();
     } else {
@@ -66,26 +45,62 @@ export class ImportSummary extends LitElement {
 
   /** */
   override render() {
-    if (!this.data) {
+    if (!this.data || (!this.data.discord && !this.data.vines)) {
       return html`<div class="empty-state">${msg("No data to display.")}</div>`;
     }
 
-    const { authors, channels, messages, reactions } = this.data;
-    const allSelected = this._selectedChannels.size === channels.length;
-    //const indeterminate = this._selectedChannels.size > 0 && !allSelected;
-    //const allKeys = this.data.channels.map((ch) => ch.id);
-    const channelMap = this.channelPerCategory;
-    const msgMap = this.messagesPerChannel;
+    let reactionsCount: number = 0;
+    let channelCount: number = 0;
+    let authorsCount: number = 0;
+    let msgCount: number = 0
+    /** category -> channel[] */
+    let channelsByCategory = new Map<string, ChannelInfo[]>();
+    /** channelId -> msgId[] */
+    let msgByChannel = new Map<string, string[]>();
+    if (this.data.discord) {
+      authorsCount = this.data.discord!.authors.length;
+      channelCount = this.data.discord!.channels.length;
+      msgCount = this.data.discord!.messages.length;
+      reactionsCount = this.data.discord!.reactions.length;
+      /** channelsByCategory */
+      for (const ch of this.data.discord!.channels) {
+        const key = ch.category ?? "__dm__";
+        if (!channelsByCategory.has(key)) channelsByCategory.set(key, []);
+        channelsByCategory.get(key)!.push(ch);
+      }
+      /** msgByChannel */
+      for (const msg of this.data.discord!.messages) {
+        if (!msgByChannel.has(msg.channelId)) msgByChannel.set(msg.channelId, []);
+        msgByChannel.get(msg.channelId)!.push(msg.id);
+      }
+    } else {
+      authorsCount = this.data.vines!.authors.length;
+      channelCount = this.data.vines!.channels.length;
+      /** channelsByCategory & msgByChannel */
+      for (const ch of this.data.vines!.channels) {
+        const catKey = ch.info.category ?? "__dm__";
+        if (!channelsByCategory.has(catKey)) channelsByCategory.set(catKey, []);
+        channelsByCategory.get(catKey)!.push(ch.info);
+        msgByChannel.set(ch.info.id, []);
+        msgCount += ch.messages.length;
+        for (const msg of ch.messages) {
+          msgByChannel.get(ch.info.id)!.push(msg.ah.b64);
+          reactionsCount += msg.reactions;
+        }
+      }
+    }
+
+    const allSelected = !!this.data.discord || this._selectedChannels.size === channelCount;
 
     /** render all */
     return html`
-    <div class="summary">
+      <div class="summary">
         <div class="stat-cards">
             ${([
-                  { label: msg("Channels"), value: channels.length },
-                  { label: msg("Messages"), value: messages.length },
-                  { label: msg("Authors"), value: authors.length },
-                  { label: msg("Reactions"), value: reactions.length },
+                  { label: msg("Channels"), value: channelCount },
+                  { label: msg("Messages"), value: msgCount },
+                  { label: msg("Authors"), value: authorsCount },
+                  { label: msg("Reactions"), value: reactionsCount },
               ] as const
             ).map(({ label, value }) => html`
               <div class="stat-card">
@@ -96,12 +111,12 @@ export class ImportSummary extends LitElement {
         </div>
 
         <!-- Channel selection -->
+          ${!!this.data.discord? html`` : html`
         <div class="channel-section">
             <div class="select-all-row">
               <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
             </div>
-
-            ${[...channelMap.entries()].map(([category, catChannels]) => {
+            ${[...channelsByCategory.entries()].map(([category, catChannels]) => {
                 const isDM = category === "__dm__";
                 return html`
               <div>
@@ -127,7 +142,7 @@ export class ImportSummary extends LitElement {
                         }}>
                         <ui5-checkbox ?checked=${selected}></ui5-checkbox>
                         <span class="channel-name">${ch.name}</span>
-                        <span class="channel-meta">${msgMap.get(ch.id)?.length}</span>
+                        <span class="channel-meta">${msgByChannel.get(ch.id)?.length}</span>
                       </div>
                     `;
                 })}
@@ -135,15 +150,17 @@ export class ImportSummary extends LitElement {
               </div>
             `;
             })}
-        </div>        
-        
-        
-    </div>
-    <div class="footer">
+        </div>
+      </div>
+        `}
+      <div class="footer">
         <div style="flex-grow: 1"></div>
         <ui5-button style="margin-top:5px" design="Emphasized"
-                    ?disabled=${this._selectedChannels.size === 0}
+                    ?disabled=${this._selectedChannels.size === 0 && !this.data!.discord}
                     @click=${(_e: any) => {
+                        if (!allSelected) {
+                          this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME] = this.filterData(); 
+                        }
                         this.dispatchEvent(new CustomEvent<ImportConfirmed>('import-confirmed', {
                           detail: {
                             selection: this._selectedChannels,
@@ -157,8 +174,47 @@ export class ImportSummary extends LitElement {
         }}>
             ${msg('Cancel')}
         </ui5-button>
-    </div>
+      </div>
     `;
+  }
+
+  /** */
+  filterData(): ThreadsSnapshot {
+    const threadsSnapshot: ThreadsSnapshot = this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME];
+    console.debug("filterData() START", threadsSnapshot.pps.length, threadsSnapshot.beads.length, threadsSnapshot.emojiReactions.length);
+    /** Filter Threads */
+    const pps: ThreadsSnapshot["pps"] = [];
+    for (const tuple of threadsSnapshot.pps) {
+      if (this._selectedChannels.has(tuple[0])) {
+        pps.push(tuple);
+      }
+    }
+    threadsSnapshot.pps = pps;
+    /** Filter Messages */
+    const keptMsgs: Set<string> = new Set();
+    for (const channel of this.data!.vines!.channels) {
+      for (const msg of channel.messages) {
+        keptMsgs.add(msg.ah.b64);
+      }
+    }
+    const beads: ThreadsSnapshot["beads"] = [];
+    for (const tuple of threadsSnapshot.beads) {
+      if (keptMsgs.has(tuple[0])) {
+        beads.push(tuple);
+      }
+    }
+    threadsSnapshot.beads = beads;
+    /** Filter Reactions */
+    const emojiReactions: ThreadsSnapshot["emojiReactions"] = [];
+    for (const tuple of threadsSnapshot.emojiReactions) {
+      if (keptMsgs.has(tuple[0])) {
+        emojiReactions.push(tuple);
+      }
+    }
+    threadsSnapshot.emojiReactions = emojiReactions;
+    /** */
+    console.debug("filterData() END", threadsSnapshot.pps.length, threadsSnapshot.beads.length, threadsSnapshot.emojiReactions.length);
+    return threadsSnapshot;
   }
 
   /** */
@@ -225,6 +281,8 @@ export class ImportSummary extends LitElement {
           }
 
           .channel-list {
+              background: #ebebeb9e;
+              border-radius: 10px;
               display: flex;
               flex-direction: column;
               gap: 0.35rem;
@@ -234,7 +292,7 @@ export class ImportSummary extends LitElement {
               display: flex;
               align-items: center;
               gap: 0.6rem;
-              padding: 0.5rem 0.75rem;
+              /*padding: 0.5rem 0.75rem;*/
               border-radius: 0.375rem;
               cursor: pointer;
               transition: background 0.15s ease;
@@ -266,6 +324,7 @@ export class ImportSummary extends LitElement {
 
           .channel-meta {
               font-size: 0.875rem;
+              padding-right: 0.75rem;
               color: var(--sapContent_LabelColor, #6a6d70);
           }
 

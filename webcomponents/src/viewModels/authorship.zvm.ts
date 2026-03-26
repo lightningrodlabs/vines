@@ -32,7 +32,7 @@ export class AuthorshipZvm extends ZomeViewModel {
   }
 
 
-  /** Dump perspective as JSON  (caller should call getAllPublicManifest() first) */
+  /** Dump perspective as JSON (caller should call getAllPublicManifest() first) */
   export(/*originalsZvm: AuthorshipZvm*/): string {
     const snapshot = this._perspective.makeSnapshot();
     return JSON.stringify(snapshot, null, 2);
