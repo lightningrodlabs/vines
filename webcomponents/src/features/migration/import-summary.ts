@@ -112,11 +112,11 @@ export class ImportSummary extends LitElement {
         </div>
 
         <!-- Channel selection -->
-          ${!!this.data.discord? html`` : html`
+        ${!!this.data.discord? html`` : html`
+        <div class="select-all-row">
+            <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
+        </div>            
         <div class="channel-section">
-            <div class="select-all-row">
-              <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
-            </div>
             ${[...channelsByCategory.entries()].map(([category, catChannels]) => {
                 const isDM = category === "__dm__";
                 return html`
@@ -152,8 +152,8 @@ export class ImportSummary extends LitElement {
             `;
             })}
         </div>
-      </div>
         `}
+      </div>
       <div class="footer">
         <div style="flex-grow: 1"></div>
         <ui5-button style="margin-top:5px" design="Emphasized"
@@ -245,12 +245,30 @@ export class ImportSummary extends LitElement {
               display: flex;
               flex-direction: column;
               gap: 5px;
+              max-height: 80vh;
+          }
+          
+          .summary {
+              flex: 1;
+              overflow: hidden;
+              padding: 1rem;
+              display: flex; 
+              flex-direction: column;
+          }
+
+
+          .channel-section {
+              margin-bottom: 1.5rem;
+              flex: 1;               
+              overflow-y: auto;
+              min-height: 0;
           }
 
           .footer {
               display: flex;
+              flex-shrink: 0;
               gap: 10px;
-              justify-content: center;
+              justify-content: flex-end;
           }
           
           .stat-cards {
@@ -284,12 +302,7 @@ export class ImportSummary extends LitElement {
               line-height: 1;
               margin: auto;
           }
-
-
-          .channel-section {
-              margin-bottom: 1.5rem;
-          }
-
+          
           .channel-group-title {
               font-size: var(--sapFontSmallSize, 0.75rem);
               color: var(--sapContent_LabelColor, #6a6d70);

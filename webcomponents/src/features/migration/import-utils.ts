@@ -243,7 +243,7 @@ function parseVines(external: any, _dvm: ThreadsDvm): VinesImportData {
   for (const [beadAhB64, beadInfo, _typedBead] of Object.values(snapshot.beads)) {
     const key = beadInfo.bead.ppAh.b64;
     if (!msgMap.has(key)) msgMap.set(key, []);
-    msgMap.get(key)!.push({ah: new ActionId(beadAhB64), reactions: reacMap.get(key) ?? 0});
+    msgMap.get(key)!.push({ah: new ActionId(beadAhB64), reactions: reacMap.get(beadAhB64) ?? 0});
   }
   /** Threads */
   for (const [ppAhB64, ppMat, title, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
