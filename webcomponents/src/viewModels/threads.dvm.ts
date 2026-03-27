@@ -783,13 +783,13 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async importPerspective(confirmed: ImportConfirmed, canPublish: boolean) {
+  async importPerspective(confirmed: ImportConfirmed) {
     console.debug("Dvm.importPerspective() selection size:", confirmed.selection.size);
     this._perspective.importing = true;
     this._perspective.importingPct = -1.0;
     this.notifySubscribers();
 
-    if (/*confirmed.data.json["guild"] && canPublish*/ confirmed.data.discord) {
+    if (confirmed.data.discord) {
         console.log("Assuming Discord import");
         await this.importDiscord(confirmed.data.discord);
         this.importDone();
@@ -799,19 +799,21 @@ export class ThreadsDvm extends DnaViewModel {
     const external = confirmed.data.json;
 
     const originals = external[AuthorshipZvm.DEFAULT_ZOME_NAME];
-    this.authorshipZvm.import(JSON.stringify(originals), canPublish);
+    this.authorshipZvm.import(JSON.stringify(originals), confirmed.canPublish);
     //console.debug("import perspective", this.authorshipZvm.perspective);
 
     const profiles = external[ProfilesZvm.DEFAULT_ZOME_NAME];
-    this.profilesZvm.import(JSON.stringify(profiles), canPublish);
+    this.profilesZvm.import(JSON.stringify(profiles), confirmed.canPublish);
 
     const threadsPersp = external[ThreadsZvm.DEFAULT_ZOME_NAME];
-    this.threadsZvm.import(JSON.stringify(threadsPersp), canPublish, this.authorshipZvm);
+    this.threadsZvm.import(JSON.stringify(threadsPersp), confirmed.canPublish, this.authorshipZvm);
 
     /** */
     this.notifySubscribers();
   }
 
+
+  /** */
   importDone() {
     this._perspective.importing = false;
     this._perspective.importingPct = 1.0;

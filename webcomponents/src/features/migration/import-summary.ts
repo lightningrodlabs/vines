@@ -9,6 +9,7 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 export type ImportConfirmed = {
   selection: Set<string>,
   data: ImportData,
+  canPublish: boolean,
 }
 
 
@@ -157,18 +158,14 @@ export class ImportSummary extends LitElement {
         <div style="flex-grow: 1"></div>
         <ui5-button style="margin-top:5px" design="Emphasized"
                     ?disabled=${this._selectedChannels.size === 0 && !this.data!.discord}
-                    @click=${(_e: any) => {
-                        if (!allSelected) {
-                          this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME] = this.filterData(); 
-                        }
-                        this.dispatchEvent(new CustomEvent<ImportConfirmed>('import-confirmed', {
-                          detail: {
-                            selection: this._selectedChannels,
-                            data: this.data!,
-                          }, bubbles: true, composed: true}));
-                    }}>
+                    @click=${(_e: any) => this.onImport(allSelected, true)}>
             ${msg('Import')}
         </ui5-button>
+          <ui5-button style="margin-top:5px"
+                      ?disabled=${(this._selectedChannels.size === 0 && !this.data!.discord) || this.data!.discord}
+                      @click=${(_e: any) => this.onImport(allSelected, false)}>
+              ${msg('Dry-run')}
+          </ui5-button>
         <ui5-button style="margin-top:5px" @click=${() => {
             this.dispatchEvent(new CustomEvent<boolean>('import-canceled', {detail: true, bubbles: true, composed: true}));
         }}>
@@ -178,18 +175,40 @@ export class ImportSummary extends LitElement {
     `;
   }
 
+  onImport(allSelected: boolean, canPublish: boolean) {
+    if (!allSelected) {
+      this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME] = this.filterData();
+    }
+    this.dispatchEvent(new CustomEvent<ImportConfirmed>('import-confirmed', {
+      detail: {
+        selection: this._selectedChannels,
+        data: this.data!,
+        canPublish
+      }, bubbles: true, composed: true}));
+  }
+
   /** */
   filterData(): ThreadsSnapshot {
     const threadsSnapshot: ThreadsSnapshot = this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME];
     console.debug("filterData() START", threadsSnapshot.pps.length, threadsSnapshot.beads.length, threadsSnapshot.emojiReactions.length);
     /** Filter Threads */
     const pps: ThreadsSnapshot["pps"] = [];
+    const selectedTopics: Set<string> = new Set();
     for (const tuple of threadsSnapshot.pps) {
       if (this._selectedChannels.has(tuple[0])) {
         pps.push(tuple);
+        selectedTopics.add(tuple[1].subject.address);
       }
     }
     threadsSnapshot.pps = pps;
+    /** Filter Topics */
+    const topics: ThreadsSnapshot["semanticTopics"] = [];
+    for (const tuple of threadsSnapshot.semanticTopics) {
+      if (selectedTopics.has(tuple[0])) {
+        topics.push(tuple);
+      }
+    }
+    threadsSnapshot.semanticTopics = topics;
     /** Filter Messages */
     const keptMsgs: Set<string> = new Set();
     for (const channel of this.data!.vines!.channels) {

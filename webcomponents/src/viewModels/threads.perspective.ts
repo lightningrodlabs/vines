@@ -39,7 +39,7 @@ import {prettyTimestamp} from "@ddd-qc/files";
 
 
 /** Snapshot does not store notifications and new/unread state */
-/** TODO: store private dms */
+/** TODO: store private DMs */
 export type ThreadsSnapshot = {
   /** Store of all Subjects: hash -> Subject */
   subjects: [HoloHashB64, Subject][],

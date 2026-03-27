@@ -959,7 +959,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   override async firstUpdated() {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
 
-    //const data =;
+    //const data = ; // Put import test data here
     //this.updateComplete.then(() => this.onImportFile(data));
 
     /** Register the loop callback */
@@ -2784,7 +2784,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <!-- Import Summary Dialog -->
             <import-summary-dialog id="importSummary"
                                    @import-confirmed=${(e: CustomEvent<ImportConfirmed>) => {
-                                     this._dvm.importPerspective(e.detail, true)
+                                     this._dvm.importPerspective(e.detail)
                                    }} ></import-summary-dialog>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>

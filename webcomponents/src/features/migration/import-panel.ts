@@ -43,14 +43,6 @@ export class ImportPanel extends LitElement {
                                     }}>
                             ${msg('Import')}
                         </ui5-button>
-                        <ui5-button style="flex-grow:1;"
-                                    @click=${(e:any) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: false, bubbles: true, composed: true}));
-                                    }}>
-                            ${msg('Dry-run')}
-                        </ui5-button>
                     </div>
                 </div>
             </div>

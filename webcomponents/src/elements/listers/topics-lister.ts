@@ -115,11 +115,12 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       break;
       case "custom":
       default:
-        console.log("<topics-lister custom>", pairs.length);
+        console.log("<topics-lister> custom", pairs.length);
         pairs = this.getOrderFromLocalStorage(this.threadsPerspective.semanticTopics);
       break;
     }
 
+    console.log("<topics-lister> pairs", pairs);
     let treeItems = pairs.map(([topicAh, [title, author]]) => {
       const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
       /** Skip if hidden */

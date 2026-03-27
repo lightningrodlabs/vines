@@ -153,8 +153,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         console.log("Importing perspective", snapshot);
         if (canPublish) {
             this._canNotify = false;
-            /*await*/
-            this.publishAllFromSnapshot(snapshot, authorshipZvm).then(() => {
+            /*await*/ this.publishAllFromSnapshot(snapshot, authorshipZvm).then(() => {
                 this._canNotify = true;
                 this.notifySubscribers();
                 (this._dvmParent as ThreadsDvm).importDone();
