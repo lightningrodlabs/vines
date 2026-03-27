@@ -115,24 +115,22 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       break;
       case "custom":
       default:
-        console.log("<topics-lister> custom", pairs.length);
+        //console.debug("<topics-lister> custom", pairs.length);
         pairs = this.getOrderFromLocalStorage(this.threadsPerspective.semanticTopics);
       break;
     }
-
-    console.log("<topics-lister> pairs", pairs);
     let treeItems = pairs.map(([topicAh, [title, author]]) => {
-      const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
-      /** Skip if hidden */
-      if (isSubjectHidden && !this.showArchivedTopics) {
-        return;
-      }
+    const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
+    /** Skip if hidden */
+    if (isSubjectHidden && !this.showArchivedTopics) {
+      return;
+    }
       /** Render threads for Topic */
       let threads: TemplateResult<1>[] = [];
       let topicThreads = this.threadsPerspective.getSubjectThreads(topicAh);
       if (topicThreads == undefined) {
         topicThreads = [];
-      } else {
+    } else {
         if (this.order == "alpha") {
           topicThreads = topicThreads.sort((a, b) => {
             const threadA = this.threadsPerspective.threads.get(a)!;
@@ -347,7 +345,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       }
 
       /** render topic item */
-      console.log("<topics-lister> collapsed", this.collapsed);
+      //console.debug("<topics-lister> collapsed", this.collapsed);
       let collapsed = false;
       if (this.collapsed.get(topicAh)) {
         collapsed = this.collapsed.get(topicAh)!;

@@ -281,10 +281,10 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       .filter(([_ah, thread]) => thread.author.b64 == this.cell.address.agentId.b64)
       .map(([ah, thread]) => myThreads.set(ah, thread));
 
-    console.log("<my-threads-lister>   count beads", this.perspective.beads.size, myBeads.length, myBeadThreads.size);
-    console.log("<my-threads-lister> count threads", this.perspective.threads.size, myThreads.size);
-    console.log("<my-threads-lister> myBeadThreads", myBeadThreads.size, myBeadThreads);
-    console.log("<my-threads-lister>     myThreads", myThreads.size, myThreads);
+    // console.debug("<my-threads-lister>   count beads", this.perspective.beads.size, myBeads.length, myBeadThreads.size);
+    // console.debug("<my-threads-lister> count threads", this.perspective.threads.size, myThreads.size);
+    // console.debug("<my-threads-lister> myBeadThreads", myBeadThreads.size, myBeadThreads);
+    // console.debug("<my-threads-lister>     myThreads", myThreads.size, myThreads);
 
     /** concat (and dedup) */
       //const allThreads = Object.assign({}, myThreads, myBeadThreads);

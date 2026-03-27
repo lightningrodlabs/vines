@@ -1392,7 +1392,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 }
                 /* Publish pp */
                 const pp = dematerializePp(ppMat);
-                console.log("import publishParticipationProtocol", ppMat);
+                console.debug("PubImp() import publishParticipationProtocol", ppMat);
                 const [throttleError, maybePair] = await catchThrottled(this.zomeProxy.publishParticipationProtocol(pp));
                 if (throttleError) {
                     continue;
@@ -1485,7 +1485,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 if (authorshipZvm.perspective.getAuthor(beadAh) != undefined) {
                     await authorshipZvm.ascribeTarget(beadInfo.beadType, newBeadAh, beadInfo.creationTime, beadInfo.author);
                 }
-                console.debug(`PubImp() Bead ${beadAh.short} -> ${newBeadAh.short}`, authorshipLog[0]);
+                //console.debug(`PubImp() Bead ${beadAh.short} -> ${newBeadAh.short}`, authorshipLog[0]);
             }
             /* Break loop if no progress made */
             const totalEnd = ppAhMapping.size + beadAhMapping.size;

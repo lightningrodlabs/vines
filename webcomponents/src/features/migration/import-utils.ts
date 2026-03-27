@@ -171,9 +171,9 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
         if (!knownDiscordAuthors.has(message.author.id)) {
           const author = await createProfileFromDiscord(message.author)
           result.authors.push(author);
-          dmId = author.agentId;
           knownDiscordAuthors.set(message.author.id, author.agentId);
         }
+        dmId = knownDiscordAuthors.get(message.author.id);
         break;
       }
     }

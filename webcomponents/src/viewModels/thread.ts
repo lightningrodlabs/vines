@@ -7,14 +7,12 @@ import createRBTree, {Tree} from "functional-red-black-tree";
 import {BeadLinkMaterialized} from "./threads.materialize";
 import {ActionId, AgentId} from "@ddd-qc/lit-happ";
 import {ParticipationProtocol} from "../bindings/threads.types";
-import {prettyTimestamp} from "@ddd-qc/files";
 
 
 /**
  * Holds BinaryTree of BeadLinks and probing TimeIntervals
  */
 export class Thread {
-
   /* Participation Protocol */
   private _pp: ParticipationProtocol;
   /* */
