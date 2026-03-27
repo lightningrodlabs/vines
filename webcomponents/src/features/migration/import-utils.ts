@@ -23,7 +23,7 @@ export type DiscordMessage = {
   id: string;
   channelId: string;
   prevId?: string;
-  authorId: string;
+  agentId: AgentId;
   timestamp: number;
   content: string;
 }
@@ -34,14 +34,24 @@ export type ImportData = {
   vines?: VinesImportData,
 }
 
+export type ImportAuthor = {
+  agentId: AgentId;
+  profile?: Profile;
+}
+
+export type ImportReaction = {
+  messageId: string,
+  emoji: string,
+  agentId: AgentId,
+}
+
+
+
 export type DiscordImportData = {
-  authors: {
-    agentId: AgentId;
-    profile?: Profile;
-  }[],
+  authors: ImportAuthor[],
   channels: ChannelInfo[],
   messages: DiscordMessage[],
-  reactions: {messageId: string, emoji: string, authorId: string}[],
+  reactions: ImportReaction[],
 }
 
 
@@ -61,7 +71,7 @@ export type VinesImportData = {
 
 
 
-async function createProfileFromDiscord(author: any): Promise<any> {
+async function createProfileFromDiscord(author: any): Promise<ImportAuthor> {
   const agentId = await AgentId.random(); // Profile needs to be bound to an agentId, since there are none, make one up.
   const profile: Profile = {
     nickname: author.nickname,
@@ -140,30 +150,34 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
   let discordChannel: ChannelInfo = {id: channel.id, name: channel.name, timestamp: 0};
 
   /** Map previous profiles by discordId (useful when importing multiple discord channels) */
-  const knownDiscordAuthors = new Set<string>();
-  for (const [_actionId, [profile, _ts]] of dvm.profilesZvm.perspective.profiles.entries()) {
+  const knownDiscordAuthors = new Map<string, AgentId>();
+  for (const [actionId, [profile, _ts]] of dvm.profilesZvm.perspective.profiles.entries()) {
     if (profile.fields["discordId"]) {
-      knownDiscordAuthors.add(profile.fields["discordId"]);
+      const agentId = dvm.profilesZvm.perspective.getProfileAgent(actionId);
+      if (!agentId) {
+        throw new Error("Missing agentId. Aborting import.")
+      }
+      knownDiscordAuthors.set(profile.fields["discordId"], agentId);
     }
   }
 
   /** Process Channel. Handle DM case */
   if (channel.type == "DirectTextChat") {
     console.debug("parseDiscord() parsing DMs with", channel.name);
-    let dmId;
+    let dmId: AgentId | undefined = undefined;
     /** Get the DM peer */
     for (const message of external["messages"]) {
       if (message["author"].nickname == channel.name) {
         if (!knownDiscordAuthors.has(message.author.id)) {
-          knownDiscordAuthors.add(message.author.id);
           const author = await createProfileFromDiscord(message.author)
           result.authors.push(author);
           dmId = author.agentId;
+          knownDiscordAuthors.set(message.author.id, author.agentId);
         }
         break;
       }
     }
-    if (!dmId || dmId == "") {
+    if (!dmId) {
       throw new Error("No DM from other person found. Aborting import.")
     }
     discordChannel.dmId = dmId;
@@ -178,11 +192,13 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
   for (const message of external["messages"]) {
     count += 1;
     /** Process author for non-DM channel */
-    const author = message["author"];
-    if (discordChannel.category && !knownDiscordAuthors.has(author.id)) {
-      result.authors.push(await createProfileFromDiscord(author));
-      knownDiscordAuthors.add(author.id);
+    const discordAuthor = message["author"];
+    if (discordChannel.category && !knownDiscordAuthors.has(discordAuthor.id)) {
+      const author = await createProfileFromDiscord(discordAuthor);
+      result.authors.push(author);
+      knownDiscordAuthors.set(discordAuthor.id, author.agentId);
     }
+    const agentId = knownDiscordAuthors.get(discordAuthor.id)!;
     /** Process timestamp */
     const timestamp = Date.parse(message["timestamp"]) * 1000;
     /** Process Reply */
@@ -190,7 +206,7 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
     if (message.type == "Reply" && message.reference && message.reference.channelId == channel.id) {
       reference = message.reference.messageId;
     }
-    let discordMessage = {id: message.id, channelId: discordChannel.id, authorId: author.id, timestamp, content: message.content, prevId: reference};
+    const discordMessage: DiscordMessage = {id: message.id, channelId: discordChannel.id, agentId, timestamp, content: message.content, prevId: reference};
     result.messages.push(discordMessage);
     prevMessageId = message.id;
     /** Process Reactions */
@@ -200,7 +216,13 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
           continue;
         }
         for (const user of reaction["users"]) {
-          result.reactions.push({emoji: reaction["emoji"].name, authorId: user.id, messageId: message.id});
+          if (!knownDiscordAuthors.has(user.id)) {
+            const author = await createProfileFromDiscord(user);
+            result.authors.push(author);
+            knownDiscordAuthors.set(discordAuthor.id, author.agentId);
+          }
+          const agentId = knownDiscordAuthors.get(discordAuthor.id)!;
+          result.reactions.push({emoji: reaction["emoji"].name, agentId, messageId: message.id});
         }
       }
     }
@@ -210,7 +232,12 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
      */
     for (const attachment of message["attachments"]) {
       const content = "__URL__" + JSON.stringify(attachment);
-      result.messages.push({id: attachment.id, channelId: discordChannel.id, authorId: author.id, timestamp: timestamp + 1001, content, prevId: reference});
+      const agentId = knownDiscordAuthors.get(discordAuthor.id);
+      if (!agentId) {
+        throw new Error("Missing agentId. Aborting import.")
+      }
+      const discordMessage: DiscordMessage = {id: attachment.id, channelId: discordChannel.id, agentId, timestamp: timestamp + 1001, content, prevId: reference}
+      result.messages.push(discordMessage);
       prevMessageId = attachment.id;
     }
     /** Set the channel creation date to the date of the first message (DiscordChatExporter does not provide a creation date for a channel) */

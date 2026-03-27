@@ -141,7 +141,7 @@ export class Thread {
       blMat.creationTime = newTs;
       this._beadLinksTree = this._beadLinksTree.remove(oldTs);
       this._beadLinksTree = this._beadLinksTree.insert(newTs, blMat);
-      console.debug("ThreadInfo.moveItem() from to", prettyTimestamp(oldTs), prettyTimestamp(newTs));
+      //console.debug("ThreadInfo.moveItem() from to", prettyTimestamp(oldTs), prettyTimestamp(newTs));
     }
 
 

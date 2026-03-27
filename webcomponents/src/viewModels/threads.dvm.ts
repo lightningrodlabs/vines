@@ -14,7 +14,7 @@ import {
     ZomeSignalProtocolType,
     ZomeViewModel
 } from "@ddd-qc/lit-happ";
-import {ThreadsZvm} from "./threads.zvm";
+import {catchThrottled, ThreadsZvm} from "./threads.zvm";
 import {ActionHashB64, AppSignal, Signal, SignalCb, SignalType, Timestamp} from "@holochain/client";
 import {
     ParticipationProtocol,
@@ -703,7 +703,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   async importDiscord(data: DiscordImportData) {
       console.debug("ThreadsDvm.importDiscord()", data);
-      const totalItems =
+      const totalItemsCount =
         data.messages.length
         + data.channels.length
         + data.authors.length
@@ -711,11 +711,12 @@ export class ThreadsDvm extends DnaViewModel {
 
       /** Process authors */
       for (const author of data.authors) {
+        console.debug("ThreadsDvm.importDiscord() createProfile", author.agentId.b64, author.profile);
         if (author.profile) {
           await this.profilesZvm.createProfile(author.profile, author.agentId);
         }
       }
-      this._perspective.importingPct = data.authors.length / totalItems;
+      this._perspective.importingPct = data.authors.length / totalItemsCount;
 
       /** Process channels (and categories) */
       let channelMap = new Map<string, ActionId>();
@@ -744,7 +745,7 @@ export class ThreadsDvm extends DnaViewModel {
         await this.authorshipZvm.ascribeTarget(ThreadsEntryType.ParticipationProtocol, ppAh, channel.timestamp, this.cell.address.agentId, false);
       }
       await delay(100); // wait for signals to process // TODO: find a better way
-      this._perspective.importingPct += data.channels.length / totalItems;
+      this._perspective.importingPct += data.channels.length / totalItemsCount;
 
       /** Process messages */
       const messageMap = new Map<string, ActionId>();
@@ -759,7 +760,7 @@ export class ThreadsDvm extends DnaViewModel {
         }
 
         const timestamp = message.timestamp;
-        const agentId = this.cell.address.agentId;
+        const agentId = message.agentId;
 
         const nextBead = await this.threadsZvm.createNextBead(ppAh, prevBeadAh);
         console.debug("ThreadsDvm.importDiscord() Publishing message", /*message.content,*/ prettyTimestamp(timestamp), agentId.b64);
@@ -767,7 +768,7 @@ export class ThreadsDvm extends DnaViewModel {
         prevBeadAh = beadAh;
         messageMap.set(message.id, beadAh);
         await this.authorshipZvm.ascribeTarget(ThreadsEntryType.TextBead, beadAh, timestamp, agentId, false);
-        this._perspective.importingPct += 1 / totalItems;
+        this._perspective.importingPct += 1 / totalItemsCount;
       }
 
       /** Process reactions */
@@ -776,7 +777,8 @@ export class ThreadsDvm extends DnaViewModel {
         if (!beadAh) {
           throw new Error("ThreadsDvm.importDiscord() Could not find message: " + reaction.messageId);
         }
-        await this.threadsZvm.zomeProxy.publishReaction({bead_ah: beadAh.hash, emoji: reaction.emoji /*from: reaction.authorId */});
+        await catchThrottled(this.threadsZvm.zomeProxy.publishReaction({bead_ah: beadAh.hash, emoji: reaction.emoji, from: reaction.agentId.hash }));
+        this._perspective.importingPct += 1 / totalItemsCount;
       }
       this._perspective.importingPct = 1.0;
   }
