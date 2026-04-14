@@ -1,6 +1,6 @@
 {
   "name"    : "vines-dev",
-  "version" : "1.27.1",
+  "version" : "1.27.2",
   "config"  : {
     "hc_version"  : "0.6.1-rc.1",
     "zits_version": "1.17.1",
@@ -102,7 +102,7 @@
 
     "package:webapp"         : "rm -rf artifacts/vines-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/vines-webapp-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack webapp/webhapp.workdir -o artifacts/vines.webhapp",
     "package:we"             : "rm -rf artifacts/vines-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/vines-we_applet-ui.zip * && cd ../../ && $npm_package_config_bin/hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp",
-    "dist:we"                : "npm run dist -w we-applet && npm run package:we",
+    "dist:we"                : "npm run build -w webapp && npm run dist -w we-applet && npm run package:we",
     "cp:we"                  : "cp artifacts/vines-we_applet.webhapp $npm_package_config_we_test_folder/testing-applets",
 
     "hash"                   : "ELECTRON_DISABLE_SANDBOX=1 weave hash-webhapp $npm_package_version  ./artifacts/vines-we_applet.webhapp",
