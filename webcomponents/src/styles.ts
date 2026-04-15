@@ -172,7 +172,8 @@ export const sharedStyles = css`
         border-radius: 5px;
         margin-left: -2px;
         padding-left: 5px;
-        margin-right: 5px;
+        margin-right: 5px;        
+        transition: background 0.2s, border-color 0.2s, opacity 0.2s;        
     }
 
     .threadItem:hover {

@@ -99,6 +99,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
         }));
     }
 
+
+  //private dragSrcIndex: number | null = null;
+
   /** */
   override render() {
     console.log("<topics-lister>.render() start", this.collapsed, this.threadsPerspective.semanticTopics.size, this.threadsPerspective.semanticTopics);
@@ -163,7 +166,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           }
 
           /** 'new', 'notif' or 'unread' badge to display */
-            //let badge = html`<ui5-badge>0</ui5-badge>`;
+          //let badge = html`<ui5-badge>0</ui5-badge>`;
           let badge = html`<div style="min-width: 26px"></div>`;
           let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
           if (threadIsNew) {
@@ -212,7 +215,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                                     }));
                                   }}></ui5-button>`;
 
-          /** Create avatar group */
+          /** Create an avatar group */
           const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
           const avatarGrp = Object.values(agents).length > 0
             ? Object.values(agents).length > 1
@@ -223,20 +226,70 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           /** render topic thread */
           return html`
               <sl-tooltip content=${thread.title} style="--show-delay:1000">
-                <div id=${ppAh.b64} class="threadItem" 
+                <div id=${ppAh.b64} .topic=${topicAh.b64} 
+                     class="threadItem" 
                      style="
                        font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
                        ${threadIsNew || notifCount? "color: #359C07;" : ""}
                        ${isSelected? "background:#4684FD;color:#444;" : ""}
                      "
-                     @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                     .draggable=${this.order == "custom"? "true" : ""}
+                     @dragstart=${(e: any) => {
+                        e.stopPropagation();
+                        this._dragged = e.target.closest('sl-tooltip');
+                        console.log("_dragged", this._dragged);
+                        setTimeout(() =>  this._dragged?.classList.add('dragging'), 0)
+                        e.dataTransfer!.effectAllowed = 'move';
+                        e.dataTransfer!.setData('thread', topicAh.b64);
+                     }}
+                     @dragend=${(e: DragEvent) => {
+                         e.stopPropagation();
+                         (e.currentTarget as HTMLElement).classList.remove('dragging');
+                         this._dragged = null;
+                         // Clean up any leftover drag-over highlights
+                         this.shadowRoot?.querySelectorAll('.drag-over')
+                                 .forEach(el => el.classList.remove('drag-over'));
+                     }}
+                     @dragover=${(e: any) => {
+                         const type = e.dataTransfer!.types.includes('thread');
+                         console.log("thread type", e.dataTransfer!.types);
+                         if (!type) return;
+                         e.preventDefault(); e.stopPropagation();
+                         e.dataTransfer!.dropEffect = 'move';
+                         (e.currentTarget as HTMLElement).classList.add('drag-over');
+
+                         const target = e.target.closest('sl-tooltip');
+                         if (!target || target === this._dragged) return;
+                         const container = this.shadowRoot!.getElementById(topicAh.b64)! as HTMLElement;
+                         if (container.id != this._dragged.children[0]!.topic) return;
+                         
+                         const { top, height } = target.getBoundingClientRect();
+                         const after = e.clientY > top + height / 2;
+                         console.log("thread dragover", container.id, topicAh.b64);
+                         console.log("target", target, container, this._dragged, after);
+                         container.insertBefore(this._dragged, after ? target.nextSibling : target);
+                     }}
+                     @dragleave=${(e: DragEvent) => (e.currentTarget as HTMLElement).classList.remove('drag-over')}
+                     @drop=${(e: DragEvent) => {
+                         const type = e.dataTransfer!.getData('thread');
+                         console.log("thread drop type", type);
+                         if (type !== 'thread') return;
+                         e.preventDefault(); e.stopPropagation();
+                         const container = this.shadowRoot!.getElementById(topicAh.b64)! as HTMLElement;
+                         if (container.id != this._dragged.children[0]!.topic) return;
+                         const order = Array.from(container.children)
+                                 .map(el => el.children[0]!.id)
+                                 .filter(id => id !== '');
+                         console.log("THREAD ORDER", order);
+                         localStorage.setItem("vinesThreadOrder-" + ppAh.b64, JSON.stringify(order));
+                     }}
+                     @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
                     ${avatarGrp}
                     ${hideShowBtn}                
                 </div>
-              </sl-tooltip>
-          `
+              </sl-tooltip>`
         })
       }
       /* */
@@ -278,7 +331,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
         if (notifCount > 0) {
           topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
         } else {
-          /** Agregate count of unread beads on all topic's threads */
+          /** Aggregate count of unread beads on all topic's threads */
           let count = 0;
           for (const topicPpAh of topicThreads) {
             if (this.threadsPerspective.unreads.get(topicPpAh)) {
@@ -295,26 +348,28 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           <ui5-button id=${"hide-" + topicAh.b64} icon="show" tooltip=${msg("Show")} design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e: any) => {
-        e.stopPropagation();
-        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-          detail: {
-            hide: false,
-            address: topicAh,
-            type: "Topic"
-          }, bubbles: true, composed: true
-        }));
-      }}"></ui5-button>
+                        e.stopPropagation();
+                        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                        detail: {
+                          hide: false,
+                          address: topicAh,
+                          type: "Topic"
+                        }, bubbles: true, composed: true
+                      }));
+                    }}">
+          </ui5-button>
       ` : html`
           <ui5-button id=${"hide-" + topicAh.b64} icon="hide" tooltip=${msg("Hide")} design="Transparent"
                       style="border:none; padding:0px;display:none;"
                       @click="${async (e: any) => {
-        e.stopPropagation();
-        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-          detail: {hide: true, address: topicAh, type: "Topic"},
-          bubbles: true,
-          composed: true
-        }));
-      }}"></ui5-button>
+                        e.stopPropagation();
+                        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                          detail: {hide: true, address: topicAh, type: "Topic"},
+                          bubbles: true,
+                          composed: true
+                        }));
+                      }}">
+          </ui5-button>
       `;
 
       // const delButton = html`<ui5-button icon="delete" tooltip=${msg("Delete topic")}
@@ -426,22 +481,28 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
          @dragstart=${(e: any) => {
            this._dragged = e.target.closest('ui5-panel');
            setTimeout(() =>  this._dragged?.classList.add('dragging'), 0);
+            e.dataTransfer!.setData('topic', '42');
          }}
          @dragend=${(_e: any) => {
              this._dragged?.classList.remove('dragging');
              this._dragged = null;
          }}
          @dragover=${(e: any) => {
+            const type = e.dataTransfer!.types.includes('topic'); 
+            console.log("topic dragover", type)
+            if (!type) return;
             e.preventDefault();
             const target = e.target.closest('ui5-panel');
             if (!target || target ===  this._dragged) return;
-          
+            console.log("dragover", target);
             const { top, height } = target.getBoundingClientRect();
             const after = e.clientY > top + height / 2;
             const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
             container.insertBefore( this._dragged, after ? target.nextSibling : target);
          }}
          @drop=${(e: any) => {
+            const type = e.dataTransfer!.getData('topic');
+            if (type !== 'topic') return;
             e.preventDefault();
             const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
             const order = Array.from(container.children).map(el => el.id);
@@ -542,6 +603,23 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           }
           ui5-panel.dragging {
               opacity: 0.4;
+          }
+
+          .threadItem[draggable="true"]:active {
+              cursor: grabbing;
+          }
+
+          .threadItem[draggable="true"] {
+              cursor: grab;
+              user-select: none;
+          }
+          .threadItem.dragging {
+              opacity: 0.4;
+          }
+
+          .threadItem.drag-over {
+              border-color: #4f6ef7;
+              background: #e0e7ff;
           }
           
           /*
