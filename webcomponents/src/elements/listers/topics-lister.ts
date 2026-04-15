@@ -240,7 +240,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                         console.log("_dragged", this._dragged);
                         setTimeout(() =>  this._dragged?.classList.add('dragging'), 0)
                         e.dataTransfer!.effectAllowed = 'move';
-                        e.dataTransfer!.setData('thread', topicAh.b64);
+                        e.dataTransfer!.setData('thread', ppAh.b64);
                      }}
                      @dragend=${(e: DragEvent) => {
                          e.stopPropagation();
@@ -250,39 +250,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                          this.shadowRoot?.querySelectorAll('.drag-over')
                                  .forEach(el => el.classList.remove('drag-over'));
                      }}
-                     @dragover=${(e: any) => {
-                         const type = e.dataTransfer!.types.includes('thread');
-                         console.log("thread type", e.dataTransfer!.types);
-                         if (!type) return;
-                         e.preventDefault(); e.stopPropagation();
-                         e.dataTransfer!.dropEffect = 'move';
-                         (e.currentTarget as HTMLElement).classList.add('drag-over');
-
-                         const target = e.target.closest('sl-tooltip');
-                         if (!target || target === this._dragged) return;
-                         const container = this.shadowRoot!.getElementById(topicAh.b64)! as HTMLElement;
-                         if (container.id != this._dragged.children[0]!.topic) return;
-                         
-                         const { top, height } = target.getBoundingClientRect();
-                         const after = e.clientY > top + height / 2;
-                         console.log("thread dragover", container.id, topicAh.b64);
-                         console.log("target", target, container, this._dragged, after);
-                         container.insertBefore(this._dragged, after ? target.nextSibling : target);
-                     }}
                      @dragleave=${(e: DragEvent) => (e.currentTarget as HTMLElement).classList.remove('drag-over')}
-                     @drop=${(e: DragEvent) => {
-                         const type = e.dataTransfer!.getData('thread');
-                         console.log("thread drop type", type);
-                         if (type !== 'thread') return;
-                         e.preventDefault(); e.stopPropagation();
-                         const container = this.shadowRoot!.getElementById(topicAh.b64)! as HTMLElement;
-                         if (container.id != this._dragged.children[0]!.topic) return;
-                         const order = Array.from(container.children)
-                                 .map(el => el.children[0]!.id)
-                                 .filter(id => id !== '');
-                         console.log("THREAD ORDER", order);
-                         localStorage.setItem("vinesThreadOrder-" + ppAh.b64, JSON.stringify(order));
-                     }}
                      @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
                     ${badge}
                     <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
@@ -488,26 +456,67 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
              this._dragged = null;
          }}
          @dragover=${(e: any) => {
-            const type = e.dataTransfer!.types.includes('topic'); 
-            console.log("topic dragover", type)
-            if (!type) return;
             e.preventDefault();
-            const target = e.target.closest('ui5-panel');
-            if (!target || target ===  this._dragged) return;
-            console.log("dragover", target);
-            const { top, height } = target.getBoundingClientRect();
-            const after = e.clientY > top + height / 2;
-            const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
-            container.insertBefore( this._dragged, after ? target.nextSibling : target);
+            console.log("dragover", e.dataTransfer!.types)
+            if (e.dataTransfer!.types.includes('topic')) {
+              const target = e.target.closest('ui5-panel');
+              if (!target || target === this._dragged) return;
+              console.log("topic dragover target", target);
+              const {top, height} = target.getBoundingClientRect();
+              const isAfterTarget = e.clientY > top + height / 2;
+              const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
+              container.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
+              return;
+            }
+             if (e.dataTransfer!.types.includes('thread')) {
+               e.dataTransfer!.dropEffect = 'move';
+               (e.currentTarget as HTMLElement).classList.add('drag-over');
+
+               const target = e.target.closest('sl-tooltip');
+               if (!target || target === this._dragged) return;
+
+               const topicB64 = this._dragged.children[0]!.topic;
+                 
+               const container = this.shadowRoot!.getElementById(topicB64)! as HTMLElement;
+               if (container.id != this._dragged.children[0]!.topic) return;
+
+               const {top, height} = target.getBoundingClientRect();
+               const isAfterTarget = e.clientY > top + height / 2;
+
+               const first = container.querySelector<HTMLElement>('sl-tooltip');
+               const dim = first!.children[0]!.getBoundingClientRect();
+               const isBeforeFirst = e.clientY < dim.top + dim.height / 2;
+
+               console.log("thread dragover", container.id, topicB64);
+               console.log("thread dragover target", isAfterTarget, isBeforeFirst, this._dragged, target, container);
+               if (isBeforeFirst) {
+                   container.insertBefore(this._dragged, first);
+               } else {
+                 container.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
+               }
+             }
          }}
          @drop=${(e: any) => {
-            const type = e.dataTransfer!.getData('topic');
-            if (type !== 'topic') return;
             e.preventDefault();
-            const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
-            const order = Array.from(container.children).map(el => el.id);
-            console.log("ORDER", order);
-            localStorage.setItem("vinesTopicOrder", JSON.stringify(order));
+            const isTopic = e.dataTransfer!.getData('topic');
+            if (isTopic) {
+              const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
+              const order = Array.from(container.children).map(el => el.id);
+              console.log("ORDER", order);
+              localStorage.setItem("vinesTopicOrder", JSON.stringify(order));
+              return;
+            }
+            const thread = e.dataTransfer!.getData('thread');
+            console.log("thread dropped", thread);
+            if (thread) {
+              const container = this.shadowRoot!.getElementById(this._dragged.children[0]!.topic)! as HTMLElement;
+              if (container.id != this._dragged.children[0]!.topic) return;
+              const order = Array.from(container.children)
+                .map(el => el.children[0]!.id)
+                .filter(id => id !== '');
+              console.log("THREAD ORDER", order);
+              localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.id, JSON.stringify(order));
+            }
          }}>
         ${treeItems}
     </div>`
