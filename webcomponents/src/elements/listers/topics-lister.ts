@@ -119,197 +119,203 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       case "custom":
       default:
         //console.debug("<topics-lister> custom", pairs.length);
-        pairs = this.getOrderFromLocalStorage(this.threadsPerspective.semanticTopics);
+        pairs = this.getTopicOrderFromLocalStorage(this.threadsPerspective.semanticTopics);
       break;
     }
     let treeItems = pairs.map(([topicAh, [title, author]]) => {
-    const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
-    /** Skip if hidden */
-    if (isSubjectHidden && !this.showArchivedTopics) {
-      return;
-    }
+      const isSubjectHidden = this.threadsPerspective.hiddens[topicAh.b64]? this.threadsPerspective.hiddens[topicAh.b64] : false;
+      /** Skip if hidden */
+      if (isSubjectHidden && !this.showArchivedTopics) {
+        return;
+      }
       /** Render threads for Topic */
       let threads: TemplateResult<1>[] = [];
       let topicThreads = this.threadsPerspective.getSubjectThreads(topicAh);
       if (topicThreads == undefined) {
         topicThreads = [];
-    } else {
-        if (this.order == "alpha") {
-          topicThreads = topicThreads.sort((a, b) => {
-            const threadA = this.threadsPerspective.threads.get(a)!;
-            const nameA = latestThreadName(threadA.title, threadA.pp, this._dvm.threadsZvm);
-            const threadB = this.threadsPerspective.threads.get(b)!;
-            const nameB = latestThreadName(threadB.title, threadB.pp, this._dvm.threadsZvm);
-            return nameA.localeCompare(nameB);
-          });
-        } else {
-          topicThreads = topicThreads.sort((a, b) => {
-            const nameA = this.threadsPerspective.threads.get(a)!.creationTime
-            const nameB = this.threadsPerspective.threads.get(b)!.creationTime;
-            return nameB - nameA
-          });
+      } else {
+        switch (this.order) {
+          case "alpha":
+            topicThreads = topicThreads.sort((a, b) => {
+              const threadA = this.threadsPerspective.threads.get(a)!;
+              const nameA = latestThreadName(threadA.title, threadA.pp, this._dvm.threadsZvm);
+              const threadB = this.threadsPerspective.threads.get(b)!;
+              const nameB = latestThreadName(threadB.title, threadB.pp, this._dvm.threadsZvm);
+              return nameA.localeCompare(nameB);
+            });
+          break;
+          case "chrono":
+            topicThreads = topicThreads.sort((a, b) => {
+              const nameA = this.threadsPerspective.threads.get(a)!.creationTime
+              const nameB = this.threadsPerspective.threads.get(b)!.creationTime;
+              return nameB - nameA
+            });
+          break;
+          case "custom":
+            topicThreads = this.getThreadOrderFromLocalStorage(topicAh, topicThreads);
+          break;
         }
         threads = topicThreads.map((ppAh) => {
-          const thread = this.threadsPerspective.threads.get(ppAh);
-          if (!thread) {
-            return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
-          }
-          //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
-          const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(ppAh.b64);
-          const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
-          const isThreadHidden = this.threadsPerspective.hiddens[ppAh.b64]? this.threadsPerspective.hiddens[ppAh.b64] : false;
-          const maybeUnreadThread = this.threadsPerspective.unreads.get(ppAh);
-          const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
-          const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
-          if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
-            return html``;
-          }
-
-          /** 'new', 'notif' or 'unread' badge to display */
-          //let badge = html`<ui5-badge>0</ui5-badge>`;
-          let badge = html`<div style="min-width: 26px"></div>`;
-          let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
-          if (threadIsNew) {
-            if (isPersistent) {
-              badge = html`<ui5-badge class="notifBadge" title="new channel!">${notifCount}</ui5-badge>`;
-            } else {
-              badge = html`<ui5-badge class="tempBadge">${msg("temp")}</ui5-badge>`;
+            const thread = this.threadsPerspective.threads.get(ppAh);
+            if (!thread) {
+              return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
             }
-          } else {
-            if (notifCount > 0) {
-              badge = html`
-                  <ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
+            //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
+            const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(ppAh.b64);
+            const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
+            const isThreadHidden = this.threadsPerspective.hiddens[ppAh.b64]? this.threadsPerspective.hiddens[ppAh.b64] : false;
+            const maybeUnreadThread = this.threadsPerspective.unreads.get(ppAh);
+            const hasNewBeads = maybeUnreadThread && maybeUnreadThread[1].length > 0;
+            const threadIsNew = this.threadsPerspective.newThreads.has(ppAh);
+            if (!thread.pp || (isThreadHidden && !this.showArchivedTopics) || thread.pp.purpose == "comment") {
+              return html``;
+            }
+
+            /** 'new', 'notif' or 'unread' badge to display */
+            //let badge = html`<ui5-badge>0</ui5-badge>`;
+            let badge = html`<div style="min-width: 26px"></div>`;
+            let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
+            if (threadIsNew) {
+              if (isPersistent) {
+                badge = html`<ui5-badge class="notifBadge" title="new channel!">${notifCount}</ui5-badge>`;
+              } else {
+                badge = html`<ui5-badge class="tempBadge">${msg("temp")}</ui5-badge>`;
+              }
             } else {
-              if (hasNewBeads) {
+              if (notifCount > 0) {
                 badge = html`
-                    <ui5-badge class="unreadBadge">${maybeUnreadThread[1].length}</ui5-badge>`;
+                    <ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
+              } else {
+                if (hasNewBeads) {
+                  badge = html`
+                      <ui5-badge class="unreadBadge">${maybeUnreadThread[1].length}</ui5-badge>`;
+                }
               }
             }
-          }
 
-          const hideShowBtn = this.showArchivedTopics && isThreadHidden?
-            html`
-                <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
-                            class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                            @click=${async (e: any) => {
-                              e.stopPropagation();
-                              this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                                detail: {
-                                  hide: false,
-                                  address: ppAh,
-                                  type: "Channel"
-                                }, bubbles: true, composed: true
-                              }));
-                            }}></ui5-button>
-            ` : html`
-                      <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
-                                  class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                                  @click=${async (e: any) => {
-                                    e.stopPropagation();
-                                    this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                                      detail: {
-                                        hide: true,
-                                        address: ppAh,
-                                        type: "Channel"
-                                      }, bubbles: true, composed: true
-                                    }));
-                                  }}></ui5-button>`;
+            const hideShowBtn = this.showArchivedTopics && isThreadHidden?
+              html`
+                  <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
+                              class="showBtn" style="${isSelected? "color:#444;" : ""}"
+                              @click=${async (e: any) => {
+                                e.stopPropagation();
+                                this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                                  detail: {
+                                    hide: false,
+                                    address: ppAh,
+                                    type: "Channel"
+                                  }, bubbles: true, composed: true
+                                }));
+                              }}></ui5-button>
+              ` : html`
+                        <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
+                                    class="showBtn" style="${isSelected? "color:#444;" : ""}"
+                                    @click=${async (e: any) => {
+                                      e.stopPropagation();
+                                      this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                                        detail: {
+                                          hide: true,
+                                          address: ppAh,
+                                          type: "Channel"
+                                        }, bubbles: true, composed: true
+                                      }));
+                                    }}></ui5-button>`;
 
-          /** Create an avatar group */
-          const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
-          const avatarGrp = Object.values(agents).length > 0
-            ? Object.values(agents).length > 1
-              ? renderAvatarGroup(this._dvm.profilesZvm, agents)
-              : renderAvatar(this, this._dvm.profilesZvm, agents[0]!, "XS")
-            : html``;
+            /** Create an avatar group */
+            const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
+            const avatarGrp = Object.values(agents).length > 0
+              ? Object.values(agents).length > 1
+                ? renderAvatarGroup(this._dvm.profilesZvm, agents)
+                : renderAvatar(this, this._dvm.profilesZvm, agents[0]!, "XS")
+              : html``;
 
-          /** render topic thread */
-          return html`
-              <sl-tooltip content=${thread.title} style="--show-delay:1000">
-                <div id=${ppAh.b64} .topic=${topicAh.b64} 
-                     class="threadItem" 
-                     style="
-                       font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
-                       ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                       ${isSelected? "background:#4684FD;color:#444;" : ""}
-                     "
-                     .draggable=${this.order == "custom"? "true" : ""}
-                     @dragstart=${(e: any) => {
-                        e.stopPropagation();
-                        this._dragged = e.target.closest('sl-tooltip');
-                        console.log("_dragged", this._dragged);
-                        setTimeout(() =>  this._dragged?.classList.add('dragging'), 0)
-                        e.dataTransfer!.effectAllowed = 'move';
-                        e.dataTransfer!.setData('thread', ppAh.b64);
-                     }}
-                     @dragend=${(e: DragEvent) => {
-                         e.stopPropagation();
-                         (e.currentTarget as HTMLElement).classList.remove('dragging');
-                         this._dragged = null;
-                         // Clean up any leftover drag-over highlights
-                         this.shadowRoot?.querySelectorAll('.drag-over')
-                                 .forEach(el => el.classList.remove('drag-over'));
-                     }}
-                     @dragleave=${(e: DragEvent) => (e.currentTarget as HTMLElement).classList.remove('drag-over')}
-                     @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
-                    ${badge}
-                    <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
-                    ${avatarGrp}
-                    ${hideShowBtn}                
-                </div>
-              </sl-tooltip>`
-        })
-      }
-      /* */
-      const newSubjects = this.threadsPerspective.getNewSubjects();
-      const unreadSubjects = this.threadsPerspective.getUnreadSubjects();
+            /** render topic thread */
+            return html`
+                <sl-tooltip content=${thread.title} style="--show-delay:1000">
+                  <div id=${ppAh.b64} .topic=${topicAh.b64} 
+                       class="threadItem" 
+                       style="
+                         font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
+                         ${threadIsNew || notifCount? "color: #359C07;" : ""}
+                         ${isSelected? "background:#4684FD;color:#444;" : ""}
+                       "
+                       .draggable=${this.order == "custom"? "true" : ""}
+                       @dragstart=${(e: any) => {
+                          e.stopPropagation();
+                          this._dragged = e.target.closest('sl-tooltip');
+                          console.log("_dragged", this._dragged);
+                          setTimeout(() =>  this._dragged?.classList.add('dragging'), 0)
+                          e.dataTransfer!.effectAllowed = 'move';
+                          e.dataTransfer!.setData('thread', ppAh.b64);
+                       }}
+                       @dragend=${(e: DragEvent) => {
+                           e.stopPropagation();
+                           (e.currentTarget as HTMLElement).classList.remove('dragging');
+                           this._dragged = null;
+                           // Clean up any leftover drag-over highlights
+                           this.shadowRoot?.querySelectorAll('.drag-over')
+                                   .forEach(el => el.classList.remove('drag-over'));
+                       }}
+                       @dragleave=${(e: DragEvent) => (e.currentTarget as HTMLElement).classList.remove('drag-over')}
+                       @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
+                      ${badge}
+                      <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
+                      ${avatarGrp}
+                      ${hideShowBtn}                
+                  </div>
+                </sl-tooltip>`
+          })
+        }
+        /* */
+        const newSubjects = this.threadsPerspective.getNewSubjects();
+        const unreadSubjects = this.threadsPerspective.getUnreadSubjects();
 
-      /** Render Topic */
-      const maybeCommentThread: ActionId | null = this.threadsPerspective.getCommentThreadForSubject(topicAh);
-      const topicIsNew = newSubjects.get(topicAh.b64) != undefined;
-      let topicHasUnreadComments = false;
-      if (maybeCommentThread != null) {
-        topicHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(topicAh.b64);
-      }
+        /** Render Topic */
+        const maybeCommentThread: ActionId | null = this.threadsPerspective.getCommentThreadForSubject(topicAh);
+        const topicIsNew = newSubjects.get(topicAh.b64) != undefined;
+        let topicHasUnreadComments = false;
+        if (maybeCommentThread != null) {
+          topicHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(topicAh.b64);
+        }
 
-      let topicCommentButton = html``;
-      if (topicHasUnreadComments) {
-        topicCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
-                                             design="Negative" style="border:none;background: transparent"
-                                             @click=${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}></ui5-button>`;
-      } else {
-        topicCommentButton = maybeCommentThread != null
-          ? html`
-                <ui5-button id=${"cmt-" + topicAh.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
-                            style="border:none;display: none"
-                            @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`
-          : html`
-                <ui5-button id=${"cmt-" + topicAh.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Category")} design="Transparent"
-                            style="border:none; padding:0px;display: none" 
-                            @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`;
-      }
-
-
-      /** 'new', 'notif' and 'unread' badge to display */
-      let topicBadge = html``;
-      if (topicIsNew) {
-        topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${msg('new')}</ui5-badge>`;
-      } else {
-        let notifCount = 0; // FIXME: Get real notif count
-        if (notifCount > 0) {
-          topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
+        let topicCommentButton = html``;
+        if (topicHasUnreadComments) {
+          topicCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
+                                               design="Negative" style="border:none;background: transparent"
+                                               @click=${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}></ui5-button>`;
         } else {
-          /** Aggregate count of unread beads on all topic's threads */
-          let count = 0;
-          for (const topicPpAh of topicThreads) {
-            if (this.threadsPerspective.unreads.get(topicPpAh)) {
-              count += this.threadsPerspective.unreads.get(topicPpAh)![1].length;
+          topicCommentButton = maybeCommentThread != null
+            ? html`
+                  <ui5-button id=${"cmt-" + topicAh.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
+                              style="border:none;display: none"
+                              @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`
+            : html`
+                  <ui5-button id=${"cmt-" + topicAh.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Category")} design="Transparent"
+                              style="border:none; padding:0px;display: none" 
+                              @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`;
+        }
+
+
+        /** 'new', 'notif' and 'unread' badge to display */
+        let topicBadge = html``;
+        if (topicIsNew) {
+          topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${msg('new')}</ui5-badge>`;
+        } else {
+          let notifCount = 0; // FIXME: Get real notif count
+          if (notifCount > 0) {
+            topicBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
+          } else {
+            /** Aggregate count of unread beads on all topic's threads */
+            let count = 0;
+            for (const topicPpAh of topicThreads) {
+              if (this.threadsPerspective.unreads.get(topicPpAh)) {
+                count += this.threadsPerspective.unreads.get(topicPpAh)![1].length;
+              }
+            }
+            if (count > 0) {
+              topicBadge = html`<ui5-badge class="unreadBadge subjectBadge">${count}</ui5-badge>`;
             }
           }
-          if (count > 0) {
-            topicBadge = html`<ui5-badge class="unreadBadge subjectBadge">${count}</ui5-badge>`;
-          }
-        }
       }
 
       const topicHideBtn = this.showArchivedTopics && isSubjectHidden? html`
@@ -457,11 +463,11 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
          }}
          @dragover=${(e: any) => {
             e.preventDefault();
-            console.log("dragover", e.dataTransfer!.types)
+            //console.log("dragover", e.dataTransfer!.types)
             if (e.dataTransfer!.types.includes('topic')) {
               const target = e.target.closest('ui5-panel');
               if (!target || target === this._dragged) return;
-              console.log("topic dragover target", target);
+              //console.log("topic dragover target", target);
               const {top, height} = target.getBoundingClientRect();
               const isAfterTarget = e.clientY > top + height / 2;
               const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
@@ -487,8 +493,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                const dim = first!.children[0]!.getBoundingClientRect();
                const isBeforeFirst = e.clientY < dim.top + dim.height / 2;
 
-               console.log("thread dragover", container.id, topicB64);
-               console.log("thread dragover target", isAfterTarget, isBeforeFirst, this._dragged, target, container);
+               //console.log("thread dragover", container.id, topicB64);
+               //console.log("thread dragover target", isAfterTarget, isBeforeFirst, this._dragged, target, container);
                if (isBeforeFirst) {
                    container.insertBefore(this._dragged, first);
                } else {
@@ -502,20 +508,18 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             if (isTopic) {
               const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
               const order = Array.from(container.children).map(el => el.id);
-              console.log("ORDER", order);
               localStorage.setItem("vinesTopicOrder", JSON.stringify(order));
               return;
             }
             const thread = e.dataTransfer!.getData('thread');
-            console.log("thread dropped", thread);
             if (thread) {
               const container = this.shadowRoot!.getElementById(this._dragged.children[0]!.topic)! as HTMLElement;
               if (container.id != this._dragged.children[0]!.topic) return;
               const order = Array.from(container.children)
                 .map(el => el.children[0]!.id)
                 .filter(id => id !== '');
-              console.log("THREAD ORDER", order);
-              localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.id, JSON.stringify(order));
+              //console.log("THREAD ORDER", this._dragged.children[0]!.topic, order);
+              localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.topic, JSON.stringify(order));
             }
          }}>
         ${treeItems}
@@ -523,8 +527,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   }
 
 
-  /** Grab order for local storage. Set order and append any unknown remaining elements */
-  getOrderFromLocalStorage(map: ActionIdMap<[string, AgentId]>): [ActionId, [string, AgentId]][] {
+  /** Grab the order for local storage. Set order and append any unknown remaining elements */
+  getTopicOrderFromLocalStorage(map: ActionIdMap<[string, AgentId]>): [ActionId, [string, AgentId]][] {
     const json = localStorage.getItem("vinesTopicOrder");
     let allPairs = Array.from(map.entries());
     if (!json) return allPairs;
@@ -540,10 +544,31 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       pairs.push([id, map.get(id)!]);
       allPairs = allPairs.filter((key) => !key[0].equals(id));
     }
-    console.log("ORDER FROM LOCAL STORAGE", pairs);
+    console.debug("TOPIC ORDER FROM LOCAL STORAGE", pairs);
     return pairs.concat(allPairs);
   }
 
+  /** Grab the order for local storage. Set order and append any unknown remaining elements */
+  getThreadOrderFromLocalStorage(topicAh: ActionId, threads: ActionId[]): ActionId[] {
+    //console.log("getThreadOrderFromLocalStorage()", topicAh.b64);
+    const json = localStorage.getItem("vinesThreadOrder-" + topicAh.b64);
+    if (!json) return threads;
+    let ids: string[];
+    try {
+      ids = JSON.parse(json) as string[];
+    } catch {
+      return threads;
+    }
+    /** Convert to ActionId and concat new/unsorted threads */
+    let ordered: ActionId[] = [];
+    for (const idb64 of ids) {
+      const id = new ActionId(idb64);
+      ordered.push(id);
+      threads = threads.filter((key) => !key.equals(id));
+    }
+    //console.log("THREAD ORDER FROM LOCAL STORAGE", topicAh.b64, threads);
+    return ordered.concat(threads);
+  }
 
   /** */
   static override get styles() {
