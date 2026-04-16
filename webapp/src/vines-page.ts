@@ -1917,6 +1917,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         ></dm-multi-lister>
     ` : html`
         <dm-lister id="dmLister" nobtn
+                   .order=${this._topicOrderType}
                    .showArchived=${this._canViewArchivedSubjects}
                    .selectedThreadHash=${this._selectedThreadHash}
                    @createNewDm=${(_e: any) => {
