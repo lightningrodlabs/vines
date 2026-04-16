@@ -1061,7 +1061,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Display requested WAL if any */
     if (this.wal && new DnaId(this.wal.hrl[0]).equals(this.cell.address.dnaId)) {
         const actionId = new ActionId(this.wal.hrl[1]);
-        const bead = this.threadsPerspective.getBead(actionId);
+        const bead = await this._dvm.threadsZvm.mustFetchUnknownBead(actionId, GetStrategy.Local);
+        //const bead = this.threadsPerspective.getBead(actionId);
         const thread = this.threadsPerspective.getParticipationProtocol(actionId);
         const jumpEvent = {
             type: MainViewType.Thread,
