@@ -16,7 +16,7 @@ import "../../elements/input-bar";
 import {consume} from "@lit/context";
 import {filesContext, weClientContext} from "../../contexts";
 import {doodle_weave} from "../../doodles";
-import {beadJumpEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
+import {beadJumpEvent, SpecialSubjectType, threadJumpEvent, VinesInputEvent} from "../../events";
 
 import {sharedStyles} from "../../styles";
 
@@ -30,6 +30,8 @@ import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {Bead, ThreadsEntryType} from "../../bindings/threads.types";
+import {toasty} from "../../toast";
 
 
 /**
@@ -87,6 +89,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** -- State variables -- */
 
   @state() private _loading = true;
+  @state() private _waitingForBeadCommit: Bead | undefined = undefined;
 
 
   /** -- Getters -- */
@@ -227,6 +230,46 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   // }
 
 
+
+  /** */
+  async onCreateComment(e: CustomEvent<VinesInputEvent>) {
+    console.log("<comment-thread-view>.onInputCommit()", e.detail);
+    let ppAh = e.detail.ppAh;
+    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh);
+    /** DM */
+    if (e.detail.agent) {
+      console.debug("onInputCommit() is DM");
+      try {
+        await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
+      } catch(e:any) {
+        toasty(msg("Publish DM failed: ") + e.failure);
+        this._waitingForBeadCommit = undefined;
+      }
+      return;
+    }
+
+    /** Create Text Message */
+    if (e.detail.text) {
+      if (!ppAh) {
+        console.error("No thread selected");
+        this._waitingForBeadCommit = undefined;
+        return;
+      }
+      try {
+        await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, undefined, this.weServices);
+      } catch(error:any) {
+        toasty(msg("Publish Message failed: ") + error.failure);
+        this._waitingForBeadCommit = undefined;
+        const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+        if (inputBar) {
+          inputBar.setValue(e.detail.text);
+        }
+        console.warn(e);
+      }
+    }
+  }
+
+
   /** */
   override render() {
     console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
@@ -267,6 +310,23 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     console.log("<comment-thread-view>.render() len =", beads.length);
     console.log("Has thread some unreads?", thread.hasUnreads());
 
+    /** Check if the bead has been committed */
+    if (this._waitingForBeadCommit) {
+      console.debug("<comment-thread-view>.render() this._waitingForBeadCommit", this._waitingForBeadCommit);
+      if (!this.threadHash || !this.threadHash.equals(new ActionId(this._waitingForBeadCommit.ppAh))) {
+        this._waitingForBeadCommit = undefined;
+      } else {
+        const thread = this._dvm.threadsZvm.perspective.threads.get(this.threadHash)!;
+        const beads = thread.getLast(1);
+        if (beads.length > 0) {
+          const [beadInfo, _] = this._dvm.threadsZvm.perspective.beads.get(beads[0]!.beadAh)!;
+          if (beadInfo.author.equals(this.cell.address.agentId) && beadInfo.bead.prevBeadAh.equals(new ActionId(this._waitingForBeadCommit.prevBeadAh))) {
+            this._waitingForBeadCommit = undefined;
+          }
+        }
+      }
+    }
+
     let prevBeadAh: ActionId | undefined = undefined;
     // <abbr title="${agent ? agent.nickname : "unknown"}">[${date_str}] ${tuple[2]}</abbr>
     let commentItems = beads.map(([beadAh, beadInfo, _typedBead]) => {
@@ -301,11 +361,20 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     // console.log("<comment-thread-view> maybeAppletInfo", maybeAppletInfo, appletName);
     //console.log("<comment-thread-view> input", this.perspective.threadInputs[this.threadHash], this.threadHash);
     let maybeInput = html``;
-    if (this.showInput && !this.assetview) {
+    //if (this.showInput && !this.assetview) {
       // @input=${(e: CustomEvent<VinesInputEvent>) => {e.preventDefault(); this.onCreateComment(e.detail)}}
       maybeInput = html`
-          <vines-input-bar id="input-bar" ?busy=${this.busy} nosend topic="" .threadHash=${this.threadHash}></vines-input-bar>`;
-    }
+          <vines-input-bar id="input-bar" nosend topic=""
+                           ?busy=${this.busy || this._waitingForBeadCommit}                            
+                           .threadHash=${this.threadHash}
+                           @vines-input-commit=${(e: CustomEvent<VinesInputEvent>) => {
+                               e.stopPropagation(); /*e.preventDefault();*/
+                               console.log("<comment-thread-view>.onInputCommit", e.detail);
+                               if (!e.detail.text) throw Error("Missing text in input event");
+                               this.onCreateComment(e);
+                           }}
+          ></vines-input-bar>`;
+    //}
 
     const titleTip = "Type: " + subjectType;
 

@@ -16,7 +16,7 @@ import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/List.js"
 
 
-import "../../elements/input-bar";
+//import "../../elements/input-bar";
 import {consume} from "@lit/context";
 import {weClientContext} from "../../contexts";
 import {sharedStyles} from "../../styles";

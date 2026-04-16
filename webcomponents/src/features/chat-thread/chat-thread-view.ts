@@ -60,7 +60,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** -- Methods -- */
 
-  /** In dvmUpdated() this._dvm is not already set */
+  /** In dvmUpdated() this._dvm is not set yet */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.debug("<chat-thread-view>.dvmUpdated()");
     /** Subscribe to ThreadsZvm */

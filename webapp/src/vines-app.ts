@@ -367,7 +367,8 @@ export class VinesApp extends HappMultiElement {
     if ((e.detail.thread || e.detail.bead) && this.appletView && this.appletView.type != "main" && this._weServices) {
       // FIXME: get correct threadsDvm
       const wal: WAL = { hrl: [this.threadsDvm(0).cell.address.dnaId.hash, e.detail.thread? e.detail.thread.hash : e.detail.bead!.hash], context: undefined };
-      /* await */this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!), wal);
+      //console.log("<vines-app>.onJump() wal", wal);
+      /* await */ this._weServices.openAppletMain(dec64(this._weServices.appletIds[0]!), wal);
     }
   }
 

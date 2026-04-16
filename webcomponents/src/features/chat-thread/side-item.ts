@@ -207,10 +207,10 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     return html`
     <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
          @click=${(e: any) => {
-      console.log("sideItem clicked", this.hash);
-      e.stopPropagation();
-      this.dispatchEvent(beadJumpEvent(this.hash))
-    }}>
+            console.log("sideItem clicked", this.hash);
+            e.stopPropagation();
+            this.dispatchEvent(beadJumpEvent(this.hash))
+        }}>
         <div class="avatarRow">
             ${author? renderAvatar(this, this._dvm.profilesZvm, author, "XS") : ""}
             <div class="nameColumn" style="display:flex; flex-direction:column;">

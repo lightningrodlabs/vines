@@ -1077,7 +1077,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 composed: true
             }));
         } else {
-            console.debug("<vines-page> requested WAL not found", this.wal);
+            console.debug("<vines-page> requested WAL not found", new ActionId(this.wal.hrl[1]));
         }
     }
     /** Need this to get all manifests at startup */
@@ -1645,7 +1645,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       uploadState = this._filesDvm.perspective.uploadStates[this._splitObj.dataHash];
     }
 
-    /** Check if bead has been committed */
+    /** Check if the bead has been committed */
     if (this._waitingForBeadCommit) {
         console.debug("<vines-page>.render() this._waitingForBeadCommit", this._waitingForBeadCommit, this._selectedThreadHash);
         if (!this._selectedThreadHash || !this._selectedThreadHash.equals(new ActionId(this._waitingForBeadCommit.ppAh))) {

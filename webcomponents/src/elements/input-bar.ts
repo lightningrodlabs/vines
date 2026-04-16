@@ -120,7 +120,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** -- Callbacks -- */
 
-  /** Handle 'jump' event */
+  /** Handle events */
   override connectedCallback() {
     super.connectedCallback();
     // @ts-ignore
@@ -656,8 +656,10 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ${walElem}
             <ui5-bar id="inputBar" design="FloatingFooter">
                 <!-- <ui5-button slot="startContent" design="Positive" icon="add"></ui5-button> -->
-                ${addBtn}
-                ${micBtn}
+                ${this.nosend? html`` : html`
+                  ${addBtn}
+                  ${micBtn}
+                `}
                 <!-- TEXT AREA -->
                 ${this._limitations.canText? html`
                     <ui5-textarea id="textMessageInput" mode="SingleSelect"
@@ -672,11 +674,11 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                       this.requestUpdate();
                                   }}
                     ></ui5-textarea>` : html``}
-                ${this.nosend? html`` : html`
+                
                     <ui5-button slot="${this._limitations.canText? "endContent" : ""}" design="Emphasized"
                                 icon="paper-plane" tooltip=${msg("Send")}
                                 ?disabled=${!canSend}
-                                @click=${() => this.commitInput()}></ui5-button>`}
+                                @click=${() => this.commitInput()}></ui5-button>
             </ui5-bar>
         </div>
         <ui5-popover id="pop" hide-arrow allow-target-overlap placement-type="Top" horizontal-align="Stretch"
