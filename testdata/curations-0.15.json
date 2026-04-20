@@ -1,0 +1,27 @@
+{
+    "curator": {
+        "name": "vines-dev",
+        "description": "pre-production Vines curation list",
+        "contact": {
+            "website": "https://lightningrodlabs.org"
+        },
+        "icon": "https://lightningrodlabs.org/lrl_logo.png"
+    },
+    "curationLists": {
+        "default": {
+            "name": "Default Curation List",
+            "description": "Default Curation List of Vines devtest",
+            "tags": [],
+            "tools": [
+                {
+                    "toolListUrl": "https://lightningrodlabs.org/weave-tool-curation/0.15/tool-list-0.15.json",
+                    "toolId": "vines",
+                    "versionBranch": "dev",
+                    "tags": [
+                        "chat"
+                    ]
+                }
+            ]
+        }
+    }
+}

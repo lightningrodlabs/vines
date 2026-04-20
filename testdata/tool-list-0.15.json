@@ -1,0 +1,37 @@
+{
+    "developerCollective": {
+        "id": "vines-dev",
+        "name": "vines-dev",
+        "description": "pre-production Vines to test",
+        "icon": "https://lightningrodlabs.org/lrl_logo.png",
+        "contact": {
+            "website": "https://lightningrodlabs.org"
+        }
+    },
+    "tools": [
+        {
+            "id": "vines",
+            "versionBranch": "dev",
+            "title": "Vines",
+            "subtitle": "Group conversations and DMs",
+            "description": "A conversation capacity for groups in The Weave.",
+            "icon": "https://github.com/lightningrodlabs/vines/releases/download/we-applet-rc/icon.png",
+            "tags": [
+                "chat"
+            ],
+            "versions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://github.com/lightningrodlabs/vines/releases/download/manual-release/vines-we_applet.webhapp",
+                    "hashes": {
+                        "happSha256": "b18bc6516007f0f365510e969500927290f13df78befb5c867f50ef0dc50547c",
+                        "webhappSha256": "ae00dc8b55e0bdb0d00ffcc1fb86cdfac3ee824deb35fda60361bab6f8acb93a",
+                        "uiSha256": "df9c3cfd9c1e6ca02edd003dac0188336b7839328343ac38dad4572da35a8c63"
+                    },
+                    "changelog": "devtest",
+                    "releasedAt": 1774012113898
+                }
+            ]
+        }
+    ]
+}
