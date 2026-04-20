@@ -24,9 +24,9 @@
                     "version": "1.0.0",
                     "url": "https://github.com/lightningrodlabs/vines/releases/download/manual-release/vines-we_applet.webhapp",
                     "hashes": {
-                        "happSha256": "b18bc6516007f0f365510e969500927290f13df78befb5c867f50ef0dc50547c",
-                        "webhappSha256": "ae00dc8b55e0bdb0d00ffcc1fb86cdfac3ee824deb35fda60361bab6f8acb93a",
-                        "uiSha256": "df9c3cfd9c1e6ca02edd003dac0188336b7839328343ac38dad4572da35a8c63"
+                      "happSha256": "de6251bf89e0b4ae5cc244a4d61aa9f80d9c4e4059a3478aca11c379d05b7ec6",
+                      "webhappSha256": "a49651aaa9143d03b9f9a8383528abbe33225bca73cc0b80c6cd727dc9adc8ab",
+                      "uiSha256": "efe4614471c3da7b0669979730cf063e930a741149e146bd58a8d6c8f8dcf62d"
                     },
                     "changelog": "devtest",
                     "releasedAt": 1774012113898

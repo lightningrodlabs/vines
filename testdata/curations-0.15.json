@@ -14,7 +14,7 @@
             "tags": [],
             "tools": [
                 {
-                    "toolListUrl": "https://lightningrodlabs.org/weave-tool-curation/0.15/tool-list-0.15.json",
+                    "toolListUrl": "https://raw.githubusercontent.com/lightningrodlabs/vines/refs/heads/hdk-6.0/testdata/tool-list-0.15.json",
                     "toolId": "vines",
                     "versionBranch": "dev",
                     "tags": [
