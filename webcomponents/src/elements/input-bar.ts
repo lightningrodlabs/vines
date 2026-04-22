@@ -556,18 +556,16 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let fileElem = html``;
     if (this._file) {
       const fileNameElem = this._isEditingFileName
-        ? html`
-                  <ui5-input id="filename-input"
+        ? html`<ui5-input id="filename-input"
                              .value=${this._file.name}
                              @change=${(_e: any) => this.onEditFile()}></ui5-input>`
-        : html`
-                  <div>${this._file.name}</div>`;
+        : html`<div>${this._file.name}</div>`;
 
       fileElem = html`
           <div class="file-row">
               <div style="margin-right:5px;">${msg("File")}:</div>
               ${fileNameElem}
-              <span style="margin-left:5px;font-size: small;">(${formatFileSize(this._file.size)})</span>
+              <span style="margin-left:5px; font-size:small;">(${formatFileSize(this._file.size)})</span>
               <ui5-button class="fileIcon" icon="edit" design="Transparent" tooltip=${msg('Rename file')}
                           style="margin-left:10px;"
                           @click=${(_e: any) => this._isEditingFileName = !this._isEditingFileName}></ui5-button>

@@ -5,6 +5,7 @@ import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
 import {ThreadsSnapshot} from "../../viewModels/threads.perspective";
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
+import Input from "@ui5/webcomponents/dist/Input";
 
 export type ImportConfirmed = {
   selection: Set<string>,
@@ -21,6 +22,7 @@ export class ImportSummary extends LitElement {
 
   @state() private _selectedChannels: Set<string> = new Set();
 
+
   /** */
   private toggleChannel(key: string) {
     const selection = new Set(this._selectedChannels);
@@ -31,6 +33,7 @@ export class ImportSummary extends LitElement {
     }
     this._selectedChannels = selection;
   }
+
 
   /** */
   private toggleAll() {
@@ -112,7 +115,41 @@ export class ImportSummary extends LitElement {
         </div>
 
         <!-- Channel selection -->
-        ${!!this.data.discord? html`` : html`
+        ${!!this.data.discord
+            ? this.data.discord.channels[0]!.category
+              ? html`<h3>${msg('Discord channel')}</h3>
+               <div style="display:grid; grid-template-columns: 1fr 1fr; column-gap: 1rem;">
+                 <div>
+                 <div style="color:grey; font-size:small">${msg('Category')}</div>
+                    <ui5-input id="discord-topic" outlined required show-clear-icon
+                               .value=${this.data.discord.channels[0]!.category}
+                               .placeholder=${this.data.discord.channels[0]!.category}
+                               @input=${(e: any) => {
+                                   if (e.target.value.length > 0) {
+                                       this.data!.discord!.channels[0]!.category = e.target.value;
+                                   } else {
+                                       this.data!.discord!.channels[0]!.category = (this.shadowRoot!.getElementById("discord-topic") as Input).placeholder;
+                                   }
+                               }}>
+                    </ui5-input>
+            </div>
+            <div>
+                <div style="color:grey; font-size:small">${msg('Channel')}</div>
+                <ui5-input id="discord-channel" outlined required show-clear-icon
+                           .value=${this.data.discord.channels[0]!.name}
+                           .placeholder=${this.data.discord.channels[0]!.name}
+                           @input=${(e: any) => {
+                               if (e.target.value.length > 0) {
+                                   this.data!.discord!.channels[0]!.name = e.target.value;
+                               } else {
+                                   this.data!.discord!.channels[0]!.name = (this.shadowRoot!.getElementById("discord-channel") as Input).placeholder;
+                               }
+                           }}>
+                </ui5-input>
+            </div>
+               </div>
+            ` : html`<span>${msg('DM channel with')} <b>${this.data!.discord!.channels[0]!.name}</b></span>
+        ` : html`
         <div class="select-all-row">
             <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
         </div>            
@@ -175,6 +212,8 @@ export class ImportSummary extends LitElement {
     `;
   }
 
+
+  /** */
   onImport(allSelected: boolean, canPublish: boolean) {
     if (!allSelected) {
       this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME] = this.filterData();
@@ -186,6 +225,7 @@ export class ImportSummary extends LitElement {
         canPublish
       }, bubbles: true, composed: true}));
   }
+
 
   /** */
   filterData(): ThreadsSnapshot {
@@ -235,6 +275,7 @@ export class ImportSummary extends LitElement {
     console.debug("filterData() END", threadsSnapshot.pps.length, threadsSnapshot.beads.length, threadsSnapshot.emojiReactions.length);
     return threadsSnapshot;
   }
+
 
   /** */
   static override get styles() {
