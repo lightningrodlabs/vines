@@ -406,7 +406,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     <!-- <div style="margin-top:15px;">${msg('Message Types')}</div> -->
 
                     <div class="field-row">
-                        <ui5-label style="font-size: large">WAL Embeds</ui5-label>
+                        <ui5-label style="font-size: large">${msg("Asset Embeds")}</ui5-label>
                         <ui5-switch ?checked=${this.limitations.canWal}
                                     @change=${this.handleAutoCanWalChange}></ui5-switch>
                             <!-- <ui5-checkbox ?checked=${this.limitations.canWal}

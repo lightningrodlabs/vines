@@ -386,7 +386,7 @@ export class VinesApp extends HappMultiElement {
     if (this._weServices) {
       this._weServices.assets.assetToPocket({hrl});
     }
-    toasty(msg("Copied WAL to clipboard"));
+    toasty(msg("Copied Asset to clipboard"));
   }
 
 

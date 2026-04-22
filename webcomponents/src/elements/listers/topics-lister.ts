@@ -508,7 +508,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             if (isTopic) {
               const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
               const order = Array.from(container.children).map(el => el.id);
-              localStorage.setItem("vinesTopicOrder", JSON.stringify(order));
+              const deduped = [...new Set(order)];
+              localStorage.setItem("vinesTopicOrder", JSON.stringify(deduped));
               return;
             }
             const thread = e.dataTransfer!.getData('thread');
@@ -518,8 +519,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               const order = Array.from(container.children)
                 .map(el => el.children[0]!.id)
                 .filter(id => id !== '');
+              const deduped = [...new Set(order)];
               //console.log("THREAD ORDER", this._dragged.children[0]!.topic, order);
-              localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.topic, JSON.stringify(order));
+              localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.topic, JSON.stringify(deduped));
             }
          }}>
         ${treeItems}

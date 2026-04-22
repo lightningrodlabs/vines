@@ -59,7 +59,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
             </div>
 
             <div class="field-row">
-                <div class="field-label">${msg('WAL Embeds:')}</div>
+                <div class="field-label">${msg('Asset Embeds:')}</div>
                 <div class="field-value">
                     ${this.limitations.canWal
                             ? html`

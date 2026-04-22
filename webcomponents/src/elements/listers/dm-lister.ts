@@ -231,7 +231,8 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    .map(el => (el.children[0]! as any).agent)
                                    .filter(id => id !== '');
                            console.log("DM ORDER", order);
-                           localStorage.setItem("vinesDmOrder", JSON.stringify(order));
+                           const deduped = [...new Set(order)];
+                           localStorage.setItem("vinesDmOrder", JSON.stringify(deduped));
                        }
                    }}                   
                    @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh))}>

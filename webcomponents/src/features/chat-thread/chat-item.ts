@@ -200,7 +200,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           if (this.weServices) {
             this.weServices.assets.assetToPocket(wal);
           }
-          toasty(msg("Copied WAL Link to clipboard"));
+          toasty(msg("Copied Asset link to clipboard"));
         }
       }
         break;
@@ -350,8 +350,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       item = html`
           <chat-wal class="${itemClass}" .hash=${this.hash}></chat-wal>`;
       downloadItem = this.weServices
-        ? html`<ui5-menu-item id="downloadItem" text=${msg("Add WAL to Pocket")}></ui5-menu-item>`
-        : html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy WAL Link")}></ui5-menu-item>`;
+        ? html`<ui5-menu-item id="downloadItem" text=${msg("Add Asset to Pocket")}></ui5-menu-item>`
+        : html`<ui5-menu-item id="downloadItem" icon="chain-link" text=${msg("Copy Asset Link")}></ui5-menu-item>`;
     }
 
     if (isFlagged) {

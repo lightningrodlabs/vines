@@ -103,7 +103,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           <ui5-list id="fileList" class="listfail">
           <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
                   @click=${(_e: any) => this.loadHrl(this.hash, this._zvm)}>
-              Failed to retrieve Asset
+              ${msg("Failed to retrieve Asset")}
           </ui5-li>
       </ui5-list>
       `;
@@ -121,7 +121,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           this.requestUpdate();
         }
       }}>
-                Asset not found
+              ${msg("Asset not found")}
             </ui5-li>
         </ui5-list>
       `;
@@ -131,7 +131,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`          
           <ui5-list id="fileList" class="listfail">
           <ui5-li id="fileLi" class="fail" icon="warning" description=${this.hash.b64}>
-              Error: Message not of type WAL
+              ${msg("Error: Message not an Asset type")}
           </ui5-li>
       </ui5-list>
       `;

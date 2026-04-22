@@ -692,9 +692,9 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <ui5-menu-item id="fileItem" ?disabled=${!this._limitations.canFile} text=${msg("Upload a File")}
                            icon="attachment" starts-section></ui5-menu-item>
             ${this.weServices? html`
-                <ui5-menu-item id="linkWalItem" ?disabled=${!this._limitations.canText} text=${msg("Insert a WAL Link")}
+                <ui5-menu-item id="linkWalItem" ?disabled=${!this._limitations.canText} text=${msg("Insert an Asset Link")}
                                icon="chain-link" starts-section></ui5-menu-item>
-                <ui5-menu-item id="embedWalItem" ?disabled=${!this._limitations.canWal} text=${msg("Embed a WAL")}
+                <ui5-menu-item id="embedWalItem" ?disabled=${!this._limitations.canWal} text=${msg("Embed an Asset")}
                                starts-section></ui5-menu-item>
             ` : html``}
         </ui5-menu>
