@@ -89,7 +89,6 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
   override render() {
     console.log("<export-summary-dialog>.render()");
 
-
     let reactionsCount: number = this._dvm.threadsZvm.perspective.emojiReactions.size;
     let channelCount: number = this._dvm.threadsZvm.perspective.threads.size;
     let authorsCount: number = this._dvm.profilesZvm.perspective.profiles.size;
@@ -108,6 +107,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <ui5-dialog id="export-dialog" header-text=${msg("Export Summary")}>
+         <div id="content">
           <!-- Summary -->
           ${this._fetchingAll ? 
                   html`<div style="height: 100px">
@@ -141,39 +141,39 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
                 }}>${msg('Fetch All messages')}</ui5-button>
           </div>            
           <div class="channel-section">
-              ${[...channelsByCategory.entries()].map(([category, catChannels]) => {
-                  const isDM = category === "__dm__";
-                  return html`
-            <div>
-              <p class="channel-group-title">
-                ${isDM ? msg("Direct Messages") : category}
-              </p>
-              <div class="channel-list">
-                ${catChannels.map(([ppAh, thread]) => {                   
-                    const selected = this._selectedChannels.has(ppAh);
-                    return html`
-                      <div class="channel-item ${selected ? "selected" : ""}"
-                         @click=${() => this.toggleChannel(ppAh)}
-                         role="checkbox"
-                         aria-checked=${selected}
-                         tabindex="0"
-                         @keydown=${(e: KeyboardEvent) => {
-                           if (e.key === "Enter") {
-                             e.preventDefault();
-                             this.toggleChannel(ppAh);
-                          }
-                         }}>
-                      <ui5-checkbox ?checked=${selected}></ui5-checkbox>
-                      <span class="channel-name">${thread.pp.purpose}</span>
-                      <span class="channel-meta">${thread.beadLinksTree.length}</span>
-                    </div>
-                  `;
-                  })}
-              </div>
-            </div>
-          `;})}
+            ${[...channelsByCategory.entries()].map(([category, catChannels]) => {
+              const isDM = category === "__dm__";
+              return html`
+                <div>
+                  <p class="channel-group-title">
+                    ${isDM ? msg("Direct Messages") : category}
+                  </p>
+                  <div class="channel-list">
+                    ${catChannels.map(([ppAh, thread]) => {                   
+                        const selected = this._selectedChannels.has(ppAh);
+                        return html`
+                          <div class="channel-item ${selected ? "selected" : ""}"
+                             @click=${() => this.toggleChannel(ppAh)}
+                             role="checkbox"
+                             aria-checked=${selected}
+                             tabindex="0"
+                             @keydown=${(e: KeyboardEvent) => {
+                               if (e.key === "Enter") {
+                                 e.preventDefault();
+                                 this.toggleChannel(ppAh);
+                              }
+                             }}>
+                          <ui5-checkbox ?checked=${selected}></ui5-checkbox>
+                          <span class="channel-name">${thread.pp.purpose}</span>
+                          <span class="channel-meta">${thread.beadLinksTree.length}</span>
+                        </div>
+                      `;
+                      })}
+                  </div>
+                </div>
+            `;})}
+          </div>
          </div>
-        </div>
          <!-- Footer -->
          <div slot="footer" class="footer">
               <div style="flex-grow: 1"></div>
@@ -215,25 +215,34 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
       sharedStyles,
       css`
           :host {
-              display: flex;
-              flex-direction: column;
-              gap: 5px;
-          }
-          
-          ui5-dialog {
-              flex: 1;
-              overflow: hidden;
-              padding: 1rem;
-              display: flex;
-              flex-direction: column;
-              width: 550px;
           }
 
+          ui5-dialog::part(content) {
+              padding-bottom:0px;
+          }
+          
+          #content {
+              display: flex;
+              flex-direction: column;  
+              width: 500px;
+              max-height: 80vh;
+              padding: 0;
+              margin: 0;
+          }
+
+          .channel-section {
+              flex: 1;
+              overflow-y: auto;
+              min-height: 0;
+              margin-bottom: 1.5rem;
+          }
+          
           .footer {
               display: flex;
               flex-shrink: 0;
               gap: 10px;
               justify-content: flex-end;
+              padding: 4px;
           }
 
 
