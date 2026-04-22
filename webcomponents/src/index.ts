@@ -24,6 +24,7 @@ export * from './elements/peer-status-badge';
 export * from './elements/copy-wal-button';
 export * from './elements/graph';
 
+export * from './features/migration/export-summary-dialog';
 export * from './features/timezone/timezone-picker';
 export * from './features/migration/import-panel';
 export * from './features/migration/import-summary';

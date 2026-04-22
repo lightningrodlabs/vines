@@ -258,6 +258,7 @@ import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
+import {ExportSummaryDialog} from "@vines/elements/dist/features/migration/export-summary-dialog";
 
 // HACK: For some reason hc-sandbox gives the dna name as the cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -400,9 +401,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     return this.shadowRoot!.getElementById("wait-dialog") as Dialog;
   }
 
-    get importDialogElem(): Dialog {
-        return this.shadowRoot!.getElementById("import-dialog") as Dialog;
-    }
+  get importDialogElem(): Dialog {
+      return this.shadowRoot!.getElementById("import-dialog") as Dialog;
+  }
+
+  get exportDialogElem(): ExportSummaryDialog {
+    return this.shadowRoot!.getElementById("export-dialog") as ExportSummaryDialog;
+  }
 
   /** -- Methods -- */
 
@@ -2786,8 +2791,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <!-- Import Summary Dialog -->
             <import-summary-dialog id="importSummary"
                                    @import-confirmed=${(e: CustomEvent<ImportConfirmed>) => {
-                                     this._dvm.importPerspective(e.detail)
+                                     /*await*/ this._dvm.importPerspective(e.detail);
                                    }} ></import-summary-dialog>
+            <export-summary-dialog id="export-dialog"
+                                   @export-confirmed=${async (_e: any) => {
+                                     const content = this._dvm.exportPerspective();
+                                     this.downloadTextFile("dump_threads.json", content);
+                                     toasty(msg(`Exported data in Downloads folder`));
+                                   }}
+                                   @export-files=${async (_e: any) => {
+                                     const files_json = await this._filesDvm.exportPerspective();
+                                     this.downloadTextFile("dump_files.json", files_json);
+                                     toasty(msg(`Exported File manifests in Downloads folder`));
+                                   }} ></export-summary-dialog>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>
                 <section>
@@ -3054,11 +3070,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       case "exportAllItem":
         if (content == "") content = await this._dvm.exportAllPerspective();
       case "exportItem":
-        if (content == "") content = this._dvm.exportPerspective();
-        this.downloadTextFile("dump_threads.json", content);
-        const files_json = await this._filesDvm.exportPerspective();
-        this.downloadTextFile("dump_files.json", files_json);
-        toasty(msg(`Exported data to json in Downloads folder`));
+        /*await*/ this.exportDialogElem.open()
         break;
       case "importCommitItem":
         //this.importDvm(true);
