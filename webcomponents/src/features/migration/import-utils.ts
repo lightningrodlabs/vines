@@ -186,6 +186,7 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
     discordChannel.category = channel.category ?? MAIN_SEMANTIC_TOPIC;
   }
   result.channels.push(discordChannel);
+
   /** Process messages */
   let prevMessageId: string | undefined = undefined;
   let count = 0;
@@ -198,7 +199,7 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
       result.authors.push(author);
       knownDiscordAuthors.set(discordAuthor.id, author.agentId);
     }
-    const agentId = knownDiscordAuthors.get(discordAuthor.id)!;
+    const agentId = knownDiscordAuthors.get(discordAuthor.id) ?? dvm.cell.address.agentId;
     /** Process timestamp */
     const timestamp = Date.parse(message["timestamp"]) * 1000;
     /** Process Reply */
@@ -221,7 +222,7 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
             result.authors.push(author);
             knownDiscordAuthors.set(discordAuthor.id, author.agentId);
           }
-          const agentId = knownDiscordAuthors.get(discordAuthor.id)!;
+          const agentId = knownDiscordAuthors.get(discordAuthor.id) ?? dvm.cell.address.agentId;
           result.reactions.push({emoji: reaction["emoji"].name, agentId, messageId: message.id});
         }
       }
@@ -232,9 +233,15 @@ async function parseDiscord(external: any, dvm: ThreadsDvm): Promise<DiscordImpo
      */
     for (const attachment of message["attachments"]) {
       const content = "__URL__" + JSON.stringify(attachment);
-      const agentId = knownDiscordAuthors.get(discordAuthor.id);
+      let agentId = knownDiscordAuthors.get(discordAuthor.id);
       if (!agentId) {
-        throw new Error("Missing agentId. Aborting import.")
+        /** Could be me as the other DM correspondent */
+        if (channel.type == "DirectTextChat") {
+          knownDiscordAuthors.set(discordAuthor.id, dvm.cell.address.agentId);
+          agentId = dvm.cell.address.agentId;
+        } else {
+          throw new Error("Missing agentId. Aborting import.")
+        }
       }
       const discordMessage: DiscordMessage = {id: attachment.id, channelId: discordChannel.id, agentId, timestamp: timestamp + 1001, content, prevId: reference}
       result.messages.push(discordMessage);
