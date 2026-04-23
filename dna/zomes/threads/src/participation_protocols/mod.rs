@@ -71,7 +71,7 @@ pub fn get_applet_tp(applet_id: String) -> ExternResult<TypedPath> {
 ///
 pub fn subject2comp(subject: &Subject) -> Component {
   debug!("subject2comp() {} | {} | {}", subject.dna_hash_b64, subject.address, subject.name);
-  let str = format!("{}{}{}{}{}", subject.dna_hash_b64, "|", subject.address, "|", subject.name);
+  let str = format!("{}{}{}{}{}", subject.dna_hash_b64, "|", subject.address, "|", subject.name.replace(['.', '|'], "_"));
   //debug!("subject2comp() {}", str);
   str.into()
 }
