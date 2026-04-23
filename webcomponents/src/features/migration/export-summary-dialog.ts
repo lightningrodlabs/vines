@@ -3,10 +3,11 @@ import {customElement, state} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import Dialog from "@ui5/webcomponents/dist/Dialog";
 import {sharedStyles} from "../../styles";
-import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {Thread} from "../../viewModels/thread";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {SpecialSubjectType} from "../../events";
 
 
 /**
@@ -21,7 +22,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  @state() private _selectedChannels: Set<ActionId> = new Set();
+  @state() private _selectedChannels: Set<string> = new Set();
 
   @state() private _fetchingAll: boolean = false;
 
@@ -52,10 +53,10 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
   /** */
   private toggleChannel(key: ActionId) {
     const selection = new Set(this._selectedChannels);
-    if (selection.has(key)) {
-      selection.delete(key);
+    if (selection.has(key.b64)) {
+      selection.delete(key.b64);
     } else {
-      selection.add(key);
+      selection.add(key.b64);
     }
     this._selectedChannels = selection;
   }
@@ -64,7 +65,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
   /** */
   private toggleAll() {
     // if (!this.data) return;
-     const allKeys = Array.from(this._dvm.threadsZvm.perspective.threads.keys());
+     const allKeys = Array.from(this._dvm.threadsZvm.perspective.threads.keys()).map((k) => k.b64);
     if (this._selectedChannels.size === allKeys.length) {
       this._selectedChannels = new Set();
     } else {
@@ -86,6 +87,51 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
 
 
   /** */
+  determineCategory(typeName: string, catName: string): string {
+    switch (typeName) {
+      case SpecialSubjectType.Asset: return msg("Comments about Assets"); break;
+      case SpecialSubjectType.Applet: return msg("Comments about Tools"); break;
+      case SpecialSubjectType.AgentPubKey: return msg("Messages"); break;
+      case SpecialSubjectType.ParticipationProtocol: return msg("Comments about Threads"); break;
+      case SpecialSubjectType.SubjectType: return msg("Comments about SubjectTypes"); break;
+      //case SpecialSubjectType.SemanticTopic: return msg("Comments about Categories"); break;
+      case SpecialSubjectType.AnyBead: return msg("Comments about Assets (2)"); break;
+      case SpecialSubjectType.EntryBead: return msg("Comments about Files"); break;
+      case SpecialSubjectType.EncryptedBead:
+      case SpecialSubjectType.TextBead: return msg("Comments about Messages"); break;
+      default:
+        break;
+    }
+    return catName;
+  }
+
+  /** */
+  determineThreadTitle(thread: Thread): string {
+    let title = thread.pp.purpose;
+    switch (thread.pp.subject.typeName) {
+      case SpecialSubjectType.AgentPubKey:
+        const profile = this._dvm.profilesZvm.perspective.getProfile(new AgentId(thread.pp.subject.address));
+        title = profile? profile.nickname : msg("Unknown");
+      break;
+      case SpecialSubjectType.Asset:
+      case SpecialSubjectType.Applet:
+      case SpecialSubjectType.SubjectType:
+      case SpecialSubjectType.ParticipationProtocol:
+      case SpecialSubjectType.AnyBead:
+      case SpecialSubjectType.EntryBead:
+        title = thread.pp.subject.name;
+        break;
+      case SpecialSubjectType.TextBead:
+        title = '"' + thread.pp.subject.name + '"';
+        break;
+      default:
+        break;
+    }
+    return title;
+  }
+
+
+  /** */
   override render() {
     console.log("<export-summary-dialog>.render()");
 
@@ -94,11 +140,14 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
     let authorsCount: number = this._dvm.profilesZvm.perspective.profiles.size;
     let msgCount: number = this._dvm.threadsZvm.perspective.beads.size;
 
-    let channelsByCategory = new Map<string, [ActionId, Thread][]>();
+    /** Subject type -> Subject Name -> Thread[] */
+    let channelsByCategory = new Map<string, Map<string, [ActionId, Thread][]>>();
     for (const [ppAh, thread] of this._dvm.threadsZvm.perspective.threads.entries()) {
+      const typeKey = thread.pp.subject.typeName;
+      if (!channelsByCategory.has(typeKey)) channelsByCategory.set(typeKey, new Map());
       const catKey = thread.pp.subject.name;
-      if (!channelsByCategory.has(catKey)) channelsByCategory.set(catKey, []);
-      channelsByCategory.get(catKey)!.push([ppAh,thread]);
+      if (!channelsByCategory.get(typeKey)!.has(catKey)) channelsByCategory.get(typeKey)!.set(catKey, []);
+      channelsByCategory.get(typeKey)!.get(catKey)!.push([ppAh,thread]);
       //msgCount += thread.beadLinksTree.length;
     }
 
@@ -131,47 +180,53 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
           </div>
         `}
             
-          <!-- Channel selection -->
-          <div class="select-all-row">
-                <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
-                <ui5-button @click=${async () => {
-                    this._fetchingAll = true;
-                    await this.fetchAll();
-                    this._fetchingAll = false;
-                }}>${msg('Fetch All messages')}</ui5-button>
-          </div>            
-          <div class="channel-section">
-            ${[...channelsByCategory.entries()].map(([category, catChannels]) => {
-              const isDM = category === "__dm__";
-              return html`
-                <div>
-                  <p class="channel-group-title">
-                    ${isDM ? msg("Direct Messages") : category}
-                  </p>
-                  <div class="channel-list">
-                    ${catChannels.map(([ppAh, thread]) => {                   
-                        const selected = this._selectedChannels.has(ppAh);
-                        return html`
-                          <div class="channel-item ${selected ? "selected" : ""}"
-                             @click=${() => this.toggleChannel(ppAh)}
-                             role="checkbox"
-                             aria-checked=${selected}
-                             tabindex="0"
-                             @keydown=${(e: KeyboardEvent) => {
-                               if (e.key === "Enter") {
-                                 e.preventDefault();
-                                 this.toggleChannel(ppAh);
-                              }
-                             }}>
-                          <ui5-checkbox ?checked=${selected}></ui5-checkbox>
-                          <span class="channel-name">${thread.pp.purpose}</span>
-                          <span class="channel-meta">${thread.beadLinksTree.length}</span>
-                        </div>
-                      `;
+         <!-- Channel selection -->
+         <div class="select-all-row">
+            <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
+            <ui5-button @click=${async () => {
+                this._fetchingAll = true;
+                await this.fetchAll();
+                this._fetchingAll = false;
+            }}>${msg('Fetch All messages')}</ui5-button>
+         </div>            
+         <div class="channel-section">
+            ${[...channelsByCategory.entries()].map(([typeName, catMap]) => {
+              const res = [...catMap.entries()].map(([category, catMap]) => {
+                let catName = this.determineCategory(typeName, category);
+                return html`
+                  <div>
+                    <p class="channel-group-title">
+                      ${catName}
+                    </p>
+                    <div class="channel-list">
+                      ${catMap.map(([ppAh, thread]) => {
+                          //console.log("<export-summary-dialog> thread subject", thread.pp.subject, thread);
+                          let title = this.determineThreadTitle(thread);
+                          const selected = this._selectedChannels.has(ppAh.b64);
+                          return html`
+                              <div class="channel-item ${selected ? "selected" : ""}"
+                                   @click=${() => this.toggleChannel(ppAh)}
+                                   role="checkbox"
+                                   .aria-checked=${selected}
+                                   tabindex="0"
+                                   @keydown=${(e: KeyboardEvent) => {
+                                       if (e.key === "Enter") {
+                                           e.preventDefault();
+                                           this.toggleChannel(ppAh);
+                                       }
+                                   }}>
+                                  <ui5-checkbox ?checked=${selected}></ui5-checkbox>
+                                  <span class="channel-name">${title}</span>
+                                  <span class="channel-meta">${thread.beadLinksTree.length}</span>
+                              </div>
+                          `;
                       })}
-                  </div>
-                </div>
-            `;})}
+                    </div>
+                  </div>`;
+              });
+              return html`${res}`;
+            })
+          }
           </div>
          </div>
          <!-- Footer -->
