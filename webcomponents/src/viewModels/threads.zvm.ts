@@ -451,7 +451,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
         /* unreadThreads: Map new beads to their threads */
         let unreadsByThread: ActionIdMap<[AnyId, [ActionId, Timestamp][]]> = new ActionIdMap();
-        latest.newBeadsByThread.map(async ([pp_ah, bl]) => {
+        await Promise.all(latest.newBeadsByThread.map(async ([pp_ah, bl]) => {
             const ppAh = new ActionId(pp_ah);
             let maybeThread = this._perspective.threads.get(ppAh);
             if (!maybeThread) {
@@ -470,7 +470,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 unreadsByThread.set(ppAh, [subjectAddr, []]);
             }
             unreadsByThread.get(ppAh)![1].push([new ActionId(bl.beadAh), bl.creationTime]);
-        });
+        }));
         console.log("threadsZvm.probeAllLatest() unreadThreads done", JSON.stringify(unreadsByThread));
         this._perspective.storeAllUnreads(unreadsByThread);
 
