@@ -359,6 +359,7 @@ export class ImportSummary extends LitElement {
               display: flex;
               flex-direction: column;
               gap: 0.35rem;
+              margin-right: 10px;
           }
 
           .channel-item {

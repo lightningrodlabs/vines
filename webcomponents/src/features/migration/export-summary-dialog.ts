@@ -50,13 +50,14 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** */
+  /** Pull all beads from the thread on toggle */
   private toggleChannel(key: ActionId) {
     const selection = new Set(this._selectedChannels);
     if (selection.has(key.b64)) {
       selection.delete(key.b64);
     } else {
       selection.add(key.b64);
+      this._dvm.threadsZvm.pullAllBeads(key, GetStrategy.Local).then(() => this.requestUpdate());
     }
     this._selectedChannels = selection;
   }
@@ -243,10 +244,8 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
                             //   this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME] = this.filterData();
                             // }
                             this.dispatchEvent(new CustomEvent<any>('export-confirmed', {
-                                detail: {
-                                    selection: this._selectedChannels,
-                                    //data: this.data!,
-                                }, bubbles: true, composed: true}));
+                                detail: this._selectedChannels,
+                                bubbles: true, composed: true}));
                             const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
                             dialog.close(false);
                   }}>
@@ -353,6 +352,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
               display: flex;
               flex-direction: column;
               gap: 0.35rem;
+              margin-right: 10px;
           }
 
           .channel-item {

@@ -1,6 +1,6 @@
 {
   "name"    : "vines-dev",
-  "version" : "1.27.2",
+  "version" : "1.27.3",
   "config"  : {
     "hc_version"  : "0.6.1-rc.1",
     "zits_version": "1.17.1",
