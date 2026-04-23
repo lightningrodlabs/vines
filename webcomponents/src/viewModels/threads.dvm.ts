@@ -681,17 +681,17 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** Dump perspective as JSON */
-  exportPerspective(): string {
+  exportPerspective(selectedChannels?: Set<string>): string {
     console.debug("Dvm.exportPerspective()")
     const dvmExport: any = {};
 
-    const tJson = this.threadsZvm.export(this.authorshipZvm);
+    const tJson = this.threadsZvm.export(this.authorshipZvm, selectedChannels);
     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);
 
     const pJson = this.profilesZvm.export(/*this.authorshipZvm*/);
     dvmExport[ProfilesZvm.DEFAULT_ZOME_NAME] = JSON.parse(pJson);
 
-    console.log("Dvm.exportPerspective()", this.authorshipZvm.perspective);
+    // TODO: Figure out how to partially export authorship based on selectedChannels
     const oJson = this.authorshipZvm.export();
 
     dvmExport[AuthorshipZvm.DEFAULT_ZOME_NAME] = JSON.parse(oJson);

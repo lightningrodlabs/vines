@@ -140,9 +140,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** Dump perspective as JSON (caller should call getAllPublicManifest() first) */
-    export(authorshipZvm: AuthorshipZvm): string {
+    export(authorshipZvm: AuthorshipZvm, selectedChannels?: Set<string>): string {
         this.storeAttributions(authorshipZvm);
-        const snapshot = this._perspective.makeSnapshot();
+        const snapshot = selectedChannels
+          ? this._perspective.makePartialSnapshot(selectedChannels)
+          : this._perspective.makeSnapshot();
         return JSON.stringify(snapshot, null, 2);
     }
 
@@ -675,11 +677,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** make sure it's my text bead */
         const beadInfo = this._perspective.getBeadInfo(beadAh);
         if (!beadInfo || beadInfo.beadType != ThreadsEntryType.TextBead || !beadInfo.author.equals(this.cell.address.agentId)) {
-            throw Error("Invalid bead to update");
+            throw Error("Invalid bead to edit");
         }
         /** Grab bead's "edit" thread */
         const pair = this._perspective.getEditThread(beadAh);
-        /** if none, create one and manually publish first bead */
+        /** if none, create one and manually publish the first bead */
         if (!pair) {
             const [_ts, ppAh] = await this.publishEditThread(beadAh);
             const bead: Bead = {

@@ -185,7 +185,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       case "downloadItem": {
         const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;
         if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-          let value = this._dvm.threadsZvm.perspective.getLatestEdit(this.hash);
+          let value = this._dvm.threadsZvm.perspective.getLatestEdit(this.hash)!;
           navigator.clipboard.writeText(value);
           toasty(msg("Copied Text to clipboard"));
         }

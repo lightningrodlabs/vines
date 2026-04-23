@@ -107,7 +107,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   determineThreadTitle(thread: Thread): string {
-    let title = thread.pp.purpose;
+    let title = thread.title; //thread.pp.purpose;
     switch (thread.pp.subject.typeName) {
       case SpecialSubjectType.AgentPubKey:
         const profile = this._dvm.profilesZvm.perspective.getProfile(new AgentId(thread.pp.subject.address));
@@ -122,7 +122,8 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
         title = thread.pp.subject.name;
         break;
       case SpecialSubjectType.TextBead:
-        title = '"' + thread.pp.subject.name + '"';
+        let latest = this._dvm.threadsZvm.perspective.getLatestEdit(new ActionId(thread.pp.subject.address)) ?? thread.pp.subject.name;
+        title = '"' + latest + '"';
         break;
       default:
         break;
@@ -146,6 +147,9 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
       const typeKey = thread.pp.subject.typeName;
       if (!channelsByCategory.has(typeKey)) channelsByCategory.set(typeKey, new Map());
       const catKey = thread.pp.subject.name;
+      if (thread.pp.subject.typeName === SpecialSubjectType.TextBead && thread.pp.purpose == "EDIT") {
+        continue;
+      }
       if (!channelsByCategory.get(typeKey)!.has(catKey)) channelsByCategory.get(typeKey)!.set(catKey, []);
       channelsByCategory.get(typeKey)!.get(catKey)!.push([ppAh,thread]);
       //msgCount += thread.beadLinksTree.length;
@@ -383,6 +387,9 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
               flex: 1;
               font-size: var(--sapFontSize, 1.0rem);
               color: var(--sapTextColor, #32363a);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              text-wrap: nowrap;
           }
 
           .channel-meta {

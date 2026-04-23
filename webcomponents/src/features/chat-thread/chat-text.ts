@@ -47,7 +47,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         this.dispatchEvent(threadJumpEvent(maybe![0]));
       }}>${msg("(edited)")}</span>`;
     }
-    let value = this._zvm.perspective.getLatestEdit(this.hash);
+    let value = this._zvm.perspective.getLatestEdit(this.hash)!;
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       value = tm.value;
     }

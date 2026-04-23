@@ -107,8 +107,7 @@ fn validate_bead(
     /// Fail if there is moderation and author has been banned
     /// FIXME
     /// Check if author is allowed
-    if !pp.limitations.allowed_agents.is_empty() && !pp.limitations.allowed_agents.contains(author)
-    {
+    if !pp.limitations.allowed_agents.is_empty() && !pp.limitations.allowed_agents.contains(author) {
         return Ok(ValidateCallbackResult::Invalid(
             "Author not allowed".to_string(),
         ));

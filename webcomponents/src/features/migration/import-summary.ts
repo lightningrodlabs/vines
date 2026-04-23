@@ -393,6 +393,9 @@ export class ImportSummary extends LitElement {
               flex: 1;
               font-size: var(--sapFontSize, 1.0rem);
               color: var(--sapTextColor, #32363a);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              text-wrap: nowrap;
           }
 
           .channel-meta {

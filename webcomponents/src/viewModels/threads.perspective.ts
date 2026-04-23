@@ -36,6 +36,7 @@ import {AuthorshipZvm} from "./authorship.zvm";
 import {SearchParameters} from "../search";
 import {Cell} from "@ddd-qc/cell-proxy";
 import {prettyTimestamp} from "@ddd-qc/files";
+import {SpecialSubjectType} from "../events";
 
 
 /** Snapshot does not store notifications and new/unread state */
@@ -380,20 +381,20 @@ export class ThreadsPerspective {
     return res;
   }
 
-  getLatestEdit(beadAh: ActionId): string {
+  getLatestEdit(beadAh: ActionId): string | undefined {
+    let bead = this.getBead(beadAh) as TextBeadMat;
+    if (!bead) return undefined;
     const pair = this.getEditThread(beadAh);
     if (!pair) {
-      const bead = this.getBead(beadAh)! as TextBeadMat;
       return bead.value;
     }
     const lastBeads = pair[1].getLast(1);
     if (lastBeads.length == 0) {
       console.warn("Missing beads in EditThread", beadAh.short);
-      const bead = this.getBead(beadAh)! as TextBeadMat;
       return bead.value;
     }
     const lastBead = lastBeads[0]!;
-    const bead = this.getBead(lastBead.beadAh) as TextBeadMat;
+    bead = this.getBead(lastBead.beadAh) as TextBeadMat;
     return bead.value;
   }
 
@@ -509,7 +510,7 @@ export class ThreadsPerspective {
     return all;
   }
 
-  /** Recursivily follow mapping */
+  /** Recursively follow mapping */
   getLatestSubject(origSubjectId: AnyId): AnyId {
     let subjectId = origSubjectId;
     let next;
@@ -520,7 +521,7 @@ export class ThreadsPerspective {
     return subjectId;
   }
 
-  /** Recursivily follow mapping */
+  /** Recursively follow mapping */
   getOrigSubject(latestSubId: AnyId): AnyId {
     let subjectId = latestSubId;
     let prev;
@@ -703,6 +704,7 @@ export class ThreadsPerspective {
   /** -- Memento -- */
 
   /** TODO: deep copy */
+  /** Optimized version of makePartialSnapshot */
   makeSnapshot(): ThreadsSnapshot {
     /** applet subject types */
     const appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][] = [];
@@ -719,7 +721,9 @@ export class ThreadsPerspective {
 
     /** PPs */
     /** Collapse subject address to latest version */
-    let pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries()).map(([ppAh, thread]) => {
+    let pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries())
+      .filter(([_ppAh, thread]) => thread.pp.subject.typeName !== SpecialSubjectType.TextBead || thread.pp.purpose !== "EDIT") // Dont include TextBead edit threads
+      .map(([ppAh, thread]) => {
       const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
       thread.pp.subject.address = latest.b64;
       return [ppAh.b64, materializePp(thread.pp), thread.title, thread.creationTime, thread.author.b64];
@@ -738,6 +742,70 @@ export class ThreadsPerspective {
       beads: Array.from(this.beads.entries()).map(([beadAh, [beadInfo, typed]]) => [beadAh.b64, beadInfo, typed]),
       emojiReactions,
       appletSubjectTypes,
+    };
+    print(result);
+    return result;
+  }
+
+  makePartialSnapshot(selectedPps: Set<string>): ThreadsSnapshot {
+    /** Filter out edit threads */
+    selectedPps = new Set(Array.from(selectedPps).filter((ppAhB64) => {
+      const thread = this.threads.get(new ActionId(ppAhB64));
+      if (!thread) return true;
+      return thread.pp.subject.typeName != SpecialSubjectType.TextBead || thread.pp.purpose !== "EDIT";
+    }));
+    /** applet subject types */
+    const appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][] = [];
+    for (const [appletEh, map] of this.appletSubjectTypes.entries()) {
+      const types: [EntryHashB64, string][] = Array.from(map.entries()).map(([pathEh, type]) => [pathEh.b64, type]);
+      appletSubjectTypes.push([appletEh.b64, types]);
+    }
+    /** PPs */
+    /** Collapse subject address to the latest version */
+    const pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries())
+      .filter(([ppAh, _thread]) => selectedPps.has(ppAh.b64))
+      .map(([ppAh, thread]) => {
+        const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
+        thread.pp.subject.address = latest.b64;
+        return [ppAh.b64, materializePp(thread.pp), thread.title, thread.creationTime, thread.author.b64];
+      });
+
+    /** Collapse TextBead data to latest version */
+    let beadsMap = new ActionIdMap<[BeadInfo, TypedBeadMat]>();
+    Array.from(this.beads.entries())
+      .filter(([_beadAh, [beadInfo, _typed]]) => selectedPps.has(beadInfo.bead.ppAh.b64))
+      .map(([beadAh, [beadInfo, typed]]) => {
+        (typed as TextBeadMat).value = this.getLatestEdit(beadAh) ?? (typed as TextBeadMat).value;
+        beadsMap.set(beadAh, [beadInfo, typed])
+      });
+
+
+    /** emojis */
+    const emojiReactions: [ActionHashB64, [AgentPubKeyB64, string[]][]][] = [];
+    for (const [beadAh, map] of this.emojiReactions.entries()) {
+      if (!beadsMap.get(beadAh)) continue;
+      const agents: [AgentPubKeyB64, string[]][] = Array.from(map.entries()).map(([agent, emojis]) => [agent.b64, emojis]);
+      emojiReactions.push([beadAh.b64, agents]);
+    }
+
+    /** -- Done -- */
+    const result: ThreadsSnapshot = {
+      appletSubjectTypes,
+      appletIds: this.appletIds.map((id) => id.b64),
+      subjects: Array.from(this.subjects.entries()),
+      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, [title, author]]) => [topicHash.b64, title, author.b64]),
+      hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
+      pps,
+      beads: Array.from(beadsMap.entries()).map(([beadAh, [a, b]]) => [beadAh.b64, a, b]),
+      emojiReactions,
+
+      favorites: this.favorites.filter((id) => beadsMap.get(id)).map((id) => id.b64),
+      bans: Array.from(this.bans.entries())
+        .filter(([ppAh, _a]) => selectedPps.has(ppAh.b64))
+        .map(([ppAh, agents]) => [ppAh.b64, agents.map((a) => a.b64)]),
+      flags: Array.from(this.flags.entries())
+        .filter(([ppAh, _a]) => selectedPps.has(ppAh.b64))
+        .map(([ppAh, pairs]) => [ppAh.b64, pairs.map(([_lh, beadAh]) => beadAh.b64)]),
     };
     print(result);
     return result;
