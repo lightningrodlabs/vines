@@ -762,9 +762,13 @@ export class ThreadsPerspective {
     }
     /** PPs */
     /** Collapse subject address to the latest version */
+    const selectedTopics: Set<string> = new Set();
     const pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries())
       .filter(([ppAh, _thread]) => selectedPps.has(ppAh.b64))
       .map(([ppAh, thread]) => {
+        if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
+          selectedTopics.add(thread.pp.subject.address);
+        }
         const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
         thread.pp.subject.address = latest.b64;
         return [ppAh.b64, materializePp(thread.pp), thread.title, thread.creationTime, thread.author.b64];
@@ -778,8 +782,6 @@ export class ThreadsPerspective {
         (typed as TextBeadMat).value = this.getLatestEdit(beadAh) ?? (typed as TextBeadMat).value;
         beadsMap.set(beadAh, [beadInfo, typed])
       });
-
-
     /** emojis */
     const emojiReactions: [ActionHashB64, [AgentPubKeyB64, string[]][]][] = [];
     for (const [beadAh, map] of this.emojiReactions.entries()) {
@@ -787,18 +789,18 @@ export class ThreadsPerspective {
       const agents: [AgentPubKeyB64, string[]][] = Array.from(map.entries()).map(([agent, emojis]) => [agent.b64, emojis]);
       emojiReactions.push([beadAh.b64, agents]);
     }
-
     /** -- Done -- */
     const result: ThreadsSnapshot = {
       appletSubjectTypes,
       appletIds: this.appletIds.map((id) => id.b64),
       subjects: Array.from(this.subjects.entries()),
-      semanticTopics: Array.from(this.semanticTopics.entries()).map(([topicHash, [title, author]]) => [topicHash.b64, title, author.b64]),
+      semanticTopics: Array.from(this.semanticTopics.entries())
+        .filter(([topicHash, _pair]) => selectedTopics.has(topicHash.b64))
+        .map(([topicHash, [title, author]]) => [topicHash.b64, title, author.b64]),
       hiddens: Object.entries(this.hiddens).filter(([_hash, isHidden]) => isHidden).map(([hash, _isHidden]) => hash),
       pps,
       beads: Array.from(beadsMap.entries()).map(([beadAh, [a, b]]) => [beadAh.b64, a, b]),
       emojiReactions,
-
       favorites: this.favorites.filter((id) => beadsMap.get(id)).map((id) => id.b64),
       bans: Array.from(this.bans.entries())
         .filter(([ppAh, _a]) => selectedPps.has(ppAh.b64))
