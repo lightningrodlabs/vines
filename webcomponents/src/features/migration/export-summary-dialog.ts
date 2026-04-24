@@ -16,23 +16,14 @@ import {SpecialSubjectType} from "../../events";
 @customElement("export-summary-dialog")
 export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
 
-  /** */
-  constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-  }
-
-
   @state() private _selectedChannels: Set<string> = new Set();
 
   @state() private _fetchingAll: boolean = false;
 
 
-
   /** */
   open() {
-    //this._data = data;
     const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-    //console.log("<export-summary>.open()", data, dialog);
     dialog.open = true;
   }
 
@@ -251,15 +242,18 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
                   }}>
                   ${msg('Export')}
               </ui5-button>
-             <ui5-button style="margin-top:5px" @click=${() => {
-                 this.dispatchEvent(new CustomEvent<boolean>('export-files', {
-                     detail: true, bubbles: true, composed: true}));
-             }}>${msg('Export Files')}
+             <ui5-button style="margin-top:5px" 
+                         @click=${() => {
+                           this.dispatchEvent(new CustomEvent<boolean>('export-files', {
+                               detail: true, bubbles: true, composed: true}));
+                        }}>
+               ${msg('Export Files')}
              </ui5-button>
-              <ui5-button style="margin-top:5px" @click=${() => {
-                  const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                  dialog.close(false);
-              }}>
+              <ui5-button style="margin-top:5px" 
+                          @click=${() => {
+                            const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
+                            dialog.close(false);
+                        }}>
                   ${msg('Cancel')}
               </ui5-button>
           </div>

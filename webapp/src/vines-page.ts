@@ -2,12 +2,15 @@ import {css, html, LitElement, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
   ActionId,
-  AgentIdMap, decodeHappJoinInfo,
+  AgentIdMap,
+  decodeHappJoinInfo,
   delay,
-  DnaElement, DnaId,
+  DnaElement,
+  DnaId,
   EntryId,
   HappBuildModeType,
-  intoDhtId, NetworkInfoResponse,
+  intoDhtId,
+  NetworkInfoResponse,
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
 
@@ -168,9 +171,7 @@ import '@vaadin/grid/theme/lumo/vaadin-grid.js';
 import '@vaadin/grid/theme/lumo/vaadin-grid-selection-column.js';
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
-import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-setBasePath('/shoelace-assets');
-
+import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
@@ -193,6 +194,7 @@ import {
   defaultModeration,
   doodle_flowers,
   EditTopicRequest,
+  ExportFilesDialog,
   FavoritesEvent,
   favoritesJumpEvent,
   filesContext,
@@ -200,10 +202,16 @@ import {
   getThisAppletId,
   HideEvent,
   ICollapsable,
+  ImportConfirmed,
+  ImportData,
+  ImportSummaryDialog,
   InputBar,
   JumpEvent,
   latestThreadName,
-  MainViewType, markdownItMentions, md,
+  loadImportFile,
+  MainViewType,
+  markdownItMentions,
+  md,
   multiJumpEvent,
   networkCallerContext,
   NotifiableEvent,
@@ -230,12 +238,12 @@ import {
   ThreadsEntryType,
   ThreadsPerspective,
   toasty,
+  unimportedProfiles,
   ViewEmbedDialog,
   ViewEmbedEvent,
   VinesInputEvent,
   weaveUrlToWal,
-  weClientContext,
-  unimportedProfiles, loadImportFile, ImportData, ImportConfirmed, ImportSummaryDialog
+  weClientContext
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -253,12 +261,14 @@ import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg, str} from "@lit/localize";
 import {getLocale, setLocale} from "./localization";
 import {mdiInformationOutline} from "@mdi/js";
-import {HoloHashB64, Timestamp, HoloHashType, AgentPubKeyB64} from "@holochain/client";
+import {AgentPubKeyB64, HoloHashB64, HoloHashType, Timestamp} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ExportSummaryDialog} from "@vines/elements/dist/features/migration/export-summary-dialog";
+
+setBasePath('/shoelace-assets');
 
 // HACK: For some reason hc-sandbox gives the dna name as the cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';
@@ -408,6 +418,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   get exportDialogElem(): ExportSummaryDialog {
     return this.shadowRoot!.getElementById("export-dialog") as ExportSummaryDialog;
   }
+
+  get exportFilesDialogElem(): ExportFilesDialog {
+    return this.shadowRoot!.getElementById("export-files-dialog") as ExportFilesDialog;
+  }
+
 
   /** -- Methods -- */
 
@@ -1821,23 +1836,24 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     const avatar = renderAvatar(this, this._dvm.profilesZvm, this.cell.address.agentId, "S");
 
+    const publicFilesItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
+      .map(([ppEh, pprm]) => {
+        const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
+        const profile = pprm.author? this._dvm.profilesZvm.perspective.getProfile(pprm.author) : undefined;
+        return {
+          ppEh: ppEh.b64,
+          description: pprm.description,
+          timestamp: pprm.creationTs,
+          author: profile,
+          isLocal,
+          isPrivate: false
+        } as FileTableItem;
+      });
+    console.log("publicFilesItems", publicFilesItems.length);
     /** Render File View */
     if (this._mainView == MainViewType.Files) {
       primaryTitle = msg("Shared Files");
       console.log("dFiles this._filesDvm", this._filesDvm);
-      const publicItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
-        .map(([ppEh, pprm]) => {
-          const isLocal = !!this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(ppEh);
-          const profile = pprm.author? this._dvm.profilesZvm.perspective.getProfile(pprm.author) : undefined;
-          return {
-            ppEh: ppEh.b64,
-            description: pprm.description,
-            timestamp: pprm.creationTs,
-            author: profile,
-            isLocal,
-            isPrivate: false
-          } as FileTableItem;
-        });
       console.log("dFiles dnaProperties", this._filesDvm.dnaProperties);
       console.log("dFiles filesDvm cell", this._filesDvm.cell);
       centerSide = html`
@@ -1852,7 +1868,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   </div>
                   <file-table type="group" notag view nolocal noselect
                               style="flex-grow: 1;"
-                              .items=${publicItems}
+                              .items=${publicFilesItems}
                               @download=${(e: CustomEvent<EntryId>) => {
                                   console.log("download", e.detail.b64);
                                   /*await*/ this._filesDvm.downloadFile(e.detail)
@@ -2793,6 +2809,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    @import-confirmed=${(e: CustomEvent<ImportConfirmed>) => {
                                      /*await*/ this._dvm.importPerspective(e.detail);
                                    }} ></import-summary-dialog>
+            <export-files-dialog id="export-files-dialog" 
+                                 .items=${publicFilesItems}
+                                 @export-files=${async (_e: any) => {
+                                     const files_json = await this._filesDvm.exportPerspective();
+                                     this.downloadTextFile("dump_files.json", files_json);
+                                     toasty(msg(`Exported File manifests in Downloads folder`));
+                                 }}></export-files-dialog>
             <export-summary-dialog id="export-dialog"
                                    @export-confirmed=${async (e: CustomEvent<Set<string>>) => {
                                      const content = this._dvm.exportPerspective(e.detail);
@@ -2800,10 +2823,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                      toasty(msg(`Exported data in Downloads folder`));
                                    }}
                                    @export-files=${async (_e: any) => {
-                                     const files_json = await this._filesDvm.exportPerspective();
-                                     this.downloadTextFile("dump_files.json", files_json);
-                                     toasty(msg(`Exported File manifests in Downloads folder`));
-                                   }} ></export-summary-dialog>
+                                     //await this._filesDvm.deliveryZvm.probeDht(GetStrategy.Local);
+                                       this._filesDvm.probeAll(GetStrategy.Local);
+                                       this.exportFilesDialogElem.open();
+                                       this.requestUpdate();
+            }}></export-summary-dialog>
             <!-- Create Topic Dialog -->
             <ui5-dialog id="create-topic-dialog" header-text=${msg('Create Category')}>
                 <section>
