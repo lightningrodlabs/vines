@@ -9,6 +9,10 @@ import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {SpecialSubjectType} from "../../events";
 import {ActionHashB64} from "@holochain/client";
 import {ProfilesAltSnapshot, ProfilesZvm} from "@ddd-qc/profiles-dvm";
+import JSZip from "jszip";
+import {prettyFileSize} from "@ddd-qc/files";
+import {DeliverySnapshot} from "@ddd-qc/delivery";
+import {kind2mime} from "@ddd-qc/files/dist/fileTypeUtils";
 
 
 export type ChannelInfo = {
@@ -45,15 +49,12 @@ export type ImportReaction = {
   agentId: AgentId,
 }
 
-
-
 export type DiscordImportData = {
   authors: ImportAuthor[],
   channels: ChannelInfo[],
   messages: DiscordMessage[],
   reactions: ImportReaction[],
 }
-
 
 export type VinesImportData = {
   authors: {
@@ -69,8 +70,13 @@ export type VinesImportData = {
   }[],
 }
 
+export type ImportFilesData = {
+  json: any,
+  files: File[]
+}
 
 
+/** */
 async function createProfileFromDiscord(author: any): Promise<ImportAuthor> {
   const agentId = await AgentId.random(); // Profile needs to be bound to an agentId, since there are none, make one up.
   const profile: Profile = {
@@ -83,6 +89,78 @@ async function createProfileFromDiscord(author: any): Promise<ImportAuthor> {
   return { agentId, profile } ;
 }
 
+
+/** */
+export function loadImportZipFile(callback: (data: ImportFilesData) => void) {
+  console.log("loadImportZipFile()");
+  /** Select a file */
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = ".zip";
+  input.onchange = async (e: any) => {
+    //console.log("loadImportZipFile() target download file", e);
+    const file = e.target.files[0];
+    if (!file) {
+      console.error("No file selected");
+      return;
+    }
+    if (file.size > 500 * 1024 * 1024) {
+      toasty(`File is too large (${prettyFileSize(file.size)}). Max size is 500MB.`);
+      input.value = '';
+      return;
+    }
+    if (file.size <= 0) {
+      toasty(`File is empty.`);
+      input.value = '';
+      return;
+    }
+    const zip = await JSZip.loadAsync(file);
+    const files: File[] = [];
+
+    let manifest: File | undefined = undefined;
+    await Promise.all(
+      Object.values(zip.files).map(async (entry) => {
+        if (entry.dir) return; // skip directory entries
+        const blob = await entry.async("blob");
+        const file2 = new File([blob], entry.name, { type: blob.type });
+        if (file2.name == "vines_files.json") {
+          manifest = file2;
+        } else {
+          files.push(file2);
+        }
+      })
+    );
+    if (!manifest) {
+      toasty("Invalid Zip File");
+      return;
+    }
+    toasty(`Found ${files.length} Files to import in zip`);
+    /** Read the file */
+    const json: any = await (manifest as File).text();
+    let external: any;
+    try {
+      external = JSON.parse(json);
+    } catch (e) {
+      console.error("Error parsing Files Manifest:", e);
+      toasty(msg("Error parsing Files Manifest. File might not be valid JSON"));
+      return;
+    }
+    const snapshot = external.zDelivery as DeliverySnapshot;
+    const typeMap = new Map();
+    snapshot.manifests.map(([manif, _ts, _agent]) => {
+      return typeMap.set(manif.description.name, kind2mime(manif.description.kind_info));
+    });
+    /** Change the file types based on manifest */
+    let i = 0;
+    for (const file of files) {
+      files[i] = new File([file], file.name, { type: typeMap.get(file.name)! });
+      i += 1;
+    }
+    /** */
+    callback({ json: external, files });
+  }
+  input.click();
+}
 
 
 /** */

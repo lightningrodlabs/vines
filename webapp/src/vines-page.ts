@@ -209,6 +209,7 @@ import {
   JumpEvent,
   latestThreadName,
   loadImportFile,
+  loadImportZipFile,
   MainViewType,
   markdownItMentions,
   md,
@@ -243,7 +244,8 @@ import {
   ViewEmbedEvent,
   VinesInputEvent,
   weaveUrlToWal,
-  weClientContext
+  weClientContext,
+  ExportSummaryDialog,
 } from "@vines/elements";
 
 import {intoHrl, WeServicesEx, wrapPathInSvg} from "@ddd-qc/we-utils";
@@ -266,7 +268,8 @@ import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
-import {ExportSummaryDialog} from "@vines/elements/dist/features/migration/export-summary-dialog";
+import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
+import {DeliverySnapshot} from "@ddd-qc/delivery";
 
 setBasePath('/shoelace-assets');
 
@@ -973,8 +976,44 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-  private _canSpin = false;
+  private async _publishFileRec(files: File[], index: number) {
+    if (index < 0) {
+      toasty("Finished importing and uploading all files");
+      return;
+    }
+    const file = files[index]!;
+    this._file = file;
+    const splitObj = await splitFile(file, this._filesDvm.dnaProperties.maxChunkSize);
 
+    const onComplete = async (_manifestEh: any) => {
+      toasty(msg("File successfully shared") + ": " + file.name);
+      this._file = undefined;
+      await delay(50);
+      this.requestUpdate();
+      await this._publishFileRec(files, index - 1);
+    };
+
+    const succeeded = this._filesDvm.startPublishFile(
+      file,
+      splitObj,
+      [],
+      this._dvm.profilesZvm.perspective.agents,
+      onComplete,
+    );
+    if (!succeeded) {
+      this._file = undefined;
+      toasty(msg(str`Error: File "${file.name}" already shared to group or stored locally`));
+    }
+  }
+
+  private _importFiles(importData: ImportFilesData): void {
+    // const snapshot = importData.json.zDelivery as DeliverySnapshot;
+    toasty(`Importing ${importData.files.length}`);
+    /*await*/ this._publishFileRec(importData.files, importData.files.length - 1);
+  }
+
+
+  private _canSpin = false;
   /** After the first render only */
   override async firstUpdated() {
     console.log("<vines-page> firstUpdated()", this._dvm.threadsZvm.perspective.globalProbeLogTs);
@@ -2755,7 +2794,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    e.stopPropagation(); /*e.preventDefault();*/
                                    console.log("onInputCommit.ProfilePanel()", e.detail);
                                    if (!e.detail.text) throw Error("Missing text in input event");
-                                   this.publishDmFromProfilePanel(e.detail.text);
+                                   /*await*/ this.publishDmFromProfilePanel(e.detail.text);
                                    const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
                                    if (profilePopElem.isOpen()) {
                                        profilePopElem.close();
@@ -2783,10 +2822,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-button>
                 </div>
                 <import-panel
-                        @import-requested=${(_e: CustomEvent) => {
-                            //const canPublish = e.detail;
+                        @import-requested=${(e: CustomEvent<boolean>) => {
+                          if (!e.detail) {
+                            loadImportZipFile((d) => this._importFiles(d));
+                          } else {
                             loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
-                            this.importDialogElem.close(false);
+                          }
+                          this.importDialogElem.close(false);
                         }}
                 ></import-panel>
             </ui5-dialog>            

@@ -21,8 +21,7 @@ export class ImportPanel extends LitElement {
                     <div style="flex-grow: 1"></div>
                     <ui5-button design="Emphasized" 
                                 @click=${(e:any) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
+                                    e.stopPropagation();e.preventDefault();
                                     this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: true, bubbles: true, composed: true}));
                                 }}>
                         ${msg('Import')}
@@ -37,11 +36,18 @@ export class ImportPanel extends LitElement {
                         <ui5-button design="Emphasized"  
                                     style="flex-grow:1;"
                                     @click=${(e:any) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
+                                        e.stopPropagation();e.preventDefault();
                                         this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: true, bubbles: true, composed: true}));
                                     }}>
-                            ${msg('Import')}
+                            ${msg('Import Data')}
+                        </ui5-button>
+                        <ui5-button design="Emphasized"
+                                    style="flex-grow:1;"
+                                    @click=${(e:any) => {
+                                        e.stopPropagation();e.preventDefault();
+                                        this.dispatchEvent(new CustomEvent<boolean>('import-requested', {detail: false, bubbles: true, composed: true}));
+                                    }}>
+                            ${msg('Import Files')}
                         </ui5-button>
                     </div>
                 </div>
