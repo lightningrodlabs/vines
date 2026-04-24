@@ -269,7 +269,6 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
-import {DeliverySnapshot} from "@ddd-qc/delivery";
 
 setBasePath('/shoelace-assets');
 
