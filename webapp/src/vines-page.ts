@@ -2812,11 +2812,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <export-files-dialog id="export-files-dialog" 
                                  .items=${publicFilesItems}
                                  @export-confirmed=${async (e: CustomEvent<Set<string>>) => {
-                                     const pairs = await Promise.all(Array.from(e.detail).map(async (ppEhB64) => this._filesDvm.fetchFile(new EntryId(ppEhB64))));
-                                     await downloadFilesAsZip(pairs.map((pair) => pair[1]));
                                      const files_json = await this._filesDvm.exportPerspective();
-                                     this.downloadTextFile("dump_files.json", files_json);
-                                     toasty(msg(`Exported File manifests in Downloads folder`));
+                                     if (e.detail.size == 0) {
+                                         this.downloadTextFile("vines_files.json", files_json);
+                                         toasty(msg(`Exported File Manifests into Downloads folder`));
+                                         return;
+                                     }
+                                     const pairs = await Promise.all(Array.from(e.detail).map(async (ppEhB64) => this._filesDvm.fetchFile(new EntryId(ppEhB64))));
+                                     const files = pairs.map((pair) => pair[1]);
+                                     const blob = new Blob([files_json], { type: "application/json" });
+                                     const manifest = new File([blob], "vines_files.json", { type: "application/json" });
+                                     files.push(manifest);
+                                     await downloadFilesAsZip(files, "vines_files.zip");
+                                     toasty(msg(`Exported Files into Downloads folder`));
                                  }}></export-files-dialog>
             <export-summary-dialog id="export-dialog"
                                    @export-confirmed=${async (e: CustomEvent<Set<string>>) => {

@@ -130,10 +130,7 @@ export class ExportFilesDialog extends LitElement {
                 <div style="flex-grow: 1"></div>
                 <ui5-button style="margin-top:5px" design="Emphasized"
                             ?disabled=${this._selectedFiles.size === 0}
-                            @click=${(_e: any) => {
-                                // if (!allSelected) {
-                                //   this.data!.json[ThreadsZvm.DEFAULT_ZOME_NAME] = this.filterData();
-                                // }
+                            @click=${(_e: any) => {                               
                                 this.dispatchEvent(new CustomEvent<any>('export-confirmed', {
                                     detail: this._selectedFiles,
                                     bubbles: true, composed: true}));
@@ -141,6 +138,16 @@ export class ExportFilesDialog extends LitElement {
                                 dialog.close(false);
                             }}>
                     ${msg('Export')}
+                </ui5-button>
+                <ui5-button style="margin-top:5px"
+                            @click=${() => {
+                                this.dispatchEvent(new CustomEvent<any>('export-confirmed', {
+                                    detail: new Set(),
+                                    bubbles: true, composed: true}));
+                                const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
+                                dialog.close(false);
+                            }}>
+                    ${msg('Export Manifests')}
                 </ui5-button>
                 <ui5-button style="margin-top:5px"
                             @click=${() => {
