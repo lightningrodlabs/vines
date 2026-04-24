@@ -1,4 +1,4 @@
-import {css, html, /*PropertyValues,*/ TemplateResult} from "lit";
+import {css, html, nothing, render, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, ActionIdMap, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -22,12 +22,6 @@ export interface ICollapsable {
 @customElement("topics-lister")
 export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> implements ICollapsable {
 
-  constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-  }
-
-  /** -- Properties -- */
-
   @property({type: Boolean}) history?: boolean = false;
 
   @property() order: string = "custom";
@@ -45,9 +39,10 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
   private _dragged: any;
 
+
   /** -- Methods -- */
 
-  /** In dvmUpdated() this._dvm is not already set */
+  /** In dvmUpdated() this._dvm is not set yet */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     console.debug("<topics-lister>.dvmUpdated()");
     /** Subscribe to ThreadsZvm */
@@ -114,7 +109,13 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
         });
       break;
       case "chrono":
-        pairs = pairs.reverse();
+        // TODO: The perspective doesn't hold timestamp data for topics so for now we assume its in the order from which we get the data.
+        //pairs = pairs.reverse();
+        // pairs = pairs.sort((a, b) => {
+        //   const nameA = this._dvm.profilesZvm.perspective.getProfileTs(a[0])!;
+        //   const nameB = this._dvm.profilesZvm.perspective.getProfileTs(b[0])!;
+        //   return nameB - nameA;
+        // });
       break;
       case "custom":
       default:
@@ -129,7 +130,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
         return;
       }
       /** Render threads for Topic */
-      let threads: TemplateResult<1>[] = [];
+      let threadElems: TemplateResult<1>[] = [];
       let topicThreads = this.threadsPerspective.getSubjectThreads(topicAh);
       if (topicThreads == undefined) {
         topicThreads = [];
@@ -148,19 +149,19 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             topicThreads = topicThreads.sort((a, b) => {
               const nameA = this.threadsPerspective.threads.get(a)!.creationTime
               const nameB = this.threadsPerspective.threads.get(b)!.creationTime;
-              return nameB - nameA
+              return nameA - nameB;
             });
           break;
           case "custom":
             topicThreads = this.getThreadOrderFromLocalStorage(topicAh, topicThreads);
           break;
         }
-        threads = topicThreads.map((ppAh) => {
+        threadElems = topicThreads.map((ppAh) => {
             const thread = this.threadsPerspective.threads.get(ppAh);
             if (!thread) {
               return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
             }
-            //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
+            // console.log("ORDER", thread.pp.purpose);
             const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(ppAh.b64);
             const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
             const isThreadHidden = this.threadsPerspective.hiddens[ppAh.b64]? this.threadsPerspective.hiddens[ppAh.b64] : false;
@@ -195,31 +196,31 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
             const hideShowBtn = this.showArchivedTopics && isThreadHidden?
               html`
-                  <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
-                              class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                              @click=${async (e: any) => {
-                                e.stopPropagation();
-                                this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                                  detail: {
-                                    hide: false,
-                                    address: ppAh,
-                                    type: "Channel"
-                                  }, bubbles: true, composed: true
-                                }));
-                              }}></ui5-button>
+                <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
+                            class="showBtn" style="${isSelected? "color:#444;" : ""}"
+                            @click=${async (e: any) => {
+                              e.stopPropagation();
+                              this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                                detail: {
+                                  hide: false,
+                                  address: ppAh,
+                                  type: "Channel"
+                                }, bubbles: true, composed: true
+                              }));
+                            }}></ui5-button>
               ` : html`
-                        <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
-                                    class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                                    @click=${async (e: any) => {
-                                      e.stopPropagation();
-                                      this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                                        detail: {
-                                          hide: true,
-                                          address: ppAh,
-                                          type: "Channel"
-                                        }, bubbles: true, composed: true
-                                      }));
-                                    }}></ui5-button>`;
+                    <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
+                                class="showBtn" style="${isSelected? "color:#444;" : ""}"
+                                @click=${async (e: any) => {
+                                  e.stopPropagation();
+                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+                                    detail: {
+                                      hide: true,
+                                      address: ppAh,
+                                      type: "Channel"
+                                    }, bubbles: true, composed: true
+                                  }));
+                                }}></ui5-button>`;
 
             /** Create an avatar group */
             const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
@@ -243,7 +244,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                        @dragstart=${(e: any) => {
                           e.stopPropagation();
                           this._dragged = e.target.closest('sl-tooltip');
-                          console.log("_dragged", this._dragged);
+                          console.log("order dragstart", this._dragged);
                           setTimeout(() =>  this._dragged?.classList.add('dragging'), 0)
                           e.dataTransfer!.effectAllowed = 'move';
                           e.dataTransfer!.setData('thread', ppAh.b64);
@@ -255,11 +256,17 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                            // Clean up any leftover drag-over highlights
                            this.shadowRoot?.querySelectorAll('.drag-over')
                                    .forEach(el => el.classList.remove('drag-over'));
+                           /** Force clear and repaint */
+                           render(nothing, this.shadowRoot!);
+                           this.requestUpdate();
                        }}
-                       @dragleave=${(e: DragEvent) => (e.currentTarget as HTMLElement).classList.remove('drag-over')}
+                       @dragleave=${(e: DragEvent) => {
+                           (e.currentTarget as HTMLElement).classList.remove('drag-over');
+                       }}
                        @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
                       ${badge}
-                      <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
+                      <span style="flex-grow:1; margin-left:10px; margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${hasNewBeads || isSelected? "bold" : ""}; color:${isSelected? "white" : ""};"
+                      >${thread.title}</span>
                       ${avatarGrp}
                       ${hideShowBtn}                
                   </div>
@@ -353,10 +360,10 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       const topicHasUnreads = unreadSubjects.map((id) => id.b64).includes(topicAh.b64);
 
       //console.log("<topics-lister>.render() threads", threads);
-      if (threads.length == 0) {
+      if (threadElems.length == 0) {
         //const tBgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "#c3f9c5bd" : "#F6FAFC";
         const tBgColor = "#F6FAFC";
-        threads = [html`<div class="threadItem" style="cursor: default; display: flex; flex-direction: column; background: ${tBgColor}">
+        threadElems = [html`<div class="threadItem" style="cursor: default; display: flex; flex-direction: column; background: ${tBgColor}">
                    <span style="color:grey;">${msg('No channels found')}</span>
                     <span class="linky" style="text-decoration: underline; font-size: small"
                           @click=${async (e: any) => {
@@ -434,7 +441,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                 </ui5-button>
             </div>
             <!-- threads -->              
-            ${threads}
+           ${threadElems}
           </ui5-panel>`
     });
 
@@ -455,11 +462,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
          @dragstart=${(e: any) => {
            this._dragged = e.target.closest('ui5-panel');
            setTimeout(() =>  this._dragged?.classList.add('dragging'), 0);
-            e.dataTransfer!.setData('topic', '42');
+           e.dataTransfer!.setData('topic', '42');
          }}
          @dragend=${(_e: any) => {
              this._dragged?.classList.remove('dragging');
              this._dragged = null;
+             /** Force clear and repaint */
+             render(nothing, this.shadowRoot!);
+             this.requestUpdate();
          }}
          @dragover=${(e: any) => {
             e.preventDefault();
@@ -520,7 +530,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                 .map(el => el.children[0]!.id)
                 .filter(id => id !== '');
               const deduped = [...new Set(order)];
-              //console.log("THREAD ORDER", this._dragged.children[0]!.topic, order);
+              //console.log("THREAD ORDER", this._dragged.children[0]!.topic, deduped);
               localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.topic, JSON.stringify(deduped));
             }
          }}>
@@ -554,7 +564,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   getThreadOrderFromLocalStorage(topicAh: ActionId, threads: ActionId[]): ActionId[] {
     //console.log("getThreadOrderFromLocalStorage()", topicAh.b64);
     const json = localStorage.getItem("vinesThreadOrder-" + topicAh.b64);
-    if (!json) return threads;
+    if (!json) {
+      return threads;
+    }
     let ids: string[];
     try {
       ids = JSON.parse(json) as string[];
@@ -568,8 +580,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       ordered.push(id);
       threads = threads.filter((key) => !key.equals(id));
     }
-    //console.log("THREAD ORDER FROM LOCAL STORAGE", topicAh.b64, threads);
-    return ordered.concat(threads);
+    const res = ordered.concat(threads);
+    console.log("THREAD ORDER FROM LOCAL STORAGE", /*topicAh.b64,*/ res);
+    return res;
   }
 
   /** */
