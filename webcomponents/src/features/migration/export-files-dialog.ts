@@ -4,6 +4,31 @@ import {css, html, LitElement} from "lit";
 import {sharedStyles} from "../../styles";
 import {msg} from "@lit/localize";
 import Dialog from "@ui5/webcomponents/dist/Dialog";
+import JSZip from "jszip";
+
+/** */
+export async function downloadFilesAsZip(files: File[], zipName = "download.zip"): Promise<void> {
+  const zip = new JSZip();
+
+  // Add each file to the zip
+  for (const file of files) {
+    const arrayBuffer = await file.arrayBuffer();
+    zip.file(file.name, arrayBuffer);
+  }
+
+  // Generate the zip blob
+  const blob = await zip.generateAsync({ type: "blob" });
+
+  // Trigger download
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = zipName;
+  anchor.click();
+
+  // Cleanup
+  URL.revokeObjectURL(url);
+}
 
 
 /**
@@ -72,7 +97,7 @@ export class ExportFilesDialog extends LitElement {
                   <ui5-button @click=${this.toggleAll}>${allSelected? msg('Deselect All'): msg('Select All')}</ui5-button>
               </div>
               <div class="channel-section">
-              <div class="channel-list">
+               <div class="channel-list">
               ${this.items.map((item) => {
                 const selected = this._selectedFiles.has(item.ppEh);                 
                 return html`
@@ -91,14 +116,14 @@ export class ExportFilesDialog extends LitElement {
                         <span class="channel-name">${item.description.name}</span>
                         <span class="channel-meta">${prettyFileSize(item.description.size)}</span>
                     </div>                    
-              `})}
-              </div>
-                  <div style="margin-top:15px; display: flex; flex-direction: row; gap:3px; padding: 0px 15px 0px 5px;">
-                      <div>${msg("Total")}: ${this._selectedFiles.size}</div>
-                      <div style="flex-grow: 1"></div>
-                      <div>${prettyFileSize(this._selectedSize)}</div>
-                  </div>
+               `})}
+               </div>
             </div>
+              <div style="margin-top:15px; display: flex; flex-direction: row; gap:3px; padding: 0px 15px 0px 5px;">
+                  <div>${msg("Total")}: ${this._selectedFiles.size}</div>
+                  <div style="flex-grow: 1"></div>
+                  <div>${prettyFileSize(this._selectedSize)}</div>
+              </div>              
           </div>
             <!-- Footer -->
             <div slot="footer" class="footer">
@@ -140,8 +165,18 @@ export class ExportFilesDialog extends LitElement {
           }
 
           ui5-dialog {
-              width: 670px;
+              width: 540px;
           }
+
+          #content {
+              display: flex;
+              flex-direction: column;
+              width: 500px;
+              max-height: 80vh;
+              padding: 0;
+              margin: 0;
+          }
+          
           .channel-list {
               background: #ebebeb9e;
               border-radius: 10px;
@@ -203,10 +238,18 @@ export class ExportFilesDialog extends LitElement {
           }
 
           .channel-section {
-              margin-bottom: 1.5rem;
+              /*margin-bottom: 1.5rem;*/
               flex: 1;
               overflow-y: auto;
               min-height: 0;
+          }
+
+          .footer {
+              display: flex;
+              flex-shrink: 0;
+              gap: 10px;
+              justify-content: flex-end;
+              padding: 4px;
           }
       `];
   }

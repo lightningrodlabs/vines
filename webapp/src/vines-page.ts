@@ -192,7 +192,7 @@ import {
   ConfirmDialog,
   defaultLimitations,
   defaultModeration,
-  doodle_flowers,
+  doodle_flowers, downloadFilesAsZip,
   EditTopicRequest,
   ExportFilesDialog,
   FavoritesEvent,
@@ -2811,7 +2811,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    }} ></import-summary-dialog>
             <export-files-dialog id="export-files-dialog" 
                                  .items=${publicFilesItems}
-                                 @export-files=${async (_e: any) => {
+                                 @export-confirmed=${async (e: CustomEvent<Set<string>>) => {
+                                     const pairs = await Promise.all(Array.from(e.detail).map(async (ppEhB64) => this._filesDvm.fetchFile(new EntryId(ppEhB64))));
+                                     await downloadFilesAsZip(pairs.map((pair) => pair[1]));
                                      const files_json = await this._filesDvm.exportPerspective();
                                      this.downloadTextFile("dump_files.json", files_json);
                                      toasty(msg(`Exported File manifests in Downloads folder`));
