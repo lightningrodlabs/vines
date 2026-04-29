@@ -16,9 +16,8 @@ import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../events";
 import {Thread} from "../../viewModels/thread";
 import {consume} from "@lit/context";
-import {filesContext, THIS_APPLET_ID, weClientContext} from "../../contexts";
+import {THIS_APPLET_ID, weClientContext} from "../../contexts";
 import {Subject, ThreadsEntryType} from "../../bindings/threads.types";
-import {FilesDvm} from "@ddd-qc/files";
 import {sharedStyles} from "../../styles";
 import {ICollapsable} from "./topics-lister";
 
@@ -39,8 +38,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
   @property() selectedThreadHash?: ActionId;
 
-  @consume({context: filesContext, subscribe: true})
-  filesDvm!: FilesDvm;
+  // @consume({context: filesContext, subscribe: true})
+  // filesDvm!: FilesDvm;
 
   @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;

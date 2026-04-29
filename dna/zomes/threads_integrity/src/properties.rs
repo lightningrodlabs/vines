@@ -1,9 +1,9 @@
 use hdi::prelude::*;
-
+use crate::THREADS_DEFAULT_INTEGRITY_ZOME_NAME;
 
 #[hdk_extern]
 pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
-   debug!("genesis_self_check() CALLED");
+   debug!("{} genesis_self_check() CALLED", THREADS_DEFAULT_INTEGRITY_ZOME_NAME);
    let _info = dna_info()?;
    let Ok(properties) = get_properties() else {
       return Ok(ValidateCallbackResult::Invalid("No properties".into()));

@@ -17,21 +17,21 @@ import {renderAvatar} from "../render";
 import {msg, str} from "@lit/localize";
 import {ActionId, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {MicEvent, VinesInputEvent} from "../events";
-import {weClientContext} from "../contexts";
+import {filesContext, weClientContext} from "../contexts";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
 import {MIC_MIME_TYPE} from "../features/chat-thread/audio-recorder";
 import {toasty} from "../toast";
-import {formatFileSize} from "../utils";
+import {formatFileSize, isFileValid} from "../utils";
 import {
   DEFAULT_MAX_TEXT_LENGTH,
   defaultCommentLimitations,
 } from "../viewModels/threads.materialize";
 import {formatTime} from "../features/timezone/utils";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
-import {prettyFileSize} from "@ddd-qc/files";
+import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {AudioPanel} from "../features/chat-thread/audio-panel";
 
 
@@ -49,6 +49,9 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;
+
+  @consume({context: filesContext, subscribe: true})
+  filesDvm!: FilesDvm;
 
   /** -- Properties -- */
 
@@ -735,17 +738,21 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const file = e.target.files[0] as File;
     const fileLimits = this._limitations.canFile!;
     console.log("<vines-input-bar> onAttachFile()", file.size, fileLimits.minFileSize, fileLimits.maxFileSize)
+    if (!isFileValid(file, this.filesDvm.dnaProperties)) {
+      this.focusInput();
+      return;
+    }
     if (file.size > fileLimits.maxFileSize /*|| file.size > this._filesDvm.dnaProperties.maxParcelSize*/) {
-      toasty(msg(str`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size allowed in this channel: ${prettyFileSize(fileLimits.maxFileSize)}`));
+      toasty(msg(str`Error: File is too big: ${prettyFileSize(file.size)}. Maximum file size allowed in this channel: ${prettyFileSize(fileLimits.maxFileSize)}`));
       this.focusInput();
       return;
     }
     if (file.size < fileLimits.minFileSize) {
-      toasty(msg(str`Error: File is too small ${prettyFileSize(file.size)}. Minimum file size allowed in this channel: ${prettyFileSize(fileLimits.minFileSize)}`));
+      toasty(msg(str`Error: File is too small: ${prettyFileSize(file.size)}. Minimum file size allowed in this channel: ${prettyFileSize(fileLimits.minFileSize)}`));
       this.focusInput();
       return;
     }
-    this._file = e.target.files[0];
+    this._file = file;
     this.focusInput();
   }
 

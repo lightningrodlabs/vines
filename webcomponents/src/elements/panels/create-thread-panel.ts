@@ -5,14 +5,13 @@ import {sharedStyles} from "../../styles";
 import Input from "@ui5/webcomponents/dist/Input";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {filesContext, weClientContext} from "../../contexts";
+import {weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
 import {DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {weaveUrlToWal, hrl2Id} from "../../utils";
 import {ParticipationProtocol, Subject} from "../../bindings/threads.types";
-import {FilesDvm} from "@ddd-qc/files";
 import {SpecialSubjectType} from "../../events";
 import {RulesEdit} from "../../features/rules/rules-edit";
 
@@ -29,8 +28,8 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** -- Properties -- */
 
-  @consume({context: filesContext, subscribe: true})
-  _filesDvm!: FilesDvm;
+  // @consume({context: filesContext, subscribe: true})
+  // _filesDvm!: FilesDvm;
 
   @consume({context: weClientContext, subscribe: true})
   weServices!: WeServicesEx;

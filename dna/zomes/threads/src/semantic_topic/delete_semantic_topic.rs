@@ -7,7 +7,7 @@ use zome_utils::*;
 /// WARN: USE FOR TESTING ONLY - USERS SHOULD ARCHIVE TOPICS INSTEAD
 #[hdk_extern]
 #[feature(zits_blocking)]
-#[ignore(zits)]
+#[ignore = "zits"]
 pub fn delete_semantic_topic(ah: ActionHash) -> ExternResult<ActionHash> {
   std::panic::set_hook(Box::new(zome_panic_hook));
   /// Make sure Topic does already exists

@@ -1,5 +1,5 @@
 import {AnyBeadMat, BeadType, EntryBeadMat, TextBeadMat, TypedBeadMat} from "./viewModels/threads.materialize";
-import {FilesDvm, FileType} from "@ddd-qc/files";
+import {FilesDvm, FileType, prettyFileSize} from "@ddd-qc/files";
 import {AppletId, GroupProfile, Hrl, WAL, weaveUrlFromWal, weaveUrlToLocation} from "@theweave/api";
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
@@ -9,6 +9,9 @@ import {ProfilesAltZvm, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashB64, HoloHashType} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
+import {toasty} from "./toast";
+import {msg, str} from "@lit/localize";
+import {DeliveryProperties} from "@ddd-qc/delivery";
 
 
 /** MAIN TOPIC is hardcoded */
@@ -513,4 +516,26 @@ export function determinerGroupProfile(dnaProperties: ThreadsProperties, tuple?:
   }
 
   return groupProfile;
+}
+
+
+/** */
+export function isFileValid(file: File, dnaProperties: DeliveryProperties): boolean {
+  if (file.size > dnaProperties.maxParcelSize) {
+    toasty(msg(str`File is too big: ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(dnaProperties.maxParcelSize)}`))
+    return false;
+  }
+  if (file.size <= 0) {
+    toasty(msg(`File is empty.`));
+    return false;
+  }
+  if (file.name.length < dnaProperties.minParcelNameLength) {
+    toasty(msg(str`File name is too short: ${file.name.length}. Minimum file name length: ${dnaProperties.minParcelNameLength}`));
+    return false;
+  }
+  if (file.name.length > dnaProperties.maxParcelNameLength) {
+    toasty(msg(str`File name is too long: ${file.name.length}. Maximum file name length: ${dnaProperties.maxParcelNameLength}`));
+    return false;
+  }
+  return true;
 }

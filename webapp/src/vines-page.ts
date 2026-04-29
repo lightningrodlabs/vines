@@ -257,7 +257,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 // @ts-ignore
 import {FileButton} from "@ddd-qc/files/dist/elements/file-button";
-import {FilesDvm, FileView, prettyFileSize, splitFile, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, FileView, isFileValid, splitFile, SplitObject} from "@ddd-qc/files";
 //import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg, str} from "@lit/localize";
@@ -3008,7 +3008,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
-
   @state() private _file: File | undefined = undefined;
 
   /** */
@@ -3021,11 +3020,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page>.openFile() Canceled");
     }
     input.onchange = (e: any) => {
-      console.log("<vines-page>.openFile() target download file", this._filesDvm.dnaProperties.maxChunkSize, e.target.files, e);
+      console.log("<vines-page>.openFile() target download file", this._filesDvm.dnaProperties, e.target.files, e);
       const file = e.target.files[0];
-      const maxSizeAllowed = Math.min(this._filesDvm.dnaProperties.maxParcelSize, 1 * 1024 * 1024 * 1024); // 1 GB
-      if (file.size > maxSizeAllowed) {
-        toasty(msg(str`Error: File is too big ${prettyFileSize(file.size)}. Maximum file size: ${prettyFileSize(maxSizeAllowed)}`));
+      if (!isFileValid(file, this._filesDvm.dnaProperties)) {
         return;
       }
       this._file = file;
