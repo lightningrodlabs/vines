@@ -1,5 +1,19 @@
 use hdi::prelude::*;
 
+
+#[hdk_extern]
+pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
+   debug!("genesis_self_check() CALLED");
+   let _info = dna_info()?;
+   let Ok(properties) = get_properties() else {
+      return Ok(ValidateCallbackResult::Invalid("No properties".into()));
+   };
+   // debug!("genesis_self_check() properties {:?}", properties);
+   ///
+   return properties.validate();
+}
+
+
 /// Dna properties
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, SerializedBytes)]
 #[serde(rename_all = "camelCase")]

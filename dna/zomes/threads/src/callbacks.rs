@@ -4,22 +4,6 @@ use zome_signals::*;
 use zome_utils::*;
 
 #[hdk_extern]
-pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
-    debug!("genesis_self_check() CALLED");
-    let _info = dna_info()?;
-    let Ok(properties) = get_properties() else {
-        return Ok(ValidateCallbackResult::Invalid("No properties".into()));
-    };
-    /// Emit init done tip
-    let _ = emit_zome_signal(vec![ZomeSignalProtocol::Tip(TipProtocol::AppValue((
-        "genesis_self_check".to_string(),
-        "done".to_string(),
-    )))]);
-    ///
-    return properties.validate();
-}
-
-#[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     debug!("init() CALLED");
     let mut fns = HashSet::new();
