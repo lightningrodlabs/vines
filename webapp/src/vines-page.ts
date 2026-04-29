@@ -797,9 +797,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   // }
 
 
-  /** -- Update -- */
+  /** -- Methods -- */
 
-
+  /** */
   private validateTitle(inputId: string, prev?: string): string | undefined {
     const input = this.shadowRoot!.getElementById(inputId) as Input;
     const name = input.value.trim();
@@ -812,10 +812,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     /** Must be at least 3 chars for link anchors */
-    if (name.length < 3) {
+    const minLimit = Math.max(3, this._dvm.dnaProperties.minTopicNameLength);
+    if (name.length < minLimit) {
       input.valueState = ValueState.Error;
-      /** Works even though Lit throws an error when inputing a valid name afterwords */
-      childDivs[0]!.innerText = msg("Minimum 3 characters");
+      /** Works even though Lit throws an error when inputing a valid title afterwords */
+      childDivs[0]!.innerText = msg(str`Minimum ${minLimit} characters`);
+      return;
+    }
+    if (name.length > this._dvm.dnaProperties.maxTopicNameLength) {
+      input.valueState = ValueState.Error;
+      childDivs[0]!.innerText = msg(str`Maximum ${this._dvm.dnaProperties.maxTopicNameLength} characters`);
       return;
     }
     const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
